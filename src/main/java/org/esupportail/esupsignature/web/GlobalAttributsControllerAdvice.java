@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -62,10 +64,12 @@ public class GlobalAttributsControllerAdvice {
 
     private final CertificatService certificatService;
 
+    private final ServletContext servletContext;
+
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
-                                           Environment environment, CertificatService certificatService) {
+                                           Environment environment, CertificatService certificatService, ServletContext servletContext) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
@@ -81,10 +85,20 @@ public class GlobalAttributsControllerAdvice {
         this.validationService = validationService;
         this.environment = environment;
         this.certificatService = certificatService;
+        this.servletContext = servletContext;
     }
 
-    @Value("${spring.session.timeout}")
+    @Value("${spring.session.timeout:#{null}}")
     private Duration sessionTimeout;
+
+    @PostConstruct
+    public void init() {
+        if (sessionTimeout == null) {
+            int defaultTimeoutMinutes = servletContext.getSessionTimeout();
+            sessionTimeout = Duration.ofMinutes(defaultTimeoutMinutes);
+        }
+        logger.info("Session timeout = " + sessionTimeout.toMinutes() + " min");
+    }
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {

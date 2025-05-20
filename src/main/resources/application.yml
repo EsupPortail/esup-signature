@@ -81,7 +81,7 @@ spring:
     session:
         jdbc:
             initialize-schema: always
-        timeout: 30m
+        timeout: 1m
     threads:
         virtual:
             enabled: true

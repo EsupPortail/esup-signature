@@ -340,7 +340,7 @@ public class GlobalProperties {
     /**
      * Activer la vérification des numéros de téléphone français pour l’OTP
      */
-    Boolean frenchPhoneNumberOnly = false;
+    private Boolean frenchPhoneNumberOnly = false;
 
     public String getRootUrl() {
         return rootUrl;
