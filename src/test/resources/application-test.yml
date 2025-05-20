@@ -51,8 +51,7 @@ management:
 
 spring:
     session:
-        jdbc:
-            initialize-schema: always
+        timeout: 30m
     data:
         ldap:
             repositories:
