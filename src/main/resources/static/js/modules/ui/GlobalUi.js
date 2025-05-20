@@ -637,7 +637,7 @@ export class GlobalUi {
             if(window.location.pathname.includes("otp")) {
                 window.location.href = "/otp-access/session-expired";
             } else {
-                window.location.href = "/user";
+                location.reload();
             }
         });
     }
