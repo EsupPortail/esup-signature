@@ -78,6 +78,8 @@ management:
             show-details: ALWAYS
 
 spring:
+    session:
+        timeout: 30m
     threads:
         virtual:
             enabled: true

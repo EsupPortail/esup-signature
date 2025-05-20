@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.web;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
@@ -22,6 +25,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import java.time.Duration;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
@@ -60,10 +64,12 @@ public class GlobalAttributsControllerAdvice {
 
     private final CertificatService certificatService;
 
+    private final ServletContext servletContext;
+
     public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
-                                           Environment environment, CertificatService certificatService) {
+                                           Environment environment, CertificatService certificatService, ServletContext servletContext) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
@@ -79,12 +85,26 @@ public class GlobalAttributsControllerAdvice {
         this.validationService = validationService;
         this.environment = environment;
         this.certificatService = certificatService;
+        this.servletContext = servletContext;
+    }
+
+    @Value("${spring.session.timeout:#{null}}")
+    private Duration sessionTimeout;
+
+    @PostConstruct
+    public void init() {
+        if (sessionTimeout == null) {
+            int defaultTimeoutMinutes = servletContext.getSessionTimeout();
+            sessionTimeout = Duration.ofMinutes(defaultTimeoutMinutes);
+        }
+        logger.info("Session timeout = " + sessionTimeout.toMinutes() + " min");
     }
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());
         HttpSession httpSession = httpServletRequest.getSession();
+        httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
@@ -126,8 +146,8 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
             model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));
         }
-        model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
+        model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
 }

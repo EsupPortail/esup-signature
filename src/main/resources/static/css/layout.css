@@ -241,7 +241,7 @@ header {
 }
 
 #ws-tabs {
-    width: fit-content !important;
+    width: 100% !important;
     flex-wrap: nowrap !important;
 }
 
