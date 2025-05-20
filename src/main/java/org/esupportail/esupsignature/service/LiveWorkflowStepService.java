@@ -52,6 +52,7 @@ public class LiveWorkflowStepService {
         }
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
+        liveWorkflowStep.setDescription(Objects.requireNonNullElse(step.getDescription(), null));
         liveWorkflowStep.setRepeatable(Objects.requireNonNullElse(step.getRepeatable(), false));
         liveWorkflowStep.setMultiSign(Objects.requireNonNullElse(step.getMultiSign(), true));
         liveWorkflowStep.setSingleSignWithAnnotation(Objects.requireNonNullElse(step.getSingleSignWithAnnotation(), false));
@@ -79,6 +80,7 @@ public class LiveWorkflowStepService {
     public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
+        liveWorkflowStep.setDescription(Objects.requireNonNullElse(step.getDescription(), null));
         liveWorkflowStep.setRepeatable(Objects.requireNonNullElse(step.getRepeatable(), false));
         liveWorkflowStep.setMultiSign(Objects.requireNonNullElse(step.getMultiSign(), true));
         liveWorkflowStep.setSingleSignWithAnnotation(Objects.requireNonNullElse(step.getSingleSignWithAnnotation(), false));
