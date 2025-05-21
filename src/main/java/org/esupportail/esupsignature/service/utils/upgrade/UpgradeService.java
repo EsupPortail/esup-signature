@@ -296,8 +296,14 @@ public class UpgradeService {
     @SuppressWarnings("unused")
     public void update_1_33_7() {
         logger.info("#### Starting update workflow workflow ####");
-        entityManager.createNativeQuery("update workflow set authorize_clone = autorize_clone where authorize_clone is null").executeUpdate();
-        entityManager.createNativeQuery("alter table workflow drop column autorize_clone").executeUpdate();
+        entityManager.createNativeQuery(
+                "DO $$ BEGIN " +
+                        "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'autorize_clone') THEN " +
+                        "UPDATE workflow SET authorize_clone = autorize_clone WHERE authorize_clone IS NULL; " +
+                        "ALTER TABLE workflow DROP COLUMN autorize_clone; " +
+                        "END IF; " +
+                        "END $$;"
+        ).executeUpdate();
         logger.info("#### Update workflow workflow completed ####");
     }
 }
