@@ -541,6 +541,8 @@ public class WorkflowService {
         workflowToUpdate.setMailFrom(workflow.getMailFrom());
         workflowToUpdate.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
+        workflowToUpdate.setStartArchiveDate(workflow.getStartArchiveDate());
+        workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }

@@ -1762,10 +1762,23 @@ public class SignBookService {
 
     @Transactional
     public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureRuntimeException {
-        if(globalProperties.getArchiveUri() != null) {
+        SignBook signBook = getById(signBookId);
+        if(!needToBeArchived(signBook)) {
+            return;
+        }
+        String archiveUri = globalProperties.getArchiveUri();
+        if(signBook.getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
+            if(signBook.getEndDate().after(signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate())) {
+                if(StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
+                    archiveUri = signBook.getLiveWorkflow().getWorkflow().getArchiveTarget();
+                }
+            } else {
+                return;
+            }
+        }
+        if(archiveUri != null) {
             logger.info("start archiving documents");
             boolean result = true;
-            SignBook signBook = getById(signBookId);
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
@@ -1775,12 +1788,13 @@ public class SignBookService {
                         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
                             name = fileService.getNameOnly(signedFile.getFileName());
                         }
-                        String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
+                        String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            logger.info("archive done to " + subPath + name + " in " + archiveUri);
                         } else {
-                            logger.error("unable to archive " + subPath + name);
+                            logger.error("unable to archive " + subPath + name + " in " + archiveUri);
                             result = false;
                         }
                     }
@@ -1812,6 +1826,17 @@ public class SignBookService {
     public boolean needToBeExported(Long signBookId) {
         SignBook signBook = getById(signBookId);
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && !signBook.getLiveWorkflow().getTargets().isEmpty();
+    }
+
+    @Transactional
+    public boolean needToBeArchived(SignBook signBook) {
+        return signBook.getLiveWorkflow() != null
+                && (signBook.getLiveWorkflow().getWorkflow() == null
+                    || (signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate() != null
+                    && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())
+                    && signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate().before(new Date())
+                    )
+        );
     }
 
     @Transactional

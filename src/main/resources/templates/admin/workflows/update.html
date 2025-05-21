@@ -278,6 +278,14 @@
                             <label for="message"><strong>Message d’accueil</strong></label>
                             <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
                         </div>
+                        <div class="form-group mb-3">
+                            <strong>Paramètre d'archivage (indépendant de l'export)</strong>
+                            <br>
+                            <label for="startArchiveDate">Date à partir de laquelle on archive les demandes de ce circuit</label>
+                            <input id="startArchiveDate" class="form-control" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
+                            <label for="archiveTarget">Emplacement d’archivage (si vide l’emplacement configuré dans application.yml est utilisé)</label>
+                            <input id="archiveTarget" class="form-control" type="text" th:field="*{archiveTarget}" value="" autocomplete="off">
+                        </div>
                     </form>
                     <div class="form-group mb-3">
                         <label for="documentsSourceUri"> <strong>Destination et format d'envoi des documents en fin de circuit</strong></label>

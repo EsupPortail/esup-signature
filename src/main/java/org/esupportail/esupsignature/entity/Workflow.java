@@ -104,6 +104,12 @@ public class Workflow {
 
     private Boolean authorizeClone = false;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
+    private Date startArchiveDate;
+
+    private String archiveTarget;
+
     public Long getId() {
         return id;
     }
@@ -409,5 +415,21 @@ public class Workflow {
 
     public void setAuthorizeClone(Boolean authorizeClone) {
         this.authorizeClone = authorizeClone;
+    }
+
+    public Date getStartArchiveDate() {
+        return startArchiveDate;
+    }
+
+    public void setStartArchiveDate(Date startArchiveDate) {
+        this.startArchiveDate = startArchiveDate;
+    }
+
+    public String getArchiveTarget() {
+        return archiveTarget;
+    }
+
+    public void setArchiveTarget(String archiveTarget) {
+        this.archiveTarget = archiveTarget;
     }
 }

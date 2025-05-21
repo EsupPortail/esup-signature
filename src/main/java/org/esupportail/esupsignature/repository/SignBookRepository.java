@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -203,6 +204,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findByCreateByIdDeleted(User user, Pageable pageable);
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
+
+    @Query("SELECT s.id FROM SignBook s WHERE s.status = :status")
+    List<Long> findIdByStatus(@Param("status") SignRequestStatus status);
 
     List<SignBook> findByDeletedIsTrue();
 
