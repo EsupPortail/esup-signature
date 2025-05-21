@@ -79,7 +79,7 @@ public class SecurityControllerAdvice {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         if(ex.getCause() instanceof ConstraintViolationException || ex.getCause() instanceof PSQLException) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Action déjà effectuée.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("<b>Action déjà effectuée ou clé dupliquée</b> : " + ex.getLocalizedMessage());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erreur interne.");
     }

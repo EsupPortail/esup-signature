@@ -12,7 +12,7 @@ public interface WorkflowDto {
 
     String getName();
 
-    String getTitle();
+    String getToken();
 
     String getDescription();
 

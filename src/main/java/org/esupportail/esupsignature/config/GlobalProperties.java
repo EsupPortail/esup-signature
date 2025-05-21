@@ -231,6 +231,11 @@ public class GlobalProperties {
     private Boolean sealForExternals = false;
 
     /**
+     * Autoriser automatiquement le certificat cachet pour les demandes internes déjà signés
+     */
+    private Boolean sealAuthorizedForSignedFiles = false;
+
+    /**
      *  Whitelist des domaines authorisés à obtenir le ROLE_USER pour les connexions Shibboleth
      */
     private List<String> shibUsersDomainWhiteList;
@@ -668,6 +673,14 @@ public class GlobalProperties {
 
     public void setSealForExternals(Boolean sealForExternals) {
         this.sealForExternals = sealForExternals;
+    }
+
+    public Boolean getSealAuthorizedForSignedFiles() {
+        return sealAuthorizedForSignedFiles;
+    }
+
+    public void setSealAuthorizedForSignedFiles(Boolean sealAuthorizedForSignedFiles) {
+        this.sealAuthorizedForSignedFiles = sealAuthorizedForSignedFiles;
     }
 
     public List<String> getShibUsersDomainWhiteList() {

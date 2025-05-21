@@ -43,8 +43,8 @@ public class SignWithService {
     }
 
     @Transactional
-    public List<SignWith> getAuthorizedSignWiths(String userEppn, SignRequest signRequest) {
-        List<SignWith> signWiths = getAuthorizedSignWiths(userEppn);
+    public List<SignWith> getAuthorizedSignWiths(String userEppn, SignRequest signRequest, boolean isAlreadyCertSign) {
+        List<SignWith> signWiths = getAuthorizedSignWiths(userEppn, isAlreadyCertSign);
         if(signRequest.getCurrentSignType() != null) {
             signWiths.removeIf(signWith -> signWith.getValue() < signRequest.getCurrentSignType().getValue());
         }
@@ -60,15 +60,20 @@ public class SignWithService {
         return signWiths;
     }
 
-    public List<SignWith> getAuthorizedSignWiths(String userEppn) {
+    public List<SignWith> getAuthorizedSignWiths(String userEppn, boolean isAlreadyCertSign) {
         User user = userService.getByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
-        if(!checkSealCertificat(userEppn, false)
-            || (!userService.getRoles(userEppn).contains("ROLE_SEAL") && !(globalProperties.getSealForExternals() || !user.getUserType().equals(UserType.external)))) {
-            signWiths.remove(SignWith.sealCert);
+        signWiths.remove(SignWith.sealCert);
+        if(checkSealCertificat(userEppn, false)
+            &&
+            (isAlreadyCertSign
+                ||
+            user.getRoles().contains("ROLE_SEAL"))
+        ) {
+            signWiths.add(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
             signWiths.remove(SignWith.groupCert);
@@ -89,11 +94,14 @@ public class SignWithService {
     }
 
     public boolean checkSealCertificat(String userEppn, boolean force) {
-        if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) return true;
         User user = userService.getByEppn(userEppn);
-        if((user.getRoles().contains("ROLE_SEAL") || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))) &&
-                StringUtils.hasText(globalProperties.getSealCertificatPin()) &&
-                (
+        if(
+                (user.getRoles().contains("ROLE_SEAL")
+                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
+                    || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))
+                )
+                && StringUtils.hasText(globalProperties.getSealCertificatPin())
+                && (
                     (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
                     ||
                     (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC))
@@ -101,15 +109,17 @@ public class SignWithService {
                     (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile()))
                 )
         ) {
-            if(!force) return true;
-            if(!certificatService.getSealCertificats().isEmpty()) {
-                sealCertOKCache.put("sealOK", true);
+            if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) {
                 return true;
             } else {
-                return false;
+                if (!certificatService.getSealCertificats().isEmpty()) {
+                    sealCertOKCache.put("sealOK", true);
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        } else {
-            return force;
         }
+        return force;
     }
 }

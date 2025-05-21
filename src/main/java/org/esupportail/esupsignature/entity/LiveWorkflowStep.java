@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import jakarta.persistence.*;
+import org.springframework.util.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,8 @@ public class LiveWorkflowStep {
             indexes = @Index(name = "idx_recipients_live_workflow_step_id", columnList = "live_workflow_step_id")
     )
     private List<Recipient> recipients = new ArrayList<>();
+
+    private String description;
 
     private Boolean allSignToComplete = false;
 
@@ -66,6 +70,17 @@ public class LiveWorkflowStep {
 
     public void setRecipients(List<Recipient> recipients) {
         this.recipients = recipients;
+    }
+
+    public String getDescription() {
+        if(description == null && workflowStep != null && StringUtils.hasText(workflowStep.getDescription())) {
+            return workflowStep.getDescription();
+        }
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Boolean getAllSignToComplete() {

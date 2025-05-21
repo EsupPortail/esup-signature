@@ -71,7 +71,7 @@ public class ExportWsController {
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     @GetMapping(value = "/workflow/{id}/datas/json", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des demandes d'un circuit")
-    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+    public LinkedHashMap<String, String> getDatas(@PathVariable String id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return workflowExportService.getJsonDatasFromWorkflow(id);
     }
 
