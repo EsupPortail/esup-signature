@@ -217,6 +217,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId and sb.status != 'uploading'")
     List<SignBook> findByWorkflowId(Long workflowId);
 
+    @Query("select sb from SignBook sb where (sb.liveWorkflow.workflow.id = :workflowIdLong or sb.liveWorkflow.workflow.token = :workflowIdStr) and sb.status != 'uploading'")
+    List<SignBook> findByWorkflowIdOrToken(@Param("workflowIdLong") Long workflowIdLong, @Param("workflowIdStr") String workflowIdStr);
+
     @Query("select sb from SignBook sb where size(sb.signRequests) = 0 and sb.status != 'uploading'")
     List<SignBook> findEmpties();
 

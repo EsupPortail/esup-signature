@@ -71,7 +71,7 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="dropdown position-relative" th:if="${workflow.id != null}">
-                                        <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark" th:title="'Actions ' + ${workflow.title}"
+                                        <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark" th:title="'Actions ' + ${workflow.description}"
                                                 th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="dropdown">
                                             <i class="fa-solid fa-ellipsis-v"></i>
                                         </button>

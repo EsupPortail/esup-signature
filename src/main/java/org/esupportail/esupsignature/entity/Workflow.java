@@ -18,9 +18,10 @@ public class Workflow {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-	private String name;
+    @Column(unique=true)
+    private String token;
 
-    private String title;
+	private String name;
 
     private String description;
 
@@ -118,20 +119,20 @@ public class Workflow {
         this.id = id;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getDescription() {

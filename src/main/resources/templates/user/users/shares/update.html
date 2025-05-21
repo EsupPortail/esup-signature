@@ -16,7 +16,7 @@
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
                 <li class="breadcrumb-item active" th:if="${userShare.workflow}"
-                    th:text="${userShare.workflow.title}"></li>
+                    th:text="${userShare.workflow.description}"></li>
                 <li class="breadcrumb-item active" th:if="${userShare.form}" th:text="${userShare.form.title}"></li>
             </ol>
         </nav>

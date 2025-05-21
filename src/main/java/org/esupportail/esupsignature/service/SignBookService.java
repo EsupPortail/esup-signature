@@ -341,8 +341,6 @@ public class SignBookService {
             if(workflow != null) {
                 if(workflow.getDescription() != null && !workflow.getDescription().isEmpty()) {
                     workflowName = workflow.getDescription();
-                } else if(workflow.getTitle() != null && !workflow.getTitle().isEmpty()) {
-                    workflowName = workflow.getTitle();
                 } else if(workflow.getName() != null && !workflow.getName().isEmpty()) {
                     workflowName = workflow.getName();
                 } else {
@@ -1313,9 +1311,9 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<Long> startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
+    public List<Long> startWorkflow(String id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
         logger.info("starting workflow " + id + " by " + createByEppn);
-        Workflow workflow = workflowService.getById(id);
+        Workflow workflow = workflowService.getByIdOrToken(id);
         User user = userService.createUserWithEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, comment);
         signBook.getLiveWorkflow().setWorkflow(workflow);

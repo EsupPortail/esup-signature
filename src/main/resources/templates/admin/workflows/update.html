@@ -45,9 +45,18 @@
                             <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="title"><strong>Titre technique</strong> (sans espaces, utilisé lors de l’import/export de documents)</label>
-                            <input id="title" class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
+                            <label for="token"><strong>Référence unique à passer dans {id} pour les appels web service</strong> (à saisir manuellement ou générer)</label>
+                            <div class="input-group">
+                                <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );">
+                                    Générer
+                                </button>
+                            </div>
                         </div>
+
                         <div class="form-group mb-3">
                             <label>
                                 <strong>Modèle de nommage des demandes</strong> (généré au moment de la création)

@@ -257,8 +257,6 @@ public class UpgradeService {
                             if(signBook.getLiveWorkflow().getWorkflow() != null) {
                                 if(signBook.getLiveWorkflow().getWorkflow().getDescription() != null) {
                                     signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getDescription());
-                                } else if(signBook.getLiveWorkflow().getWorkflow().getTitle() != null) {
-                                    signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getTitle());
                                 } else if(signBook.getLiveWorkflow().getWorkflow().getName() != null) {
                                     signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getName());
                                 } else {
@@ -301,6 +299,14 @@ public class UpgradeService {
                         "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'autorize_clone') THEN " +
                         "UPDATE workflow SET authorize_clone = autorize_clone WHERE authorize_clone IS NULL; " +
                         "ALTER TABLE workflow DROP COLUMN autorize_clone; " +
+                        "END IF; " +
+                        "END $$;"
+        ).executeUpdate();
+        entityManager.createNativeQuery(
+                "DO $$ BEGIN " +
+                        "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'title') THEN " +
+                        "UPDATE workflow SET token = title; " +
+                        "ALTER TABLE workflow DROP COLUMN title; " +
                         "END IF; " +
                         "END $$;"
         ).executeUpdate();
