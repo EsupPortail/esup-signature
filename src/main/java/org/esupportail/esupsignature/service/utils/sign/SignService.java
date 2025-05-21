@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,9 +111,6 @@ public class SignService {
 	private SignRequestRepository signRequestRepository;
 
 	@Resource
-	private Environment environment;
-
-	@Resource
 	private UserKeystoreService userKeystoreService;
 
 	@Resource
@@ -153,11 +149,10 @@ public class SignService {
 	}
 
 	@Transactional
-	public Document certSign(SignRequest signRequest, String userEppn, String password, SignWith signWith, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
+	public Document certSign(List<Document> toSignDocuments, SignRequest signRequest, String userEppn, String password, SignWith signWith, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
-		List<Document> toSignDocuments = new ArrayList<>(getToSignDocuments(signRequest.getId()));
 		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
 		try {
 			if(signWith.equals(SignWith.userCert)) {
@@ -393,25 +388,17 @@ public class SignService {
 			Document toSignFile = documents.get(0);
 			if(toSignFile.getContentType().equals("application/pdf")) {
 				signatureForm = SignatureForm.PAdES;
-				if(toSignFile.getTransientInputStream() != null) {
-					inputStream = toSignFile.getTransientInputStream();
-				} else {
-					inputStream = toSignFile.getInputStream();
-				}
+				inputStream = toSignFile.getTransientInputStream();
 				bytes = inputStream.readAllBytes();
 				if(!isSigned(signRequest, null) && !pdfService.isPdfAComplient(bytes)) {
 					bytes = pdfService.convertToPDFA(pdfService.writeMetadatas(bytes, toSignFile.getFileName(), signRequest, new ArrayList<>()));
 				}
 			} else {
 				signatureForm = signProperties.getDefaultSignatureForm();
-				bytes = toSignFile.getInputStream().readAllBytes();
+				bytes = toSignFile.getTransientInputStream().readAllBytes();
 			}
 			abstractSignatureForm = new SignatureDocumentForm();
-			if(includeDocuments) {
-				((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(toSignFile.getMultipartFile());
-			} else {
-				documentService.addSignedFile(signRequest, new ByteArrayInputStream(bytes), toSignFile.getFileName(), toSignFile.getContentType(), userService.getSystemUser());
-			}
+			((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
 				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
 			}
@@ -430,6 +417,7 @@ public class SignService {
 		abstractSignatureForm.setSigningDate(new Date());
 		return abstractSignatureForm;
 	}
+
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {

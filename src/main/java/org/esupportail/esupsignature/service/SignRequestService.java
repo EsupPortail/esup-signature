@@ -273,11 +273,9 @@ public class SignRequestService {
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
 				if (signRequestParamses.size() > 1) {
 					for (SignRequestParams signRequestParams : signRequestParamses) {
-						if(signRequestParams.getSignImageNumber() < 0) {
-							filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
-							lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
-							auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
-						}
+						filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
+						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
 					}
 				}
 			} else {
@@ -287,7 +285,7 @@ public class SignRequestService {
 				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
-			Document signedDocument = signService.certSign(signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), signRequestParamses.get(0));
+			Document signedDocument = signService.certSign(toSignDocuments, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0).findFirst().get());
 			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
 
@@ -332,7 +330,7 @@ public class SignRequestService {
 	@Transactional
 	public void seal(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		Document document = signService.certSign(signRequest, "system", "", SignWith.sealCert, null);
+		Document document = signService.certSign(signService.getToSignDocuments(signRequestId), signRequest, "system", "", SignWith.sealCert, null);
 		if(signRequest.getSignedDocuments().size() > 1) {
 			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
 		}
