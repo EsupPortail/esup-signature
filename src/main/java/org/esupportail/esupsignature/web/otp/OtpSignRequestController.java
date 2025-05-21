@@ -126,7 +126,6 @@ public class OtpSignRequestController {
         model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), userEppn, authUserEppn, nextSignBook));
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("otp", true);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -143,6 +142,7 @@ public class OtpSignRequestController {
         model.addAttribute("signatureIds", new ArrayList<>());
         Reports reports = signService.validate(id);
         if(reports != null) {
+            model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
             model.addAttribute("signatureIssue", false);
             for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
@@ -150,6 +150,8 @@ public class OtpSignRequestController {
                     model.addAttribute("signatureIssue", true);
                 }
             }
+        } else {
+            model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);

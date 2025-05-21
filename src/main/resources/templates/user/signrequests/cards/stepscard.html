@@ -54,8 +54,8 @@
                                 </th:block>
                                 <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
                                 <div>
-                                    <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
-                                        <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
+                                    <th:block th:if="${liveWorkflowStep.description != null}">
+                                        <span th:text="${liveWorkflowStep.description}"></span>
                                         <br/>
                                     </th:block>
                                     <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">

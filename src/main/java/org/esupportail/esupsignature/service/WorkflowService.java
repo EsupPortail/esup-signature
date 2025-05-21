@@ -125,7 +125,6 @@ public class WorkflowService {
                 toUpdateWorkflow.getRoles().clear();
                 toUpdateWorkflow.getRoles().addAll(classWorkflow.getRoles());
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
-                toUpdateWorkflow.setTitle(classWorkflow.getTitle());
                 toUpdateWorkflow.setDocumentsSourceUri(classWorkflow.getDocumentsSourceUri());
                 toUpdateWorkflow.getTargets().addAll(classWorkflow.getTargets());
                 toUpdateWorkflow.setAuthorizedShareTypes(classWorkflow.getAuthorizedShareTypes());
@@ -221,7 +220,7 @@ public class WorkflowService {
             Workflow workflow = new Workflow();
             workflow.setName(name);
             workflow.setDescription(description);
-            workflow.setTitle(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            workflow.setToken(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
@@ -299,13 +298,22 @@ public class WorkflowService {
     }
 
     @Transactional
+    public Workflow getByIdOrToken(String idStr) {
+        Long idLong = null;
+        try {
+            idLong = Long.valueOf(idStr);
+        } catch (NumberFormatException ignored) {}
+        return workflowRepository.findByIdOrToken(idLong, idStr);
+    }
+
+    @Transactional
     public void updateWorkflow(String userEppn, Long id, String name, List<String> recipientsCCEmails) {
         User user = userService.getByEppn(userEppn);
         Workflow workflow = getById(id);
         if(workflow.getCreateBy().equals(user)) {
             workflow.setName(name);
             workflow.setDescription(name);
-            workflow.setTitle(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            workflow.setToken(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
             addViewers(id, recipientsCCEmails);
         } else {
             throw new EsupSignatureRuntimeException("You are not authorized to update this workflow");
@@ -517,9 +525,9 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
+        workflowToUpdate.setToken(workflow.getToken().replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
-        workflowToUpdate.setTitle(workflow.getTitle());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
@@ -530,7 +538,7 @@ public class WorkflowService {
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
-        workflowToUpdate.setAutorizeClone(workflow.getAutorizeClone());
+        workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
         workflowToUpdate.getRoles().clear();
         workflowToUpdate.getRoles().addAll(workflow.getRoles());
         workflowToUpdate.getDashboardRoles().clear();
@@ -541,6 +549,8 @@ public class WorkflowService {
         workflowToUpdate.setMailFrom(workflow.getMailFrom());
         workflowToUpdate.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
+        workflowToUpdate.setStartArchiveDate(workflow.getStartArchiveDate());
+        workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }
@@ -608,7 +618,6 @@ public class WorkflowService {
     public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException, EsupSignatureRuntimeException {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
-        String savedTitle = workflow.getTitle();
         String savedDescription = workflow.getDescription();
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
         workflowSetup.setId(id);
@@ -635,7 +644,6 @@ public class WorkflowService {
             workflow.getTargets().add(newTarget);
         }
         workflow.setName(savedName);
-        workflow.setTitle(savedTitle);
         workflow.setDescription(savedDescription);
     }
 
@@ -672,13 +680,21 @@ public class WorkflowService {
     }
 
     @Transactional
-    public String getByIdJson(Long id) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(workflowRepository.getByIdJson(id));
+    public String getByIdJson(String idStr) throws JsonProcessingException {
+        Long idLong = null;
+        try {
+            idLong = Long.valueOf(idStr);
+        } catch (NumberFormatException ignored) {}
+        return objectMapper.writeValueAsString(workflowRepository.getByIdJson(idLong, idStr));
     }
 
     @Transactional
-    public String getSignRequestById(Long id) throws JsonProcessingException {
-        List<SignBook> signBooks = signBookRepository.findByWorkflowId(id);
+    public String getSignRequestById(String idStr) throws JsonProcessingException {
+        Long idLong = null;
+        try {
+            idLong = Long.valueOf(idStr);
+        } catch (NumberFormatException ignored) {}
+        List<SignBook> signBooks = signBookRepository.findByWorkflowIdOrToken(idLong, idStr);
         return objectMapper.writeValueAsString(signBooks.stream().map(SignBook::getSignRequests).collect(Collectors.toList()));
     }
 

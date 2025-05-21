@@ -45,9 +45,18 @@
                             <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="title"><strong>Titre technique</strong> (sans espaces, utilisé lors de l’import/export de documents)</label>
-                            <input id="title" class="form-control" type="text" th:field="*{title}" value="" autocomplete="on">
+                            <label for="token"><strong>Référence unique à passer dans {id} pour les appels web service</strong> (à saisir manuellement ou générer)</label>
+                            <div class="input-group">
+                                <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
+                                <button class="btn btn-outline-secondary" type="button"
+                                        onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>
+                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );">
+                                    Générer
+                                </button>
+                            </div>
                         </div>
+
                         <div class="form-group mb-3">
                             <label>
                                 <strong>Modèle de nommage des demandes</strong> (généré au moment de la création)
@@ -175,8 +184,8 @@
                             <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
                         </div>
                         <div class="form-check mb-2">
-                            <input id="autorizeClone" type="checkbox" class="form-check-input" th:field="*{autorizeClone}"/>
-                            <label for="autorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
+                            <input id="authorizeClone" type="checkbox" class="form-check-input" th:field="*{authorizeClone}"/>
+                            <label for="authorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
                         </div>
                         <div class="form-check mb-2">
                             <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
@@ -277,6 +286,14 @@
                         <div class="form-group mb-3">
                             <label for="message"><strong>Message d’accueil</strong></label>
                             <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
+                        </div>
+                        <div class="form-group mb-3">
+                            <strong>Paramètre d'archivage (indépendant de l'export)</strong>
+                            <br>
+                            <label for="startArchiveDate">Date à partir de laquelle on archive les demandes de ce circuit</label>
+                            <input id="startArchiveDate" class="form-control" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
+                            <label for="archiveTarget">Emplacement d’archivage (si vide l’emplacement configuré dans application.yml est utilisé)</label>
+                            <input id="archiveTarget" class="form-control" type="text" th:field="*{archiveTarget}" value="" autocomplete="off">
                         </div>
                     </form>
                     <div class="form-group mb-3">

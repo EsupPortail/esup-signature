@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.repository;
 
+import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
 import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
 import org.esupportail.esupsignature.dto.json.WorkflowDto;
-import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -15,6 +15,8 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query("select w from Workflow w")
     List<WorkflowDto> findAllJson();
     Workflow findByName(String name);
+    @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
+    Workflow findByIdOrToken(Long idLong, String idStr);
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
@@ -31,8 +33,9 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
             "or exists (select r from Workflow w2 join w2.dashboardRoles r where w = w2 and r in :roles)")
     List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
     List<Workflow> findByViewersEppn(String userEppn);
-    @Query("select w from Workflow w where w.id = :id")
-    WorkflowDto getByIdJson(Long id);
+
+    @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
+    WorkflowDto getByIdJson(Long idLong, String idStr);
 
     @Query(value = """
         select distinct

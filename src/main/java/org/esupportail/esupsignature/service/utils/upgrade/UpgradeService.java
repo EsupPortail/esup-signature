@@ -46,7 +46,7 @@ public class UpgradeService {
 
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -257,8 +257,6 @@ public class UpgradeService {
                             if(signBook.getLiveWorkflow().getWorkflow() != null) {
                                 if(signBook.getLiveWorkflow().getWorkflow().getDescription() != null) {
                                     signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getDescription());
-                                } else if(signBook.getLiveWorkflow().getWorkflow().getTitle() != null) {
-                                    signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getTitle());
                                 } else if(signBook.getLiveWorkflow().getWorkflow().getName() != null) {
                                     signBook.setWorkflowName(signBook.getLiveWorkflow().getWorkflow().getName());
                                 } else {
@@ -291,5 +289,27 @@ public class UpgradeService {
         entityManager.createNativeQuery("alter table sign_request_params alter column x_pos drop not null").executeUpdate();
         entityManager.createNativeQuery("alter table sign_request_params alter column y_pos drop not null").executeUpdate();
         logger.info("#### Update signRequestParams completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_33_7() {
+        logger.info("#### Starting update workflow workflow ####");
+        entityManager.createNativeQuery(
+                "DO $$ BEGIN " +
+                        "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'autorize_clone') THEN " +
+                        "UPDATE workflow SET authorize_clone = autorize_clone WHERE authorize_clone IS NULL; " +
+                        "ALTER TABLE workflow DROP COLUMN autorize_clone; " +
+                        "END IF; " +
+                        "END $$;"
+        ).executeUpdate();
+        entityManager.createNativeQuery(
+                "DO $$ BEGIN " +
+                        "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'title') THEN " +
+                        "UPDATE workflow SET token = title; " +
+                        "ALTER TABLE workflow DROP COLUMN title; " +
+                        "END IF; " +
+                        "END $$;"
+        ).executeUpdate();
+        logger.info("#### Update workflow workflow completed ####");
     }
 }
