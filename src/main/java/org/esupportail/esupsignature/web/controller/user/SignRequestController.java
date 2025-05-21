@@ -96,6 +96,8 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", "user");
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
         model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
@@ -148,12 +150,15 @@ public class SignRequestController {
         Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            if(signable) model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
             model.addAttribute("signatureIssue", false);
             for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
                 if(!reports.getSimpleReport().isValid(signatureId)) {
                     model.addAttribute("signatureIssue", true);
                 }
             }
+        } else {
+            if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
@@ -167,12 +172,9 @@ public class SignRequestController {
                 }
             }
         }
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        model.addAttribute("signable", signable);
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
         model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest.getParentSignBook().getId()));

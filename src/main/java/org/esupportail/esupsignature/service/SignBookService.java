@@ -1097,7 +1097,7 @@ public class SignBookService {
         String finalSignWith = signWith;
         if(signWith == null ||
                 (globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(finalSignWith).getValue())
-                && !signWithService.getAuthorizedSignWiths(userEppn, signRequest).contains(SignWith.valueOf(signWith)))) {
+                && !signWithService.getAuthorizedSignWiths(userEppn, signRequest, false).contains(SignWith.valueOf(signWith)))) {
             throw new EsupSignatureRuntimeException("Le type de signature " + signWith + " n'est pas autorisé");
         }
         Map<String, String> formDataMap = null;

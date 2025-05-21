@@ -110,7 +110,7 @@ public class SignBookController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, false));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);

@@ -49,6 +49,8 @@ global:
     french-phone-number-only: false
     external-can-edit: false
     search-for-external-users: false
+    seal-for-externals: true
+    seal-authorized-for-signed-files: false
 #    test-email: toto@univ-ville.fr
 
 #tomcat:
