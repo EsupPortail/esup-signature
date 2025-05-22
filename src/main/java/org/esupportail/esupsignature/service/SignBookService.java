@@ -1070,7 +1070,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sealAllDocs(Long id) throws EsupSignatureRuntimeException {
+    public void sealAllDocs(Long id) throws EsupSignatureRuntimeException, IOException {
         SignBook signBook = getById(id);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.seal(signRequest.getId());
@@ -1160,7 +1160,11 @@ public class SignBookService {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
         if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
-            signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+            if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
+                signRequest.getSignRequestParams().clear();
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
+                signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+            }
             return StepStatus.nexu_redirect;
         } else {
             StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
@@ -1589,7 +1593,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         LinkedList<String> signImages = new LinkedList<>();
         if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
-            List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
+            List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
                     if(userShareId != null) {

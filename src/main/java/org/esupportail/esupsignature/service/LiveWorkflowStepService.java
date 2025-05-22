@@ -6,12 +6,14 @@ import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -28,14 +30,18 @@ public class LiveWorkflowStepService {
     private final RecipientService recipientService;
     private final UserService userService;
     private final SignTypeService signTypeService;
-    private final SignService signService;
+    private final SignRequestService signRequestService;
+    private final SignBookRepository signBookRepository;
+    private final ActionService actionService;
 
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignService signService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
         this.signTypeService = signTypeService;
-        this.signService = signService;
+        this.signRequestService = signRequestService;
+        this.signBookRepository = signBookRepository;
+        this.actionService = actionService;
     }
 
     public LiveWorkflowStep getById(Long liveWorkflowStepId) {
@@ -64,7 +70,7 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
             int minLevel = 2;
-            if(signService.isSigned(signBook, null)) {
+            if(signRequestService.isSigned(signBook, null)) {
                 minLevel = 3;
             }
             if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
@@ -94,7 +100,7 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
             int minLevel = 2;
-            if(signService.isSigned(signBook, null)) {
+            if(signRequestService.isSigned(signBook, null)) {
                 minLevel = 3;
             }
             if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
@@ -172,6 +178,28 @@ public class LiveWorkflowStepService {
 
     public List<LiveWorkflowStep> getLiveWorkflowStepByWorkflowStep(WorkflowStep workflowStep) {
         return liveWorkflowStepRepository.findByWorkflowStep(workflowStep);
+    }
+
+    @Transactional
+    public void replaceRecipientsToWorkflowStep(Long signBookId, Integer stepNumber, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
+        SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
+        LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber - 1);
+        if (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) + 1 < signBook.getLiveWorkflow().getCurrentStepNumber()) {
+            throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
+        }
+        List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+        liveWorkflowStep.getRecipients().clear();
+        List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
+        if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
+            for (SignRequest signRequest : signBook.getSignRequests()) {
+                for (Recipient recipient : oldRecipients) {
+                    signRequest.getRecipientHasSigned().remove(recipient);
+                }
+                for (Recipient recipient : recipients) {
+                    signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+                }
+            }
+        }
     }
 
 }
