@@ -24,10 +24,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestParamsService;
-import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -55,12 +52,14 @@ public class SignRequestWsController {
     private final SignBookService signBookService;
 
     private final SignRequestParamsService signRequestParamsService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
 
-    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService) {
+    public SignRequestWsController(SignRequestService signRequestService, RecipientService recipientService, SignBookService signBookService, SignRequestParamsService signRequestParamsService, LiveWorkflowStepService liveWorkflowStepService) {
         this.signRequestService = signRequestService;
         this.recipientService = recipientService;
         this.signBookService = signBookService;
         this.signRequestParamsService = signRequestParamsService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
     }
 
     @CrossOrigin
@@ -234,7 +233,7 @@ public class SignRequestWsController {
                                                    @RequestParam Integer stepNumber) throws JsonProcessingException, EsupSignatureException {
         List<RecipientWsDto> recipientWsDtos = new ObjectMapper().readValue(recipientWsDtosString, new TypeReference<List<RecipientWsDto>>() {});
         SignRequest signRequest = signRequestService.getById(id);
-        signRequestService.replaceRecipientsToWorkflowStep(signRequest.getParentSignBook().getId(), stepNumber, recipientWsDtos);
+        liveWorkflowStepService.replaceRecipientsToWorkflowStep(signRequest.getParentSignBook().getId(), stepNumber, recipientWsDtos);
         return ResponseEntity.ok().build();
     }
 
