@@ -302,14 +302,32 @@ public class UpgradeService {
                         "END IF; " +
                         "END $$;"
         ).executeUpdate();
+
         entityManager.createNativeQuery(
-                "DO $$ BEGIN " +
+                "DO $$ DECLARE " +
+                        "rec RECORD; " +
+                        "base TEXT; " +
+                        "suffix INT; " +
+                        "new_token TEXT; " +
+                        "BEGIN " +
                         "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'title') THEN " +
-                        "UPDATE workflow SET token = title; " +
+                        "FOR rec IN SELECT id, title FROM workflow LOOP " +
+                        "IF rec.title IS NOT NULL THEN " +
+                        "base := rec.title; " +
+                        "suffix := 1; " +
+                        "new_token := base; " +
+                        "WHILE EXISTS (SELECT 1 FROM workflow WHERE token = new_token) LOOP " +
+                        "new_token := base || '_' || suffix; " +
+                        "suffix := suffix + 1; " +
+                        "END LOOP; " +
+                        "UPDATE workflow SET token = new_token WHERE id = rec.id; " +
+                        "END IF; " +
+                        "END LOOP; " +
                         "ALTER TABLE workflow DROP COLUMN title; " +
                         "END IF; " +
                         "END $$;"
         ).executeUpdate();
+
         logger.info("#### Update workflow workflow completed ####");
     }
 }
