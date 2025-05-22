@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,9 +41,6 @@ import java.util.List;
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
-
-    @Resource
-    private SignService signService;
 
     @Resource
     private SignWithService signWithService;
@@ -124,7 +120,7 @@ public class SignRequestController {
             model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
-        List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
+        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
@@ -147,7 +143,7 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signService.validate(id);
+        Reports reports = signRequestService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
             if(signable) model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
@@ -176,7 +172,7 @@ public class SignRequestController {
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
-        model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
+        model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest.getParentSignBook().getId()));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
