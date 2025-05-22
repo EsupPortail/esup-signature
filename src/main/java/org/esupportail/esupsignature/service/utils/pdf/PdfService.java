@@ -50,6 +50,7 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
+import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -786,9 +787,7 @@ public class PdfService {
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(pdField instanceof PDSignatureField) {
-                        removeField(pdField, pdDocument, pdAcroForm);
-                    } else if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                    if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
                         String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
                         try {
                             Class<?> pdFieldClass = Class.forName(className);
@@ -1012,6 +1011,46 @@ public class PdfService {
             logger.warn(multipartFile.getOriginalFilename() + " : " + e.getMessage());
             throw new EsupSignatureRuntimeException("La création de nouvelles signatures n'est pas autorisée dans le document actuel. Raison : Le dictionnaire des autorisations PDF n'autorise pas la modification ou la création de champs de formulaire interactifs, y compris les champs de signature, lorsque le document est ouvert avec un accès utilisateur.");
         }
+    }
+
+    public PDSignatureField getSignatureField(MultipartFile documentToSign, SignRequestParams signRequestParams) {
+        try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if (pdAcroForm != null) {
+                for (PDField pdField : pdAcroForm.getFields()) {
+                    if (pdField instanceof PDSignatureField) {
+                        if (pdField.getPartialName().equals(signRequestParams.getPdSignatureFieldName())) {
+                            return (PDSignatureField) pdField;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error on get signature field", e);
+        }
+        return null;
+    }
+
+    public SignRequestParamsWsDto getSignatureField(MultipartFile documentToSign, String pdSignatureFieldName) {
+        try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            if (pdAcroForm != null) {
+                for (PDField pdField : pdAcroForm.getFields()) {
+                    if (pdField instanceof PDSignatureField) {
+                        if (pdField.getPartialName().equals(pdSignatureFieldName)) {
+                            SignRequestParamsWsDto signRequestParamsWsDto = new SignRequestParamsWsDto();
+                            PDRectangle pdRectangle = pdField.getWidgets().get(0).getRectangle();
+                            signRequestParamsWsDto.setxPos(Math.round(pdRectangle.getLowerLeftX()));
+                            signRequestParamsWsDto.setyPos(Math.round(pdRectangle.getLowerLeftY() + pdRectangle.getHeight()));
+                            return signRequestParamsWsDto;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error on get signature field", e);
+        }
+        return null;
     }
 
 //    public InputStream convertDocToPDF(InputStream doc) {

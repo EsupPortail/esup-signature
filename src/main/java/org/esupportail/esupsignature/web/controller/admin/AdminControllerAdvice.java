@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.DSSService;
-import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
+import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +21,16 @@ public class AdminControllerAdvice {
 
     private final DSSService dssService;
 
-    private final HttpSessionsListenerService httpSessionsListenerService;
+    private final SessionRepositoryCustom sessionRepositoryCustom;
 
-    public AdminControllerAdvice(@Autowired(required = false) DSSService dssService, HttpSessionsListenerService httpSessionsListenerService) {
+    public AdminControllerAdvice(@Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom) {
         this.dssService = dssService;
-        this.httpSessionsListenerService = httpSessionsListenerService;
+        this.sessionRepositoryCustom = sessionRepositoryCustom;
     }
 
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        model.addAttribute("nbSessions", httpSessionsListenerService.getSessions().size());
+        model.addAttribute("nbSessions", sessionRepositoryCustom.findAllSessionIds().size());
         try {
             if(dssService != null) {
                 model.addAttribute("dssStatus", dssService.refreshIsNeeded());

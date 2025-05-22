@@ -57,12 +57,12 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
+                        <button tabindex="1" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
                             <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
                         </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button id="signLaunchButton" role="button" class="btn btn-floating btn-lg bg-success" title="Enregistrer la signature et passer à l'étape suivante">
+                        <button tabindex="1" id="signLaunchButton" role="button" class="btn btn-floating btn-lg bg-success" title="Enregistrer la signature et passer à l'étape suivante">
                             <span class="fa-stack fa-sm">
                                 <i class="fa-solid fa-save fa-stack-1x" style="margin-top: 14px; margin-left: 10px"></i>
                                 <i class="fa-solid fa-signature fa-stack-2x" style="margin-top: -8px; margin-left: -5px"></i>
@@ -71,59 +71,59 @@
                         </button>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <a id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success"
+                        <a tabindex="1" id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
                     <li th:if="${!user.userType.name.equals('external')}">
-                        <a id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+                        <a tabindex="1" id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
                             <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
                         </a>
                     </li>
-                    <li th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
-                        <button id="refuseLaunchButton" class="btn-floating btn-lg bg-danger border-0" title="Refuser"
+                    <li tabindex="1" th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
+                        <button tabindex="1" id="refuseLaunchButton" class="btn-floating btn-lg bg-danger border-0" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fa-solid fa-file-excel fa-2xl" style="margin-top: -8px;"></i></button>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
+                        <a tabindex="1" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
                             <i class="fa-solid fa-trash-restore fa-2xl"></i>
                         </a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
-                        <a class="btn-lg btn-floating bg-primary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-primary"
                            th:href="'/ws-secure/global/get-original-file/' + ${id}" target="_blank"
                            title="Télécharger le document original"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
-                    <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.autorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
-                        <a type="button"
+                    <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.authorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
+                        <a tabindex="1" type="button"
                            class="btn-lg btn-floating bg-primary" data-bs-toggle="modal" title="Relancer cette demande"
                            data-bs-target="#cloneModal">
                             <i class="fa-solid fa-refresh fa-2xl"></i>
                         </a>
                     </li>
                     <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <a class="btn-lg btn-floating bg-primary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger le document"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                        <a class="btn-lg btn-floating bg-primary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-primary"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document"><i class="fa-solid fa-download fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <a class="btn-lg btn-floating bg-primary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-primary"
                            th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
                            title="Télécharger la dernière version des documents dans une archive ZIP"><i class="fa-solid fa-file-archive fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
-                        <a class="btn-lg btn-floating bg-primary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-primary"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
                             title="Imprimer avec un code datamatrix"><i class="fa-solid fa-print fa-2xl"></i></a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                        <button id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
+                        <button tabindex="1" id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
                                 th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                                 data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-xl" style="margin-top: -8px;"></i>
@@ -132,7 +132,7 @@
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                         <li>
-                            <a id="start-button" role="button" class="btn-floating btn-lg bg-success" title="Démarrer le circuit"
+                            <a tabindex="1" id="start-button" role="button" class="btn-floating btn-lg bg-success" title="Démarrer le circuit"
                                 data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fa-solid fa-play fa-2xl"></i>
                             </a>
                         </li>
@@ -148,27 +148,27 @@
                         onmouseover="$('#openButtons').toggleClass('active');"
                         onmouseout="$('#openButtons').toggleClass('active');">
                         <li>
-                            <a class="btn-lg btn-floating bg-primary"
+                            <a tabindex="1" class="btn-lg btn-floating bg-primary"
                                 th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
                                 title="Enregistrer le document signé et le rapport de signature"><i class="fa-solid fa-file-shield fa-2xl"></i>
                             </a>
                         </li>
                         <li>
-                            <a title="Export SEDA" class="btn btn-floating bg-primary d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
+                            <a tabindex="1" title="Export SEDA" class="btn btn-floating bg-primary d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
                                 <i class="fa-solid fa-file-export fa-2xl"></i>
                             </a>
                         </li>
                         <li>
-                            <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                            <a tabindex="1" th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-floating bg-primary d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                                 <i class="fa-solid fa-shield-alt fa-2xl"></i>
                             </a>
                         </li>
                     </th:block>
                     <li th:if="${nextSignBook != null}" class="">
-                        <a th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}" class="btn-lg btn-floating bg-primary" title="Demande suivante">
+                        <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}" class="btn-lg btn-floating bg-primary" title="Demande suivante">
                             <i class="fa-solid fa-arrow-right fa-2xl"></i>
                         </a>
-                        <a th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}" class="btn-lg btn-floating bg-primary" title="Demande suivante">
+                        <a tabindex="1" th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}" class="btn-lg btn-floating bg-primary" title="Demande suivante">
                             <i class="fa-solid fa-arrow-right fa-2xl"></i>
                         </a>
                     </li>
@@ -190,7 +190,7 @@
                 </div>
                 <th:block th:each="postit, iterate : ${postits}">
                     <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"
-                        th:style="'z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${150 + (iterate.index * 70)} + 'px;'">
+                        th:style="'z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${190 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -833,7 +833,7 @@
     </div>
 </div>
 
-<div data-bs-focus="false" class="modal fade" id="cloneModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.autorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
+<div data-bs-focus="false" class="modal fade" id="cloneModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.authorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signrequests/clone/' + ${signRequest.id}" method="post" enctype="multipart/form-data">

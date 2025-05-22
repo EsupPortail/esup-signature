@@ -26,7 +26,7 @@
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" title="Accueil" type="button"
+                    <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" title="Accueil" type="button"
                             href="/user" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                         <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">

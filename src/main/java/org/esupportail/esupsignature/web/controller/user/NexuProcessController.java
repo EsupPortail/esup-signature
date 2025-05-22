@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.model.*;
@@ -30,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
@@ -72,9 +72,10 @@ public class NexuProcessController implements Serializable {
 		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + ids);
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
-			nexuService.delete(id);
+			signRequestService.deleteNexu(id);
 		}
 		model.addAttribute("ids", ids);
+		model.addAttribute("id", ids.get(0));
 		if(ids.size() > 1) {
 			Report report = reportService.createReport(authUserEppn);
 			model.addAttribute("massSignReportId", report.getId());
@@ -95,22 +96,24 @@ public class NexuProcessController implements Serializable {
 											   @ModelAttribute("authUserEppn") String authUserEppn,
 											   @RequestBody @Valid DataToSignParams dataToSignParams,
 											   @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-											   @RequestParam("id") Long id) throws IOException, EsupSignatureRuntimeException {
+											   @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
 		logger.info("get data to sign for signRequest: " + id);
-		AbstractSignatureForm abstractSignatureForm = nexuService.getSignatureForm(id);
-		abstractSignatureForm.setCertificate(dataToSignParams.getSigningCertificate());
-		abstractSignatureForm.setCertificateChain(dataToSignParams.getCertificateChain());
-		abstractSignatureForm.setEncryptionAlgorithm(dataToSignParams.getEncryptionAlgorithm());
-		NexuSignature nexuSignature = nexuService.saveNexuSignature(id, abstractSignatureForm);
-		GetDataToSignResponse responseJson = new GetDataToSignResponse();
 		try {
-			ToBeSigned dataToSign = nexuService.getDataToSign(id, userEppn, (SignatureDocumentForm) abstractSignatureForm, nexuSignature.getDocumentToSign());
+			SignatureDocumentForm abstractSignatureForm = nexuService.getSignatureForm(id, userEppn, new Date());
+			abstractSignatureForm.setCertificate(dataToSignParams.getSigningCertificate());
+			abstractSignatureForm.setCertificateChain(dataToSignParams.getCertificateChain());
+			abstractSignatureForm.setEncryptionAlgorithm(dataToSignParams.getEncryptionAlgorithm());
+			GetDataToSignResponse responseJson = new GetDataToSignResponse();
+			ToBeSigned dataToSign = nexuService.getDataToSign(id, userEppn, abstractSignatureForm);
 			responseJson.setDataToSign(dataToSign.getBytes());
+			nexuService.saveNexuSignature(id, abstractSignatureForm, userEppn);
 			return responseJson;
-		} catch (DSSException e) {
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			if(massSignReportId != null) {
 				reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.nexuError);
 			}
+			signRequestService.cleanSignRequestParams(id);
 			throw new EsupSignatureRuntimeException(e.getMessage());
 		}
 	}
@@ -125,7 +128,7 @@ public class NexuProcessController implements Serializable {
 		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
 		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
-        SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn, nexuSignature.getDocumentToSign());
+        SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
 		StepStatus stepStatus = signRequestService.applyEndOfSignRules(id, userEppn, authUserEppn, SignType.nexuSign, "");
 		if(stepStatus.equals(StepStatus.last_end)) {
@@ -136,16 +139,17 @@ public class NexuProcessController implements Serializable {
 		if(massSignReportId != null) {
 			reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.signed);
 		}
-		nexuService.delete(id);
+		signRequestService.deleteNexu(id);
 		return ResponseEntity.ok().body(responseJson);
 	}
 
 	@PostMapping(value = "/error")
 	@ResponseBody
-	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, @RequestParam(value = "massSignReportId", required = false) Long massSignReportId) throws EsupSignatureRuntimeException {
+	public void error(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, @RequestParam(value = "massSignReportId", required = false) Long massSignReportId) throws EsupSignatureRuntimeException, IOException {
 		for(Long id : ids) {
 			if(preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) {
-				nexuService.delete(id);
+				signRequestService.cleanSignRequestParams(id);
+				signRequestService.deleteNexu(id);
 				if(massSignReportId != null) {
 					reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.nexuError);
 				}

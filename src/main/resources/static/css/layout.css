@@ -241,7 +241,7 @@ header {
 }
 
 #ws-tabs {
-    width: fit-content !important;
+    width: 100% !important;
     flex-wrap: nowrap !important;
 }
 
@@ -317,7 +317,7 @@ header {
 #pdf-progress-bar {
     width: calc(100% - 300px);
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     bottom: 40px;
     opacity: 1;
     -webkit-transition:opacity 2s linear;

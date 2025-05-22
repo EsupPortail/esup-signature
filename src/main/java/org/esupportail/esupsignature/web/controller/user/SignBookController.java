@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -56,6 +57,8 @@ public class SignBookController {
 
     @Resource
     private SignWithService signWithService;
+    @Autowired
+    private LiveWorkflowStepService liveWorkflowStepService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -110,7 +113,7 @@ public class SignBookController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, false));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
@@ -501,7 +504,7 @@ public class SignBookController {
             recipientWsDtos.add(recipientWsDto);
         }
         try {
-            signRequestService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
+            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }

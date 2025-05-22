@@ -57,10 +57,16 @@ export class ListSignBooksUi {
             creatorFilter.slim.events.afterChange = function () {
                 self.buildUrlFilter();
             }
+            if ($(creatorFilter).hasClass('slim-select-filter')) {
+                $(creatorFilter).on('change', function () {
+                    self.buildUrlFilter();
+                });
+            }
         }
         let recipientsFilter = document.querySelector('#recipientsFilter');
         if(recipientsFilter != null) {
             recipientsFilter.slim.settings.placeholderText = $(recipientsFilter).attr("data-placeholder");
+            document.querySelector('#recipientsFilter + div .ss-placeholder').textContent = $(recipientsFilter).attr("data-placeholder");
             recipientsFilter.slim.open();
             recipientsFilter.slim.close();
             recipientsFilter.slim.events.afterChange = function () {
@@ -78,9 +84,12 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
         this.listSignRequestTable.focus();
-        $(document).on('click', function(){
-            self.listSignRequestTable.focus();
+        $(document).on('click', function(e){
+            if (!$(e.target).closest('.modal').length) {
+                self.listSignRequestTable.focus();
+            }
         });
+        $("#toggle-new-grid").css("top", "-55px");
         $(document).on('wheel', function(e){
             let delta = e.originalEvent.deltaY;
             let scrollAmount = delta > 0 ? 50 : -50;

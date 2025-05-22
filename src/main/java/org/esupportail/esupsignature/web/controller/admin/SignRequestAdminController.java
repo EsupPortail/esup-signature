@@ -48,9 +48,6 @@ public class SignRequestAdminController {
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestAdminController.class);
 
 	@Resource
-	private SignService signService;
-
-	@Resource
 	private WebUtilsService webUtilsService;
 
 	@ModelAttribute("adminMenu")
@@ -137,7 +134,7 @@ public class SignRequestAdminController {
 	@GetMapping(value = "/get-last-file/{id}")
 	@Transactional
 	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-		List<Document> documents = signService.getToSignDocuments(id);
+		List<Document> documents = signRequestService.getToSignDocuments(id);
 		try {
 			if(documents.size() > 1) {
 				httpServletResponse.sendRedirect("/user/signrequests/" + id);

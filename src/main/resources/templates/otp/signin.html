@@ -11,7 +11,8 @@
                 <div class="col-4">
                 <input name="urlId" type="hidden" th:value="${urlId}">
                     <div class="mb-3">
-                <input name="password" type="password" class="form-control" maxlength="6" placeholder="Saisir le code reçu par SMS" autofocus>
+                        <label for="password">Merci de saisir le code reçu par SMS</label>
+                <input id="password" name="password" type="password" class="form-control" maxlength="6" placeholder="Merci de saisir le code reçu par sms" autofocus>
                     </div>
                 <input type="submit" class="btn btn-success" value="Valider">
                 </div>

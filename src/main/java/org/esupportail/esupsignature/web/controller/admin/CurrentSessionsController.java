@@ -18,11 +18,13 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
+import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.session.Session;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -48,47 +50,38 @@ public class CurrentSessionsController {
 
 	private final HttpSessionsListenerService httpSessionsListenerService;
 
-	public CurrentSessionsController(SessionRegistry sessionRegistry, HttpSessionsListenerService httpSessionsListenerService) {
+	private final JdbcIndexedSessionRepository sessionRepository;
+
+	private final SessionRepositoryCustom sessionRepositoryCustom;
+
+	public CurrentSessionsController(SessionRegistry sessionRegistry, HttpSessionsListenerService httpSessionsListenerService, JdbcIndexedSessionRepository sessionRepository, SessionRepositoryCustom sessionRepositoryCustom) {
 		this.sessionRegistry = sessionRegistry;
         this.httpSessionsListenerService = httpSessionsListenerService;
+        this.sessionRepository = sessionRepository;
+        this.sessionRepositoryCustom = sessionRepositoryCustom;
     }
 
 	@GetMapping
 	public String getCurrentSessions(Model model) {
-		Map<String, HttpSessionViewDto> allSessions = httpSessionsListenerService.getSessions();
-
-        for (Object principal : sessionRegistry.getAllPrincipals()) {
-			for (SessionInformation sessionInformation : sessionRegistry.getAllSessions(principal, false)) {
-				HttpSessionViewDto httpSession = allSessions.get(sessionInformation.getSessionId());
-				if (httpSession == null) {
-					httpSession = new HttpSessionViewDto();
-					httpSession.setSessionId(sessionInformation.getSessionId());
-					httpSession.setCreatedDate(new Date());
-					allSessions.put(sessionInformation.getSessionId(), httpSession);
-				}
-				httpSession.setLastRequest(sessionInformation.getLastRequest());
-				httpSession.setUserEppn(((UserDetails) principal).getUsername());
-				httpSession.setExpired(sessionInformation.isExpired());
+		List<HttpSessionViewDto> sessions = new ArrayList<>();
+		List<String> allSessionIds = sessionRepositoryCustom.findAllSessionIds();
+        for (String sessionId : allSessionIds) {
+			Session session = sessionRepository.findById(sessionId);
+			if(session != null) {
+				HttpSessionViewDto httpSession = new HttpSessionViewDto();
+				httpSession.setSessionId(session.getId());
+				httpSession.setCreatedDate(Date.from(session.getCreationTime()));
+				httpSession.setLastRequest(Date.from(session.getLastAccessedTime()));
+				httpSession.setUserEppn(session.getAttribute("userEppn"));
+				httpSession.setExpired(session.isExpired());
+				sessions.add(httpSession);
 			}
 		}
-
-		for (HttpSessionViewDto httpSession : allSessions.values()) {
-			if (httpSession.getLastRequest() == null) {
-				httpSession.setLastRequest(httpSession.getCreatedDate());
-			}
-		}
-
-		synchronized(allSessions) {
-			List<HttpSessionViewDto> sessions;
-			sessions = new ArrayList<>(allSessions.values());
-			sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest,
-					Comparator.nullsLast(Comparator.naturalOrder())).reversed());
-			model.addAttribute("httpSessions", sessions);
-			long now = System.currentTimeMillis();
-			model.addAttribute("httpSessionsAlive", sessions.stream().filter(s -> now - s.getLastRequest().getTime() < 60 * 1000).toList());
-		}
+		sessions.sort(Comparator.comparing(HttpSessionViewDto::getLastRequest, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+		model.addAttribute("httpSessions", sessions);
+		long now = System.currentTimeMillis();
+		model.addAttribute("httpSessionsAlive", sessions.stream().filter(s -> now - s.getLastRequest().getTime() < 60 * 1000).toList());
 		model.addAttribute("active", "sessions");
-
 		return "admin/currentsessions";
 	}
 

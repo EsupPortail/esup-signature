@@ -49,6 +49,8 @@ global:
     french-phone-number-only: false
     external-can-edit: false
     search-for-external-users: false
+    seal-for-externals: true
+    seal-authorized-for-signed-files: false
 #    test-email: toto@univ-ville.fr
 
 #tomcat:
@@ -78,6 +80,8 @@ management:
             show-details: ALWAYS
 
 spring:
+    session:
+        timeout: 30m
     threads:
         virtual:
             enabled: true
@@ -117,6 +121,13 @@ spring:
             repositories:
                 enabled: false
 #    security:
+#        oauth2:
+#          client:
+#              provider:
+#                esup-signature:
+#                    issuer-uri: https://cas.univ-ville.fr/oidc
+
+## Exemple france connect
 #        oauth2:
 #            client:
 #                registration:

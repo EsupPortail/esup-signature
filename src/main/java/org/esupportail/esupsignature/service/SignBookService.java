@@ -341,8 +341,6 @@ public class SignBookService {
             if(workflow != null) {
                 if(workflow.getDescription() != null && !workflow.getDescription().isEmpty()) {
                     workflowName = workflow.getDescription();
-                } else if(workflow.getTitle() != null && !workflow.getTitle().isEmpty()) {
-                    workflowName = workflow.getTitle();
                 } else if(workflow.getName() != null && !workflow.getName().isEmpty()) {
                     workflowName = workflow.getName();
                 } else {
@@ -418,6 +416,7 @@ public class SignBookService {
     }
 
     public void dispatchSignRequestParams(SignRequest signRequest) {
+        int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
         if(!signRequest.getSignRequestParams().isEmpty()) {
             int i = 0;
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
@@ -426,6 +425,7 @@ public class SignBookService {
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
                             for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                                signRequestParams.setSignDocumentNumber(docNumber);
                                 for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
                                     if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                             && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
@@ -436,6 +436,7 @@ public class SignBookService {
                             }
                         } else {
                             if(signRequest.getSignRequestParams().size() > i) {
+                                signRequest.getSignRequestParams().get(i).setSignDocumentNumber(docNumber);
                                 addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
                             }
                         }
@@ -459,7 +460,7 @@ public class SignBookService {
         }
     }
 
-    private static void addSignRequestParamToStep(SignRequestParams signRequestParams, LiveWorkflowStep liveWorkflowStep) {
+    private void addSignRequestParamToStep(SignRequestParams signRequestParams, LiveWorkflowStep liveWorkflowStep) {
         if(liveWorkflowStep.getSignRequestParams().stream().noneMatch(s -> s.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                 && s.getxPos().equals(signRequestParams.getxPos())
                 && s.getyPos().equals(signRequestParams.getyPos()))) {
@@ -817,6 +818,15 @@ public class SignBookService {
 
     public void replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
         List<SignRequestParams> signRequestParamses = steps.stream().flatMap(s->s.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams)).toList();
+        for(SignRequestParams signRequestParams : signRequestParamses) {
+            if(StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
+                SignRequestParamsWsDto signRequestParamsWsDto = pdfService.getSignatureField(signRequest.getOriginalDocuments().get(0).getMultipartFile(), signRequestParams.getPdSignatureFieldName());
+                if(signRequestParamsWsDto != null) {
+                    signRequestParams.setxPos(signRequestParamsWsDto.getxPos());
+                    signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
+                }
+            }
+        }
         if (!signRequestParamses.isEmpty()) {
             signRequestParamsRepository.saveAll(signRequestParamses);
             signRequest.getSignRequestParams().clear();
@@ -836,8 +846,8 @@ public class SignBookService {
 
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
-        int i = 0;
         SignBook signBook = getById(signBookId);
+        int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
         }
@@ -1060,7 +1070,7 @@ public class SignBookService {
     }
 
     @Transactional
-    public void sealAllDocs(Long id) throws EsupSignatureRuntimeException {
+    public void sealAllDocs(Long id) throws EsupSignatureRuntimeException, IOException {
         SignBook signBook = getById(id);
         for(SignRequest signRequest : signBook.getSignRequests()) {
             signRequestService.seal(signRequest.getId());
@@ -1087,7 +1097,7 @@ public class SignBookService {
         String finalSignWith = signWith;
         if(signWith == null ||
                 (globalProperties.getAuthorizedSignTypes().stream().noneMatch(s -> s.getValue() <= SignWith.valueOf(finalSignWith).getValue())
-                && !signWithService.getAuthorizedSignWiths(userEppn, signRequest).contains(SignWith.valueOf(signWith)))) {
+                && !signWithService.getAuthorizedSignWiths(userEppn, signRequest, false).contains(SignWith.valueOf(signWith)))) {
             throw new EsupSignatureRuntimeException("Le type de signature " + signWith + " n'est pas autorisé");
         }
         Map<String, String> formDataMap = null;
@@ -1150,7 +1160,11 @@ public class SignBookService {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
         if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
-            signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+            if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
+                signRequest.getSignRequestParams().clear();
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
+                signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+            }
             return StepStatus.nexu_redirect;
         } else {
             StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
@@ -1301,9 +1315,9 @@ public class SignBookService {
     }
 
     @Transactional
-    public List<Long> startWorkflow(Long id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
+    public List<Long> startWorkflow(String id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
         logger.info("starting workflow " + id + " by " + createByEppn);
-        Workflow workflow = workflowService.getById(id);
+        Workflow workflow = workflowService.getByIdOrToken(id);
         User user = userService.createUserWithEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, comment);
         signBook.getLiveWorkflow().setWorkflow(workflow);
@@ -1579,7 +1593,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         LinkedList<String> signImages = new LinkedList<>();
         if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
-            List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
+            List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
             if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
                     if(userShareId != null) {
@@ -1750,22 +1764,39 @@ public class SignBookService {
 
     @Transactional
     public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureRuntimeException {
-        if(globalProperties.getArchiveUri() != null) {
+        SignBook signBook = getById(signBookId);
+        if(!needToBeArchived(signBook)) {
+            return;
+        }
+        String archiveUri = globalProperties.getArchiveUri();
+        if(signBook.getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
+            if(signBook.getEndDate().after(signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate())) {
+                if(StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())) {
+                    archiveUri = signBook.getLiveWorkflow().getWorkflow().getArchiveTarget();
+                }
+            } else {
+                return;
+            }
+        }
+        if(archiveUri != null) {
             logger.info("start archiving documents");
             boolean result = true;
-            SignBook signBook = getById(signBookId);
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
                     if (signRequest.getExportedDocumentURI() == null) {
                         String name = generateName(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, true, null);
-                        String documentUri = documentService.archiveDocument(signedFile, globalProperties.getArchiveUri(), subPath, signedFile.getId() + "_" + name);
+                        if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
+                            name = fileService.getNameOnly(signedFile.getFileName());
+                        }
+                        String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Exporté vers l'archivage", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            logger.info("archive done to " + subPath + name + " in " + archiveUri);
                         } else {
-                            logger.error("unable to archive " + subPath + name);
+                            logger.error("unable to archive " + subPath + name + " in " + archiveUri);
                             result = false;
                         }
                     }
@@ -1797,6 +1828,17 @@ public class SignBookService {
     public boolean needToBeExported(Long signBookId) {
         SignBook signBook = getById(signBookId);
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && !signBook.getLiveWorkflow().getTargets().isEmpty();
+    }
+
+    @Transactional
+    public boolean needToBeArchived(SignBook signBook) {
+        return signBook.getLiveWorkflow() != null
+                && (signBook.getLiveWorkflow().getWorkflow() == null
+                    || (signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate() != null
+                    && StringUtils.hasText(signBook.getLiveWorkflow().getWorkflow().getArchiveTarget())
+                    && signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate().before(new Date())
+                    )
+        );
     }
 
     @Transactional
@@ -2117,7 +2159,7 @@ public class SignBookService {
     public Long clone(Long id, MultipartFile[] multipartFiles, String comment, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
         SignBook signBook = signRequest.getParentSignBook();
-        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAutorizeClone()) {
+        if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAuthorizeClone()) {
             throw new RuntimeException("clonage non autorisé pour : " + id);
         }
         String name = "Demande simple";

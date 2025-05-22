@@ -48,9 +48,9 @@ public class WsAccessTokenService {
     }
 
     @Transactional
-    public boolean createWorkflowAccess(Long id, String token) {
+    public boolean createWorkflowAccess(String id, String token) {
         if(allAccess(token)) return true;
-        Workflow workflow = workflowService.getById(id);
+        Workflow workflow = workflowService.getByIdOrToken(id);
         if(workflow == null) return true;
         List<WsAccessToken> wsAccessTokens = wsAccessTokenRepository.findByTokenAndWorkflowsContains(token, workflow);
         if(!wsAccessTokens.isEmpty() && wsAccessTokens.stream().anyMatch(WsAccessToken::getCreateSignrequest)) {
@@ -64,8 +64,8 @@ public class WsAccessTokenService {
     }
 
     @Transactional(readOnly = true)
-    public boolean workflowCsv(Long id, String csvToken) {
-        Workflow workflow = workflowService.getById(id);
+    public boolean workflowCsv(String id, String csvToken) {
+        Workflow workflow = workflowService.getByIdOrToken(id);
         User user = userService.getByAccessToken(csvToken);
         return user != null && (workflow.getManagers().contains(user.getEmail()) || user.getRoles().contains(workflow.getManagerRole()));
     }
