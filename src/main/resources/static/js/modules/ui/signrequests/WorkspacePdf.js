@@ -422,7 +422,7 @@ export class WorkspacePdf {
         let testSign = Array.from(this.signPosition.signRequestParamses.values());
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) && (this.formId != null || this.dataId != null || this.workflow === true)) {
+                if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
                     return i;
                 }
             }
@@ -715,7 +715,6 @@ export class WorkspacePdf {
                 if (!self.isThereSign($(this))) {
                     $(this).addClass("sign-field");
                     $(this).removeClass("sign-field-dropped");
-                    let id = $(this).attr("id").split("_")[1];
                     self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
                     $(this).text("Vous devez placer une signature ici");
                     $(this).css("pointer-events", "auto");
