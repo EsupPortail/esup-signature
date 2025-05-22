@@ -287,9 +287,10 @@ public class SignRequestService {
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
 			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
+			SignRequestParams lastSignRequestParams = findLastSignRequestParams(signRequestParamses);
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-				filledInputStream = stampImagesOnFirstSign(signRequest, signRequestParamses, userEppn, authUserEppn, filledInputStream, date, lastSignLogs);
+				filledInputStream = stampImagesOnFirstSign(signRequest, signRequestParamses, userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
@@ -298,7 +299,7 @@ public class SignRequestService {
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
 			SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
-			Document signedDocument = signService.certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), signRequestParamses.stream().filter(srp -> srp.getSignImageNumber() >= 0).findFirst().get());
+			Document signedDocument = signService.certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), lastSignRequestParams);
 			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
 
@@ -307,11 +308,22 @@ public class SignRequestService {
 		return stepStatus;
 	}
 
-	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs) {
+	public SignRequestParams findLastSignRequestParams(List<SignRequestParams> signRequestParamses) {
+		SignRequestParams lastSignRequestParams = null;
+		for (SignRequestParams signRequestParams : signRequestParamses) {
+			if (signRequestParams.getSignImageNumber() >= 0) {
+				lastSignRequestParams = signRequestParams;
+			}
+		}
+		return lastSignRequestParams;
+	}
+
+	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
 		User signerUser = userService.getByEppn(userEppn);
 		boolean isViewed = signRequest.getViewedBy().contains(signerUser);
 		if (signRequestParamses.size() > 1) {
 			for (SignRequestParams signRequestParams : signRequestParamses) {
+				if(signRequestParams.equals(lastSignRequestParams)) continue;
 				filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
 				Log log = updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 				if(lastSignLogs != null) {

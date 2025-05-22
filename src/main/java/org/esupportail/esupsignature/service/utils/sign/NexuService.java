@@ -221,9 +221,10 @@ public class NexuService {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
 		List<Document> documentsToSign = signRequestService.getToSignDocuments(signRequest.getId());
 		byte[] bytes = documentsToSign.get(0).getInputStream().readAllBytes();
+		SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest.getSignRequestParams());
 		Reports reports = signRequestService.validate(signRequestId);
 		if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-			bytes = signRequestService.stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, userEppn, documentsToSign.get(0).getInputStream().readAllBytes(), date, null);
+			bytes = signRequestService.stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, userEppn, documentsToSign.get(0).getInputStream().readAllBytes(), date, null, lastSignRequestParams);
 		} else {
 			logger.warn("skip add visuals because document already signed");
 		}
@@ -239,10 +240,10 @@ public class NexuService {
 			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(signatureMultipleDocumentsForm.getDocumentsToSign());
 			parameters = getParameters(signatureMultipleDocumentsForm, toSignDocuments);
 		} else if(abstractSignatureForm instanceof SignatureDocumentForm signatureDocumentForm) {
-			List<SignRequestParams> signRequestParamsesForSign = signRequest.getSignRequestParams().stream().filter(srp -> signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().contains(srp) && srp.getSignImageNumber() >= 0 && srp.getTextPart() == null).toList();
+			SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest.getSignRequestParams());
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
-				if(!signRequestParamsesForSign.isEmpty()) {
-					parameters = signService.fillVisibleParameters(signatureDocumentForm, signRequestParamsesForSign.get(0), user, abstractSignatureForm.getSigningDate());
+				if(lastSignRequestParams != null) {
+					parameters = signService.fillVisibleParameters(signatureDocumentForm, lastSignRequestParams, user, abstractSignatureForm.getSigningDate());
 				} else {
 					parameters = signService.fillVisibleParameters(signatureDocumentForm, user);
 				}

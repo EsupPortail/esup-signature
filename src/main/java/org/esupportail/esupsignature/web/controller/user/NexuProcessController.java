@@ -75,6 +75,7 @@ public class NexuProcessController implements Serializable {
 			signRequestService.deleteNexu(id);
 		}
 		model.addAttribute("ids", ids);
+		model.addAttribute("id", ids.get(0));
 		if(ids.size() > 1) {
 			Report report = reportService.createReport(authUserEppn);
 			model.addAttribute("massSignReportId", report.getId());
@@ -108,6 +109,7 @@ public class NexuProcessController implements Serializable {
 			nexuService.saveNexuSignature(id, abstractSignatureForm, userEppn);
 			return responseJson;
 		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
 			if(massSignReportId != null) {
 				reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.nexuError);
 			}
