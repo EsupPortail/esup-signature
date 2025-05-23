@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.config.security;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.jwt.CustomJwtAuthenticationConverter;
@@ -47,6 +49,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -143,7 +147,7 @@ public class WebSecurityConfig {
 		http.cors(AbstractHttpConfigurer::disable)
 				.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
-			http.oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())
+			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(jwtDecoder())
 					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(authService))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
@@ -155,6 +159,27 @@ public class WebSecurityConfig {
 
 	@Value("${spring.security.oauth2.client.provider.esup-signature.issuer-uri:}")
 	private String issuerUri;
+
+	@Bean
+	public BearerTokenResolver bearerTokenResolver() {
+		return new BearerTokenResolver() {
+			private final DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
+
+			@Override
+			public String resolve(HttpServletRequest request) {
+				String token = defaultResolver.resolve(request);
+				if (token != null) return token;
+				if (request.getCookies() != null) {
+					for (Cookie cookie : request.getCookies()) {
+						if ("jwt".equalsIgnoreCase(cookie.getName())) {
+							return cookie.getValue();
+						}
+					}
+				}
+				return null;
+			}
+		};
+	}
 
 	@Bean
 	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.esup-signature.issuer-uri")
