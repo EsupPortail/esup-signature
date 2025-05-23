@@ -625,6 +625,14 @@ public class SignBookService {
                 for (SignRequest signRequest : signBook.getSignRequests()) {
                     signRequest.getRecipientHasSigned().remove(recipient);
                 }
+                if(!signBook.getViewers().contains(recipient.getUser())
+                    && (signBook.getLiveWorkflow().getWorkflow() == null
+                        ||
+                        !signBook.getLiveWorkflow().getWorkflow().getManagers().contains(recipient.getUser().getEmail())
+                    )
+                ) {
+                    signBook.getTeam().remove(recipient.getUser());
+                }
             }
             liveWorkflowStepService.delete(liveWorkflowStep);
             return true;
