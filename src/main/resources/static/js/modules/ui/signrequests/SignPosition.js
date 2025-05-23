@@ -101,7 +101,7 @@ export class SignPosition extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-    addSign(page, restore, signImageNumber, forceSignNumber) {
+    addSign(page, restore, signImageNumber, forceSignNumber, signField) {
         if(this.signImages != null && this.signImages.length === 1) {
             this.popUserUi();
             return;
@@ -208,6 +208,7 @@ export class SignPosition extends EventFactory {
             signRequestParams.turnToText();
             signRequestParams.cross.css("background-image", "");
             signRequestParams.changeSignSize(null);
+            signRequestParams.textareaPart.focus();
         }
     }
 }

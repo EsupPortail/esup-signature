@@ -125,7 +125,7 @@ public class UserService {
     }
 
     public User getByAccessToken(String accessToken) {
-        return  userRepository.findByAccessToken(accessToken).orElse(null);
+        return userRepository.findByAccessToken(accessToken).orElse(null);
     }
 
     @Transactional
@@ -1059,7 +1059,9 @@ public class UserService {
         User user = getByEppn(userEppn);
         List<SignRequestParams> signRequestParamses = new ArrayList<>();
         try {
-            signRequestParamses = Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class));
+            signRequestParamses = new LinkedList<>(
+                    Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class))
+            );
             for (SignRequestParams signRequestParams : signRequestParamses) {
                 if(signRequestParams.getImageBase64() != null) {
                     try {

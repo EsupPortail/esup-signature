@@ -6,10 +6,10 @@
 		<button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
 			<i class="fa-solid fa-eye"></i> <span class="d-none d-md-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
 		</button>
-		<a th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+		<a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
 			<i class="fa-solid fa-info-circle"></i>
 		</a>
-		<a th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+		<a tabindex="0" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
 		   class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1"
 		   onclick="printIt()" target="_blank"
 		   title="Imprimer le document"><i class="fa-solid fa-print"></i></a>
@@ -54,7 +54,7 @@
 			<th:block th:if="${editable}">
 				<button class="btn btn-warning me-1 d-none d-lg-block"
 						name="changeMode"
-						id="changeMode1"><i class="fas fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
+						id="changeMode1"><i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
 			</th:block>
 <!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
 <!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
@@ -71,7 +71,7 @@
 <!--					</button>-->
 <!--				</div>-->
 <!--			</div>-->
-			<div id="insert-btn-div" class="d-none d-sm-block" th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+			<div id="insert-btn-div" class="d-none d-sm-block">
 				<button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary pulse-primary me-1"
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
@@ -96,25 +96,29 @@
 									class="btn btn-light btn-outline-primary text-start">
 								<i class="fa-solid fa-file-signature"></i> <span class="d-inline">Insérer un visa</span>
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCheck" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-check"></i> Insérer une coche
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addTimes" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addTimes" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-times"></i> Insérer une croix
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addCircle" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCircle" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-regular fa-circle"></i> Insérer un cercle
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addMinus" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addMinus" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-minus"></i> Insérer un trait
 							</button>
-							<button th:if="${signatureIds.size() == 0 && isNotSigned}" id="addText" class="btn btn-light btn-outline-primary text-start"
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addText" class="btn btn-light btn-outline-primary text-start"
 								th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
 								<i class="fa-solid fa-i-cursor"></i><i class="fa-solid fa-font d-none d-md-inline"></i> Insérer un texte
+							</button>
+							<button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="btn btn-light btn-outline-primary text-start"
+									th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">
+								<i class="fa-solid fa-xmark"></i> Non disponible pour un visa caché
 							</button>
 						</div>
 						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="alert alert-light d-flex flex-column d-none text-start gap-1" style="display: none;">
@@ -164,24 +168,30 @@
 	</div>
 	<ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
 		<th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-			<li class="nav-item overflow-hidden ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
-				<a class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '')}"
+			<li class="nav-item ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
+				<a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning text-dark' : '')}"
 				   th:href="${otp} ? '/otp/signrequests/' + ${signRequestTab.id} : '/user/signrequests/' + ${signRequestTab.id}"
 				   th:title="${signRequestTab.title}">
 					<div class="truncate">
 						<span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-							<i class="fa-solid fa-clock text-warning"></i>
+							<i class="fa-solid fa-clock" th:classappend="${(signRequest.id == signRequestTab.id ? 'text-warning' : 'text-dark')}"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-							<i class="fa-solid fa-check-circle text-light"></i>
+						<span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-success' : 'text-light')}">
+							<i class="fa-solid fa-check-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-							<i class="fa-solid fa-times-circle text-light"></i>
+						<span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
+							<i class="fa-solid fa-times-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						<span title="Document supprimé" th:if="${signRequestTab.deleted}">
-							<i class="fa-solid fa-stop-circle text-light"></i>
+						<span title="Document supprimé" th:if="${signRequestTab.deleted}"
+							  th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
+							<i class="fa-solid fa-stop-circle"></i>
+							<span th:text="${signRequestTab.title}"></span>
 						</span>
-						&nbsp;<span th:text="${signRequestTab.title}"></span>
 					</div>
 				</a>
 			</li>

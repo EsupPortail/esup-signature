@@ -51,9 +51,7 @@ management:
 
 spring:
     session:
-        jdbc:
-            initialize-schema: always
-            save-mode: always
+        timeout: 30m
     data:
         ldap:
             repositories:

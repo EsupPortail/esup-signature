@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
@@ -204,6 +205,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
 
+    @Query("SELECT s.id FROM SignBook s WHERE s.status = :status")
+    List<Long> findIdByStatus(@Param("status") SignRequestStatus status);
+
     List<SignBook> findByDeletedIsTrue();
 
     List<SignBook> findByStatusAndLiveWorkflowTargetsNotEmpty(SignRequestStatus signRequestStatus);
@@ -212,6 +216,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     @Query("select sb from SignBook sb where sb.liveWorkflow.workflow.id = :workflowId and sb.status != 'uploading'")
     List<SignBook> findByWorkflowId(Long workflowId);
+
+    @Query("select sb from SignBook sb where (sb.liveWorkflow.workflow.id = :workflowIdLong or sb.liveWorkflow.workflow.token = :workflowIdStr) and sb.status != 'uploading'")
+    List<SignBook> findByWorkflowIdOrToken(@Param("workflowIdLong") Long workflowIdLong, @Param("workflowIdStr") String workflowIdStr);
 
     @Query("select sb from SignBook sb where size(sb.signRequests) = 0 and sb.status != 'uploading'")
     List<SignBook> findEmpties();

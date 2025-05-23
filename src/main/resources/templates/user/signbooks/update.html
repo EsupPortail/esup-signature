@@ -18,6 +18,16 @@
             <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
+                        <a th:if="${signBook.isEditable()}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end">
+                            <i class="fa-solid fa-file-medical fa-2xl"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end m-2">
+                            <i class="fa-solid fa-shoe-prints fa-2xl"></i>
+                        </a>
+                    </li>
+                    <li>
                         <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
                             <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
@@ -116,10 +126,6 @@
                     <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
                         Aucun document à signer pour le moment
                     </div>
-                    <a th:if="${signBook.isEditable()}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end m-3">
-                        <i class="fa-solid fa-file-medical fa-2xl"></i>
-                    </a>
-
                 </div>
             </div>
             <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">

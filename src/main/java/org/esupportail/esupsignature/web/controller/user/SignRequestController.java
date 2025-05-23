@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.exception.*;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -42,9 +41,6 @@ import java.util.List;
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
-
-    @Resource
-    private SignService signService;
 
     @Resource
     private SignWithService signWithService;
@@ -96,6 +92,8 @@ public class SignRequestController {
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", "user");
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
         model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
@@ -122,7 +120,7 @@ public class SignRequestController {
             model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
-        List<Document> toSignDocuments = signService.getToSignDocuments(signRequest.getId());
+        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
@@ -145,15 +143,18 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signService.validate(id);
+        Reports reports = signRequestService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+            if(signable) model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
             model.addAttribute("signatureIssue", false);
             for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
                 if(!reports.getSimpleReport().isValid(signatureId)) {
                     model.addAttribute("signatureIssue", true);
                 }
             }
+        } else {
+            if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
@@ -167,14 +168,11 @@ public class SignRequestController {
                 }
             }
         }
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        model.addAttribute("signable", signable);
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
-        model.addAttribute("isNotSigned", !signService.isSigned(signRequest, reports));
+        model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest.getParentSignBook().getId()));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
@@ -339,10 +337,12 @@ public class SignRequestController {
                                         @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                                         @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                                         @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                                        @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
+                                        @RequestParam(value = "commentHeight", required = false) Integer commentHeight,
                                         @RequestParam(value = "postit", required = false) String postit,
                                         @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend,
                                         Model model) {
-        Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, postit, spotStepNumber, authUserEppn, userEppn, forceSend);
+        Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, commentWidth, commentHeight, postit, spotStepNumber, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             return ResponseEntity.ok().body(commentId);
         } else {
@@ -387,7 +387,7 @@ public class SignRequestController {
                          @RequestParam(value = "comment", required = false) String comment,
                          @RequestParam(value = "postit", required = false) String postit,
                          @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend, Model model) {
-        Long commentId = signRequestService.addComment(id, comment, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
+        Long commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
         } else {

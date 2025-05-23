@@ -20,6 +20,8 @@ public class SignRequestParamsWsDto {
 
     private Integer signImageNumber = 0;
 
+    private String pdSignatureFieldName;
+
     public Integer getSignPageNumber() {
     return signPageNumber;
 }
@@ -84,6 +86,14 @@ public class SignRequestParamsWsDto {
         this.signImageNumber = signImageNumber;
     }
 
+    public String getPdSignatureFieldName() {
+        return pdSignatureFieldName;
+    }
+
+    public void setPdSignatureFieldName(String pdSignatureFieldName) {
+        this.pdSignatureFieldName = pdSignatureFieldName;
+    }
+
     public SignRequestParams getSignRequestParams() {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(this.signPageNumber);
@@ -94,6 +104,7 @@ public class SignRequestParamsWsDto {
         signRequestParams.setyPos(this.yPos);
         signRequestParams.setImageBase64(this.imageBase64);
         signRequestParams.setSignImageNumber(this.signImageNumber);
+        signRequestParams.setPdSignatureFieldName(this.pdSignatureFieldName);
         return signRequestParams;
     }
 }

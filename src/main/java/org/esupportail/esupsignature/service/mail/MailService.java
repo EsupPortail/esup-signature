@@ -4,7 +4,6 @@ import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.util.ByteArrayDataSource;
 import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
@@ -190,7 +189,8 @@ public class MailService {
         Set<String> toEmails = new HashSet<>();
         if(!signBook.getCreateBy().getEppn().equals("system")) toEmails.add(signBook.getCreateBy().getEmail());
         if(BooleanUtils.isTrue(sendToAll)) {
-            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList());
+            String systemAddress = "system@" + globalProperties.getDomain();
+            toEmails.addAll(signBook.getTeam().stream().map(User::getEmail).toList().stream().filter(email -> !email.equals(systemAddress) && !email.equals("system")).toList());
         }
         User user = userService.getByEppn(userEppn);
         toEmails.removeIf(e -> e.equals(user.getEmail()));
@@ -443,35 +443,30 @@ public class MailService {
         mimeMessageHelper.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
         mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
         mimeMessageHelper.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
-        MimeMessage mimeMessage = mimeMessageHelper.getMimeMessage();
         if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
             logger.debug("email alerts are disabled for this workflow " + workflow.getName());
             return;
         }
         try {
             String systemAddress = "system@" + globalProperties.getDomain();
-            Address[] tosArray = mimeMessage.getRecipients(Message.RecipientType.TO);
+            InternetAddress[] tosArray = (InternetAddress[]) mimeMessageHelper.getMimeMessage().getRecipients(Message.RecipientType.TO);
             if (tosArray != null) {
-                List<Address> tos = Arrays.stream(tosArray).filter(addr -> !systemAddress.equalsIgnoreCase(((InternetAddress) addr).getAddress())).toList();
+                List<InternetAddress> tos = Arrays.stream(tosArray).filter(addr -> !"system".equalsIgnoreCase(addr.getAddress()) && !systemAddress.equalsIgnoreCase(addr.getAddress())).toList();
                 logger.info("send email to : " + String.join(",", tos.stream().map(Address::toString).toList()));
-                mimeMessage.setFrom(mailConfig.getMailFrom());
+                mimeMessageHelper.getMimeMessage().setFrom(mailConfig.getMailFrom());
                 InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
                 if (workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                     replyToAddress = new InternetAddress(workflow.getMailFrom());
                 }
-                mimeMessage.setReplyTo(new Address[]{replyToAddress});
-                String[] toHeader = mimeMessage.getHeader("To");
-                if (toHeader == null) {
-                    return;
-                }
+                mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{replyToAddress});
+
                 if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                     tos = new ArrayList<>();
                     tos.add(new InternetAddress(globalProperties.getTestEmail()));
                 }
                 if (!tos.isEmpty()) {
-                    mimeMessage.setHeader("To", String.join(",", tos.stream().map(Address::toString).toList()));
-                    mimeMessage.setRecipients(Message.RecipientType.TO, tos.toArray(new Address[0]));
-                    mailSender.send(mimeMessage);
+                    mimeMessageHelper.setTo(tos.toArray(new InternetAddress[0]));
+                    mailSender.send(mimeMessageHelper.getMimeMessage());
                 }
             }
         } catch(MessagingException e){

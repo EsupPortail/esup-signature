@@ -152,16 +152,32 @@ td {
 }
 
 .nav-tabs {
-    border-bottom : 1px solid #000000;
+    border-bottom : 1px solid #555;
+}
+
+.nav-link:focus-visible {
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.6);
+}
+
+.navbar .btn:focus-visible {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+#signLaunchButton:focus-visible {
+    box-shadow: 0 0 0 2px #000;
+}
+
+#trashLaunchButton:focus-visible {
+    box-shadow: 0 0 0 2px #000;
 }
 
 .nav-item.ws-tab {
     margin-bottom: -1px;
-    border-bottom : 1px solid #000000;
+    /*border-bottom : 1px solid #555;*/
 }
 
 .nav-item.ws-tab a {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .nav-item.ws-tab.active a {
@@ -174,7 +190,7 @@ td {
 
 .nav-tabs .nav-link {
     color: rgba(0, 0, 0, 1);
-    border-color: rgba(0, 0, 0, 1) !important;
+    border-color: rgba(85, 85, 85, 1) !important;
     border-bottom : 1px solid rgba(0, 0, 0, 1) !important;
     background-color: #FFF;
 }
@@ -182,13 +198,13 @@ td {
 .nav-link.current {
     color: black;
     font-weight: bold;
-    border-color: #000 #000 #fff #000 !important;
-
+    border-color: #555 #555 #fff #555 !important;
+    background-color: white !important;
 }
 
 .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
     color: black;
-    border-color: #000 #000 transparent #000 !important;
+    border-color: #555 #555 transparent #555 !important;
 }
 
 .nav-tab-admin {
@@ -680,10 +696,10 @@ textarea:placeholder-shown.required-field {
     padding: 1em;
 }
 
-.file-tab {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+/*.file-tab {*/
+/*    overflow: hidden;*/
+/*    text-overflow: ellipsis;*/
+/*}*/
 
 .clickable-row {
     cursor: pointer;
@@ -738,6 +754,7 @@ textarea:placeholder-shown.required-field {
 }
 
 .sign-textarea {
+    line-height: 1.2;
     position: relative;
     font-family: "LiberationSans-Regular", serif !important;
     color: black;

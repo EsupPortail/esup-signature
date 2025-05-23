@@ -65,6 +65,8 @@ public class SignRequestParamsService {
         signRequestParams.setPdSignatureFieldName(name);
         signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth()));
+        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight()));
         signRequestParams.setSignPageNumber(signPageNumber);
         return signRequestParams;
     }
@@ -203,6 +205,7 @@ public class SignRequestParamsService {
                 signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
             }
             signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
+            signRequestParams.setPdSignatureFieldName(signRequestParamses.get(i).getPdSignatureFieldName());
             signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
             signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
             signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
@@ -231,8 +234,10 @@ public class SignRequestParamsService {
     public SignRequestParams createSignRequestParams(Integer signPageNumber, Integer xPos, Integer yPos) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignPageNumber(signPageNumber);
-        signRequestParams.setxPos(xPos);
-        signRequestParams.setyPos(yPos);
+        if(xPos != null && yPos != null) {
+            signRequestParams.setxPos(xPos);
+            signRequestParams.setyPos(yPos);
+        }
         signRequestParamsRepository.save(signRequestParams);
         return signRequestParams;
     }

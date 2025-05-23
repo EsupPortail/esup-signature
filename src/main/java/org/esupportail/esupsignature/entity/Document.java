@@ -62,7 +62,7 @@ public class Document {
     @JsonIgnore
     public DssMultipartFile getMultipartFile() {
         try {
-            return new DssMultipartFile(fileName, fileName, contentType, getInputStream());
+            return new DssMultipartFile(fileName, fileName, contentType, getTransientInputStream());
         } catch (IOException e) {
             logger.error("unable to get multipartfile", e);
         }
@@ -153,12 +153,13 @@ public class Document {
         this.id = id;
     }
 
-	
-
-	
-
-    public InputStream getTransientInputStream() {
-        return transientInputStream;
+    @JsonIgnore
+    public InputStream getTransientInputStream() throws IOException {
+        if(this.transientInputStream != null) {
+            return this.transientInputStream;
+        } else {
+            return getInputStream();
+        }
     }
 
     public void setTransientInputStream(InputStream transientInputStream) {

@@ -131,15 +131,16 @@ public class TaskService {
         if(globalProperties.getArchiveUri() != null && !isEnableArchiveTask()) {
             setEnableArchiveTask(true);
             logger.debug("scan all signRequest to archive");
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.completed);
-            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.refused));
-            signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.exported));
-            for(SignBook signBook : signBooks) {
+            List<Long> signBooksIds = signBookRepository.findIdByStatus(SignRequestStatus.completed);
+            signBooksIds.addAll(signBookRepository.findIdByStatus(SignRequestStatus.refused));
+            signBooksIds.addAll(signBookRepository.findIdByStatus(SignRequestStatus.exported));
+            for(Long signBookId : signBooksIds) {
                 try {
-                    if(signBookService.needToBeExported(signBook.getId())) {
+                    if(signBookService.needToBeExported(signBookId)) {
+                        /* on n’archive pas les demandes en cours d’export */
                         continue;
                     }
-                    signBookService.archiveSignRequests(signBook.getId(), "scheduler");
+                    signBookService.archiveSignRequests(signBookId, "scheduler");
                 } catch(EsupSignatureRuntimeException e) {
                     logger.error(e.getMessage());
                 }

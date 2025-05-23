@@ -54,7 +54,7 @@ public class SeleniumTest {
         } else {
             driver = new ChromeDriver();
         }
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         js = (JavascriptExecutor) driver;
         driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));
     }

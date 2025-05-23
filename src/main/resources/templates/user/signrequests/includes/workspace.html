@@ -6,8 +6,8 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div class="pdf-alerts" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''">
-        <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
-            En raison de la configuration des prochaines étapes, aucun mode de signature n'est disponible pour garantir l'intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
+        <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+            En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
         </div>
         <div id="signBookDesc" class="d-none alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}" style="width: 100%;">
             <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
@@ -26,7 +26,7 @@
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature non qualifiée (eIDAS) qui, bien que techniquement conforme, pourrait poser des problèmes pour les signatures ultérieures.
+            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
@@ -62,7 +62,7 @@
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div id="pdf" class="mx-auto" style="position: relative !important;">
+        <div tabindex="-1" id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
@@ -81,7 +81,7 @@
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="width: 300px; height: 150px; color: #000;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
@@ -116,7 +116,7 @@
                 <i class="fa-regular fa-trash-alt"></i>
             </button>
             <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Modifier ma signature'>
-                <i class='fas fa-eraser'></i>
+                <i class='fa-solid fa-eraser'></i>
             </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"

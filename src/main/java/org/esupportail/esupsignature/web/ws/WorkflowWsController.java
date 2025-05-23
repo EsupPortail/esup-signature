@@ -33,10 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/ws/workflows")
@@ -69,11 +66,11 @@ public class WorkflowWsController {
     @PostMapping(value ="/{id}/scan", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Recupération des paramètres de signature du documents")
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
-    public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@PathVariable Long id,
+    public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@PathVariable String id,
                                                                         @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
     ) throws IOException {
-        Workflow workflow = workflowService.getById(id);
+        Workflow workflow = workflowService.getByIdOrToken(id);
         return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, false));
     }
 
@@ -81,7 +78,7 @@ public class WorkflowWsController {
     @PostMapping(value = "/{id}/new", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Dépôt d'un document dans une nouvelle instance d'un circuit")
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
-    public ResponseEntity<?> start(@PathVariable Long id,
+    public ResponseEntity<?> start(@PathVariable String id,
                                    @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                                    @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
@@ -193,9 +190,13 @@ public class WorkflowWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération d'un circuit",
             responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
-    public String get(@PathVariable Long id,
+    public ResponseEntity<String> get(@PathVariable String id,
                       @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
-        return workflowService.getByIdJson(id);
+        String json = workflowService.getByIdJson(id);
+        if("null".equals(json)) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(workflowService.getByIdJson(id));
     }
 
     @CrossOrigin
@@ -203,7 +204,7 @@ public class WorkflowWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des demandes d'un circuit",
             responses = @ApiResponse(description = "JsonDtoWorkflow", content = @Content(schema = @Schema(implementation = WorkflowDto.class))))
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
-    public String getSignRequests(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
+    public String getSignRequests(@PathVariable String id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return workflowService.getSignRequestById(id);
     }
 
@@ -219,15 +220,15 @@ public class WorkflowWsController {
     @GetMapping(value = "/get-datas/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupération des données d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
-    public LinkedHashMap<String, String> getDatas(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+    public LinkedHashMap<String, String> getDatas(@PathVariable String id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         return workflowExportService.getJsonDatasFromWorkflow(id);
     }
 
     @CrossOrigin
-    @PreAuthorize("@wsAccessTokenService.workflowCsv(#id, #xApiKey)")
     @GetMapping(value = "/{id}/datas/csv", produces = {"text/csv", "*/*"})
-    public ResponseEntity<Void> getWorkflowDatasCsv(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
-        Workflow workflow = workflowService.getById(id);
+    @PreAuthorize("@wsAccessTokenService.workflowCsv(#id, #xApiKey)")
+    public ResponseEntity<Void> getWorkflowDatasCsv(@PathVariable String id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse response) {
+        Workflow workflow = workflowService.getByIdOrToken(id);
         try {
             response.setContentType("text/csv; charset=utf-8");
             response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(workflow.getName().replace(" ", "-"), StandardCharsets.UTF_8.toString()) + ".csv");

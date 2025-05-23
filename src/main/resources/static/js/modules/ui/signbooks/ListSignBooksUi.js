@@ -57,10 +57,16 @@ export class ListSignBooksUi {
             creatorFilter.slim.events.afterChange = function () {
                 self.buildUrlFilter();
             }
+            if ($(creatorFilter).hasClass('slim-select-filter')) {
+                $(creatorFilter).on('change', function () {
+                    self.buildUrlFilter();
+                });
+            }
         }
         let recipientsFilter = document.querySelector('#recipientsFilter');
         if(recipientsFilter != null) {
             recipientsFilter.slim.settings.placeholderText = $(recipientsFilter).attr("data-placeholder");
+            document.querySelector('#recipientsFilter + div .ss-placeholder').textContent = $(recipientsFilter).attr("data-placeholder");
             recipientsFilter.slim.open();
             recipientsFilter.slim.close();
             recipientsFilter.slim.events.afterChange = function () {

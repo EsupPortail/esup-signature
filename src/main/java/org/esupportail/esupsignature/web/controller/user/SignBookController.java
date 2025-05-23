@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -51,34 +50,32 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
-    @Resource
-    private RecipientService recipientService;
-
-    @Resource
-    private SignWithService signWithService;
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signbooks";
     }
 
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
+    private final RecipientService recipientService;
+    private final SignWithService signWithService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
+    private final PreAuthorizeService preAuthorizeService;
+    private final WorkflowService workflowService;
+    private final SignBookService signBookService;
+    private final SignRequestService signRequestService;
+    private final FormService formService;
+    private final TemplateEngine templateEngine;
 
-    @Resource
-    private WorkflowService workflowService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private FormService formService;
-
-    @Resource
-    private TemplateEngine templateEngine;
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine) {
+        this.recipientService = recipientService;
+        this.signWithService = signWithService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.workflowService = workflowService;
+        this.signBookService = signBookService;
+        this.signRequestService = signRequestService;
+        this.formService = formService;
+        this.templateEngine = templateEngine;
+    }
 
     @GetMapping
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
@@ -110,7 +107,7 @@ public class SignBookController {
         model.addAttribute("statuses", SignRequestStatus.values());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn));
+        model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, false));
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
@@ -501,7 +498,7 @@ public class SignBookController {
             recipientWsDtos.add(recipientWsDto);
         }
         try {
-            signRequestService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
+            liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }

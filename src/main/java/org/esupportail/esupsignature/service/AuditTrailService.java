@@ -127,6 +127,12 @@ public class AuditTrailService {
     }
 
     @Transactional
+    public AuditTrail getAuditTrailByDocumentId(String id) {
+        return auditTrailRepository.findByDocumentId(id);
+    }
+
+
+    @Transactional
     public ByteArrayOutputStream generateAuditTrailPdf(SignRequest signRequest, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException {
         AuditTrail auditTrail = getAuditTrailByToken(signRequest.getToken());
         RequestContext requestContext = new RequestContext(httpServletRequest, httpServletResponse);

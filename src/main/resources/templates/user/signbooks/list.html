@@ -8,7 +8,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    const listSignBooksUi = new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -112,7 +112,7 @@
                     </th>
                     <th class="d-none d-xxxxl-table-cell">
                         <div class="d-flex text-center">
-                            <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-placeholder="Crée par" data-allow-deselect="true">
+                            <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
                                 <th:block th:each="creator : ${creators}">
@@ -188,7 +188,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <button id="launchMassSignButton" class="btn btn-success" title="Lancer la signature en masse" autofocus>
-                    <i class="fas fa-signature"></i> Lancer la signature en masse
+                    <i class="fa-solid fa-signature"></i> Lancer la signature en masse
                 </button>
             </div>
         </div>
