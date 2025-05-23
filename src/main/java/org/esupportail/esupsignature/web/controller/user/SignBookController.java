@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -19,7 +18,6 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -52,36 +50,32 @@ public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
 
-    @Resource
-    private RecipientService recipientService;
-
-    @Resource
-    private SignWithService signWithService;
-    @Autowired
-    private LiveWorkflowStepService liveWorkflowStepService;
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signbooks";
     }
 
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
+    private final RecipientService recipientService;
+    private final SignWithService signWithService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
+    private final PreAuthorizeService preAuthorizeService;
+    private final WorkflowService workflowService;
+    private final SignBookService signBookService;
+    private final SignRequestService signRequestService;
+    private final FormService formService;
+    private final TemplateEngine templateEngine;
 
-    @Resource
-    private WorkflowService workflowService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private FormService formService;
-
-    @Resource
-    private TemplateEngine templateEngine;
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine) {
+        this.recipientService = recipientService;
+        this.signWithService = signWithService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.workflowService = workflowService;
+        this.signBookService = signBookService;
+        this.signRequestService = signRequestService;
+        this.formService = formService;
+        this.templateEngine = templateEngine;
+    }
 
     @GetMapping
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")

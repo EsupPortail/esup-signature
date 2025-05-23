@@ -714,6 +714,8 @@ public class SignBookService {
                     }
                 }
             }
+        } else {
+            signBook.getViewers().clear();
         }
     }
 
