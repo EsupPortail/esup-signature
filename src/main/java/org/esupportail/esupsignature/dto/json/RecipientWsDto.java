@@ -46,6 +46,9 @@ public class RecipientWsDto {
     }
 
     public void setEmail(String email) {
+        if (!email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException("invalide email : " + email);
+        }
         this.email = email;
     }
 
