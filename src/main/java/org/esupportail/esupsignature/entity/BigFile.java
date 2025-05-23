@@ -42,10 +42,6 @@ public class BigFile {
         this.id = id;
     }
 
-    
-
-    
-
     public Blob getBinaryFile() {
         return this.binaryFile;
     }

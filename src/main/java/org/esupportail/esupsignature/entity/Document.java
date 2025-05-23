@@ -153,7 +153,8 @@ public class Document {
         this.id = id;
     }
 
-    public InputStream getTransientInputStream() {
+    @JsonIgnore
+    public InputStream getTransientInputStream() throws IOException {
         if(this.transientInputStream != null) {
             return this.transientInputStream;
         } else {
