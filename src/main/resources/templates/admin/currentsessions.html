@@ -56,10 +56,12 @@
                             <i th:class="${httpSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
                         </td>
                         <td>
-                            <form th:action="'/admin/currentsessions'" th:method="'delete'">
+                            <form th:action="'/admin/currentsessions'" th:method="'delete'"
+                                onsubmit="return confirm('Attention,️ cette action va déconnecter l’utilisateur.')">
                                 <input type="hidden" name="sessionId" th:value="${httpSession.sessionId}"/>
-                                <button type="submit" class="btn btn-sm btn-danger"><i
-                                        class="fa-solid fa-trash-alt"></i></button>
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fa-solid fa-trash-alt"></i>
+                                </button>
                             </form>
                         </td>
                     </tr>
