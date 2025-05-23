@@ -19,7 +19,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.dto.view.HttpSessionViewDto;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
-import org.esupportail.esupsignature.service.security.HttpSessionsListenerService;
+import org.esupportail.esupsignature.service.security.SessionTrackingFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
@@ -29,7 +29,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 @RequestMapping("/admin/currentsessions")
 @Controller
@@ -47,16 +50,13 @@ public class CurrentSessionsController {
 	}
 
 	private final SessionRegistry sessionRegistry;
-
-	private final HttpSessionsListenerService httpSessionsListenerService;
-
+	private final SessionTrackingFilter sessionTrackingFilter;
 	private final JdbcIndexedSessionRepository sessionRepository;
-
 	private final SessionRepositoryCustom sessionRepositoryCustom;
 
-	public CurrentSessionsController(SessionRegistry sessionRegistry, HttpSessionsListenerService httpSessionsListenerService, JdbcIndexedSessionRepository sessionRepository, SessionRepositoryCustom sessionRepositoryCustom) {
+	public CurrentSessionsController(SessionRegistry sessionRegistry, SessionTrackingFilter sessionTrackingFilter, JdbcIndexedSessionRepository sessionRepository, SessionRepositoryCustom sessionRepositoryCustom) {
 		this.sessionRegistry = sessionRegistry;
-        this.httpSessionsListenerService = httpSessionsListenerService;
+        this.sessionTrackingFilter = sessionTrackingFilter;
         this.sessionRepository = sessionRepository;
         this.sessionRepositoryCustom = sessionRepositoryCustom;
     }
@@ -68,7 +68,10 @@ public class CurrentSessionsController {
         for (String sessionId : allSessionIds) {
 			Session session = sessionRepository.findById(sessionId);
 			if(session != null) {
-				HttpSessionViewDto httpSession = new HttpSessionViewDto();
+				HttpSessionViewDto httpSession = sessionTrackingFilter.getSessions().get(sessionId);
+				if (httpSession == null) {
+					httpSession = new HttpSessionViewDto();
+				}
 				httpSession.setSessionId(session.getId());
 				httpSession.setCreatedDate(Date.from(session.getCreationTime()));
 				httpSession.setLastRequest(Date.from(session.getLastAccessedTime()));
@@ -87,11 +90,12 @@ public class CurrentSessionsController {
 
 	@DeleteMapping
 	public String deleteSessions(@RequestParam String sessionId) {
-		httpSessionsListenerService.getSessions().remove(sessionId);
+		sessionTrackingFilter.getSessions().remove(sessionId);
 		SessionInformation sessionInformation = sessionRegistry.getSessionInformation(sessionId);
-		if(sessionInformation != null) {
+		if (sessionInformation != null) {
 			sessionInformation.expireNow();
 		}
+		sessionRepository.deleteById(sessionId);
 		return "redirect:/admin/currentsessions";
 	}
 
