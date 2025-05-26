@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -45,6 +46,7 @@ public class Recipient {
         this.signed = signed;
     }
 
+    @JsonIgnore
     public RecipientWsDto getRecipientDto() {
         RecipientWsDto recipientWsDto = new RecipientWsDto();
         recipientWsDto.setId(id);

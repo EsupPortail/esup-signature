@@ -163,7 +163,9 @@ public class SignRequestParamsService {
                                 String signFieldName = pdActionURI.getURI();
                                 Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
                                 if (pattern.matcher(signFieldName).find()) {
-                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, pdAnnotationLink.getRectangle(), i, pdPage);
+                                    PDRectangle originalPdRectangle = pdAnnotationLink.getRectangle();
+                                    PDRectangle pdRectangle = new PDRectangle(originalPdRectangle.getUpperRightX() - originalPdRectangle.getWidth(), originalPdRectangle.getUpperRightY() - 75, 100, 50);
+                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, pdRectangle, i, pdPage);
                                     signRequestParamsList.add(signRequestParams);
                                 }
                             }
