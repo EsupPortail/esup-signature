@@ -417,6 +417,7 @@ export class SignRequestParams extends EventFactory {
         let maxHeight = ((this.originalHeight + this.extraHeight / this.signScale) * 2 * this.currentScale);
         let minWidth = ((this.originalWidth + this.extraWidth / this.signScale) * .5 * this.currentScale);
         let minHeight = ((this.originalHeight + this.extraHeight / this.signScale) * .5 * this.currentScale);
+        let refresh = false;
         if (ui.size.width >= maxWidth
             ||
             ui.size.height >= maxHeight
@@ -428,7 +429,10 @@ export class SignRequestParams extends EventFactory {
             ui.size.height <= minHeight) {
             ui.size.width = minWidth;
             ui.size.height = minHeight;
+        } else {
+            refresh = true;
         }
+        if (refresh) {
         let newScale = this.getNewScale(ui);
         this.signWidth = this.signWidth / this.signScale * newScale;
         this.signHeight = this.signHeight / this.signScale * newScale;
@@ -450,6 +454,7 @@ export class SignRequestParams extends EventFactory {
         }
         this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale);
         this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale);
+    }
     }
 
     createCross() {
@@ -1247,17 +1252,16 @@ export class SignRequestParams extends EventFactory {
             if(lines.length > maxLines) {
                 lines.pop();
             }
-
             for(let i = 0; i < lines.length; i++) {
                 let c = document.createElement("canvas");
                 let ctx = c.getContext("2d");
                 ctx.font = fontSize + "px Gravity";
                 let txt = lines[i];
-                console.log(ctx.measureText(txt).width + " " + this.textareaExtra.css("width"));
-                if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")) - (ctx.measureText(txt).width / txt.length) * 2)) {
+                if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")))) {
                     text += txt;
                     this.stringLength = txt.length;
                 } else {
+                    console.log("text length : " + ctx.measureText(txt).width + " " + this.textareaExtra.css("width"));
                     text += txt.substring(0, this.stringLength);
                 }
                 if(i < lines.length - 1) {
