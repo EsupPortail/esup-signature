@@ -29,6 +29,7 @@ export class WizUi {
 
     initListeners() {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
+        this.modal.focus();
     }
 
     listenHelpMarkAsReadButton(btn) {
