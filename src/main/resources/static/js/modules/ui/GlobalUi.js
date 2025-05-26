@@ -68,6 +68,26 @@ export class GlobalUi {
             }
         }, { once: true });
 
+        document.addEventListener('shown.bs.modal', function (e) {
+            const modal = e.target;
+            function escHandler(event) {
+                if (event.key === 'Escape' || event.key === 'Esc') {
+                    const instance = bootstrap.Modal.getOrCreateInstance(modal);
+                    instance.hide();
+                }
+            }
+            modal._escHandler = escHandler;
+            document.addEventListener('keydown', escHandler);
+        });
+
+        document.addEventListener('hidden.bs.modal', function (e) {
+            const modal = e.target;
+            if (modal._escHandler) {
+                document.removeEventListener('keydown', modal._escHandler);
+                delete modal._escHandler;
+            }
+        });
+
         $(document).on("refreshClickableTd", e => this.refreshClickableTd());
         this.markAsReadButtons.each((index, e) => this.listenMarkAsReadButton(e));
         this.markHelpAsReadButtons.each((index, e) => this.listenHelpMarkAsReadButton(e));
@@ -107,37 +127,79 @@ export class GlobalUi {
         window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
         let self = this;
-        $("#new-self-sign").on('click', function(e) {
+        let newSelfSign =$("#new-self-sign");
+        newSelfSign.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        newSelfSign.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-self-sign-div"), self.csrf, self.maxSize);
             wizUi.selfSignStart();
         });
 
-        $("#new-fast-sign").on('click', function(e) {
+        let newFastSign = $("#new-fast-sign")
+        newFastSign.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        newFastSign.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-fast-sign-div"), self.csrf, self.maxSize);
             wizUi.fastStartSign();
         });
 
-        $("#start-wizard-custom-button").on('click', function(e) {
+        let startWizardCustomButton = $("#start-wizard-custom-button");
+        startWizardCustomButton.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        startWizardCustomButton.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-custom-sign-div"), self.csrf, self.maxSize);
             wizUi.workflowSignStart();
         });
 
-        $("#start-wizard-button").on('click', function(e) {
+        let startWizardButton = $("#start-wizard-button");
+        startWizardButton.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        startWizardButton.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
             wizUi.wizardWorkflowStart();
         });
 
-        $("#start-wizard-button-2").on('click', function(e) {
+        let startWizardButton2 = $("#start-wizard-button-2");
+        startWizardButton2.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        startWizardButton2.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
             wizUi.wizardWorkflowStart();
         });
 
-        $("#start-wizard-button-3").on('click', function(e) {
+        let startWizardButton3 = $("#start-wizard-button-3");
+        startWizardButton3.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        startWizardButton3.on('click', function(e) {
             let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
             wizUi.wizardWorkflowStart();
         });
 
-        $(".start-form-button").on('click', function() {
+        let startFormButton = $(".start-form-button");
+        startFormButton.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.target.click();
+            }
+        });
+        startFormButton.on('click', function() {
             let wizUi = new WizUi("", $("#wiz-start-form-div"), self.csrf, self.maxSize);
             wizUi.wizardFormStart($(this).attr("data-es-form-id"));
         });
@@ -147,6 +209,11 @@ export class GlobalUi {
             menuToggle.on("click", function(e) {
                 e.stopPropagation();
                 e.preventDefault();
+            });
+            $(this).on('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.target.click();
+                }
             });
             $(this).on('click', function(e) {
                 let wizUi = new WizUi($(this).attr('data-es-workflow-id'), $("#wiz-workflow-sign-div"), self.csrf, self.maxSize);
@@ -621,7 +688,7 @@ export class GlobalUi {
 
     onDocumentLoad() {
         console.info("global on load");
-        $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+        // $.fn.modal.Constructor.prototype.enforceFocus = function () {};
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
