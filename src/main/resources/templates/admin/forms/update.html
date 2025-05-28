@@ -28,22 +28,22 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body">
-                    <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"> Circuit : <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a></h3>
+                    <h3>FORM ID : <input type="text" readonly disabled th:value="${form.id}"> Circuit : <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a></h3>
 
                     <div class="alert alert-dark bg-white mb-2">
-                        <p><strong>Modification du modèle </strong>(<span th:if="${form.document != null}">Modele actuel : <a th:href="'/admin/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
-                        <form id="formUpdateModel" th:action="'/admin/forms/update-model/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                        <p><strong>Modification du modèle </strong>(<span th:if="${form.document != null}">Modele actuel : <a th:href="'/' + ${workflowRole} + '/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></span>)</p>
+                        <form id="formUpdateModel" th:action="'/' + ${workflowRole} + '/forms/update-model/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                             <div class="form-group mb-3">
                                 <div class="custom-file">
                                     <label for="multipartModel" class="custom-file-label"> Choisir un nouveau modèle au format PDF</label>
@@ -53,7 +53,7 @@
                             <button id="submitModel" type="submit" class="btn btn-success">Modifier le modèle</button>
                         </form>
                     </div>
-                    <form id="formUpdate" th:action="'/admin/forms'" th:object="${form}" th:method="'put'">
+                    <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
                         <input type="hidden" th:field="*{id}">
                         <div class="form-group mb-3">
                             <label for="title"><strong>Titre (affiché aux utilisateurs)</strong></label>
@@ -82,19 +82,21 @@
                         </div>
                         <div class="form-group mb-3">
                             <label><strong>Autorisations</strong></label>
-                            <div class="form-check mb-2">
+                            <div class="form-check" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                                 <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
-                                <label for="publicUsage">Accès publique</label>
+                                <label for="publicUsage">Accès public</label>
                             </div>
-                            <label for="roles" class="form-check-label">Accès au formulaire pour les rôles</label>
-                            <select id="roles" class="slim-select-filter mb-2" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
-                                <th:block th:each="newRole : ${roles}">
-                                    <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
-                                </th:block>
-                            </select>
+                            <div class="form-group mt-2">
+                                <label for="roles" class="form-check-label">Accès au formulaire pour les rôles</label>
+                                <select id="roles" class="slim-select-filter mb-2" type="text" th:field="*{roles}" data-placeholder="Choisir des roles" multiple>
+                                    <th:block th:each="newRole : ${roles}">
+                                        <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(form.roles, newRole)}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
                             <div class="form-check mb-2">
                                 <input id="hideButton" type="checkbox" class="form-check-input" th:field="*{hideButton}"/>
-                                <label for="hideButton">Masquer la tuile sur la page d’accueil </label>
+                                <label for="hideButton">Masquer la tuile sur la page d’accueil (en vue des tests)</label>
                             </div>
                         </div>
                         <div class="form-group mb-3">
@@ -161,7 +163,7 @@
                             </script>
                         </div>
                     </form>
-                    <form id="importFormSetup" th:action="'/admin/forms/import/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
+                    <form id="importFormSetup" th:action="'/' + ${workflowRole} + '/forms/import/' + ${form.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                         <label class="form-label">Importer une configuration</label>
                         <div class="form-group mb-3">
                             <div class="custom-file">
@@ -172,7 +174,7 @@
                         </div>
                         <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer la configuration</button>
                         <a class="btn btn-primary" title="Exporter" role="button"
-                           th:href="'/admin/forms/export/' + ${form.id}">Exporter la configuration
+                           th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">Exporter la configuration
                         </a>
                     </form>
 

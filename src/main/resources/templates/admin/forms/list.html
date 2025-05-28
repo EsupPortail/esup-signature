@@ -37,11 +37,11 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="form : ${forms}" th:data-href="'/admin/forms/update/' + ${form.id}">
+                    <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
                         <td><input type="text" th:value="${form.id}" disabled></td>
                         <td class="clickable-td" th:text="${form.title}"></td>
                         <td>
-                            <a th:if="${form.workflow != null}" th:href="'/admin/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
+                            <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
@@ -64,31 +64,31 @@
                                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${form.id}">
                                     <li>
                                         <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/admin/forms/update/' + ${form.id}">
+                                            th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
                                             <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
                                         </a>
                                     </li>
                                     <li>
                                         <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/admin/forms/' + ${form.id} + '/fields'">
+                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">
                                             <i class="fa-solid fa-align-justify pr-2"></i> Modifier les champs
                                         </a>
                                     </li>
                                     <li>
                                         <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/admin/forms/' + ${form.id} + '/signs'">
+                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">
                                             <i class="fa-solid fa-signature pr-2"></i> Configurer les champs signatures
                                         </a>
                                     <li>
                                     </li>
                                         <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
-                                            th:href="'/admin/forms/export/' + ${form.id}">
+                                            th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
                                             <i class="fa-solid fa-cloud-download-alt pr-2"></i> Exporter la configuration
                                         </a>
                                     </li>
                                     <li>
                                         <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                                            th:href="'/admin/forms/' + ${form.name} + '/datas/csv'">
+                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.name} + '/datas/csv'">
                                             <i class="fa-solid fa-file-export pr-2"></i> Exporter les données saisies
                                         </a>
                                     </li>
@@ -104,7 +104,7 @@
                             <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form id="command" th:action="'/admin/forms/' + ${form.id}" th:method="delete">
+                                        <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id}" th:method="delete">
                                             <div class="modal-header">
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close">
@@ -153,7 +153,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form th:action="'/admin/forms'" method="post">
+                <form th:action="'/' + ${workflowRole} + '/forms'" method="post">
                     <div class="form-group mb-3">
                         <label for="titleManual" class="col-form-label">Titre (affiché aux utilisateurs)</label>
                         <input type="text" id="titleManual" name="title" class="form-control" required>
@@ -210,7 +210,7 @@
                 <h5 class="modal-title">Nouveau formulaire</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addModel" th:action="'/admin/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+            <form id="addModel" th:action="'/' + ${workflowRole} + '/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
                         <label for="title" class="col-form-label">Titre (affiché aux utilisateurs)</label>

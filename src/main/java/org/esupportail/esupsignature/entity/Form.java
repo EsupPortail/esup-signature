@@ -37,8 +37,6 @@ public class Form {
 	@Column(columnDefinition = "TEXT")
 	private String message;
 
-	private Integer version;
-
 	@Deprecated
 	@ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
 	private Set<String> managers = new HashSet<>();

@@ -241,6 +241,11 @@ public class GlobalProperties {
     private List<String> shibUsersDomainWhiteList;
 
     /**
+     * Liste permettant de forcer des domaines comme externes
+     */
+    private List<String> forcedExternalsDomainList;
+
+    /**
      *  Adresse du web service de données externes
      */
     private String restExtValueUrl;
@@ -689,6 +694,14 @@ public class GlobalProperties {
 
     public void setShibUsersDomainWhiteList(List<String> shibUsersDomainWhiteList) {
         this.shibUsersDomainWhiteList = shibUsersDomainWhiteList;
+    }
+
+    public List<String> getForcedExternalsDomainList() {
+        return forcedExternalsDomainList;
+    }
+
+    public void setForcedExternalsDomainList(List<String> forcedExternalsDomainList) {
+        this.forcedExternalsDomainList = forcedExternalsDomainList;
     }
 
     public String getRestExtValueUrl() {
