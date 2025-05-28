@@ -111,10 +111,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage) throws IOException, EsupSignatureRuntimeException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn);
 		updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		return form;
 	}
@@ -138,13 +138,24 @@ public class FormService {
 	}
 
 	@Transactional
-	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow) {
+	public void updateForm(Long id, Form updateForm, String[] types, boolean updateWorkflow, String authUserEppn) {
 		Form form = getById(id);
+		User manager = userService.getByEppn(authUserEppn);
+		if(!manager.getRoles().contains("ROLE_ADMIN") && form.getManagerRole() != null && manager.getManagersRoles().contains(form.getManagerRole())) {
+			form.setPublicUsage(false);
+			form.getRoles().clear();
+			if(updateForm.getRoles().size() == 1 && updateForm.getRoles().contains(form.getManagerRole())) {
+				form.getRoles().addAll(updateForm.getRoles());
+			}
+		} else {
+			form.setPublicUsage(updateForm.getPublicUsage());
+			form.getRoles().clear();
+			form.getRoles().addAll(updateForm.getRoles());
+		}
 		form.setPdfDisplay(updateForm.getPdfDisplay());
 		form.setName(updateForm.getName());
 		form.setTitle(updateForm.getTitle());
-		form.getRoles().clear();
-		form.getRoles().addAll(updateForm.getRoles());
+
 		form.setPreFillType(updateForm.getPreFillType());
 		if(updateWorkflow) {
 			if(updateForm.getWorkflow() == null) {
@@ -156,7 +167,6 @@ public class FormService {
 		}
 		form.setDescription(updateForm.getDescription());
 		form.setMessage(updateForm.getMessage());
-		form.setPublicUsage(updateForm.getPublicUsage());
 		form.setHideButton(updateForm.getHideButton());
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
@@ -232,7 +242,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes) throws IOException, EsupSignatureRuntimeException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
 		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
@@ -254,13 +264,20 @@ public class FormService {
 			form.setFields(getFields(document.getInputStream(), workflow));
 		}
 		form.setDocument(document);
-		form.getRoles().clear();
-		if(roleNames == null) roleNames = new ArrayList<>();
-		form.getRoles().addAll(roleNames);
+		User manager = userService.getByEppn(authUserEppn);
+		if(!manager.getRoles().contains("ROLE_ADMIN") && form.getManagerRole() != null && manager.getManagersRoles().contains(form.getManagerRole())) {
+			form.getRoles().clear();
+			form.getRoles().add(form.getManagerRole());
+			form.setPublicUsage(false);
+		} else {
+			form.getRoles().clear();
+			if(roleNames == null) roleNames = new ArrayList<>();
+			form.getRoles().addAll(roleNames);
+			if(publicUsage == null) publicUsage = false;
+			form.setPublicUsage(publicUsage);
+		}
 		form.setPreFillType(prefillType);
 		form.setWorkflow(workflow);
-		if(publicUsage == null) publicUsage = false;
-		form.setPublicUsage(publicUsage);
 		if(document != null) {
 			document.setParentId(form.getId());
 		}
@@ -539,7 +556,7 @@ public class FormService {
     }
 
     @Transactional
-	public void setFormSetupFromJson(Long id, InputStream inputStream) throws IOException {
+	public void setFormSetupFromJson(Long id, InputStream inputStream, String authUserEppn) throws IOException {
 		Form form = getById(id);
 		Form formSetup = objectMapper.readValue(inputStream.readAllBytes(), Form.class);
 		for(Field field : form.getFields()) {
@@ -556,7 +573,7 @@ public class FormService {
 		formSetup.setName(form.getName());
 		formSetup.setTitle(form.getTitle());
 		formSetup.setWorkflow(null);
-		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).toList().toArray(String[]::new), false);
+		updateForm(id, formSetup, formSetup.getAuthorizedShareTypes().stream().map(Enum::name).toList().toArray(String[]::new), false, authUserEppn);
 	}
 
 	public void nullifyForm(Form form) {
@@ -584,13 +601,13 @@ public class FormService {
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			if(!workflowStep.getSignRequestParams().isEmpty()) {
 				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
+				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 			step++;
 		}
 		if(spots.isEmpty()) {
 			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
+				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 		}
 		return spots;

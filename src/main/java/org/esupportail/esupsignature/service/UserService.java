@@ -618,6 +618,9 @@ public class UserService {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
             String domain = emailSplit[1];
+            if(globalProperties.getForcedExternalsDomainList() != null && !globalProperties.getForcedExternalsDomainList().isEmpty() && globalProperties.getForcedExternalsDomainList().contains(domain)) {
+                return UserType.external;
+            }
             if (domain.equals(globalProperties.getDomain()) && ldapPersonService != null) {
                 return UserType.ldap;
             } else if(domain.equals(globalProperties.getDomain()) && StringUtils.hasText(shibProperties.getPrincipalRequestHeader())) {

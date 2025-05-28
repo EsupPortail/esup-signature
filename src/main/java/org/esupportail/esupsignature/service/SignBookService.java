@@ -1147,7 +1147,7 @@ public class SignBookService {
         }
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
-            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(srp -> signRequest.getSignRequestParams().contains(srp)).toList();
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
                 signRequestParamse.setAddExtra(true);
@@ -1232,7 +1232,7 @@ public class SignBookService {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.noSignField);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
                 } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                    stepStatuses.add(initSign(id, null, null, null, password, signWith, userShareId, userEppn, authUserEppn));
+                    stepStatuses.add(initSign(signRequest.getId(), null, null, null, password, signWith, userShareId, userEppn, authUserEppn));
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.signed);
                 } else {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.error);

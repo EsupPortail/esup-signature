@@ -15,6 +15,7 @@ export class WorkspacePdf {
         this.action = action;
         this.dataId = dataId;
         this.formId = formId;
+        this.userName = userName;
         this.workflow = workflow;
         this.signImageNumber = signImageNumber;
         this.restore = restore;
@@ -45,7 +46,7 @@ export class WorkspacePdf {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/admin/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
+                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
                 this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
@@ -91,7 +92,7 @@ export class WorkspacePdf {
             $('#next').on('click', e => this.pdfViewer.nextPage());
             $('#end-button').on('click', e => this.pdfViewer.nextPage());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
-            $('#addSpotButton').on('click', e => this.enableSpotAdd(e));
+            $('#addSpotButton').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
             $("#showComments").on('click', e => this.enableCommentMode());
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
@@ -608,9 +609,13 @@ export class WorkspacePdf {
                     console.log("spot pos : " + posX + ", " + posY);
                     spotDiv.css('left',  posX + "px");
                     spotDiv.css('top',  posY + "px");
-                    spotDiv.width(300 * this.pdfViewer.scale);
-                    spotDiv.width(150 * this.pdfViewer.scale);
                     if(signDiv != null) {
+                        if(signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
+                            spot.signWidth = signDiv.attr('data-es-width');
+                            spot.signHeight = signDiv.attr('data-es-height');
+                            spotDiv.css("width", signDiv.attr('data-es-width') / .75 * this.pdfViewer.scale);
+                            spotDiv.css("height", signDiv.attr('data-es-height') / .75 * this.pdfViewer.scale);
+                        }
                         signDiv.css("width", Math.round(spot.signWidth / .75 * self.pdfViewer.scale) + "px");
                         signDiv.css("height", Math.round(spot.signHeight / .75 * self.pdfViewer.scale) + "px");
                         signDiv.css("font-size", 10 * self.pdfViewer.scale);
@@ -623,14 +628,16 @@ export class WorkspacePdf {
                                 if (result) {
                                     let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                     if (self.currentSignType === "form") {
-                                        url = "/admin/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                        url = "/" + self.userName + "/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                     }
                                     $.ajax({
                                         method: 'DELETE',
                                         url: url,
                                         success: function () {
                                             spotDiv.remove();
-                                            // location.reload();
+                                            if (self.currentSignType === "form") {
+                                                location.reload();
+                                            }
                                         }
                                     });
                                 }
@@ -1043,13 +1050,12 @@ export class WorkspacePdf {
         this.displayCommentPointer();
         $("#divSpotStepNumber").hide();
         $("#postitComment").attr("required", true);
-        // $("#addSpotButton").attr("disabled", true);
         $(".textLayer").each(function () {
             $(this).addClass("text-disable-selection");
         });
     }
 
-    enableSpotAdd(e) {
+    enableSpotAdd() {
         this.disableAddComment();
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);

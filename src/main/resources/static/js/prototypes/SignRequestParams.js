@@ -169,6 +169,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     saveSpot() {
+        $(window).unbind("beforeunload");
         let self = this;
         this.spotStepNumber = $("#spotStepNumber").val();
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
@@ -185,16 +186,13 @@ export class SignRequestParams extends EventFactory {
             this.signRequestId = $("#save-spot-button").attr("data-es-signrequest-id");
             let url = "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
             if (this.signType === "form") {
-                url = "/admin/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
+                url = "/" + this.userName + "/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
             }
             $.ajax({
                 method: 'POST',
                 url: url,
                 success: function (result) {
-                    $("#spot-modal").modal("hide");
-                    self.id = result;
-                    $(window).unbind("beforeunload");
-                    self.disableSpot();
+                    location.reload();
                 }
             });
         }
@@ -224,8 +222,8 @@ export class SignRequestParams extends EventFactory {
             bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                 if (result) {
                     let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                    if (self.authUserName === "forms" && self.userName === "admin") {
-                        url = "/admin/forms/delete-spot/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                    if (self.authUserName === "forms" && (self.userName === "admin" || self.userName === "manage")) {
+                        url = "/" + self.userName + "/forms/delete-spot/" + self.signRequestId + "/" + self.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                     }
                     $.ajax({
                         method: 'DELETE',

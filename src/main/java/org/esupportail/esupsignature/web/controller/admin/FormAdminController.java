@@ -2,9 +2,9 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
@@ -20,7 +20,6 @@ import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -55,29 +54,25 @@ public class FormAdminController {
 		return "forms";
 	}
 
-	@Resource
-	private FormService formService;
+	private final FormService formService;
+	private final WorkflowService workflowService;
+	private final UserService userService;
+	private final PreFillService preFillService;
+	private final DataExportService dataExportService;
+	private final FieldService fieldService;
+	private final ObjectMapper objectMapper;
+	private final PreAuthorizeService preAuthorizeService;
 
-	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private PreFillService preFillService;
-
-	@Resource
-	private DataExportService dataExportService;
-
-	@Resource
-	private FieldService fieldService;
-
-	@Resource
-	private ObjectMapper objectMapper;
-
-	@Resource
-	private PreAuthorizeService preAuthorizeService;
+	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService) {
+		this.formService = formService;
+		this.workflowService = workflowService;
+		this.userService = userService;
+		this.preFillService = preFillService;
+		this.dataExportService = dataExportService;
+		this.fieldService = fieldService;
+		this.objectMapper = objectMapper;
+		this.preAuthorizeService = preAuthorizeService;
+	}
 
 	@GetMapping()
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
@@ -86,10 +81,12 @@ public class FormAdminController {
 			forms.addAll(formService.getAllForms());
 			model.addAttribute("roles", userService.getAllRoles());
 			model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
+			model.addAttribute("workflowRole", "admin");
 		} else {
 			forms.addAll(formService.getManagerForms(authUserEppn));
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
+			model.addAttribute("workflowRole", "manager");
 		}
 		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(f -> f.getTitle().toLowerCase(), Comparator.nullsFirst(String::compareTo))).collect(Collectors.toList()));
 		model.addAttribute("targetTypes", DocumentIOType.values());
@@ -108,11 +105,15 @@ public class FormAdminController {
 						 @RequestParam(required = false) List<String> roleNames,
 						 @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes);
+			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes, authUserEppn);
 			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
-			return "redirect:/admin/forms/" + form.getId() + "/fields";
+			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+				return "redirect:/admin/forms/" + form.getId() + "/fields";
+			} else {
+				return "redirect:/manager/forms/" + form.getId() + "/fields";
+			}
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
@@ -130,7 +131,7 @@ public class FormAdminController {
 						   @RequestParam(required = false) List<String> roleNames,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage);
+			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn);
 			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				form.setManagerRole(managerRole);
 			}
@@ -145,26 +146,38 @@ public class FormAdminController {
 	@GetMapping("{id}/fields")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String fields(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		if(preAuthorizeService.formManager(id, authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			Form form = formService.getById(id);
-			model.addAttribute("form", form);
-			model.addAttribute("workflow", form.getWorkflow());
-			PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
-			if (preFill != null) {
-				model.addAttribute("preFillTypes", preFill.getTypes());
-			} else {
-				model.addAttribute("preFillTypes", new HashMap<>());
-			}
-			model.addAttribute("document", form.getDocument());
-			return "admin/forms/fields";
+		if(preAuthorizeService.formManager(id, authUserEppn)) {
+			model.addAttribute("workflowRole", "manager");
+		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			model.addAttribute("workflowRole", "admin");
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			return "redirect:/admin/forms";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
-		return "redirect:/admin/forms";
+		Form form = formService.getById(id);
+		model.addAttribute("form", form);
+		model.addAttribute("workflow", form.getWorkflow());
+		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+		if (preFill != null) {
+			model.addAttribute("preFillTypes", preFill.getTypes());
+		} else {
+			model.addAttribute("preFillTypes", new HashMap<>());
+		}
+		model.addAttribute("document", form.getDocument());
+		return "admin/forms/fields";
 	}
 
 	@GetMapping("{id}/signs")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) throws EsupSignatureIOException {
+	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+		if(preAuthorizeService.formManager(id, authUserEppn)) {
+			model.addAttribute("workflowRole", "manager");
+		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			model.addAttribute("workflowRole", "admin");
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			return "redirect:/admin/forms";
+		}
 		Form form = formService.getById(id);
 		if (form.getWorkflow() != null) {
 			model.addAttribute("spots", formService.getSpots(id));
@@ -225,17 +238,33 @@ public class FormAdminController {
 		return "redirect:/admin/forms/" + id + "/fields";
 	}
 
-	@GetMapping("update/{id}")
+	@GetMapping("/update/{id}")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") long id, Model model) {
+	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") long id, Model model, RedirectAttributes redirectAttributes) {
+		if(preAuthorizeService.formManager(id, authUserEppn)) {
+			model.addAttribute("workflowRole", "manager");
+		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			model.addAttribute("workflowRole", "admin");
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			return "redirect:/user";
+		}
 		Form form = formService.getById(id);
 		model.addAttribute("form", form);
 		model.addAttribute("fields", form.getFields());
 		model.addAttribute("roles", userService.getAllRoles());
 		model.addAttribute("document", form.getDocument());
-		List<Workflow> workflows = workflowService.getSystemWorkflows();
-		workflows.add(form.getWorkflow());
-		model.addAttribute("workflowTypes", workflows);
+		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			model.addAttribute("roles", userService.getAllRoles());
+			List<Workflow> workflows = workflowService.getSystemWorkflows();
+			workflows.add(form.getWorkflow());
+			model.addAttribute("workflowTypes", workflows);
+			model.addAttribute("workflowRole", "admin");
+		} else {
+			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
+			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
+			model.addAttribute("workflowRole", "manager");
+		}
 		List<PreFill> preFillTypes = preFillService.getPreFillValues();
 		model.addAttribute("preFillTypes", preFillTypes);
 		model.addAttribute("shareTypes", ShareType.values());
@@ -249,13 +278,18 @@ public class FormAdminController {
 	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute Form updateForm,
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
-		if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			formService.updateForm(updateForm.getId(), updateForm, types, true);
-			redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+
+		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			formService.updateForm(updateForm.getId(), updateForm, types, true, authUserEppn);
 			return "redirect:/admin/forms/update/" + updateForm.getId();
+		} else if(preAuthorizeService.formManager(updateForm.getId(), authUserEppn)) {
+			formService.updateForm(updateForm.getId(), updateForm, types, true, authUserEppn);
+			return "redirect:/manager/forms/update/" + updateForm.getId();
+		} else {
+			redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Accès non autorisé"));
+			return "redirect:/";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Accès non autorisé"));
-		return "redirect:/";
 	}
 
 	@PostMapping("/update-model/{id}")
@@ -386,7 +420,7 @@ public class FormAdminController {
 								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
 		try {
 			if(multipartFormSetup.getSize() > 0) {
-				formService.setFormSetupFromJson(id, multipartFormSetup.getInputStream());
+				formService.setFormSetupFromJson(id, multipartFormSetup.getInputStream(), authUserEppn);
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
