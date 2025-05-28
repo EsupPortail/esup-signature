@@ -498,7 +498,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers) {
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, String authUserEppn) {
         Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && !managers.isEmpty()) {
             workflowToUpdate.getManagers().clear();
@@ -530,7 +530,6 @@ public class WorkflowService {
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
-        workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
         workflowToUpdate.setSealAtEnd(workflow.getSealAtEnd());
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
@@ -539,8 +538,18 @@ public class WorkflowService {
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
         workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
-        workflowToUpdate.getRoles().clear();
-        workflowToUpdate.getRoles().addAll(workflow.getRoles());
+        User manager = userService.getByEppn(authUserEppn);
+        if(!manager.getRoles().contains("ROLE_ADMIN") && workflowToUpdate.getManagerRole() != null && manager.getManagersRoles().contains(workflowToUpdate.getManagerRole())) {
+            workflowToUpdate.setPublicUsage(false);
+            workflowToUpdate.getRoles().clear();
+            if(workflow.getRoles().size() == 1 && workflow.getRoles().contains(workflowToUpdate.getManagerRole())) {
+                workflowToUpdate.getRoles().addAll(workflow.getRoles());
+            }
+        } else {
+            workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
+            workflowToUpdate.getRoles().clear();
+            workflowToUpdate.getRoles().addAll(workflow.getRoles());
+        }
         workflowToUpdate.getDashboardRoles().clear();
         workflowToUpdate.getDashboardRoles().addAll(workflow.getDashboardRoles());
         workflowToUpdate.setUpdateBy(user.getEppn());
@@ -615,7 +624,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void setWorkflowSetupFromJson(Long id, InputStream inputStream) throws IOException, EsupSignatureRuntimeException {
+    public void setWorkflowSetupFromJson(Long id, InputStream inputStream, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
         Workflow workflow = getById(id);
         String savedName = workflow.getName();
         String savedDescription = workflow.getDescription();
@@ -638,7 +647,7 @@ public class WorkflowService {
             }
         }
         workflow.getTargets().clear();
-        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers());
+        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers(), authUserEppn);
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);

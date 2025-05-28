@@ -11,7 +11,7 @@
             <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style">
                 <div id="newContainer" class="d-inline">
                     <h5 class="newToggled d-none">Outils de signature</h5>
-                    <a id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
+                    <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
                         data-bs-toggle="modal"
                         data-bs-target="#wiz-self-sign-modal"
                         title="Vous devez signer un document présent sur votre poste de travail">
@@ -20,7 +20,7 @@
                         </div>
                         <span class="h7">Auto signature</span>
                     </a>
-                    <a id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
+                    <a tabindex="0" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
                         data-bs-toggle="modal"
                         data-bs-target="#wiz-fast-sign-modal"
                         title="Demander la signature d'un document présent sur votre poste de travail">
@@ -29,7 +29,7 @@
                         </div>
                         <span class="h7">Demander une signature</span>
                     </a>
-                    <a id="start-wizard-custom-button" th:if="${!isUserOnSu}"
+                    <a tabindex="0" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
                         th:unless="${globalProperties.hideWizard}"
                         role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
                         data-bs-target="#wiz-custom-sign-modal" style="width: 120px; height: 170px;"
@@ -44,7 +44,7 @@
                     </a>
                     <hr class="newHr d-none">
                     <h5 class="newToggled d-none">Circuits</h5>
-                    <a th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-3" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0"
+                    <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-3" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0"
                         data-bs-toggle="modal" data-bs-target="#wiz-modal" style="width: 120px; height: 170px;"
                         title="Créer un circuit personnel à l'aide de l'assistant" >
                         <div class="crop">
@@ -55,7 +55,7 @@
                     <div class="d-inline-flex" id="newWorkflow">
                         <th:block th:each="workflow : ${workflows}">
                             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
-                                <a role="button" class="workflow-btn start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
+                                <a tabindex="0" role="button" class="workflow-btn start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
                                     data-bs-toggle="modal"
                                     data-bs-target="#wiz-workflow-sign-modal"
                                     style="width: 120px; display: inline-flex; flex-direction: column;"
@@ -99,7 +99,7 @@
                     <h5 class="newToggled d-none">Formulaires</h5>
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">
-                            <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button start-form-button"
+                            <a tabindex="0" role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button start-form-button"
                                 style="width: 120px; height: 170px;"
                                 th:classappend="${form.hideButton} ? 'd-none' : ''"
                                 th:title="${form.title}"

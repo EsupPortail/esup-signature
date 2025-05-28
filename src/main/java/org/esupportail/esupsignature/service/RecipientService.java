@@ -139,13 +139,11 @@ public class RecipientService {
         return workflowStepDtos;
     }
 
-
     public List<WorkflowStepDto> convertRecipientJsonStringToWorkflowStepDtos(String recipientsJsonString) {
         try {
             return Arrays.asList(objectMapper.readValue(recipientsJsonString, WorkflowStepDto[].class));
         } catch (JsonProcessingException e) {
-            logger.warn("error parsing recipientsJsonString : " + recipientsJsonString, e);
-            throw new EsupSignatureRuntimeException("error parsing recipientsJsonString : " + recipientsJsonString);
+            throw new EsupSignatureRuntimeException("error parsing recipientsJsonString caused by " + e.getMessage() + " : " + recipientsJsonString);
         }
     }
 

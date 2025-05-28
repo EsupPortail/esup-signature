@@ -37,13 +37,13 @@
             </div>
             <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
@@ -72,7 +72,7 @@
         false,
         null,
         null,
-        "admin",
+        [[${workflowRole}]],
         "forms",
         [[${_csrf}]],
         null,
@@ -141,7 +141,7 @@
 <div class="modal" th:id="'modal-warning-' + ${signRequestParams.id}" >
     <div class="modal-dialog">
         <div class="modal-content">
-            <form th:action="'/admin/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
+            <form th:action="'/' + ${workflowRole} + '/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
                 <div class="modal-header">
                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                             aria-label="Close">
