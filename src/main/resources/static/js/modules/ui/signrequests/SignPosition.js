@@ -102,14 +102,16 @@ export class SignPosition extends EventFactory {
     }
 
     addSign(page, restore, signImageNumber, forceSignNumber, signField) {
-        if(this.signImages != null && this.signImages.length === 1) {
+        if (this.signImages != null && this.signImages.length === 1) {
             this.popUserUi();
             return;
         }
         this.disableForwardButton();
-        $(window).bind("beforeunload",function(event) {
-            return "You have some unsaved changes";
-        });
+        if (this.authUserName !== "forms" && !(this.userName === "admin" || this.userName === "manager")) {
+            $(window).bind("beforeunload", function (event) {
+                return "You have some unsaved changes";
+            });
+        }
         this.addSignButton.removeClass("pulse-primary");
         $("#addSignButton2").removeClass("pulse-primary");
         let id = this.id;

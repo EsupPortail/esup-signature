@@ -10,7 +10,7 @@
         <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a th:href="'/' + ${workflowRole}">Administration</a></li>
                 <li class="breadcrumb-item active">Liste des circuits</li>
             </ol>
         </nav>
@@ -44,7 +44,7 @@
                         </thead>
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
-                            <tr th:data-href="'/admin/workflows/update/' + ${workflow.id}">
+                            <tr th:data-href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">
                                 <td class="clickable-td">
                                     <input type="text" th:value="${workflow.id}" disabled>
                                 </td>
@@ -78,24 +78,24 @@
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${workflow.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                    th:href="'/admin/workflows/update/' + ${workflow.id}">
+                                                    th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">
                                                     <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                                    th:href="'/admin/workflows/steps/' + ${workflow.id}">
+                                                    th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">
                                                     <i class="fa-solid fa-shoe-prints pr-2"></i> Modifier les étapes
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter le circuit" role="button"
-                                                    th:href="'/admin/workflows/export/' + ${workflow.id}">
+                                                    th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
                                                     <i class="fa-solid fa-file-export pr-2"></i> Exporter le circuit
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/admin/workflows/get-files-from-source/' + ${workflow.id}">
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
                                                     <i class="fa-solid fa-binoculars pr-2"></i> Scanner la source
                                                 </a>
                                             </li>
@@ -111,7 +111,7 @@
                                     <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${workflow.id}">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
-                                                <form id="command" th:action="'/admin/workflows/' + ${workflow.id}" th:method="delete">
+                                                <form id="command" th:action="'/' + ${workflowRole} + '/workflows/' + ${workflow.id}" th:method="delete">
                                                     <div class="modal-header">
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
@@ -145,7 +145,7 @@
 <div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/admin/workflows'" method="post">
+            <form th:action="'/' + ${workflowRole} + '/workflows'" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
