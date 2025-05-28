@@ -113,7 +113,7 @@
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/' + ${workflowRole} + '/workflows/' + ${workflow.id}" th:method="delete">
                                                     <div class="modal-header">
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="alert alert-danger text-center">Confirmez-vous la suppression du circuit ?
@@ -148,7 +148,7 @@
             <form th:action="'/' + ${workflowRole} + '/workflows'" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter un circuit</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>

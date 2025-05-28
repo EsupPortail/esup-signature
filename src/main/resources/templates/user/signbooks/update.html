@@ -103,7 +103,7 @@
                                                     <form id="command" th:action="'/user/signrequests/' + ${signRequest.id}" th:method="delete">
                                                         <div class="modal-header">
                                                             <h2>Attention</h2>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                            <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                                                             </button>
                                                         </div>
@@ -141,7 +141,7 @@
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h3 class="modal-title" id="fastSignRequestLabel">Ajouter un document</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>
@@ -169,7 +169,7 @@
             <form th:action="'/user/signbooks/add-live-step/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="exampleModalLabel">Ajouter une étape</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>
@@ -224,7 +224,7 @@
             <form th:action="'/user/signbooks/pending/' + ${id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title">Démarrer le circuit</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>

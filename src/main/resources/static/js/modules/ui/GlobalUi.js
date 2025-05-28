@@ -70,6 +70,10 @@ export class GlobalUi {
 
         document.addEventListener('shown.bs.modal', function (e) {
             const modal = e.target;
+            const focusable = modal.querySelector(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable) focusable.focus();
             function escHandler(event) {
                 if (event.key === 'Escape' || event.key === 'Esc') {
                     const instance = bootstrap.Modal.getOrCreateInstance(modal);
