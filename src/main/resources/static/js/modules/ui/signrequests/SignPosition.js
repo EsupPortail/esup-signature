@@ -107,11 +107,9 @@ export class SignPosition extends EventFactory {
             return;
         }
         this.disableForwardButton();
-        if (this.authUserName !== "forms" && !(this.userName === "admin" || this.userName === "manager")) {
-            $(window).bind("beforeunload", function (event) {
-                return "You have some unsaved changes";
-            });
-        }
+        $(window).bind("beforeunload", function (event) {
+            return "You have some unsaved changes";
+        });
         this.addSignButton.removeClass("pulse-primary");
         $("#addSignButton2").removeClass("pulse-primary");
         let id = this.id;

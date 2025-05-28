@@ -169,6 +169,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     saveSpot() {
+        $(window).unbind("beforeunload");
         let self = this;
         this.spotStepNumber = $("#spotStepNumber").val();
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
