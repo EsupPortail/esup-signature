@@ -44,7 +44,7 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/workflows/update/' + ${workflow.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="#" onclick="return false;">Étapes</a>
@@ -61,7 +61,7 @@
             <div data-bs-focus="false" class="modal fade" id="addStep"  role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/admin/workflows/add-step/' + ${workflow.id}" method="post">
+                        <form th:action="'/' + ${workflowRole} + '/workflows/add-step/' + ${workflow.id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addStepLabel">Ajouter une étape</h5>
                             </div>
@@ -153,7 +153,7 @@
             <div data-bs-focus="false" class="modal fade" id="addAutoStep"  role="dialog" aria-labelledby="addAutoStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
-                        <form th:action="'/admin/workflows/add-auto-step/' + ${workflow.id}" method="post">
+                        <form th:action="'/' + ${workflowRole} + '/workflows/add-auto-step/' + ${workflow.id}" method="post">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="addAutoStepLabel">Ajouter une étape Automatique</h5>
                             </div>

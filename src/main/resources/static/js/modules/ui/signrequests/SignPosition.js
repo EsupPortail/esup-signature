@@ -102,12 +102,12 @@ export class SignPosition extends EventFactory {
     }
 
     addSign(page, restore, signImageNumber, forceSignNumber, signField) {
-        if(this.signImages != null && this.signImages.length === 1) {
+        if (this.signImages != null && this.signImages.length === 1) {
             this.popUserUi();
             return;
         }
         this.disableForwardButton();
-        $(window).bind("beforeunload",function(event) {
+        $(window).bind("beforeunload", function (event) {
             return "You have some unsaved changes";
         });
         this.addSignButton.removeClass("pulse-primary");

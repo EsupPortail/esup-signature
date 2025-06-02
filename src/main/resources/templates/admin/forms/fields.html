@@ -35,13 +35,13 @@
             </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/admin/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/admin/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
             <div th:if="${form.workflow == null}" class="alert alert-warning">
@@ -72,7 +72,7 @@
                 <tbody>
                 <th:block th:each="field : ${form.fields}">
                     <tr>
-                        <form th:name="field-update" th:id="${field.id}" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'post'">
+                        <form th:name="field-update" th:id="${field.id}" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'post'">
                         <td><span th:text="${field.name}"></span></td>
                         <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
                         <td>
@@ -131,9 +131,9 @@
                             <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <form id="command" th:action="'/admin/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
+                                        <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
                                             <div class="modal-header">
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
                                                         aria-label="Close">
 
                                                 </button>
@@ -173,14 +173,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Nouveau formulaire sans modèle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <script th:inline="javascript" type="module">
                     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
                     new FormManualAdd();
                 </script>
-                <form th:action="'/admin/forms/add-field/' + ${form.id}" method="post">
+                <form th:action="'/' + ${workflowRole} + '/forms/add-field/' + ${form.id}" method="post">
                     <div id="repeatingInputFields">
                         <div class="entry inline-form col-xs-12">
                             <input class="form-control" name="fieldNames[]" type="text" placeholder="Nom"/>

@@ -95,7 +95,7 @@
                                                 <form th:action="'/admin/ws-access-token/' + ${wsAccessToken.id}" th:method="'put'">
                                                     <div class="modal-header">
                                                         <h3 class="modal-title">Modification du token <span th:text="${wsAccessToken.appName}"></span></h3>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                                                         </button>
                                                     </div>
@@ -129,7 +129,7 @@
                                                 <form id="renew-token" th:action="'/admin/ws-access-token/renew/' + ${wsAccessToken.id}" th:method="'put'">
                                                     <div class="modal-header">
                                                         <h3>Attention !</h3>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="alert alert-danger text-left">
@@ -152,7 +152,7 @@
                                             <div class="modal-content">
                                                 <form id="command" th:action="'/admin/ws-access-token/' + ${wsAccessToken.id}" th:method="'delete'">
                                                     <div class="modal-header">
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
                                                         <div class="alert alert-danger text-center">
@@ -186,7 +186,7 @@
             <form th:action="'/admin/ws-access-token'" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title">Créer un nouveau token</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>
