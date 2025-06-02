@@ -94,7 +94,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h1 class="modal-title fs-5" id="updateSignsModalTitle">Modifier les champs signatures</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <table class="table table-borderless table-hover">
@@ -143,7 +143,7 @@
         <div class="modal-content">
             <form th:action="'/' + ${workflowRole} + '/forms/remove-signRequestParams/' + ${form.id} + '/' + ${signRequestParams.id}" th:method="delete">
                 <div class="modal-header">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
                             aria-label="Close">
 
                     </button>

@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <div class="modal-header">
     <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
     <form id="update-fast-sign">
@@ -13,7 +13,7 @@
         </div>
         <div class="form-group mb-3">
             <label class="form-label" for="multipartFiles">Choix des fichiers à signer *</label>
-            <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
+            <input tabindex="500" id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
         </div>
         <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
             <input id="force-all-sign" class="form-check-input" type="checkbox" name="forceAllSign">
