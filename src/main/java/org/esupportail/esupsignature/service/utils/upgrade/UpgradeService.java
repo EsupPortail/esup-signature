@@ -322,32 +322,6 @@ public class UpgradeService {
                         "END IF; " +
                         "END $$;"
         ).executeUpdate();
-        List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
-        signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.cleaned));
-
-        for(SignBook signBook : signBooks) {
-            if(signBook.getStatus().equals(SignRequestStatus.archived)) signBook.setArchiveStatus(ArchiveStatus.archived);
-            if(signBook.getStatus().equals(SignRequestStatus.cleaned)) signBook.setArchiveStatus(ArchiveStatus.cleaned);
-            for(SignRequest signRequest : signBook.getSignRequests()) {
-                if(signRequest.getStatus().equals(SignRequestStatus.archived)) signRequest.setArchiveStatus(ArchiveStatus.archived);
-                if(signRequest.getStatus().equals(SignRequestStatus.cleaned)) signRequest.setArchiveStatus(ArchiveStatus.cleaned);
-                if(signRequest.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused))) {
-                    signRequest.setStatus(SignRequestStatus.refused);
-                } else if(!signBook.getLiveWorkflow().getTargets().isEmpty() && signBook.getLiveWorkflow().getTargets().stream().allMatch(Target::getTargetOk)){
-                    signRequest.setStatus(SignRequestStatus.exported);
-                } else {
-                    signRequest.setStatus(SignRequestStatus.completed);
-                }
-            }
-            if((signBook.getForceAllDocsSign() || signBook.getSignRequests().size() == 1) && signBook.getSignRequests().stream().anyMatch(sr -> sr.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused)))) {
-                signBook.setStatus(SignRequestStatus.refused);
-            } else if(!signBook.getLiveWorkflow().getTargets().isEmpty() && signBook.getLiveWorkflow().getTargets().stream().allMatch(Target::getTargetOk)){
-                signBook.setStatus(SignRequestStatus.exported);
-            } else {
-                signBook.setStatus(SignRequestStatus.completed);
-            }
-        }
-
         logger.info("#### Update workflow completed ####");
     }
 
@@ -380,7 +354,6 @@ public class UpgradeService {
                 signBook.setStatus(SignRequestStatus.completed);
             }
         }
-
         logger.info("#### Update archive status completed ####");
     }
 }

@@ -1707,7 +1707,7 @@ public class SignBookService {
                                                     inputStreams.put(new ByteArrayInputStream(fileBytes), name + "-report.zip");
                                                 }
                                             } catch (Exception e) {
-                                                throw new RuntimeException(e);
+                                                throw new EsupSignatureRuntimeException(e.getMessage(), e);
                                             }
                                         }
                                         if(!target.getSendZip()) {
@@ -1715,8 +1715,8 @@ public class SignBookService {
                                                 documentService.exportDocument(finalTargetUrl, inputStream.getKey(), inputStream.getValue(), null);
                                             }
                                             inputStreams = new HashMap<>();
+                                            target.setTargetOk(true);
                                         }
-                                        target.setTargetOk(true);
                                     } catch (EsupSignatureFsException e) {
                                         logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
                                         allTargetsDone = false;
@@ -1727,6 +1727,7 @@ public class SignBookService {
                                 try {
                                     ByteArrayInputStream zip = new ByteArrayInputStream(fileService.zipDocuments(inputStreams));
                                     documentService.exportDocument(target.getTargetUri(), zip, signBook.getSubject() + ".zip", null);
+                                    target.setTargetOk(true);
                                 } catch (EsupSignatureFsException | IOException e) {
                                     logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
                                     allTargetsDone = false;
