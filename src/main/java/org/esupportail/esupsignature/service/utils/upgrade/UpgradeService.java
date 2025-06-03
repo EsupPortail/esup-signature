@@ -91,8 +91,7 @@ public class UpgradeService {
                 if(!appliVersions.isEmpty()) {
                     appliVersions.get(0).setEsupSignatureVersion(update);
                 } else {
-                    AppliVersion appliVersion = new AppliVersion();
-                    appliVersion.setEsupSignatureVersion(update);
+                    AppliVersion appliVersion = new AppliVersion(update);
                     appliVersionRepository.save(appliVersion);
                 }
             } else {

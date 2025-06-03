@@ -195,6 +195,10 @@ public class CertificatService implements HealthIndicator {
     public List<DSSPrivateKeyEntry> getSealCertificats() {
         List<AppliVersion> appliVersions = new ArrayList<>();
         appliVersionRepository.findAll().forEach(appliVersions::add);
+        if(appliVersions.isEmpty()) {
+            AppliVersion appliVersion = new AppliVersion("0.1");
+            appliVersions.add(appliVersion);
+        }
         if(appliVersions.get(0).isStopCheckSealCertificat()) {
             logger.error("no seal certificat found or configuration error");
             logger.error("La vérification du certificat cachet est bloquée, probablement pour cause de mauvais mot de passe.\n" +
@@ -204,9 +208,9 @@ public class CertificatService implements HealthIndicator {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if ((StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+            if (StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
-            } else if (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
+            } else if (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
             }
         } catch (Exception e) {

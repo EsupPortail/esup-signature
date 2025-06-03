@@ -34,6 +34,13 @@ public class AppliVersion {
 
     Boolean stopCheckSealCertificat = false;
 
+    public AppliVersion(String esupSignatureVersion) {
+        this.esupSignatureVersion = esupSignatureVersion;
+    }
+
+    public AppliVersion() {
+    }
+
     public Long getId() {
         return id;
     }
