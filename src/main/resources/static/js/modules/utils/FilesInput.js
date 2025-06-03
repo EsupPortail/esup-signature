@@ -92,6 +92,14 @@ export default class FilesInput extends EventFactory {
             initialPreviewConfig : previews,
             initialPreviewAsData: true,
             initialPreviewShowDelete: !readOnly,
+            tabIndexConfig: {
+                browse: 0,
+                remove: 500,
+                upload: 500,
+                cancel: null,
+                pause: null,
+                modal: -1
+            },
             overwriteInitial: false,
             preferIconicPreview: true,
             allowedFileTypes : [],
