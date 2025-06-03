@@ -103,6 +103,11 @@
         <td class="clickable-td d-none d-xxl-table-cell">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
+        </td>
         <td class="clickable-td d-xxl-none">
             <div th:replace="~{user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>

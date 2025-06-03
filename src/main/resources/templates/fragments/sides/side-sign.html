@@ -4,12 +4,17 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign">
     <div class="ms-1 mt-3">
+        <p class="mb-2"><b>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></b></p>
         <div class="hr">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
                 <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
+                <div class="text-center mb-1">
+                    <div class="badge badge-status bg-secondary" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                        <i class="fa-solid fa-box-archive"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+                    </div>
+                </div>
                 <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
-                <span>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></span>
                 <th:block th:if="${signBook.viewers.size() > 0 }">
                     <span>
                     Suivi par :

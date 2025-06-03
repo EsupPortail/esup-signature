@@ -209,7 +209,6 @@ public class OtpService {
         List<Otp> toCleanOtps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
-        toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.archived));
         List<Otp> completedOtps = otpRepository.findBySignBookStatus(SignRequestStatus.completed);
         for(Otp completedOtp : completedOtps) {
             if(completedOtp.getSignBook().getEndDate() != null && completedOtp.getSignBook().getEndDate().before(new Date(System.currentTimeMillis() - 30L * 24 * 60 * 60 * 1000))) {
