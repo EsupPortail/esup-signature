@@ -35,17 +35,11 @@ public class UpgradeService {
 
     @PersistenceContext
     private final EntityManager entityManager;
-
     private final GlobalProperties globalProperties;
-
     private final SignBookRepository signBookRepository;
-
     private final AppliVersionRepository appliVersionRepository;
-
     private final BuildProperties buildProperties;
-
     private final FileService fileService;
-
     private final FormService formService;
 
     private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0"};

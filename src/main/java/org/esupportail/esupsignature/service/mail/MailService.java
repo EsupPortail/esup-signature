@@ -532,7 +532,7 @@ public class MailService {
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             mimeMessage.setTo(globalProperties.getApplicationEmail());
-            mimeMessage.setSubject("esup-signature : " + message);
+            mimeMessage.setSubject("[esup-signature] " + message);
             mimeMessage.setText(trace, false);
             sendMail(mimeMessage, null);
         } catch (MessagingException e) {

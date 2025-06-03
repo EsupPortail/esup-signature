@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign">
     <div class="ms-1 mt-3">
-        <p class="mb-2"><b>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></b></p>
+        <p class="mb-2" th:if="${signRequest != null}"><b>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></b></p>
         <div class="hr">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
