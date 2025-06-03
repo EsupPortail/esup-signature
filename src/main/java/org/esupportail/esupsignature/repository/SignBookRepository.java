@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.ActionType;
+import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -205,8 +206,10 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
 
     List<SignBook> findByStatus(SignRequestStatus signRequestStatus);
 
-    @Query("SELECT s.id FROM SignBook s WHERE s.status = :status")
-    List<Long> findIdByStatus(@Param("status") SignRequestStatus status);
+    List<SignBook> findByArchiveStatus(ArchiveStatus archiveStatus);
+
+    @Query("SELECT s.id FROM SignBook s WHERE (s.status = 'completed' or s.status = 'refused' or s.status = 'exported') and (s.archiveStatus = 'none' or s.archiveStatus is null)")
+    List<Long> findIdToArchive();
 
     List<SignBook> findByDeletedIsTrue();
 

@@ -51,6 +51,11 @@
             style="width: 150px;">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
+        </td>
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -141,6 +146,11 @@
         <td class="d-none d-md-table-cell"
             style="width: 150px;">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+        </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
         </td>
         <td>
             <div class="dropdown position-relative">

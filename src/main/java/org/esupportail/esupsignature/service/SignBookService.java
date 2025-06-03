@@ -1516,7 +1516,7 @@ public class SignBookService {
         for(Long id : ids) {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
-                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported)) {
                     FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
                     if(fsFile != null) {
                         fsFiles.add(fsFile);
@@ -1544,7 +1544,7 @@ public class SignBookService {
         for(Long id : ids) {
             SignBook signBook = getById(id);
             for (SignRequest signRequest : signBook.getSignRequests()) {
-                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived))
+                if(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))
                     documents.put(signRequestService.getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse), signBook.getSubject());
             }
         }
@@ -1707,7 +1707,7 @@ public class SignBookService {
                                                     inputStreams.put(new ByteArrayInputStream(fileBytes), name + "-report.zip");
                                                 }
                                             } catch (Exception e) {
-                                                throw new RuntimeException(e);
+                                                throw new EsupSignatureRuntimeException(e.getMessage(), e);
                                             }
                                         }
                                         if(!target.getSendZip()) {
@@ -1715,8 +1715,8 @@ public class SignBookService {
                                                 documentService.exportDocument(finalTargetUrl, inputStream.getKey(), inputStream.getValue(), null);
                                             }
                                             inputStreams = new HashMap<>();
+                                            target.setTargetOk(true);
                                         }
-                                        target.setTargetOk(true);
                                     } catch (EsupSignatureFsException e) {
                                         logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
                                         allTargetsDone = false;
@@ -1727,6 +1727,7 @@ public class SignBookService {
                                 try {
                                     ByteArrayInputStream zip = new ByteArrayInputStream(fileService.zipDocuments(inputStreams));
                                     documentService.exportDocument(target.getTargetUri(), zip, signBook.getSubject() + ".zip", null);
+                                    target.setTargetOk(true);
                                 } catch (EsupSignatureFsException | IOException e) {
                                     logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
                                     allTargetsDone = false;
@@ -1803,7 +1804,8 @@ public class SignBookService {
                         String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.archived, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequest.setArchiveStatus(ArchiveStatus.archived);
                             logger.info("archive done to " + subPath + name + " in " + archiveUri);
                         } else {
                             logger.error("unable to archive " + subPath + name + " in " + archiveUri);
@@ -1813,7 +1815,7 @@ public class SignBookService {
                 }
             }
             if(result) {
-                signBook.setStatus(SignRequestStatus.archived);
+                signBook.setArchiveStatus(ArchiveStatus.archived);
             }
         } else {
             logger.debug("archive document was skipped");
@@ -1830,7 +1832,7 @@ public class SignBookService {
         }
         if(nbDocOnDataBase == 0) {
             logger.info(signBook.getSubject() + " :  " + signBook.getId() + " cleaned");
-            signBook.setStatus(SignRequestStatus.cleaned);
+            signBook.setArchiveStatus(ArchiveStatus.cleaned);
         }
     }
 
@@ -2117,7 +2119,7 @@ public class SignBookService {
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
             if (signBook != null) {
-                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> !s.getStatus().equals(SignRequestStatus.cleaned) || !s.getDeleted()).findFirst().orElse(null);
+                SignRequest signRequest = signBook.getSignRequests().stream().filter(s -> s.getArchiveStatus().equals(ArchiveStatus.none) || !s.getDeleted()).findFirst().orElse(null);
                 if (signRequest != null) {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
