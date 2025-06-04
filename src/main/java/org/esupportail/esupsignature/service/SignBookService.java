@@ -1216,9 +1216,10 @@ public class SignBookService {
         if(userShareString != null) {
             userShareId = Long.valueOf(userShareString.toString());
         }
+        List<StepStatus> stepStatuses = new ArrayList<>();
         for (Long id : idsLong) {
             SignRequest selectedSignRequest = signRequestService.getById(id);
-            List<StepStatus> stepStatuses = new ArrayList<>();
+            StepStatus stepStatus = StepStatus.not_completed;
             for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
                 if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.badStatus);
@@ -1232,15 +1233,16 @@ public class SignBookService {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.noSignField);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
                 } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                    stepStatuses.add(initSign(signRequest.getId(), null, null, null, password, signWith, userShareId, userEppn, authUserEppn));
+                    stepStatus = initSign(signRequest.getId(), null, null, null, password, signWith, userShareId, userEppn, authUserEppn);
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.signed);
                 } else {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.error);
                 }
             }
-            if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed) || s.equals(StepStatus.last_end))) {
-                error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
-            }
+            stepStatuses.add(stepStatus);
+        }
+        if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed) || s.equals(StepStatus.last_end))) {
+            error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
         }
         return error;
     }

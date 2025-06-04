@@ -82,6 +82,7 @@ public class AuditTrailService {
 
     public void addAuditStep(String token, String userEppn, String signId, String timeStampId, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
+        if(auditTrail == null) auditTrail = create(token);
         AuditStep auditStep = createAuditStep(userEppn, signId, timeStampId, certificat, timeStampCertificat, timeStampDate, allScrolled, page, posX, posY);
         auditTrail.getAuditSteps().add(auditStep);
     }
