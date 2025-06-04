@@ -9,6 +9,9 @@ import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
+import eu.europa.esig.dss.pdf.IPdfObjFactory;
+import eu.europa.esig.dss.pdf.PdfSignatureFieldPositionChecker;
+import eu.europa.esig.dss.pdf.pdfbox.PdfBoxNativeObjectFactory;
 import eu.europa.esig.dss.service.crl.JdbcCacheCRLSource;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.http.commons.CommonsDataLoader;
@@ -348,6 +351,13 @@ public class DSSBeanConfig {
 	public PAdESService padesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
 		PAdESService pAdESService = new PAdESService(certificateVerifier);
 		pAdESService.setTspSource(tspSource);
+		if(dssProperties.getAcceptSignatureFieldOverlap()) {
+			IPdfObjFactory iPdfObjFactory = new PdfBoxNativeObjectFactory();
+			PdfSignatureFieldPositionChecker pdfSignatureFieldPositionChecker = new PdfSignatureFieldPositionChecker();
+			pdfSignatureFieldPositionChecker.setAlertOnSignatureFieldOverlap(new SilentOnStatusAlert());
+			iPdfObjFactory.setPdfSignatureFieldPositionChecker(pdfSignatureFieldPositionChecker);
+			pAdESService.setPdfObjFactory(iPdfObjFactory);
+		}
 		return pAdESService;
 	}
 
