@@ -30,9 +30,16 @@ public class AppliVersion {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
-    
-
 	String esupSignatureVersion;
+
+    Boolean stopCheckSealCertificat = false;
+
+    public AppliVersion(String esupSignatureVersion) {
+        this.esupSignatureVersion = esupSignatureVersion;
+    }
+
+    public AppliVersion() {
+    }
 
     public Long getId() {
         return id;
@@ -42,15 +49,20 @@ public class AppliVersion {
         this.id = id;
     }
 
-    
-
-    
-
     public String getEsupSignatureVersion() {
         return esupSignatureVersion;
     }
 
     public void setEsupSignatureVersion(String esupSignatureVersion) {
         this.esupSignatureVersion = esupSignatureVersion;
+    }
+
+    public Boolean isStopCheckSealCertificat() {
+        if(stopCheckSealCertificat == null) return false;
+        return stopCheckSealCertificat;
+    }
+
+    public void setStopCheckSealCertificat(Boolean stopCheckSealCertificat) {
+        this.stopCheckSealCertificat = stopCheckSealCertificat;
     }
 }
