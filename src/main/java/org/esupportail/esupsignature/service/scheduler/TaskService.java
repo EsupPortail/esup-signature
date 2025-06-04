@@ -1,9 +1,10 @@
 package org.esupportail.esupsignature.service.scheduler;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -86,7 +86,7 @@ public class TaskService {
         if(globalProperties.getDelayBeforeCleaning() > -1 && !isEnableCleanTask()) {
             logger.info("start cleanning archives");
             setEnableCleanTask(true);
-            List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
+            List<SignBook> signBooks = signBookRepository.findByArchiveStatus(ArchiveStatus.archived);
             int i = 0;
             for (SignBook signBook : signBooks) {
                 logger.info("clean signbook : " + signBook.getId());
@@ -131,9 +131,7 @@ public class TaskService {
         if(globalProperties.getArchiveUri() != null && !isEnableArchiveTask()) {
             setEnableArchiveTask(true);
             logger.debug("scan all signRequest to archive");
-            List<Long> signBooksIds = signBookRepository.findIdByStatus(SignRequestStatus.completed);
-            signBooksIds.addAll(signBookRepository.findIdByStatus(SignRequestStatus.refused));
-            signBooksIds.addAll(signBookRepository.findIdByStatus(SignRequestStatus.exported));
+            List<Long> signBooksIds = signBookRepository.findIdToArchive();
             for(Long signBookId : signBooksIds) {
                 try {
                     if(signBookService.needToBeExported(signBookId)) {

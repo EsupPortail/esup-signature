@@ -2,10 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,12 +50,15 @@ public class SignBook {
 
     private Boolean deleted;
 
+    @Enumerated(EnumType.STRING)
+    private ArchiveStatus archiveStatus;
+
     @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
     private String updateBy;
-    
+
     @Enumerated(EnumType.STRING)
     private SignRequestStatus status;
 
@@ -166,6 +170,15 @@ public class SignBook {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public ArchiveStatus getArchiveStatus() {
+        if(archiveStatus == null) return ArchiveStatus.none;
+        return archiveStatus;
+    }
+
+    public void setArchiveStatus(ArchiveStatus archiveStatus) {
+        this.archiveStatus = archiveStatus;
     }
 
     public Date getUpdateDate() {

@@ -656,7 +656,7 @@ public class SignRequestService {
 			return deleteDefinitive(signRequestId, userEppn);
 		} else {
 			logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), SignRequestStatus.deleted, "Mise à la corbeille du document par l'utilisateur", "", "SUCCESS", null, null, null, null, userEppn, userEppn);
-			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+			if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getArchiveStatus().equals(ArchiveStatus.archived)) {
 				logger.info("nettoyage des documents archivés ou exportés");
 				signRequest.getOriginalDocuments().clear();
 				signRequest.getSignedDocuments().clear();
@@ -1007,7 +1007,8 @@ public class SignRequestService {
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
 				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-				&& !signRequest.getStatus().equals(SignRequestStatus.archived)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
 				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
@@ -1056,7 +1057,8 @@ public class SignRequestService {
 			&& (!signRequest.getStatus().equals(SignRequestStatus.completed)
 			&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 			&& !signRequest.getStatus().equals(SignRequestStatus.exported)
-			&& !signRequest.getStatus().equals(SignRequestStatus.archived))) {
+			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned))) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(signRequest.getParentSignBook().getSubject() + "-avec_rapport.zip", "application/zip; charset=utf-8", "attachment", new ByteArrayInputStream(getZipWithDocAndReport(signRequest, httpServletRequest, httpServletResponse)), httpServletResponse);
@@ -1073,7 +1075,7 @@ public class SignRequestService {
 				name = documents.get(0).getFileName();
 				inputStream = documents.get(0).getInputStream();
 			}
-		} else if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.archived)) {
+		} else if (signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getArchiveStatus().equals(ArchiveStatus.archived) || signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)) {
 			FsFile fsFile = getLastSignedFsFile(signRequest);
 			name = fsFile.getName();
 			inputStream = fsFile.getInputStream();
