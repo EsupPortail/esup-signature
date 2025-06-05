@@ -96,12 +96,16 @@
         </td>
         <td class="clickable-td d-none d-xxxl-table-cell">
             <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
-            <br>
-            <span th:if="${signBook.deleted}" th:text="'Supprimé le : ' + ${#dates.format(signBook.updateDate, 'dd/MM/yyyy HH:mm')}"></span>
-            <span th:if="${signBook.signRequests.size() > 0 && signBook.signRequests.get(0).lastSignedDocument != null}" th:text="${#dates.format(signBook.signRequests.get(0).lastSignedDocument.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+            <span th:if="${signBook.endDate == null && signBook.signRequests.size() > 0 && signBook.signRequests.get(0).lastSignedDocument != null}" th:text="${#dates.format(signBook.signRequests.get(0).lastSignedDocument.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+            <span th:if="${signBook.deleted}" th:utext="'<br>Supprimé le : <br>' + ${#dates.format(signBook.updateDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
         <td class="clickable-td d-none d-xxl-table-cell">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
+        </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
         </td>
         <td class="clickable-td d-xxl-none">
             <div th:replace="~{user/signbooks/includes/status-sm :: status(signBook=${signRequest.parentSignBook})}"></div>
@@ -172,7 +176,7 @@
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                                 </button>
                             </div>
@@ -253,7 +257,7 @@
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                                 </button>
                             </div>

@@ -51,6 +51,11 @@
             style="width: 150px;">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}"></div>
         </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
+        </td>
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -81,7 +86,7 @@
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                                 </button>
                             </div>
@@ -142,6 +147,11 @@
             style="width: 150px;">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </td>
+        <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
+            <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+                <i class="fa-solid fa-box-archive" th:classappend="${signBook.archiveStatus.name == 'archived'} ? 'text-dark' : 'text-secondary'"></i>
+            </span>
+        </td>
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
@@ -162,7 +172,7 @@
                             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                             <div class="modal-header">
                                 <h2>Attention</h2>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>

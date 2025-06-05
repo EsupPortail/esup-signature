@@ -48,6 +48,11 @@
                 </div>
                 <div class="card-body">
                     <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}" class="mb-1"></div>
+                    <div class="text-center mb-1">
+                        <div class="badge badge-status bg-secondary" th:if="${signRequest.parentSignBook.archiveStatus != null && signRequest.parentSignBook.archiveStatus.name != 'none'}">
+                            <i class="fa-solid fa-box-archive"></i> <span th:text="#{'signbook.archivestatus.' + ${signRequest.parentSignBook.archiveStatus}}"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="card text-bg-light col-lg-11 m-2">
@@ -134,7 +139,7 @@
             <form id="command" th:action="'/admin/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
                 <div class="modal-header">
                     <h2>Attention</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
                 </div>

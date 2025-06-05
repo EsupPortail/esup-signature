@@ -509,3 +509,7 @@ textarea:invalid {
 .sign-request-filter.ss-content.ss-open-below {
     width: revert !important;
 }
+
+.form-check-input {
+    border-color: #6c757d;
+}

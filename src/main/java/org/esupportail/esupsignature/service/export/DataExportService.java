@@ -113,7 +113,7 @@ public class DataExportService {
         Map<Recipient, Action> recipientHasSigned = null;
         if(signBook != null) {
             recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
-            if (recipientHasSigned != null && !recipientHasSigned.isEmpty() && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.archived)) {
+            if (recipientHasSigned != null && !recipientHasSigned.isEmpty() && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported)) {
                 Optional<Action> lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst();
                 if (lastActionHero.isPresent()) {
                     toExportDatas.put("form_completed_date", lastActionHero.get().getDate().toString());

@@ -165,7 +165,7 @@ export class Nexu {
                     } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
                         $("#errorText").html("Le mot de passe du keystore est incorrect");
                     } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
-                        $("#errorText").html("Le code pin est incorrect");
+                        $("#errorText").html("Le code PIN est incorrect. Attention, après 3 essais infructueux, votre certificat sera définitivement bloqué !");
                     }
                 } else if (jsonResp.message != null) {
                     if (jsonResp.message.includes("is expired")) {

@@ -62,7 +62,7 @@
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div tabindex="-1" id="pdf" class="mx-auto" style="position: relative !important;">
+        <div tabindex="0" id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"

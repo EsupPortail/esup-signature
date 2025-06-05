@@ -19,32 +19,30 @@
                 aria-controls="navbar_toggle" aria-expanded="false" aria-label="Toggle navigation">
             <span class="fa-solid fa-bars text-white"></span>
         </button>
-        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand" aria-label="Esup-Signature" title="Esup-Signature">
+        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand" aria-label="Esup-Signature">
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" title="Accueil" type="button"
-                            href="/user" class="btn btn-transparent text-left me-1">
+                    <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" type="button" href="/user" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-home"></i> <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
-                        <span title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
+                        <span aria-hidden="true" title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}">
                         </span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-dashboard" title="Tableau de bord"
-                        th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
+                    <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
-                        <span title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}">
+                        <span aria-hidden="true" title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}">
                         </span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}">
-                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-report" title="Rapport"
+                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-report"
                         href="/user/reports" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-file-contract"></i> <span
                             class="nav-item-label d-none d-xl-inline">Rapports</span>
@@ -56,13 +54,12 @@
                         <i class="fa-solid fa-toolbox"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="link-tools" >
-                        <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager"
-                            title="Vue manager" href="/user/manage"
+                        <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager" href="/user/manage"
                             class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >
                             <i class="fa-solid fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>
                         </a>
                         <div th:if="${managedWorkflowsSize > 0}" class="dropdown-divider"></div>
-                        <a id="start-wizard-button" th:unless="${globalProperties.hideWizardWorkflow}" role="button" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
+                        <a tabindex="0" id="start-wizard-button" th:unless="${globalProperties.hideWizardWorkflow}" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"
                             data-bs-target="#wiz-modal"
                             title="Créez un nouveau circuit à l'aide de l'assistant">
                                 <i class="fa-solid fa-magic"></i> Assistant de création de circuit

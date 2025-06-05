@@ -2,8 +2,11 @@ package org.esupportail.esupsignature.service.utils.upgrade;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.ActionType;
+import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -33,20 +36,14 @@ public class UpgradeService {
 
     @PersistenceContext
     private final EntityManager entityManager;
-
     private final GlobalProperties globalProperties;
-
     private final SignBookRepository signBookRepository;
-
     private final AppliVersionRepository appliVersionRepository;
-
     private final BuildProperties buildProperties;
-
     private final FileService fileService;
-
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -95,8 +92,7 @@ public class UpgradeService {
                 if(!appliVersions.isEmpty()) {
                     appliVersions.get(0).setEsupSignatureVersion(update);
                 } else {
-                    AppliVersion appliVersion = new AppliVersion();
-                    appliVersion.setEsupSignatureVersion(update);
+                    AppliVersion appliVersion = new AppliVersion(update);
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
@@ -166,7 +162,6 @@ public class UpgradeService {
                     || signBook.getStatus().equals(SignRequestStatus.exported)
                     || signBook.getStatus().equals(SignRequestStatus.refused)
                     || signBook.getStatus().equals(SignRequestStatus.signed)
-                    || signBook.getStatus().equals(SignRequestStatus.archived)
                     || signBook.getDeleted())) {
                 List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
                 if(!actions.isEmpty()) {
@@ -293,7 +288,7 @@ public class UpgradeService {
 
     @SuppressWarnings("unused")
     public void update_1_33_7() {
-        logger.info("#### Starting update workflow workflow ####");
+        logger.info("#### Starting update workflow ####");
         entityManager.createNativeQuery(
                 "DO $$ BEGIN " +
                         "IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'workflow' AND column_name = 'autorize_clone') THEN " +
@@ -327,7 +322,38 @@ public class UpgradeService {
                         "END IF; " +
                         "END $$;"
         ).executeUpdate();
+        logger.info("#### Update workflow completed ####");
+    }
 
-        logger.info("#### Update workflow workflow completed ####");
+    @SuppressWarnings("unused")
+    public void update_1_34_0() {
+        logger.info("#### Starting update archive status ####");
+
+        List<SignBook> signBooks = signBookRepository.findByStatus(SignRequestStatus.archived);
+        signBooks.addAll(signBookRepository.findByStatus(SignRequestStatus.cleaned));
+
+        for(SignBook signBook : signBooks) {
+            if(signBook.getStatus().equals(SignRequestStatus.archived)) signBook.setArchiveStatus(ArchiveStatus.archived);
+            if(signBook.getStatus().equals(SignRequestStatus.cleaned)) signBook.setArchiveStatus(ArchiveStatus.cleaned);
+            for(SignRequest signRequest : signBook.getSignRequests()) {
+                if(signRequest.getStatus().equals(SignRequestStatus.archived)) signRequest.setArchiveStatus(ArchiveStatus.archived);
+                if(signRequest.getStatus().equals(SignRequestStatus.cleaned)) signRequest.setArchiveStatus(ArchiveStatus.cleaned);
+                if(signRequest.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused))) {
+                    signRequest.setStatus(SignRequestStatus.refused);
+                } else if(!signBook.getLiveWorkflow().getTargets().isEmpty() && signBook.getLiveWorkflow().getTargets().stream().allMatch(Target::getTargetOk)){
+                    signRequest.setStatus(SignRequestStatus.exported);
+                } else {
+                    signRequest.setStatus(SignRequestStatus.completed);
+                }
+            }
+            if((BooleanUtils.isTrue(signBook.getForceAllDocsSign()) || signBook.getSignRequests().size() == 1) && signBook.getSignRequests().stream().anyMatch(sr -> sr.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused)))) {
+                signBook.setStatus(SignRequestStatus.refused);
+            } else if(!signBook.getLiveWorkflow().getTargets().isEmpty() && signBook.getLiveWorkflow().getTargets().stream().allMatch(Target::getTargetOk)){
+                signBook.setStatus(SignRequestStatus.exported);
+            } else {
+                signBook.setStatus(SignRequestStatus.completed);
+            }
+        }
+        logger.info("#### Update archive status completed ####");
     }
 }

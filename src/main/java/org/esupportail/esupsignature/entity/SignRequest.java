@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.serializer.RecipientActionMapSerializer;
@@ -40,6 +41,9 @@ public class SignRequest {
     private User createBy;
 
     private Boolean deleted;
+
+    @Enumerated(EnumType.STRING)
+    private ArchiveStatus archiveStatus;
 
     @Column(columnDefinition = "TEXT")
     private String exportedDocumentURI;
@@ -148,6 +152,15 @@ public class SignRequest {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public ArchiveStatus getArchiveStatus() {
+        if(archiveStatus == null) return ArchiveStatus.none;
+        return archiveStatus;
+    }
+
+    public void setArchiveStatus(ArchiveStatus archiveStatus) {
+        this.archiveStatus = archiveStatus;
     }
 
     public String getExportedDocumentURI() {

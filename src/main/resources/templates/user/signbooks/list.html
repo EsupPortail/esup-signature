@@ -136,6 +136,7 @@
                     </th>
                     <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
                     <th class=""><a class="sorted" sd:pagination-sort="status">Statut</a></th>
+                    <th class=""><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
                     <th >Actions</th>
                 </tr>
                 </thead>
@@ -160,7 +161,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="checkCertSignModalLabel">Signature en masse</h3>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>
             <div class="modal-body">
@@ -199,7 +200,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Créer une nouvelle demande</h3>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div th:replace="~{fragments/new :: new}"></div>

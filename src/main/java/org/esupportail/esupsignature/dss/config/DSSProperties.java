@@ -26,6 +26,7 @@ public class DSSProperties {
     private String locality;
     private Boolean checkRevocationForUntrustedChains = true;
     private Boolean multiThreadTlValidation = true;
+    private Boolean acceptSignatureFieldOverlap = false;
 
     public String getCacheUsername() {
         return cacheUsername;
@@ -177,5 +178,14 @@ public class DSSProperties {
 
     public void setMultiThreadTlValidation(Boolean multiThreadTlValidation) {
         this.multiThreadTlValidation = multiThreadTlValidation;
+    }
+
+    public Boolean getAcceptSignatureFieldOverlap() {
+        if(acceptSignatureFieldOverlap == null) return false;
+        return acceptSignatureFieldOverlap;
+    }
+
+    public void setAcceptSignatureFieldOverlap(Boolean acceptSignatureFieldOverlap) {
+        this.acceptSignatureFieldOverlap = acceptSignatureFieldOverlap;
     }
 }
