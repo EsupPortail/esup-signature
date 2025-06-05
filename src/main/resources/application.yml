@@ -233,6 +233,7 @@ dss:
     locality: Ville
     check-revocation-for-untrusted-chains: false
     multi-thread-tl-validation: true
+    accept-signature-field-overlap: false
 
 fs:
 #    smb-login: esup-signature

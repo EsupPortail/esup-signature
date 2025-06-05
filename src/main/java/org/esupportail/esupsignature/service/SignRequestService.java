@@ -295,7 +295,7 @@ public class SignRequestService {
 				logger.warn("skip add visuals because document already signed");
 			}
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
-				signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+				signRequestParamsService.copySignRequestParams(signRequest, Collections.singletonList(lastSignRequestParams));
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
 			SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
