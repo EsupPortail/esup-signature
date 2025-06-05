@@ -1,11 +1,13 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -13,8 +15,9 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -26,10 +29,12 @@ import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ValidatingOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
+public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRequest, OidcUser> {
+
     private static final String MISSING_USER_INFO_URI_ERROR_CODE = "missing_user_info_uri";
 
     private static final String MISSING_USER_NAME_ATTRIBUTE_ERROR_CODE = "missing_user_name_attribute";
@@ -43,14 +48,16 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OAuth2User
 
     public ValidatingOAuth2UserService(JwtDecoder jwtDecoder) {
         this.jwtDecoder = jwtDecoder;
-        RestTemplate restTemplate = new RestTemplate();
+        JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
+        jwtConverter.setSupportedMediaTypes(List.of(MediaType.valueOf("application/jwt")));
+        RestTemplate restTemplate = new RestTemplate(List.of(jwtConverter));
         restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
         restTemplate.getMessageConverters().add(new JwtHttpMessageConverter());
         this.restOperations = restTemplate;
     }
 
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+    public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
 
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
@@ -108,8 +115,7 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OAuth2User
         for (String authority : token.getScopes()) {
             authorities.add(new SimpleGrantedAuthority("SCOPE_" + authority));
         }
-
-        return new DefaultOAuth2User(authorities, userAttributes, userNameAttributeName);
+        return new DefaultOidcUser(authorities, new OidcIdToken(userRequest.getIdToken().getTokenValue(), userRequest.getIdToken().getIssuedAt(), userRequest.getIdToken().getExpiresAt(), jwt.getClaims()), userNameAttributeName);
     }
 
 

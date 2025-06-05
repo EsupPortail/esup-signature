@@ -9,15 +9,10 @@ import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.service.security.IndexEntryPoint;
-import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
-import org.esupportail.esupsignature.service.security.SecurityService;
-import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.jwt.AuthService;
-import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
-import org.esupportail.esupsignature.service.security.oauth.OAuthSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
+import org.esupportail.esupsignature.service.security.oauth.*;
 import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
@@ -41,14 +36,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.session.SessionRegistryImpl;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -62,8 +53,6 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,6 +81,8 @@ public class WebSecurityConfig {
 
 	private final GlobalProperties globalProperties;
 
+	private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
+
 	private final WebSecurityProperties webSecurityProperties;
 
 	private final ClientRegistrationRepository clientRegistrationRepository;
@@ -102,8 +93,9 @@ public class WebSecurityConfig {
 
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, AuthService authService) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, AuthService authService) {
         this.globalProperties = globalProperties;
+        this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.authService = authService;
@@ -135,14 +127,23 @@ public class WebSecurityConfig {
 	@Bean
 	@Order(3)
 	@Conditional(ClientsConfiguredCondition.class)
-	public OAuthSecurityServiceImpl oAuthSecurityService() {
-		OAuthSecurityServiceImpl oAuthSecurityService = new OAuthSecurityServiceImpl();
+	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
+		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl(webSecurityProperties, clientRegistrationRepository);
 		securityServices.add(oAuthSecurityService);
 		return oAuthSecurityService;
 	}
 
 	@Bean
 	@Order(4)
+	@Conditional(ClientsConfiguredCondition.class)
+	public ProConnectSecurityServiceImpl proConnectSecurityService() {
+		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl(clientRegistrationRepository);
+		securityServices.add(oAuthSecurityService);
+		return oAuthSecurityService;
+	}
+
+	@Bean
+	@Order(5)
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
 		http.cors(AbstractHttpConfigurer::disable)
 				.securityMatcher("/ws-jwt/**");
@@ -188,26 +189,6 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	@Conditional(ClientsConfiguredCondition.class)
-	JwtDecoder franceConnectJwtDecoder() {
-		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("franceconnect");
-		SecretKeySpec key = new SecretKeySpec(registration.getClientSecret().getBytes(StandardCharsets.UTF_8), "HS256");
-		return NimbusJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
-	}
-
-	@Bean
-	@Conditional(ClientsConfiguredCondition.class)
-	public JwtDecoderFactory<ClientRegistration> jwtDecoderFactory() {
-		final JwtDecoder decoder = franceConnectJwtDecoder();
-		return new JwtDecoderFactory<ClientRegistration>() {
-			@Override
-			public JwtDecoder createDecoder(ClientRegistration context) {
-				return decoder;
-			}
-		};
-	}
-
-	@Bean
 	@Order(4)
 	@ConditionalOnProperty(prefix = "security.shib.dev", name = "enable", havingValue = "true")
 	public DevShibRequestFilter devClientRequestFilter() {
@@ -243,15 +224,13 @@ public class WebSecurityConfig {
 		for(SecurityService securityService : securityServices) {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher(securityService.getLoginUrl())).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), antMatcher(securityService.getLoginUrl())));
-			if(securityService.getClass().equals(OAuthSecurityServiceImpl.class)) {
-				http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/"))
-						.oauth2Login(oauth2Login -> oauth2Login.successHandler(((OAuthSecurityServiceImpl) securityService).getoAuthAuthenticationSuccessHandler())
-								.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
-										.userService(new ValidatingOAuth2UserService(franceConnectJwtDecoder()))))
-						.oauth2Login(oauth2Login -> oauth2Login
-								.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-										.authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, webSecurityProperties.getFranceConnectAcr()))));
-
+			if (securityService instanceof OidcSecurityService oidc) {
+				http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/")
+					.successHandler(oAuthAuthenticationSuccessHandler)
+					.failureHandler(new OAuth2FailureHandler())
+					.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(new ValidatingOAuth2UserService(oidc.getJwtDecoder())))
+					.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
+					.authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, oidc.getAdditionalAuthorizationParameters()))));
 			} else {
 				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			}

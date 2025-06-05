@@ -156,6 +156,11 @@ public class IndexController {
 		return "redirect:/user";
 	}
 
+	@GetMapping("/login/proconnectentry")
+	public String loginProConnectRedirection(Authentication authentication) {
+		return "redirect:/user";
+	}
+
 	public User getAuthUser(Authentication auth) {
 		User user = null;
 		if (auth != null && !auth.getName().equals("anonymousUser")) {

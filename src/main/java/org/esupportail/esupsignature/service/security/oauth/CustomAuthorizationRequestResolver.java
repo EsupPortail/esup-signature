@@ -13,18 +13,18 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
 
     private final OAuth2AuthorizationRequestResolver defaultAuthorizationRequestResolver;
 
-    private final String acr;
+    private final Map<String, Object> params;
 
-    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository, String acr) {
+    public CustomAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository, Map<String, Object> params) {
         this.defaultAuthorizationRequestResolver = new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-        this.acr = acr;
+        this.params = params;
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         OAuth2AuthorizationRequest authorizationRequest = this.defaultAuthorizationRequestResolver.resolve(request);
         if(authorizationRequest != null) {
-            return customAuthorizationRequest(authorizationRequest, request);
+            return customAuthorizationRequest(authorizationRequest);
         }
         return null;
     }
@@ -33,14 +33,14 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
         OAuth2AuthorizationRequest authorizationRequest = this.defaultAuthorizationRequestResolver.resolve( request, clientRegistrationId);
         if(authorizationRequest != null) {
-            return customAuthorizationRequest(authorizationRequest, request);
+            return customAuthorizationRequest(authorizationRequest);
         }
         return null;
     }
 
-    private OAuth2AuthorizationRequest customAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request) {
+    private OAuth2AuthorizationRequest customAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest) {
         Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
-        additionalParameters.put("acr_values", acr);
+        additionalParameters.putAll(params);
         return OAuth2AuthorizationRequest.from(authorizationRequest).additionalParameters(additionalParameters).build();
     }
 }

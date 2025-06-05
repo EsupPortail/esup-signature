@@ -28,10 +28,12 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		DefaultOAuth2User defaultOidcUser = ((DefaultOAuth2User)authentication.getPrincipal());
 		String id = defaultOidcUser.getAttributes().get("sub").toString();
-		String name = defaultOidcUser.getAttributes().get("family_name").toString();
-		String prenom = defaultOidcUser.getAttributes().get("given_name").toString();
+		String name = defaultOidcUser.getAttributes().containsKey("family_name")
+				? defaultOidcUser.getAttributes().get("family_name").toString()
+				: defaultOidcUser.getAttributes().get("usual_name").toString();
+		String firstName = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
-		userService.createUser(id, name, prenom, email, UserType.external, true);
+		userService.createUser(id, name, firstName, email, UserType.external, true);
 		httpServletRequest.getSession().setAttribute("securityServiceName", "OAuthSecurityServiceImpl");
 		List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
 		simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_FRANCECONNECT"));
