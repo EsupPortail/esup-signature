@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service.utils.upgrade;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
@@ -345,7 +346,7 @@ public class UpgradeService {
                     signRequest.setStatus(SignRequestStatus.completed);
                 }
             }
-            if((signBook.getForceAllDocsSign() || signBook.getSignRequests().size() == 1) && signBook.getSignRequests().stream().anyMatch(sr -> sr.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused)))) {
+            if((BooleanUtils.isTrue(signBook.getForceAllDocsSign()) || signBook.getSignRequests().size() == 1) && signBook.getSignRequests().stream().anyMatch(sr -> sr.getRecipientHasSigned().values().stream().anyMatch(a -> a.getActionType().equals(ActionType.refused)))) {
                 signBook.setStatus(SignRequestStatus.refused);
             } else if(!signBook.getLiveWorkflow().getTargets().isEmpty() && signBook.getLiveWorkflow().getTargets().stream().allMatch(Target::getTargetOk)){
                 signBook.setStatus(SignRequestStatus.exported);
