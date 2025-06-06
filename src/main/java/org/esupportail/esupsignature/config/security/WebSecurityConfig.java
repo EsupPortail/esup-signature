@@ -13,6 +13,8 @@ import org.esupportail.esupsignature.service.security.*;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.jwt.AuthService;
 import org.esupportail.esupsignature.service.security.oauth.*;
+import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
@@ -127,8 +129,8 @@ public class WebSecurityConfig {
 	@Bean
 	@Order(3)
 	@Conditional(ClientsConfiguredCondition.class)
-	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
-		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl(webSecurityProperties, clientRegistrationRepository);
+	public ProConnectSecurityServiceImpl proConnectSecurityService() {
+		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl(clientRegistrationRepository);
 		securityServices.add(oAuthSecurityService);
 		return oAuthSecurityService;
 	}
@@ -136,8 +138,8 @@ public class WebSecurityConfig {
 	@Bean
 	@Order(4)
 	@Conditional(ClientsConfiguredCondition.class)
-	public ProConnectSecurityServiceImpl proConnectSecurityService() {
-		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl(clientRegistrationRepository);
+	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
+		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl(webSecurityProperties, clientRegistrationRepository);
 		securityServices.add(oAuthSecurityService);
 		return oAuthSecurityService;
 	}
@@ -221,18 +223,18 @@ public class WebSecurityConfig {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
+		if(securityServices.stream().anyMatch(s -> s instanceof OidcOtpSecurityService)) {
+			http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/")
+				.successHandler(oAuthAuthenticationSuccessHandler)
+				.failureHandler(new OAuth2FailureHandler())
+				.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(validatingOAuth2UserService()))
+				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.authorizationRequestResolver(customAuthorizationRequestResolver())));
+		}
 		for(SecurityService securityService : securityServices) {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher(securityService.getLoginUrl())).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), antMatcher(securityService.getLoginUrl())));
-			if (securityService instanceof OidcSecurityService oidc) {
-				http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/")
-					.successHandler(oAuthAuthenticationSuccessHandler)
-					.failureHandler(new OAuth2FailureHandler())
-					.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(new ValidatingOAuth2UserService(oidc.getJwtDecoder())))
-					.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint
-					.authorizationRequestResolver(new CustomAuthorizationRequestResolver(clientRegistrationRepository, oidc.getAdditionalAuthorizationParameters()))));
-			} else {
-				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+			if(securityService.getAuthenticationProcessingFilter() != null) {
+			http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
 			}
 		}
 		if(globalProperties.getEnableSu()) {
@@ -264,7 +266,17 @@ public class WebSecurityConfig {
 		return http.build();
 	}
 
-//	@Bean
+	@Bean
+	public ValidatingOAuth2UserService validatingOAuth2UserService() {
+		return new ValidatingOAuth2UserService(securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
+	}
+
+	@Bean
+	public CustomAuthorizationRequestResolver customAuthorizationRequestResolver() {
+		return new CustomAuthorizationRequestResolver(clientRegistrationRepository, securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
+	}
+
+	//	@Bean
 //	public APIKeyFilter apiKeyFilter() {
 //		APIKeyFilter filter = new APIKeyFilter();
 //		filter.setAuthenticationManager(authentication -> {
@@ -304,9 +316,9 @@ public class WebSecurityConfig {
 				.requestMatchers(antMatcher("/admin/**")).hasAnyRole("ADMIN")
 				.requestMatchers(antMatcher("/manager/**")).hasAnyRole("MANAGER")
 				.requestMatchers(antMatcher("/user/**")).hasAnyRole("USER")
-				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
-				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP", "FRANCECONNECT")
-				.requestMatchers(antMatcher("/ws-secure/**")).hasAnyRole("USER", "OTP", "FRANCECONNECT")
+				.requestMatchers(antMatcher("/nexu-sign/**")).hasAnyRole("USER", "OTP")
+				.requestMatchers(antMatcher("/otp/**")).hasAnyRole("OTP")
+				.requestMatchers(antMatcher("/ws-secure/**")).hasAnyRole("USER", "OTP")
 				.anyRequest().permitAll());
 	}
 

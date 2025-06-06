@@ -6,7 +6,7 @@
     <button id="toggle-new-grid" class="btn btn-transparent text-dark btn-grid-display">
         <i class="fa-solid fa-th"></i> Affichage
     </button>
-        <div class="card border-0 w-100 h-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}">
+        <div class="card border-0 w-100 h-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}">
         <div class="card-body">
             <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style">
                 <div id="newContainer" class="d-inline">

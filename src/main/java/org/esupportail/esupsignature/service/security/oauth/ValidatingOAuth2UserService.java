@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -23,7 +24,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
@@ -41,13 +41,12 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
 
     private static final String INVALID_USER_INFO_RESPONSE_ERROR_CODE = "invalid_user_info_response";
 
-    private Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = new OAuth2UserRequestEntityConverter();
+    private final Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = new OAuth2UserRequestEntityConverter();
+    private final RestOperations restOperations;
+    private final List<OidcOtpSecurityService> securityServices;
 
-    private RestOperations restOperations;
-    private JwtDecoder jwtDecoder;
-
-    public ValidatingOAuth2UserService(JwtDecoder jwtDecoder) {
-        this.jwtDecoder = jwtDecoder;
+    public ValidatingOAuth2UserService(List<OidcOtpSecurityService> securityServices) {
+        this.securityServices = securityServices;
         JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
         jwtConverter.setSupportedMediaTypes(List.of(MediaType.valueOf("application/jwt")));
         RestTemplate restTemplate = new RestTemplate(List.of(jwtConverter));
@@ -59,7 +58,9 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
-
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OidcOtpSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
+        JwtDecoder jwtDecoder = currentSecurityService.getJwtDecoder();
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(
                     MISSING_USER_INFO_URI_ERROR_CODE,
@@ -106,7 +107,7 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
         }
 
-        Jwt jwt = decodeAndValidateJwt(response.getBody());
+        Jwt jwt = jwtDecoder.decode(response.getBody());
 
         Map<String, Object> userAttributes = jwt.getClaims();
         Set<GrantedAuthority> authorities = new LinkedHashSet<>();
@@ -118,37 +119,4 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
         return new DefaultOidcUser(authorities, new OidcIdToken(userRequest.getIdToken().getTokenValue(), userRequest.getIdToken().getIssuedAt(), userRequest.getIdToken().getExpiresAt(), jwt.getClaims()), userNameAttributeName);
     }
 
-
-    private Jwt decodeAndValidateJwt(String token) {
-        return jwtDecoder.decode(token);
-    }
-
-    /**
-     * Sets the {@link Converter} used for converting the {@link OAuth2UserRequest}
-     * to a {@link RequestEntity} representation of the UserInfo Request.
-     *
-     * @since 5.1
-     * @param requestEntityConverter the {@link Converter} used for converting to a {@link RequestEntity} representation of the UserInfo Request
-     */
-    public final void setRequestEntityConverter(Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter) {
-        Assert.notNull(requestEntityConverter, "requestEntityConverter cannot be null");
-        this.requestEntityConverter = requestEntityConverter;
-    }
-
-    /**
-     * Sets the {@link RestOperations} used when requesting the UserInfo resource.
-     *
-     * <p>
-     * <b>NOTE:</b> At a minimum, the supplied {@code restOperations} must be configured with the following:
-     * <ol>
-     *  <li>{@link ResponseErrorHandler} - {@link OAuth2ErrorResponseErrorHandler}</li>
-     * </ol>
-     *
-     * @since 5.1
-     * @param restOperations the {@link RestOperations} used when requesting the UserInfo resource
-     */
-    public final void setRestOperations(RestOperations restOperations) {
-        Assert.notNull(restOperations, "restOperations cannot be null");
-        this.restOperations = restOperations;
-    }
 }

@@ -1,9 +1,10 @@
-package org.esupportail.esupsignature.service.security.oauth;
+package org.esupportail.esupsignature.service.security.oauth.proconnect;
 
-import org.esupportail.esupsignature.service.security.OidcSecurityService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -13,7 +14,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProConnectSecurityServiceImpl implements OidcSecurityService {
+public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
     private final ClientRegistrationRepository clientRegistrationRepository;
 
@@ -21,10 +22,14 @@ public class ProConnectSecurityServiceImpl implements OidcSecurityService {
         this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
-
     @Override
     public String getTitle() {
         return "ProConnect";
+    }
+
+    @Override
+    public String getCode() {
+        return "proconnect";
     }
 
     @Override
@@ -44,24 +49,27 @@ public class ProConnectSecurityServiceImpl implements OidcSecurityService {
 
     @Override
     public GenericFilterBean getAuthenticationProcessingFilter() {
-        return null; // Laisse Spring gérer le filtre OIDC
+        return null;
     }
 
     @Override
     public UserDetailsService getUserDetailsService() {
-        return null; // Utilise celui par défaut ou injecte un spécifique si besoin
+        return null;
     }
 
     @Override
     public JwtDecoder getJwtDecoder() {
         ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("proconnect");
         String jwkSetUri = registration.getProviderDetails().getJwkSetUri();
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+                .jwsAlgorithm(SignatureAlgorithm.RS256)
+                .build();
     }
 
     @Override
     public Map<String, Object> getAdditionalAuthorizationParameters() {
         Map<String, Object> params = new HashMap<>();
+//        params.put("acr_values", List.of("eidas1"));
         params.put("claims", """
                             {
                                 "id_token":

@@ -3,10 +3,8 @@ package org.esupportail.esupsignature.web.otp;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
@@ -16,6 +14,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY;
@@ -44,24 +45,19 @@ public class OtpAccessController {
 
     private static final PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
 
-    @Resource
-    private GlobalProperties globalProperties;
-
-    @Resource
-    private OtpService otpService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    AuthenticationManager authenticationManager;
-
+    private final OtpService otpService;
+    private final SignBookService signBookService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final List<SecurityService> securityServices;
     private final SmsService smsService;
 
-    public OtpAccessController(@Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(OtpService otpService, SignBookService signBookService, UserService userService, AuthenticationManager authenticationManager, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+        this.otpService = otpService;
+        this.signBookService = signBookService;
+        this.userService = userService;
+        this.authenticationManager = authenticationManager;
+        this.securityServices = securityServices;
         this.smsService = smsService;
     }
 
@@ -76,29 +72,32 @@ public class OtpAccessController {
             } else {
                 signature = otp.isSignature();
             }
-            User user = otp.getUser();
-            if (globalProperties.getSmsRequired() || otp.isForceSms()) {
-                if (!otp.getSmsSended() && smsService != null) {
-                    if (user.getPhone() != null && !user.getPhone().isEmpty()) {
-                        Phonenumber.PhoneNumber number = phoneUtil.parse(user.getPhone(), null);
-                        if (phoneUtil.isValidNumber(number)) {
-                            String password = otpService.generateOtpPassword(urlId, user.getPhone());
-                            logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
-                            try {
-                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup_signature " + password);
-                                otpService.setSmsSended(urlId);
-                            } catch (EsupSignatureRuntimeException e) {
-                                logger.error(e.getMessage(), e);
-                            }
-                            return "otp/signin";
-                        }
-                    }
-                    return "otp/enter-phonenumber";
-                }
-            } else if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-                authOtp(model, httpServletRequest, user);
-                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
-            }
+            model.addAttribute("otp", otp);
+            httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
+            model.addAttribute("securityServices", securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).toList());
+            return "otp/signin";
+//            if (globalProperties.getSmsRequired() || otp.isForceSms()) {
+//                if (!otp.getSmsSended() && smsService != null) {
+//                    if (user.getPhone() != null && !user.getPhone().isEmpty()) {
+//                        Phonenumber.PhoneNumber number = phoneUtil.parse(user.getPhone(), null);
+//                        if (phoneUtil.isValidNumber(number)) {
+//                            String password = otpService.generateOtpPassword(urlId, user.getPhone());
+//                            logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
+//                            try {
+//                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup_signature " + password);
+//                                otpService.setSmsSended(urlId);
+//                            } catch (EsupSignatureRuntimeException e) {
+//                                logger.error(e.getMessage(), e);
+//                            }
+//                            return "otp/signin";
+//                        }
+//                    }
+//                    return "otp/enter-phonenumber";
+//                }
+//            } else if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
+//                authOtp(model, httpServletRequest, user);
+//                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
+//            }
         }
         if(signBookService.renewOtp(urlId, signature)) {
             return "redirect:/otp-access/expired";

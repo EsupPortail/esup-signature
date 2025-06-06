@@ -17,7 +17,6 @@
  */
 package org.esupportail.esupsignature.web;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -28,6 +27,7 @@ import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
@@ -53,30 +53,25 @@ public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);
 
-	private final GlobalProperties globalProperties;
-
-	@Resource
-	private PreAuthorizeService preAuthorizeService;
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "home";
 	}
 
-	@Resource
-	private List<SecurityService> securityServices;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private SignRequestService signRequestService;
-
+	private final GlobalProperties globalProperties;
+	private final PreAuthorizeService preAuthorizeService;
+	private final List<SecurityService> securityServices;
+	private final UserService userService;
+	private final SignRequestService signRequestService;
 	private final LdapPersonLightService ldapPersonLightService;
 
-	public IndexController(GlobalProperties globalProperties, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
+	public IndexController(GlobalProperties globalProperties, PreAuthorizeService preAuthorizeService, List<SecurityService> securityServices, UserService userService, SignRequestService signRequestService, @Autowired(required = false) LdapPersonLightService ldapPersonLightService) {
 		this.globalProperties = globalProperties;
-		this.ldapPersonLightService = ldapPersonLightService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.securityServices = securityServices;
+        this.userService = userService;
+        this.signRequestService = signRequestService;
+        this.ldapPersonLightService = ldapPersonLightService;
 	}
 
 	@GetMapping
@@ -84,7 +79,12 @@ public class IndexController {
 		String savedQueryString = null;
 		HttpSession httpSession = httpServletRequest.getSession(false);
 		if(httpSession != null) {
-			DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			DefaultSavedRequest defaultSavedRequest = null;
+			try {
+				defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			} catch (Exception e) {
+				logger.warn(e.getMessage());
+			}
 			if (defaultSavedRequest != null) {
 				if (StringUtils.hasText(defaultSavedRequest.getQueryString())) {
 					savedQueryString = defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString();
@@ -100,7 +100,7 @@ public class IndexController {
 		} else {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
-				model.addAttribute("securityServices", securityServices);
+				model.addAttribute("securityServices", securityServices.stream().filter(s -> !(s instanceof OidcOtpSecurityService)).toList());
 				model.addAttribute("globalProperties", globalProperties);
 				if(StringUtils.hasText(savedQueryString)) {
 					model.addAttribute("redirect", savedQueryString);
