@@ -78,28 +78,6 @@ public class OtpAccessController {
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).toList());
             return "otp/signin";
-//            if (globalProperties.getSmsRequired() || otp.isForceSms()) {
-//                if (!otp.getSmsSended() && smsService != null) {
-//                    if (user.getPhone() != null && !user.getPhone().isEmpty()) {
-//                        Phonenumber.PhoneNumber number = phoneUtil.parse(user.getPhone(), null);
-//                        if (phoneUtil.isValidNumber(number)) {
-//                            String password = otpService.generateOtpPassword(urlId, user.getPhone());
-//                            logger.info("sending password by sms : " + password + " to " + otp.getPhoneNumber());
-//                            try {
-//                                smsService.sendSms(user.getPhone(), "Votre code de connexion esup_signature " + password);
-//                                otpService.setSmsSended(urlId);
-//                            } catch (EsupSignatureRuntimeException e) {
-//                                logger.error(e.getMessage(), e);
-//                            }
-//                            return "otp/signin";
-//                        }
-//                    }
-//                    return "otp/enter-phonenumber";
-//                }
-//            } else if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
-//                authOtp(model, httpServletRequest, user);
-//                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
-//            }
         }
         if(signBookService.renewOtp(urlId, signature)) {
             return "redirect:/otp-access/expired";
