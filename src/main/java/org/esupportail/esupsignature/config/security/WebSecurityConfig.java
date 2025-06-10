@@ -9,12 +9,16 @@ import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.service.security.*;
+import org.esupportail.esupsignature.service.security.IndexEntryPoint;
+import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.jwt.AuthService;
-import org.esupportail.esupsignature.service.security.oauth.*;
-import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.jwt.JwtAuthService;
+import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
+import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
+import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
+import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
 import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
@@ -29,7 +33,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -55,10 +58,7 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
@@ -74,75 +74,68 @@ public class WebSecurityConfig {
 
 	private final String apiKey = "SomeKey1234567890";
 
-	private LdapContextSource ldapContextSource;
-
-	@Autowired(required = false)
-	public void setLdapContextSource(LdapContextSource ldapContextSource) {
-		this.ldapContextSource = ldapContextSource;
-	}
-
 	private final GlobalProperties globalProperties;
-
 	private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
-
 	private final WebSecurityProperties webSecurityProperties;
-
 	private final ClientRegistrationRepository clientRegistrationRepository;
-
-	private final AuthService authService;
-
-	private final List<SecurityService> securityServices = new ArrayList<>();
+	private final JwtAuthService jwtAuthService;
+	private final List<SecurityService> securityServices;
+	private final RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
+	private final SessionRegistryImpl sessionRegistry;
 
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, AuthService authService) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.authService = authService;
+        this.jwtAuthService = jwtAuthService;
+        this.securityServices = securityServices;
+        this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
+        this.sessionRegistry = sessionRegistry;
     }
 
-	@Bean
-	@Order(1)
-	@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
-	public CasSecurityServiceImpl casSecurityServiceImpl() {
-		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
-			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl();
-			securityServices.add(casSecurityService);
-			return casSecurityService;
-		} else {
-			logger.error("cas config found without needed ldap config, cas security will be disabled");
-			return null;
-		}
-	}
-
-	@Bean
-	@Order(2)
-	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
-	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
-		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
-		securityServices.add(shibSecurityService);
-		return shibSecurityService;
-	}
-
-	@Bean
-	@Order(3)
-	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
-	public ProConnectSecurityServiceImpl proConnectSecurityService() {
-		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl();
-		securityServices.add(oAuthSecurityService);
-		return oAuthSecurityService;
-	}
-
-	@Bean
-	@Order(4)
-	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
-	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
-		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl();
-		securityServices.add(oAuthSecurityService);
-		return oAuthSecurityService;
-	}
+//	@Bean
+//	@Order(1)
+//	@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
+//	public CasSecurityServiceImpl casSecurityServiceImpl() {
+//		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
+//			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl(webSecurityProperties, spelGroupService(), ldapGroupService, casProperties, ldapProperties, );
+//			securityServices.add(casSecurityService);
+//			return casSecurityService;
+//		} else {
+//			logger.error("cas config found without needed ldap config, cas security will be disabled");
+//			return null;
+//		}
+//	}
+//
+//	@Bean
+//	@Order(2)
+//	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
+//	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
+//		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
+//		securityServices.add(shibSecurityService);
+//		return shibSecurityService;
+//	}
+//
+//	@Bean
+//	@Order(3)
+//	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
+//	public ProConnectSecurityServiceImpl proConnectSecurityService() {
+//		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl();
+//		securityServices.add(oAuthSecurityService);
+//		return oAuthSecurityService;
+//	}
+//
+//	@Bean
+//	@Order(4)
+//	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
+//	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
+//		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl();
+//		securityServices.add(oAuthSecurityService);
+//		return oAuthSecurityService;
+//	}
 
 	@Bean
 	@Order(5)
@@ -151,7 +144,7 @@ public class WebSecurityConfig {
 				.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
 			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(jwtDecoder())
-					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(authService))));
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(jwtAuthService))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
@@ -199,23 +192,13 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	public SessionRegistryImpl sessionRegistry() {
-		return new SessionRegistryImpl();
-	}
-
-	@Bean
-	public RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy() {
-		return new RegisterSessionAuthenticationStrategy(sessionRegistry());
-	}
-
-	@Bean
 	public HttpSessionEventPublisher sessionEventPublisher() {
 		return new HttpSessionEventPublisher();
 	}
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy()).maximumSessions(5).sessionRegistry(sessionRegistry()));
+		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy).maximumSessions(5).sessionRegistry(sessionRegistry));
 		if(devShibRequestFilter != null) {
 			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
 		}
@@ -257,7 +240,6 @@ public class WebSecurityConfig {
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
 				.ignoringRequestMatchers(antMatcher("/ws/**"))
 				.ignoringRequestMatchers(antMatcher("/nexu-sign/**"))
-				.ignoringRequestMatchers(antMatcher("/otp-access/**"))
 				.ignoringRequestMatchers(antMatcher("/log/**"))
 				.ignoringRequestMatchers(antMatcher("/actuator/**"))
 				.ignoringRequestMatchers(antMatcher("/h2-console/**")));
@@ -371,20 +353,6 @@ public class WebSecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManagerBean() {
 		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
-	}
-
-	@Bean
-	public SpelGroupService spelGroupService() {
-		SpelGroupService spelGroupService = new SpelGroupService(globalProperties);
-		Map<String, String> groups4eppnSpel = new HashMap<>();
-		if (webSecurityProperties.getGroupMappingSpel() != null) {
-			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {
-				String spelRule = webSecurityProperties.getGroupMappingSpel().get(groupName);
-				groups4eppnSpel.put(groupName, spelRule);
-			}
-		}
-		spelGroupService.setGroups4eppnSpel(groups4eppnSpel);
-		return spelGroupService;
 	}
 
 }

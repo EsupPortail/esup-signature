@@ -1,15 +1,21 @@
 package org.esupportail.esupsignature.service.security.oauth.proconnect;
 
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.stereotype.Service;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
+@Order(3)
+@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
 public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
     @Override

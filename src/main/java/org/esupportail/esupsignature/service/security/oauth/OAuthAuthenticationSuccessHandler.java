@@ -1,10 +1,11 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.enums.UserType;
+import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,10 +25,15 @@ import java.util.List;
 @Service
 public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-	@Resource
-	private UserService userService;
+	private final GlobalProperties globalProperties;
+	private final UserService userService;
 
-	@Override
+    public OAuthAuthenticationSuccessHandler(GlobalProperties globalProperties, UserService userService) {
+        this.globalProperties = globalProperties;
+        this.userService = userService;
+    }
+
+    @Override
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
 		DefaultOAuth2User defaultOidcUser = ((DefaultOAuth2User) authentication.getPrincipal());
 		String id = defaultOidcUser.getAttributes().get("sub").toString();
@@ -36,22 +42,34 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 				: defaultOidcUser.getAttributes().get("usual_name").toString();
 		String firstName = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
-		userService.createUser(id, name, firstName, email, UserType.external, true);
-		if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
-			String registrationId = oauth2Token.getAuthorizedClientRegistrationId();
-			httpServletRequest.getSession().setAttribute("securityServiceName", registrationId);
+		try {
+			if(userService.checkMailDomain(email) != UserType.external) {
+				httpServletRequest.getSession().invalidate();
+				SecurityContextHolder.clearContext();
+				throw new EsupSignatureUserException("" +
+						"Authentification OTP interdite pour les utilisateurs internes, Merci de passer par la page d'accueil <a href='" + globalProperties.getRootUrl() + "'>Retour à l'accueil</a>");
+			}
+			userService.createUser(id, name, firstName, email, UserType.external, true);
+			if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
+				String registrationId = oauth2Token.getAuthorizedClientRegistrationId();
+				httpServletRequest.getSession().setAttribute("securityServiceName", registrationId);
+			}
+			List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+			simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
+			Authentication newAuth = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), simpleGrantedAuthorities);
+			SecurityContextHolder.getContext().setAuthentication(newAuth);
+			String targetUrl = httpServletRequest.getSession().getAttribute("after_oauth_redirect").toString();
+			if (targetUrl == null || targetUrl.isBlank()) {
+				targetUrl = "/";
+			}
+			SavedRequest savedRequest = new SimpleSavedRequest(targetUrl);
+			httpServletRequest.getSession().setAttribute("SPRING_SECURITY_SAVED_REQUEST", savedRequest);
+			super.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
+		} catch (EsupSignatureUserException e) {
+			httpServletRequest.getSession().setAttribute("errorMsg", e.getMessage());
+			httpServletResponse.sendRedirect("/otp-access/error");
 		}
-		List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-		simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
-		Authentication newAuth = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), simpleGrantedAuthorities);
-		SecurityContextHolder.getContext().setAuthentication(newAuth);
-		String targetUrl = httpServletRequest.getSession().getAttribute("after_oauth_redirect").toString();
-		if (targetUrl == null || targetUrl.isBlank()) {
-			targetUrl = "/";
-		}
-		SavedRequest savedRequest = new SimpleSavedRequest(targetUrl);
-		httpServletRequest.getSession().setAttribute("SPRING_SECURITY_SAVED_REQUEST", savedRequest);
-		super.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
+
 	}
 	
 }

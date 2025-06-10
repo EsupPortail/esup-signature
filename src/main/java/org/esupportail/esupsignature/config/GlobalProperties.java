@@ -3,11 +3,12 @@ package org.esupportail.esupsignature.config;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//@Configuration
+@Configuration
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 

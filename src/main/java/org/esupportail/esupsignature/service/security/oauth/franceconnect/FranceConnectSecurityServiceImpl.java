@@ -1,7 +1,9 @@
 package org.esupportail.esupsignature.service.security.oauth.franceconnect;
 
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
@@ -9,10 +11,14 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepo
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Service
+@Order(4)
+@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
 public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
 	@Override
