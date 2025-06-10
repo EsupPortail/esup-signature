@@ -9,6 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -20,8 +22,10 @@ import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClientException;
@@ -44,9 +48,12 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     private final Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = new OAuth2UserRequestEntityConverter();
     private final RestOperations restOperations;
     private final List<OidcOtpSecurityService> securityServices;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public ValidatingOAuth2UserService(List<OidcOtpSecurityService> securityServices) {
+
+    public ValidatingOAuth2UserService(List<OidcOtpSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
         this.securityServices = securityServices;
+        this.clientRegistrationRepository = clientRegistrationRepository;
         JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
         jwtConverter.setSupportedMediaTypes(List.of(MediaType.valueOf("application/jwt")));
         RestTemplate restTemplate = new RestTemplate(List.of(jwtConverter));
@@ -55,12 +62,20 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
         this.restOperations = restTemplate;
     }
 
+    public JwtDecoder getJwtDecoder(String registrationId, SignatureAlgorithm signatureAlgorithm) {
+        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId(registrationId);
+        String jwkSetUri = registration.getProviderDetails().getJwkSetUri();
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
+                .jwsAlgorithm(signatureAlgorithm)
+                .build();
+    }
+
     @Override
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OidcOtpSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
-        JwtDecoder jwtDecoder = currentSecurityService.getJwtDecoder();
+        JwtDecoder jwtDecoder = getJwtDecoder(currentSecurityService.getCode(), currentSecurityService.getSignatureAlgorithm());
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(
                     MISSING_USER_INFO_URI_ERROR_CODE,

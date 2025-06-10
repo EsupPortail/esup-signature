@@ -63,6 +63,11 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Pour accéder au service Université de Rouen Normandie - Système de Gestion de Cartes - Leocarte, sélectionnez ou cherchez l'établissement auquel vous appartenez.";
+	}
+
+	@Override
 	public String getLoginUrl() {
 		return "/login/shibentry";
 	}

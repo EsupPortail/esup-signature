@@ -128,18 +128,18 @@ public class WebSecurityConfig {
 
 	@Bean
 	@Order(3)
-	@Conditional(ClientsConfiguredCondition.class)
+	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
 	public ProConnectSecurityServiceImpl proConnectSecurityService() {
-		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl(clientRegistrationRepository);
+		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl();
 		securityServices.add(oAuthSecurityService);
 		return oAuthSecurityService;
 	}
 
 	@Bean
 	@Order(4)
-	@Conditional(ClientsConfiguredCondition.class)
+	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
 	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
-		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl(webSecurityProperties, clientRegistrationRepository);
+		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl();
 		securityServices.add(oAuthSecurityService);
 		return oAuthSecurityService;
 	}
@@ -268,10 +268,11 @@ public class WebSecurityConfig {
 
 	@Bean
 	public ValidatingOAuth2UserService validatingOAuth2UserService() {
-		return new ValidatingOAuth2UserService(securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
+		return new ValidatingOAuth2UserService(securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList(), clientRegistrationRepository);
 	}
 
 	@Bean
+	@Conditional(ClientsConfiguredCondition.class)
 	public CustomAuthorizationRequestResolver customAuthorizationRequestResolver() {
 		return new CustomAuthorizationRequestResolver(clientRegistrationRepository, securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
 	}

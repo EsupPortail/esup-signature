@@ -1,22 +1,13 @@
 package org.esupportail.esupsignature.service.security.oauth.franceconnect;
 
-import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 
 import java.util.HashMap;
@@ -24,17 +15,17 @@ import java.util.Map;
 
 public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
-	private final WebSecurityProperties webSecurityProperties;
-	private final ClientRegistrationRepository clientRegistrationRepository;
-
-	public FranceConnectSecurityServiceImpl(WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
-        this.webSecurityProperties = webSecurityProperties;
-        this.clientRegistrationRepository = clientRegistrationRepository;
-    }
-
 	@Override
 	public String getTitle() {
 		return "FranceConnect";
+	}
+
+	@Override
+	public String getDescription() {
+		return """
+            J’utilise FranceConnect pour créer mon compte ou me connecter.
+            FranceConnect est la solution proposée par l’État pour sécuriser et simplifier la connexion aux services publics en ligne
+            """;
 	}
 
 	@Override
@@ -49,7 +40,7 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 
 	@Override
 	public String getLogoutUrl() {
-		return webSecurityProperties.getFranceConnectLogoutEndpoint();
+		return "/logout";
 	}
 
 	@Override
@@ -75,12 +66,8 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
     }
 
 	@Override
-	public JwtDecoder getJwtDecoder() {
-		ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("franceconnect");
-		String jwkSetUri = registration.getProviderDetails().getJwkSetUri();
-		return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-				.jwsAlgorithm(SignatureAlgorithm.RS256)
-				.build();
+	public SignatureAlgorithm getSignatureAlgorithm() {
+		return SignatureAlgorithm.RS256;
 	}
 
 	@Override
@@ -90,11 +77,5 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 		return params;
 	}
 
-	@Bean
-	@Conditional(ClientsConfiguredCondition.class)
-	public JwtDecoderFactory<ClientRegistration> franceConnectJwtDecoderFactory() {
-		final JwtDecoder decoder = getJwtDecoder();
-		return context -> decoder;
-	}
 
 }

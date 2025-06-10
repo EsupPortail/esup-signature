@@ -13,6 +13,7 @@
             <div class="text-center">
                 <th:block th:each="securityService : ${securityServices}">
                         <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
+                        <p th:text="${securityService.description}"></p>
                         <div>
                             <form th:action="${securityService.loginUrl}" method="post">
                                 <button th:class="${securityService.code} + '-button'">

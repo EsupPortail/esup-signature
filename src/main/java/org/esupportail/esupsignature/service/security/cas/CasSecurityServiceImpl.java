@@ -76,6 +76,12 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getDescription() {
+		return "Si vous êtes personnel ou étudiant utilisez votre compte unique CAS";
+	}
+
+
+	@Override
 	public String getLoginUrl() {
 		return "/login/casentry";
 	}

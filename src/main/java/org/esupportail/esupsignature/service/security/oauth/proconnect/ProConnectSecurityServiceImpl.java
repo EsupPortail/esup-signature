@@ -2,11 +2,7 @@ package org.esupportail.esupsignature.service.security.oauth.proconnect;
 
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.web.filter.GenericFilterBean;
@@ -16,15 +12,17 @@ import java.util.Map;
 
 public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
-    private final ClientRegistrationRepository clientRegistrationRepository;
-
-    public ProConnectSecurityServiceImpl(ClientRegistrationRepository clientRegistrationRepository) {
-        this.clientRegistrationRepository = clientRegistrationRepository;
-    }
-
     @Override
     public String getTitle() {
         return "ProConnect";
+    }
+
+    @Override
+    public String getDescription() {
+        return """
+                Se connecter avec ProConnect.
+                ProConnect est le moyen d'authentification commun des services numériques de l'État pour les professionnels
+            """;
     }
 
     @Override
@@ -58,12 +56,8 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
     }
 
     @Override
-    public JwtDecoder getJwtDecoder() {
-        ClientRegistration registration = clientRegistrationRepository.findByRegistrationId("proconnect");
-        String jwkSetUri = registration.getProviderDetails().getJwkSetUri();
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(SignatureAlgorithm.RS256)
-                .build();
+    public SignatureAlgorithm getSignatureAlgorithm() {
+        return SignatureAlgorithm.RS256;
     }
 
     @Override
