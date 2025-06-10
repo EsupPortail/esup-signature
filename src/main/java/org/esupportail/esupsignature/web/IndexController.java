@@ -108,6 +108,7 @@ public class IndexController {
 						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
 				}
+				model.addAttribute("message", httpServletRequest.getSession().getAttribute("errorMsg"));
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());

@@ -67,7 +67,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 			super.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
 		} catch (EsupSignatureUserException e) {
 			httpServletRequest.getSession().setAttribute("errorMsg", e.getMessage());
-			httpServletResponse.sendRedirect("/otp-access/error");
+			httpServletResponse.sendRedirect("/");
 		}
 
 	}

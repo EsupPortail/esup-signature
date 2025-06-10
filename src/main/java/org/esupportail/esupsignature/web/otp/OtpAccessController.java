@@ -6,6 +6,7 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
@@ -47,6 +48,7 @@ public class OtpAccessController {
 
     private static final PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
 
+    private final GlobalProperties globalProperties;
     private final OtpService otpService;
     private final SignBookService signBookService;
     private final UserService userService;
@@ -54,7 +56,8 @@ public class OtpAccessController {
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
 
-    public OtpAccessController(OtpService otpService, SignBookService signBookService, UserService userService, AuthenticationManager authenticationManager, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, AuthenticationManager authenticationManager, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+        this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
@@ -65,21 +68,25 @@ public class OtpAccessController {
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
-        boolean signature = true;
         model.addAttribute("urlId", urlId);
+        List<SecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).toList();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null) {
+            if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
+                authOtp(model, httpServletRequest, otp.getUser());
+                return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
+            }
             if(!otp.getSignBook().getStatus().equals(SignRequestStatus.pending) && otp.isSignature()) {
                 return "redirect:/otp-access/completed";
-            } else {
-                signature = otp.isSignature();
             }
             model.addAttribute("otp", otp);
+            model.addAttribute("smsService", smsService);
+            model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
-            model.addAttribute("securityServices", securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).toList());
+            model.addAttribute("securityServices", oidcOtpSecurityServices);
             return "otp/signin";
         }
-        if(signBookService.renewOtp(urlId, signature)) {
+        if(signBookService.renewOtp(urlId, true)) {
             return "redirect:/otp-access/expired";
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", """
@@ -142,6 +149,10 @@ public class OtpAccessController {
     @PostMapping
     public String auth(@RequestParam String urlId, @RequestParam String password, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureUserException {
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
+        if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
+            authOtp(model, httpServletRequest, otp.getUser());
+            return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
+        }
         Boolean testOtp = otpService.checkOtp(urlId, password);
         if(BooleanUtils.isTrue(testOtp)) {
             otp.setSmsSended(true);
