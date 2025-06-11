@@ -308,7 +308,7 @@ export default class SelectUser {
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +
-                    "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS</label>" +
+                    "<div class=\"d-flex col-12\"><label for=\"forcesms\" class='col-3'>Autentification SMS obligatoire</label>" +
                     "<input id=\"forcesms_" + id + "\" class=\"form-check-input \" type=\"checkbox\" name=\"forcesmses\" value='1'></div>";
             }
         }

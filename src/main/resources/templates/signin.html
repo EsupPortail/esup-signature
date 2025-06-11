@@ -27,28 +27,12 @@
                                 onclick="location.href=this.getAttribute('data-url')" th:text="${securityConfig.title}"
                                 class="btn btn-primary btn-lg col-6 m-3"></button>
                     </th:block>
-                    <th:block th:each="securityConfig : ${securityServices}">
-                        <div th:if="${securityConfig.title == 'FranceConnect'}">
-                            <div class="hr hr-center m-5"><b>OU</b></div>
-                            <h3>Utilisez FranceConnect pour accéder et/ou créer un compte.</h3>
-                            <p>
-                                Si vous possédez un compte interne à l'université de Rouen Normandie, merci d'utiliser l'authentification via CAS à l'aide du bouton "Compte Université (CAS)"
-                            </p>
-                            <div class="france-connect mx-auto">
-                                <a th:href="${securityConfig.loginUrl} + '?redirect=' + ${redirect}">
-                                    <img class="image-main" src="images/franceconnect-bouton.svg" alt="FranceConnect">
-                                    <img class="image-hover" src="images/franceconnect-bouton-hover.svg" alt="FranceConnect">
-                                </a>
-                            </div>
-                            <br>
-                            <a href="https://franceconnect.gouv.fr/">Qu’est-ce que FranceConnect ?</a>
-                        </div>
-                    </th:block>
                 </div>
             </div>
         </div>
     </div>
 </main>
+<div th:replace="~{fragments/message :: message}"></div>
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
 <script th:if="${globalProperties.enableCaptcha}">
     $(function() {

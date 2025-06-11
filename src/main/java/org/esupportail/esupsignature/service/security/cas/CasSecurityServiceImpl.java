@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import jakarta.annotation.Resource;
 import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -13,6 +12,8 @@ import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -29,51 +30,55 @@ import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Service
+@Order(1)
+@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
 public class CasSecurityServiceImpl implements SecurityService {
 
 	private static final Logger logger = LoggerFactory.getLogger(CasSecurityServiceImpl.class);
 
-	@Resource
-	private WebSecurityProperties webSecurityProperties;
-
-	@Resource
-	private SpelGroupService spelGroupService;
-
-	@Resource
-	private LdapGroupService ldapGroupService;
-
-	@Resource
-	private CasProperties casProperties;
-
-	@Resource
-	private LdapProperties ldapProperties;
-
-	@Resource
-	private CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
-
-	@Resource
-	private LdapContextSource ldapContextSource;
-
-	@Resource
-	private MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
-
-	@Resource
-	private MappingGroupsRolesRepository mappingGroupsRolesRepository;
-
-	@Resource
-	private RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
+	private final WebSecurityProperties webSecurityProperties;
+	private final SpelGroupService spelGroupService;
+	private final LdapGroupService ldapGroupService;
+	private final CasProperties casProperties;
+	private final LdapProperties ldapProperties;
+	private final CasAuthenticationSuccessHandler casAuthenticationSuccessHandler;
+	private final LdapContextSource ldapContextSource;
+	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
+	private final MappingGroupsRolesRepository mappingGroupsRolesRepository;
+	private final RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
 
 	private LdapUserDetailsService ldapUserDetailsService;
 
-	@Override
+    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy) {
+        this.webSecurityProperties = webSecurityProperties;
+        this.spelGroupService = spelGroupService;
+        this.ldapGroupService = ldapGroupService;
+        this.casProperties = casProperties;
+        this.ldapProperties = ldapProperties;
+        this.casAuthenticationSuccessHandler = casAuthenticationSuccessHandler;
+        this.ldapContextSource = ldapContextSource;
+        this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
+        this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
+        this.registerSessionAuthenticationStrategy = registerSessionAuthenticationStrategy;
+    }
+
+    @Override
 	public String getTitle() {
 		return casProperties.getTitle();
 	}
+
+	@Override
+	public String getDescription() {
+		return "Si vous êtes personnel ou étudiant utilisez votre compte unique CAS";
+	}
+
 
 	@Override
 	public String getLoginUrl() {

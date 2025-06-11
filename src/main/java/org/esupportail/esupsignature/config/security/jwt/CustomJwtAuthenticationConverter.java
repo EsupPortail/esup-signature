@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.config.security.jwt;
 
-import org.esupportail.esupsignature.service.security.jwt.AuthService;
+import org.esupportail.esupsignature.service.security.jwt.JwtAuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,10 +13,10 @@ public class CustomJwtAuthenticationConverter extends JwtAuthenticationConverter
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CustomJwtAuthenticationConverter.class);
 
-	private final AuthService authoritiesService;
+	private final JwtAuthService authoritiesService;
 
 	public CustomJwtAuthenticationConverter(
-		AuthService authoritiesService
+		JwtAuthService authoritiesService
 	) {
 		setJwtGrantedAuthoritiesConverter(this::extractAuthorities);
 		setPrincipalClaimName("uid");

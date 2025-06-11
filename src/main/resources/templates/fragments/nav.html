@@ -41,7 +41,7 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0}">
+                <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-report"
                         href="/user/reports" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-file-contract"></i> <span
@@ -172,6 +172,10 @@
                 <tr>
                     <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
+                </tr>
+                <tr>
+                    <td>Auth</td>
+                    <td th:text="${securityServiceName}"></td>
                 </tr>
                 <tr th:if="${user.userType.name == 'ldap'}">
                     <td>Token d’accès API</td>

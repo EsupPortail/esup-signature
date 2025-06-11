@@ -5,18 +5,129 @@
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="wrapper">
-        <div id="content" class="content">
-            <h1>Signature OTP</h1>
-            <form th:action="'/otp-access'" method="post">
-                <div class="col-4">
-                <input name="urlId" type="hidden" th:value="${urlId}">
-                    <div class="mb-3">
-                        <label for="password">Merci de saisir le code reçu par SMS</label>
-                <input id="password" name="password" type="password" class="form-control" maxlength="6" placeholder="Merci de saisir le code reçu par sms" autofocus>
+        <div id="content" class="content-full ms-0">
+            <div class="ms-5 mb-5">
+                <div style="height: 60px"></div>
+                <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document :'"></h4>
+                <p th:utext="'Vous devez signer le document <b>' + ${otp.signBook.subject} + '</b> transmit par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>. Contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
+            </div>
+            <div class="d-flex justify-content-center mx-auto my-auto gap-2 row">
+                <th:block th:each="securityService : ${securityServices}">
+                    <div class="text-center col-4 p-4 alert alert-light" style="min-width: 250px;">
+                        <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
+                        <p class="text-left" style="height: 100px;" th:text="${securityService.description}"></p>
+                        <div>
+                            <form th:action="${securityService.loginUrl}" method="post">
+                                <button th:class="${securityService.code} + '-button'">
+                                    <span th:class="${securityService.code} + '-sr-only'" th:text="'S`identifier avec ' + ${securityService.title}"></span>
+                                </button>
+                            </form>
+                            <p>
+                                <a
+                                        th:href="'https://www.' + ${securityService.code} + '.gouv.fr/'"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        th:title="'Qu’est-ce que ' + ${securityService.title} + ' ? - nouvelle fenêtre'"
+                                        th:text="'Qu’est-ce que ' + ${securityService.title}"
+                                >
+                                </a>
+                            </p>
+                        </div>
                     </div>
-                <input type="submit" class="btn btn-success" value="Valider">
+                </th:block>
+                <div class="accordion text-center col-4" th:if="${(smsRequired && smsService != null) || !smsRequired}">
+                    <div class="accordion-item ">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-light-subtle text-light-emphasis" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
+                                <h3>Autre méthode</h3>
+                            </button>
+                        </h3>
+                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" style="min-width: 250px;">
+                            <div class="accordion-body">
+                                <th:block th:if="${smsRequired && smsService != null}">
+                                    <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
+                                    <p class="text-left" th:if="${!securityServices.isEmpty()}">
+                                        Attention ! Merci de privilégier les autres modes de connexion
+                                    </p>
+                                    <div class="mb-4">
+                                        <form id="phoneForm" th:method="'post'" th:action="'#'">
+                                            <input type="hidden" name="urlId" th:value="${urlId}">
+                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.phone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
+                                        </form>
+                                    </div>
+                                    <div class="">
+                                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
+                                        <input name="urlId" type="hidden" th:value="${urlId}">
+                                        <label class="form-label" for="password">Saisir le code reçu par SMS</label>
+                                        <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${message == null}">
+                                        <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${message == null}">
+                                    </form>
+                                    </div>
+                                </th:block>
+                                <th:block th:unless="${smsRequired}">
+                                    <h3 class="mb-4">J’accède à la signature sans authentification complémentaire</h3>
+                                    <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
+                                        Attention ! Cette méthode n’est à utiliser que dans le cas ou vous ne pouvez pas utiliser d’autres modes
+                                    </p>
+                                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
+                                        <input name="urlId" type="hidden" th:value="${urlId}">
+                                        <input name="password" type="hidden">
+                                        <input type="submit" class="btn btn-primary" value="Continuer">
+                                    </form>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
+            <script type="module">
+                let phonesInput = document.querySelector("#phone");
+                let iti = intlTelInput(phonesInput, {
+                    validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                    strictMode: true,
+                    separateDialCode: false,
+                    nationalMode: true,
+                    countryOrder: ["fr"],
+                    customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                    searchPlaceholder: "Rechercher",
+                });
+                document.getElementById('phoneForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const form = e.target;
+                    const formData = new FormData();
+
+                    const fullPhoneNumber = iti.getNumber();
+                    formData.append('phone', fullPhoneNumber);
+                    formData.append('urlId', form.querySelector('[name="urlId"]').value);
+                    formData.append('_csrf', form.querySelector('[name="_csrf"]').value);
+
+                    fetch('/otp-access/phone', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': formData.get('_csrf')
+                        },
+                        body: formData
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Erreur lors de l’envoi');
+                            return response.text();
+                        })
+                        .then(data => {
+                            if(data !== "") {
+                                bootbox.alert(data, function () {
+                                });
+                            }
+                            $("#smsPassword").removeAttr("disabled");
+                            $("#smsSubmit").removeAttr("disabled");
+                        })
+                        .catch(error => {
+                            console.error('Erreur :', error);
+                            alert(error);
+                        });
+                });
+            </script>
         </div>
     </div>
 </main>
