@@ -62,33 +62,19 @@ public class UserService {
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
 
     private final GlobalProperties globalProperties;
-
     private final WebSecurityProperties webSecurityProperties;
-
     private final LdapPersonService ldapPersonService;
-
     private final LdapPersonLightService ldapPersonLightService;
-
     private final LdapAliasService ldapAliasService;
-
     private final LdapGroupService ldapGroupService;
-
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
-
     private final SmsService smsService;
-
     private final ShibProperties shibProperties;
-
     private final UserRepository userRepository;
-
     private final FileService fileService;
-
     private final DocumentService documentService;
-
     private final UserListService userListService;
-
     private final ObjectMapper objectMapper;
-
     private final SignRequestParamsRepository signRequestParamsRepository;
 
     public UserService(GlobalProperties globalProperties,

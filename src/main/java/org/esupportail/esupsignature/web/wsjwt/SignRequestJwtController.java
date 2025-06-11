@@ -61,7 +61,7 @@ public class SignRequestJwtController {
     @PostMapping(value ="/sign", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(security = @SecurityRequirement(name = "bearer token"), description = "Création d'une demande de signature et signature du document")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
-    public ResponseEntity<?> create(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+    public ResponseEntity<?> sign(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
                                             """

@@ -16,14 +16,14 @@ import java.util.Collection;
 import java.util.HashSet;
 
 @Service
-public class AuthService {
+public class JwtAuthService {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthService.class);
 
 	private final GlobalProperties globalProperties;
 	private final UserService userService;
 
-    public AuthService(GlobalProperties globalProperties, UserService userService) {
+    public JwtAuthService(GlobalProperties globalProperties, UserService userService) {
         this.globalProperties = globalProperties;
         this.userService = userService;
     }

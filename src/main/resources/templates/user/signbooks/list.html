@@ -53,7 +53,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')') || #authorization.expression('hasRole(''ROLE_FRANCECONNECT'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
+                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
                             title="Créer une nouvelle demande"
                             class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-plus fa-2xl"></i>
