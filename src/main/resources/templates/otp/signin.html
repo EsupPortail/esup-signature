@@ -35,16 +35,16 @@
                         </div>
                     </div>
                 </th:block>
-                <div class="accordion text-center col-4">
+                <div class="accordion text-center col-4" th:if="${(smsRequired && smsService != null) || !smsRequired}">
                     <div class="accordion-item ">
                         <h3 class="accordion-header">
                             <button class="accordion-button collapsed bg-light-subtle text-light-emphasis" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
                                 <h3>Autre méthode</h3>
                             </button>
                         </h3>
-                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" th:if="${smsService != null}" style="min-width: 250px;">
+                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" style="min-width: 250px;">
                             <div class="accordion-body">
-                                <th:block th:if="${smsRequired}">
+                                <th:block th:if="${smsRequired && smsService != null}">
                                     <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
                                     <p class="text-left" th:if="${!securityServices.isEmpty()}">
                                         Attention ! Merci de privilégier les autres modes de connexion
