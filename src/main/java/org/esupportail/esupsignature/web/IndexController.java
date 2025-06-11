@@ -108,7 +108,9 @@ public class IndexController {
 						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
 				}
-				model.addAttribute("message", httpServletRequest.getSession().getAttribute("errorMsg"));
+				if(httpServletRequest.getSession().getAttribute("errorMsg") != null) {
+					model.addAttribute("message", new JsMessage("error", httpServletRequest.getSession().getAttribute("errorMsg").toString()));
+				}
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());

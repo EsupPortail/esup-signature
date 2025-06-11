@@ -47,7 +47,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 				httpServletRequest.getSession().invalidate();
 				SecurityContextHolder.clearContext();
 				throw new EsupSignatureUserException("" +
-						"Authentification OTP interdite pour les utilisateurs internes, Merci de passer par la page d'accueil <a href='" + globalProperties.getRootUrl() + "'>Retour à l'accueil</a>");
+						"L'authentification via OTP (ProConnect ou autre) n'est pas supportée pour les utilisateurs internes.");
 			}
 			userService.createUser(id, name, firstName, email, UserType.external, true);
 			if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {

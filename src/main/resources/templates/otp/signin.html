@@ -35,39 +35,50 @@
                         </div>
                     </div>
                 </th:block>
-                <div class="text-center col-4 p-4 alert alert-light" th:if="${smsService != null}" style="min-width: 250px;">
-                    <th:block th:if="${smsRequired}">
-                    <h3>Me transmettre un code OTP par SMS</h3>
-                    <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
-                        Attention ! Merci de privilégier les autres modes de connexion
-                    </p>
-                    <div class="mt-4 mb-4">
-                        <form id="phoneForm" th:method="'post'" th:action="'#'">
-                            <input type="hidden" name="urlId" th:value="${urlId}">
-                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.phone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
-                            <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
-                        </form>
+                <div class="accordion text-center col-4">
+                    <div class="accordion-item ">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button collapsed bg-light-subtle text-light-emphasis" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
+                                <h3>Autre méthode</h3>
+                            </button>
+                        </h3>
+                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" th:if="${smsService != null}" style="min-width: 250px;">
+                            <div class="accordion-body">
+                                <th:block th:if="${smsRequired}">
+                                    <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
+                                    <p class="text-left" th:if="${!securityServices.isEmpty()}">
+                                        Attention ! Merci de privilégier les autres modes de connexion
+                                    </p>
+                                    <div class="mb-4">
+                                        <form id="phoneForm" th:method="'post'" th:action="'#'">
+                                            <input type="hidden" name="urlId" th:value="${urlId}">
+                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.phone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
+                                        </form>
+                                    </div>
+                                    <div class="">
+                                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
+                                        <input name="urlId" type="hidden" th:value="${urlId}">
+                                        <label class="form-label" for="password">Saisir le code reçu par SMS</label>
+                                        <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${message == null}">
+                                        <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${message == null}">
+                                    </form>
+                                    </div>
+                                </th:block>
+                                <th:block th:unless="${smsRequired}">
+                                    <h3 class="mb-4">J’accède à la signature sans authentification complémentaire</h3>
+                                    <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
+                                        Attention ! Cette méthode n’est à utiliser que dans le cas ou vous ne pouvez pas utiliser d’autres modes
+                                    </p>
+                                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
+                                        <input name="urlId" type="hidden" th:value="${urlId}">
+                                        <input name="password" type="hidden">
+                                        <input type="submit" class="btn btn-primary" value="Continuer">
+                                    </form>
+                                </th:block>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                    <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
-                        <input name="urlId" type="hidden" th:value="${urlId}">
-                        <label class="form-label" for="password">Saisir le code reçu par SMS</label>
-                        <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${message == null}">
-                        <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${message == null}">
-                    </form>
-                    </div>
-                    </th:block>
-                    <th:block th:unless="${smsRequired}">
-                        <h3 class="mb-4">J’accède à la signature sans authentification complémentaire</h3>
-                        <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
-                            Attention ! Cette méthode n’est à utiliser que dans le cas ou vous ne pouvez pas utiliser d’autres modes
-                        </p>
-                        <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
-                            <input name="urlId" type="hidden" th:value="${urlId}">
-                            <input name="password" type="hidden">
-                            <input type="submit" class="btn btn-primary" value="Continuer">
-                        </form>
-                    </th:block>
                 </div>
             </div>
             <script type="module">

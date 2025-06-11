@@ -31,6 +31,7 @@
         </div>
     </div>
 </main>
+<div th:replace="~{fragments/message :: message}"></div>
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
 <script th:if="${globalProperties.enableCaptcha}">
     $(function() {
