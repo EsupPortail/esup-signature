@@ -71,4 +71,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
             """)
     List<WorkflowStatusChartDto> findWorkflowStatusCount(Long id);
 
+    boolean existsByToken(String token);
+
+    List<Workflow> findByToken(String token);
 }

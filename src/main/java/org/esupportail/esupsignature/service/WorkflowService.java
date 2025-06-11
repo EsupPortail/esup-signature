@@ -220,7 +220,7 @@ public class WorkflowService {
             Workflow workflow = new Workflow();
             workflow.setName(name);
             workflow.setDescription(description);
-            workflow.setToken(title.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            workflow.setToken(generateToken(title));
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
@@ -313,7 +313,7 @@ public class WorkflowService {
         if(workflow.getCreateBy().equals(user)) {
             workflow.setName(name);
             workflow.setDescription(name);
-            workflow.setToken(name.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+            workflow.setToken(generateToken(name));
             addViewers(id, recipientsCCEmails);
         } else {
             throw new EsupSignatureRuntimeException("You are not authorized to update this workflow");
@@ -525,7 +525,7 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        workflowToUpdate.setToken(workflow.getToken().replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_"));
+        workflowToUpdate.setToken(generateToken(workflow.getToken()));
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
@@ -562,6 +562,15 @@ public class WorkflowService {
         workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
+    }
+
+    private String generateToken(String token) {
+        token = token.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_");
+        List<Workflow> workflows = workflowRepository.findByToken(token);
+        if(!workflows.isEmpty()) {
+            return token + "_" + workflows.size();
+        }
+        return token;
     }
 
     @Transactional
