@@ -15,8 +15,6 @@ public class WebSecurityProperties {
     private String groupToRoleFilterPattern;
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
-    private String franceConnectAcr = "eidas1";
-    private String franceConnectLogoutEndpoint;
     private List<String> excludedEmails = new ArrayList<>();
 
     public String[] getWsAccessAuthorizeIps() {
@@ -66,22 +64,6 @@ public class WebSecurityProperties {
 
     public void setGroupMappingSpel(Map<String, String> groupMappingSpel) {
         this.groupMappingSpel = groupMappingSpel;
-    }
-
-    public String getFranceConnectAcr() {
-        return franceConnectAcr;
-    }
-
-    public void setFranceConnectAcr(String franceConnectAcr) {
-        this.franceConnectAcr = franceConnectAcr;
-    }
-
-    public String getFranceConnectLogoutEndpoint() {
-        return franceConnectLogoutEndpoint;
-    }
-
-    public void setFranceConnectLogoutEndpoint(String franceConnectLogoutEndpoint) {
-        this.franceConnectLogoutEndpoint = franceConnectLogoutEndpoint;
     }
 
     public List<String> getExcludedEmails() {
