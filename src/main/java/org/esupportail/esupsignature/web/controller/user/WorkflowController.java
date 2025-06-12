@@ -44,6 +44,7 @@ public class WorkflowController {
         Workflow workflow = workflowService.getById(id);
         model.addAttribute("workflow", workflow);
         model.addAttribute("certificats", certificatService.getAllCertificats());
+        model.addAttribute("workflowRole", "user");
         return "user/workflows/show";
     }
 
