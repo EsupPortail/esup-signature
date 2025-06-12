@@ -88,11 +88,17 @@ public class WebAppConfig implements WebMvcConfigurer {
 						.description("Wiki Esup Signature")
 						.url("https://www.esup-portail.org/wiki/display/SIGN/Accueil"))
 				.components(new Components()
-						.addSecuritySchemes("x-api-key", new SecurityScheme()
-								.type(SecurityScheme.Type.APIKEY)
-								.name("x-api-key")
-								.description("Nécessaire ou facultatif en fonction de la configuration")
-								.in(SecurityScheme.In.HEADER)));
+						.addSecuritySchemes("bearer token",
+								new SecurityScheme()
+										.type(SecurityScheme.Type.HTTP)
+										.scheme("bearer")
+										.bearerFormat("JWT"))
+						.addSecuritySchemes("x-api-key",
+								new SecurityScheme()
+									.type(SecurityScheme.Type.APIKEY)
+									.name("x-api-key")
+									.description("Nécessaire ou facultatif en fonction de la configuration")
+									.in(SecurityScheme.In.HEADER)));
 	}
 
 }
