@@ -40,9 +40,9 @@ public class OVHSmsService implements SmsService {
         try {
             String ServiceName = objectMapper.readValue(getSmsAccount(), String[].class)[0];
             URL    QUERY  = new URI("https://eu.api.ovh.com/1.0/sms/"+ServiceName+"/jobs").toURL();
-            String BODY   = "{\"receivers\":[\"+33" + phoneNumber.substring(1, 10) + "\"],\"message\":\""+ message + "\",\"priority\":\"high\",\"senderForResponse\":" + smsProperties.getSenderForResponse() + ",\"sender\":\""+smsProperties.getUsername()+"\",\"noStopClause\":" + smsProperties.getSenderForResponse() + "}";
+            String BODY   = "{\"receivers\":[\"" + phoneNumber.substring(1, 10) + "\"],\"message\":\""+ message + "\",\"priority\":\"high\",\"senderForResponse\":" + smsProperties.getSenderForResponse() + ",\"sender\":\""+smsProperties.getUsername()+"\",\"noStopClause\":" + smsProperties.getSenderForResponse() + "}";
             StringBuffer response = getStringBuffer(METHOD, QUERY, BODY,  true);
-            logger.info("sms sended : " + response.toString());
+            logger.info("sms sended : " + response);
         } catch (IOException | URISyntaxException e) {
             throw new EsupSignatureRuntimeException(e.getMessage(), e);
         }
