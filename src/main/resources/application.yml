@@ -326,5 +326,5 @@ springdoc:
         enabled: true
         supported-submit-methods: []
         path: /swagger-ui.html
-    packages-to-scan: org.esupportail.esupsignature.web.ws
+    packages-to-scan: org.esupportail.esupsignature.web.ws, org.esupportail.esupsignature.web.wsjwt
     show-actuator: true

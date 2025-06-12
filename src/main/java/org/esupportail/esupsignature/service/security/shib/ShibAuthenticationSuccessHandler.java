@@ -44,7 +44,7 @@ public class ShibAuthenticationSuccessHandler extends SavedRequestAwareAuthentic
 			throw new EsupSignatureRuntimeException("At least one shib attribut is missing. Needed attributs are eppn, mail, sn and givenName");
 		}
 		registerSessionAuthenticationStrategy.onAuthentication(authentication, httpServletRequest, httpServletResponse);
-		httpServletRequest.getSession().setAttribute("securityServiceName", "ShibSecurityServiceImpl");
+		httpServletRequest.getSession().setAttribute("securityServiceName", "shibboleth");
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null) {
 			String queryString = defaultSavedRequest.getRequestURL();

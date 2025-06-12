@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.service.security.cas;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.User;
@@ -27,10 +26,13 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 
 	private static final Logger logger = LoggerFactory.getLogger(CasAuthenticationSuccessHandler.class);
 
-	@Resource
-	private UserService userService;
+	private final UserService userService;
 
-	@Override
+    public CasAuthenticationSuccessHandler(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Override
 	@Transactional
 	public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException {
 		logger.info("authentication success for " + authentication.getName());
@@ -45,7 +47,7 @@ public class CasAuthenticationSuccessHandler extends SavedRequestAwareAuthentica
 			Authentication newAuth = new CasAuthenticationToken("EsupSignatureCAS", auth.getPrincipal(), auth.getCredentials(), updatedAuthorities, auth.getUserDetails(), auth.getAssertion());
 			SecurityContextHolder.getContext().setAuthentication(newAuth);
 		}
-		httpServletRequest.getSession().setAttribute("securityServiceName", "CasSecurityServiceImpl");
+		httpServletRequest.getSession().setAttribute("securityServiceName", "cas");
 		DefaultSavedRequest defaultSavedRequest = (DefaultSavedRequest) httpServletRequest.getSession().getAttribute("SPRING_SECURITY_SAVED_REQUEST");
 		if(defaultSavedRequest != null) {
 			String queryString = defaultSavedRequest.getQueryString();
