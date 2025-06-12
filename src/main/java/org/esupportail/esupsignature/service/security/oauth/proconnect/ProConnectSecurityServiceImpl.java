@@ -27,7 +27,9 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
     public String getDescription() {
         return """
                 Se connecter avec ProConnect.
-                ProConnect est le moyen d'authentification commun des services numériques de l'État pour les professionnels
+                ProConnect est le moyen d'authentification commun des services numériques de l'État pour les professionnels.
+                <br>
+                <b>L'adresse email FranceConnect doit être la même que celle qui a reçu le lien de signature.</b>
             """;
     }
 
