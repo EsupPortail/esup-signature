@@ -322,6 +322,10 @@ export default class SelectUser {
                 separateDialCode: false,
                 nationalMode: true,
                 countryOrder: ["fr"],
+                initialCountry: "auto",
+                geoIpLookup: callback => {
+                    callback(navigator.language.split('-')[0]);
+                },
                 customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
                 searchPlaceholder: "Rechercher",
             });

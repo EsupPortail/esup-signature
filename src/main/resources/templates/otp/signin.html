@@ -6,17 +6,19 @@
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content-full ms-0">
-            <div class="ms-5 mb-5">
-                <div style="height: 60px"></div>
-                <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document :'"></h4>
+            <div class="text-center mb-4">
+                <div style="height: 70px"></div>
+                <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document'"></h4>
                 <p th:utext="'Vous devez signer le document <b>' + ${otp.signBook.subject} + '</b> transmit par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>. Contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
             </div>
             <div class="d-flex justify-content-center mx-auto my-auto gap-2 row">
                 <th:block th:each="securityService : ${securityServices}">
-                    <div class="text-center col-4 p-4 alert alert-light" style="min-width: 250px;">
+                    <div class="d-flex flex-column text-center col-5 p-4 alert alert-light" style="min-width: 300px;">
+                        <div class="h-100">
                         <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
-                        <p class="text-left" style="height: 100px;" th:text="${securityService.description}"></p>
-                        <div>
+                        <p class="text-left" th:utext="${securityService.description}"></p>
+                        </div>
+                        <div class=" text-center w-100">
                             <form th:action="${securityService.loginUrl}" method="post">
                                 <button th:class="${securityService.code} + '-button'">
                                     <span th:class="${securityService.code} + '-sr-only'" th:text="'S`identifier avec ' + ${securityService.title}"></span>
@@ -35,14 +37,15 @@
                         </div>
                     </div>
                 </th:block>
-                <div class="accordion text-center col-4" th:if="${(smsRequired && smsService != null) || !smsRequired}">
+                <div class="accordion text-center col-5" th:if="${(smsRequired && smsService != null) || !smsRequired}" style="min-width: 300px;padding: 0;" >
                     <div class="accordion-item ">
                         <h3 class="accordion-header">
-                            <button class="accordion-button collapsed bg-light-subtle text-light-emphasis" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
-                                <h3>Autre méthode</h3>
+                            <button class="accordion-button bg-light-subtle text-light-emphasis" th:classappend="${!securityServices.isEmpty() ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#otherMethod" aria-expanded="true" aria-controls="otherMethod">
+                                <h3 th:if="${securityServices.isEmpty()}">Authentification</h3>
+                                <h3 th:unless="${securityServices.isEmpty()}">Autre méthode</h3>
                             </button>
                         </h3>
-                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" style="min-width: 250px;">
+                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" th:classappend="${!securityServices.isEmpty() ? '' : 'show'}" style="min-width: 250px;">
                             <div class="accordion-body">
                                 <th:block th:if="${smsRequired && smsService != null}">
                                     <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
@@ -66,7 +69,7 @@
                                     </div>
                                 </th:block>
                                 <th:block th:unless="${smsRequired}">
-                                    <h3 class="mb-4">J’accède à la signature sans authentification complémentaire</h3>
+                                    <p class="text-left"><b>J’accède à la signature sans authentification complémentaire</b></p>
                                     <p class="text-left" style="height: 100px;" th:if="${!securityServices.isEmpty()}">
                                         Attention ! Cette méthode n’est à utiliser que dans le cas ou vous ne pouvez pas utiliser d’autres modes
                                     </p>
@@ -87,6 +90,10 @@
                     validationNumberTypes: "FIXED_LINE_OR_MOBILE",
                     strictMode: true,
                     separateDialCode: false,
+                    initialCountry: "auto",
+                    geoIpLookup: callback => {
+                        callback(navigator.language.split('-')[0]);
+                    },
                     nationalMode: true,
                     countryOrder: ["fr"],
                     customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
@@ -111,7 +118,7 @@
                         body: formData
                     })
                         .then(response => {
-                            if (!response.ok) throw new Error('Erreur lors de l’envoi');
+                            if (!response.ok) throw new Error('Erreur lors de l’envoi du numéro de mobile');
                             return response.text();
                         })
                         .then(data => {
@@ -124,7 +131,8 @@
                         })
                         .catch(error => {
                             console.error('Erreur :', error);
-                            alert(error);
+                            bootbox.alert(error.message, function () {
+                            });
                         });
                 });
             </script>
