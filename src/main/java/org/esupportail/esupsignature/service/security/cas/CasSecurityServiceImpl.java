@@ -75,10 +75,14 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getCode() {
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
 	public String getDescription() {
 		return "Si vous êtes personnel ou étudiant utilisez votre compte unique CAS";
 	}
-
 
 	@Override
 	public String getLoginUrl() {
@@ -86,7 +90,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
-	public String getLogoutUrl() {
+	public String getLoggedOutUrl() {
 		return casProperties.getUrl() + "/logout";
 	}
 

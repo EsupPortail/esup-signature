@@ -82,10 +82,11 @@ public class WebSecurityConfig {
 	private final List<SecurityService> securityServices;
 	private final RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	private final SessionRegistryImpl sessionRegistry;
+	private final LogoutHandlerImpl logoutHandler;
 
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -94,6 +95,7 @@ public class WebSecurityConfig {
         this.securityServices = securityServices;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.sessionRegistry = sessionRegistry;
+        this.logoutHandler = logoutHandler;
     }
 
 //	@Bean
@@ -233,8 +235,8 @@ public class WebSecurityConfig {
 		http.logout(logout -> logout.invalidateHttpSession(true)
 						.logoutRequestMatcher(
 								antMatcher("/logout")
-						));
-		http.logout(logout -> logout.addLogoutHandler(logoutHandler())
+						).logoutSuccessUrl("/logged-out"));
+		http.logout(logout -> logout.addLogoutHandler(logoutHandler)
 				.logoutSuccessUrl("/login").permitAll());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/resources/**"))
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
@@ -288,6 +290,7 @@ public class WebSecurityConfig {
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/logged-out")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv"))
 				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
 		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps());
@@ -331,11 +334,6 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).denyAll());
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
-	}
-
-	@Bean
-	public LogoutHandlerImpl logoutHandler() {
-		return new LogoutHandlerImpl();
 	}
 
 	@Bean

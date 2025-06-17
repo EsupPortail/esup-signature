@@ -53,6 +53,11 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
+	public String getCode() {
+		return this.getClass().getSimpleName();
+	}
+
+	@Override
 	public String getDescription() {
 		return "Pour accéder au service Université de Rouen Normandie - Système de Gestion de Cartes - Leocarte, sélectionnez ou cherchez l'établissement auquel vous appartenez.";
 	}
@@ -63,7 +68,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	}
 
 	@Override
-	public String getLogoutUrl() {
+	public String getLoggedOutUrl() {
 		return shibProperties.getIdpUrl() + "/idp/profile/Logout";
 	}
 

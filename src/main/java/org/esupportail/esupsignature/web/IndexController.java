@@ -17,6 +17,7 @@
  */
 package org.esupportail.esupsignature.web;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequestMapping("/")
 @Controller
@@ -191,7 +193,20 @@ public class IndexController {
 	}
 
 	@GetMapping("/logged-out")
-	public String loggedOut() {
+	public String loggedOut(HttpServletRequest httpServletRequest) {
+		String returnedState = httpServletRequest.getParameter("state");
+		String expectedState = null;
+		if (httpServletRequest.getCookies() != null) {
+			for (Cookie cookie : httpServletRequest.getCookies()) {
+				if ("logout_state".equals(cookie.getName())) {
+					expectedState = cookie.getValue();
+				}
+			}
+		}
+		if (!Objects.equals(returnedState, expectedState)) {
+			throw new IllegalStateException("Échec vérification du state !");
+		}
+		httpServletRequest.getSession().invalidate();
 		return "logged-out";
 	}
 
