@@ -566,11 +566,13 @@ public class WorkflowService {
 
     private String generateToken(String token) {
         token = token.replaceAll("[\\\\/:*?\"<>|]", "_").replace(" ", "_");
-        List<Workflow> workflows = workflowRepository.findByToken(token);
-        if(!workflows.isEmpty()) {
-            return token + "_" + workflows.size();
+        String baseToken = token.replaceAll("_\\d+$", "");
+
+        List<Workflow> workflows = workflowRepository.findByTokenStartingWith(baseToken);
+        if (!workflows.isEmpty()) {
+            return baseToken + "_" + workflows.size();
         }
-        return token;
+        return baseToken;
     }
 
     @Transactional
