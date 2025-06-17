@@ -6,9 +6,10 @@ import org.springframework.web.filter.GenericFilterBean;
 
 public interface SecurityService {
 	String getTitle();
+	String getCode();
 	String getDescription();
 	String getLoginUrl();
-	String getLogoutUrl();
+	String getLoggedOutUrl();
 	AuthenticationEntryPoint getAuthenticationEntryPoint();
 	GenericFilterBean getAuthenticationProcessingFilter();
 	UserDetailsService getUserDetailsService();
