@@ -43,8 +43,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 			if(userService.checkMailDomain(email) != UserType.external) {
 				httpServletRequest.getSession().invalidate();
 				SecurityContextHolder.clearContext();
-				throw new EsupSignatureUserException("" +
-						"L'authentification via OTP (ProConnect ou autre) n'est pas supportée pour les utilisateurs internes.");
+				throw new EsupSignatureUserException("L'authentification via OTP (ProConnect ou autre) n'est pas supportée pour les utilisateurs internes.");
 			}
 			userService.createUser(id, name, firstName, email, UserType.external, true);
 			if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {

@@ -29,7 +29,6 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
         this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
-
     @Override
 	public String getTitle() {
 		return "FranceConnect";
