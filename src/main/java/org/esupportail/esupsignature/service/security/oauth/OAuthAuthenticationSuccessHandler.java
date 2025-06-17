@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service.security.oauth;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
@@ -25,11 +24,9 @@ import java.util.List;
 @Service
 public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-	private final GlobalProperties globalProperties;
 	private final UserService userService;
 
-    public OAuthAuthenticationSuccessHandler(GlobalProperties globalProperties, UserService userService) {
-        this.globalProperties = globalProperties;
+    public OAuthAuthenticationSuccessHandler(UserService userService) {
         this.userService = userService;
     }
 

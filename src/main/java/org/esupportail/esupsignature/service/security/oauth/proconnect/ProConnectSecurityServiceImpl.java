@@ -43,9 +43,11 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
         return "/login/proconnectentry";
     }
 
+
+
     @Override
-    public String getLogoutUrl() {
-        return "/logout";
+    public String getLoggedOutUrl() {
+        return "/logged-out";
     }
 
     @Override
@@ -61,6 +63,11 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
     @Override
     public UserDetailsService getUserDetailsService() {
         return null;
+    }
+
+    @Override
+    public String getLogoutUrl() {
+        return "";
     }
 
     @Override
