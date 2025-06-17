@@ -73,5 +73,5 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
 
     boolean existsByToken(String token);
 
-    List<Workflow> findByToken(String token);
+    List<Workflow> findByTokenStartingWith(String token);
 }
