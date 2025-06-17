@@ -71,16 +71,27 @@ public class OtpSignRequestController {
     @Resource
     private LogService logService;
 
-    @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/signbook-redirect/{id}")
-    public String redirect(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
+    public String redirect(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws IOException, EsupSignatureRuntimeException {
         SignBook signBook = signBookService.getById(id);
+        if(!preAuthorizeService.signBookView(id, userEppn, authUserEppn)) {
+            User user = userService.getByEppn(userEppn);
+            redirectAttributes.addFlashAttribute("errorMsg", "Access non autorisé");
+            if (signBook.getLiveWorkflow().getCurrentStep().getRecipients().stream().noneMatch(r -> r.getUser().getEmail().equals(user.getEmail()))) {
+                redirectAttributes.addFlashAttribute("errorMsg",
+                        "<p>L'adresse email liée à votre authentification ne correspond pas à celle indiquée dans la demande initiale.<br>\n" +
+                                "Voici l'adresse transmise par votre fournisseur d'identité :"
+                                + user.getEmail() +
+                                "</p><p>Vous pouvez soit modifier votre adresse de contact auprès de votre fournisseur d'identité, soit contacter le gestionnaire de la demande afin qu’il mette à jour l’email de contact dans la demande de signature.</p>");
+            }
+            return "redirect:/otp-access/error";
+        }
         return "redirect:/otp/signrequests/" + signBook.getSignRequests().get(0).getId();
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, HttpSession httpSession) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(id);
         model.addAttribute("urlProfil", "otp");
         model.addAttribute("displayNotif", false);
