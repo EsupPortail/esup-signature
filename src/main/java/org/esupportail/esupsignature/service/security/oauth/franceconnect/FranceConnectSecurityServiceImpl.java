@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.AuthenticatedPrincipalOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
@@ -21,7 +23,13 @@ import java.util.Map;
 @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
 public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
-	@Override
+	private final ClientRegistrationRepository clientRegistrationRepository;
+
+    public FranceConnectSecurityServiceImpl(ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
+
+    @Override
 	public String getTitle() {
 		return "FranceConnect";
 	}
@@ -48,7 +56,20 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 
 	@Override
 	public String getLogoutUrl() {
-		return "/logout";
+		ClientRegistration registration = clientRegistrationRepository
+				.findByRegistrationId(getCode());
+
+		if (registration != null) {
+			return registration.getProviderDetails().getConfigurationMetadata()
+					.getOrDefault("end_session_endpoint", "")
+					.toString();
+		}
+		return "";
+	}
+
+	@Override
+	public String getLoggedOutUrl() {
+		return "/logged-out";
 	}
 
 	@Override

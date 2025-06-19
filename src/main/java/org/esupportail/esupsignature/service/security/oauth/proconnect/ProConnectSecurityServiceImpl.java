@@ -4,6 +4,8 @@ import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -17,6 +19,12 @@ import java.util.Map;
 @Order(3)
 @ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
 public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
+
+    private final ClientRegistrationRepository clientRegistrationRepository;
+
+    public ProConnectSecurityServiceImpl(ClientRegistrationRepository clientRegistrationRepository) {
+        this.clientRegistrationRepository = clientRegistrationRepository;
+    }
 
     @Override
     public String getTitle() {
@@ -43,9 +51,11 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
         return "/login/proconnectentry";
     }
 
+
+
     @Override
-    public String getLogoutUrl() {
-        return "/logout";
+    public String getLoggedOutUrl() {
+        return "/logged-out";
     }
 
     @Override
@@ -61,6 +71,19 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
     @Override
     public UserDetailsService getUserDetailsService() {
         return null;
+    }
+
+    @Override
+    public String getLogoutUrl() {
+        ClientRegistration registration = clientRegistrationRepository
+                .findByRegistrationId(getCode());
+
+        if (registration != null) {
+            return registration.getProviderDetails().getConfigurationMetadata()
+                    .getOrDefault("end_session_endpoint", "")
+                    .toString();
+        }
+        return "";
     }
 
     @Override

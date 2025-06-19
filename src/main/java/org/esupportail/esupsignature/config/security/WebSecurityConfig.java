@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.config.security;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.security.cas.CasJwtDecoder;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.jwt.CustomJwtAuthenticationConverter;
 import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
@@ -43,8 +44,6 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -82,10 +81,11 @@ public class WebSecurityConfig {
 	private final List<SecurityService> securityServices;
 	private final RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	private final SessionRegistryImpl sessionRegistry;
-
+	private final LogoutHandlerImpl logoutHandler;
+	private final CasJwtDecoder casJwtDecoder;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -94,6 +94,8 @@ public class WebSecurityConfig {
         this.securityServices = securityServices;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.sessionRegistry = sessionRegistry;
+        this.logoutHandler = logoutHandler;
+        this.casJwtDecoder = casJwtDecoder;
     }
 
 //	@Bean
@@ -140,10 +142,9 @@ public class WebSecurityConfig {
 	@Bean
 	@Order(5)
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
-		http.cors(AbstractHttpConfigurer::disable)
-				.securityMatcher("/ws-jwt/**");
+		http.cors(AbstractHttpConfigurer::disable).securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
-			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(jwtDecoder())
+			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
 					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(jwtAuthService))));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
@@ -153,7 +154,7 @@ public class WebSecurityConfig {
 		return http.build();
 	}
 
-	@Value("${spring.security.oauth2.client.provider.esup-signature.issuer-uri:}")
+	@Value("${spring.security.oauth2.client.provider.cas.issuer-uri:}")
 	private String issuerUri;
 
 	@Bean
@@ -175,12 +176,6 @@ public class WebSecurityConfig {
 				return null;
 			}
 		};
-	}
-
-	@Bean
-	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.esup-signature.issuer-uri")
-	public JwtDecoder jwtDecoder() {
-		return JwtDecoders.fromIssuerLocation(issuerUri);
 	}
 
 	@Bean
@@ -233,8 +228,8 @@ public class WebSecurityConfig {
 		http.logout(logout -> logout.invalidateHttpSession(true)
 						.logoutRequestMatcher(
 								antMatcher("/logout")
-						));
-		http.logout(logout -> logout.addLogoutHandler(logoutHandler())
+						).logoutSuccessUrl("/logged-out"));
+		http.logout(logout -> logout.addLogoutHandler(logoutHandler)
 				.logoutSuccessUrl("/login").permitAll());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/resources/**"))
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
@@ -288,6 +283,7 @@ public class WebSecurityConfig {
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/")).permitAll());
+		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/logged-out")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/workflows/**/datas/csv"))
 				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
 		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps());
@@ -331,11 +327,6 @@ public class WebSecurityConfig {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/ws/**")).denyAll());
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(antMatcher("/actuator/**")).denyAll());
 		}
-	}
-
-	@Bean
-	public LogoutHandlerImpl logoutHandler() {
-		return new LogoutHandlerImpl();
 	}
 
 	@Bean

@@ -192,6 +192,10 @@
 							<i class="fa-solid fa-stop-circle"></i>
 							<span th:text="${signRequestTab.title}"></span>
 						</span>
+						<span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+							<i class="fa-solid fa-file"></i>
+							<span th:text="${signRequestTab.title}"></span>
+						</span>
 					</div>
 				</a>
 			</li>

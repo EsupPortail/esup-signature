@@ -17,7 +17,8 @@ public class OtpAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
         simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
-        return new UsernamePasswordAuthenticationToken(name, password, simpleGrantedAuthorities);
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(name, password, simpleGrantedAuthorities);
+        return usernamePasswordAuthenticationToken;
     }
 
     @Override

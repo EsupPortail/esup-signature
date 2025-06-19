@@ -127,6 +127,10 @@ public class Workflow {
         this.token = token;
     }
 
+    public String getTitle() {
+        return token;
+    }
+
     public String getName() {
         return name;
     }
