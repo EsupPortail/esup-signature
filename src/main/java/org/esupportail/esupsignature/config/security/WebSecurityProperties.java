@@ -16,6 +16,7 @@ public class WebSecurityProperties {
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
     private List<String> excludedEmails = new ArrayList<>();
+    private List<String> jwtWsAuthorizedAudiences = new ArrayList<>();
 
     public String[] getWsAccessAuthorizeIps() {
         return wsAccessAuthorizeIps;
@@ -72,5 +73,13 @@ public class WebSecurityProperties {
 
     public void setExcludedEmails(List<String> excludedEmails) {
         this.excludedEmails = excludedEmails;
+    }
+
+    public List<String> getJwtWsAuthorizedAudiences() {
+        return jwtWsAuthorizedAudiences;
+    }
+
+    public void setJwtWsAuthorizedAudiences(List<String> jwtWsAuthorizedAudiences) {
+        this.jwtWsAuthorizedAudiences = jwtWsAuthorizedAudiences;
     }
 }

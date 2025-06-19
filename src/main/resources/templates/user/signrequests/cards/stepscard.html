@@ -95,7 +95,7 @@
                                                     <div class="modal-body">
                                                         <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                         <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
-                                                        <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
+                                                        <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
                                                         <br>
                                                         <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
                                                         </form>
