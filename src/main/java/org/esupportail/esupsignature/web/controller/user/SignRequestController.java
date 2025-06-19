@@ -202,6 +202,7 @@ public class SignRequestController {
             model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
         }
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported)) {
+            model.addAttribute("auditTrailChecked", true);
             model.addAttribute("externalsRecipients", signRequestService.getExternalRecipients(signRequest.getId()));
         }
         return "user/signrequests/show";

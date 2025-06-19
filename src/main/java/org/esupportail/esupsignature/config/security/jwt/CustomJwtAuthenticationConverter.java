@@ -15,9 +15,7 @@ public class CustomJwtAuthenticationConverter extends JwtAuthenticationConverter
 
 	private final JwtAuthService authoritiesService;
 
-	public CustomJwtAuthenticationConverter(
-		JwtAuthService authoritiesService
-	) {
+	public CustomJwtAuthenticationConverter(JwtAuthService authoritiesService) {
 		setJwtGrantedAuthoritiesConverter(this::extractAuthorities);
 		setPrincipalClaimName("uid");
 		this.authoritiesService = authoritiesService;

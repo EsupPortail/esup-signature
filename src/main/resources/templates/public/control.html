@@ -63,7 +63,9 @@
                                 <tbody>
                                 <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
                                     <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                        <td><i class="fa-solid fa-signature"></i></td>
+                                        <td>
+                                            <i class="fa-solid caret-toggle"></i>
+                                        </td>
                                         <td class="text-left"><span
                                                 th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                         <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
@@ -74,12 +76,19 @@
                                         <td colspan="6">
                                             <dl class="row border-bottom m-0">
                                                 <dt class="col-lg-5">Login : </dt>
-                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                <dd th:text="${auditStep.login}"></dd>
                                             </dl>
                                             <dl class="row border-bottom m-0">
                                                 <dt class="col-lg-5">Authentification : </dt>
-                                                <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                <dd>
+                                                    <pre class="prettyprint" style="max-width: 600px; overflow-x: auto;"><code class="language-json" th:text="${auditStep.pettyPrintAuthenticationDetails}"></code></pre>
+                                                </dd>
                                             </dl>
+                                            <link rel="stylesheet" th:href="@{/webjars/highlightjs/styles/github.min.css}">
+                                            <script th:src="@{/webjars/highlightjs/highlight.min.js}"></script>
+                                            <script type="module">
+                                                hljs.highlightAll();
+                                            </script>
                                             <dl class="row border-bottom m-0">
                                                 <dt class="col-lg-5">Id signature : </dt>
                                                 <dd th:text="${auditStep.signId}"></dd>
@@ -118,7 +127,7 @@
                     </div>
                 </th:block>
                 <div th:if="${signRequest != null || (auditTrailChecked != null && auditTrailChecked)}" class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: auto;">
-                    <h4>Journal des actions</h4>
+                    <h5>Journal des actions</h5>
                     <table class="table table-sm table-hover">
                         <thead class="table-secondary">
                         <tr>

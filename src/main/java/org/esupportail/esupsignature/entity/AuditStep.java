@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.Map;
 
@@ -172,6 +174,15 @@ public class AuditStep {
 
     public void setAuthenticationDetails(Map<String, String> authenticationDetails) {
         this.authenticationDetails = authenticationDetails;
+    }
+
+    public String getPettyPrintAuthenticationDetails() {
+        try {
+            ObjectWriter prettyPrinter = new ObjectMapper().writerWithDefaultPrettyPrinter();
+            return prettyPrinter.writeValueAsString(authenticationDetails);
+        } catch (Exception e) {
+            return "{}";
+        }
     }
 
     public SignRequestParams getSignRequestParams() {

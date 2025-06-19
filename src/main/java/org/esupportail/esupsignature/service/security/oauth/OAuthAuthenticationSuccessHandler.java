@@ -46,13 +46,18 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 				throw new EsupSignatureUserException("L'authentification via OTP (ProConnect ou autre) n'est pas supportée pour les utilisateurs internes.");
 			}
 			userService.createUser(id, name, firstName, email, UserType.external, true);
+			Authentication newAuth;
+			List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+			simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
 			if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
 				String registrationId = oauth2Token.getAuthorizedClientRegistrationId();
 				httpServletRequest.getSession().setAttribute("securityServiceName", registrationId);
+				newAuth = new OAuth2AuthenticationToken(oauth2Token.getPrincipal(), simpleGrantedAuthorities, oauth2Token.getAuthorizedClientRegistrationId());
+			} else {
+				httpServletRequest.getSession().setAttribute("securityServiceName", "sms");
+				newAuth = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), simpleGrantedAuthorities);
 			}
-			List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-			simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_OTP"));
-			Authentication newAuth = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), simpleGrantedAuthorities);
+
 			SecurityContextHolder.getContext().setAuthentication(newAuth);
 			String targetUrl = httpServletRequest.getSession().getAttribute("after_oauth_redirect").toString();
 			if (targetUrl == null || targetUrl.isBlank()) {

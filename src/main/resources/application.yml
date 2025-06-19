@@ -271,6 +271,7 @@ security:
             for.esup-signature.user: ROLE_USER
         ws-access-authorize-ips:
         actuators-access-authorize-ips:
+        jwt-ws-authorized-audiences: esup-signature
 #        group-mapping-spel:
 #            for.esup-signature.user: "true"	
 
