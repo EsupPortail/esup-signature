@@ -94,12 +94,19 @@
                                                     <td colspan="6">
                                                         <dl class="row border-bottom m-0">
                                                             <dt class="col-lg-5">Login : </dt>
-                                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                            <dd th:text="${auditStep.login}"></dd>
                                                         </dl>
                                                         <dl class="row border-bottom m-0">
                                                             <dt class="col-lg-5">Authentification : </dt>
-                                                            <dd th:text="${auditStep.authenticationDetails}"></dd>
+                                                            <dd>
+                                                                <pre class="prettyprint"><code class="language-json" th:text="${auditStep.pettyPrintAuthenticationDetails}"></code></pre>
+                                                            </dd>
                                                         </dl>
+                                                        <link rel="stylesheet" th:href="@{/webjars/highlightjs/styles/github.min.css}">
+                                                        <script th:src="@{/webjars/highlightjs/highlight.min.js}"></script>
+                                                        <script type="module">
+                                                            hljs.highlightAll();
+                                                        </script>
                                                         <dl class="row border-bottom m-0">
                                                             <dt class="col-lg-5">Id signature : </dt>
                                                             <dd th:text="${auditStep.signId}"></dd>
@@ -300,8 +307,9 @@
             </div>
             <link rel="stylesheet" th:href="@{/webjars/highlightjs/styles/stackoverflow-light.min.css}">
             <script th:src="@{/webjars/highlightjs/highlight.min.js}"></script>
+            <script th:src="@{/webjars/highlightjs/languages/xml.min.js}"></script>
             <script type="text/javascript" th:src="@{/js/jsValidationResult.js}"></script>
-            <script type="text/javascript">hljs.highlightAll();</script> <!-- highlight XML code -->
+            <script type="text/javascript">hljs.highlightAll();</script>
             <script type="text/javascript" th:inline="javascript">
                 /*<![CDATA[*/
                 $('#tabsResult a').click(function(e) {

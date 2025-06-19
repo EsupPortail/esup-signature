@@ -49,6 +49,7 @@ public class UserShareService {
         this.globalProperties = globalProperties;
     }
 
+    @Transactional
     public List<User> getSuUsers(String authUserEppn) {
         List<User> suUsers = new ArrayList<>();
         if(globalProperties.getShareMode() > 0) {
