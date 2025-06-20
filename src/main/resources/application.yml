@@ -124,7 +124,7 @@ spring:
 #        oauth2:
 #          client:
 #              provider:
-#                esup-signature:
+#                cas:
 #                    issuer-uri: https://cas.univ-ville.fr/oidc
 
 ## Exemple france connect
