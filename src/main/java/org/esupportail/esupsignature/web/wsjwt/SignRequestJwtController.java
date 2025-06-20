@@ -118,7 +118,6 @@ public class SignRequestJwtController {
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
                                     @RequestParam(required = false) @Parameter(description = "Emplacement final", example = "smb://drive.univ-ville.fr/forms-archive/") String targetUrl,
                                     @RequestParam(required = false) @Parameter(description = "Retour au format json (facultatif, false par défaut)") Boolean json,
-                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants") List<String> recipientsEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Liste des participants (ancien nom)") List<String> recipientEmails,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
@@ -169,8 +168,7 @@ public class SignRequestJwtController {
 
     @GetMapping(value = "/get-last-file/{id}")
     @Operation(security = @SecurityRequirement(name = "bearer token"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
-    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
-                                                           @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
+    public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
         SignRequest signRequest = signRequestService.getById(id);

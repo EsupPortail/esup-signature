@@ -15,7 +15,6 @@ import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.jwt.JwtAuthService;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
@@ -77,7 +76,6 @@ public class WebSecurityConfig {
 	private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
 	private final WebSecurityProperties webSecurityProperties;
 	private final ClientRegistrationRepository clientRegistrationRepository;
-	private final JwtAuthService jwtAuthService;
 	private final List<SecurityService> securityServices;
 	private final RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	private final SessionRegistryImpl sessionRegistry;
@@ -85,12 +83,11 @@ public class WebSecurityConfig {
 	private final CasJwtDecoder casJwtDecoder;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.jwtAuthService = jwtAuthService;
         this.securityServices = securityServices;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.sessionRegistry = sessionRegistry;
@@ -140,16 +137,17 @@ public class WebSecurityConfig {
 //	}
 
 	@Bean
-	@Order(5)
+	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.cas.issuer-uri")
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
-		http.cors(AbstractHttpConfigurer::disable).securityMatcher("/ws-jwt/**");
+		http.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
 			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
-					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(jwtAuthService))));
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter())));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
 		}
+		http.cors(AbstractHttpConfigurer::disable);
 		http.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class);
 		return http.build();
 	}
