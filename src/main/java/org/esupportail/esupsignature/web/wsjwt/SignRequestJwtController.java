@@ -166,6 +166,7 @@ public class SignRequestJwtController {
         return ResponseEntity.internalServerError().body("-1");
     }
 
+    @CrossOrigin
     @GetMapping(value = "/get-last-file/{id}")
     @Operation(security = @SecurityRequirement(name = "bearer token"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
@@ -174,8 +175,31 @@ public class SignRequestJwtController {
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest.getCreateBy().getEppn().equals(user.getEppn())) {
             signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok().build();
+    }
+
+    @CrossOrigin
+    @DeleteMapping("/{id}")
+    @Operation(security = @SecurityRequirement(name = "bearer-token"), description = "Supprimer une demande de signature définitivement")
+    public ResponseEntity<String> delete(@PathVariable Long id,
+                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
+        SignRequest signRequest = signRequestService.getById(id);
+        if(signRequest.getCreateBy().getEppn().equals(user.getEppn())) {
+            Long signBookId = signRequestService.getParentIdIfSignRequestUnique(id);
+            if (signBookId != null) {
+                signBookService.deleteDefinitive(signBookId, "system");
+            } else {
+                signRequestService.deleteDefinitive(id, "system");
+            }
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
 }
