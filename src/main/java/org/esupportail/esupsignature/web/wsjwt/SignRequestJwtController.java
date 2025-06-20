@@ -60,7 +60,6 @@ public class SignRequestJwtController {
     @CrossOrigin
     @PostMapping(value ="/sign", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     @Operation(security = @SecurityRequirement(name = "bearer token"), description = "Création d'une demande de signature et signature du document")
-    @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> sign(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                     @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
@@ -169,14 +168,13 @@ public class SignRequestJwtController {
     }
 
     @GetMapping(value = "/get-last-file/{id}")
-    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
-    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    @Operation(security = @SecurityRequirement(name = "bearer token"), description = "Récupérer le dernier fichier signé d'une demande", responses = @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = byte[].class), mediaType = MediaType.APPLICATION_PDF_VALUE)))
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
         SignRequest signRequest = signRequestService.getById(id);
-        if(signRequest.getCreateBy().equals(user)) {
+        if(signRequest.getCreateBy().getEppn().equals(user.getEppn())) {
             signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
         }
         return ResponseEntity.ok().build();
