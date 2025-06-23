@@ -84,6 +84,7 @@ public class SignRequestJwtController {
                                                   ],
                                                   "signRequestParams": [
                                                     {
+                                                      "pdSignatureFieldName": "string",
                                                       "signPageNumber": 1,
                                                       "signDocumentNumber": 0,
                                                       "signWidth": 150,

@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,6 +58,30 @@ public class SignRequestParamsService {
 
     public SignRequestParams getById(Long id) {
         return signRequestParamsRepository.findById(id).orElseThrow();
+    }
+
+
+    public SignRequestParams getSignatureField(MultipartFile documentToSign, String pdSignatureFieldName) {
+        try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
+            Map<String, Integer> pageNrByAnnotDict = pdfService.getPageNumberByAnnotDict(pdDocument);
+            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
+            PDPageTree pdPages = pdDocument.getDocumentCatalog().getPages();
+            if (pdAcroForm != null) {
+                for (PDField pdField : pdAcroForm.getFields()) {
+                    if (pdField instanceof PDSignatureField) {
+                        if (pdField.getPartialName().equals(pdSignatureFieldName)) {
+                            PDRectangle pdRectangle = pdField.getWidgets().get(0).getRectangle();
+                            int pageNum = pageNrByAnnotDict.get(pdSignatureFieldName);
+                            PDPage pdPage = pdPages.get(pageNum);
+                            return createFromPdf(pdSignatureFieldName, pdRectangle, pageNum, pdPage);
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("error on get signature field", e);
+        }
+        return null;
     }
 
     public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage) {
