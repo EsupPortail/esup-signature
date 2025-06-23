@@ -789,7 +789,6 @@ export class WorkspacePdf {
         comment.css('top', yPos * this.pdfViewer.scale + offset);
         $("#postitComment").removeAttr("disabled");
         $("#spotStepNumber").removeAttr("disabled");
-        $("#addSignParams").removeAttr("disabled");
         comment.show();
         this.signPosition.lockSigns();
         // this.signPosition.stopDragSignature(true);
