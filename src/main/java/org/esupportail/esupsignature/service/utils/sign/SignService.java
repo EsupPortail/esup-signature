@@ -157,11 +157,13 @@ public class SignService {
 				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				aSiCWithCAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithCAdESSignatureParameters;
+				fillCommonsParameters(parameters, signatureDocumentForm);
 			} else if(signatureForm.equals(SignatureForm.XAdES)) {
 				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
+				fillCommonsParameters(parameters, signatureDocumentForm);
 			} else {
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
