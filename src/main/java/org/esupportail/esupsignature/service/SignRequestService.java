@@ -1491,4 +1491,9 @@ public class SignRequestService {
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
 		}
 	}
+
+	public boolean isCurrentUserAsSigned(SignRequest signRequest, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		return signRequest.getRecipientHasSigned().entrySet().stream().anyMatch(rhs -> rhs.getValue().getActionType().equals(ActionType.signed) && rhs.getKey().getUser().getEppn().equals(user.getEppn()));
+	}
 }
