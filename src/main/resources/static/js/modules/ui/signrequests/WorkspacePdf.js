@@ -280,6 +280,7 @@ export class WorkspacePdf {
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
         if((this.currentSignType === "nexuSign" || this.currentSignType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
+            $("#addSignButton2").addClass("d-none");
         }
     }
 

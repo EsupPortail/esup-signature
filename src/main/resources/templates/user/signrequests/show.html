@@ -625,7 +625,7 @@
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
                                             <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="" th:required="${globalProperties.smsRequired}">
+                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="">
                                         </div>
                                     </div>
                                 </th:block>

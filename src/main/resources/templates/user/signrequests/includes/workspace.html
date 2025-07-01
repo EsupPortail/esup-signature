@@ -262,7 +262,7 @@
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                                    <option th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>
                             </select>
                         </div>

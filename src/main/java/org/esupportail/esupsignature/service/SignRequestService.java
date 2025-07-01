@@ -311,7 +311,7 @@ public class SignRequestService {
 	public SignRequestParams findLastSignRequestParams(List<SignRequestParams> signRequestParamses) {
 		SignRequestParams lastSignRequestParams = null;
 		for (SignRequestParams signRequestParams : signRequestParamses) {
-			if (signRequestParams.getSignImageNumber() >= 0) {
+			if (signRequestParams.getSignImageNumber() >= 0 && !signRequestParams.getIsExtraText()) {
 				lastSignRequestParams = signRequestParams;
 			}
 		}
