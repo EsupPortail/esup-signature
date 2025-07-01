@@ -100,8 +100,9 @@ export class WorkspacePdf {
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
             this.pdfViewer.addEventListener('reachEnd', e => this.markAsViewed());
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
-            this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
-
+            if(this.isPdf) {
+                this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
+            }
             $(".postit-global-close").on('click', function () {
                 if($(this).parent().hasClass("postit-small")) {
                     $(this).parent().resizable("enable");
@@ -279,6 +280,7 @@ export class WorkspacePdf {
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
         if((this.currentSignType === "nexuSign" || this.currentSignType === "certSign") && !this.notSigned) {
             $("#addSignButton").attr("disabled", true);
+            $("#addSignButton2").addClass("d-none");
         }
     }
 

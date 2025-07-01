@@ -1,7 +1,6 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.validation.reports.Reports;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -42,46 +41,41 @@ public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);
 
-    @Resource
-    private SignWithService signWithService;
-
-    @Resource
-    private DataService dataService;
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signrequests";
     }
 
-    @Resource
-    private UserService userService;
+    private final SignWithService signWithService;
+    private final DataService dataService;
+    private final UserService userService;
+    private final CertificatService certificatService;
+    private final PreAuthorizeService preAuthorizeService;
+    private final SignRequestService signRequestService;
+    private final WorkflowService workflowService;
+    private final SignBookService signBookService;
+    private final LogService logService;
 
-    @Resource
-    private CertificatService certificatService;
+    public SignRequestController(SignWithService signWithService, DataService dataService, UserService userService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, SignRequestService signRequestService, WorkflowService workflowService, SignBookService signBookService, LogService logService, AuditTrailService auditTrailService, OtpService otpService, XSLTService xsltService) {
+        this.signWithService = signWithService;
+        this.dataService = dataService;
+        this.userService = userService;
+        this.certificatService = certificatService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.signRequestService = signRequestService;
+        this.workflowService = workflowService;
+        this.signBookService = signBookService;
+        this.logService = logService;
+        this.auditTrailService = auditTrailService;
+        this.otpService = otpService;
+        this.xsltService = xsltService;
+    }
 
-    @Resource
-    private PreAuthorizeService preAuthorizeService;
+    private final AuditTrailService auditTrailService;
+    private final OtpService otpService;
+    private final XSLTService xsltService;
 
-    @Resource
-    private SignRequestService signRequestService;
 
-    @Resource
-    private WorkflowService workflowService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private LogService logService;
-
-    @Resource
-    private AuditTrailService auditTrailService;
-
-    @Resource
-    private OtpService otpService;
-
-    @Resource
-    private XSLTService xsltService;
 
     @GetMapping()
     public String show() {
@@ -173,6 +167,7 @@ public class SignRequestController {
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
         model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
+        model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         model.addAttribute("isTempUsers", signRequestService.isTempUsers(signRequest.getParentSignBook().getId()));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));

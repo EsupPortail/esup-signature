@@ -928,3 +928,28 @@ button.close {
 tr[aria-expanded="true"] .caret-toggle::before {
     content: "\f0d7"; /* fa-caret-down */
 }
+
+.btn-primary.focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.5);
+}
+.btn-secondary.focus {
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.5);
+}
+.btn-success:focus {
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.5);
+}
+.btn-danger.focus {
+    box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.5);
+}
+.btn-warning.focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.5);
+}
+.btn-info.focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 202, 240, 0.5);
+}
+.btn-light.focus {
+    box-shadow: 0 0 0 0.25rem rgba(248, 249, 250, 0.5);
+}
+.btn-dark.focus {
+    box-shadow: 0 0 0 0.25rem rgba(33, 37, 41, 0.5);
+}
