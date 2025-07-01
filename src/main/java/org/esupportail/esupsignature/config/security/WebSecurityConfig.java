@@ -228,7 +228,7 @@ public class WebSecurityConfig {
 								antMatcher("/logout")
 						).logoutSuccessUrl("/logged-out"));
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler)
-				.logoutSuccessUrl("/login").permitAll());
+				.logoutSuccessUrl("/").permitAll());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/resources/**"))
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
 				.ignoringRequestMatchers(antMatcher("/ws/**"))

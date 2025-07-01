@@ -51,6 +51,8 @@
                                         </span>Refusé par
                                     </div>
                                 </th:block>
+                                <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+
                                 <div>
                                     <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
                                         <span th:text="${liveWorkflowStep.workflowStep.description}"></span>

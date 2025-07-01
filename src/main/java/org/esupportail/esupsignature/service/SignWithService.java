@@ -57,6 +57,9 @@ public class SignWithService {
                 signWiths.removeIf(signWith -> signWith.getValue() > 2);
             }
         }
+        if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
+            signWiths.remove(SignWith.imageStamp);
+        }
         return signWiths;
     }
 
