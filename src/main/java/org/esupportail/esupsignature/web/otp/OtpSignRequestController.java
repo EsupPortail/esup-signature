@@ -108,6 +108,7 @@ public class OtpSignRequestController {
         model.addAttribute("attachmentAlert", attachmentAlert);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
         model.addAttribute("attachmentRequire", attachmentRequire);
+        model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         model.addAttribute("currentStepMultiSign", true);
