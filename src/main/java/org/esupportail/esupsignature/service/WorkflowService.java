@@ -560,6 +560,8 @@ public class WorkflowService {
         workflowToUpdate.setSignRequestParamsDetectionPattern(workflow.getSignRequestParamsDetectionPattern());
         workflowToUpdate.setStartArchiveDate(workflow.getStartArchiveDate());
         workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
+        workflowToUpdate.getExternalAuths().clear();
+        workflowToUpdate.setExternalAuths(workflow.getExternalAuths());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }

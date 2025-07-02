@@ -27,6 +27,9 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
@@ -2197,4 +2200,28 @@ public class SignBookService {
         return newSignRequest.getId();
     }
 
+    @Transactional
+    public List<ExternalAuth> getExternalAuths(Long id, List<OidcOtpSecurityService> securityServices) {
+        List<ExternalAuth> externalAuths = new ArrayList<>();
+        SignBook signBook = getById(id);
+        if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getExternalAuths().isEmpty()) {
+            externalAuths.addAll(signBook.getLiveWorkflow().getWorkflow().getExternalAuths());
+            if(BooleanUtils.isTrue(globalProperties.getSmsRequired())) {
+                externalAuths.remove(ExternalAuth.open);
+            }
+        } else {
+            if(securityServices.stream().anyMatch(s -> s instanceof ProConnectSecurityServiceImpl)) {
+                externalAuths.add(ExternalAuth.proconnect);
+            }
+            if(securityServices.stream().anyMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) {
+                externalAuths.add(ExternalAuth.franceconnect);
+            }
+            if(BooleanUtils.isFalse(globalProperties.getSmsRequired())) {
+                externalAuths.add(ExternalAuth.open);
+            } else {
+                externalAuths.add(ExternalAuth.sms);
+            }
+        }
+        return externalAuths;
+    }
 }
