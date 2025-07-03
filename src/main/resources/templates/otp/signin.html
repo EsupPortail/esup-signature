@@ -9,7 +9,7 @@
             <div class="text-center mb-4">
                 <div style="height: 70px"></div>
                 <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document'"></h4>
-                <p th:utext="'Vous devez signer le document <b>' + ${otp.signBook.subject} + '</b> transmit par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>. Contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
+                <p th:utext="'Vous devez signer le document <b>' + ${otp.signBook.subject} + '</b> transmis par <b>' + ${otp.signBook.createBy.firstname} + ' ' + ${otp.signBook.createBy.name} + '</b>. Contact : <a href=\'mailto:' + ${otp.signBook.createBy.email} + '\'>' + ${otp.signBook.createBy.email} + '</a>'"></p>
             </div>
             <div class="d-flex justify-content-center mx-auto my-auto gap-2 row">
                 <th:block th:each="securityService : ${securityServices}">

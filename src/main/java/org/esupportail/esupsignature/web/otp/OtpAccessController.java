@@ -142,7 +142,7 @@ public class OtpAccessController {
                 }
             }
         }
-        return ResponseEntity.internalServerError().body("Un sms a déjà été transmit, merci de prendre contact via le mail ci-dessus");
+        return ResponseEntity.internalServerError().body("Un sms a déjà été transmis, merci de prendre contact via le mail ci-dessus");
     }
 
     @PostMapping
