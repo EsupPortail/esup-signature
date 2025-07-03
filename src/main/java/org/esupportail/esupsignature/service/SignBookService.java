@@ -445,6 +445,7 @@ public class SignBookService {
                         }
                     }
                 } else if(signRequest.getSignRequestParams().size() > i) {
+                    if(liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) continue;
                     addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
                     logger.info("add signRequestParams to liveWorkflowStep " + liveWorkflowStep.getId());
                 }
@@ -973,6 +974,7 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
+    @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;
