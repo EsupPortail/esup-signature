@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
@@ -165,7 +166,14 @@ public class WorkflowWsController {
             List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsWsDtosFromJson(signRequestParamsJsonString, "system");
             int i = 0;
             for(WorkflowStepDto step : steps) {
-                step.getSignRequestParams().add(signRequestParamsWsDtos.get(i));
+                if(signRequestParamsWsDtos.size() > i ) {
+                    if(!step.getSignType().equals(SignType.hiddenVisa)) {
+                        step.getSignRequestParams().add(signRequestParamsWsDtos.get(i));
+                        i++;
+                    }
+                } else {
+                    break;
+                }
             }
         }
         try {

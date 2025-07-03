@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security;
 
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.web.filter.GenericFilterBean;

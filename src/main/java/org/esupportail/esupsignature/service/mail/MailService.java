@@ -410,7 +410,7 @@ public class MailService {
         MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
         String htmlContent = templateEngine.process("mail/email-file.html", ctx);
         mimeMessage.setText(htmlContent, true);
-        mimeMessage.setSubject("Un document signé vous est transmit : " + title);
+        mimeMessage.setSubject("Un document signé vous est transmis : " + title);
         mimeMessage.setTo(targetUri.replace("mailto:", "").split(","));
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(sendDocument) {
