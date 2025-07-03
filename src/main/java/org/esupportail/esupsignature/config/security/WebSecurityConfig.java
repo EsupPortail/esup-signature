@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.config.security;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasJwtDecoder;
 import org.esupportail.esupsignature.config.security.cas.CasProperties;
@@ -10,16 +11,19 @@ import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
 import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.IndexEntryPoint;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
-import org.esupportail.esupsignature.service.security.jwt.JwtAuthService;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
+import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.shib.DevShibRequestFilter;
 import org.esupportail.esupsignature.service.security.shib.ShibSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.su.SuAuthenticationSuccessHandler;
@@ -57,6 +61,7 @@ import org.springframework.security.web.authentication.switchuser.SwitchUserFilt
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
@@ -77,7 +82,6 @@ public class WebSecurityConfig {
 	private final OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler;
 	private final WebSecurityProperties webSecurityProperties;
 	private final ClientRegistrationRepository clientRegistrationRepository;
-	private final JwtAuthService jwtAuthService;
 	private final List<SecurityService> securityServices;
 	private final RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy;
 	private final SessionRegistryImpl sessionRegistry;
@@ -85,12 +89,11 @@ public class WebSecurityConfig {
 	private final CasJwtDecoder casJwtDecoder;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, JwtAuthService jwtAuthService, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.jwtAuthService = jwtAuthService;
         this.securityServices = securityServices;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.sessionRegistry = sessionRegistry;
@@ -140,16 +143,17 @@ public class WebSecurityConfig {
 //	}
 
 	@Bean
-	@Order(5)
+	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.cas.issuer-uri")
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
-		http.cors(AbstractHttpConfigurer::disable).securityMatcher("/ws-jwt/**");
+		http.securityMatcher("/ws-jwt/**");
 		if (StringUtils.hasText(issuerUri)) {
 			http.oauth2ResourceServer(oauth2 -> oauth2.bearerTokenResolver(bearerTokenResolver()).jwt(jwt -> jwt.decoder(casJwtDecoder)
-					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(jwtAuthService))));
+					.jwtAuthenticationConverter(new CustomJwtAuthenticationConverter())));
 			http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
 		} else {
 			http.authorizeHttpRequests(auth -> auth.anyRequest().denyAll());
 		}
+		http.cors(AbstractHttpConfigurer::disable);
 		http.addFilterAfter(new MdcUsernameFilter(), AuthorizationFilter.class);
 		return http.build();
 	}
@@ -230,7 +234,7 @@ public class WebSecurityConfig {
 								antMatcher("/logout")
 						).logoutSuccessUrl("/logged-out"));
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler)
-				.logoutSuccessUrl("/login").permitAll());
+				.logoutSuccessUrl("/").permitAll());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(antMatcher("/resources/**"))
 				.ignoringRequestMatchers(antMatcher("/webjars/**"))
 				.ignoringRequestMatchers(antMatcher("/ws/**"))
@@ -344,6 +348,16 @@ public class WebSecurityConfig {
 	@Bean
 	public AuthenticationManager authenticationManagerBean() {
 		return new ProviderManager(List.of(new OtpAuthenticationProvider()));
+	}
+
+	@Bean
+	public List<ExternalAuth> getExternalAuths(List<OidcOtpSecurityService> securityServices, SmsProperties smsProperties) {
+		List<ExternalAuth> externalAuths = new ArrayList<>(List.of(ExternalAuth.values()));
+		if(globalProperties.getSmsRequired()) externalAuths.remove(ExternalAuth.open);
+		if(securityServices.stream().noneMatch(s -> s instanceof ProConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.proconnect);
+		if(securityServices.stream().noneMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.franceconnect);
+		if(BooleanUtils.isFalse(smsProperties.getEnableSms())) externalAuths.remove(ExternalAuth.sms);
+		return externalAuths;
 	}
 
 }

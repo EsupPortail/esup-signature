@@ -311,7 +311,7 @@ public class SignRequestService {
 	public SignRequestParams findLastSignRequestParams(List<SignRequestParams> signRequestParamses) {
 		SignRequestParams lastSignRequestParams = null;
 		for (SignRequestParams signRequestParams : signRequestParamses) {
-			if (signRequestParams.getSignImageNumber() >= 0) {
+			if (signRequestParams.getSignImageNumber() >= 0 && !signRequestParams.getIsExtraText()) {
 				lastSignRequestParams = signRequestParams;
 			}
 		}
@@ -1490,5 +1490,10 @@ public class SignRequestService {
 			signRequest.getSignRequestParams().clear();
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
 		}
+	}
+
+	public boolean isCurrentUserAsSigned(SignRequest signRequest, String userEppn) {
+		User user = userService.getByEppn(userEppn);
+		return signRequest.getRecipientHasSigned().entrySet().stream().anyMatch(rhs -> rhs.getValue().getActionType().equals(ActionType.signed) && rhs.getKey().getUser().getEppn().equals(user.getEppn()));
 	}
 }

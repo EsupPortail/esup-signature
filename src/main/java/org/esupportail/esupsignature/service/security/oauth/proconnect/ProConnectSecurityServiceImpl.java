@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth.proconnect;
 
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
@@ -84,6 +85,11 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
                     .toString();
         }
         return "";
+    }
+
+    @Override
+    public ExternalAuth getExternalAuth() {
+        return ExternalAuth.proconnect;
     }
 
     @Override

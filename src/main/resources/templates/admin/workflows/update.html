@@ -22,7 +22,7 @@
         <div id="content" class="content">
             <div class="fixed-action-btn" >
                 <a id="saveButton" th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
-                   onclick="document.getElementById('updateSignBook').submit();">
+                    onclick="document.getElementById('updateSignBook').submit();">
                     <i class="fa-solid fa-save fa-2xl"></i>
                 </a>
             </div>
@@ -49,9 +49,7 @@
                             <div class="input-group">
                                 <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
                                 <button class="btn btn-outline-secondary" type="button"
-                                        onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=>
-                    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-                );">
+                                        onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=> (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));">
                                     Générer
                                 </button>
                             </div>
@@ -156,6 +154,14 @@
                                 </th:block>
                             </select>
                         </div>
+                        <div class="form-group mb-2">
+                            <label><strong>Authentification des externes</strong></label>
+                            <select id="externalAuth" class="form-select" data-placeholder="Choisir des modes" type="text" th:field="*{externalAuths}" multiple>
+                                <th:block th:each="externalAuth : ${externalAuths}">
+                                    <option th:text="${externalAuth}" th:value="${externalAuth}" th:selected="${#sets.contains(workflow.externalAuths, externalAuth)}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                         <strong>Options</strong>
                         <div class="form-check mb-2" th:if="${globalProperties.sealCertificatDriver != null}">
                             <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
@@ -229,7 +235,7 @@
                                 </div>
                             </div>
                             <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
-                                   class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
+                                class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label for="mailFrom"><strong>Adresse email from</strong></label>
@@ -247,9 +253,9 @@
                         <div class="form-group mb-3" id="documentsSourceUriDiv">
                             <label for="documentsSourceUri"> <strong>Lien pour l’import automatique des documents</strong></label>
                             <input id="documentsSourceUri" name="documentsSourceUri"
-                                   class="form-control" type="text"
-                                   th:value="${workflow.documentsSourceUri}"
-                                   autocomplete="on">
+                                class="form-control" type="text"
+                                th:value="${workflow.documentsSourceUri}"
+                                autocomplete="on">
                         </div>
                         <div class="form-group mb-3">
                             <label>
