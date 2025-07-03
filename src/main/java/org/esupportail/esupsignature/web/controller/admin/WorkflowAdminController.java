@@ -8,10 +8,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
-import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
-import org.esupportail.esupsignature.entity.enums.DocumentIOType;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
@@ -57,8 +54,9 @@ public class WorkflowAdminController {
 	private final WorkflowStepService workflowStepService;
 	private final CertificatService certificatService;
 	private final PreAuthorizeService preAuthorizeService;
+	private final List<ExternalAuth> externalAuths;
 
-	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService) {
+	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths) {
 		this.targetService = targetService;
 		this.userService = userService;
 		this.recipientService = recipientService;
@@ -67,7 +65,8 @@ public class WorkflowAdminController {
 		this.workflowStepService = workflowStepService;
 		this.certificatService = certificatService;
 		this.preAuthorizeService = preAuthorizeService;
-	}
+        this.externalAuths = externalAuths;
+    }
 
 	@GetMapping
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
@@ -141,6 +140,7 @@ public class WorkflowAdminController {
 		}
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
+		model.addAttribute("externalAuths", externalAuths);
 		model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());

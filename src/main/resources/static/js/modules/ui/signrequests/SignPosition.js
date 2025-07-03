@@ -31,6 +31,7 @@ export class SignPosition extends EventFactory {
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
         this.addSignButton = $("#addSignButton");
+        $("#signLaunchButton").focus();
         $("#addSignButton2").focus();
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         if(localStorage.getItem("scale") != null) {
@@ -60,8 +61,10 @@ export class SignPosition extends EventFactory {
             $('#addSignButton').removeAttr('disabled');
         }
         if(this.signRequestParamses.size === 0) {
-            $("#addSignButton2").addClass("pulse-primary");
-            $("#addSignButton2").focus();
+            let addSignButton2 = $("#addSignButton2");
+            addSignButton2.removeClass("d-none");
+            addSignButton2.addClass("pulse-primary");
+            addSignButton2.focus();
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");
             this.enableForwardButton();

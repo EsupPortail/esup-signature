@@ -24,6 +24,7 @@ import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
 import eu.europa.esig.dss.xades.signature.XAdESService;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
@@ -157,11 +158,13 @@ public class SignService {
 				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				aSiCWithCAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithCAdESSignatureParameters;
+				fillCommonsParameters(parameters, signatureDocumentForm);
 			} else if(signatureForm.equals(SignatureForm.XAdES)) {
 				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
 				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
 				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
 				parameters = aSiCWithXAdESSignatureParameters;
+				fillCommonsParameters(parameters, signatureDocumentForm);
 			} else {
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
                         || abstractKeyStoreTokenConnection instanceof Pkcs11SignatureToken
@@ -221,7 +224,7 @@ public class SignService {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}
 			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
-			if(signRequestParams.getAddWatermark()) {
+			if(BooleanUtils.isTrue(signRequestParams.getAddWatermark())) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
 				signImage = new ByteArrayInputStream(outputStream.toByteArray());

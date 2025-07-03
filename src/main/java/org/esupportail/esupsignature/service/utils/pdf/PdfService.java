@@ -50,7 +50,6 @@ import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
-import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -104,15 +103,13 @@ public class PdfService {
     private FileService fileService;
 
     private final GlobalProperties globalProperties;
+    private final LogService logService;
+    private final ValidationService validationService;
 
-    @Resource
-    private LogService logService;
-
-    @Resource
-    private ValidationService validationService;
-
-    public PdfService(GlobalProperties globalProperties) {
+    public PdfService(GlobalProperties globalProperties, LogService logService, ValidationService validationService) {
         this.globalProperties = globalProperties;
+        this.logService = logService;
+        this.validationService = validationService;
     }
 
     public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp, Boolean endingWithCert) {
@@ -1021,28 +1018,6 @@ public class PdfService {
                     if (pdField instanceof PDSignatureField) {
                         if (pdField.getPartialName().equals(signRequestParams.getPdSignatureFieldName())) {
                             return (PDSignatureField) pdField;
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            logger.error("error on get signature field", e);
-        }
-        return null;
-    }
-
-    public SignRequestParamsWsDto getSignatureField(MultipartFile documentToSign, String pdSignatureFieldName) {
-        try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
-            PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
-            if (pdAcroForm != null) {
-                for (PDField pdField : pdAcroForm.getFields()) {
-                    if (pdField instanceof PDSignatureField) {
-                        if (pdField.getPartialName().equals(pdSignatureFieldName)) {
-                            SignRequestParamsWsDto signRequestParamsWsDto = new SignRequestParamsWsDto();
-                            PDRectangle pdRectangle = pdField.getWidgets().get(0).getRectangle();
-                            signRequestParamsWsDto.setxPos(Math.round(pdRectangle.getLowerLeftX()));
-                            signRequestParamsWsDto.setyPos(Math.round(pdRectangle.getLowerLeftY() + pdRectangle.getHeight()));
-                            return signRequestParamsWsDto;
                         }
                     }
                 }

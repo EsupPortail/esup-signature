@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth.franceconnect;
 
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -65,6 +66,11 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 					.toString();
 		}
 		return "";
+	}
+
+	@Override
+	public ExternalAuth getExternalAuth() {
+		return ExternalAuth.franceconnect;
 	}
 
 	@Override

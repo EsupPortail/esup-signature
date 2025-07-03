@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -130,6 +131,10 @@ public class Workflow {
     public String getTitle() {
         return token;
     }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    public Set<ExternalAuth> externalAuths;
 
     public String getName() {
         return name;
@@ -436,5 +441,13 @@ public class Workflow {
 
     public void setArchiveTarget(String archiveTarget) {
         this.archiveTarget = archiveTarget;
+    }
+
+    public Set<ExternalAuth> getExternalAuths() {
+        return externalAuths;
+    }
+
+    public void setExternalAuths(Set<ExternalAuth> externalAuths) {
+        this.externalAuths = externalAuths;
     }
 }

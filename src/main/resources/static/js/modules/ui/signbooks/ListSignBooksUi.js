@@ -83,12 +83,6 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        this.listSignRequestTable.focus();
-        $(document).on('click', function(e){
-            if (!$(e.target).closest('.modal').length) {
-                self.listSignRequestTable.focus();
-            }
-        });
         $("#toggle-new-grid").css("top", "-55px");
         $(document).on('wheel', function(e){
             let delta = e.originalEvent.deltaY;

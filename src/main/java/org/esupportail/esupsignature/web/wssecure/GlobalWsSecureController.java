@@ -84,6 +84,7 @@ public class GlobalWsSecureController {
                 return ResponseEntity.ok().body("initNexu");
             }
         } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
         return ResponseEntity.ok().build();
