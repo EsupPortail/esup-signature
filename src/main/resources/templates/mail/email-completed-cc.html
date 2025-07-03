@@ -59,7 +59,7 @@
                 <ul>
                     <th:block th:each="signRequest : ${signBook.signRequests}">
                         <li th:if="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;margin-top:0;margin-bottom:1rem;" >
-                            Le document a été transmis à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
+                            Le document a été transmis à cette adresse : <span th:text="${signRequest.exportedDocumentURI}" style="box-sizing:border-box;" ></span>
                         </li>
                     </th:block>
                 </ul>
