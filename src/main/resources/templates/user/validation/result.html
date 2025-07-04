@@ -88,7 +88,7 @@
                                                             th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                                     <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
                                                     <td class="text-left"><span th:text="${auditStep.email}"></span></td>
-                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
+                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu au moment de la signature'"></td>
                                                 </tr>
                                                 <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
                                                     <td colspan="6">
