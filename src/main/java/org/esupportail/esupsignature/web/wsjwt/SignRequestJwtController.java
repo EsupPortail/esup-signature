@@ -124,7 +124,7 @@ public class SignRequestJwtController {
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Tout les participants doivent-ils signer ?") Boolean allSignToComplete,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Le créateur doit-il signer en premier ?") Boolean userSignFirst,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "Forcer la signature de tous les documents") Boolean forceAllSign,
-                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Type de signature", schema = @Schema(allowableValues = {"visa", "pdfImageStamp", "certSign", "nexuSign"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "pdfImageStamp"), @ExampleObject(value = "certSign"), @ExampleObject(value = "nexuSign")}) String signType,
+                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Type de signature", schema = @Schema(allowableValues = {"visa", "hiddenVisa", "signature"}), examples = {@ExampleObject(value = "visa"), @ExampleObject(value = "signature")}) String signType,
                                     @RequestParam(required = false) @Parameter(deprecated = true, description = "EPPN du créateur/propriétaire de la demande (ancien nom)") String eppn
     ) throws EsupSignatureException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

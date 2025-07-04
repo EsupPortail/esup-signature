@@ -210,7 +210,7 @@ public class WorkflowAdminController {
 	public String addAutoStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
 							  @RequestParam(name="certificatId", required = false) Long certificatId) throws EsupSignatureRuntimeException {
-		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.certSign, description, null, false, 1, false, false);
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.signature, description, null, false, 1, false, false);
 		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, true, certificatId);
 		return "redirect:/admin/workflows/steps/" + id;
 	}

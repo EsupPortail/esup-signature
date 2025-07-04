@@ -55,11 +55,11 @@ public class CreatorAndOneStepWorkflow extends DefaultWorkflow {
 		WorkflowStep workflowStep1 = new WorkflowStep();
 		workflowStep1.getUsers().add(userService.getCreatorUser());
 		workflowStep1.setDescription("Votre signature");
-		workflowStep1.setSignType(SignType.pdfImageStamp);
+		workflowStep1.setSignType(SignType.signature);
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
-		workflowStep2.setSignType(SignType.pdfImageStamp);
+		workflowStep2.setSignType(SignType.signature);
 		workflowStep2.setDescription("Signataire présélectionné en fonction de vos précédentes saisies");
 		workflowStep2.getUsers().add(userService.getGenericUser());
 		workflowStep2.setChangeable(true);

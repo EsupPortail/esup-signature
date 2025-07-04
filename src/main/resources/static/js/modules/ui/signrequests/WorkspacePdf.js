@@ -264,6 +264,10 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber, signField) {
+        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+            bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
+            return;
+        }
         this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
         let signNum = this.signPosition.currentSignRequestParamsNum;
@@ -278,9 +282,12 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
-        if((this.currentSignType === "nexuSign" || this.currentSignType === "certSign") && !this.notSigned) {
-            $("#addSignButton").attr("disabled", true);
-            $("#addSignButton2").addClass("d-none");
+        if(!this.notSigned) {
+            // let msg = ;
+            // $("#addSignButton").attr("disabled", true);
+            // $("#addSignButton").attr("title", msg);
+            // $("#addSignButton2").attr("disabled", true);
+            // $("#addSignButton2").attr("title", msg);
         }
     }
 

@@ -488,7 +488,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         WorkflowStepDto workflowStepDto = new WorkflowStepDto();
         recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
-        workflowStepDto.setSignType(SignType.pdfImageStamp);
+        workflowStepDto.setSignType(SignType.signature);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
     }
 
@@ -980,7 +980,7 @@ public class SignBookService {
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
-                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.certSign);
+                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
                 liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(userService.getSystemUser()));
             }
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
@@ -1174,7 +1174,7 @@ public class SignBookService {
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
-        if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
+        if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
                 signRequest.getSignRequestParams().clear();
                 signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();

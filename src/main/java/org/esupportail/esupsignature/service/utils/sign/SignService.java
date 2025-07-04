@@ -223,7 +223,7 @@ public class SignService {
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}
-			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.nexuSign, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
+			InputStream signImage = fileService.addTextToImage(inputStream, signRequestParams, SignType.signature, user, date, userService.getRoles(user.getEppn()).contains("ROLE_OTP"));
 			if(BooleanUtils.isTrue(signRequestParams.getAddWatermark())) {
 				ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 				fileService.addImageWatermark(new ClassPathResource("/static/images/watermark.png").getInputStream(), signImage, outputStream, signRequestParams.getExtraOnTop());
@@ -384,21 +384,4 @@ public class SignService {
 		return parameters;
 	}
 
-	public SignatureForm getDefaultSignatureForm() {
-		return signProperties.getDefaultSignatureForm();
-	}
-
-	public Long getPasswordTimeout() {
-		return signProperties.getPasswordTimeout();
-	}
-
-	public boolean checkSignTypeDocType(SignType signType, MultipartFile multipartFile) {
-		boolean check = true;
-		if(!multipartFile.getContentType().toLowerCase().contains("pdf") && !multipartFile.getContentType().toLowerCase().contains("image")) {
-			if(signType.equals(SignType.pdfImageStamp) || signType.equals(SignType.visa)) {
-				check = false;
-			}
-		}
-		return check;
-	}
 }

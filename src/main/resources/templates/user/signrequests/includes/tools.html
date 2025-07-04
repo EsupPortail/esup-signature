@@ -58,11 +58,7 @@
 			</th:block>
 <!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
 <!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
-<!--					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp-->
-<!--									||-->
-<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign-->
-<!--									||-->
-<!--									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign-->
+<!--					<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature-->
 <!--									}"-->
 <!--							id="addSignButton3"-->
 <!--							role="button"-->
@@ -79,12 +75,7 @@
 				<div id="second-tools" class="second-tools position-fixed collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 						<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
-							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign
-									||
-									signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign
-									}"
+							<button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}"
 									id="addSignButton"
 									role="button"
 									class="btn btn-light btn-outline-primary text-start">

@@ -21,6 +21,7 @@ export class SignUi {
         this.formId = formId;
         this.dataId = dataId;
         this.currentSignType = currentSignType;
+        this.notSigned = notSigned;
         this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
@@ -154,8 +155,9 @@ export class SignUi {
                             self.checkSignOptions();
                         }
                     } else {
-                        $("#certType > option[value='imageStamp']").remove();
-                        if(self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa") {
+                        let imageStampOption = $("#certType > option[value='imageStamp']");
+                        imageStampOption.remove();
+                        if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
                             $('#certType').prepend($('<option>', {
                                 value: 'imageStamp',
                                 text: self.saveOptionText
@@ -163,7 +165,7 @@ export class SignUi {
                         }
                         self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp" && (self.currentSignType === "pdfImageStamp" || self.currentSignType === "visa")) {
+                            if($(this).val() === "imageStamp" && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
                                 $("#no-options").hide();
                                 $("#selectTypeDiv").show();
@@ -171,8 +173,8 @@ export class SignUi {
                                 $("#checkValidateSignButtonNext").show();
                             }
                         });
-                        if(self.currentSignType === "imageStamp" || self.currentSignType === "visa") {
-                            $("#certType > option[value='imageStamp']").attr('selected', 'selected');
+                        if(self.currentSignType === "visa") {
+                            imageStampOption.attr('selected', 'selected');
                             $("#certType").val('imageStamp');
                         }
                         self.checkAttachement();

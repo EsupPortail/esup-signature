@@ -59,7 +59,7 @@ public class WorkflowStepService {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
         if(signType == null) {
-            workflowStep.setSignType(signTypeService.getLessSignType(2));
+            workflowStep.setSignType(SignType.signature);
         } else {
             workflowStep.setSignType(signType);
         }
@@ -122,7 +122,7 @@ public class WorkflowStepService {
         }
         if(autoSign == null) autoSign = false;
         if(autoSign) {
-            signType = SignType.certSign;
+            signType = SignType.signature;
         }
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);

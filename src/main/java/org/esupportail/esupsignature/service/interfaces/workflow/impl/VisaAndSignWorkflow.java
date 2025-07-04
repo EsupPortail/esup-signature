@@ -59,7 +59,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         String step2Recipient =  "president@univ-ville.fr";
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setName("Président de l’université");
-        workflowStep2.setSignType(SignType.pdfImageStamp);
+        workflowStep2.setSignType(SignType.signature);
         workflowStep2.setDescription("Signature du Président de l’université");
         Set<User> recipientsStep2 = new HashSet<>();
         recipientsStep2.add(userService.getUserByEmail(step2Recipient));
