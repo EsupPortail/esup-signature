@@ -140,7 +140,8 @@ public class SignRequestController {
         Reports reports = signRequestService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
-            if(signable) model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
+            List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
+            if(signable) model.addAttribute("signWiths", signWiths);
             model.addAttribute("signatureIssue", false);
             for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
                 if(!reports.getSimpleReport().isValid(signatureId)) {

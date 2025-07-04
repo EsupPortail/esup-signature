@@ -232,7 +232,7 @@ public class FileService {
 				if(signRequestParams.getExtraType()) {
 					String typeSign = "Signature calligraphique";
 					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-					if(signType.equals(SignType.certSign) || signType.equals(SignType.nexuSign)) typeSign = "Signature électronique";
+					if(signType.equals(SignType.signature)) typeSign = "Signature électronique";
 					if(otp!= null && otp) {
 						if(user.getPhone() != null) {
 							typeSign = "Signature OTP : " + user.getPhone();

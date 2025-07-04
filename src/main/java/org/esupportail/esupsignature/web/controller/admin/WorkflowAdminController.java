@@ -210,7 +210,7 @@ public class WorkflowAdminController {
 	public String addAutoStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
 							  @RequestParam(name="certificatId", required = false) Long certificatId) throws EsupSignatureRuntimeException {
-		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.certSign, description, null, false, 1, false, false);
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.signature, description, null, false, 1, false, false);
 		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, true, certificatId);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
@@ -232,10 +232,12 @@ public class WorkflowAdminController {
 							 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
 							 @RequestParam(name="autoSign", required = false) Boolean autoSign,
 							 @RequestParam(name="certificatId", required = false) Long certificatId,
+							 @RequestParam(name="minSignLevel", required = false) SignLevel minSignLevel,
+							 @RequestParam(name="maxSignLevel", required = false) SignLevel maxSignLevel,
 							 RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getById(id);
 		try {
-			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
+			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel);
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}

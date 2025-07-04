@@ -16,30 +16,28 @@
         </nav>
         <div id="content" class="content">
             <div class="col-12 mx-auto">
-            <ul class="nav nav-tabs nav-justified d-print-none" id="tabsResult">
-                <li class="nav-item" th:if="${simpleReport} != null" role="presentation">
-                    <a class="nav-link active" href="#simple-report" th:text="#{label.simple.report}" data-bs-toggle="tab" role="tab"
-                       aria-controls="simple-report" aria-selected="true"></a>
-                </li>
-                <li class="nav-item" th:if="${detailedReport} != null" role="presentation">
-                    <a class="nav-link" href="#detailed-report" th:text="#{label.detailed.report}" data-bs-toggle="tab" role="tab"
-                       aria-controls="detailed-report" aria-selected="false"></a>
-                </li>
-                <li class="nav-item" th:if="${diagnosticDataXml} != null" role="presentation">
-                    <a class="nav-link" href="#diagnostic-tree" th:text="#{label.diagnostic.tree}" data-bs-toggle="tab" role="tab"
-                       aria-controls="diagnostic-tree" aria-selected="false"></a>
-                </li>
-                <li class="nav-item" th:if="${etsiValidationReport} != null" role="presentation">
-                    <a class="nav-link" href="#etsi-validation-report" th:text="#{label.etsi.validation.report}" data-bs-toggle="tab"
-                       role="tab" aria-controls="etsi-validation-report" aria-selected="false"></a>
-                </li>
-                <li class="nav-item" th:if="${pdfaReport != null}">
-                    <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
-                </li>
-            </ul>
-
+                <ul class="nav nav-tabs nav-justified d-print-none" id="tabsResult">
+                    <li class="nav-item" th:if="${simpleReport} != null" role="presentation">
+                        <a class="nav-link active" href="#simple-report" th:text="#{label.simple.report}" data-bs-toggle="tab" role="tab"
+                            aria-controls="simple-report" aria-selected="true"></a>
+                    </li>
+                    <li class="nav-item" th:if="${detailedReport} != null" role="presentation">
+                        <a class="nav-link" href="#detailed-report" th:text="#{label.detailed.report}" data-bs-toggle="tab" role="tab"
+                            aria-controls="detailed-report" aria-selected="false"></a>
+                    </li>
+                    <li class="nav-item" th:if="${diagnosticDataXml} != null" role="presentation">
+                        <a class="nav-link" href="#diagnostic-tree" th:text="#{label.diagnostic.tree}" data-bs-toggle="tab" role="tab"
+                            aria-controls="diagnostic-tree" aria-selected="false"></a>
+                    </li>
+                    <li class="nav-item" th:if="${etsiValidationReport} != null" role="presentation">
+                        <a class="nav-link" href="#etsi-validation-report" th:text="#{label.etsi.validation.report}" data-bs-toggle="tab"
+                            role="tab" aria-controls="etsi-validation-report" aria-selected="false"></a>
+                    </li>
+                    <li class="nav-item" th:if="${pdfaReport != null}">
+                        <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
+                    </li>
+                </ul>
                 <div class="tab-content mt-2">
-
                     <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
                         <div class="position-relative">
                             <div class="alert alert-danger" th:if="${auditTrail == null && signCount == 0}">
@@ -88,7 +86,7 @@
                                                             th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                                     <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
                                                     <td class="text-left"><span th:text="${auditStep.email}"></span></td>
-                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu'"></td>
+                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu au moment de la signature'"></td>
                                                 </tr>
                                                 <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
                                                     <td colspan="6">
@@ -140,8 +138,8 @@
                                         <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
                                     </button>
                                     <a class="btn btn-light float-end"
-                                       th:href="@{/ws-secure/validation/download-simple-report}" role="button"
-                                       th:if="${displayDownloadPdf}">
+                                        th:href="@{/ws-secure/validation/download-simple-report}" role="button"
+                                        th:if="${displayDownloadPdf}">
                                         <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
                                     </a>
                                 </div>
@@ -150,7 +148,6 @@
 
                         </div>
                     </div>
-
                     <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
                         <div class="position-relative">
                             <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
@@ -165,8 +162,8 @@
                                         <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
                                     </button>
                                     <a class="btn btn-light"
-                                       th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
-                                       th:if="${displayDownloadPdf}">
+                                        th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
+                                        th:if="${displayDownloadPdf}">
                                         <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
                                     </a>
                                 </div>
@@ -174,13 +171,12 @@
                             </div>
                         </div>
                     </div>
-
                     <div th:if="${diagnosticDataXml} != null" role="tabcard" class="tab-pane fade report" id="diagnostic-tree">
                         <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
 
                         <div class="card mb-2">
                             <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
-                                 data-target="#downloads" aria-expanded='false'>
+                                data-target="#downloads" aria-expanded='false'>
                                 <h3 th:text="#{label.validation.download}" th:remove="tag"></h3>
                             </div>
 
@@ -245,7 +241,7 @@
                         </div>
                         <div class="card mb-2">
                             <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
-                                 data-target="#svg-card" aria-expanded='false'>
+                                data-target="#svg-card" aria-expanded='false'>
                                 <h3 th:text="#{label.validation.visualrepresentation}" th:remove="tag"></h3>
                             </div>
                             <div class="card-body collapse show" id="svg-card">
@@ -285,7 +281,6 @@
                         <pre class="prettyprint"><code class="language-xml" th:text="${diagnosticDataXml}"></code></pre>
                         </div>
                     </div>
-
                     <div th:if="${etsiValidationReport} != null" role="tabcard" class="tab-pane fade report" id="etsi-validation-report">
                         <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
                             <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
@@ -445,8 +440,6 @@
                 /*]]>*/
 
                 </script>
-
-            </div>
         </div>
     </div>
 </main>

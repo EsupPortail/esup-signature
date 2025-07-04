@@ -87,7 +87,7 @@
             <label class="form-label mb-2" for="signType-1">Type de signature :</label>
             <select class="form-select" id="signType-1" name="signType">
                 <th:block th:each="signType : ${signTypes}">
-                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                 </th:block>
             </select>
             <div class="form-check form-switch form-switch-md ">

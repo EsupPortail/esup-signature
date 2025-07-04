@@ -6,7 +6,6 @@ import com.google.common.cache.LoadingCache;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.jetbrains.annotations.NotNull;
@@ -60,22 +59,21 @@ public class SignWithService {
         if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
             signWiths.remove(SignWith.imageStamp);
         }
+        if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
+            signWiths.removeIf(signWith -> signWith.getValue() > signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getMaxSignLevel().getValue() || signWith.getValue() < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getMinSignLevel().getValue());
+        }
         return signWiths;
     }
 
     public List<SignWith> getAuthorizedSignWiths(String userEppn, boolean isAlreadyCertSign) {
         User user = userService.getByEppn(userEppn);
         List<SignWith> signWiths = new ArrayList<>(List.of(SignWith.values()));
+        if(isAlreadyCertSign) signWiths.remove(SignWith.imageStamp);
         if(globalProperties.getDisableCertStorage() || user.getKeystore() == null) {
             signWiths.remove(SignWith.userCert);
         }
         signWiths.remove(SignWith.sealCert);
-        if(checkSealCertificat(userEppn, false)
-            &&
-            (isAlreadyCertSign
-                ||
-            user.getRoles().contains("ROLE_SEAL"))
-        ) {
+        if(checkSealCertificat(userEppn, false) && (isAlreadyCertSign || user.getRoles().contains("ROLE_SEAL"))) {
             signWiths.add(SignWith.sealCert);
         }
         if(certificatService.getCertificatByUser(user.getEppn()).isEmpty()) {
@@ -86,8 +84,7 @@ public class SignWithService {
         }
         List<SignWith> toRemoveSignWiths = new ArrayList<>();
         for (SignWith signWith : signWiths) {
-            List<SignType> signTypes = globalProperties.getAuthorizedSignTypes().stream().filter(s -> s.getValue() >= signWith.getValue()).toList();
-            if(signTypes.isEmpty()) {
+            if(!globalProperties.getAuthorizedSignTypes().contains(signWith)) {
                 toRemoveSignWiths.add(signWith);
             }
         }

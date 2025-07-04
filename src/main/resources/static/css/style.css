@@ -953,3 +953,16 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .btn-dark.focus {
     box-shadow: 0 0 0 0.25rem rgba(33, 37, 41, 0.5);
 }
+
+.warning {
+    cursor: pointer;
+    width: 100%; padding-right: 40px;
+    position: relative;
+}
+
+.warning-close {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+}

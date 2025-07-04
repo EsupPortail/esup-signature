@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -74,7 +75,7 @@ public class LiveWorkflowStepService {
                 minLevel = 3;
             }
             if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+                liveWorkflowStep.setSignType(SignType.signature);
             }
         } else {
             liveWorkflowStep.setSignType(step.getSignType());
@@ -104,7 +105,7 @@ public class LiveWorkflowStepService {
                 minLevel = 3;
             }
             if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+                liveWorkflowStep.setSignType(SignType.signature);
             }
         } else {
             liveWorkflowStep.setSignType(step.getSignType());

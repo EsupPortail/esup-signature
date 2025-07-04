@@ -30,11 +30,11 @@
                                             <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                                 <i class="fa-solid fa-check"></i>
                                             </span>
-                                            <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}" class="bs-stepper-circle bg-success">
+                                            <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
                                                 <i class="fa-solid fa-signature"></i>
                                             </span>
                                         </th:block>
-                                        <span title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}">
+                                        <span title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="bs-stepper-circle bg-success">
                                             <i class="fa-solid fa-robot"></i>
                                         </span>
                                     </th:block>
@@ -44,7 +44,7 @@
                                         <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                             <i class="fa-solid fa-check"></i>
                                         </span>
-                                        <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}" class="bs-stepper-circle bg-success">
+                                        <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
                                             <i class="fa-solid fa-signature"></i>
                                         </span>
                                     </th:block>

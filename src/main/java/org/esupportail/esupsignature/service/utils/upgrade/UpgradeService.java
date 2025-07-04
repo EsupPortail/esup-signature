@@ -43,7 +43,7 @@ public class UpgradeService {
     private final FileService fileService;
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -355,5 +355,98 @@ public class UpgradeService {
             }
         }
         logger.info("#### Update archive status completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_34_4() {
+        logger.info("#### Starting update sign types ####");
+        entityManager.createNativeQuery("""
+        
+                        DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'workflow_step_repeatable_sign_type_check'
+                      AND conrelid = 'public.workflow_step'::regclass
+                ) THEN
+                    ALTER TABLE public.workflow_step
+                        DROP CONSTRAINT workflow_step_repeatable_sign_type_check;
+                END IF;
+            END;
+        $$;
+        
+        DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'workflow_step_sign_type_check'
+                      AND conrelid = 'public.workflow_step'::regclass
+                ) THEN
+                    ALTER TABLE public.workflow_step
+                        DROP CONSTRAINT workflow_step_sign_type_check;
+                END IF;
+            END;
+        $$;
+        
+        DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'live_workflow_step_repeatable_sign_type_check'
+                      AND conrelid = 'public.live_workflow_step'::regclass
+                ) THEN
+                    ALTER TABLE public.live_workflow_step
+                        DROP CONSTRAINT live_workflow_step_repeatable_sign_type_check;
+                END IF;
+            END;
+        $$;
+        
+        DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'live_workflow_step_sign_type_check'
+                      AND conrelid = 'public.live_workflow_step'::regclass
+                ) THEN
+                    ALTER TABLE public.live_workflow_step
+                        DROP CONSTRAINT live_workflow_step_sign_type_check;
+                END IF;
+            END;
+        $$;
+        
+        
+        update live_workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
+        update workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
+        
+        update live_workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        
+        alter table public.workflow_step
+            add constraint workflow_step_repeatable_sign_type_check
+                check ((repeatable_sign_type)::text = ANY
+                       ((ARRAY ['hiddenVisa'::character varying, 'visa'::character varying, 'signature'::character varying])::text[]));
+        
+        
+        alter table public.live_workflow_step
+            add constraint live_workflow_step_repeatable_sign_type_check
+                check ((repeatable_sign_type)::text = ANY
+                       ((ARRAY ['hiddenVisa'::character varying, 'visa'::character varying, 'signature'::character varying])::text[]));
+        
+        alter table public.workflow_step
+            add constraint workflow_step_sign_type_check
+                check ((sign_type)::text = ANY
+                       ((ARRAY ['hiddenVisa'::character varying, 'visa'::character varying, 'signature'::character varying])::text[]));
+        
+        alter table public.live_workflow_step
+            add constraint live_workflow_step_sign_type_check
+                check ((sign_type)::text = ANY
+                       ((ARRAY ['hiddenVisa'::character varying, 'visa'::character varying, 'signature'::character varying])::text[]));
+        """
+        ).executeUpdate();
+        logger.info("#### Update sign types done ####");
     }
 }
