@@ -2,12 +2,12 @@ package org.esupportail.esupsignature.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public enum SignType {
+public enum SignLevel {
     hiddenVisa(0), visa(1), signature(2);
 
     private final int value;
 
-    SignType(final int newValue) {
+    SignLevel(final int newValue) {
         value = newValue;
     }
 
@@ -19,11 +19,11 @@ public enum SignType {
      * Ensures backward compatibility with existing JSON payloads.
      **/
     @JsonCreator
-    public static SignType fromString(String key) {
+    public static SignLevel fromString(String key) {
         if ("pdfImageStamp".equalsIgnoreCase(key) || "certSign".equalsIgnoreCase(key) || "nexuSign".equalsIgnoreCase(key)) {
             return signature;
         }
-        return SignType.valueOf(key);
+        return SignLevel.valueOf(key);
     }
 
 

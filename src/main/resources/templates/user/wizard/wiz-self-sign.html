@@ -12,7 +12,7 @@
                     <label class="form-label" for="multipartFiles">Choix des fichiers à signer *</label>
                     <input tabindex="500" id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
                 </div>
-                <input type="hidden" name="signType" value="pdfImageStamp">
+                <input type="hidden" name="signType" value="signature">
             </div>
             <button type="submit" id="fast-form-submit" class="d-none"></button>
         </form>

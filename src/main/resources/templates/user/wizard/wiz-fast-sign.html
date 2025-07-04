@@ -45,7 +45,7 @@
                     <select class="form-select" name="signType" id="signType-1">
                         <th:block th:each="signType : ${signTypes}">
                             <option th:value="${signType}"
-                                    th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                                    th:text="#{'signbook.signtype.' + ${signType}}"></option>
                         </th:block>
                     </select>
                 </div>
