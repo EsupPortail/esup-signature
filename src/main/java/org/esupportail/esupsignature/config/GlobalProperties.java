@@ -292,7 +292,16 @@ public class GlobalProperties {
     private Integer otpValidity = 10;
 
     /**
-     * Liste des types de signature autorisés (par défault tous les types)
+     * Liste des types de signature autorisés (par défaut tous les types).
+     * <p>
+     * Valeurs possibles :
+     * - imageStamp
+     * - userCert
+     * - groupCert
+     * - autoCert
+     * - openPkiCert
+     * - sealCert
+     * - nexuCert
      */
     private List<SignWith> authorizedSignTypes = List.of(SignWith.values());
 
