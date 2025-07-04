@@ -294,7 +294,7 @@ public class SignRequestService {
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && lastSignRequestParams != null) {
 				signRequestParamsService.copySignRequestParams(signRequest, Collections.singletonList(lastSignRequestParams));
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}

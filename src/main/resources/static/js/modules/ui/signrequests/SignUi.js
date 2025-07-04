@@ -156,13 +156,13 @@ export class SignUi {
                         }
                     } else {
                         let imageStampOption = $("#certType > option[value='imageStamp']");
-                        imageStampOption.remove();
-                        if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
-                            $('#certType').prepend($('<option>', {
-                                value: 'imageStamp',
-                                text: self.saveOptionText
-                            }));
-                        }
+                        // imageStampOption.remove();
+                        // if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
+                        //     $('#certType').prepend($('<option>', {
+                        //         value: 'imageStamp',
+                        //         text: self.saveOptionText
+                        //     }));
+                        // }
                         self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
                             if($(this).val() === "imageStamp" && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
@@ -204,6 +204,7 @@ export class SignUi {
         console.info("check sign options");
         if (this.signable) {
             new Nexu(null, null, this.currentSignType, null, null);
+            $("#certType").focus();
         }
     }
 

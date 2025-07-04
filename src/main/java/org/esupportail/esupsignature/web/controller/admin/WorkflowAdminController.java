@@ -232,10 +232,12 @@ public class WorkflowAdminController {
 							 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
 							 @RequestParam(name="autoSign", required = false) Boolean autoSign,
 							 @RequestParam(name="certificatId", required = false) Long certificatId,
+							 @RequestParam(name="minSignLevel", required = false) SignLevel minSignLevel,
+							 @RequestParam(name="maxSignLevel", required = false) SignLevel maxSignLevel,
 							 RedirectAttributes redirectAttributes) {
 		Workflow workflow = workflowService.getById(id);
 		try {
-			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId);
+			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel);
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
 		}

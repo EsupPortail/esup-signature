@@ -100,6 +100,7 @@ export class ListSignBooksUi {
     checkSignOptions() {
         console.info("check sign options");
         new Nexu(null, null, null, null, null);
+        $("#certType").focus();
     }
 
     checkAfterChangeSignType() {
