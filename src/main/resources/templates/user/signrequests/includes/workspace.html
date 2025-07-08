@@ -16,6 +16,11 @@
             Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
+        <div id="no-options-alert" class="alert alert-warning warning" title="Masquer ce message" th:if="${signable}" style="display: none;"
+            onclick="$(this).remove();">
+            Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
+        </div>
         <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
             onclick="$(this).remove();">
             Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
