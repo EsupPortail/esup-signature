@@ -770,6 +770,7 @@ public class WorkflowService {
             step.setSignType(workflowStep.getSignType());
             step.setAttachmentAlert(workflowStep.getAttachmentAlert());
             step.setAttachmentRequire(workflowStep.getAttachmentRequire());
+            step.setSignLevel(workflowStep.getMinSignLevel());
             LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
         }
