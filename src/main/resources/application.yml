@@ -36,7 +36,7 @@ global:
     csv-quote: "\""
     csv-separator: ";"
     otp-validity: 1
-#    authorized-sign-types: certsign
+#    authorized-sign-types: imageStamp, nexuCert
     export-attachements: true
     external-signature-params:
         add-watermark: false

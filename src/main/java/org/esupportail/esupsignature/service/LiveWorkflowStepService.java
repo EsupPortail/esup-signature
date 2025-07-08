@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -69,15 +71,18 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
-            int minLevel = 2;
+            SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
-                minLevel = 3;
+                minLevel = SignLevel.advanced;
             }
-            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel.getValue()) {
+                liveWorkflowStep.setSignType(SignType.signature);
             }
+            liveWorkflowStep.setMinSignLevel(workflowStep.getMinSignLevel());
+            liveWorkflowStep.setMaxSignLevel(workflowStep.getMaxSignLevel());
         } else {
             liveWorkflowStep.setSignType(step.getSignType());
+            liveWorkflowStep.setMinSignLevel(step.getSignLevel());
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
@@ -99,15 +104,16 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
-            int minLevel = 2;
+            SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
-                minLevel = 3;
+                minLevel = SignLevel.advanced;
             }
-            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel.getValue()) {
+                liveWorkflowStep.setSignType(SignType.signature);
             }
         } else {
             liveWorkflowStep.setSignType(step.getSignType());
+            liveWorkflowStep.setMinSignLevel(step.getMinSignLevel());
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();

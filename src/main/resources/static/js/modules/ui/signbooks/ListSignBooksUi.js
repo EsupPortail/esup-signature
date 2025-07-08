@@ -46,7 +46,6 @@ export class ListSignBooksUi {
         $("#certType").on("change", e => this.checkAfterChangeSignType());
         $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
         $('#launchMassSignButton').on('click', e => this.launchMassSign());
-        //$('#massSignModalButton').on("click", e => this.checkCertSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
         let creatorFilter = document.querySelector('#creatorFilter');
@@ -83,12 +82,6 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        this.listSignRequestTable.focus();
-        $(document).on('click', function(e){
-            if (!$(e.target).closest('.modal').length) {
-                self.listSignRequestTable.focus();
-            }
-        });
         $("#toggle-new-grid").css("top", "-55px");
         $(document).on('wheel', function(e){
             let delta = e.originalEvent.deltaY;
@@ -107,6 +100,7 @@ export class ListSignBooksUi {
     checkSignOptions() {
         console.info("check sign options");
         new Nexu(null, null, null, null, null);
+        $("#certType").focus();
     }
 
     checkAfterChangeSignType() {
@@ -468,27 +462,6 @@ export class ListSignBooksUi {
         let bar = $("#bar");
         bar.hide();
         bar.addClass("progress-bar-animated");
-    }
-
-    checkCertSign() {
-        let signRequestIds = $('.sign-requests-ids:checked');
-        let ids = [];
-        let isCertSign = false;
-        for (let i = 0; i < signRequestIds.length ; i++) {
-            let checkbox = signRequestIds.eq(i);
-            ids.push(checkbox.val());
-            if(checkbox.attr("data-es-sign-type") === 'certSign' && checkbox.attr("data-es-signrequest-status") === 'pending') {
-                isCertSign = true;
-            }
-        }
-        if (isCertSign) {
-            $("#passwordForm").on("submit", function (e){
-               e.preventDefault();
-            });
-            $('#checkCertSignModal').modal('show');
-        } else {
-            this.launchMassSign()
-        }
     }
 
     activeHorizontalScrolling(e){

@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -53,16 +52,14 @@ public class OtpAccessController {
     private final OtpService otpService;
     private final SignBookService signBookService;
     private final UserService userService;
-    private final AuthenticationManager authenticationManager;
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, AuthenticationManager authenticationManager, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
-        this.authenticationManager = authenticationManager;
         this.securityServices = securityServices;
         this.smsService = smsService;
     }
@@ -70,7 +67,7 @@ public class OtpAccessController {
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
         model.addAttribute("urlId", urlId);
-        List<SecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).toList();
+        List<OidcOtpSecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).map(s -> (OidcOtpSecurityService) s).toList();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null) {
             if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
@@ -83,6 +80,7 @@ public class OtpAccessController {
             model.addAttribute("otp", otp);
             model.addAttribute("smsService", smsService);
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
+            model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
             return "otp/signin";
@@ -144,7 +142,7 @@ public class OtpAccessController {
                 }
             }
         }
-        return ResponseEntity.internalServerError().body("Un sms a déjà été transmit, merci de prendre contact via le mail ci-dessus");
+        return ResponseEntity.internalServerError().body("Un sms a déjà été transmis, merci de prendre contact via le mail ci-dessus");
     }
 
     @PostMapping

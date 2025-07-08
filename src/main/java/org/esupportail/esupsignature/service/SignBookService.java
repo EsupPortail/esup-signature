@@ -27,6 +27,9 @@ import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.mail.MailService;
+import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
+import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
@@ -377,6 +380,8 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSignType(steps.get(0).getSignType());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getSignLevel());
     }
 
     @Transactional
@@ -442,6 +447,7 @@ public class SignBookService {
                         }
                     }
                 } else if(signRequest.getSignRequestParams().size() > i) {
+                    if(liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) continue;
                     addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
                     logger.info("add signRequestParams to liveWorkflowStep " + liveWorkflowStep.getId());
                 }
@@ -484,7 +490,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         WorkflowStepDto workflowStepDto = new WorkflowStepDto();
         recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
-        workflowStepDto.setSignType(SignType.pdfImageStamp);
+        workflowStepDto.setSignType(SignType.signature);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
     }
 
@@ -970,12 +976,13 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
+    @Transactional
     public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
-                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.certSign);
+                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
                 liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(userService.getSystemUser()));
             }
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
@@ -1169,7 +1176,7 @@ public class SignBookService {
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
-        if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
+        if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
                 signRequest.getSignRequestParams().clear();
                 signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
@@ -2197,4 +2204,28 @@ public class SignBookService {
         return newSignRequest.getId();
     }
 
+    @Transactional
+    public List<ExternalAuth> getExternalAuths(Long id, List<OidcOtpSecurityService> securityServices) {
+        List<ExternalAuth> externalAuths = new ArrayList<>();
+        SignBook signBook = getById(id);
+        if(signBook.getLiveWorkflow().getWorkflow() != null && !signBook.getLiveWorkflow().getWorkflow().getExternalAuths().isEmpty()) {
+            externalAuths.addAll(signBook.getLiveWorkflow().getWorkflow().getExternalAuths());
+            if(BooleanUtils.isTrue(globalProperties.getSmsRequired())) {
+                externalAuths.remove(ExternalAuth.open);
+            }
+        } else {
+            if(securityServices.stream().anyMatch(s -> s instanceof ProConnectSecurityServiceImpl)) {
+                externalAuths.add(ExternalAuth.proconnect);
+            }
+            if(securityServices.stream().anyMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) {
+                externalAuths.add(ExternalAuth.franceconnect);
+            }
+            if(BooleanUtils.isFalse(globalProperties.getSmsRequired())) {
+                externalAuths.add(ExternalAuth.open);
+            } else {
+                externalAuths.add(ExternalAuth.sms);
+            }
+        }
+        return externalAuths;
+    }
 }

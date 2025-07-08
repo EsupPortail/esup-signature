@@ -122,7 +122,7 @@ public class PdfService {
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
-                    if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.pdfImageStamp)) {
+                    if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.signature)) {
                         stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date, otp, endingWithCert);
                     }
                     i++;

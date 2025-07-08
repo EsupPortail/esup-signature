@@ -6,45 +6,58 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div class="pdf-alerts" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''">
-        <div id="warningSelectDiv" class="alert alert-danger border-dark" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+        <div id="warningSelectDiv" title="Masquer ce message" class="alert alert-danger border-dark warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}"
+            onclick="$(this).remove();">
             En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div class="alert alert-success" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+            onclick="$(this).remove();">
             Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
-            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div class="alert alert-success" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
+            onclick="$(this).remove();">
             Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
-            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div id="signBookDesc" class="d-none alert alert-warning border-dark" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}" style="width: 100%;">
-            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+        <div id="signBookDesc" title="Masquer ce message" class="d-none alert alert-warning border-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
+            onclick="$(this).remove();" style="width: 100%;">
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
             <span th:text="${signRequest.parentSignBook.description}"></span>
         </div>
-        <div id="alertSign" class="alert border-dark" th:classappend="${signatureIssue ? 'alert-warning' : 'alert-success'}" th:if="${signatureIds.size() > 0}" style="width: 100%;">
-            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">Ce document contient des signatures électroniques
+        <div id="alertSign" title="Masquer ce message" class="alert border-dark warning" th:classappend="${signatureIssue ? 'alert-warning' : 'alert-success'}" th:if="${signatureIds.size() > 0}"
+            onclick="$(this).remove();" style="width: 100%;">
+            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">
+                Ce document contient des signatures électroniques
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button>
             </span>
-            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}"><i class="fa-solid fa-circle-check"></i> Ce document contient une signature électronique qualifiée (eIDas)
+            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}">
+                <i class="fa-solid fa-circle-check"></i> Ce document contient une signature électronique qualifiée (eIDas)
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
                 <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
             </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}"><i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
+            <span style="line-height: 33px;" th:if="${signatureIssue}">
+                <i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
                 <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                     <span class="sr-only">En cours...</span>
                 </div>
                 <button es-modal-style="bg-warning" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
             </span>
-            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div id="warningPdfA" class="alert alert-warning border-dark" th:if="${pdfaCheck != null && pdfaCheck.contains('6.3.5')}">
-            Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.
-            <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+        <div id="warningPdfA" title="Masquer ce message"
+            class="alert alert-warning border-dark warning d-flex align-items-center justify-content-between"
+            th:if="${pdfaCheck != null && pdfaCheck.contains('6.3.5')}"
+            onclick="$(this).remove();">
+            <div style="flex: 1;">Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
+            <button class="btn btn-sm btn-close text-dark warning-close"
+                    onclick="$(this).parent('div').remove();"></button>
         </div>
         <div id="alertNexu" class="alert alert-danger border-dark text-center" style="display: none;">
             L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.

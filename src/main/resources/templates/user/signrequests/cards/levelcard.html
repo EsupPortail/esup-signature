@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<span id="levelcard" th:fragment="levelcard">
+    <span th:switch="${liveWorkflowStep.minSignLevel}" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).simple}" class="fa-stack text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fa-solid fa-signature"></i>
+        </span>
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).advanced}" class="fa-stack text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fa-solid fa-signature"></i>
+            <i class="fa-solid fa-certificate"></i>
+        </span>
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).qualified}" class="fa-stack text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fa-solid fa-signature"></i>
+            <i class="fa-solid fa-shield-halved"></i>
+        </span>
+    </span>
+    <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
+        <span class="fa-stack text-secondary" title="Visa">
+            <i class="fa-solid fa-signature"></i>
+        </span>
+    </span>
+    <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+        <span class="fa-stack text-secondary" title="Validation">
+            <i class="fa-solid fa-check"></i>
+        </span>
+    </span>
+</span>
+</html>

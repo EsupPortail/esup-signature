@@ -322,12 +322,12 @@
                                     </th:block>
                                 </th:block>
                             </select>
-                            <button id="refresh-certType" type="button" class="btn border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
+                            <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
                         </div>
                         <input type="text" autocomplete="username" name="username" class="d-none">
                         <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                     </div>
-                    <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${!(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign) && signatureIds.size() > 0}">
+                    <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${!(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature) && signatureIds.size() > 0}">
                         Attention ce document comporte <span th:text="${signatureIds.size()}"></span> signature(s) électronique(s). Le fait d’apposer une signature calligraphique ou un visa visuel aura pour effet de détruire les précédentes signatures
                     </div>
                     <div id="alert-multi-sign-present" class="alert alert-warning mb-1" style="display: none">
@@ -340,7 +340,7 @@
                         <label for="signComment">Commentaire (facultatif)</label>
                         <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                     </div>
-                    <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign ? 'd-none' : ''}">
+                    <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).signature ? 'd-none' : ''}">
                         <div id="nexu_version_alert" class="alert alert-warning mt-1 mb-1 col-12 text-center" style="display: none;">
                             L'application Esup-DSS-Client n’a pas la bonne version
                             <br>
@@ -400,7 +400,7 @@
                 <form>
                     <input type="text" autocomplete="username" name="username" class="d-none">
                     <input autocomplete="new-password"
-                        th:classappend="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign} ? 'd-none'"
+                        th:classappend="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).signature} ? 'd-none'"
                         class="form-control" type="password" id="passwordAll" name="passwordAll" value=""
                         placeholder="Mot de passe du keystore"/>
                 </form>
@@ -485,7 +485,7 @@
                         <select name="signType" id="signType" class="form-select">
                             <th:block th:each="signType : ${signTypes}">
                                 <option th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                                        th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>
                     </div>
@@ -715,7 +715,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
+                    <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
                         <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
                                 class="btn btn-danger me-1" title="Refuser" autofocus>
                             <span>Refuser</span>

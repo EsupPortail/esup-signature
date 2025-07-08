@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.dto.json;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class WorkflowStepDto {
 
 	private Boolean changeable = null;
 
-	private Integer signLevel = 0;
+	private SignLevel signLevel = SignLevel.simple;
 
 	private SignType signType;
 
@@ -138,11 +139,11 @@ public class WorkflowStepDto {
 		this.changeable = changeable;
 	}
 
-	public Integer getSignLevel() {
+	public SignLevel getSignLevel() {
 		return signLevel;
 	}
 
-	public void setSignLevel(Integer signLevel) {
+	public void setSignLevel(SignLevel signLevel) {
 		this.signLevel = signLevel;
 	}
 

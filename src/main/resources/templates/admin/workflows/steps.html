@@ -82,61 +82,37 @@
                                     </label>
                                     <select data-es-check-list="false" class="auto-select-users" name="recipientsEmails" id="stepRecipientsEmails" multiple="multiple"></select>
                                 </div>
-                                <div class="form-check form-switch form-switch-md" id="all-sign-to-complete-div-1">
-                                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
-                                    <label class="form-check-label" for="all-sign-to-complete">
-                                        <strong> Tous les participants doivent-ils signer ? </strong>
-                                        <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fa-solid fa-info-circle text-info"></span>
-                                        </button>
-                                        <div class="collapse" id="collapseHelpAllSign">
-                                            <div class="alert alert-info">
-                                                <small>
-                                                    <ul>
-                                                        <li>
-                                                            Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
-                                                        </li>
-                                                        <li>
-                                                            Non : Une seule signature suffit
-                                                        </li>
-                                                    </ul>
-                                                </small>
-                                            </div>
+                                <div class="form-group mb-3 d-flex">
+                                    <div class="form-check form-switch form-switch-md" id="all-sign-to-complete-div-1">
+                                        <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
+                                        <label class="form-check-label" for="all-sign-to-complete">
+                                            <strong> Tous les participants doivent-ils signer ? </strong>
+                                        </label>
+                                    </div>
+                                    <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
+                                        <span class="fa-solid fa-info-circle text-info"></span>
+                                    </button>
+                                    <div class="collapse" id="collapseHelpAllSign">
+                                        <div class="alert alert-info">
+                                            <ul>
+                                                <li>
+                                                    Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+                                                </li>
+                                                <li>
+                                                    Non : Une seule signature suffit
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </label>
+                                    </div>
                                 </div>
-
                                 <div class="form-group mb-3" id="_signType_div_id">
                                     <label for="signType_id">
                                         <strong> Type de signature par défaut</strong>
-                                        <button data-bs-target="#collapseHelpSignType"
-                                                data-bs-toggle="collapse" type="button"
-                                                class="btn btn-sm btn-transparent">
-                                            <i class="fa-solid fa-info-circle text-info"></i>
-                                        </button>
-                                        <div class="collapse" id="collapseHelpSignType">
-                                            <div class="alert alert-info">
-                                                <ul>
-                                                    <li>PAdES/XAdES : s'appuie sur le certificat P12
-                                                        uploader au niveau de vos paramètres
-                                                    </li>
-                                                    <li>Apposition de la signature : ajoute simplement
-                                                        l'image de votre signature sur un PDF à l'endroit voulu
-                                                    </li>
-                                                    <li>PAdES/XAdES eIDas : s'appuie l'application Esup-DSS-Client
-                                                        qui permet l'utilisation d'un certificat matériel
-                                                    </li>
-                                                    <li>Confirmation de lecture : permet de valider la
-                                                        lecture d'un document
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
                                     </label>
                                     <div class="col-lg-10">
                                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
                                             <th:block th:each="signType : ${signTypes}">
-                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                                             </th:block>
                                         </select>
                                     </div>

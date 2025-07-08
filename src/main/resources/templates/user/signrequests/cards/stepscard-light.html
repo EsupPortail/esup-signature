@@ -39,7 +39,7 @@
                                                 <i class="fa-solid fa-check"></i>
                                             </span>Visé par
                                         </div>
-                                        <div th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).pdfImageStamp || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).certSign || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).nexuSign}">
+                                        <div th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
                                             <span title="Etape signé" class="bs-stepper-circle bg-success">
                                                 <i class="fa-solid fa-signature"></i>
                                             </span>Signé par

@@ -36,6 +36,7 @@
                             <span th:text="${workflowStep.description}"></span>
                         </th:block>
                         <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                        <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
                         <div>
                             <table class="table table-sm table-hover table-borderless">
                                 <th:block th:each="user : ${workflowStep.users}">
@@ -82,12 +83,38 @@
                 <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
             </div>
         </div>
-        <label for="signType-1">Type de signature :</label>
-        <select class="form-select mb-3" id="signType-1" name="signType">
-            <th:block th:each="signType : ${signTypes}">
-                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
-            </th:block>
-        </select>
+        <div class="align-self-start">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="form-group w-50">
+                    <label class="form-label" for="signType-1">Choisir un type de signature *</label>
+                    <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
+                        <th:block th:each="signType : ${signTypes}">
+                            <option th:value="${signType}"
+                                    th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="form-group" id="signLevel" title="Avancée et qualifiée nécessitent un certificat">
+                    <label class="form-label" for="signLevel-1">Niveau minimum</label>
+                    <select class="form-select" name="minSignLevel" id="signLevel-1">
+                        <th:block th:each="signLevel : ${signLevels}">
+                            <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                        </th:block>
+                    </select>
+                </div>
+            </div>
+            <script>
+                function toggleSignLevel() {
+                    const signType = document.getElementById("signType-1").value;
+                    const signLevelDiv = document.getElementById("signLevel");
+                    if (signType !== "signature") {
+                        signLevelDiv.style.display = "none";
+                    } else {
+                        signLevelDiv.style.display = "block";
+                    }
+                }
+            </script>
+        </div>
         <div class="form-check form-switch form-switch-md">
             <label class="form-check-label">
                 Les signataires peuvent apposer plusieurs signatures

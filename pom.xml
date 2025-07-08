@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.34.4-SNAPSHOT</version>
+	<version>1.34.5-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -200,7 +200,7 @@
 		<dependency>
 			<groupId>org.webjars</groupId>
 			<artifactId>font-awesome</artifactId>
-			<version>6.2.0</version>
+			<version>6.7.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>

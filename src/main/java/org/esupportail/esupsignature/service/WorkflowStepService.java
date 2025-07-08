@@ -4,6 +4,7 @@ import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
@@ -59,7 +60,7 @@ public class WorkflowStepService {
             workflowStep.setAllSignToComplete(allSignToComplete);
         }
         if(signType == null) {
-            workflowStep.setSignType(signTypeService.getLessSignType(2));
+            workflowStep.setSignType(SignType.signature);
         } else {
             workflowStep.setSignType(signType);
         }
@@ -116,13 +117,13 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel) throws EsupSignatureRuntimeException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
             throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
         }
         if(autoSign == null) autoSign = false;
         if(autoSign) {
-            signType = SignType.certSign;
+            signType = SignType.signature;
         }
         WorkflowStep workflowStep = getById(workflowStepId);
         changeSignType(workflowStep, null, signType);
@@ -149,6 +150,12 @@ public class WorkflowStepService {
         }
         if(maxRecipients != null) {
             workflowStep.setMaxRecipients(maxRecipients);
+        }
+        if(minSignLevel.getValue() <= maxSignLevel.getValue()) {
+            workflowStep.setMinSignLevel(minSignLevel);
+            workflowStep.setMaxSignLevel(maxSignLevel);
+        } else {
+            throw new EsupSignatureRuntimeException("Le niveau minimum doit est inferieur ou équal au niveau maximum");
         }
     }
 

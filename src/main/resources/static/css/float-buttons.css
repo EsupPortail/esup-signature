@@ -121,7 +121,7 @@
     position: fixed;
     right: 1vw;
     bottom: 40px;
-    z-index: 1000;
+    z-index: 999;
     overflow-y: auto;
     height: calc(100% - 180px);
     display: -webkit-box;
