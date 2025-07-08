@@ -17,7 +17,7 @@
                                     <input name="description" type="text" class="form-control" th:value="${workflowStep.description}"/>
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
+                                    <label th:for="'signType-' + ${workflowStep.id}">Type de signature :</label>
                                     <br>
                                     <select class="form-select" name="signType" th:id="'signType-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                         <th:block th:each="signType : ${signTypes}">
@@ -26,21 +26,29 @@
                                     </select>
                                     <input type="hidden" name="signType" value="certSign" th:if="${workflowStep.autoSign}" >
                                 </div>
-                                <div class="form-group mb-3">
+                                <div class="form-group mb-3" th:classappend="${!workflowStep.autoSign} ? '' : 'd-none'">
                                     <label th:for="'signType-' + ${workflowStep.id}">Niveaux de signature autorisés :</label>
-                                    <br>
-                                    Niveau minimum
-                                    <select class="form-select" name="minSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
-                                        <th:block th:each="signLevel : ${signLevels}">
-                                            <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.minSignLevel == signLevel}"></option>
-                                        </th:block>
-                                    </select>
-                                    Niveau maximum
-                                    <select class="form-select" name="maxSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
-                                        <th:block th:each="signLevel : ${signLevels}">
-                                            <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.maxSignLevel == signLevel}"></option>
-                                        </th:block>
-                                    </select>
+                                    <div class="d-flex justify-content-around align-items-center">
+                                        <div>
+                                            <small>Niveau minimum</small>
+                                            <select class="form-select" name="minSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                                <th:block th:each="signLevel : ${signLevels}">
+                                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.minSignLevel == signLevel}"></option>
+                                                </th:block>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            >
+                                        </div>
+                                        <div>
+                                            <small>Niveau maximum</small>
+                                            <select class="form-select" name="maxSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                                <th:block th:each="signLevel : ${signLevels}">
+                                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.maxSignLevel == signLevel}"></option>
+                                                </th:block>
+                                            </select>
+                                        </div>
+                                    </div>
                                     <input type="hidden" name="signType" value="certSign" th:if="${workflowStep.autoSign}" >
                                 </div>
                                 <div class="form-check form-switch form-switch-md">

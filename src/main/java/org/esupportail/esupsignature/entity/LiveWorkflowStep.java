@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotNull;
-import org.esupportail.esupsignature.entity.enums.SignType;
-
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -49,6 +49,12 @@ public class LiveWorkflowStep {
     @NotNull
     @Enumerated(EnumType.STRING)
     private SignType signType;
+
+    @Enumerated(EnumType.STRING)
+    private SignLevel minSignLevel;
+
+    @Enumerated(EnumType.STRING)
+    private SignLevel maxSignLevel;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
@@ -156,6 +162,24 @@ public class LiveWorkflowStep {
 
     public void setSignType(SignType signType) {
         this.signType = signType;
+    }
+
+    public SignLevel getMinSignLevel() {
+        if(minSignLevel == null) return SignLevel.simple;
+        return minSignLevel;
+    }
+
+    public void setMinSignLevel(SignLevel signLevel) {
+        this.minSignLevel = signLevel;
+    }
+
+    public SignLevel getMaxSignLevel() {
+        if(maxSignLevel == null) return SignLevel.qualified;
+        return maxSignLevel;
+    }
+
+    public void setMaxSignLevel(SignLevel maxSignLevel) {
+        this.maxSignLevel = maxSignLevel;
     }
 
     public List<SignRequestParams> getSignRequestParams() {

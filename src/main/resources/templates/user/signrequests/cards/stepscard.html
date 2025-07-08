@@ -53,6 +53,7 @@
                                     </span>
                                 </th:block>
                                 <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
                                 <div>
                                     <th:block th:if="${liveWorkflowStep.description != null}">
                                         <span th:text="${liveWorkflowStep.description}"></span>
