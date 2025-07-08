@@ -57,7 +57,6 @@
                                 <div>
                                     <th:block th:if="${liveWorkflowStep.description != null}">
                                         <span th:text="${liveWorkflowStep.description}"></span>
-                                        <br/>
                                     </th:block>
                                     <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
                                     <th:block th:each="recipient : ${liveWorkflowStep.recipients}">

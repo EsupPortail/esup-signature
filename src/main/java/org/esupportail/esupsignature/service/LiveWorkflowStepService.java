@@ -70,6 +70,8 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
+        liveWorkflowStep.setSignType(step.getSignType());
+        liveWorkflowStep.setMinSignLevel(step.getSignLevel());
         if(step.getSignType() == null) {
             SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
@@ -78,11 +80,10 @@ public class LiveWorkflowStepService {
             if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel.getValue()) {
                 liveWorkflowStep.setSignType(SignType.signature);
             }
-            liveWorkflowStep.setMinSignLevel(workflowStep.getMinSignLevel());
-            liveWorkflowStep.setMaxSignLevel(workflowStep.getMaxSignLevel());
-        } else {
-            liveWorkflowStep.setSignType(step.getSignType());
-            liveWorkflowStep.setMinSignLevel(step.getSignLevel());
+            if(workflowStep != null) {
+                liveWorkflowStep.setMinSignLevel(workflowStep.getMinSignLevel());
+                liveWorkflowStep.setMaxSignLevel(workflowStep.getMaxSignLevel());
+            }
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
