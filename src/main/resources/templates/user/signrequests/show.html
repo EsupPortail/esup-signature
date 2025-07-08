@@ -348,11 +348,18 @@
                                 <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
                             </button>
                         </div>
-                        <div id="no-options" class="alert alert-danger mt-1 mb-1 col-12 text-center" style="display: none;">
-                            <p>Votre profil ne possède pas les prérequis nécessaires pour signer cette demande.</p>
-                            <p>Si vous en avez la possibilité, merci de contrôler vos paramètres de signature, d’importer un certificat ou de démarrer Esup-DSS-Client.</p>
-                            <p>Sinon merci de contacter la personne ou le service émetteur de cette demande de signature.</p>
+                        <div id="no-options" class="alert alert-warning mt-1 mb-1 col-12" style="display: none;">
+                            <p class="mx-auto">Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande.</p>
+                            <p>Si une signature avancée ou qualifiée est requise, merci d’installer et de démarrer <strong>Esup-DSS-Client</strong> pour utiliser votre certificat :</p>
+                            <p>
+                                <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">
+                                    > Télécharger la dernière version d'Esup-DSS-Client
+                                </a>
+                            </p>
+                            <p>Choisissez le fichier adapté à votre système : <em>esup-dss-client-win64.zip</em> (Windows), <em>esup-dss-client.pkg</em> (macOS) ou <em>esup-dss-client-installer.jar</em> (Linux).</p>
+                            <p>En cas de difficulté, merci de contacter la personne ou le service émetteur de cette demande.</p>
                         </div>
+
                         <div id="nexu_ready_alert" class="alert alert-success mt-1 mb-1 col-12 text-center" style="display: none;">
                             L’application Esup-DSS-Client est fonctionnelle
                             <br/>
