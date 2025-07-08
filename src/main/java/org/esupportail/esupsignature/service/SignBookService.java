@@ -380,6 +380,8 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSignType(steps.get(0).getSignType());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getSignLevel());
     }
 
     @Transactional

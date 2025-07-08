@@ -214,7 +214,7 @@ public class CertificatService implements HealthIndicator {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
             }
         } catch (Exception e) {
-            logger.warn("no seal certificat found or configuration error : " + e.getMessage(), e);
+            logger.debug("no seal certificat found or configuration error : " + e.getMessage(), e);
             Throwable cause = e;
             while (cause != null) {
                 String pkcs11Error = cause.getMessage();
