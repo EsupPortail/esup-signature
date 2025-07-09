@@ -94,7 +94,7 @@
                         </th:block>
                     </select>
                 </div>
-                <div class="form-group" id="signLevel" title="Avancée et qualifiée nécessitent un certificat">
+                <div class="form-group w-50" id="signLevel" title="Avancée et qualifiée nécessitent un certificat">
                     <label class="form-label" for="signLevel-1">Niveau minimum</label>
                     <select class="form-select" name="minSignLevel" id="signLevel-1">
                         <th:block th:each="signLevel : ${signLevels}">
@@ -102,18 +102,13 @@
                         </th:block>
                     </select>
                 </div>
+                <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
+                    <label class="form-check-label">
+                        Utiliser le cachet de l’établissement pour verrouiller le visa
+                    </label>
+                    <input type="checkbox" class="form-check-input" id="sealVisa-1"/>
+                </div>
             </div>
-            <script>
-                function toggleSignLevel() {
-                    const signType = document.getElementById("signType-1").value;
-                    const signLevelDiv = document.getElementById("signLevel");
-                    if (signType !== "signature") {
-                        signLevelDiv.style.display = "none";
-                    } else {
-                        signLevelDiv.style.display = "block";
-                    }
-                }
-            </script>
         </div>
         <div class="form-check form-switch form-switch-md">
             <label class="form-check-label">

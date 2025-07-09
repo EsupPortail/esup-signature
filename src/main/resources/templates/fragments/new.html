@@ -3,6 +3,23 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-fragment" th:fragment="new" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
+    <script>
+        function toggleSignLevel() {
+            const signType = document.getElementById("signType-1").value;
+            const signLevelDiv = $("#signLevel");
+            const sealOptions = $("#seal-options")
+            if (signType === "visa") {
+                signLevelDiv.hide();
+                sealOptions.show();
+            } else if (signType === "signature") {
+                signLevelDiv.show();
+                sealOptions.hide();
+            } else {
+                signLevelDiv.hide();
+                sealOptions.hide();
+            }
+        }
+    </script>
     <button id="toggle-new-grid" class="btn btn-transparent text-dark btn-grid-display">
         <i class="fa-solid fa-th"></i> Affichage
     </button>
