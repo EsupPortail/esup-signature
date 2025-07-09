@@ -1189,7 +1189,7 @@ public class SignBookService {
                 try {
                     if(globalProperties.getSealAllDocs() ||
                         (signRequest.getParentSignBook().getLiveWorkflow() != null
-                            && (BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSealVisa())
+                            && ((signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSealVisa()))
                                 || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
                                     && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSealAtEnd()))
                                 )
