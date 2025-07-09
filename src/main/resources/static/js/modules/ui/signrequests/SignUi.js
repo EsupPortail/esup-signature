@@ -168,6 +168,7 @@ export class SignUi {
                             if($(this).val() === "imageStamp" && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
                                 $(this).removeAttr('disabled');
                                 $("#no-options").hide();
+                                $("#no-options-alert").hide();
                                 $("#selectTypeDiv").show();
                                 $("#checkValidateSignButtonEnd").show();
                                 $("#checkValidateSignButtonNext").show();

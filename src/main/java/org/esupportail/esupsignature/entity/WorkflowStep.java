@@ -47,6 +47,8 @@ public class WorkflowStep {
 
     private Boolean autoSign = false;
 
+    private Boolean sealVisa = false;
+
     @ManyToOne
     private Certificat certificat;
 
@@ -221,5 +223,14 @@ public class WorkflowStep {
 
     public void setMaxSignLevel(SignLevel maxSignLevel) {
         this.maxSignLevel = maxSignLevel;
+    }
+
+    public Boolean getSealVisa() {
+        if(sealVisa == null) return false;
+        return sealVisa;
+    }
+
+    public void setSealVisa(Boolean sealVisa) {
+        this.sealVisa = sealVisa;
     }
 }

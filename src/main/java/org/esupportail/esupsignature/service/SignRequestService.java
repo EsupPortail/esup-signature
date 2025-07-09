@@ -584,14 +584,14 @@ public class SignRequestService {
 	@Transactional
 	public void cleanDocuments(SignRequest signRequest, String authUserEppn) {
 		Date cleanDate = getEndDate(signRequest);
-		Calendar cal = Calendar.getInstance();
 		if(cleanDate != null) {
+			Calendar cal = Calendar.getInstance();
 			cal.setTime(cleanDate);
 			cal.add(Calendar.DATE, globalProperties.getDelayBeforeCleaning());
 			Date test = cal.getTime();
 			Date now = new Date();
 			if(signRequest.getExportedDocumentURI() != null
-					&& test.getTime()< now.getTime()
+					&& test.getTime() < now.getTime()
 					&& !signRequest.getSignedDocuments().isEmpty()) {
 				clearAllDocuments(signRequest);
 				updateStatus(signRequest.getId(), SignRequestStatus.exported, "Fichiers nettoyés", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);

@@ -94,13 +94,6 @@ public class WorkflowStepService {
         }
     }
 
-    public void changeSignType(WorkflowStep workflowStep, String name, SignType signType) {
-        if (name != null) {
-            workflowStep.setName(name);
-        }
-        workflowStep.setSignType(signType);
-    }
-
     @Transactional
     public WorkflowStep addStepRecipients(Long workflowStepId, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = workflowStepRepository.findById(workflowStepId).get();
@@ -117,7 +110,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel) throws EsupSignatureRuntimeException {
+    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
         if(repeatable != null && repeatable && signType.getValue() > 2) {
             throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
         }
@@ -126,7 +119,12 @@ public class WorkflowStepService {
             signType = SignType.signature;
         }
         WorkflowStep workflowStep = getById(workflowStepId);
-        changeSignType(workflowStep, null, signType);
+        workflowStep.setSignType(signType);
+        if(signType.equals(SignType.visa)) {
+            workflowStep.setSealVisa(sealVisa);
+        } else {
+            workflowStep.setSealVisa(false);
+        }
         workflowStep.setDescription(description);
         workflowStep.setChangeable(Objects.requireNonNullElse(changeable, false));
         workflowStep.setRepeatable(Objects.requireNonNullElse(repeatable, false));
@@ -155,7 +153,7 @@ public class WorkflowStepService {
             workflowStep.setMinSignLevel(minSignLevel);
             workflowStep.setMaxSignLevel(maxSignLevel);
         } else {
-            throw new EsupSignatureRuntimeException("Le niveau minimum doit est inferieur ou équal au niveau maximum");
+            throw new EsupSignatureRuntimeException("Le niveau minimum doit est inférieur ou équal au niveau maximum");
         }
     }
 
