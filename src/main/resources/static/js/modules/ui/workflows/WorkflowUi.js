@@ -9,7 +9,6 @@ export class WorkflowUi {
         $(document).ready(e => this.initDeleteListener());
         $(document).ready(e => this.initMultiSignListener());
         $("#delete-button").on("click", e => this.confirmDelete());
-        let self = this;
         $("#autoSign").on('change', function(){
            if($(this).is(":checked")) {
                let id = $(this).attr("data-es-step-id");
@@ -30,6 +29,36 @@ export class WorkflowUi {
                $("#table_" + id).removeClass("d-none");
            }
         });
+        let self = this;
+        $(document).ready(function () {
+
+            $('select[id^="signType-"]').each(function () {
+                const stepId = $(this).attr('id').split('signType-')[1];
+                self.toggleVisibility(stepId, $(this).val());
+            });
+
+            $('select[id^="signType-"]').on('change', function () {
+                const stepId = $(this).attr('id').split('signType-')[1];
+                self.toggleVisibility(stepId, $(this).val());
+            });
+        });
+    }
+
+    toggleVisibility(stepId, selectedVal) {
+        const $signTypeDiv = $('#signTypeDiv-' + stepId);
+        const $sealVisaDiv = $('#sealVisaDiv-' + stepId);
+
+        if (selectedVal === 'signature') {
+            $signTypeDiv.removeClass('d-none');
+        } else {
+            $signTypeDiv.addClass('d-none');
+        }
+
+        if (selectedVal === 'visa') {
+            $sealVisaDiv.removeClass('d-none');
+        } else {
+            $sealVisaDiv.addClass('d-none');
+        }
     }
 
     toggleAnnotationOption(element) {

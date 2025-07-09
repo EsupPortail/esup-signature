@@ -602,6 +602,10 @@ export class WizUi {
             if(signLevel.length) {
                 step.signLevel = signLevel.val();
             }
+            let sealVisa = $('#sealVisa-' + i);
+            if(sealVisa.length) {
+                step.sealVisa = sealVisa.prop("checked");
+            }
             signType.on('change', function (e) {
                 if($(this).val() === "hiddenVisa") {
                     let multiSign = $('#multiSign-' + i);

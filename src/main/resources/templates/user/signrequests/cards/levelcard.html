@@ -17,12 +17,12 @@
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
         <span class="fa-stack text-secondary" title="Visa">
-            <i class="fa-solid fa-signature"></i>
+            <i class="fa-solid fa-check" title="Visa"></i><i th:if="${liveWorkflowStep.sealVisa}" class="fa-solid fa-certificate"  title="avec cachet établissement"></i>
         </span>
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-        <span class="fa-stack text-secondary" title="Validation">
-            <i class="fa-solid fa-check"></i>
+        <span class="fa-stack text-secondary" title="Vérification">
+            <i class="fa-solid fa-eye"></i>
         </span>
     </span>
 </span>

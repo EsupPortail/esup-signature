@@ -44,6 +44,8 @@ public class WorkflowStepDto {
 
 	private Boolean autoSign = false;
 
+	private Boolean sealVisa = false;
+
 	private Boolean forceAllSign = false;
 
 	private String comment;
@@ -257,5 +259,13 @@ public class WorkflowStepDto {
 
 	public void setTargetEmails(List<String> targetEmails) {
 		this.targetEmails = targetEmails;
+	}
+
+	public Boolean getSealVisa() {
+		return sealVisa;
+	}
+
+	public void setSealVisa(Boolean sealVisa) {
+		this.sealVisa = sealVisa;
 	}
 }

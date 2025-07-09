@@ -46,6 +46,8 @@ public class LiveWorkflowStep {
 
     private Boolean autoSign = false;
 
+    private Boolean sealVisa = false;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     private SignType signType;
@@ -200,5 +202,14 @@ public class LiveWorkflowStep {
 
     public List<User> getUsers() {
         return recipients.stream().map(Recipient::getUser).collect(Collectors.toList());
+    }
+
+    public Boolean getSealVisa() {
+        if(sealVisa == null) return false;
+        return sealVisa;
+    }
+
+    public void setSealVisa(Boolean sealVisa) {
+        this.sealVisa = sealVisa;
     }
 }
