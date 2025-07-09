@@ -199,6 +199,7 @@ public class WorkflowService {
             if(step.getSingleSignWithAnnotation() != null) {
                 workflowStep.setSingleSignWithAnnotation(step.getSingleSignWithAnnotation());
             }
+            workflowStep.setSealVisa(step.getSealVisa());
             workflow.getWorkflowSteps().add(workflowStep);
             userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
         }

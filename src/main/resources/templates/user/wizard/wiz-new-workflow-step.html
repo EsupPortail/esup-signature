@@ -36,7 +36,7 @@
                             <span th:text="${workflowStep.description}"></span>
                         </th:block>
                         <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
-                        <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
+                        <span th:replace="~{user/signrequests/cards/levelcard :: levelcard(liveWorkflowStep=${workflowStep})}"></span>
                         <div>
                             <table class="table table-sm table-hover table-borderless">
                                 <th:block th:each="user : ${workflowStep.users}">
