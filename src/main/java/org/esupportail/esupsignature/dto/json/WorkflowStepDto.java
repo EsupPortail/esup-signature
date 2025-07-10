@@ -58,6 +58,8 @@ public class WorkflowStepDto {
 
 	private List<String> targetEmails = new ArrayList<>();
 
+	private Boolean convertToPDFA = true;
+
 	public WorkflowStepDto() {
 	}
 
@@ -267,5 +269,13 @@ public class WorkflowStepDto {
 
 	public void setSealVisa(Boolean sealVisa) {
 		this.sealVisa = sealVisa;
+	}
+
+	public Boolean getConvertToPDFA() {
+		return convertToPDFA;
+	}
+
+	public void setConvertToPDFA(Boolean convertToPDFA) {
+		this.convertToPDFA = convertToPDFA;
 	}
 }
