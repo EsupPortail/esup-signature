@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.config;
 
 import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -292,9 +292,18 @@ public class GlobalProperties {
     private Integer otpValidity = 10;
 
     /**
-     * Liste des types de signature autorisés (par défault tous les types)
+     * Liste des types de signature autorisés (par défaut tous les types).
+     * <p>
+     * Valeurs possibles :
+     * - imageStamp
+     * - userCert
+     * - groupCert
+     * - autoCert
+     * - openPkiCert
+     * - sealCert
+     * - nexuCert
      */
-    private List<SignType> authorizedSignTypes = List.of(SignType.values());
+    private List<SignWith> authorizedSignTypes = List.of(SignWith.values());
 
     /**
      *  Resolution de l’image de signature
@@ -781,11 +790,11 @@ public class GlobalProperties {
         this.otpValidity = otpValidity;
     }
 
-    public List<SignType> getAuthorizedSignTypes() {
+    public List<SignWith> getAuthorizedSignTypes() {
         return authorizedSignTypes;
     }
 
-    public void setAuthorizedSignTypes(List<SignType> authorizedSignTypes) {
+    public void setAuthorizedSignTypes(List<SignWith> authorizedSignTypes) {
         this.authorizedSignTypes = authorizedSignTypes;
     }
 

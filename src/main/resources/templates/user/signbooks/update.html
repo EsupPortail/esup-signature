@@ -198,7 +198,7 @@
                         <label for="signType_id">Type de signature</label>
                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
                             <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}" th:selected="${signType.name() == 'pdfImageStamp'}"></option>
+                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>
                     </div>

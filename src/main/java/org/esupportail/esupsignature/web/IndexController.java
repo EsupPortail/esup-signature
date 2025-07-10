@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -161,9 +162,19 @@ public class IndexController {
 		return "redirect:/user";
 	}
 
-	@GetMapping("/login/proconnectentry")
-	public String loginProConnectRedirection(Authentication authentication) {
-		return "redirect:/user";
+	@RequestMapping(
+			value = {"/login/proconnectentry", "/login/franceconnectentry"},
+			method = {RequestMethod.GET, RequestMethod.POST}
+	)	public String loginFranceConnectRedirectionPost(Authentication authentication, Model model) {
+		DefaultOidcUser defaultOidcUser = (DefaultOidcUser) authentication.getPrincipal();
+		String name = defaultOidcUser.getAttributes().get("given_name").toString() + " ";
+		name += defaultOidcUser.getAttributes().containsKey("family_name")
+			? defaultOidcUser.getAttributes().get("family_name").toString()
+			: defaultOidcUser.getAttributes().get("usual_name").toString();
+		model.addAttribute("errorMsg", "Bonjour " + name + ",<br>" +
+				"Merci de vous déconnecter et d'utiliser de nouveau le lien d'accès présent dans le mail que vous avez reçu pour signer votre document." +
+				"Une nouvelle connexion est necessaire pour chaque nouvelle demande à signer");
+		return "otp/error";
 	}
 
 	public User getAuthUser(Authentication auth) {

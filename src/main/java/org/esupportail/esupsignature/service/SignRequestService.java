@@ -279,7 +279,7 @@ public class SignRequestService {
 			} else {
 				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Visa", "Pas de timestamp", "", "", date, isViewed, null, null, null);
 			}
-			if (isStepAllSignDone(signRequest.getParentSignBook()) && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
+			if (isStepAllSignDone(signRequest.getParentSignBook()) && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) && BooleanUtils.isNotFalse(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getConvertToPDFA())) {
 				signedInputStream = pdfService.convertToPDFA(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
 			}
 			byte[] signedBytes = signedInputStream;
@@ -294,14 +294,14 @@ public class SignRequestService {
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
-			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && lastSignRequestParams != null) {
 				signRequestParamsService.copySignRequestParams(signRequest, Collections.singletonList(lastSignRequestParams));
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
 			SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
 			Document signedDocument = signService.certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), lastSignRequestParams);
 			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
-			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.certSign, comment);
+			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.signature, comment);
 
 		}
 		customMetricsService.incValue("esup-signature.signrequests", "signed");
@@ -506,7 +506,7 @@ public class SignRequestService {
 			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
 			if (isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
-					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signTypeService.getLessSignType(3));
+					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
 				}
 			}
 		}
@@ -584,14 +584,14 @@ public class SignRequestService {
 	@Transactional
 	public void cleanDocuments(SignRequest signRequest, String authUserEppn) {
 		Date cleanDate = getEndDate(signRequest);
-		Calendar cal = Calendar.getInstance();
 		if(cleanDate != null) {
+			Calendar cal = Calendar.getInstance();
 			cal.setTime(cleanDate);
 			cal.add(Calendar.DATE, globalProperties.getDelayBeforeCleaning());
 			Date test = cal.getTime();
 			Date now = new Date();
 			if(signRequest.getExportedDocumentURI() != null
-					&& test.getTime()< now.getTime()
+					&& test.getTime() < now.getTime()
 					&& !signRequest.getSignedDocuments().isEmpty()) {
 				clearAllDocuments(signRequest);
 				updateStatus(signRequest.getId(), SignRequestStatus.exported, "Fichiers nettoyés", null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);

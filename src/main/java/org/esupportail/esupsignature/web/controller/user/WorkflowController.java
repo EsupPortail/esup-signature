@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.CertificatService;
@@ -83,10 +84,13 @@ public class WorkflowController {
                                      @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                                      @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
                                      @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
+                                     @RequestParam(name="minSignLevel", required = false) SignLevel minSignLevel,
+                                     @RequestParam(name="maxSignLevel", required = false) SignLevel maxSignLevel,
+                                     @RequestParam(name="sealVisa", required = false) Boolean sealVisa,
                                      RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         try {
-            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null);
+            workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null, minSignLevel, maxSignLevel, sealVisa);
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Type de signature impossible pour une étape infinie"));
         }

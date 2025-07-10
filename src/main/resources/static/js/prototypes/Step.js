@@ -10,6 +10,7 @@ export class Step {
         this.singleSignWithAnnotation = "";
         this.autoSign = false;
         this.signType = null;
+        this.signLevel = null;
         this.forceAllSign = false;
         this.userSignFirst = false;
         this.changeable = "";

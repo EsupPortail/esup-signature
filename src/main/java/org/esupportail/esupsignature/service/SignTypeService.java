@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
@@ -19,17 +19,23 @@ public class SignTypeService {
         this.globalProperties = globalProperties;
     }
 
-    public List<SignType> getAuthorizedSignTypes(List<String> roles) {
-        List<SignType> signTypes = new ArrayList<>(globalProperties.getAuthorizedSignTypes());
-        if(!roles.contains("ROLE_SEAL") &&  globalProperties.getDisableCertStorage() && (globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
-            signTypes.remove(SignType.certSign);
+    public List<SignWith> getAuthorizedSignTypes(List<String> roles) {
+        List<SignWith> signWith = new ArrayList<>(globalProperties.getAuthorizedSignTypes());
+        if(!roles.contains("ROLE_SEAL")) {
+            signWith.remove(SignWith.sealCert);
         }
-        return signTypes;
+        if(globalProperties.getDisableCertStorage()) {
+            signWith.remove(SignWith.userCert);
+        }
+        if((globalProperties.getOpenXPKIServerUrl() == null || globalProperties.getOpenXPKIServerUrl().isEmpty())) {
+            signWith.remove(SignWith.openPkiCert);
+        }
+        return signWith;
     }
 
-    public SignType getLessSignType(int minLevel) {
-        List<SignType> signTypes = globalProperties.getAuthorizedSignTypes();
-        return signTypes.stream().filter(s -> s.getValue() >= minLevel).min(Comparator.comparing(SignType::getValue)).orElse(null);
+    public SignWith getLessSignType(int minLevel) {
+        List<SignWith> signWith = globalProperties.getAuthorizedSignTypes();
+        return signWith.stream().filter(s -> s.getValue() >= minLevel).min(Comparator.comparing(SignWith::getValue)).orElse(null);
     }
 
 }
