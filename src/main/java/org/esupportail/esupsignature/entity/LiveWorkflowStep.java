@@ -58,6 +58,8 @@ public class LiveWorkflowStep {
     @Enumerated(EnumType.STRING)
     private SignLevel maxSignLevel;
 
+    private Boolean convertToPDFA = true;
+
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
@@ -211,5 +213,14 @@ public class LiveWorkflowStep {
 
     public void setSealVisa(Boolean sealVisa) {
         this.sealVisa = sealVisa;
+    }
+
+    public Boolean getConvertToPDFA() {
+        if(convertToPDFA == null) return true;
+        return convertToPDFA;
+    }
+
+    public void setConvertToPDFA(Boolean convertToPDFA) {
+        this.convertToPDFA = convertToPDFA;
     }
 }

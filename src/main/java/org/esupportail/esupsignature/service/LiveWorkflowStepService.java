@@ -73,6 +73,7 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setSignType(step.getSignType());
         liveWorkflowStep.setMinSignLevel(step.getSignLevel());
         liveWorkflowStep.setSealVisa(step.getSealVisa());
+        liveWorkflowStep.setConvertToPDFA(step.getConvertToPDFA());
         if(step.getSignType() == null) {
             SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
