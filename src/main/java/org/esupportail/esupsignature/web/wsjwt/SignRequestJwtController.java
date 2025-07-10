@@ -93,6 +93,7 @@ public class SignRequestJwtController {
                                                       "yPos": 0
                                                     }
                                                   ],
+                                                  "convertToPDFA":true,
                                                   "changeable": false,
                                                   "signLevel": 0,
                                                   "signType": "visa",

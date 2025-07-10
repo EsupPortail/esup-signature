@@ -437,7 +437,7 @@
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input th:classappend="${signRequest.parentSignBook.liveWorkflow.currentStep.signType != T(org.esupportail.esupsignature.entity.enums.SignType).certSign || user.keystore == null} ? 'd-none'"
+                <input th:classappend="${signRequest.parentSignBook.liveWorkflow.currentStep.signType != T(org.esupportail.esupsignature.entity.enums.SignType).signature || user.keystore == null} ? 'd-none'"
                     class="form-control mt-2 mb-1" type="password" id="passwordInfinite" name="password" value=""
                     placeholder="Mot de passe du keystore" />
                 <p>
