@@ -47,19 +47,19 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();
 		workflowStep1.getUsers().add(userService.getCreatorUser());
-		workflowStep1.setSignType(SignType.pdfImageStamp);
+		workflowStep1.setSignType(SignType.signature);
 		workflowSteps.add(workflowStep1);
 		//STEP 2
 		WorkflowStep workflowStep2 = new WorkflowStep();
 		workflowStep2.getUsers().add(userService.getGenericUser());
 		workflowStep2.setChangeable(true);
-		workflowStep2.setSignType(SignType.pdfImageStamp);
+		workflowStep2.setSignType(SignType.signature);
 		workflowSteps.add(workflowStep2);
 		//STEP 3
 		WorkflowStep workflowStep3 = new WorkflowStep();
 		workflowStep3.getUsers().add(userService.getGenericUser());
 		workflowStep3.setChangeable(true);
-		workflowStep3.setSignType(SignType.pdfImageStamp);
+		workflowStep3.setSignType(SignType.signature);
 		workflowSteps.add(workflowStep3);
 		return workflowSteps;
 	}

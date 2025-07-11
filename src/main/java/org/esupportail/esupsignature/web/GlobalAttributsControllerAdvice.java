@@ -10,6 +10,8 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
@@ -26,6 +28,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
@@ -141,7 +145,9 @@ public class GlobalAttributsControllerAdvice {
             } else {
                 model.addAttribute("versionApp", "dev");
             }
-            model.addAttribute("signTypes", signTypeService.getAuthorizedSignTypes(roles));
+            model.addAttribute("signTypes", Arrays.stream(SignType.values()).sorted(Comparator.comparingInt(SignType::getValue).reversed()).toList());
+            model.addAttribute("signLevels", Arrays.stream(SignLevel.values()).sorted(Comparator.comparingInt(SignLevel::getValue)).toList());
+
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
             model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));

@@ -380,6 +380,8 @@ public class SignBookService {
         }
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSignType(steps.get(0).getSignType());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getSignLevel());
     }
 
     @Transactional
@@ -488,7 +490,7 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         WorkflowStepDto workflowStepDto = new WorkflowStepDto();
         recipientService.addRecipientInStep(workflowStepDto, user.getEmail());
-        workflowStepDto.setSignType(SignType.pdfImageStamp);
+        workflowStepDto.setSignType(SignType.signature);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
     }
 
@@ -980,7 +982,7 @@ public class SignBookService {
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
-                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.certSign);
+                signBook.getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
                 liveWorkflowStepService.addRecipient(liveWorkflowStep, recipientService.createRecipient(userService.getSystemUser()));
             }
             if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
@@ -1174,7 +1176,7 @@ public class SignBookService {
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
-        if (signRequest.getCurrentSignType().equals(SignType.nexuSign) || (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
+        if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
                 signRequest.getSignRequestParams().clear();
                 signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
@@ -1186,7 +1188,12 @@ public class SignBookService {
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
                     if(globalProperties.getSealAllDocs() ||
-                        (signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSealAtEnd() !=null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSealAtEnd())
+                        (signRequest.getParentSignBook().getLiveWorkflow() != null
+                            && ((signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSealVisa()))
+                                || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+                                    && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSealAtEnd()))
+                                )
+                        )
                     ) {
                         sealAllDocs(signRequest.getParentSignBook().getId());
                     }

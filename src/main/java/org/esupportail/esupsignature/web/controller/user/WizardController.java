@@ -2,9 +2,11 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
@@ -26,7 +28,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
+import org.thymeleaf.context.WebContext;
+import org.thymeleaf.web.servlet.IServletWebExchange;
+import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.util.List;
 import java.util.Locale;
@@ -182,13 +186,15 @@ public class WizardController {
     @PostMapping(value = "/wiz-add-step-signbook/{signBookId}", produces = "text/html")
     @ResponseBody
     public ResponseEntity<String> wizWorkflowSignAddStep(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                       @PathVariable("signBookId") Long signBookId,
-                       @RequestParam(name="end", required = false, defaultValue = "false") Boolean end,
-                       @RequestParam(name="close", required = false) Boolean close,
-                       @RequestParam(name="start", required = false) Boolean start,
-                       @RequestBody List<WorkflowStepDto> steps,
-                       Model model) throws EsupSignatureRuntimeException {
-        final Context context = new Context(Locale.FRENCH);
+                                                         @PathVariable("signBookId") Long signBookId,
+                                                         @RequestParam(name="end", required = false, defaultValue = "false") Boolean end,
+                                                         @RequestParam(name="close", required = false) Boolean close,
+                                                         @RequestParam(name="start", required = false) Boolean start,
+                                                         @RequestBody List<WorkflowStepDto> steps,
+                                                         Model model, HttpServletRequest request, HttpServletResponse response) throws EsupSignatureRuntimeException {
+        JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
+        IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
+        final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
         SignBook signBook = signBookService.getById(signBookId);
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             if(!end && !steps.isEmpty()) {
@@ -235,9 +241,11 @@ public class WizardController {
                                @ModelAttribute("userEppn") String userEppn,
                                @RequestParam(name="end", required = false) Boolean end,
                                @RequestBody List<WorkflowStepDto> steps,
-                               Model model) {
+                               Model model, HttpServletRequest request, HttpServletResponse response) {
         User user = (User) model.getAttribute("user");
-        final Context context = new Context(Locale.FRENCH);
+        JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
+        IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
+        final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
         Workflow workflow;
         workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), user);
         model.addAttribute("workflow", workflow);

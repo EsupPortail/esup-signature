@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
+import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -33,8 +36,9 @@ public class LiveWorkflowStepService {
     private final SignRequestService signRequestService;
     private final SignBookRepository signBookRepository;
     private final ActionService actionService;
+    private final OtpService otpService;
 
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
@@ -42,6 +46,7 @@ public class LiveWorkflowStepService {
         this.signRequestService = signRequestService;
         this.signBookRepository = signBookRepository;
         this.actionService = actionService;
+        this.otpService = otpService;
     }
 
     public LiveWorkflowStep getById(Long liveWorkflowStepId) {
@@ -68,16 +73,22 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAllSignToComplete(Objects.requireNonNullElse(step.getAllSignToComplete(), false));
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
+        liveWorkflowStep.setSignType(step.getSignType());
+        liveWorkflowStep.setMinSignLevel(step.getSignLevel());
+        liveWorkflowStep.setSealVisa(step.getSealVisa());
+        liveWorkflowStep.setConvertToPDFA(step.getConvertToPDFA());
         if(step.getSignType() == null) {
-            int minLevel = 2;
+            SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
-                minLevel = 3;
+                minLevel = SignLevel.advanced;
             }
-            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel.getValue()) {
+                liveWorkflowStep.setSignType(SignType.signature);
             }
-        } else {
-            liveWorkflowStep.setSignType(step.getSignType());
+            if(workflowStep != null) {
+                liveWorkflowStep.setMinSignLevel(workflowStep.getMinSignLevel());
+                liveWorkflowStep.setMaxSignLevel(workflowStep.getMaxSignLevel());
+            }
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
@@ -99,15 +110,16 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         if(step.getSignType() == null) {
-            int minLevel = 2;
+            SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
-                minLevel = 3;
+                minLevel = SignLevel.advanced;
             }
-            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel) {
-                liveWorkflowStep.setSignType(signTypeService.getLessSignType(minLevel));
+            if(liveWorkflowStep.getSignType() == null || liveWorkflowStep.getSignType().getValue() < minLevel.getValue()) {
+                liveWorkflowStep.setSignType(SignType.signature);
             }
         } else {
             liveWorkflowStep.setSignType(step.getSignType());
+            liveWorkflowStep.setMinSignLevel(step.getMinSignLevel());
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
@@ -188,6 +200,9 @@ public class LiveWorkflowStepService {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+            otpService.deleteOtp(signBookId, recipient.getUser());
+        }
         liveWorkflowStep.getRecipients().clear();
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {

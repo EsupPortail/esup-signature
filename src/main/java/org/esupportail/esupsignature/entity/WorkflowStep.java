@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import jakarta.validation.constraints.NotNull;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -46,6 +47,8 @@ public class WorkflowStep {
 
     private Boolean autoSign = false;
 
+    private Boolean sealVisa = false;
+
     @ManyToOne
     private Certificat certificat;
 
@@ -55,6 +58,12 @@ public class WorkflowStep {
 
     @ManyToMany(cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    private SignLevel minSignLevel = SignLevel.simple;
+
+    @Enumerated(EnumType.STRING)
+    private SignLevel maxSignLevel = SignLevel.qualified;
 
     public Long getId() {
         return id;
@@ -196,5 +205,32 @@ public class WorkflowStep {
 
     public void setCertificat(Certificat certificat) {
         this.certificat = certificat;
+    }
+
+    public SignLevel getMinSignLevel() {
+        if(minSignLevel == null) return SignLevel.simple;
+        return minSignLevel;
+    }
+
+    public void setMinSignLevel(SignLevel minSignLevel) {
+        this.minSignLevel = minSignLevel;
+    }
+
+    public SignLevel getMaxSignLevel() {
+        if(maxSignLevel == null) return SignLevel.qualified;
+        return maxSignLevel;
+    }
+
+    public void setMaxSignLevel(SignLevel maxSignLevel) {
+        this.maxSignLevel = maxSignLevel;
+    }
+
+    public Boolean getSealVisa() {
+        if(sealVisa == null) return false;
+        return sealVisa;
+    }
+
+    public void setSealVisa(Boolean sealVisa) {
+        this.sealVisa = sealVisa;
     }
 }

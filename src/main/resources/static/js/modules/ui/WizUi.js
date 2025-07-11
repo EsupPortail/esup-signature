@@ -598,6 +598,14 @@ export class WizUi {
             if(signType.length) {
                 step.signType = signType.val();
             }
+            let signLevel = $('#signLevel-' + i);
+            if(signLevel.length) {
+                step.signLevel = signLevel.val();
+            }
+            let sealVisa = $('#sealVisa-' + i);
+            if(sealVisa.length) {
+                step.sealVisa = sealVisa.prop("checked");
+            }
             signType.on('change', function (e) {
                 if($(this).val() === "hiddenVisa") {
                     let multiSign = $('#multiSign-' + i);
