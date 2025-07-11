@@ -59,7 +59,10 @@ public class SignWithService {
         if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
             signWiths.remove(SignWith.imageStamp);
         }
-        signWiths.removeIf(signWith -> signWith.getValue() > signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMaxSignLevel().getValue() || signWith.getValue() < signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel().getValue());
+        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
+            LiveWorkflowStep currentLiveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+            signWiths.removeIf(signWith -> signWith.getValue() > currentLiveWorkflowStep.getMaxSignLevel().getValue() || signWith.getValue() < currentLiveWorkflowStep.getMinSignLevel().getValue());
+        }
         return signWiths;
     }
 
