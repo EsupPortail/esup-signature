@@ -223,6 +223,16 @@ public class OtpService {
     }
 
     @Transactional
+    public void deleteOtp(Long signbookId, User user) {
+        SignBook signBook = signBookRepository.findById(signbookId).get();
+        List<Otp> toCleanOtps = otpRepository.findByUserAndSignBook(user, signBook);
+        for(Otp otp : toCleanOtps) {
+            clearOTP(otp.getUrlId());
+            otpRepository.delete(otp);
+        }
+    }
+
+    @Transactional
     public void setSmsSended(String urlId) {
         Otp otp = getOtpFromDatabase(urlId);
         otp.setSmsSended(true);
