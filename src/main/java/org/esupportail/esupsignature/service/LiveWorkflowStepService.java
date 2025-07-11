@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,9 @@ public class LiveWorkflowStepService {
     private final SignRequestService signRequestService;
     private final SignBookRepository signBookRepository;
     private final ActionService actionService;
+    private final OtpService otpService;
 
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
@@ -44,6 +46,7 @@ public class LiveWorkflowStepService {
         this.signRequestService = signRequestService;
         this.signBookRepository = signBookRepository;
         this.actionService = actionService;
+        this.otpService = otpService;
     }
 
     public LiveWorkflowStep getById(Long liveWorkflowStepId) {
@@ -197,6 +200,9 @@ public class LiveWorkflowStepService {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
+            otpService.deleteOtp(signBookId, recipient.getUser());
+        }
         liveWorkflowStep.getRecipients().clear();
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
