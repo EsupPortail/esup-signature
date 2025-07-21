@@ -140,7 +140,7 @@ public class SignRequestJwtController {
         if(stepsJsonString == null && recipientEmails != null) {
             workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
             workflowStepDtos.forEach(workflowStepDto -> {
-                workflowStepDto.setSignType(SignType.valueOf(signType));
+                workflowStepDto.setSignType(SignType.fromString(signType));
                 workflowStepDto.setAllSignToComplete(allSignToComplete);
                 workflowStepDto.setUserSignFirst(userSignFirst);
                 workflowStepDto.setComment(comment);
