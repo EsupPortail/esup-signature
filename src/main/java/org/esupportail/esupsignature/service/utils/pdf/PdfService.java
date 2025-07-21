@@ -164,7 +164,7 @@ public class PdfService {
                 } else {
                     signImage = fileService.addTextToImage(user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream(), signRequestParams, signType, user, newDate, otp);
                 }
-            } else if (signRequestParams.getTextPart() == null) {
+            } else if (!StringUtils.hasText(signRequestParams.getTextPart())) {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
