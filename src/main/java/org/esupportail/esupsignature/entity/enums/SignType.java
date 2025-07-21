@@ -23,7 +23,7 @@ public enum SignType {
         if ("pdfImageStamp".equalsIgnoreCase(key) || "certSign".equalsIgnoreCase(key) || "nexuSign".equalsIgnoreCase(key)) {
             return signature;
         }
-        return SignType.valueOf(key);
+        return SignType.fromString(key);
     }
 
 

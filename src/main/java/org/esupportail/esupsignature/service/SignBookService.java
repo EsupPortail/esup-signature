@@ -1448,7 +1448,7 @@ public class SignBookService {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
                                         WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToStep(recipientList).get(0);
-                                        workflowStepDto.setSignType(SignType.valueOf(signType));
+                                        workflowStepDto.setSignType(SignType.fromString(signType));
                                         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, workflowStepDto);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                     } catch (Exception e) {
