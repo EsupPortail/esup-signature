@@ -1437,7 +1437,7 @@ public class SignBookService {
                             int i = 0;
                             for (String metadataKey : metadatas.keySet()) {
                                 String[] keySplit = metadataKey.split("_");
-                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
+                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {term
                                     try {
                                         ObjectMapper mapper = new ObjectMapper();
                                         TypeReference<List<String>> type = new TypeReference<>() {
@@ -1448,7 +1448,7 @@ public class SignBookService {
                                             workflowStep = workflow.getWorkflowSteps().get(i);
                                         }
                                         WorkflowStepDto workflowStepDto = recipientService.convertRecipientEmailsToStep(recipientList).get(0);
-                                        workflowStepDto.setSignType(SignType.valueOf(signType));
+                                        workflowStepDto.setSignType(SignType.fromString(signType));
                                         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, workflowStepDto);
                                         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
                                     } catch (Exception e) {
