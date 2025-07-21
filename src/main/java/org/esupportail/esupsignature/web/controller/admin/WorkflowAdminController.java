@@ -193,7 +193,7 @@ public class WorkflowAdminController {
 		if(recipientsEmails != null) {
 			recipientWsDtos = recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails));
 		}
-		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.valueOf(signType), description, recipientWsDtos, changeable, maxRecipients, allSignToComplete, attachmentRequire);
+		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.fromString(signType), description, recipientWsDtos, changeable, maxRecipients, allSignToComplete, attachmentRequire);
 		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
 		if(preAuthorizeService.workflowManager(id, authUserEppn)) {
 			return "redirect:/manager/workflows/steps/" + id;
