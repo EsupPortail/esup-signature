@@ -1437,7 +1437,7 @@ public class SignBookService {
                             int i = 0;
                             for (String metadataKey : metadatas.keySet()) {
                                 String[] keySplit = metadataKey.split("_");
-                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {term
+                                if (keySplit[0].equals("sign") && keySplit[1].contains("step")) {
                                     try {
                                         ObjectMapper mapper = new ObjectMapper();
                                         TypeReference<List<String>> type = new TypeReference<>() {
