@@ -111,6 +111,7 @@ public class OtpSignRequestController {
         model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
+        model.addAttribute("currentStepMinSignLevel", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel());
         model.addAttribute("currentStepMultiSign", true);
         model.addAttribute("currentStepSingleSignWithAnnotation", true);
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
