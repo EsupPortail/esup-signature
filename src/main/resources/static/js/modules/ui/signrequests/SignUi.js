@@ -6,7 +6,7 @@ import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, currentStepMinSignLevel, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
         console.info("Starting sign UI for " + id);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.returnToHome = returnToHome;
@@ -28,6 +28,7 @@ export class SignUi {
         this.signModal = $('#signModal');
         this.stepRepeatable = stepRepeatable;
         this.currentStepNumber = currentStepNumber;
+        this.currentStepMinSignLevel = currentStepMinSignLevel;
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
         this.nbSignRequests = nbSignRequests;
@@ -67,9 +68,9 @@ export class SignUi {
         $("#copyButton").on('click', e => this.copy());
         $("#send").on('submit', function (e) {
             e.preventDefault();
-            alert("Merci de saisir les participants");
+            bootbox.alert("Merci de saisir les participants", null);
             if ($(e.target).is(':invalid')) {
-                alert("Merci de saisir les participants");
+                bootbox.alert("Merci de saisir les participants", null);
             }
         });
         this.initLaunchButtons();
@@ -156,13 +157,13 @@ export class SignUi {
                         }
                     } else {
                         let imageStampOption = $("#certType > option[value='imageStamp']");
-                        // imageStampOption.remove();
-                        // if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
-                        //     $('#certType').prepend($('<option>', {
-                        //         value: 'imageStamp',
-                        //         text: self.saveOptionText
-                        //     }));
-                        // }
+                        imageStampOption.remove();
+                        if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa") && (self.currentStepMinSignLevel === "simple")) {
+                            $('#certType').prepend($('<option>', {
+                                value: 'imageStamp',
+                                text: self.saveOptionText
+                            }));
+                        }
                         self.checkSignOptions();
                         self.certTypeSelect.children().each(function(e) {
                             if($(this).val() === "imageStamp" && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
@@ -404,7 +405,7 @@ export class SignUi {
             console.log(this.signRequestUrlParams);
             this.sendData(this.signRequestUrlParams);
         } else {
-            alert("Une signature est vide");
+            bootbox.alert("Une signature est vide", null);
         }
     }
 
