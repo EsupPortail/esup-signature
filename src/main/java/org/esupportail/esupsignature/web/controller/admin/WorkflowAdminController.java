@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -36,11 +37,6 @@ public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
 
-	@ModelAttribute("adminMenu")
-	public String getAdminMenu() {
-		return "active";
-	}
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "workflows";
@@ -69,12 +65,13 @@ public class WorkflowAdminController {
     }
 
 	@GetMapping
-	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model) {
-		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			if (displayWorkflowType == null) {
-				displayWorkflowType = DisplayWorkflowType.system;
-			}
-			model.addAttribute("displayWorkflowType", displayWorkflowType);
+	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model, HttpServletRequest httpServletRequest) {
+		if (displayWorkflowType == null) {
+			displayWorkflowType = DisplayWorkflowType.system;
+		}
+		model.addAttribute("displayWorkflowType", displayWorkflowType);
+		String path = httpServletRequest.getRequestURI();
+		if (path.startsWith("/admin")) {
 			model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
 			model.addAttribute("workflowRole", "admin");
 		} else {

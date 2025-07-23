@@ -16,11 +16,6 @@ import java.util.Set;
 @Controller
 public class RolesManagersController {
 
-    @ModelAttribute("adminMenu")
-    String getCurrentMenu() {
-        return "active";
-    }
-
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "rolesManagers";
