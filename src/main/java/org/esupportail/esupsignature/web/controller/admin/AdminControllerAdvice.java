@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
@@ -29,7 +30,14 @@ public class AdminControllerAdvice {
     }
 
     @ModelAttribute
-    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+    public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
+        String path = httpServletRequest.getRequestURI();
+        if (path.startsWith("/admin")) {
+            model.addAttribute("adminMenu", "active");
+        } else {
+            model.addAttribute("managerMenu", "active");
+        }
+
         model.addAttribute("nbSessions", sessionRepositoryCustom.findAllSessionIds().size());
         try {
             if(dssService != null) {

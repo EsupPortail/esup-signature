@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -44,11 +45,6 @@ public class FormAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormAdminController.class);
 
-	@ModelAttribute("adminMenu")
-	public String getAdminMenu() {
-		return "active";
-	}
-
 	@ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "forms";
@@ -75,9 +71,10 @@ public class FormAdminController {
 	}
 
 	@GetMapping()
-	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
+	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
+		String path = httpServletRequest.getRequestURI();
 		Set<Form> forms = new HashSet<>();
-		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+		if (path.startsWith("/admin")) {
 			forms.addAll(formService.getAllForms());
 			model.addAttribute("roles", userService.getAllRoles());
 			model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
