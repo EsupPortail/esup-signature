@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<nav th:fragment="side-manager" id="sidebar" th:unless="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+<nav th:fragment="side-manager" id="sidebar" th:if="${managerMenu == 'active'}">
     <div class="ms-1 mt-2">
         <h5 class="text-center"><b>Management</b></h5>
 
