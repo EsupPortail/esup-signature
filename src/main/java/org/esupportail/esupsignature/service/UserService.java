@@ -324,11 +324,11 @@ public class UserService {
     @Transactional
     public User createUser(String eppn, String name, String firstName, String email, UserType userType, boolean updateCurrentUserRoles) {
         User user;
-        Optional<User> optionalUser = userRepository.findByEppn(eppn);
+        Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(email);
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
         } else {
-            optionalUser = userRepository.findByEmailIgnoreCase(email);
+            optionalUser = userRepository.findByEppn(eppn);
             if (optionalUser.isPresent()) {
                 user = optionalUser.get();
             } else {
