@@ -327,20 +327,28 @@ public class UserService {
         Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(email);
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
+            Optional<User> optionalUser2 = userRepository.findByEppn(eppn);
+            if (optionalUser2.isEmpty()) {
+                user.setEppn(eppn);
+            }
         } else {
             optionalUser = userRepository.findByEppn(eppn);
             if (optionalUser.isPresent()) {
                 user = optionalUser.get();
+                Optional<User> optionalUser2 = userRepository.findByEmailIgnoreCase(email);
+                if (optionalUser2.isEmpty()) {
+                    user.setEmail(email.toLowerCase());
+                }
             } else {
                 logger.info("create user with : " + eppn + ", " + name + ", " + firstName + ", " + email);
                 user = new User();
                 user.setKeystore(null);
+                user.setEppn(eppn);
+                user.setEmail(email.toLowerCase());
             }
         }
         user.setName(name);
         user.setFirstname(firstName);
-        user.setEppn(eppn);
-        user.setEmail(email.toLowerCase());
         user.setUserType(userType);
         if(updateCurrentUserRoles) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
