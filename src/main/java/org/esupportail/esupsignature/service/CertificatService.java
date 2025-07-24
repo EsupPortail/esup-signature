@@ -208,7 +208,11 @@ public class CertificatService implements HealthIndicator {
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
         try {
-            if (StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType() != null && (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12))) {
+            if (globalProperties.getSealCertificatType() != null &&
+                    ((globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
+                    ||
+                    (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile())))
+            ) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
             } else if (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
