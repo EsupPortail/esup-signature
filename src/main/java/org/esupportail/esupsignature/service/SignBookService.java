@@ -1180,10 +1180,12 @@ public class SignBookService {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
         if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
-            if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
+            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams().isEmpty()) {
                 signRequest.getSignRequestParams().clear();
                 signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();
                 signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+            } else {
+                signRequestParamsService.copySignRequestParams(signRequest, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams());
             }
             return StepStatus.nexu_redirect;
         } else {
