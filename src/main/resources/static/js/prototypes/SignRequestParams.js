@@ -989,9 +989,8 @@ export class SignRequestParams extends EventFactory {
                 $("#signExtraOnTop_" + this.id).addClass("btn-outline-dark");
             }
             if(this.divExtra == null) {
-                this.typeSign = "Signature calligraphique";
+                this.typeSign = "Signature";
                 if (this.isVisa) this.typeSign = "Visa";
-                if (this.isElec) this.typeSign = "Signature électronique";
                 let divExtraHtml = "<div id='divExtra_" + this.id + "' class='div-extra div-extra-top' style='position: absolute;z-index: 5;'></div>";
                 this.cross.prepend(divExtraHtml);
                 this.divExtra = $("#divExtra_" + this.id);

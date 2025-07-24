@@ -230,9 +230,8 @@ public class FileService {
 				FontMetrics fm = graphics2D.getFontMetrics();
 				int lineHeight = Math.round(fontSize + fontSize * .5f);
 				if(signRequestParams.getExtraType()) {
-					String typeSign = "Signature calligraphique";
+					String typeSign = "Signature";
 					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-					if(signType.equals(SignType.signature)) typeSign = "Signature électronique";
 					if(otp!= null && otp) {
 						if(user.getPhone() != null) {
 							typeSign = "Signature OTP : " + user.getPhone();
