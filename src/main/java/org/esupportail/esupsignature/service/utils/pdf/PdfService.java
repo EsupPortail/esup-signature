@@ -5,6 +5,7 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import eu.europa.esig.dss.model.InMemoryDocument;
 import eu.europa.esig.dss.pades.SignatureFieldParameters;
 import eu.europa.esig.dss.pades.exception.ProtectedDocumentException;
 import eu.europa.esig.dss.pdf.PdfPermissionsChecker;
@@ -999,8 +1000,8 @@ public class PdfService {
         }
         try {
             PdfPermissionsChecker pdfPermissionsChecker = new PdfPermissionsChecker();
-            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(Loader.loadPDF(multipartFile.getBytes())), new SignatureFieldParameters());
-            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(Loader.loadPDF(multipartFile.getBytes())), new SignatureFieldParameters());
+            pdfPermissionsChecker.checkSignatureRestrictionDictionaries(new PdfBoxDocumentReader(new InMemoryDocument(multipartFile.getBytes())), new SignatureFieldParameters());
+            pdfPermissionsChecker.checkDocumentPermissions(new PdfBoxDocumentReader(new InMemoryDocument(multipartFile.getBytes())), new SignatureFieldParameters());
         } catch (IOException e) {
             logger.error("error on check pdf permitions", e);
             throw new EsupSignatureRuntimeException("error on check pdf permitions", e);
