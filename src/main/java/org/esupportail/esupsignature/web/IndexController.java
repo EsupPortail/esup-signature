@@ -207,15 +207,15 @@ public class IndexController {
 	public String loggedOut(HttpServletRequest httpServletRequest) {
 		String returnedState = httpServletRequest.getParameter("state");
 		String expectedState = null;
-		if (httpServletRequest.getCookies() != null) {
+		if (returnedState != null && httpServletRequest.getCookies() != null) {
 			for (Cookie cookie : httpServletRequest.getCookies()) {
 				if ("logout_state".equals(cookie.getName())) {
 					expectedState = cookie.getValue();
 				}
 			}
-		}
-		if (!Objects.equals(returnedState, expectedState)) {
-			throw new IllegalStateException("Échec vérification du state !");
+            if (!Objects.equals(returnedState, expectedState)) {
+                throw new IllegalStateException("Échec vérification du state !");
+            }
 		}
 		httpServletRequest.getSession().invalidate();
 		return "logged-out";
