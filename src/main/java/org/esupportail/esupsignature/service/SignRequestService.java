@@ -221,7 +221,7 @@ public class SignRequestService {
 		StepStatus stepStatus;
 		Date date = new Date();
 		List<Log> lastSignLogs = new ArrayList<>();
-		User signerUser = userService.getByEppn(userEppn);
+		User signerUser = user;
 		if(userShareId != null) {
 			UserShare userShare = userShareService.getById(userShareId);
 			if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {

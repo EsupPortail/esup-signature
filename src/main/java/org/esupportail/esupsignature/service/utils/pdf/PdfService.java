@@ -471,8 +471,12 @@ public class PdfService {
             for(Log log : logs) {
                 i++;
                 String signatureInfos =
-                    pdfTextStripper.getLineSeparator() + log.getAction() + pdfTextStripper.getLineSeparator() +
-                    "De : " + log.getUser().getFirstname() + " " + log.getUser().getName() + pdfTextStripper.getLineSeparator() +
+                    pdfTextStripper.getLineSeparator() + log.getAction() + pdfTextStripper.getLineSeparator();
+                if(log.getUser() != null) {
+                    signatureInfos +=
+                            "De : " + log.getUser().getFirstname() + " " + log.getUser().getName() + pdfTextStripper.getLineSeparator();
+                }
+                signatureInfos +=
                     "Le : " + dateFormat.format(log.getLogDate()) + pdfTextStripper.getLineSeparator() +
                     "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
                     "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +

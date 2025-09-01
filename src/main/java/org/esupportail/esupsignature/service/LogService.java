@@ -135,8 +135,10 @@ public class LogService {
         log.setSubject(subject);
         log.setWorkflowName(workflowName);
         User user = userService.getByEppn(authUserEppn);
+        if(user == null) {
+            user = userService.getByEppn(userEppn);
+        }
         log.setUser(user);
-        log.setEppnFor(userEppn);
         setClientIp(log);
         log.setLogDate(new Date());
         log.setAction(action);
