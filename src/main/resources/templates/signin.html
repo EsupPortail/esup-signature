@@ -7,7 +7,6 @@
 <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body text-center">
-            <img th:src="@{/images/logo-univ-rouen-normandie-noir.png}" width="250" class="mb-4">
             <div class="d-none" th:if="${#authorization.expression('isAuthenticated()')}">
                 <span th:if="${auth != null}" th:text="${auth}"></span>
             </div>
