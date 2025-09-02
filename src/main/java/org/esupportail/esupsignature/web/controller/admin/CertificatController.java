@@ -40,7 +40,7 @@ public class CertificatController {
     public String list(Model model) {
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("roles", userService.getAllRoles());
-        model.addAttribute("sealCertificats", certificatService.getSealCertificats());
+        model.addAttribute("sealCertificats", certificatService.getCheckedCertificate());
         return "admin/certificats/list";
     }
 
