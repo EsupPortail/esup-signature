@@ -293,7 +293,7 @@ public class CertificatService implements HealthIndicator {
             CertificateReports reports = validator.validate();
             SimpleCertificateReport simpleReport = reports.getSimpleReport();
             CertificateQualification qualificationAtValidationTime = simpleReport.getQualificationAtValidationTime();
-            dssPrivateKeyEntryBooleanMap.put(dssPrivateKeyEntry, qualificationAtValidationTime.isQc() && qualificationAtValidationTime.isForEsig() && qualificationAtValidationTime.isQscd() && qualificationAtValidationTime.isForEseal());
+            dssPrivateKeyEntryBooleanMap.put(dssPrivateKeyEntry, qualificationAtValidationTime.isQc() && qualificationAtValidationTime.isQscd() && qualificationAtValidationTime.isForEseal());
         }
         return dssPrivateKeyEntryBooleanMap;
     }
