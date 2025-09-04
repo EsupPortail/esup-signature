@@ -152,8 +152,15 @@ export class WizUi {
         }
         this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
         $("#send-draft-button").on('click', function() {
-            self.wizCreateSign("fast");
-        });
+            self.disableButtons();
+            let fileCount = self.input.fileinput('getFilesCount');
+            if(fileCount > 0 &&  self.recipientsEmailsSelect.slimSelect.getSelected().length > 0) {
+                self.pending = false;
+                self.wizCreateSign("fast");
+            } else {
+                $("#update-fast-sign-submit").click();
+                self.enableButtons();
+            }        });
         this.input.on("fileuploaderror", e => function (e) {
             alert(e);
         });
