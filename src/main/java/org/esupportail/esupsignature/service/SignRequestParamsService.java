@@ -226,17 +226,17 @@ public class SignRequestParamsService {
     public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
             SignRequestParams signRequestParams;
-            if (signRequest.getSignRequestParams().size() >= i + 1) {
-                signRequestParams = signRequest.getSignRequestParams().get(i);
+            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > i) {
+                signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(i);
             } else {
                 signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
             }
             signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
             signRequestParams.setPdSignatureFieldName(signRequestParamses.get(i).getPdSignatureFieldName());
-            signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
+//            signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
             signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
-            signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
-            signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
+//            signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
+//            signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
             signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
             signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
             signRequestParams.setExtraType(signRequestParamses.get(i).getExtraType());
@@ -248,13 +248,14 @@ public class SignRequestParamsService {
             signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
             signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
             signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
-            if (signRequest.getSignRequestParams().size() < i + 1) {
+            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > i) {
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().set(i, signRequestParams);
+            } else {
+                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
+            }
+            if (signRequest.getSignRequestParams().size() <= i) {
                 signRequest.getSignRequestParams().add(signRequestParams);
             }
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() >= i + 1) {
-                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().remove(i);
-            }
-            signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
         }
     }
 
