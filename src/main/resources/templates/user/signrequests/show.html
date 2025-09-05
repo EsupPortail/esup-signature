@@ -74,15 +74,15 @@
                         <a tabindex="1" id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
-                    <li th:if="${!user.userType.name.equals('external')}">
-                        <a tabindex="1" id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
-                            <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
-                        </a>
-                    </li>
                     <li tabindex="1" th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         <button tabindex="1" id="refuseLaunchButton" class="btn-floating btn-lg bg-danger border-0" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fa-solid fa-file-excel fa-2xl" style="margin-top: -8px;"></i></button>
+                    </li>
+                    <li th:if="${!user.userType.name.equals('external')}">
+                        <a tabindex="1" id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
+                            <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
+                        </a>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
                         <a tabindex="1" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
