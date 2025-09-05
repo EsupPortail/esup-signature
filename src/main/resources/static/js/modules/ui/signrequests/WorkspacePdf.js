@@ -820,7 +820,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>');
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -841,7 +841,7 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-outline-dark').html('<i class="fa-regular fa-eye"></i> <span class="d-none d-xl-inline">Mode consultation</span>')
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-primary').html('<i class="fa-solid fa-pen"></i> <span class="d-none d-xl-inline">Mode modification</span>')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
@@ -862,11 +862,8 @@ export class WorkspacePdf {
         $('#infos').show();
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
-        insertBtn.show();
-        insertBtn.removeClass("pulse-primary");
-        insertBtn.removeClass("btn-outline-primary");
-        insertBtn.removeClass("btn-light");
-        insertBtn.addClass("btn-warning");
+        insertBtn.hide();
+        $("#signModeBtns").addClass("d-none");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
         $(".spot").each(function () {
@@ -884,7 +881,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span>')
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
