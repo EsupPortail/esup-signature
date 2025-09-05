@@ -32,7 +32,13 @@
                             <tr>
                                 <td style="width: 600px; word-break: break-all" th:text="${certificat.getKey().certificate.subject.principal}"></td>
                                 <td th:text="${#dates.format(certificat.getKey().certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${#dates.format(certificat.getKey().certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td>
+                                    <i th:if="${certificat.getKey().certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
+                                    <i th:unless="${certificat.getKey().certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-xmark text-danger fa-2x"></i>
+                                    <span th:text="${#dates.format(certificat.getKey().certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
+
+                                </td>
+
                                 <td class="text-center">
                                     <i th:if="${certificat.getValue()}" class="fa-solid fa-check text-success fa-2x"></i>
                                     <i th:unless="${certificat.getValue()}" class="fa-solid fa-xmark text-danger fa-2x"></i>
