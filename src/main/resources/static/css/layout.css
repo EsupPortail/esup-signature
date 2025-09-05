@@ -222,7 +222,8 @@ header {
 }
 
 .tools {
-    top: 81px;
+    top: 80px;
+    height: 50px;
     padding-top: 5px;
     background-color: white;
     width: 100%;
@@ -328,7 +329,7 @@ header {
 .pdf-alerts {
     top:130px;
     position: fixed;
-    width: calc(100% - 285px);
+    width: calc(100% - 282px);
     z-index: 999;
 }
 

@@ -169,7 +169,7 @@ public class LiveWorkflowStepService {
                 recipients.add(recipient);
             }
         }
-        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("Les destinataires sont vides ou n'ont pas été trouvés");
+        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("Les destinataires sont vides ou n'ont pas été trouvés pour le circuit " + signBook.getWorkflowName());
         return recipients;
     }
 
