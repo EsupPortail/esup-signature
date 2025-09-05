@@ -11,7 +11,6 @@ import eu.europa.esig.dss.pades.exception.ProtectedDocumentException;
 import eu.europa.esig.dss.pdf.PdfPermissionsChecker;
 import eu.europa.esig.dss.pdf.pdfbox.PdfBoxDocumentReader;
 import eu.europa.esig.dss.validation.reports.Reports;
-import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SystemUtils;
@@ -90,29 +89,49 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * Service destiné à la gestion, manipulation et validation des fichiers PDF.
+ * Il fournit différentes fonctionnalités comme l'ajout de tampons, la conversion en PDF/A,
+ * la normalisation de fichiers PDF, et bien d'autres.
+ *
+ * Ce service utilise principalement les bibliothèques Spring, Apache PDFBox,
+ * ainsi que d'autres outils pour la manipulation avancée des fichiers PDF.
+ *
+ * @author David Lemaignent
+ */
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
 
-    @Resource
-    private PdfConfig pdfConfig;
-
-    @Resource
-    private FileService fileService;
-
+    private final PdfConfig pdfConfig;
+    private final FileService fileService;
     private final GlobalProperties globalProperties;
     private final LogService logService;
     private final ValidationService validationService;
 
-    public PdfService(GlobalProperties globalProperties, LogService logService, ValidationService validationService) {
+    public PdfService(PdfConfig pdfConfig, FileService fileService, GlobalProperties globalProperties, LogService logService, ValidationService validationService) {
+        this.pdfConfig = pdfConfig;
+        this.fileService = fileService;
         this.globalProperties = globalProperties;
         this.logService = logService;
         this.validationService = validationService;
     }
 
+    /**
+     * Ajoute une image de type tampon à un fichier PDF spécifié.
+     *
+     * @param inputStream Le flux de données du fichier PDF d'entrée
+     * @param signRequest La requête de signature associée
+     * @param signRequestParams Les paramètres de la requête de signature
+     * @param j L'indice de la page où le tampon sera appliqué
+     * @param user L'utilisateur effectuant l'opération
+     * @param date La date de l'opération
+     * @param otp Utilisé pour les signatures OTP
+     * @param endingWithCert Indique si l'opération doit se terminer par une certification
+     * @return Le fichier PDF modifié en tant que tableau de bytes
+     */
     public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp, Boolean endingWithCert) {
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
@@ -145,6 +164,7 @@ public class PdfService {
         }
         return null;
     }
+
 
     private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp, Boolean endingWithCert) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
@@ -297,6 +317,14 @@ public class PdfService {
         pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
     }
 
+    /**
+     * Crée un QR code à partir d'une chaîne de caractères donnée.
+     *
+     * @param data Les données à encoder dans le QR code
+     * @return Un flux de données contenant le QR code généré
+     * @throws WriterException Lorsque la génération du QR code échoue
+     * @throws IOException En cas d'erreur d'entrée/sortie
+     */
     public ByteArrayOutputStream createQR(String data) throws WriterException, IOException {
         BitMatrix matrix = new MultiFormatWriter().encode(
                 new String(data.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8),
@@ -306,6 +334,15 @@ public class PdfService {
         return outputStream;
     }
 
+    /**
+     * Ajoute un QR code à un fichier PDF donné.
+     *
+     * @param signRequest La requête de signature associée
+     * @param inputStream Le flux du fichier PDF d'entrée
+     * @return Le fichier PDF modifié contenant le QR code en tant que flux
+     * @throws IOException Si une erreur d'entrée/sortie survient
+     * @throws WriterException Si la génération du QR code échoue
+     */
     public InputStream addQrCode(SignRequest signRequest, InputStream inputStream) throws IOException, WriterException {
         PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
         for(int i = 0; i < pdDocument.getNumberOfPages(); i++) {
@@ -354,6 +391,12 @@ public class PdfService {
         return in;
     }
 
+    /**
+     * Lit les métadonnées d'un fichier PDF.
+     *
+     * @param inputStream Le flux de données du fichier PDF
+     * @return Une map contenant les clés et les valeurs des métadonnées
+     */
     public Map<String, String> readMetadatas(InputStream inputStream) {
         Map<String, String> metadatas = new HashMap<>();
         try {
@@ -387,6 +430,12 @@ public class PdfService {
         }
     }
 
+    /**
+     * Vérifie la cohérence des clés des métadonnées présentes dans le fichier PDF.
+     *
+     * @param keys Les clés à valider
+     * @return `true` si les clés respectent la validation, `false` sinon
+     */
     public boolean checkMetadataKeys(Set<String> keys) {
         for(String key : keys) {
             if(key.startsWith("sign_")) {
@@ -396,6 +445,12 @@ public class PdfService {
         return false;
     }
 
+    /**
+     * Vérifie la cohérence des attributs des métadonnées avec les standards définis.
+     *
+     * @param attributes La liste des attributs à valider
+     * @return `true` si tout est valide, `false` sinon
+     */
     public boolean checkMetadataKeys(List<Attribute> attributes) {
         for(Attribute attribute : attributes) {
             if(attribute.getName().startsWith("sign_")) {
@@ -405,6 +460,15 @@ public class PdfService {
         return false;
     }
 
+    /**
+     * Écrit des métadonnées personnalisées dans un fichier PDF.
+     *
+     * @param inputStream Le flux PDF d'entrée en tant que tableau de bytes
+     * @param fileName Le nom du fichier sur lequel les métadonnées sont basées
+     * @param signRequest La requête de signature associée
+     * @param additionnalLogs Les logs additionnels à insérer
+     * @return Le fichier PDF modifié avec les métadonnées ajoutées
+     */
     public byte[] writeMetadatas(byte[] inputStream, String fileName, SignRequest signRequest, List<Log> additionnalLogs) {
 
         try {
@@ -518,6 +582,13 @@ public class PdfService {
         return inputStream;
     }
 
+    /**
+     * Convertit un fichier PDF standard en version PDF/A conforme aux normes d'archivage.
+     *
+     * @param originalBytes Les données du fichier PDF original
+     * @return Les données du fichier PDF converti au format PDF/A
+     * @throws EsupSignatureRuntimeException Si la conversion échoue
+     */
     public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
@@ -564,6 +635,14 @@ public class PdfService {
         }
     }
 
+    /**
+     * Normalise un fichier PDF pour réduire les problèmes de compatibilité.
+     *
+     * @param originalBytes Les données du fichier PDF
+     * @return Le fichier PDF normalisé
+     * @throws IOException En cas de problème lié au traitement du fichier
+     * @throws EsupSignatureRuntimeException Si la normalisation échoue
+     */
     public byte[] normalizePDF(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         ByteArrayOutputStream repairedOriginalBytes = new ByteArrayOutputStream();
         PDDocument pdDocument = Loader.loadPDF(originalBytes);
@@ -622,6 +701,13 @@ public class PdfService {
         }
     }
 
+    /**
+     * Vérifie si un fichier PDF est conforme au format PDF/A.
+     *
+     * @param pdfFile Le fichier PDF à analyser
+     * @return `true` si le fichier est conforme, sinon `false`
+     * @throws EsupSignatureRuntimeException Si une erreur se produit pendant la vérification
+     */
     public boolean isPdfAComplient(byte[] pdfFile) throws EsupSignatureRuntimeException {
         List<String> result = checkPDFA(pdfFile, false);
         if (!result.isEmpty() && "success".equals(result.get(0))) {
@@ -630,6 +716,15 @@ public class PdfService {
         return false;
     }
 
+    /**
+     * Valide la conformité d'un fichier PDF au format PDF/A tout en optionnellement retournant
+     * les détails des erreurs éventuelles.
+     *
+     * @param pdfFile Le fichier PDF à analyser
+     * @param fillResults Indique si les résultats des erreurs doivent être retournés
+     * @return Une liste de messages décrivant les éventuelles non-conformités
+     * @throws EsupSignatureRuntimeException En cas d'échec de la validation
+     */
     public List<String> checkPDFA(byte[] pdfFile, boolean fillResults) throws EsupSignatureRuntimeException {
         List<String> result = new ArrayList<>();
         VeraGreenfieldFoundryProvider.initialise();
@@ -658,6 +753,15 @@ public class PdfService {
         return result;
     }
 
+    /**
+     * Remplit dynamiquement les champs d'un formulaire PDF à partir de données fournies.
+     *
+     * @param pdfFile Le flux du fichier PDF original
+     * @param datas Les données à insérer dans le formulaire
+     * @param isLastStep Indique si c'est la dernière étape de remplissage
+     * @param isForm Indique si le fichier doit être traité comme un formulaire
+     * @return Le fichier PDF modifié en tant que tableau de bytes
+     */
     public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
         ByteArrayOutputStream interimOut = new ByteArrayOutputStream();
         try {
@@ -770,6 +874,13 @@ public class PdfService {
         return null;
     }
 
+    /**
+     * Récupère la liste des champs d'un document PDF.
+     *
+     * @param pdDocument Une instance de document PDDocument
+     * @return Un arbre de structure des champs PDF
+     * @throws EsupSignatureRuntimeException Si un problème survient lors de l'extraction
+     */
     public PDFieldTree getFields(PDDocument pdDocument) throws EsupSignatureRuntimeException {
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
         if(pdAcroForm != null) {
@@ -778,6 +889,13 @@ public class PdfService {
         return null;
     }
 
+    /**
+     * Supprime un champ de signature d'un fichier PDF.
+     *
+     * @param pdfFile Le fichier PDF en tant que flux d'entrée
+     * @param workflow Le workflow associé
+     * @return Un flux modifié du fichier PDF sans le champ de signature
+     */
     public InputStream removeSignField(InputStream pdfFile, Workflow workflow) {
         try {
             PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
@@ -880,6 +998,13 @@ public class PdfService {
         return null;
     }
 
+    /**
+     * Extrait les paramètres PDF d'une page donnée.
+     *
+     * @param pdfFile Le fichier PDF en tant que flux d'entrée
+     * @param pageNumber Le numéro de la page à analyser
+     * @return Les paramètres PDF (dimensions, typographie, etc.) de la page spécifiée
+     */
     public PdfParameters getPdfParameters(InputStream pdfFile, int pageNumber) {
         PDDocument pdDocument = null;
         try {
@@ -899,11 +1024,25 @@ public class PdfService {
         return null;
     }
 
+    /**
+     * Extrait les paramètres PDF d'une page donnée dans un document PDF déjà chargé.
+     *
+     * @param pdDocument Une instance de PDDocument
+     * @param pageNumber Le numéro de la page à analyser
+     * @return Les paramètres PDF (dimensions, typographie, etc.) de la page spécifiée
+     */
     public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
         PDPage pdPage = pdDocument.getPage(pageNumber - 1);
         return new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
     }
 
+    /**
+     * Convertit une page PDF en une image de type BufferedImage.
+     *
+     * @param pdfFile Le fichier PDF en tant que flux d'entrée
+     * @param page Le numéro de la page à convertir
+     * @return Une image BufferedImage représentant la page PDF
+     */
     public BufferedImage pageAsBufferedImage(InputStream pdfFile, int page) {
         BufferedImage bufferedImage = null;
         PDDocument pdDocument = null;
@@ -929,6 +1068,14 @@ public class PdfService {
         return fileService.bufferedImageToInputStream(image, "png");
     }
 
+    /**
+     * Récupère une page PDF comme un flux d'entrée.
+     *
+     * @param pdfFile Le fichier PDF en tant que flux d'entrée
+     * @param page Le numéro de la page à extraire
+     * @return Un flux InputStream contenant uniquement la page spécifiée
+     * @throws Exception Si une erreur survient lors de l'extraction
+     */
     public InputStream pageAsInputStream(InputStream pdfFile, int page) throws Exception {
         BufferedImage bufferedImage = pageAsBufferedImage(pdfFile, page);
         InputStream inputStream = bufferedImageToInputStream(bufferedImage);
@@ -936,6 +1083,14 @@ public class PdfService {
         return inputStream;
     }
 
+    /**
+     * Convertit une image JPEG en un fichier PDF.
+     *
+     * @param inputStream L'image JPEG en tant que flux d'entrée
+     * @param name Le nom du fichier PDF généré
+     * @return Le fichier PDF généré en tant que flux InputStream
+     * @throws IOException Si une erreur survient lors de la conversion
+     */
     public InputStream jpegToPdf(InputStream inputStream, String name) throws IOException {
         PDDocument pdDocument = new PDDocument();
         byte[] imageBytes = inputStream.readAllBytes();
@@ -954,7 +1109,7 @@ public class PdfService {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    int determineSafe(PDDocument document, PDAnnotationWidget widget) throws IOException {
+    private int determineSafe(PDDocument document, PDAnnotationWidget widget) throws IOException {
         COSDictionary widgetObject = widget.getCOSObject();
         PDPageTree pages = document.getDocumentCatalog().getPages();
         for (int i = 0; i < pages.getCount(); i++) {
@@ -968,12 +1123,19 @@ public class PdfService {
         return -1;
     }
 
-    int determineFast(PDDocument document, PDAnnotationWidget widget)
+    private int determineFast(PDDocument document, PDAnnotationWidget widget)
     {
         PDPage page = widget.getPage();
         return page != null ? document.getPages().indexOf(page) : -1;
     }
 
+    /**
+     * Récupère un dictionnaire des numéros de page par nom d'annotation dans un document PDF.
+     *
+     * @param pdDocument L'objet PDDocument représentant le fichier PDF
+     * @return Une map contenant les noms d'annotations associés aux numéros de page
+     * @throws IOException Si une erreur d'accès survient lors de la lecture du document
+     */
     public Map<String, Integer> getPageNumberByAnnotDict(PDDocument pdDocument) throws IOException {
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
         Map<String, Integer> pageNrByAnnotDict = new HashMap<>();
@@ -991,6 +1153,13 @@ public class PdfService {
         return pageNrByAnnotDict;
     }
 
+    /**
+     * Vérifie si un fichier PDF contient un formulaire de type AcroForm.
+     *
+     * @param byteArrayInputStream Le flux d'entrée du fichier PDF à analyser
+     * @return `true` si le fichier contient un AcroForm, sinon `false`
+     * @throws IOException Si une erreur de lecture survient
+     */
     public boolean isAcroForm(ByteArrayInputStream byteArrayInputStream) throws IOException {
         try (PDDocument pdDocument = Loader.loadPDF(byteArrayInputStream.readAllBytes())) {
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -998,6 +1167,12 @@ public class PdfService {
         }
     }
 
+    /**
+     * Vérifie les permissions et les restrictions d'un fichier PDF fourni.
+     *
+     * @param multipartFile Le fichier PDF en tant que MultipartFile
+     * @throws EsupSignatureRuntimeException Si les permissions du fichier ne sont pas correctes
+     */
     public void checkPdfPermitions(MultipartFile multipartFile) throws EsupSignatureRuntimeException {
         if(!Objects.equals(multipartFile.getContentType(), "application/pdf")) {
             return;
@@ -1015,6 +1190,13 @@ public class PdfService {
         }
     }
 
+    /**
+     * Obtient un champ de signature pour un fichier PDF à signer.
+     *
+     * @param documentToSign Le fichier PDF à signer
+     * @param signRequestParams Les paramètres de la requête de signature
+     * @return Un champ PDSignatureField correspondant
+     */
     public PDSignatureField getSignatureField(MultipartFile documentToSign, SignRequestParams signRequestParams) {
         try (PDDocument pdDocument = Loader.loadPDF(documentToSign.getBytes())) {
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();

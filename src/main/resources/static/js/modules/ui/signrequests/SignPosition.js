@@ -64,6 +64,7 @@ export class SignPosition extends EventFactory {
             let addSignButton2 = $("#addSignButton2");
             addSignButton2.removeClass("d-none");
             addSignButton2.addClass("pulse-primary");
+            $("#signLaunchButton").removeClass("pulse-success");
             addSignButton2.focus();
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");

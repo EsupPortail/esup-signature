@@ -54,7 +54,7 @@
 			<th:block th:if="${editable}">
 				<button class="btn btn-warning me-1 d-none d-lg-block"
 						name="changeMode"
-						id="changeMode1"><i class="fa-solid fa-wrench"></i> <span class="d-none d-xl-inline">Mode édition</span></button>
+						id="changeMode1"><i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span></button>
 			</th:block>
 <!--			<div id="insert-btn-sign-div" class="d-block d-lg-none">-->
 <!--				<div th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="me-1">-->
@@ -72,6 +72,16 @@
 					data-bs-toggle="collapse" href="#second-tools">
 					<i class="fa-solid fa-plus"></i> <span class="d-none d-xxl-inline">Menu insertion</span>
 				</button>
+                <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1" style="display: none;">
+                    <button id="addCommentButton"
+                            class="btn btn-warning text-start">
+                        <i class="fa-solid fa-comment"></i> Ajouter une annotation
+                    </button>
+                    <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
+                            class="btn btn-warning text-start">
+                        <i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
+                    </button>
+                </div>
 				<div id="second-tools" class="second-tools position-fixed collapse">
 					<th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
 						<div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1">
@@ -112,19 +122,10 @@
 								<i class="fa-solid fa-xmark"></i> Non disponible pour un visa caché
 							</button>
 						</div>
-						<div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="alert alert-light d-flex flex-column d-none text-start gap-1" style="display: none;">
-							<button id="addCommentButton"
-									class="btn btn-warning text-start">
-								<i class="fa-solid fa-comment"></i> Ajouter une annotation
-							</button>
-							<button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
-									class="btn btn-warning text-start">
-								<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
-							</button>
-						</div>
 					</th:block>
 				</div>
 			</div>
+            <div id="signModeBtns" class="d-inline-flex">
 			<button class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Pièces jointes"
 					data-bs-target="#attachment">
 				<i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxxxl-inline">Pièces jointes</span>
@@ -148,6 +149,7 @@
 			<button th:if="${externalsRecipients != null && externalsRecipients.size() > 0}" class="btn btn-light btn-outline-dark me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
 				<i class="fa-solid fa-share-nodes"></i>
 			</button>
+            </div>
 		</th:block>
 		<div class="border 1 me-2 d-none d-lg-block ms-1"></div>
 		<a th:if="${isManager}" class="btn btn-light btn-outline-dark d-none d-lg-block ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
