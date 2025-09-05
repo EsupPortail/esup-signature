@@ -1252,7 +1252,7 @@ export class SignRequestParams extends EventFactory {
             for(let i = 0; i < lines.length; i++) {
                 let c = document.createElement("canvas");
                 let ctx = c.getContext("2d");
-                ctx.font = fontSize + "px Gravity";
+                ctx.font = fontSize + "px";
                 let txt = lines[i];
                 if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")))) {
                     text += txt;
