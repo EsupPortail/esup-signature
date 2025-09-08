@@ -192,8 +192,9 @@ export class SignRequestParams extends EventFactory {
                 method: 'POST',
                 url: url,
                 success: function (result) {
-                    location.reload();
-                }
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("annotation", "");
+                    window.location.href = url.toString();                }
             });
         }
     }
