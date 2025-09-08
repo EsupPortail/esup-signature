@@ -828,6 +828,11 @@ textarea:placeholder-shown.required-field {
     position: absolute;
 }
 
+button[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 button.close {
     box-sizing: content-box;
     width: 1em;

@@ -158,10 +158,17 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(150 / .75 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 / .75 * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(10 * this.currentScale)  + "px");
+        this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
+        });
+        let self = this;
+        $("#delete-add-spot").on("click", function (){
+            const url = new URL(window.location.href);
+            url.searchParams.set("annotation", "");
+            window.location.href = url.toString();
         });
         this.saveSpotButton = $("#save-spot-button")
         this.saveSpotButton.unbind();

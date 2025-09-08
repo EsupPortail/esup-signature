@@ -816,15 +816,9 @@ export class WorkspacePdf {
         if (this.mode !== 'comment') {
             return;
         }
-        this.addCommentEnabled = false;
-        this.disablePointer();
-        this.signPosition.pointItEnable = true;
-        let addCommentButton = $("#addCommentButton");
-        addCommentButton.toggleClass("btn-primary");
-        addCommentButton.toggleClass("btn-outline-dark");
-        $("#comment-div").hide();
-        $("#addSpotButton").attr("disabled", false);
-        $('#pdf').mousemove(e => this.moveAction(e));
+        const url = new URL(window.location.href);
+        url.searchParams.set("annotation", "");
+        window.location.href = url.toString();
     }
 
     enableReadMode() {
@@ -1038,7 +1032,11 @@ export class WorkspacePdf {
         saveCommentButton.unbind();
         hideCommentButton.unbind();
         $('#pdf').mousemove(e => this.moveAction(e));
-        let addCommentButton = $("#addCommentButton");
+        $("#addSpotButton").attr("disabled", true);
+        $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
+        $("#addCommentButton2").addClass("disable");
         // this.hideComment(e);
         if (this.addCommentEnabled) {
             this.disableAddComment();
@@ -1077,6 +1075,8 @@ export class WorkspacePdf {
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
         this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null);
     }
 
