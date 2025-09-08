@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <div th:fragment="footer">
 	<div id="footer">
-		<footer  class="footer bg-secondary fixed-bottom text-center text-white">
-			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span>
+		<footer class="footer bg-secondary fixed-bottom text-center text-white">
+			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> | <a class="text-white" href="/user">Accueil</a> | <a class="text-white" href="/rgpd">Données personnelles</a> | <a class="text-white" href="/rgaa" th:text="#{rgaa.title}"></a>
 		</footer>
 	</div>
 </div>

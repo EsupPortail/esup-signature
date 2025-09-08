@@ -11,7 +11,7 @@
 			<div th:if="${certificatProblem == true && user.roles.contains('ROLE_ADMIN')}"  class="w-100 bg-danger text-center">
 				Au moins un des certificats serveur va ou est expirer, merci vérifier les certificats concernés
 			</div>
-			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${versionApp}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span>
+			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${versionApp}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span> | <a class="text-white" href="/user">Accueil</a> | <a class="text-white" href="/rgpd">Données personnelles</a> | <a class="text-white" href="/rgaa" th:text="#{rgaa.title}"></a>
 		</footer>
 	</div>
 	<div id="snackbar"></div>
