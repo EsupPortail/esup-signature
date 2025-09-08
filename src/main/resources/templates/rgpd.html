@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="securityServices" type="java.util.List<org.esupportail.esupsignature.service.security.SecurityService>"*/-->
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<main role="main">
+    <div class="card col-lg-10 mx-auto" style="top: 60px;">
+        <div class="card-body">
+            <h1 class="mb-4 fw-bold">Politique de Confidentialité</h1>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">1. Responsable du traitement</h2>
+                <p>Ce site est exploité par <strong th:text="#{rgpd.exploit}"></strong>, joignable à l’adresse : <strong th:text="#{rgpd.email}"></strong>.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">2. Données collectées</h2>
+                <p>Nous collectons les données nécessaires à la signature de documents PDF : nom, prénom, adresse email, signature électronique, adresse IP, ainsi que les données techniques liées à l’utilisation du service.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">3. Finalités</h2>
+                <p>Ces données sont utilisées uniquement pour permettre la signature électronique, assurer la validité juridique des documents et la gestion des comptes utilisateurs.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">4. Base légale</h2>
+                <p>Le traitement repose sur l’exécution d’un contrat (signature des documents), et sur nos obligations légales en matière de conservation des preuves électroniques.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">5. Conservation</h2>
+                <p>Vos données sont conservées pendant la durée légale nécessaire à la preuve des signatures électroniques, puis supprimées ou anonymisées.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">6. Partage et hébergement</h2>
+                <p>Vos données sont hébergées par <strong th:text="#{rgpd.host}">[nom de l’hébergeur]</strong> situé dans l’Union européenne. Elles ne sont pas revendues ni transférées hors UE, sauf obligation légale.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">7. Vos droits</h2>
+                <p>Conformément au RGPD, vous disposez d’un droit d’accès, de rectification, de suppression, d’opposition et de portabilité. Pour exercer vos droits, contactez : <strong th:text="#{rgpd.email}"></strong>.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">8. Autorité de contrôle</h2>
+                <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez saisir la <a href="https://www.cnil.fr" class="link-primary">CNIL</a>.</p>
+            </section>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
+</body>
+</html>
