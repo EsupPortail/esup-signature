@@ -93,6 +93,8 @@ export class WorkspacePdf {
             $('#end-button').on('click', e => this.pdfViewer.nextPage());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton').on('click', e => this.enableSpotAdd());
+            $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
+            $('#addSpotButton2').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
             $("#showComments").on('click', e => this.enableCommentMode());
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
@@ -307,19 +309,25 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            if(this.signable) {
-                if (localStorage.getItem('mode') === 'comment') {
-                    this.enableCommentMode();
-                } else if (this.currentSignType !== 'form') {
-                    this.enableSignMode();
-                }
-            } else if(!this.editable) {
-                this.enableSignMode();
+            const url = new URL(window.location.href);
+            const hasAnnotation = url.searchParams.has("annotation");
+            if(hasAnnotation) {
+                this.enableCommentMode();
             } else {
-                if(this.status === 'draft') {
-                    this.enableCommentMode();
+                if (this.signable) {
+                    if (localStorage.getItem('mode') === 'comment') {
+                        this.enableCommentMode();
+                    } else if (this.currentSignType !== 'form') {
+                        this.enableSignMode();
+                    }
+                } else if (!this.editable) {
+                    this.enableSignMode();
                 } else {
-                    this.enableReadMode();
+                    if (this.status === 'draft') {
+                        this.enableCommentMode();
+                    } else {
+                        this.enableReadMode();
+                    }
                 }
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
@@ -808,15 +816,9 @@ export class WorkspacePdf {
         if (this.mode !== 'comment') {
             return;
         }
-        this.addCommentEnabled = false;
-        this.disablePointer();
-        this.signPosition.pointItEnable = true;
-        let addCommentButton = $("#addCommentButton");
-        addCommentButton.toggleClass("btn-primary");
-        addCommentButton.toggleClass("btn-outline-dark");
-        $("#comment-div").hide();
-        $("#addSpotButton").attr("disabled", false);
-        $('#pdf').mousemove(e => this.moveAction(e));
+        const url = new URL(window.location.href);
+        url.searchParams.set("annotation", "");
+        window.location.href = url.toString();
     }
 
     enableReadMode() {
@@ -846,7 +848,6 @@ export class WorkspacePdf {
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
-        $("#changeMode1").attr("checked", true);
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
         this.mode = 'comment';
@@ -858,6 +859,8 @@ export class WorkspacePdf {
             this.changeModeSelector.setSelected("comment");
         }
         $('#signTools').addClass("d-none");
+        $('#addCommentButton2').removeClass('d-none');
+        $('#addSpotButton2').removeClass('d-none');
         $('#commentsBar').show();
         $('#infos').show();
         $('#insert-btn-div').show();
@@ -902,6 +905,7 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
+        $('#forward-btn').removeClass('d-none');
         $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
@@ -948,7 +952,10 @@ export class WorkspacePdf {
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
+        $('#addCommentButton2').addClass('d-none');
+        $('#addSpotButton2').addClass('d-none');
         $('#signLaunchButton').addClass('d-none');
+        $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
@@ -1025,7 +1032,11 @@ export class WorkspacePdf {
         saveCommentButton.unbind();
         hideCommentButton.unbind();
         $('#pdf').mousemove(e => this.moveAction(e));
-        let addCommentButton = $("#addCommentButton");
+        $("#addSpotButton").attr("disabled", true);
+        $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
+        $("#addCommentButton2").addClass("disable");
         // this.hideComment(e);
         if (this.addCommentEnabled) {
             this.disableAddComment();
@@ -1064,6 +1075,8 @@ export class WorkspacePdf {
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
         this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null);
     }
 
@@ -1153,7 +1166,9 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             } else {
                 if(this.signable) {
-                    document.location.reload();
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("annotation");
+                    window.location.href = url.toString();
                 } else {
                     this.enableReadMode();
                 }
