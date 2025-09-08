@@ -1174,21 +1174,21 @@ export class WorkspacePdf {
 
     autocollapse() {
         let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").width() - 100;
+        let maxWidth = $("#workspace").width() - 1000;
         console.info("maxWidth : " + maxWidth);
         const listItems = document.querySelectorAll('#ws-tabs > li');
         let totalWidth = 0;
         listItems.forEach(li => {
             totalWidth += li.offsetWidth;
         });
+        console.warn(totalWidth + " >= " + maxWidth);
         if (totalWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
             while (this.navWidth > maxWidth) {
                 let children = this.wsTabs.children(menu + ' li:not(:last-child)');
                 let count = children.length;
                 this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn(this.navWidth);
-
+                console.warn("nav width : " + this.navWidth);
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
             }
         } else if (this.navWidth < maxWidth - 300) {
