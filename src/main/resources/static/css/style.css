@@ -242,6 +242,7 @@ dd {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 10vw;
 }
 
 .form-switch.form-switch-md {
