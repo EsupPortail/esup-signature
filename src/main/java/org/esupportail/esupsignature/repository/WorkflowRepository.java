@@ -67,7 +67,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
 
     @Query("""
             select sb.status as status, count(sb.status) as count from SignBook sb
-            where sb.liveWorkflow.workflow.id = :id and sb.deleted is not true group by sb.status
+            where sb.liveWorkflow.workflow.id = :id and sb.deleted is not true group by sb.status order by sb.status
             """)
     List<WorkflowStatusChartDto> findWorkflowStatusCount(Long id);
 
