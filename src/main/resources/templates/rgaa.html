@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="securityServices" type="java.util.List<org.esupportail.esupsignature.service.security.SecurityService>"*/-->
+<head th:replace="~{fragments/head :: head}"></head>
+<body>
+<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<main role="main">
+    <div class="card col-lg-10 mx-auto" style="top: 60px;">
+        <div class="card-body">
+            <h1 class="mb-4 fw-bold">Déclaration d’accessibilité</h1>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">Engagement</h2>
+                <p>[Nom du site] s’engage à rendre son site internet accessible conformément à l’article 47 de la loi n°2005-102 du 11 février 2005.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">État de conformité</h2>
+                <p>Le site <strong>[Nom du site]</strong> est <strong>[en conformité partielle / totale / non conforme]</strong> avec le <a href="https://accessibilite.numerique.gouv.fr/methode/criteres/" class="link-primary">Référentiel Général d’Amélioration de l’Accessibilité (RGAA)</a>.</p>
+                <p>Cette déclaration a été établie le <strong>[date]</strong> après <strong>[audit interne / audit externe]</strong>.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">Résultats des tests</h2>
+                <p>Le test de conformité a été réalisé sur un échantillon de pages représentatives. Le taux moyen de conformité est de <strong>[xx %]</strong>.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">Améliorations en cours</h2>
+                <p>Les points suivants restent à corriger pour améliorer l’accessibilité :
+                <ul>
+                    <li>[Exemple : alternative textuelle manquante sur certaines images]</li>
+                    <li>[Exemple : contraste insuffisant sur certains boutons]</li>
+                    <li>[Autres points identifiés]</li>
+                </ul>
+                </p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">Assistance</h2>
+                <p>Si vous n’arrivez pas à accéder à un contenu ou un service, vous pouvez contacter notre responsable accessibilité à l’adresse suivante : <strong>[email/contact]</strong>.</p>
+            </section>
+
+            <section class="mb-4">
+                <h2 class="h5 fw-semibold mb-2">Voies de recours</h2>
+                <p>Si vous constatez un défaut d’accessibilité vous empêchant d’accéder à un contenu, et que vous ne parvenez pas à obtenir une réponse satisfaisante, vous pouvez :</p>
+                <ul>
+                    <li>Écrire au <a target="_blank" href="https://formulaire.defenseurdesdroits.fr" class="link-primary">Défenseur des droits</a></li>
+                    <li>Contacter le <a target="_blank" href="https://www.defenseurdesdroits.fr/saisir/delegues" class="link-primary">délégué du Défenseur des droits</a> dans votre région</li>
+                    <li>Envoyer un courrier postal (gratuit, sans affranchissement) :
+                        <br><strong>Défenseur des droits
+                            Libre réponse 71120
+                            75342 Paris CEDEX 07</strong></li>
+                </ul>
+            </section>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer-light :: footer}"></footer>
+</body>
+</html>

@@ -28,7 +28,7 @@ html {
 }
 
 body {
-    font-family: "Gravity", sans-serif;
+    font-family: "Lexend", sans-serif;
 }
 
 main {
@@ -242,6 +242,7 @@ dd {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 10vw;
 }
 
 .form-switch.form-switch-md {

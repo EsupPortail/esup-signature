@@ -223,6 +223,16 @@ public class IndexController {
 		return "logged-out";
 	}
 
+    @GetMapping("/rgpd")
+    public String rgpd() {
+        return "rgpd";
+    }
+
+    @GetMapping("/rgaa")
+    public String rgaa() {
+        return "rgaa";
+    }
+
 	@RequestMapping(value={"/robots.txt", "/robot.txt"}, produces = "text/plain")
 	@ResponseBody
 	public String getRobotsTxt() {
