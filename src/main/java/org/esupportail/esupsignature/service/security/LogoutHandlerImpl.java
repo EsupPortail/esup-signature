@@ -73,6 +73,14 @@ public class LogoutHandlerImpl implements LogoutHandler {
                             redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, logoutUrl);
                             return;
                         }
+                    } else {
+                        if (securityService.getCode().equalsIgnoreCase(securityServiceName + "SecurityServiceImpl")) {
+                            String redirectUri = globalProperties.getRootUrl() + "/logged-out";
+                            String logoutUrl = securityService.getLoggedOutUrl()
+                                    + "?service=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
+                            redirectStrategy.sendRedirect(httpServletRequest, httpServletResponse, logoutUrl);
+                            return;
+                        }
                     }
                 }
             } else {

@@ -1,13 +1,13 @@
 package org.esupportail.esupsignature.service;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.CommentRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,19 +17,19 @@ import java.util.Optional;
 @Service
 public class CommentService {
 
-    @Resource
-    private CommentRepository commentRepository;
+    private final CommentRepository commentRepository;
+    private final SignRequestRepository signRequestRepository;
+    private final SignRequestParamsRepository signRequestParamsRepository;
+    private final UserService userService;
+    private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 
-    @Resource
-    private SignRequestRepository signRequestRepository;
-
-    @Resource
-    private SignRequestParamsRepository signRequestParamsRepository;
-
-    @Resource
-    private UserService userService;
-    @Autowired
-    private LiveWorkflowStepRepository liveWorkflowStepRepository;
+    public CommentService(CommentRepository commentRepository, SignRequestRepository signRequestRepository, SignRequestParamsRepository signRequestParamsRepository, UserService userService, LiveWorkflowStepRepository liveWorkflowStepRepository) {
+        this.commentRepository = commentRepository;
+        this.signRequestRepository = signRequestRepository;
+        this.signRequestParamsRepository = signRequestParamsRepository;
+        this.userService = userService;
+        this.liveWorkflowStepRepository = liveWorkflowStepRepository;
+    }
 
     @Transactional
     public Comment getById(Long id) {
@@ -58,6 +58,29 @@ public class CommentService {
         commentRepository.save(comment);
         signRequest.getComments().add(comment);
         return comment;
+    }
+
+    public void updateComment(Long signRequestId, Long postitId, String text) throws EsupSignatureException {
+        Comment comment = getById(postitId);
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
+        if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+            comment.setText(text);
+            commentRepository.save(comment);
+        } else {
+            throw new EsupSignatureException("Demande refusé, modification impossible");
+        }
+    }
+
+    @Transactional
+    public void deletePostit(Long signRequestId, Long postitId) throws EsupSignatureException {
+        Comment comment = getById(postitId);
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
+        if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
+            signRequest.getComments().remove(comment);
+            deleteComment(postitId, signRequest);
+        } else {
+            throw new EsupSignatureException("Demande refusé, modification impossible");
+        }
     }
 
     @Transactional

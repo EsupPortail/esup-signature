@@ -227,11 +227,9 @@ public class WebSecurityConfig {
 				}
 			}
 		}
-		http.logout(logout -> logout.invalidateHttpSession(true)
+		http.logout(logout -> logout.addLogoutHandler(logoutHandler).invalidateHttpSession(true)
 						.logoutUrl("/logout"
 						).logoutSuccessUrl("/logged-out"));
-		http.logout(logout -> logout.addLogoutHandler(logoutHandler)
-				.logoutSuccessUrl("/").permitAll());
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(("/resources/**"))
 				.ignoringRequestMatchers("/webjars/**")
 				.ignoringRequestMatchers("/ws/**")
