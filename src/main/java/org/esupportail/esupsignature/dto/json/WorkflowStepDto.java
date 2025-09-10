@@ -7,58 +7,137 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO représentant une étape d’un workflow avec ses paramètres.
+ */
 @JsonIgnoreProperties
 public class WorkflowStepDto {
 
-	private String title;
 
-	private Long workflowId;
+    /**
+     * Titre de l’étape.
+     */
+    private String title;
 
-	private Integer stepNumber = 1;
+    /**
+     * Identifiant du workflow auquel appartient cette étape.
+     */
+    private Long workflowId;
 
-	private String description;
+    /**
+     * Numéro de l’étape dans le workflow (valeur par défaut : 1).
+     */
+    private Integer stepNumber = 1;
 
-	private List<String> recipientsCCEmails = new ArrayList<>();
+    /**
+     * Description de l’étape.
+     */
+    private String description;
 
-	private List<RecipientWsDto> recipients = new ArrayList<>();
+    /**
+     * Liste des adresses e-mail des destinataires en copie carbone (CC).
+     */
+    private List<String> recipientsCCEmails = new ArrayList<>();
 
-	private List<SignRequestParamsWsDto> signRequestParams = new ArrayList<>();
+    /**
+     * Liste des destinataires assignés à cette étape.
+     */
+    private List<RecipientWsDto> recipients = new ArrayList<>();
 
-	private Boolean changeable = null;
+    /**
+     * Liste des paramètres des signatures visuelle pour cette étape.
+     */
+    private List<SignRequestParamsWsDto> signRequestParams = new ArrayList<>();
 
-	private SignLevel signLevel = SignLevel.simple;
+    /**
+     * Indique si l’étape peut être modifiée.
+     */
+    private Boolean changeable = null;
 
-	private SignType signType;
+    /**
+     * Niveau de signature requis pour cette étape (valeur par défaut : simple).
+     */
+    private SignLevel signLevel = SignLevel.simple;
 
-	private Boolean repeatable = null;
+    /**
+     * Type de signature utilisé pour cette étape.
+     */
+    private SignType signType;
 
-	private SignType repeatableSignType = SignType.visa;
+    /**
+     * Indique si cette étape peut être modifiée par l’utilisateur.
+     */
+    private Boolean repeatable = null;
 
-	private Boolean allSignToComplete;
+    /**
+     * Type de signature requis pour les répétitions de l’étape (valeur par défaut : visa).
+     */
+    private SignType repeatableSignType = SignType.visa;
 
-	private Boolean userSignFirst = false;
+    /**
+     * Indique si toutes les signatures doivent être complétées pour valider cette étape.
+     */
+    private Boolean allSignToComplete;
 
-	private Boolean multiSign;
+    /**
+     * Indique si le créateur doit signer en premier.
+     */
+    private Boolean userSignFirst = false;
 
-	private Boolean singleSignWithAnnotation;
+    /**
+     * Indique si plusieurs signatures sont autorisées pour cette étape.
+     */
+    private Boolean multiSign;
 
-	private Boolean autoSign = false;
+    /**
+     * Indique si une seule signature avec des annotations est autorisée.
+     */
+    private Boolean singleSignWithAnnotation;
 
-	private Boolean sealVisa = false;
+    /**
+     * Indique si cette étape sera automatiquement signée.
+     */
+    private Boolean autoSign = false;
 
-	private Boolean forceAllSign = false;
+    /**
+     * Indique si cette étape sera terminée par l’apposition du cachet de l’établissement.
+     */
+    private Boolean sealVisa = false;
 
-	private String comment;
+    /**
+     * Force l’exigence de toutes les signatures pour finaliser cette étape.
+     */
+    private Boolean forceAllSign = false;
 
-	private Boolean attachmentRequire;
+    /**
+     * Commentaire associé à cette étape.
+     */
+    private String comment;
 
-	private Boolean attachmentAlert;
+    /**
+     * Indique si une pièce jointe est requise pour cette étape.
+     */
+    private Boolean attachmentRequire;
 
-	private Integer maxRecipients = 99;
+    /**
+     * Indique si une alerte doit être déclenchée lorsqu’une pièce jointe est demandée.
+     */
+    private Boolean attachmentAlert;
 
-	private List<String> targetEmails = new ArrayList<>();
+    /**
+     * Nombre maximal de destinataires autorisés pour cette étape (valeur par défaut : 99).
+     */
+    private Integer maxRecipients = 99;
 
-	private Boolean convertToPDFA = true;
+    /**
+     * Liste des e-mails des destinataires finaux.
+     */
+    private List<String> targetEmails = new ArrayList<>();
+
+    /**
+     * Indique si le document doit être converti en format PDF/A.
+     */
+    private Boolean convertToPDFA = true;
 
 	public WorkflowStepDto() {
 	}

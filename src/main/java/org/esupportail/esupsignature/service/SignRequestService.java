@@ -24,10 +24,7 @@ import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
-import org.esupportail.esupsignature.repository.NexuSignatureRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestRepository;
-import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -75,7 +72,6 @@ public class SignRequestService {
 	private final DocumentService documentService;
 	private final CustomMetricsService customMetricsService;
 	private final SignService signService;
-	private final SignTypeService signTypeService;
 	private final UserService userService;
 	private final DataService dataService;
 	private final CommentService commentService;
@@ -95,7 +91,7 @@ public class SignRequestService {
 	private final SignBookRepository signBookRepository;
 	private final NexuSignatureRepository nexuSignatureRepository;
 
-	public SignRequestService(GlobalProperties globalProperties, SignProperties signProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository) {
+    public SignRequestService(GlobalProperties globalProperties, SignProperties signProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, CommentRepository commentRepository) {
         this.globalProperties = globalProperties;
         this.signProperties = signProperties;
         this.targetService = targetService;
@@ -106,7 +102,6 @@ public class SignRequestService {
         this.documentService = documentService;
         this.customMetricsService = customMetricsService;
         this.signService = signService;
-        this.signTypeService = signTypeService;
         this.userService = userService;
         this.dataService = dataService;
         this.commentService = commentService;
@@ -125,7 +120,7 @@ public class SignRequestService {
         this.objectMapper = objectMapper;
         this.signBookRepository = signBookRepository;
 		this.nexuSignatureRepository = nexuSignatureRepository;
-	}
+    }
 
     @PostConstruct
 	public void initSignrequestMetrics() {
@@ -933,7 +928,6 @@ public class SignRequestService {
 		signRequest.getLinks().remove(toRemove);
 	}
 
-	@Transactional
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
@@ -1328,29 +1322,6 @@ public class SignRequestService {
 		} else {
 			logger.warn("audit trail not found for " + id);
 			return "";
-		}
-	}
-
-	@Transactional
-	public void updateComment(Long signRequestId, Long postitId, String text) throws EsupSignatureException {
-		Comment comment = commentService.getById(postitId);
-		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
-		if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
-			comment.setText(text);
-		} else {
-			throw new EsupSignatureException("Demande refusé, modification impossible");
-		}
-	}
-
-	@Transactional
-	public void deleteComment(Long signRequestId, Long postitId) throws EsupSignatureException {
-		Comment comment = commentService.getById(postitId);
-		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
-		if(!signRequest.getStatus().equals(SignRequestStatus.refused)) {
-			signRequest.getComments().remove(comment);
-			commentService.deleteComment(postitId, signRequest);
-		} else {
-			throw new EsupSignatureException("Demande refusé, modification impossible");
 		}
 	}
 
