@@ -36,7 +36,6 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -67,6 +66,11 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Service permettant de gérer les SignBooks.
+ *
+ * @author David Lemaignent
+ */
 @Service
 @EnableConfigurationProperties(GlobalProperties.class)
 public class SignBookService {
@@ -97,7 +101,6 @@ public class SignBookService {
     private final DataRepository dataRepository;
     private final WorkflowRepository workflowRepository;
     private final UserShareService userShareService;
-    private final SignService signService;
     private final RecipientService recipientService;
     private final DocumentService documentService;
     private final SignRequestParamsService signRequestParamsService;
@@ -109,7 +112,7 @@ public class SignBookService {
     private final SignWithService signWithService;
     private final SmsProperties smsProperties;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, SignService signService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SmsProperties smsProperties1) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties1) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -134,7 +137,6 @@ public class SignBookService {
         this.dataRepository = dataRepository;
         this.workflowRepository = workflowRepository;
         this.userShareService = userShareService;
-        this.signService = signService;
         this.recipientService = recipientService;
         this.documentService = documentService;
         this.signRequestParamsService = signRequestParamsService;
@@ -147,18 +149,42 @@ public class SignBookService {
         this.smsProperties = smsProperties1;
     }
 
+    /**
+     * Compte le nombre de signBooks associés à un workflow donné.
+     *
+     * @param workflowId l'identifiant unique du workflow pour lequel compter les signBooks
+     * @return le nombre total de signBooks associés au workflow spécifié
+     */
     @Transactional
     public int countSignBooksByWorkflow(Long workflowId) {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         return signBookRepository.countByLiveWorkflowWorkflow(workflow);
     }
 
+    /**
+     * Calcule le nombre de livres-signatures à signer pour un utilisateur donné.
+     *
+     * @param userEppn l'identifiant EPPN de l'utilisateur pour lequel calculer le nombre de livres-signatures à signer
+     * @return le nombre total de livres-signatures à signer pour l'utilisateur spécifié
+     */
     @Transactional
     public Long nbToSignSignBooks(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.countToSign(user);
     }
 
+    /**
+     * Récupère une page des SignBooks pour les gestionnaires en fonction des filtres fournis.
+     *
+     * @param statusFilter le filtre basé sur le statut de la demande de signature
+     * @param recipientsFilter le filtre basé sur les destinataires
+     * @param workflowId l'identifiant du workflow pour filtrer les résultats
+     * @param docTitleFilter le filtre basé sur le titre du document
+     * @param creatorFilter le filtre basé sur le créateur (adresse e-mail)
+     * @param dateFilter le filtre basé sur la date (format attendu : yyyy-MM-dd)
+     * @param pageable les informations de pagination pour les résultats
+     * @return une page contenant la liste des SignBooks correspondant aux critères donnés
+     */
     @Transactional
     public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User creatorFilterUser = null;
@@ -189,6 +215,20 @@ public class SignBookService {
         return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
+    /**
+     * Récupère une page de SignBooks en fonction des filtres et des paramètres fournis.
+     *
+     * @param userEppn l'identifiant EPPN de l'utilisateur pour lequel les SignBooks sont récupérés
+     * @param authUserEppn l'identifiant EPPN de l'utilisateur authentifié effectuant la requête
+     * @param statusFilter un filtre pour le statut du SignBook (par exemple "toSign", "signedByMe", "refusedByMe", etc.)
+     * @param recipientsFilter un filtre pour les destinataires des SignBooks
+     * @param workflowFilter un filtre pour le type de workflow des SignBooks
+     * @param docTitleFilter un filtre pour le titre des documents associés aux SignBooks
+     * @param creatorFilter un filtre pour l'identifiant EPPN du créateur des SignBooks
+     * @param dateFilter une date pour filtrer les SignBooks sur une journée spécifique (au format "yyyy-MM-dd")
+     * @param pageable un objet Pageable définissant la pagination des résultats
+     * @return une page de SignBooks correspondant aux filtres et paramètres spécifiés
+     */
     @Transactional
     public Page<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User user = userService.getByEppn(userEppn);
@@ -257,6 +297,17 @@ public class SignBookService {
         return signBooks;
     }
 
+    /**
+     * Récupère une page de tous les SignBooks filtrés selon divers critères.
+     *
+     * @param statusFilter      Le filtre sur le statut des SignBooks (peut être null).
+     * @param workflowFilter    Le filtre sur le workflow des SignBooks (peut être null).
+     * @param docTitleFilter    Le filtre sur le titre du document des SignBooks (peut être null).
+     * @param creatorFilter     Le filtre sur le créateur des SignBooks (adresse email, peut être null).
+     * @param dateFilter        Le filtre sur la date des SignBooks au format "yyyy-MM-dd" (peut être null).
+     * @param pageable          L'objet Pageable contenant les informations de pagination.
+     * @return                  Une page contenant les SignBooks répondant aux critères spécifiés.
+     */
     @Transactional
     public Page<SignBook> getAllSignBooks(String statusFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         Calendar calendar = Calendar.getInstance();
@@ -287,6 +338,14 @@ public class SignBookService {
         return signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
+    /**
+     * Filtre une liste de SignBook en fonction des partages d'utilisateur et des autorisations associées.
+     *
+     * @param userEppn l'identifiant EPPN de l'utilisateur pour lequel les SignBooks doivent être vérifiés
+     * @param authUserEppn l'identifiant EPPN de l'utilisateur autorisé à effectuer l'opération
+     * @param signBooksToSignToCheck la liste de SignBooks à vérifier
+     * @return une liste de SignBooks filtrés qui respectent les critères des partages d'utilisateur
+     */
     @Transactional
     public List<SignBook> filterByUserShares(String userEppn, String authUserEppn, List<SignBook> signBooksToSignToCheck) {
         List<SignBook> signBooksToSign = new ArrayList<>();
@@ -308,6 +367,14 @@ public class SignBookService {
         return signBooksToSign;
     }
 
+    /**
+     * Crée un SignBook auto-signé pour un utilisateur spécifié en utilisant son identifiant
+     * et met à jour ses propriétés, étapes et statut.
+     *
+     * @param signBookId l'identifiant du SignBook à créer ou mettre à jour
+     * @param userEppn l'identifiant de l'utilisateur (EPPN) pour lequel le SignBook
+     *                 est auto-signé
+     */
     @Transactional
     public void createSelfSignBook(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
@@ -324,6 +391,13 @@ public class SignBookService {
         pendingSignBook(signBook, null, userEppn, userEppn, false, true);
     }
 
+    /**
+     * Termine le processus de téléchargement du carnet de signatures.
+     * Met à jour le statut du carnet de signatures et génère un sujet si nécessaire.
+     *
+     * @param signBookId l'identifiant du carnet de signatures
+     * @param userEppn l'identifiant unique de l'utilisateur dans le système (EPPN)
+     */
     @Transactional
     public void finishSignBookUpload(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
@@ -334,11 +408,18 @@ public class SignBookService {
         signBook.setStatus(SignRequestStatus.draft);
     }
 
-    public List<UserDto> getRecipientsNames(String userEppn) {
-        User user = userService.getByEppn(userEppn);
-        return signBookRepository.findRecipientNames(user);
-    }
 
+    /**
+     * Crée un nouveau SignBook avec les paramètres fournis et l'enregistre dans le dépôt.
+     *
+     * @param subject Le sujet du SignBook.
+     * @param workflow Le workflow associé au SignBook.
+     * @param workflowName Le nom du workflow. Si vide, un nom sera généré automatiquement.
+     * @param userEppn L'identifiant eppn de l'utilisateur créant le SignBook.
+     * @param geneateName Indique si un nom doit être généré automatiquement pour le sujet.
+     * @param comment Une description ou un commentaire pour le SignBook.
+     * @return Le SignBook nouvellement créé.
+     */
     @Transactional
     public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn, boolean geneateName, String comment) {
         User user = userService.getByEppn(userEppn);
@@ -370,6 +451,18 @@ public class SignBookService {
         return signBook;
     }
 
+    /**
+     * Démarre un processus de signature simple.
+     *
+     * @param id l'identifiant du carnet de signatures à démarrer
+     * @param pending indique si le processus de signature démarre en attente
+     * @param steps une liste d'étapes représentant les étapes du workflow
+     * @param userEppn le principal utilisateur (eppn) initiant le processus de signature
+     * @param authUserEppn l'utilisateur authentifié (eppn) utilisé pour l'action
+     * @param multiSign indique si le processus permet la signature multiple
+     * @param singleSignWithAnnotation indique si la signature unique est autorisée avec annotation
+     * @throws EsupSignatureRuntimeException si une erreur survient durant le démarrage du processus
+     */
     @Transactional
     public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean multiSign, boolean singleSignWithAnnotation) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
@@ -387,6 +480,15 @@ public class SignBookService {
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getSignLevel());
     }
 
+    /**
+     * Met à jour un SignBook en fonction des attributs fournis.
+     *
+     * @param id l'identifiant unique du SignBook à mettre à jour
+     * @param subject le nouveau sujet à attribuer au SignBook, s'il n'est pas vide
+     * @param description la nouvelle description à attribuer au SignBook, si elle n'est pas vide
+     * @param viewers une liste de viewers à ajouter au SignBook
+     * @return le SignBook mis à jour
+     */
     @Transactional
     public SignBook updateSignBook(Long id, String subject, String description, List<String> viewers) {
         SignBook signBook = getById(id);
@@ -400,6 +502,14 @@ public class SignBookService {
         return signBook;
     }
 
+    /**
+     * Met à jour un SignBook avec les informations fournies concernant la première étape.
+     *
+     * @param signBookId l'identifiant unique du SignBook à mettre à jour
+     * @param steps une liste d'objets WorkflowStepDto contenant les informations des étapes,
+     *              seule la première étape sera utilisée pour la mise à jour
+     * @return le SignBook mis à jour
+     */
     @Transactional
     public SignBook updateSignBookWithStep(Long signBookId, List<WorkflowStepDto> steps) {
         SignBook signBook = updateSignBook(signBookId, steps.get(0).getTitle(), steps.get(0).getDescription(), steps.get(0).getRecipientsCCEmails());
@@ -407,6 +517,13 @@ public class SignBookService {
         return signBook;
     }
 
+    /**
+     * Initialise un SignBook avec un Workflow si l'utilisateur est celui qui l'a créé.
+     *
+     * @param signBookId l'identifiant du SignBook à initialiser
+     * @param workflowId l'identifiant du Workflow à associer au SignBook
+     * @param userEppn le eppn de l'utilisateur effectuant l'initialisation
+     */
     @Transactional
     public void initSignBook(Long signBookId, Long workflowId, String userEppn) {
         User user = userService.getByEppn(userEppn);
@@ -417,13 +534,13 @@ public class SignBookService {
         }
     }
 
-    public void dispatchSignRequestParams(SignBook signBook) {
+    private void dispatchSignRequestParams(SignBook signBook) {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             dispatchSignRequestParams(signRequest);
         }
     }
 
-    public void dispatchSignRequestParams(SignRequest signRequest) {
+    private void dispatchSignRequestParams(SignRequest signRequest) {
         int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
         if(!signRequest.getSignRequestParams().isEmpty()) {
             int i = 0;
@@ -477,6 +594,13 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Importe un workflow à partir d'une liste de WorkflowStepDto et l'associe au SignBook spécifié.
+     *
+     * @param signBookId l'identifiant du SignBook auquel le workflow sera associé
+     * @param steps une liste de WorkflowStepDto représentant les étapes du workflow à importer
+     * @param userEppn l'identifiant unique de l'utilisateur (EPPN) effectuant l'importation
+     */
     @Transactional
     public void importWorkflowFromWorkflowStepDto(Long signBookId, List<WorkflowStepDto> steps, String userEppn) {
         SignBook signBook = getById(signBookId);
@@ -487,6 +611,12 @@ public class SignBookService {
         workflowService.computeWorkflow(steps, signBook);
     }
 
+    /**
+     * Ajoute la signature d'un utilisateur à la première étape d'un SignBook existant.
+     *
+     * @param signBookId L'identifiant unique du SignBook auquel ajouter l'étape de signature.
+     * @param userEppn   L'identifiant EPPN (eduPersonPrincipalName) de l'utilisateur à inclure dans l'étape de signature.
+     */
     @Transactional
     public void addUserSignFirstStep(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
@@ -497,6 +627,14 @@ public class SignBookService {
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.createLiveWorkflowStep(signBook, null, workflowStepDto));
     }
 
+    /**
+     * Ajoute une nouvelle étape au workflow d'un SignBook existant.
+     *
+     * @param signBookId L'identifiant du SignBook auquel l'étape doit être ajoutée.
+     * @param steps La liste des étapes du workflow à ajouter.
+     * @param authUserEppn L'identifiant utilisateur EPPN de l'utilisateur authentifié effectuant l'opération.
+     * @throws EsupSignatureRuntimeException Exception levée en cas d'erreur durant la procédure.
+     */
     @Transactional
     public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = signBookRepository.findById(signBookId).get();
@@ -506,11 +644,26 @@ public class SignBookService {
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
     }
 
+    /**
+     * Récupère un SignBook par son identifiant.
+     *
+     * @param id l'identifiant unique du SignBook.
+     * @return le SignBook correspondant à l'identifiant donné ou null si aucun SignBook n'est trouvé.
+     */
     @Transactional
     public SignBook getById(Long id) {
         return signBookRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Recherche et retourne un objet SignRequest en fonction de l'identifiant fourni.
+     * Si aucun SignRequest direct n'est trouvé, l'identifiant est utilisé pour chercher un SignBook
+     * et, si applicable, retourne un SignRequest associé basé sur certaines conditions.
+     *
+     * @param id l'identifiant unique pour rechercher un SignRequest ou un SignBook
+     * @return un objet SignRequest correspondant à l'identifiant ou trouvé dans un SignBook associé,
+     *         sinon retourne null si aucune correspondance n'est trouvée
+     */
     @Transactional
     public SignRequest search(Long id) {
         SignRequest signRequest = signRequestService.getById(id);
@@ -533,10 +686,17 @@ public class SignBookService {
         return null;
     }
 
-    public List<SignBook> getByWorkflowId(Long id) {
+    private List<SignBook> getByWorkflowId(Long id) {
         return signBookRepository.findByWorkflowId(id);
     }
 
+    /**
+     * Supprime un sign book et ses sign requests associées.
+     *
+     * @param signBookId l'identifiant du sign book à supprimer
+     * @param userEppn l'identifiant épintrinique de l'utilisateur demandant la suppression
+     * @return true si le sign book a été définitivement supprimé, false s'il a été marqué comme supprimé
+     */
     @Transactional
     public Boolean delete(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
@@ -556,6 +716,12 @@ public class SignBookService {
         return false;
     }
 
+    /**
+     * Restaure les demandes de signature supprimées associées à un SignBook spécifique.
+     *
+     * @param signBookId l'identifiant du SignBook contenant les demandes de signature à restaurer
+     * @param userEppn le principal d'utilisateur (eppn) de l'utilisateur effectuant la restauration
+     */
     @Transactional
     public void restore(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
@@ -571,6 +737,14 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Supprime définitivement un SignBook, ainsi que ses étapes de workflow, ses requêtes de signature associées et ses données liées.
+     * Seule la création par l'utilisateur, un utilisateur système ou un administrateur permet cette suppression.
+     *
+     * @param signBookId l'identifiant du SignBook à supprimer
+     * @param userEppn l'identifiant EPPN de l'utilisateur effectuant la demande de suppression
+     * @return true si la suppression a été effectuée avec succès, false sinon
+     */
     @Transactional
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
@@ -596,6 +770,13 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Vérifie si un utilisateur dispose des droits de gestion pour un SignBook spécifique.
+     *
+     * @param signBookId l'identifiant unique du SignBook
+     * @param userEppn l'identifiant unique de l'utilisateur (eppn)
+     * @return true si l'utilisateur dispose des droits de gestion, false sinon
+     */
     @Transactional
     public boolean checkUserManageRights(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
@@ -615,6 +796,15 @@ public class SignBookService {
         return signBook.getCreateBy().getEppn().equals(userEppn);
     }
 
+    /**
+     * Supprime une étape spécifique d'un workflow en fonction de l'identifiant du SignBook et du numéro d'étape donné.
+     * Si l'étape actuelle est celle qui doit être supprimée, l'étape suivante devient l'étape actuelle.
+     * Les receveurs et leurs actions associés à cette étape sont supprimés de la configuration du SignBook.
+     *
+     * @param signBookId l'identifiant unique du SignBook (carnet de signatures) contenant l'étape à supprimer
+     * @param step le numéro d'étape à supprimer dans le workflow
+     * @return {@code true} si l'étape a été correctement supprimée, sinon {@code false}
+     */
     @Transactional
     public boolean removeStep(Long signBookId, int step) {
         SignBook signBook = getById(signBookId);
@@ -650,7 +840,7 @@ public class SignBookService {
         }
     }
 
-    public void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, String userEppn, String authUserEppn) {
+    private void updateStatus(SignBook signBook, SignRequestStatus signRequestStatus, String action, String returnCode, String comment, String userEppn, String authUserEppn) {
         Log log = logService.create(signBook.getId(), signBook.getSubject(), signBook.getWorkflowName(), signRequestStatus, action, comment, returnCode, null, null, null, null, userEppn, authUserEppn);
         if(signRequestStatus != null) {
             log.setFinalStatus(signRequestStatus.toString());
@@ -660,8 +850,15 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Récupère les journaux d'activités associés à un SignBook spécifique.
+     *
+     * @param signBookId l'identifiant unique du SignBook dont les journaux doivent être récupérés
+     * @return une liste de journaux d'activités (Log) associés aux demandes de signature du SignBook
+     */
     @Transactional
-    public List<Log> getLogsFromSignBook(SignBook signBook) {
+    public List<Log> getLogsFromSignBook(Long signBookId) {
+        SignBook signBook = getById(signBookId);
         List<Log> logs = new ArrayList<>();
         for (SignRequest signRequest : signBook.getSignRequests()) {
             logs.addAll(logService.getBySignRequestId(signRequest.getId()));
@@ -669,7 +866,15 @@ public class SignBookService {
         return logs;
     }
 
-    public List<LiveWorkflowStep> getAllSteps(SignBook signBook) {
+    /**
+     * Récupère l'ensemble des étapes d'un workflow en fonction de l'identifiant du signBook donné.
+     *
+     * @param signBookId l'identifiant unique du signBook pour lequel les étapes doivent être récupérées
+     * @return une liste contenant toutes les étapes du workflow associées au signBook, sauf la première étape
+     */
+    @Transactional
+    public List<LiveWorkflowStep> getAllSteps(Long signBookId) {
+        SignBook signBook = getById(signBookId);
         List<LiveWorkflowStep> allSteps = new ArrayList<>(signBook.getLiveWorkflow().getLiveWorkflowSteps());
         if (!allSteps.isEmpty()) {
             allSteps.remove(0);
@@ -677,6 +882,9 @@ public class SignBookService {
         return allSteps;
     }
 
+    /**
+     * Ajoute une étape au workflow actif d'un SignBook en fonction de l'identifiant du SignBook,
+     * des informations de l'étape,*/
     @Transactional
     public void addLiveStep(Long id, WorkflowStepDto step, Integer stepNumber, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
@@ -707,6 +915,13 @@ public class SignBookService {
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
     }
 
+    /**
+     * Ajoute des utilisateurs en tant que spectateurs (viewers) d'un SignBook spécifique
+     * ou supprime les spectateurs si aucune adresse mail n'est fournie.
+     *
+     * @param signBookId l'identifiant unique du SignBook auquel les spectateurs doivent être ajoutés
+     * @param recipientsCCEmails liste des adresses email des utilisateurs à ajouter en tant que spectateurs.
+     *                           Si la liste est vide ou*/
     @Transactional
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
@@ -728,7 +943,7 @@ public class SignBookService {
         }
     }
 
-    public List<SignBook> getSharedSignBooks(String userEppn) {
+    private List<SignBook> getSharedSignBooks(String userEppn) {
         List<SignBook> sharedSignBook = new ArrayList<>();
         for(UserShare userShare : userShareService.getByToUsersEppnInAndShareTypesContains(Collections.singletonList(userEppn), ShareType.sign)) {
             if(userShare.getWorkflow() != null) {
@@ -747,20 +962,45 @@ public class SignBookService {
         return sharedSignBook;
     }
 
+    /**
+     * Récupère toutes les titres des documents correspondant à la recherche effectuée par un utilisateur.
+     *
+     * @param userEppn l'identifiant EPPN de l'utilisateur effectuant la recherche
+     * @param searchString le texte de recherche à utiliser pour filtrer les titres des documents
+     * @return une liste triée par ordre alphabétique contenant les titres des documents correspondant aux critères de recherche
+     */
+    @Transactional
     public List<String> getAllDocTitles(String userEppn, String searchString) {
         User user = userService.getByEppn(userEppn);
         Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user, "%"+searchString+"%"));
         return docTitles.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
+    /**
+     * Récupère une liste des noms de workflow associés à un utilisateur spécifié par son eppn.
+     *
+     * @param userEppn L'identifiant eppn de l'utilisateur pour lequel les noms de workflows seront récupérés.
+     * @return Une liste triée de chaînes représentant les noms des workflows associés, ignorant les noms null ou vides.
+     */
+    @Transactional
     public List<String> getWorkflowNames(String userEppn) {
         User user = userService.getByEppn(userEppn);
         List<String> workflowNames = signBookRepository.findAllWorkflowNames(user);
         return workflowNames.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
+    /**
+     * Modifie l'état de visibilité d'un carnet de signatures pour un utilisateur donné.
+     * Si l'utilisateur a déjà masqué le carnet de signatures, il sera à nouveau visible.
+     * Si l'utilisateur ne l'a pas masqué, il sera caché pour cet utilisateur.
+     *
+     * @param id L'identifiant unique du carnet de signatures.
+     * @param userEpppn L'identifiant professionnel principal (EPPN) de l'utilisateur.
+     * @return true si le carnet de signatures vient d'être masqué pour l'utilisateur,
+     *         false s'il vient d'être rendu visible.
+     */
     @Transactional
-    public boolean toggle(Long id, String userEpppn) {
+    public boolean toggleHideSignBook(Long id, String userEpppn) {
         SignBook signBook = getById(id);
         User user = userService.getByEppn(userEpppn);
         if(signBook.getHidedBy().contains(user)) {
@@ -772,13 +1012,39 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Compte le nombre d'éléments vides associés à un utilisateur spécifique.
+     *
+     * @param userEppn l'identifiant EPPN de l'utilisateur pour lequel le comptage doit être effectué
+     * @return le nombre d'éléments vides correspondant à cet utilisateur
+     */
+    @Transactional
     public int countEmpty(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return Math.toIntExact(signBookRepository.countEmpty(user));
     }
 
+    /**
+     * Envoie un formulaire pour signature en générant un SignBook et en configurant le flux de travail
+     * et les étapes nécessaires à la signature ou validation selon les paramètres fournis.
+     *
+     * @param dataId Identifiant de la donnée associée au formulaire à signer.
+     * @param steps Liste des étapes du flux de travail, représentées par des objets WorkflowStepDto.
+     * @param targetEmails Liste des adresses e-mails cibles où envoyer les notifications de signature.
+     * @param targetUrls Liste des URLs cibles où les documents signés seront envoyés.
+     * @param userEppn Identifiant unique de l'utilisateur initiant la demande de signature (user principal).
+     * @param authUserEppn Identifiant unique de l'utilisateur authentifié agissant pour le compte de l'utilisateur principal.
+     * @param forceSendEmail Indique si l'envoi d'un e-mail d'invitation pour la signature doit être forcé.
+     * @param formDatas Données du formulaire sous forme de paires clé-valeur à mettre à jour.
+     * @param formReplaceInputStream Flux d'entrée du fichier à remplacer dans le document original.
+     * @param title Titre attribué au SignBook. Si null ou vide, le titre par défaut du formulaire sera utilisé.
+     * @param sendEmailAlert Indique si une alerte par e-mail doit être envoyée pour informer les utilisateurs ciblés.
+     * @param comment Commentaire facultatif à inclure dans le SignBook.
+     * @return Un objet SignBook représentant le lot des documents gérés pour la signature avec leur flux de travail associé.
+     * @throws EsupSignatureRuntimeException Si le formulaire ne peut pas être généré ou si une erreur survient dans le traitement.
+     */
     @Transactional
-    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String signRequestParamsJsonString, String title, Boolean sendEmailAlert, String comment) {
+    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String title, Boolean sendEmailAlert, String comment) {
         User user = userService.createUserWithEppn(userEppn);
         User authUser = userService.createUserWithEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -835,7 +1101,7 @@ public class SignBookService {
         return signBook;
     }
 
-    public void replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
+    private void replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
         List<SignRequestParams> signRequestParamses = steps.stream().flatMap(s->s.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams)).toList();
         for(SignRequestParams signRequestParams : signRequestParamses) {
             if(StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
@@ -853,7 +1119,16 @@ public class SignBookService {
         }
     }
 
-    public void sendEmailAlertSummary(User recipientUser) throws EsupSignatureMailException {
+    /**
+     * Envoie un résumé d'alertes d'e-mails pour un utilisateur spécifique, incluant les demandes de signature à traiter
+     * et les demandes de signature partagées.
+     *
+     * @param recipientUserEppn le EPPN (EduPersonPrincipalName) de l'utilisateur destinataire.
+     * @throws EsupSignatureMailException si une erreur survient lors de l'envoi de l'e-mail.
+     */
+    @Transactional
+    public void sendEmailAlertSummary(String recipientUserEppn) throws EsupSignatureMailException {
+        User recipientUser = userService.getByEppn(recipientUserEppn);
         Date date = new Date();
         List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser.getEppn());
         toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser.getEppn()));
@@ -863,6 +1138,16 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Ajoute des documents dans un carnet de signatures existant.
+     * Si le carnet n'est pas éditable, une exception est levée.
+     * Après vérification des permissions PDF, cette méthode crée une ou plusieurs
+     * demandes de signature, ajoute les documents correspondants à ces demandes,
+     * et met à jour le carnet ainsi que son statut si nécessaire.
+     * En cas d'erreur lors de l'ajout des documents, la création est annulée.
+     *
+     * @param signBookId L'identifiant du carnet de signatures dans lequel ajouter les documents
+     * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn) {
         SignBook signBook = getById(signBookId);
@@ -891,6 +1176,9 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Crée un parapheur (SignBook) à partir des informations fournies, ajoute les documents à signer,
+     **/
     @Transactional
     public Map<SignBook, String> createAndSendSignBook(String title, MultipartFile[] multipartFiles, Boolean pending, List<WorkflowStepDto> steps, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl) throws EsupSignatureException {
         User authUser = userService.createUserWithEppn(createByEppn);
@@ -922,6 +1210,19 @@ public class SignBookService {
         return sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
     }
 
+    /**
+     * Envoie un SignBook avec les étapes spécifiées pour démarrer un workflow de signature.
+     *
+     * @param signBook L'objet SignBook représentant la demande de signature à envoyer.
+     * @param pending Si true ou null, le SignBook est mis en attente; sinon, le SignBook est traité comme un brouillon.
+     * @param comment Un commentaire facultatif associé au SignBook.
+     * @param steps Liste des étapes du workflow à importer dans le SignBook.
+     * @param userEppn Identifiant ePPN de l'utilisateur initiant l'action.
+     * @param authUserEppn Identifiant ePPN de l'utilisateur authentifié réalisant l'action.
+     * @param forceSendEmail Si true, force l'envoi d'emails de notification.
+     * @return Une map contenant le SignBook en tant que clé et un message d'information comme valeur.
+     * @throws EsupSignatureRuntimeException Exception levée en cas d'erreur durant le traitement du SignBook.
+     */
     @Transactional
     public Map<SignBook, String> sendSignBook(SignBook signBook, Boolean pending, String comment, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean forceSendEmail) throws EsupSignatureRuntimeException {
         logger.info(userEppn + " envoi d'une demande de signature à " + StringUtils.collectionToCommaDelimitedString(steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).map(RecipientWsDto::getEmail).flatMap(String::lines).toList()));
@@ -942,6 +1243,16 @@ public class SignBookService {
         return signBookStringMap;
     }
 
+    /**
+     * Initialise le workflow d'un carnet de signatures (signBook).
+     *
+     * @param signBookId L'identifiant du carnet de signatures à initialiser.
+     * @param steps La liste des étapes du workflow à appliquer.
+     * @param targetEmails La liste des adresses e-mail cibles, si nécessaire.
+     * @param userEppn L'identifiant EPPN (eduPersonPrincipalName) de l'utilisateur effectuant l'opération.
+     * @param authUserEppn L'identifiant EPPN de l'utilisateur authentifié effectuant l'opération.
+     * @param pending Indicateur spécifiant si le carnet de signatures doit être mis en attente.
+     * @param sendEmailAlert Indicateur spécifiant si une alerte e-mail*/
     @Transactional
     public void initSignBookWorkflow(Long signBookId, List<WorkflowStepDto> steps, List<String> targetEmails, String userEppn, String authUserEppn, Boolean pending, Boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
@@ -973,14 +1284,19 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Met un SignBook en attente de signature en utilisant les informations fournies.
+     *
+     * @param authUserEppn le nom principal de l'utilisateur autorisé (EPPN) qui effectue l'action
+     * @param id l'identifiant unique du SignBook à mettre en attente
+     */
     @Transactional
     public void pendingSignBook(String authUserEppn, Long id) {
         SignBook signBook = getById(id);
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
-    @Transactional
-    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
+    private void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -1066,7 +1382,7 @@ public class SignBookService {
         }
     }
 
-    public void completeSignBook(SignBook signBook, String userEppn, String message) throws EsupSignatureRuntimeException {
+    private void completeSignBook(SignBook signBook, String userEppn, String message) throws EsupSignatureRuntimeException {
         if (!signBook.getCreateBy().equals(userService.getSchedulerUser())) {
             try {
                 Set<String> toMails = mailService.sendCompletedMail(signBook, userEppn);
@@ -1089,6 +1405,15 @@ public class SignBookService {
         signBook.setEndDate(new Date());
     }
 
+    /**
+     * Scelle tous les documents associés au SignBook identifié par l'ID donné.
+     * Cette méthode parcourt chaque demande de signature dans le SignBook
+     * et applique un scellement sur chacun d'eux.
+     *
+     * @param id l'identifiant unique du SignBook dont tous les documents doivent être scellés
+     * @throws EsupSignatureRuntimeException si une erreur liée à la signature survient
+     * @throws IOException si une erreur d'entrée/sortie survient pendant le processus
+     */
     @Transactional
     public void sealAllDocs(Long id) throws EsupSignatureRuntimeException, IOException {
         SignBook signBook = getById(id);
@@ -1097,7 +1422,7 @@ public class SignBookService {
         }
     }
 
-    public List<SignRequest> getSharedToSignSignRequests(String userEppn) {
+    private List<SignRequest> getSharedToSignSignRequests(String userEppn) {
         List<SignRequest> sharedSignRequests = new ArrayList<>();
         List<SignBook> sharedSignBooks = getSharedSignBooks(userEppn);
         for(SignBook signBook: sharedSignBooks) {
@@ -1106,6 +1431,22 @@ public class SignBookService {
         return sharedSignRequests;
     }
 
+    /**
+     * Initialise le processus de signature pour une requête de signature donnée.
+     *
+     * @param signRequestId L'identifiant unique de la requête de signature.
+     * @param signRequestParamsJsonString Chaîne JSON contenant les paramètres de la requête de signature.
+     * @param comment Commentaire fourni par l'utilisateur concernant la signature.
+     * @param formData Chaîne JSON contenant les données du formulaire pour la signature.
+     * @param password Mot de passe de l'utilisateur pour authentification.
+     * @param signWith Type de signature utilisée (par exemple, certificat, image, etc.).
+     * @param userShareId Identifiant de partage de l'utilisateur, si applicable.
+     * @param userEppn Identifiant unique (eppn) de l'utilisateur effectuant la signature.
+     * @param authUserEppn Identifiant unique (eppn) de l'utilisateur authentifié.
+     * @return Le statut de l'étape courante après l'initialisation de la signature.
+     * @throws IOException Si une erreur d'entrée/sortie se produit lors de l'accès aux données ou à des fichiers.
+     * @throws EsupSignatureRuntimeException Si une exception liée au processus de signature se produit.
+     */
     @Transactional
     public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
@@ -1215,6 +1556,19 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Initialise un processus de signature en masse pour un utilisateur donné.
+     *
+     * @param userEppn L'identifiant unique (eppn) de l'utilisateur pour lequel le processus de signature est initialisé.
+     * @param authUserEppn L'identifiant unique (eppn) de l'utilisateur actuellement authentifié.
+     * @param ids Une chaîne JSON contenant une liste d'identifiants des demandes de signature à traiter.
+     * @param httpSession La session HTTP active permettant de récupérer des informations utilisateur partagées.
+     * @param password Le mot de passe fourni pour assurer l'authentification nécessaire au processus de signature.
+     * @param signWith La méthode ou le type d'outil de signature à utiliser (par exemple, nexuCert, imageStamp).
+     * @return Une chaîne contenant un message d'erreur ou null si le processus de signature s'est déroulé sans problème.
+     * @throws IOException Si une erreur d'entrée/sortie se produit lors de la conversion des identifiants à partir de la chaîne JSON.
+     * @throws EsupSignatureRuntimeException Si une exception liée à l'exécution de la logique de signature se produit.
+     */
     @Transactional
     public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, EsupSignatureRuntimeException {
         if (SignWith.valueOf(signWith).equals(SignWith.nexuCert)) {
@@ -1262,7 +1616,7 @@ public class SignBookService {
         return error;
     }
 
-    public void refuseSignBook(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
+    private void refuseSignBook(SignBook signBook, String comment, String userEppn, String authUserEppn) throws EsupSignatureMailException {
         for(SignRequest signRequest : signBook.getSignRequests()) {
             commentService.create(signRequest.getId(), comment, 0, 0, 0, null, true, "#FF7EB9", userEppn);
         }
@@ -1295,6 +1649,17 @@ public class SignBookService {
         mailService.sendRefusedMail(signBook, comment, userEppn);
     }
 
+    /**
+     * Refuse une demande de signature spécifiée. Cette méthode met à jour l'état
+     * de la demande et effectue les étapes nécessaires en fonction de la configuration
+     * et de l'état actuel du document et du SignBooks.
+     *
+     * @param signRequestId l'identifiant unique de la demande de signature à refuser
+     * @param comment le commentaire fourni par l'utilisateur pour expliquer le refus
+     * @param userEppn l'identifiant unique (eppn) de l'utilisateur initiant le refus
+     * @param authUserEppn l'identifiant unique (eppn) de l'utilisateur authentifié
+     * @throws EsupSignatureRuntimeException si une erreur se produit lors du traitement
+     */
     @Transactional
     public void refuse(Long signRequestId, String comment, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
@@ -1341,6 +1706,22 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Démarre un workflow en créant un SignBook et en y ajoutant les signataires, documents et cibles associés.
+     *
+     * @param id l'identifiant ou le token du workflow à démarrer
+     * @param multipartFiles les fichiers à inclure dans le workflow
+     * @param createByEppn l'identifiant EPPN de l'utilisateur initiateur du workflow
+     * @param title le titre du SignBook créé
+     * @param steps la liste des étapes du workflow (WorkflowStepDto)
+     * @param targetEmails les adresses email des destinataires cibles
+     * @param targetUrls les URLs des cibles associées au workflow
+     * @param scanSignatureFields indique si les champs de signature doivent être automatiquement détectés
+     * @param sendEmailAlert indique si une alerte email doit être envoyée aux destinataires
+     * @param comment un commentaire pouvant être attaché au SignBook
+     * @return une liste des identifiants des SignRequests créées dans le workflow
+     * @throws EsupSignatureRuntimeException si une erreur survient lors de l'exécution du workflow
+     */
     @Transactional
     public List<Long> startWorkflow(String id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException {
         logger.info("starting workflow " + id + " by " + createByEppn);
@@ -1366,6 +1747,14 @@ public class SignBookService {
         return signBook.getSignRequests().stream().map(SignRequest::getId).toList();
     }
 
+    /**
+     * Import un liveWorkflow au SignBook spécifié.
+     *
+     * @param signBook SignBook auquel le workflow doit être ajouté.
+     * @param authUserEppn ePPN de l'utilisateur authentifié effectuant l'opération.
+     * @param workflowSignBookId ID du workflow à ajouter au SignBook.
+     * @throws EsupSignatureRuntimeException Exception levée en cas d'erreur lors de l'ajout du workflow.
+     */
     @Transactional
     public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(workflowSignBookId);
@@ -1375,6 +1764,15 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
+    /**
+     * Effectue une transition vers l'étape suivante d'un SignBook et le place en attente.
+     *
+     * @param signBookId l'identifiant du SignBook à traiter
+     * @param data les données associées au traitement de l'étape
+     * @param userEppn l'identifiant EPPN de l'utilisateur effectuant l'action
+     * @param authUserEppn l'identifiant EPPN de l'utilisateur authentifié
+     * @throws EsupSignatureRuntimeException si une erreur survient lors du passage à l'étape suivante ou de la mise en attente
+     */
     @Transactional
     public void nextStepAndPending(Long signBookId, Data data, String userEppn, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
@@ -1382,6 +1780,18 @@ public class SignBookService {
         pendingSignBook(signBook, data, userEppn, authUserEppn, true, true);
     }
 
+    /**
+     * Démarre un workflow en direct associé à un SignBook.
+     * Si le workflow contient des étapes, la première étape est définie comme l'étape courante.
+     * Si le paramètre 'start' est vrai, le SignBook est mis en attente pour la signature selon les utilisateurs spécifiés.
+     *
+     * @param signBookId l'identifiant unique du SignBook à utiliser
+     * @param userEppn l'identifiant de l'utilisateur principal (eppn) initiant l'action
+     * @param authUserEppn l'identifiant de l'utilisateur authentifié (eppn) effectuant l'action
+     * @param start un indicateur pour déclencher ou non le démarrage du workflow en attente
+     * @return true si le workflow en direct contient des étapes et a été démarré correctement, false sinon
+     * @throws EsupSignatureRuntimeException si des erreurs spécifiques à l'application surviennent lors du démarrage
+     */
     @Transactional
     public boolean startLiveWorkflow(Long signBookId, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
@@ -1396,6 +1806,15 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Importe des fichiers à partir d'une source définie associée à un workflow donné.
+     *
+     * @param workflowId l'identifiant du workflow à partir duquel les fichiers doivent être importés
+     * @param user l'utilisateur qui initie l'importation des fichiers
+     * @param authUser l'utilisateur authentifié qui autorise l'importation
+     * @return le nombre de fichiers importés depuis la source
+     * @throws EsupSignatureRuntimeException en cas d'erreur ou d'exception lors de l'importation des fichiers
+     */
     @Transactional
     public int importFilesFromSource(Long workflowId, User user, User authUser) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowService.getById(workflowId);
@@ -1488,6 +1907,16 @@ public class SignBookService {
         return nbImportedFiles;
     }
 
+    /**
+     * Récupère le prochain SignBook qu'un utilisateur doit signer, en fonction de l'état
+     * des demandes de signature et des critères d'accès.
+     *
+     * @param signRequestId l'identifiant de la demande de signature actuelle
+     * @param userEppn le nom principal de l'utilisateur authentifié
+     * @param authUserEppn le nom principal de l'utilisateur ayant l'autorisation
+     *                     d'accéder aux données
+     * @return le prochain SignBook à signer, ou null s'il n'y en a pas
+     */
     @Transactional
     public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
@@ -1512,8 +1941,15 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Retourne la prochaine demande de signature en attente dans le même SignBook ou dans un SignBook supplémentaire si fourni.
+     *
+     * @param signRequestId l'identifiant de la demande de signature actuelle
+     * @param nextSignBook un SignBook supplémentaire contenant des demandes de signature
+     * @return la prochaine demande de signature en attente si elle existe, sinon null
+     */
     @Transactional
-    public SignRequest getNextSignRequest(Long signRequestId, String userEppn, String authUserEppn, SignBook nextSignBook) {
+    public SignRequest getNextSignRequest(Long signRequestId, SignBook nextSignBook) {
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
         Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId)).findAny();
         if(nextSignRequest.isPresent()) {
@@ -1525,6 +1961,14 @@ public class SignBookService {
         return null;
     }
 
+    /**
+     * Génère un fichier ZIP contenant plusieurs documents signés correspondant aux identifiants fournis.
+     *
+     * @param ids      liste des identifiants des SignBooks pour lesquels les documents signés doivent être récupérés.
+     * @param response objet HttpServletResponse utilisé pour écrire le fichier ZIP result.
+     * @throws IOException            si une erreur survient lors de l'écriture des fichiers dans la réponse HTTP.
+     * @throws EsupSignatureFsException si une erreur liée au système de fichiers survient lors de la récupération des fichiers signés.
+     */
     @Transactional
     public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
         response.setContentType("application/zip; charset=utf-8");
@@ -1553,6 +1997,14 @@ public class SignBookService {
         zipOutputStream.close();
     }
 
+    /**
+     * Cette méthode permet de récupérer plusieurs documents signés avec leurs rapports et de les compresser dans un fichier ZIP à télécharger.
+     *
+     * @param ids Liste des identifiants des SignBooks à traiter.
+     * @param httpServletRequest Requête HTTP initiée par le client.
+     * @param httpServletResponse Réponse HTTP utilisée pour envoyer le fichier ZIP généré au client.
+     * @throws Exception En cas d'erreur lors de la récupération des données ou de la génération du fichier ZIP.
+     */
     @Transactional
     public void getMultipleSignedDocumentsWithReport(List<Long> ids, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
         httpServletResponse.setContentType("application/zip; charset=utf-8");
@@ -1577,6 +2029,15 @@ public class SignBookService {
         zipOutputStream.close();
     }
 
+    /**
+     * Sauvegarde un SignBook existant en tant que Workflow.
+     *
+     * @param signBookId L'identifiant du SignBook à sauvegarder.
+     * @param title Le titre du Workflow à créer.
+     * @param description La description du Workflow.
+     * @param user L'utilisateur qui initie la création du Workflow.
+     * @throws EsupSignatureRuntimeException Si une erreur survient lors de l'exécution.
+     */
     @Transactional
     public void saveSignBookAsWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
@@ -1592,13 +2053,21 @@ public class SignBookService {
         }
     }
 
-    public boolean needToSign(SignRequest signRequest, String userEppn) {
+    private boolean needToSign(SignRequest signRequest, String userEppn) {
         boolean needSignInWorkflow = recipientService.needSign(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients(), userEppn);
         Recipient recipient = signRequest.getRecipientHasSigned().keySet().stream().filter(recipient1 -> recipient1.getUser().getEppn().equals(userEppn)).max(Comparator.comparing(Recipient::getId)).get();
         boolean needSign = signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none);
         return needSign || needSignInWorkflow;
     }
 
+    /**
+     * Vérifie si un utilisateur dispose des droits pour signer une demande de signature donnée.
+     *
+     * @param signRequest la demande de signature à vérifier
+     * @param userEppn le eppn (identifiant unique) de l'utilisateur pour lequel les droits doivent être vérifiés
+     * @param authUserEppn le eppn (identifiant unique) de l'utilisateur actuellement authentifié
+     * @return true si l'utilisateur a les droits pour signer la demande de signature, false sinon
+     */
     public boolean checkUserSignRights(SignRequest signRequest, String userEppn, String authUserEppn) {
         if(userEppn.equals(authUserEppn) || userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook(), ShareType.sign)) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
@@ -1614,6 +2083,17 @@ public class SignBookService {
         return false;
     }
 
+    /**
+     * Récupère les images de signature associées à une demande de signature.
+     *
+     * @param id Identifiant de la demande de signature.
+     * @param userEppn Identifiant EPPN de l'utilisateur effectuant l'opération.
+     * @param authUserEppn Identifiant EPPN de l'utilisateur authentifié dans le contexte de l'opération.
+     * @param userShareId Identifiant de l'utilisateur partagé (le cas échéant).
+     * @return Une liste contenant les images de signature au format base64 prêtes à être utilisées ou affichées.
+     * @throws EsupSignatureUserException Exception levée en cas d'erreur liée à l'utilisateur.
+     * @throws IOException Exception levée en cas d'erreur d'entrée/sortie lors de la récupération des images.
+     */
     @Transactional
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
@@ -1648,6 +2128,16 @@ public class SignBookService {
         return signImages;
     }
 
+    /**
+     * Vérifie si une demande de signature est signable en fonction de son statut,
+     * de l'état de suppression, des droits de l'utilisateur, de la présence de documents
+     * originaux et de la nécessité de signer pour l'utilisateur.
+     *
+     * @param id l'identifiant unique de la demande de signature
+     * @param userEppn l'identifiant de l'utilisateur supposé signer la demande
+     * @param authUserEppn l'identifiant de l'utilisateur authentifié effectuant la vérification
+     * @return true si la demande est signable, false sinon
+     */
     @Transactional
     public boolean checkSignRequestSignable(Long id, String userEppn, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);
@@ -1667,6 +2157,16 @@ public class SignBookService {
         return signable;
     }
 
+    /**
+     * Envoie les demandes de signature associées à un SignBook vers les cibles définies.
+     * La méthode traite divers types de destinations, notamment les systèmes REST, les systèmes de fichiers,
+     * et les envois par e-mail. Chaque cible peut nécessiter l'envoi des documents signés, des pièces jointes,
+     * et éventuellement d'un rapport généré.
+     *
+     * @param id l'identifiant unique du SignBook à traiter
+     * @param authUserEppn le nom principal (EPPN) de l'utilisateur authentifié initiant l'opération
+     * @throws EsupSignatureRuntimeException si une erreur survient lors de l'envoi des demandes vers les cibles
+     */
     @Transactional
     public void sendSignRequestsToTarget(Long id, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
@@ -1790,6 +2290,15 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Archive les demandes de signature associées à un SignBook spécifié.
+     * Ce processus vérifie si le SignBook doit être archivé, détermine l'URI cible pour l'archivage,
+     * et archive les documents signés correspondants. Une fois les documents archivés, leur état est mis à jour.
+     *
+     * @param signBookId L'identifiant unique du SignBook à archiver.
+     * @param authUserEppn L'identifiant unique EPPN de l'utilisateur authentifié réalisant cette opération.
+     * @throws EsupSignatureRuntimeException Si une erreur survient lors de l'opération d'archivage.
+     */
     @Transactional
     public void archiveSignRequests(Long signBookId, String authUserEppn) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
@@ -1839,6 +2348,13 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Nettoie les fichiers liés à un SignBook en fonction de son identifiant et
+     * de l'utilisateur authentifié.
+     *
+     * @param signBookId L'identifiant du SignBook à nettoyer.
+     * @param authUserEppn L'identifiant de l'utilisateur authentifié responsable de l'action.
+     */
     @Transactional
     public void cleanFiles(Long signBookId, String authUserEppn) {
         SignBook signBook = getById(signBookId);
@@ -1853,12 +2369,27 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Vérifie si un SignBook doit être exporté.
+     *
+     * @param signBookId L'identifiant du SignBook à vérifier.
+     * @return true si le SignBook est terminé, qu'il possède un workflow actif et des cibles définies,
+     *         sinon false.
+     */
     @Transactional
     public boolean needToBeExported(Long signBookId) {
         SignBook signBook = getById(signBookId);
         return signBook.getStatus().equals(SignRequestStatus.completed) && signBook.getLiveWorkflow() != null && !signBook.getLiveWorkflow().getTargets().isEmpty();
     }
 
+    /**
+     * Détermine si un SignBook doit être archivé en fonction de son état de workflow en cours.
+     *
+     * @param signBook L'objet SignBook à évaluer. Ce dernier contient des informations sur le workflow en cours.
+     * @return true si le SignBook doit être archivé, false sinon. La condition est remplie si le workflow en cours existe
+     *         mais n'est pas défini, ou si une date de début d'archivage est spécifiée, qu'une cible d'archivage est
+     *         renseignée, et que la date de début d'archivage se situe avant la date actuelle.
+     */
     @Transactional
     public boolean needToBeArchived(SignBook signBook) {
         return signBook.getLiveWorkflow() != null
@@ -1870,8 +2401,7 @@ public class SignBookService {
         );
     }
 
-    @Transactional
-    public String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
+    private String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
         SignBook signBook;
         SignRequest signRequest = null;
         if(signBookId != null) {
@@ -2013,6 +2543,15 @@ public class SignBookService {
         return template;
     }
 
+    /**
+     * Récupère une liste de créateurs (users) selon les filtres fournis.
+     *
+     * @param userEppn L'identifiant EPPN de l'utilisateur pour lequel récupérer les créateurs.
+     * @param workflowFilter Filtre associé au workflow pour restreindre les résultats.
+     * @param docTitleFilter Filtre sur le titre des documents pour affiner la recherche.
+     * @param creatorFilter Identifiant EPPN du créateur à filtrer spécifiquement, si fourni.
+     * @return Une liste d'objets UserDto contenant les informations des créateurs correspondants aux critères.
+     */
     public List<UserDto> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
         User creatorFilterUser = null;
         if(creatorFilter != null) {
@@ -2022,11 +2561,23 @@ public class SignBookService {
         return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
     }
 
+    /**
+     * Récupère une liste de SignBook associés à l'utilisateur spécifié.
+     *
+     * @param userEppn l'identifiant unique de l'utilisateur (eppn)
+     * @return une liste de SignBook associés à l'utilisateur
+     */
     public List<SignBook> getSignBookForUsers(String userEppn) {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.findByTeamContaining(user);
     }
 
+    /**
+     * Transfère toutes les demandes de signature en cours d'un utilisateur à un autre si cet utilisateur est remplacé.
+     *
+     * @param authUserEppn l'identifiant EPPN de l'utilisateur authentifié.
+     * @return le nombre de demandes de signature transférées.
+     */
     @Transactional
     public int transfer(String authUserEppn) {
         int i = 0;
@@ -2042,6 +2593,15 @@ public class SignBookService {
         return i;
     }
 
+    /**
+     * Transfère une demande de signature d'un utilisateur à un autre.
+     *
+     * @param signRequestId l'identifiant de la demande de signature à transférer
+     * @param userEppn l'identifiant eppn de l'utilisateur actuel (propriétaire de la demande de signature)
+     * @param replacedByUserEmail l'adresse email de l'utilisateur vers lequel la demande de signature sera transférée
+     * @param keepFollow un indicateur booléen pour savoir si l'utilisateur actuel doit continuer de suivre la demande de signature après le transfert
+     * @throws EsupSignatureRuntimeException si le transfert est impossible
+     */
     @Transactional
     public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, boolean keepFollow) {
         if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
@@ -2056,6 +2616,17 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Transfère une demande de signature d'un utilisateur à un autre. Permet de remplacer les tâches de signature et/ou de
+     * conserver les droits de suivi pour l'utilisateur initial.
+     *
+     * @param signRequestId l'identifiant unique de la demande de signature à transférer
+     * @param transfertAll détermine si toutes les étapes de workflow associées doivent être transférées
+     *                     (true pour toutes les étapes, false pour seulement l'étape actuelle)
+     * @param user l'utilisateur source de transfert, c'est-à-dire l'utilisateur actuellement associé à la demande
+     * @param replacedByUser l'utilisateur remplaçant, c'est-à-dire l'utilisateur qui prendra en charge la demande de signature
+     * @param keepFollow détermine si l'utilisateur source doit garder les droits de suivi sur la demande de signature
+     */
     @Transactional
     public void transfertSignRequest(Long signRequestId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
@@ -2091,6 +2662,17 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Méthode pour nettoyer les SignBooks en cours d'upload ou vides.
+     * Cette méthode identifie et supprime les SignBooks qui sont dans l'une
+     * des conditions suivantes :
+     *
+     * - Les SignBooks qui ne contiennent aucun élément.
+     * - Les SignBooks dont le statut est "uploading".
+     *
+     * La suppression se fait de manière définitive en appelant la méthode
+     * deleteDefinitive pour chaque SignBook correspondant.
+     */
     @Transactional
     public void cleanUploadingSignBooks() {
         List<SignBook> toDelete = new ArrayList<>();
@@ -2101,6 +2683,14 @@ public class SignBookService {
         }
     }
 
+    /**
+     * Vérifie si un utilisateur a les droits de visualisation d'un signBook spécifique.
+     *
+     * @param userEppn l'identifiant unique de l'utilisateur concerné par la vérification des droits
+     * @param authUserEppn l'identifiant unique de l'utilisateur authentifié effectuant la demande
+     * @param signBookId l'identifiant unique du signBook à vérifier
+     * @return true si l'utilisateur possède les droits de visualisation, false sinon
+     */
     @Transactional
     public boolean checkUserViewRights(String userEppn, String authUserEppn, Long signBookId) {
         SignBook signBook = getById(signBookId);
@@ -2119,6 +2709,16 @@ public class SignBookService {
         return false;
     }
 
+    /**
+     * Vérifie si tous les types de partage sont présents pour une demande de signature entre deux utilisateurs
+     * pour un SignBook donné.
+     *
+     * @param fromUserEppn EPPN de l'utilisateur source qui partage une demande de signature.
+     * @param toUserEppn EPPN de l'utilisateur destinataire du partage.
+     * @param signBookId Identifiant du livre de signature concerné.
+     * @return {@code true} si au moins un type de partage est valide pour la demande de signature,
+     *         sinon {@code false}.
+     */
     @Transactional
     public Boolean checkAllShareTypesForSignRequest(String fromUserEppn, String toUserEppn, Long signBookId) {
         SignBook signBook = getById(signBookId);
@@ -2130,6 +2730,13 @@ public class SignBookService {
         return false;
     }
 
+    /**
+     * Renouvelle le code OTP (One-Time Password) pour une demande de signature en fonction de l'identifiant d'URL fourni.
+     *
+     * @param urlId l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
+     * @param signature indique si la signature liée à la demande doit être prise en compte
+     * @return true si le renouvellement de l'OTP a réussi, false sinon
+     */
     @Transactional
     public boolean renewOtp(String urlId, boolean signature) {
         Otp otp = otpService.getOtpFromDatabase(urlId);
@@ -2153,37 +2760,67 @@ public class SignBookService {
         return false;
     }
 
+    /**
+     * Finalise une requête de signature en fonction de son identifiant et de l'utilisateur authentifié.
+     *
+     * @param id l'identifiant unique de la requête de signature à compléter
+     * @param authUserEppn le eppn (eduPersonPrincipalName) de l'utilisateur authentifié
+     * @param text le texte associé à la finalisation de la requête
+     */
     @Transactional
     public void completeSignRequest(Long id, String authUserEppn, String text) {
         SignRequest signRequest = signRequestService.getById(id);
         completeSignBook(signRequest.getParentSignBook(), authUserEppn, text);
     }
 
+    /**
+     * Met à jour l'état de la demande de signature en la passant à l'état "en attente".
+     *
+     * @param id L'identifiant unique de la demande de signature.
+     * @param data Les données associées à la demande de signature.
+     * @param userEppn L'identifiant de l'utilisateur effectuant cette opération (EPPN - EduPersonPrincipalName).
+     * @param authUserEppn L'identifiant de l'utilisateur authentifié effectuant l'action (EPPN - EduPersonPrincipalName).
+     * @param forceSendEmail Indique si un email doit être envoyé de manière forcée lors de la mise à jour.
+     */
     @Transactional
     public void pendingSignRequest(Long id, Data data, String userEppn, String authUserEppn, boolean forceSendEmail) {
         SignRequest signRequest = signRequestService.getById(id);
         pendingSignBook(signRequest.getParentSignBook(), data, userEppn, authUserEppn, forceSendEmail, true);
     }
 
-    public void addToTeam(SignBook signBook, String userEppn) {
+    private void addToTeam(SignBook signBook, String userEppn) {
         User user = userService.getByEppn(userEppn);
         if(signBook.getTeam().stream().noneMatch(u -> u.getId().equals(user.getId()))) {
             signBook.getTeam().add(user);
         }
     }
 
+    /**
+     * Récupère les sujets des SignBooks pour les managers correspondant à un workflow et une recherche donnée.
+     *
+     * @param workflowId l'identifiant du workflow pour lequel récupérer les SignBooks
+     * @param searchString la chaîne de recherche pour filtrer les sujets
+     * @return une liste de chaînes représentant les sujets des SignBooks correspondant aux critères
+     */
+    @Transactional
     public List<String> getSignBooksForManagersSubjects(Long workflowId, String searchString) {
         return signBookRepository.findByWorkflowNameSubjects(workflowId, "%"+searchString+"%");
     }
 
-    public List<UserDto> getSignBooksForManagersCreators(Long workflowId) {
-        return signBookRepository.findByWorkflowNameCreators(workflowId);
-    }
-
-    public List<UserDto> getSignBooksForManagersRecipientsUsers(Long workflowId) {
-        return signBookRepository.findByWorkflowNameRecipientsUsers(workflowId);
-    }
-
+    /**
+     * Clone une demande de signature existante et crée un nouveau carnet de signature associé.
+     *
+     * Cette méthode permet de cloner une demande de signature en respectant les autorisations de clonage définies.
+     * Un nouveau carnet de signatures et une nouvelle demande de signature sont créés avec les documents fournis,
+     * tout en préservant les étapes du flux de travail initial.
+     *
+     * @param id L'identifiant de la demande de signature à cloner.
+     * @param multipartFiles Les fichiers à associer à la nouvelle demande de signature.
+     * @param comment Un commentaire à ajouter à la nouvelle demande ou au carnet cloné.
+     * @param authUserEppn L'identifiant de l'utilisateur authentifié qui initie le clonage.
+     * @return L'identifiant de la nouvelle demande de signature créée.
+     * @throws RuntimeException Si le processus de clonage n'est pas autorisé pour la demande spécifiée.
+     */
     @Transactional
     public Long clone(Long id, MultipartFile[] multipartFiles, String comment, String authUserEppn) {
         SignRequest signRequest = signRequestService.getById(id);

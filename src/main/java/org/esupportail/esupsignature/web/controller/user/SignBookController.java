@@ -246,8 +246,8 @@ public class SignBookController {
         SignBook signBook = signBookService.getById(id);
         if(signBook != null && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
             model.addAttribute("signBook", signBook);
-            model.addAttribute("logs", signBookService.getLogsFromSignBook(signBook));
-            model.addAttribute("allSteps", signBookService.getAllSteps(signBook));
+            model.addAttribute("logs", signBookService.getLogsFromSignBook(id));
+            model.addAttribute("allSteps", signBookService.getAllSteps(id));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
             return "user/signbooks/update";
         } else {
@@ -395,7 +395,7 @@ public class SignBookController {
     @GetMapping(value = "/toggle/{id}", produces = "text/html")
     public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
                          @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
-        if(signBookService.toggle(id, authUserEppn)) {
+        if(signBookService.toggleHideSignBook(id, authUserEppn)) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande à été masquée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande est de nouveau visible"));
