@@ -195,7 +195,7 @@ export default class SelectUser {
                         async: true,
                         data: JSON.stringify(recipientEmails),
                         success: datas => this.displayTempUsersSuccess(datas),
-                        error: e => this.displayExternalsError()
+                        error: e => this.displayExternalsError(e)
                     });
                 }
             }
@@ -215,14 +215,26 @@ export default class SelectUser {
         }
     }
 
-    displayExternalsError() {
+    displayExternalsError(e) {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if($("#recipient_").length === 0) {
-            tempUsersDiv.append(
-                "<div class='alert alert-danger' id='recipient_'>" +
-                "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
-                "</div>");
+        if ($("#recipient_").length === 0) {
+            if(e.status === 500) {
+                let message = "Une erreur inconnue est survenue :"
+                if (e.responseJSON && e.responseJSON.message) {
+                    message = e.responseJSON.message;
+                }
+                tempUsersDiv.append(
+                    "<div class='alert alert-danger' id='recipient_'>" +
+                    "<b>Le destinataire n’a pas pu être vérifié </b>: <br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide.<br>" +
+                    "<small>Detail de l'erreur : " + message + "</small>" +
+                    "</div>");
+            } else {
+                tempUsersDiv.append(
+                    "<div class='alert alert-danger' id='recipient_'>" +
+                    "<b>Un problème s’est produit lors de la vérification des destinataires</b><br>Merci d’actualiser la page avant d’essayer de nouveau." +
+                    "</div>");
+            }
         }
     }
 
