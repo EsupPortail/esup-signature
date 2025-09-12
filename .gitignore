@@ -13,3 +13,4 @@ src/main/resources/static/images/watermark.png
 !NOTICE
 !pom.xml
 !docs
+!docs/**
