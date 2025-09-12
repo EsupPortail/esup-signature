@@ -1337,24 +1337,52 @@ export class SignRequestParams extends EventFactory {
     }
 
     resizeText() {
+        const minCols = 10;
+        const extraPx = 6; // marge pour éviter que le dernier caractère soit collé
         let fontSize = this.fontSize * this.currentScale * this.signScale;
-        this.textareaPart.css("font-size", Math.round(fontSize));
+        const roundedFontSize = Math.round(fontSize);
+        this.textareaPart.css("font-size", roundedFontSize + "px");
+
+        const text = this.textareaPart.val() || "";
+        this.textPart = text;
+        const lines = text.split(/\r\n|\r|\n/);
+
+        if (lines[0] && lines[0].length > 0) {
+            this.textareaPart.css("width", "");
+        }
+
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const fontFamily = this.textareaPart.css("font-family") || "sans-serif";
+        ctx.font = `${roundedFontSize}px ${fontFamily}`;
+
+        const sample = "W";
+        const avgCharWidth = ctx.measureText(sample).width / sample.length;
+
+        const maxLen = lines.reduce((m, l) => Math.max(m, l.length), 0);
+
+        let finalPxWidth;
+        if (maxLen <= minCols) {
+            finalPxWidth = Math.ceil(avgCharWidth * minCols) + extraPx;
+        } else {
+            let maxWidth = 0;
+            for (const l of lines) {
+                const w = ctx.measureText(l).width;
+                if (w > maxWidth) maxWidth = w;
+            }
+            finalPxWidth = Math.ceil(maxWidth) + extraPx;
+        }
+
+        this.textareaPart.css("width", finalPxWidth + "px");
+        this.textareaPart.attr("rows", Math.max(lines.length, 1));
+
+        // mettre à jour cols pour compatibilité si tu t'en sers ailleurs
+        this.textareaPart.attr("cols", Math.max(minCols, Math.ceil(finalPxWidth / avgCharWidth)));
+
+        // recalculer les tailles sign en tenant compte du scale
         this.signWidth = Math.round(parseInt(this.textareaPart.css("width")) / this.currentScale);
         this.signHeight = Math.round(parseInt(this.textareaPart.css("height")) / this.currentScale);
-        let text = this.textareaPart.val();
-        this.textPart = text;
-        let lines = text.split(/\r|\r\n|\n/);
-        if(lines[0].length > 0) {
-            this.textareaPart.css('width', '');
-        }
-        let width = 28;
-        for(let i = 0; i < lines.length; i++) {
-            if(lines[i].length >= width) {
-                width = lines[i].length;
-            }
-        }
-        this.textareaPart.attr("cols", width);
-        this.textareaPart.attr("rows", lines.length);
+
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
     }
