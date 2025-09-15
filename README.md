@@ -43,7 +43,7 @@ Voir : https://www.esup-portail.org/wiki/display/SIGN/Sources+et+configuration#S
 mvn clean package
 ```
 Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile.
-Pour l'éviter :
+Pour l’éviter :
 
 ```
 mvn clean package -DskipTests
@@ -51,7 +51,7 @@ mvn clean package -DskipTests
 
 # Tests Selenium
 
-Prérequis suplémentaires :
+Prérequis supplémentaires :
 
  * chromium
  * python3-selenium

@@ -66,7 +66,7 @@ public class DataController {
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
 			List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
-			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
+			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, null);
 			return ResponseEntity.ok().body(signBook.getId().toString());
 		}
 		logger.warn("form id " + id + " not autorized");
