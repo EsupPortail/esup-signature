@@ -171,7 +171,7 @@ public class FormWsController {
                 workflowStepDto.setSignRequestParams(signRequestParamsWsDtos);
             }
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, signRequestParamsJsonString, title, sendEmailAlert, comment);
+        SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, comment);
         signBookService.addViewers(signBook.getId(), recipientsCCEmails);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
@@ -203,7 +203,6 @@ public class FormWsController {
                                           @RequestParam(required = false) @Parameter(description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes,
                                           @RequestParam(required = false) @Parameter(description = "Liste des destinataires finaux", example = "[email]") List<String> targetEmails,
                                           @RequestParam(required = false) @Parameter(description = "Emplacements finaux", example = "[smb://drive.univ-ville.fr/forms-archive/]") List<String> targetUrls,
-                                          @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                                           @RequestParam(required = false) @Parameter(description = "Données par défaut à remplir dans le formulaire", example = "{'field1' : 'toto, 'field2' : 'tata'}") String formDatas,
                                           @RequestParam(required = false) @Parameter(description = "Titre") String title,
                                           @RequestParam(required = false, defaultValue = "true") @Parameter(description = "Envoyer une alerte mail") Boolean sendEmailAlert,
@@ -226,7 +225,7 @@ public class FormWsController {
         if(formDatas != null) {
             datas.putAll(objectMapper.readValue(formDatas, type));
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), signRequestParamsJsonString, title, sendEmailAlert, comment);
+        SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, comment);
         signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
