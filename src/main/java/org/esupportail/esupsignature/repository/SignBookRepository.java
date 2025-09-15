@@ -84,23 +84,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<String> findByWorkflowNameSubjects(Long workflowId, String searchString);
 
     @Query("""
-            select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
-            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            """)
-    List<UserDto> findByWorkflowNameCreators(Long workflowId);
-
-    @Query("""
-                select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from SignBook sb
-                left join sb.liveWorkflow lw
-                left join lw.liveWorkflowSteps lws
-                left join lws.recipients r
-                left join r.user u
-                where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId) and u is not null
-                """)
-    List<UserDto> findByWorkflowNameRecipientsUsers(Long workflowId);
-
-    @Query("""
             select distinct sb from SignBook sb
             left join sb.team team
             left join sb.signRequests sr

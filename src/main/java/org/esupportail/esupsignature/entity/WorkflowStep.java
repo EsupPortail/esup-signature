@@ -18,50 +18,107 @@ public class WorkflowStep {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
+    /**
+     * Nom de l’étape.
+     */
     private String name;
 
+    /**
+     * Description de l’étape.
+     */
     private String description;
 
+    /**
+     * Nombre maximal de destinataires autorisés pour cette étape (valeur par défaut : 99).
+     */
     private Integer maxRecipients = 99;
 
+    /**
+     * Liste des utilisateurs assignés à cette étape.
+     */
     @Fetch(FetchMode.JOIN)
     @ManyToMany(cascade = CascadeType.DETACH)
     private Set<User> users = new HashSet<>();
 
+    /**
+     * Indique si cette étape peut être modifiée par l’utilisateur.
+     */
     private Boolean changeable = false;
 
+    /**
+     * Indique si cette étape peut donner lieu à une étape intermédiaire.
+     */
     private Boolean repeatable = false;
 
+    /**
+     * Type de signature utilisé pour les étapes intermédiaires.
+     */
     @Enumerated(EnumType.STRING)
     private SignType repeatableSignType;
 
+    /**
+     * Indique si toutes les signatures doivent être complétées pour terminer cette étape.
+     */
     private Boolean allSignToComplete = false;
 
+    /**
+     * Indique si une alerte doit être déclenchée lorsqu’une pièce jointe est demandée.
+     */
     private Boolean attachmentAlert = false;
 
+    /**
+     * Indique si une pièce jointe est requise pour cette étape.
+     */
     private Boolean attachmentRequire = false;
 
+    /**
+     * Indique si plusieurs signatures sont autorisées pour cette étape (par défaut : true).
+     */
     private Boolean multiSign = true;
 
+    /**
+     * Indique si une seule signature avec des annotations est autorisée.
+     */
     private Boolean singleSignWithAnnotation = false;
 
+    /**
+     * Indique si cette étape est automatiquement signée.
+     */
     private Boolean autoSign = false;
 
+    /**
+     * Indique si cette étape sera terminée par l’apposition du cachet de l’établissement.
+     */
     private Boolean sealVisa = false;
 
+    /**
+     * Certificat à utiliser pour cette étape, si autoSign.
+     */
     @ManyToOne
     private Certificat certificat;
 
+    /**
+     * Type de signature utilisé pour cette étape.
+     */
     @NotNull
     @Enumerated(EnumType.STRING)
     private SignType signType;
 
+    /**
+     * Liste des paramètres des signatures visuelle pour cette étape.
+     */
     @ManyToMany(cascade = CascadeType.DETACH)
     private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
+    /**
+     * Niveau de signature minimal requis pour cette étape (valeur par défaut : simple).
+     */
     @Enumerated(EnumType.STRING)
     private SignLevel minSignLevel = SignLevel.simple;
 
+    /**
+     * Niveau de signature maximal autorisé pour cette étape (valeur par défaut : qualifié).
+     */
     @Enumerated(EnumType.STRING)
     private SignLevel maxSignLevel = SignLevel.qualified;
 

@@ -101,7 +101,7 @@ public class ScheduledTaskService {
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
-				signBookService.sendEmailAlertSummary(user);
+				signBookService.sendEmailAlertSummary(user.getEppn());
 			}
 		}
 	}

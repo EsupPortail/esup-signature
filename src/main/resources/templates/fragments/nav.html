@@ -186,10 +186,6 @@
                     <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
                 </tr>
-                <tr>
-                    <td>Auth</td>
-                    <td th:text="${securityServiceName}"></td>
-                </tr>
                 <tr th:if="${user.userType.name == 'ldap'}">
                     <td>Token d’accès API</td>
                     <td><input type="text" th:value="${user.accessToken}" disabled></td>
