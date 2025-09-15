@@ -47,6 +47,13 @@ public class ValidationService {
         this.defaultPolicy = defaultPolicy;
     }
 
+    /**
+     * Validation DSS d'un document.
+     *
+     * @param docInputStream Flux de données contenant le document à valider.
+     * @param signInputStream Flux de données contenant la signature associée au document. Peut être null si celle-ci est intégrée au document.
+     * @return Un objet Reports contenant les résultats de la validation, ou null si la validation échoue ou si les données fournies sont invalides.
+     */
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {
             List<DSSDocument> detachedContents = new ArrayList<>();

@@ -2875,4 +2875,16 @@ public class SignBookService {
         }
         return externalAuths;
     }
+
+    /**
+     * Vérifie si un SignBook contient des utilisateurs temporaires (utilisateur pas encore présent en base).
+     *
+     * @param signBookId l'identifiant du carnet de signatures à vérifier
+     * @return true si le carnet de signatures contient des utilisateurs temporaires, false sinon
+     */
+    @Transactional
+    public boolean isTempUsers(Long signBookId) {
+        SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
+        return !userService.getTempUsers(signBook).isEmpty();
+    }
 }
