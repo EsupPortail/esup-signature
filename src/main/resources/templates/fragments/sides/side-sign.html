@@ -48,6 +48,7 @@
 <!--        </button>-->
 
         <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
+        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
     </div>
 </nav>
 </html>

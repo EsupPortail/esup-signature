@@ -26,6 +26,8 @@ public class Target {
 
     private Boolean sendZip = false;
 
+    private Integer nbRetry = 0;
+
     public Boolean getTargetOk() {
         return targetOk;
     }
@@ -48,6 +50,15 @@ public class Target {
 
     public Long getId() {
         return id;
+    }
+
+    public Integer getNbRetry() {
+        if(nbRetry == null) return 0;
+        return nbRetry;
+    }
+
+    public void setNbRetry(Integer nbRetry) {
+        this.nbRetry = nbRetry;
     }
 
     public Boolean getSendDocument() {

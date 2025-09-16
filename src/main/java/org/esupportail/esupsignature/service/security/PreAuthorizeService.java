@@ -16,23 +16,14 @@ import java.util.List;
 public class PreAuthorizeService {
 
     private final UserService userService;
-
     private final SignBookService signBookService;
-
     private final DataService dataService;
-
     private final SignRequestService signRequestService;
-
     private final DocumentService documentService;
-
     private final CommentService commentService;
-
     private final WorkflowService workflowService;
-
     private final FormService formService;
-
     private final ReportService reportService;
-
     private final UserShareService userShareService;
 
     public PreAuthorizeService(UserService userService, SignBookService signBookService, DataService dataService, SignRequestService signRequestService, DocumentService documentService, CommentService commentService, WorkflowService workflowService, FormService formService, ReportService reportService, UserShareService userShareService) {
@@ -243,14 +234,6 @@ public class PreAuthorizeService {
             Form form = formService.getById(id);
             User manager = userService.getByEppn(userEppn);
             return form.getManagerRole() != null && manager.getManagersRoles().contains(form.getManagerRole());
-        }
-        return false;
-    }
-
-    public boolean roleManager(String role, String userEppn) {
-        if(userEppn != null) {
-            User manager = userService.getByEppn(userEppn);
-            return manager.getManagersRoles().contains(role);
         }
         return false;
     }
