@@ -6,6 +6,7 @@ import com.google.common.cache.LoadingCache;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +63,9 @@ public class SignWithService {
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
             LiveWorkflowStep currentLiveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
             signWiths.removeIf(signWith -> signWith.getValue() > currentLiveWorkflowStep.getMaxSignLevel().getValue() || signWith.getValue() < currentLiveWorkflowStep.getMinSignLevel().getValue());
+            if(currentLiveWorkflowStep.getMinSignLevel().equals(SignLevel.qualified) && certificatService.getCheckedCertificate().values().stream().noneMatch(v -> v.equals(true))) {
+                signWiths.remove(SignWith.sealCert);
+            }
         }
         return signWiths;
     }
