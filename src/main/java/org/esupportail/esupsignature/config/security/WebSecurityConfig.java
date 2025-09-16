@@ -99,47 +99,6 @@ public class WebSecurityConfig {
         this.casJwtDecoder = casJwtDecoder;
     }
 
-//	@Bean
-//	@Order(1)
-//	@ConditionalOnProperty({"spring.ldap.base", "security.cas.service"})
-//	public CasSecurityServiceImpl casSecurityServiceImpl() {
-//		if(ldapContextSource!= null && ldapContextSource.getUserDn() != null) {
-//			CasSecurityServiceImpl casSecurityService = new CasSecurityServiceImpl(webSecurityProperties, spelGroupService(), ldapGroupService, casProperties, ldapProperties, );
-//			securityServices.add(casSecurityService);
-//			return casSecurityService;
-//		} else {
-//			logger.error("cas config found without needed ldap config, cas security will be disabled");
-//			return null;
-//		}
-//	}
-//
-//	@Bean
-//	@Order(2)
-//	@ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
-//	public ShibSecurityServiceImpl shibSecurityServiceImpl() {
-//		ShibSecurityServiceImpl shibSecurityService = new ShibSecurityServiceImpl();
-//		securityServices.add(shibSecurityService);
-//		return shibSecurityService;
-//	}
-//
-//	@Bean
-//	@Order(3)
-//	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.proconnect.client-id")
-//	public ProConnectSecurityServiceImpl proConnectSecurityService() {
-//		ProConnectSecurityServiceImpl oAuthSecurityService = new ProConnectSecurityServiceImpl();
-//		securityServices.add(oAuthSecurityService);
-//		return oAuthSecurityService;
-//	}
-//
-//	@Bean
-//	@Order(4)
-//	@ConditionalOnProperty(name = "spring.security.oauth2.client.registration.franceconnect.client-id")
-//	public FranceConnectSecurityServiceImpl franceConnectSecurityService() {
-//		FranceConnectSecurityServiceImpl oAuthSecurityService = new FranceConnectSecurityServiceImpl();
-//		securityServices.add(oAuthSecurityService);
-//		return oAuthSecurityService;
-//	}
-
 	@Bean
 	@ConditionalOnProperty(name = "spring.security.oauth2.client.provider.cas.issuer-uri")
 	public SecurityFilterChain wsJwtSecurityFilter(HttpSecurity http) throws Exception {
@@ -252,33 +211,6 @@ public class WebSecurityConfig {
 	public CustomAuthorizationRequestResolver customAuthorizationRequestResolver() {
 		return new CustomAuthorizationRequestResolver(clientRegistrationRepository, securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
 	}
-
-	//	@Bean
-//	public APIKeyFilter apiKeyFilter() {
-//		APIKeyFilter filter = new APIKeyFilter();
-//		filter.setAuthenticationManager(authentication -> {
-//			if(authentication.getPrincipal() == null) {
-//				throw new BadCredentialsException("Access Denied.");
-//			}
-//			String apiKey = (String) authentication.getPrincipal();
-//			if (authentication.getPrincipal() != null && this.apiKey.equals(apiKey)) {
-//				Collection<SimpleGrantedAuthority> oldAuthorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext().getAuthentication().getAuthorities();
-//				SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_WS");
-//				List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<>();
-//				updatedAuthorities.add(authority);
-//				updatedAuthorities.addAll(oldAuthorities);
-//				SecurityContextHolder.getContext().setAuthentication(
-//						new UsernamePasswordAuthenticationToken(
-//								SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
-//								SecurityContextHolder.getContext().getAuthentication().getCredentials(),
-//								updatedAuthorities));
-//				return SecurityContextHolder.getContext().getAuthentication();
-//			} else {
-//				throw new BadCredentialsException("Access Denied.");
-//			}
-//		});
-//		return filter;
-//	}
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/")).permitAll());

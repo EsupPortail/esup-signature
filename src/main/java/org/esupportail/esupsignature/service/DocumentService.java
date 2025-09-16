@@ -137,6 +137,7 @@ public class DocumentService {
 					documentUri = targetUrl + name;
 					return documentUri;
 				} else {
+
 					throw new EsupSignatureRuntimeException("file is not exported");
 				}
 			} catch (EsupSignatureFsException  e) {

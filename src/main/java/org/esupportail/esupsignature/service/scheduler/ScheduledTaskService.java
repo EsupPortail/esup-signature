@@ -75,7 +75,7 @@ public class ScheduledTaskService {
 			try {
 				signBookService.sendSignRequestsToTarget(signBook.getId(), "scheduler");
 			} catch(Exception e) {
-				logger.error("export error for signbook " + signBook.getId(), e);
+				logger.debug("export error for signbook " + signBook.getId() + " : " + e.getMessage());
 			}
 		}
 	}
