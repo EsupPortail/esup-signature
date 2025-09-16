@@ -843,7 +843,7 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-primary').html('<i class="fa-solid fa-pen"></i> <span class="d-none d-xl-inline">Mode modification</span>')
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
@@ -866,7 +866,8 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.hide();
-        $("#signModeBtns").addClass("d-none");
+        // $("#signModeBtns").addClass("d-none");
+        $("#signImageBtn").removeClass("d-lg-block");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
         $(".spot").each(function () {

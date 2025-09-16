@@ -247,20 +247,7 @@
         </div>
     </div>
 
-    <div id="commentsBar" th:if="${toSignDocument.contentType == 'application/pdf'}" style="position: fixed; display: none; width: 250px; left: 285px;">
-        <div th:if="${comments.size() > 0}" class="alert alert-light border-dark text-dark">
-            <h5>Commentaires</h5>
-            <ul class="list-group">
-                <th:block th:each="comment : ${comments}">
-                    <li th:id="'postit' + ${comment.id}" class="list-group-item border" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
-                        <b th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}"></b>
-                        <p th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></p>
-                        <p class="postitarea" th:text="${comment.text}"></p>
-                    </li>
-                </th:block>
-            </ul>
-        </div>
-    </div>
+
 
     <div id="spot-modal" data-bs-focus="false" class="modal text-black">
         <div class="modal-dialog">
