@@ -810,4 +810,15 @@ public class WorkflowService {
         Workflow workflow = getById(id);
         workflow.setSendAlertToAllRecipients(sendAlertToAllRecipients);
     }
+
+    @Transactional
+    public void restartTargets(Long id) {
+        Workflow workflow = getById(id);
+        List<LiveWorkflow> liveWorkflows = liveWorkflowService.getByWorkflow(workflow);
+        for(LiveWorkflow liveWorkflow : liveWorkflows) {
+            for(Target target : liveWorkflow.getTargets()) {
+                target.setNbRetry(0);
+            }
+        }
+    }
 }

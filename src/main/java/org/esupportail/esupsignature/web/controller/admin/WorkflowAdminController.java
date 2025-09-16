@@ -336,6 +336,16 @@ public class WorkflowAdminController {
 
 	}
 
+    @PostMapping(value = "/restart-targets/{id}")
+    @PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
+    public String restartTargets(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                               RedirectAttributes redirectAttributes) {
+        workflowService.restartTargets(id);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Exports relancés"));
+        return "redirect:/admin/workflows/update/" + id;
+
+    }
+
 	@GetMapping(value = "/export/{id}", produces="text/json")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public ResponseEntity<Void> exportFormSetup(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse response) {

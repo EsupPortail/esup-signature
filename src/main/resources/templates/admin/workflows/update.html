@@ -350,14 +350,11 @@
                                     </td>
                                     <td>
                                         <form th:action="'/' + ${workflowRole} + '/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}"
-                                            method="post"
-                                              class="d-inline-flex align-items-center"
+                                            method="post" class="d-inline-flex align-items-center"
                                             onsubmit="return confirm('Confirmer la suppression ?');">
-
                                             <button type="submit" class="btn btn-sm btn-danger text-white">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
-
                                             <div class="form-check d-inline" >
                                                 <input type="checkbox" class="form-check-input" name="cascade" th:id="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">
                                                 <label class="form-check-label" th:for="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">En cascade</label>
@@ -365,7 +362,15 @@
 
                                         </form>
                                     </td>
-                                    <td></td>
+                                    <td>
+                                        <form th:action="'/' + ${workflowRole} + '/workflows/restart-targets/' + ${workflow.id}" method="post"
+                                            class="d-inline-flex align-items-center"
+                                            onsubmit="return confirm('Confirmer le redémarrage des exports pour les demandes de ce circuit ?');">
+                                            <button type="submit" class="btn btn-sm btn-secondary">
+                                                <i class="fa-solid fa-refresh"></i>
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             </th:block>
                             </tbody>

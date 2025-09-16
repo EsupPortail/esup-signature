@@ -19,10 +19,7 @@ import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
-import org.esupportail.esupsignature.repository.DataRepository;
-import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
-import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.repository.*;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -112,7 +109,7 @@ public class SignBookService {
     private final SignWithService signWithService;
     private final SmsProperties smsProperties;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties1) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -146,7 +143,7 @@ public class SignBookService {
         this.signRequestParamsRepository = signRequestParamsRepository;
         this.objectMapper = objectMapper;
         this.signWithService = signWithService;
-        this.smsProperties = smsProperties1;
+        this.smsProperties = smsProperties;
     }
 
     /**
@@ -2177,6 +2174,14 @@ public class SignBookService {
             boolean allTargetsDone = true;
             for (Target target : targets) {
                 if (!target.getTargetOk()) {
+                    if(target.getNbRetry() == 5) {
+                        mailService.sendAdminError("La destination suivante n'est plus accessible : " + target.getTargetUri(), "La destination suivante n'est plus accessible : " + target.getTargetUri()  + ". Merci de contrôler la validité de la destination puis de relancer les exports au niveau de la configuration du circuit");
+                        logger.error("La destination suivante n'est plus accessible : " + target.getTargetUri() + ". Merci de contrôler la validité de la destination puis de relancer les exports au niveau de la configuration du circuit");
+                    }
+                    if(target.getNbRetry() > 5) {
+                        allTargetsDone = false;
+                        continue;
+                    }
                     DocumentIOType documentIOType = fsAccessFactoryService.getPathIOType(target.getTargetUri());
                     String targetUrl = target.getTargetUri();
                     if (documentIOType != null && !documentIOType.equals(DocumentIOType.none)) {
@@ -2224,12 +2229,20 @@ public class SignBookService {
                                                     inputStreams.put(new ByteArrayInputStream(fileBytes), name + "-report.zip");
                                                 }
                                             } catch (Exception e) {
+                                                target.setNbRetry(target.getNbRetry() + 1);
                                                 throw new EsupSignatureRuntimeException(e.getMessage(), e);
                                             }
                                         }
                                         if(!target.getSendZip()) {
                                             for (Map.Entry<InputStream, String> inputStream : inputStreams.entrySet()) {
-                                                documentService.exportDocument(finalTargetUrl, inputStream.getKey(), inputStream.getValue(), null);
+                                                try {
+                                                    documentService.exportDocument(finalTargetUrl, inputStream.getKey(), inputStream.getValue(), null);
+                                                } catch (EsupSignatureRuntimeException e) {
+                                                    target.setNbRetry(target.getNbRetry() + 1);
+                                                    targetService.forceSave(target);
+                                                    logger.error(e.getMessage() + " : " + targetUrl);
+                                                    allTargetsDone = false;
+                                                }
                                             }
                                             inputStreams = new HashMap<>();
                                             target.setTargetOk(true);
@@ -2237,6 +2250,7 @@ public class SignBookService {
                                     } catch (EsupSignatureFsException e) {
                                         logger.error("fs export fail : " + target.getProtectedTargetUri(), e);
                                         allTargetsDone = false;
+                                        target.setNbRetry(target.getNbRetry() + 1);
                                     }
                                 }
                             }
