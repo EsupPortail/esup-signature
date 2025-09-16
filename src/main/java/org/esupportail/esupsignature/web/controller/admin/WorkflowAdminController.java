@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
@@ -309,12 +310,13 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							@RequestParam("documentsTargetUri") String documentsTargetUri,
-							@RequestParam(value = "sendDocument", required = false) Boolean sendDocument,
-							@RequestParam(value = "sendReport", required = false) Boolean sendReport,
-							@RequestParam(value = "sendDocument", required = false) Boolean sendAttachment,
-							@RequestParam(value = "sendZip", required = false) Boolean sendZip,
-							RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
-		if (workflowService.addTarget(id, documentsTargetUri, sendDocument, sendReport, sendAttachment, sendZip)) {
+							@RequestParam(value = "sendDocument", required = false) String sendDocument,
+							@RequestParam(value = "sendReport", required = false) String sendReport,
+							@RequestParam(value = "sendAttachment", required = false) String sendAttachment,
+							@RequestParam(value = "sendZip", required = false) String sendZip,
+                            @RequestParam(value = "cascade", required = false) String cascade,
+                            RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
+		if (workflowService.addTarget(id, documentsTargetUri, BooleanUtils.toBoolean(sendDocument), BooleanUtils.toBoolean(sendReport), BooleanUtils.toBoolean(sendAttachment), BooleanUtils.toBoolean(sendZip), BooleanUtils.toBoolean(cascade))) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination ajoutée"));
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
@@ -322,12 +324,13 @@ public class WorkflowAdminController {
 		return "redirect:/admin/workflows/update/" + id;
 	}
 
-	@GetMapping(value = "/delete-target/{id}/{targetId}")
+	@PostMapping(value = "/delete-target/{id}/{targetId}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String deleteTarget(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							   @PathVariable("targetId") Long targetId,
+                               @RequestParam(value = "cascade", required = false) String cascade,
 							   RedirectAttributes redirectAttributes) {
-		workflowService.deleteTarget(id, targetId);
+		workflowService.deleteTarget(id, targetId, BooleanUtils.toBoolean(cascade));
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination supprimée"));
 		return "redirect:/admin/workflows/update/" + id;
 

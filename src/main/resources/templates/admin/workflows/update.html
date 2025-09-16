@@ -345,13 +345,25 @@
                                     </td>
                                     <td class="text-left w-100">
                                         <form th:id="'toggle-send-zip-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-zip/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
-                                            <input type="checkbox"        th:disabled="${!target.sendDocument and !target.sendReport and !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
+                                            <input type="checkbox" th:disabled="${!target.sendDocument and !target.sendReport and !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
                                         </form>
                                     </td>
                                     <td>
-                                        <a th:id="'deleteSign_' + ${signImageId}" th:href="'/' + ${workflowRole} + '/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}" role="button" class="btn btn-sm btn-danger text-white">
-                                            <i class="fa-solid fa-trash-alt"></i>
-                                        </a>
+                                        <form th:action="'/' + ${workflowRole} + '/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}"
+                                            method="post"
+                                              class="d-inline-flex align-items-center"
+                                            onsubmit="return confirm('Confirmer la suppression ?');">
+
+                                            <button type="submit" class="btn btn-sm btn-danger text-white">
+                                                <i class="fa-solid fa-trash-alt"></i>
+                                            </button>
+
+                                            <div class="form-check d-inline" >
+                                                <input type="checkbox" class="form-check-input" name="cascade" th:id="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">
+                                                <label class="form-check-label" th:for="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">En cascade</label>
+                                            </div>
+
+                                        </form>
                                     </td>
                                     <td></td>
                                 </tr>
@@ -398,6 +410,32 @@
                         <br>
                         Pour plus de détails voir : <a href="https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI" target="_blank">https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI</a>
                     </small></p>
+                    <label>
+                        <input type="checkbox" name="sendDocument" class="form-check-input" checked>
+                        Document
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendReport" class="form-check-input">
+                        Rapports
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendAttachment" class="form-check-input">
+                        Pièces jointes
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendZip" class="form-check-input">
+                        Envoyer zippé
+                    </label>
+                    <br><br>
+                    <p>
+                    <label>
+                        <input type="checkbox" name="cascade" class="form-check-input">
+                        Appliquer à toutes les demandes en cours non encore exportées
+                    </label>
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-end"
