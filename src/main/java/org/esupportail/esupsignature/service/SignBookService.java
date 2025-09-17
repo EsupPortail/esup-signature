@@ -1293,6 +1293,7 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
+    @Transactional
     private void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;

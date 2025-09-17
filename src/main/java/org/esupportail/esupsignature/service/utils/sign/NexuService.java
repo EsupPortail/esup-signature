@@ -94,21 +94,21 @@ public class NexuService {
 		return toBeSigned;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ToBeSigned getDataToSign(SignatureMultipleDocumentsForm form, List<DSSDocument> documentsToSign) throws DSSException, IOException {
-		logger.info("Start getDataToSign with multiple documents");
-		MultipleDocumentsSignatureService service = signService.getASiCSignatureService(form.getSignatureForm());
-		AbstractSignatureParameters parameters = getParameters(form, documentsToSign);
-		ToBeSigned toBeSigned = null;
-		try {
-			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
-			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
-		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
-		}
-		logger.info("End getDataToSign with multiple documents");
-		return toBeSigned;
-	}
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public ToBeSigned getDataToSign(SignatureMultipleDocumentsForm form, List<DSSDocument> documentsToSign) throws DSSException, IOException {
+//		logger.info("Start getDataToSign with multiple documents");
+//		MultipleDocumentsSignatureService service = signService.getASiCSignatureService(form.getSignatureForm());
+//		AbstractSignatureParameters parameters = getParameters(form, documentsToSign);
+//		ToBeSigned toBeSigned = null;
+//		try {
+//			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
+//			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
+//		} catch (Exception e) {
+//			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
+//		}
+//		logger.info("End getDataToSign with multiple documents");
+//		return toBeSigned;
+//	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
@@ -170,7 +170,7 @@ public class NexuService {
 	}
 
 	@Transactional
-	public NexuSignature saveNexuSignature(Long id, SignatureDocumentForm abstractSignatureForm, String userEppn) throws IOException {
+	public void saveNexuSignature(Long id, SignatureDocumentForm abstractSignatureForm, String userEppn) throws IOException {
 		User user = userService.getByEppn(userEppn);
 		NexuSignature nexuSignature = new NexuSignature();
 		nexuSignature.setSignRequest(signRequestRepository.findById(id).orElseThrow());
@@ -185,8 +185,7 @@ public class NexuService {
 		//nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
 		nexuSignature.getDocumentToSign().add(documentService.createDocument(abstractSignatureForm.getDocumentToSign().getInputStream(), user, abstractSignatureForm.getDocumentToSign().getOriginalFilename(), abstractSignatureForm.getDocumentToSign().getContentType()));
 		nexuSignatureRepository.save(nexuSignature);
-		return nexuSignature;
-	}
+    }
 
 	@Transactional
 	public NexuSignature getNexuSignature(Long id) {

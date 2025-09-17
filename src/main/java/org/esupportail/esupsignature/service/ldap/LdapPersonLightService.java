@@ -11,8 +11,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.Resource;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
@@ -26,11 +24,13 @@ public class LdapPersonLightService {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapPersonLightService.class);
 
-    @Resource
-    private LdapProperties ldapProperties;
+    private final LdapProperties ldapProperties;
+    private final LdapTemplate ldapTemplate;
 
-    @Resource
-    private LdapTemplate ldapTemplate;
+    public LdapPersonLightService(LdapProperties ldapProperties, LdapTemplate ldapTemplate) {
+        this.ldapProperties = ldapProperties;
+        this.ldapTemplate = ldapTemplate;
+    }
 
     public List<PersonLightLdap> searchLight(String searchString) {
         String formattedFilter = MessageFormat.format(ldapProperties.getUsersSearchFilter(), (Object[]) new String[] { searchString });

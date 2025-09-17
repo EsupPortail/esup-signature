@@ -283,9 +283,9 @@ public class SignRequestParamsService {
     @Transactional
     public void copySignRequestParams(Long signRequestId, List<SignRequestParams> signRequestParamses) {
         SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+        signRequest.getSignRequestParams().clear();
         for (int i = 0 ; i < signRequestParamses.size() ; i++) {
-            SignRequestParams signRequestParams;
-            signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
+            SignRequestParams signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
             signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
             signRequestParams.setPdSignatureFieldName(signRequestParamses.get(i).getPdSignatureFieldName());
             signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
@@ -300,16 +300,7 @@ public class SignRequestParamsService {
             signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
             signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
             signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
-//            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > i) {
-//                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().set(i, signRequestParams);
-//            } else {
-//                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
-//            }
-            if (signRequest.getSignRequestParams().size() > i) {
-                signRequest.getSignRequestParams().set(i, signRequestParams);
-            } else {
-                signRequest.getSignRequestParams().add(signRequestParams);
-            }
+            signRequest.getSignRequestParams().add(signRequestParams);
         }
     }
 

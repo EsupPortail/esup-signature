@@ -73,7 +73,7 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
-    @ManyToMany
+    @OneToMany(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @OrderColumn
     @JoinTable(
             indexes = @Index(name = "idx_sign_request_params_sign_request_id", columnList = "sign_request_id")

@@ -1269,7 +1269,6 @@ public class SignRequestService {
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
 				signRequestParams.setComment(commentText);
-				signRequest.getSignRequestParams().add(signRequestParams);
 				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 			}
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
@@ -1638,8 +1637,7 @@ public class SignRequestService {
 			}
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).toList();
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getSignRequestParams().contains(signRequestParams)
-					&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
 					toUserSignRequestParams.add(signRequestParams);
 				}
 			}
