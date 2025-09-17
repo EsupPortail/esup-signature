@@ -358,7 +358,7 @@ public class SignRequestService {
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
 			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
 		} else {
-			SignRequestParams lastSignRequestParams = findLastSignRequestParams(signRequestParamses);
+			SignRequestParams lastSignRequestParams = findLastSignRequestParams(signRequest);
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
 				filledInputStream = stampImagesOnFirstSign(signRequest, signRequestParamses, userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
@@ -366,7 +366,7 @@ public class SignRequestService {
 				logger.warn("skip add visuals because document already signed");
 			}
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && lastSignRequestParams != null) {
-				signRequestParamsService.copySignRequestParams(signRequest, Collections.singletonList(lastSignRequestParams));
+				signRequestParamsService.copySignRequestParams(signRequest.getId(), Collections.singletonList(lastSignRequestParams));
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
 			SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
@@ -384,14 +384,16 @@ public class SignRequestService {
      * qui satisfait les conditions : le numéro d'image de signature est supérieur ou
      * égal à zéro et la partie textuelle est vide ou non définie.
      *
-     * @param signRequestParamses la liste des objets SignRequestParams à analyser
+     * @param signRequest signRequest à analyser
      * @return le dernier objet SignRequestParams répondant aux critères ou null si aucun n'est trouvé
      */
-    public SignRequestParams findLastSignRequestParams(List<SignRequestParams> signRequestParamses) {
+    public SignRequestParams findLastSignRequestParams(SignRequest signRequest) {
 		SignRequestParams lastSignRequestParams = null;
-		for (SignRequestParams signRequestParams : signRequestParamses) {
+		for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
 			if (signRequestParams.getSignImageNumber() >= 0 && !StringUtils.hasText(signRequestParams.getTextPart())) {
-				lastSignRequestParams = signRequestParams;
+                if(lastSignRequestParams == null || signRequestParams.getSignPageNumber() >= lastSignRequestParams.getSignPageNumber()) {
+                    lastSignRequestParams = signRequestParams;
+                }
 			}
 		}
 		return lastSignRequestParams;

@@ -1519,9 +1519,9 @@ public class SignBookService {
         }
         if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() == null || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams() == null || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams().isEmpty()) {
-                signRequestParamsService.copySignRequestParams(signRequest, signRequestParamses);
+                signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
             } else {
-                signRequestParamsService.copySignRequestParams(signRequest, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams());
+                signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams());
             }
             return StepStatus.nexu_redirect;
         } else {
