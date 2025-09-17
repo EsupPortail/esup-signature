@@ -153,6 +153,9 @@ td {
 
 .nav-tabs {
     border-bottom : 1px solid #555;
+    background-color: white;
+    margin-left: -5px;
+
 }
 
 .nav-link:focus-visible {
