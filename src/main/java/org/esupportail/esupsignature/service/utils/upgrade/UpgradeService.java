@@ -43,7 +43,7 @@ public class UpgradeService {
     private final FileService fileService;
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.35.3"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -448,17 +448,6 @@ public class UpgradeService {
         """
         ).executeUpdate();
         logger.info("#### Update sign types done ####");
-    }
-
-    @SuppressWarnings("unused")
-    public void update_1_35_3() {
-        logger.info("#### Starting update drop unique constraint on sign_request_sign_request_params ####");
-        entityManager.createNativeQuery("""
-            ALTER TABLE public.sign_request_sign_request_params DROP CONSTRAINT IF EXISTS uk_cfnhtinasf8x9j2kjh0gmsv7c;
-            ALTER TABLE public.sign_request_sign_request_params DROP CONSTRAINT IF EXISTS sign_request_sign_request_params_sign_request_params_id_key;
-        """
-        ).executeUpdate();
-        logger.info("#### Update drop unique constraint on sign_request_sign_request_params done ####");
     }
 
 }

@@ -1293,7 +1293,8 @@ public class SignBookService {
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
     }
 
-    private void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
+    @Transactional
+    public void pendingSignBook(SignBook signBook, Data data, String userEppn, String authUserEppn, boolean forceSendEmail, boolean sendEmailAlert) throws EsupSignatureRuntimeException {
         LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getCurrentStep();
         boolean emailSended = false;
         for(SignRequest signRequest : signBook.getSignRequests()) {
@@ -1328,7 +1329,8 @@ public class SignBookService {
                                     signRequestParamses.get(0).setExtraText(signBook.getLiveWorkflow().getCurrentStep().getWorkflowStep().getCertificat().getKeystore().getFileName().replace(",", "\n"));
                                 }
                                 try {
-                                    signRequestService.sign(signRequest1, "", "autoCert", signRequestParamses, null, null,"system", "system", null, "");
+                                    signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
+                                    signRequestService.sign(signRequest1, "", "autoCert", null, null,"system", "system", null, "");
                                                                     } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
@@ -1336,7 +1338,8 @@ public class SignBookService {
                                 }
                             } else {
                                 try {
-                                    signRequestService.sign(signRequest1, "", "sealCert", signRequestParamses, null, null,"system", "system", null, "");
+                                    signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
+                                    signRequestService.sign(signRequest1, "", "sealCert", null, null,"system", "system", null, "");
                                 } catch (IOException | EsupSignatureRuntimeException e) {
                                     logger.error("auto sign fail", e);
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
@@ -1517,15 +1520,14 @@ public class SignBookService {
         } else {
             signRequestParamses = userService.getSignRequestParamsesFromJson(signRequestParamsJsonString, userEppn);
         }
+        signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
         if (signRequest.getCurrentSignType().equals(SignType.signature) && (SignWith.valueOf(signWith).equals(SignWith.nexuCert))) {
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() == null || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams() == null || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams().isEmpty()) {
-                signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequestParamses);
-            } else {
+            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams().isEmpty()) {
                 signRequestParamsService.copySignRequestParams(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getSignRequestParams());
             }
             return StepStatus.nexu_redirect;
         } else {
-            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, signRequestParamses, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
+            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
                     if(globalProperties.getSealAllDocs() ||

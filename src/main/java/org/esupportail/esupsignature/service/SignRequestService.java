@@ -97,8 +97,9 @@ public class SignRequestService {
 	private final ObjectMapper objectMapper;
 	private final SignBookRepository signBookRepository;
 	private final NexuSignatureRepository nexuSignatureRepository;
+    private final SignRequestParamsRepository signRequestParamsRepository;
 
-    public SignRequestService(GlobalProperties globalProperties, SignProperties signProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, CommentRepository commentRepository) {
+    public SignRequestService(GlobalProperties globalProperties, SignProperties signProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, SignService signService, SignTypeService signTypeService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, CommentRepository commentRepository, SignRequestParamsRepository signRequestParamsRepository) {
         this.globalProperties = globalProperties;
         this.signProperties = signProperties;
         this.targetService = targetService;
@@ -127,6 +128,7 @@ public class SignRequestService {
         this.objectMapper = objectMapper;
         this.signBookRepository = signBookRepository;
 		this.nexuSignatureRepository = nexuSignatureRepository;
+        this.signRequestParamsRepository = signRequestParamsRepository;
     }
 
     @PostConstruct
@@ -271,7 +273,6 @@ public class SignRequestService {
      * @param signRequest L'objet représentant la requête de signature à traiter.
      * @param password Le mot de passe de l'utilisateur nécessaire pour effectuer la signature.
      * @param signWith Le type d'élément utilisé pour effectuer la signature (image, certificat, etc.).
-     * @param signRequestParamses La liste des paramètres de signature spécifiant les détails de l'application de chaque signature (page, position, etc.).
      * @param data Les données associées à la signature, incluant des informations de formulaire.
      * @param formDataMap Une carte représentant les données des champs de formulaire à remplir ou à valider.
      * @param userEppn L'identifiant de l'utilisateur effectuant la signature.
@@ -283,7 +284,7 @@ public class SignRequestService {
      * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
      */
     @Transactional
-	public StepStatus sign(SignRequest signRequest, String password, String signWith, List<SignRequestParams> signRequestParamses, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
+	public StepStatus sign(SignRequest signRequest, String password, String signWith, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
 		if(signRequest.getAuditTrail() == null) {
 			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -330,12 +331,12 @@ public class SignRequestService {
 			byte[] signedInputStream = filledInputStream;
 			String fileName = toSignDocuments.get(0).getFileName();
 			if(signType.equals(SignType.hiddenVisa)) visual = false;
-			if(signRequestParamses.isEmpty() && visual) {
+			if(signRequest.getSignRequestParams().isEmpty() && visual) {
 				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
 			}
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
-				for(SignRequestParams signRequestParams : signRequestParamses) {
+				for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
 					if((signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
 						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
 						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
@@ -361,7 +362,7 @@ public class SignRequestService {
 			SignRequestParams lastSignRequestParams = findLastSignRequestParams(signRequest);
 			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
 			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-				filledInputStream = stampImagesOnFirstSign(signRequest, signRequestParamses, userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
 			} else {
 				logger.warn("skip add visuals because document already signed");
 			}
@@ -1269,7 +1270,6 @@ public class SignRequestService {
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
 				signRequestParams.setComment(commentText);
-				signRequest.getSignRequestParams().add(signRequestParams);
 				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 			}
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
@@ -1638,8 +1638,7 @@ public class SignRequestService {
 			}
 			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).toList();
 			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getSignRequestParams().contains(signRequestParams)
-					&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
+				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
 					toUserSignRequestParams.add(signRequestParams);
 				}
 			}
