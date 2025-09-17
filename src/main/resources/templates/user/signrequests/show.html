@@ -576,7 +576,6 @@
                 <h3 class="modal-title">Démarrer le circuit</h3>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
                         aria-label="Close">
-
                 </button>
             </div>
             <form th:action="'/user/signbooks/pending/' + ${signBook.id}" method="post">
@@ -587,6 +586,31 @@
                         </p>
                     </th:block>
                     <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                            <h5>
+                                Le circuit comporte <span
+                                    th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
+                                étape<span
+                                    th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
+                            </h5>
+                            <br>
+                            <ul class="list-group">
+                                <th:block th:each="step, iterator : ${steps}">
+                                    <li class="list-group-item">
+                                        <div class="form-group d-inline mb-1">
+                                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
+                                                th:text="${step.description != null ?  step.description + ' (' : ''}"></span>
+                                            <th:block th:if="${step.users.size() > 0}" th:each="user, iterator : ${step.users}">
+                                                <span th:if="${iterator.index > 0}"> ou </span>
+                                                <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                            </th:block>
+                                            <span th:text="${step.description != null ?  ')' : ''}"></span>
+                                        </div>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </th:block>
+
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
                             <h5>
                                 Le circuit comporte <span

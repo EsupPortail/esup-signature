@@ -449,4 +449,5 @@ public class UpgradeService {
         ).executeUpdate();
         logger.info("#### Update sign types done ####");
     }
+
 }
