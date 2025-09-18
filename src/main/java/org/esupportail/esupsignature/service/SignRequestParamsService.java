@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,11 +58,13 @@ public class SignRequestParamsService {
     private final SignRequestParamsRepository signRequestParamsRepository;
     private final PdfService pdfService;
     private final GlobalProperties globalProperties;
+    private final SignRequestRepository signRequestRepository;
 
-    public SignRequestParamsService(SignRequestParamsRepository signRequestParamsRepository, PdfService pdfService, GlobalProperties globalProperties) {
+    public SignRequestParamsService(SignRequestParamsRepository signRequestParamsRepository, PdfService pdfService, GlobalProperties globalProperties, SignRequestRepository signRequestRepository) {
         this.signRequestParamsRepository = signRequestParamsRepository;
         this.pdfService = pdfService;
         this.globalProperties = globalProperties;
+        this.signRequestRepository = signRequestRepository;
     }
 
     /**
@@ -272,44 +275,32 @@ public class SignRequestParamsService {
     }
 
     /**
-     * Copie les paramètres de requête de signature d'une liste vers une requête.
+     * Copie les paramètres de requête de signature d'une liste vers une signRequest.
      *
-     * @param signRequest La requête de signature cible
+     * @param signRequestId La requête de signature cible
      * @param signRequestParamses La liste des paramètres de requête de signature à copier
      */
-    public void copySignRequestParams(SignRequest signRequest, List<SignRequestParams> signRequestParamses) {
-        for (int i = 0 ; i < signRequestParamses.size() ; i++) {
-            SignRequestParams signRequestParams;
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > i) {
-                signRequestParams = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().get(i);
-            } else {
-                signRequestParams = createSignRequestParams(signRequestParamses.get(i).getSignPageNumber(), signRequestParamses.get(i).getxPos(), signRequestParamses.get(i).getyPos());
-            }
-            signRequestParams.setSignImageNumber(signRequestParamses.get(i).getSignImageNumber());
-            signRequestParams.setPdSignatureFieldName(signRequestParamses.get(i).getPdSignatureFieldName());
-//            signRequestParams.setSignPageNumber(signRequestParamses.get(i).getSignPageNumber());
-            signRequestParams.setSignScale(signRequestParamses.get(i).getSignScale());
-//            signRequestParams.setxPos(signRequestParamses.get(i).getxPos());
-//            signRequestParams.setyPos(signRequestParamses.get(i).getyPos());
-            signRequestParams.setSignWidth(signRequestParamses.get(i).getSignWidth());
-            signRequestParams.setSignHeight(signRequestParamses.get(i).getSignHeight());
-            signRequestParams.setExtraType(signRequestParamses.get(i).getExtraType());
-            signRequestParams.setExtraName(signRequestParamses.get(i).getExtraName());
-            signRequestParams.setExtraDate(signRequestParamses.get(i).getExtraDate());
-            signRequestParams.setExtraText(signRequestParamses.get(i).getExtraText());
-            signRequestParams.setAddExtra(signRequestParamses.get(i).getAddExtra());
-            signRequestParams.setTextPart(signRequestParamses.get(i).getTextPart());
-            signRequestParams.setAddWatermark(signRequestParamses.get(i).getAddWatermark());
-            signRequestParams.setAllPages(signRequestParamses.get(i).getAllPages());
-            signRequestParams.setExtraOnTop(signRequestParamses.get(i).getExtraOnTop());
-            if (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > i) {
-                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().set(i, signRequestParams);
-            } else {
-                signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().add(signRequestParams);
-            }
-            if (signRequest.getSignRequestParams().size() <= i) {
-                signRequest.getSignRequestParams().add(signRequestParams);
-            }
+    @Transactional
+    public void copySignRequestParams(Long signRequestId, List<SignRequestParams> signRequestParamses) {
+        SignRequest signRequest = signRequestRepository.findById(signRequestId).get();
+        signRequest.getSignRequestParams().clear();
+        for (SignRequestParams requestParams : signRequestParamses) {
+            SignRequestParams signRequestParams = createSignRequestParams(requestParams.getSignPageNumber(), requestParams.getxPos(), requestParams.getyPos());
+            signRequestParams.setSignImageNumber(requestParams.getSignImageNumber());
+            signRequestParams.setPdSignatureFieldName(requestParams.getPdSignatureFieldName());
+            signRequestParams.setSignScale(requestParams.getSignScale());
+            signRequestParams.setSignWidth(requestParams.getSignWidth());
+            signRequestParams.setSignHeight(requestParams.getSignHeight());
+            signRequestParams.setExtraType(requestParams.getExtraType());
+            signRequestParams.setExtraName(requestParams.getExtraName());
+            signRequestParams.setExtraDate(requestParams.getExtraDate());
+            signRequestParams.setExtraText(requestParams.getExtraText());
+            signRequestParams.setAddExtra(requestParams.getAddExtra());
+            signRequestParams.setTextPart(requestParams.getTextPart());
+            signRequestParams.setAddWatermark(requestParams.getAddWatermark());
+            signRequestParams.setAllPages(requestParams.getAllPages());
+            signRequestParams.setExtraOnTop(requestParams.getExtraOnTop());
+            signRequest.getSignRequestParams().add(signRequestParams);
         }
     }
 

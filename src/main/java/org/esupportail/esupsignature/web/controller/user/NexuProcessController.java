@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.Report;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -31,9 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @CrossOrigin(allowedHeaders = "Content-Type", origins = "*")
 @Controller
@@ -72,16 +69,15 @@ public class NexuProcessController implements Serializable {
 	@GetMapping(value = "/start", produces = "text/html")
 	public String startNexuProcess(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 								   @RequestParam("ids") List<Long> ids, Model model) {
-		Set<Long> allIds = new HashSet<>();
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
 			signRequestService.deleteNexu(id);
-			SignRequest signRequest = signRequestService.getById(id);
-			allIds.addAll(signRequest.getParentSignBook().getSignRequests().stream().map(SignRequest::getId).toList());
+//			SignRequest signRequest = signRequestService.getById(id);
+//			allIds.addAll(signRequest.getParentSignBook().getSignRequests().stream().map(SignRequest::getId).toList());
 		}
-		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + allIds);
-		model.addAttribute("ids", allIds.stream().toList());
-		model.addAttribute("id", allIds.stream().toList().get(0));
+		logger.info("init nexu sign by : " + userEppn + " for signRequest : " + ids);
+		model.addAttribute("ids", ids);
+		model.addAttribute("id", ids.get(0));
 		if(ids.size() > 1) {
 			Report report = reportService.createReport(authUserEppn);
 			model.addAttribute("massSignReportId", report.getId());
