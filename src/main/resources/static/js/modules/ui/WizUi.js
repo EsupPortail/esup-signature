@@ -160,7 +160,8 @@ export class WizUi {
             } else {
                 $("#update-fast-sign-submit").click();
                 self.enableButtons();
-            }        });
+            }
+        });
         this.input.on("fileuploaderror", e => function (e) {
             alert(e);
         });
