@@ -21,6 +21,7 @@ export class UserSignaturePad {
     initListeners() {
         this.canvas.on('mousedown', e => this.firstClearSignaturePad());
         this.canvas.on('touchstart', e => this.firstClearSignaturePad());
+        this.canvas.on('click', e => this.firstClearSignaturePad());
         $('#erase').click(e => this.clear());
         // $('#validate').click(e => this.saveSignaturePad());
         // $('#reset').click(e => this.resetSignaturePad());
@@ -65,6 +66,8 @@ export class UserSignaturePad {
         if (this.firstClear) {
             this.clear();
             this.firstClear = false;
+        } else {
+            $("#signPadTip").hide();
         }
         this.setLastSign();
     }
@@ -79,6 +82,7 @@ export class UserSignaturePad {
     clear() {
         console.info("clear sign pad");
         this.signaturePad.clear();
+        $("#signPadTip").show();
     }
 
 }
