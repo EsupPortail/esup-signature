@@ -488,7 +488,7 @@ export class SignRequestParams extends EventFactory {
         }
 
         this.cross.css("position", "absolute");
-        this.cross.css("z-index", "100");
+        this.cross.css("z-index", "1028");
         this.cross.attr("data-id", this.id);
 
     }
@@ -835,7 +835,7 @@ export class SignRequestParams extends EventFactory {
     show() {
         this.cross.css('opacity', '1');
         this.cross.draggable("enable");
-        this.cross.css("z-index", 5);
+        this.cross.css("z-index", 1028);
     }
 
     hide() {

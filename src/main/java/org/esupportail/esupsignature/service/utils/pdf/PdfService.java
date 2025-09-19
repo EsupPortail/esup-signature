@@ -927,7 +927,7 @@ public class PdfService {
                 pdAcroForm.setDefaultResources(resources);
                 List<PDField> fields = pdAcroForm.getFields();
                 for(PDField pdField : fields) {
-                    if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
+                    if(workflow != null && pdField.getClass().getPackageName().contains("org.apache.pdfbox.pdmodel.interactive.form") && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
                         String className = "org.apache.pdfbox.pdmodel.interactive.form.PD" + extractTextInBrackets(workflow.getSignRequestParamsDetectionPattern());
                         try {
                             Class<?> pdFieldClass = Class.forName(className);
@@ -940,7 +940,7 @@ public class PdfService {
                                 }
                             }
                         } catch (ClassNotFoundException e) {
-                            logger.warn("error on remove sign field", e);
+                            logger.debug("error on remove sign field", e);
                         }
                     }
                 }

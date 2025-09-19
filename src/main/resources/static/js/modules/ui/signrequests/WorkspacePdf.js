@@ -708,12 +708,14 @@ export class WorkspacePdf {
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
-                        if(signWidth / signHeight <= 2) {
-                            ui.size.width = parseInt(signSpaceDiv.css("width"));
-                            ui.size.height = height * (ui.size.width / width);
-                        } else {
-                            ui.size.height = parseInt(signSpaceDiv.css("height"));
-                            ui.size.width = width * (ui.size.height / height);
+                        let maxWidth  = parseInt(signSpaceDiv.css("width"));
+                        let maxHeight = parseInt(signSpaceDiv.css("height"));
+                        let ratio = width / height;
+                        ui.size.width  = maxWidth;
+                        ui.size.height = ui.size.width / ratio;
+                        if (ui.size.height > maxHeight) {
+                            ui.size.height = maxHeight;
+                            ui.size.width  = ui.size.height * ratio;
                         }
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
