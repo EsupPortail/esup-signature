@@ -753,8 +753,12 @@ textarea:placeholder-shown.required-field {
     transition: background-image 0.2s ease-in-out;
 }
 
-.cross-error {
+.cross-warning {
     background-color: rgba(255, 223, 151, 0.57) !important;
+}
+
+.cross-danger {
+    background-color: rgba(255, 151, 151, 0.75) !important;
 }
 
 .sign-textarea {

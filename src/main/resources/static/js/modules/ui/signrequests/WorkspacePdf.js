@@ -717,6 +717,8 @@ export class WorkspacePdf {
                             ui.size.height = maxHeight;
                             ui.size.width  = ui.size.height * ratio;
                         }
+                        ui.size.width = ui.size.width - 2;
+                        ui.size.height = ui.size.height - 2;
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
