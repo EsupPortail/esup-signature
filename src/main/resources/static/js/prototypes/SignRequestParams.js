@@ -596,8 +596,8 @@ export class SignRequestParams extends EventFactory {
         this.cross.draggable({
             containment: "#pdf",
             snap: ".pdf-page",
-            snapMode: "both",    // inner, outer ou both
-            snapTolerance: 20,    // distance en px avant que ça accroche
+            snapMode: "inner",
+            snapTolerance: 20,
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
