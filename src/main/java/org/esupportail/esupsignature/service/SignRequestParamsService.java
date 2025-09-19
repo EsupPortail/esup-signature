@@ -224,7 +224,7 @@ public class SignRequestParamsService {
                                 }
                             }
                         } catch (ClassNotFoundException e) {
-                            logger.warn("error on get sign fields");
+                            logger.debug("error on get sign fields");
                         }
                     }
                 }
