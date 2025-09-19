@@ -128,17 +128,17 @@ export class PdfViewer extends EventFactory {
                 tolerance: "touch",
                 drop: function( event, ui ) {
                     if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-error");
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
                     }
                 },
                 over: function( event, ui ) {
                     if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-error");
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).addClass("cross-warning");
                     }
                 },
                 out: function( event, ui ) {
                     if($(ui.draggable).attr("id") != null && ($(ui.draggable).attr("id").includes("cross_") || $($(ui.draggable).attr("id").includes("border_")))) {
-                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).removeClass("cross-error");
+                        $("#border_" + $(ui.draggable).attr("id").split("_")[1]).removeClass("cross-warning");
                     }
                 }
             });
