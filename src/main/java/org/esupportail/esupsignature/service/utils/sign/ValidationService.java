@@ -111,6 +111,10 @@ public class ValidationService {
             || !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
             || (!certificateToken.isValidOn(new Date()) && certificateVerifier.getAlertOnExpiredCertificate() instanceof SilentOnStatusAlert)) {
             logger.warn("LT or LTA signature level not supported, switching to T level");
+            logger.debug("containsBadSignature : " + containsBadSignature);
+            logger.debug("revocationToken null : " + (revocationToken == null));
+            logger.debug("revocationToken ok : " + !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken));
+            logger.debug("certificat valid : " + (!certificateToken.isValidOn(new Date()) && certificateVerifier.getAlertOnExpiredCertificate() instanceof SilentOnStatusAlert));
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
                 String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
                 newLevel = newLevel.replace("_LT", "_T");
