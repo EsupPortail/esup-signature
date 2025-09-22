@@ -488,7 +488,7 @@ export class SignRequestParams extends EventFactory {
         }
 
         this.cross.css("position", "absolute");
-        this.cross.css("z-index", "100");
+        this.cross.css("z-index", "1028");
         this.cross.attr("data-id", this.id);
 
     }
@@ -595,6 +595,9 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.draggable({
             containment: "#pdf",
+            snap: ".pdf-page",
+            snapMode: "inner",
+            snapTolerance: 20,
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
@@ -604,8 +607,32 @@ export class SignRequestParams extends EventFactory {
                 self.tools.addClass("d-none");
             },
             stop: function(event, ui) {
+                const dragRect = this.getBoundingClientRect();
+                let inside = false;
+                $(".pdf-page").each(function() {
+                    const pageRect = this.getBoundingClientRect();
+                    if (
+                        dragRect.left   >= pageRect.left &&
+                        dragRect.top    >= pageRect.top &&
+                        dragRect.right  <= pageRect.right &&
+                        dragRect.bottom <= pageRect.bottom
+                    ) {
+                        inside = true;
+                        return false; // break
+                    }
+                });
+
+                if (!inside) {
+                    console.log("La signature n'est pas entièrement dans une page !");
+                    $("#signLaunchButton").attr("disabled", "disabled");
+                    self.border.addClass("cross-danger");
+                } else {
+                    $("#signLaunchButton").removeAttr("disabled");
+                    self.border.removeClass("cross-danger");
+                }
+
                 self.tools.removeClass("d-none");
-                if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-error") && self.firstCrossAlert) {
+                if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && self.firstCrossAlert) {
                     self.firstCrossAlert = false;
                     bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
                 }
@@ -835,7 +862,7 @@ export class SignRequestParams extends EventFactory {
     show() {
         this.cross.css('opacity', '1');
         this.cross.draggable("enable");
-        this.cross.css("z-index", 5);
+        this.cross.css("z-index", 1028);
     }
 
     hide() {
