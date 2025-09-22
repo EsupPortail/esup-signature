@@ -84,7 +84,7 @@
                                                 <button class="btn btn-sm"
                                                         title="Envoyer un nouveau lien d'accès"
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                        th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                                                        th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber && isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                                     <i class="fa-solid fa-key"></i></button>
                                             </td>
                                         </tr>
