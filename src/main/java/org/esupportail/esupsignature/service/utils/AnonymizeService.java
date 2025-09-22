@@ -11,37 +11,26 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service permettant d'anonymiser un utilisateur dans le système.
+ */
 @Service
 public class AnonymizeService {
 
     private final SignBookService signBookService;
-    
     private final UserService userService;
-    
     private final WorkflowService workflowService;
-    
     private final WorkflowStepService workflowStepService;
-    
     private final LogService logService;
-    
     private final UserPropertieService userPropertieService;
-    
     private final CommentService commentService;
-    
     private final DataService dataService;
-    
     private final UserShareService userShareService;
-    
     private final RecipientService recipientService;
-    
     private final ReportService reportService;
-    
     private final FieldPropertieService fieldPropertieService;
-    
     private final SignRequestService signRequestService;
-    
     private final MessageService messageService;
-    
     private final DocumentService documentService;
 
     public AnonymizeService(SignBookService signBookService, UserService userService, WorkflowService workflowService, WorkflowStepService workflowStepService, LogService logService, UserPropertieService userPropertieService, CommentService commentService, DataService dataService, UserShareService userShareService, RecipientService recipientService, ReportService reportService, FieldPropertieService fieldPropertieService, SignRequestService signRequestService, MessageService messageService, DocumentService documentService) {
@@ -62,6 +51,14 @@ public class AnonymizeService {
         this.documentService = documentService;
     }
 
+    /**
+     * Anonymise un utilisateur en supprimant ses données personnelles et en les remplaçant par celles d'un utilisateur anonyme.
+     *
+     * @param id l'identifiant de l'utilisateur à anonymiser
+     * @param force indique si l'anonymisation doit être forcée même si l'utilisateur a des demandes en cours (true pour forcer, false ou null pour vérifier les demandes en cours
+     * )
+     * @throws EsupSignatureUserException si l'utilisateur possède des demandes en cours et que l'anonymisation ne peut pas être forcée
+     */
     @Transactional
     public void anonymize(Long id, Boolean force) throws EsupSignatureUserException {
         User user = userService.getById(id);
