@@ -36,6 +36,7 @@ import org.esupportail.esupsignature.dss.model.SignatureMultipleDocumentsForm;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.CertificatService;
@@ -54,7 +55,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -128,7 +128,7 @@ public class SignService {
 			} else if(signWith.equals(SignWith.groupCert)){
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else if ((signWith.equals(SignWith.sealCert) && (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system"))) {
+			} else if ((signWith.equals(SignWith.sealCert) && (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals()))) {
 				try {
 					if(!userEppn.equals("system") || certificatService.getOpenSCKey() != null || StringUtils.hasText(globalProperties.getSealCertificatFile())) {
 						abstractKeyStoreTokenConnection = certificatService.getSealToken();
