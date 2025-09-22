@@ -15,11 +15,15 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * La classe DataService fournit des services pour gérer les objets Data
+ * et effectuer des opérations connexes telles que la récupération, la mise à jour,
+ * la suppression et la génération de fichiers PDF basés sur des formulaires et leurs données associées.
+ */
 @Service
 public class DataService {
 
@@ -43,20 +47,44 @@ public class DataService {
     @Resource
     private FieldPropertieService fieldPropertieService;
 
+    /**
+     * Récupère un objet Data à partir de son identifiant.
+     * Si aucune donnée n'est trouvée pour l'identifiant donné, une exception est levée.
+     *
+     * @param dataId l'identifiant unique de l'objet Data à récupérer
+     * @return l'objet Data trouvé correspondant à l'identifiant donné
+     * @throws NoSuchElementException si aucune donnée correspondante n'est trouvée
+     */
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).orElseThrow();
     }
 
+    /**
+     * Récupère un objet Data associé à une SignRequest donnée en utilisant
+     * son SignBook parent pour effectuer la recherche.
+     *
+     * @param signRequest l'objet SignRequest pour lequel récupérer l'objet Data associé
+     * @return l'objet Data correspondant au SignBook parent de la SignRequest donnée
+     */
     public Data getBySignRequest(SignRequest signRequest) {
         return getBySignBook(signRequest.getParentSignBook());
     }
 
-
-
+    /**
+     * Récupère les données associées à un livre des signatures donné.
+     *
+     * @param signBook le livre des signatures dont les données doivent être récupérées
+     * @return les données liées au livre des signatures donné
+     */
     public Data getBySignBook(SignBook signBook) {
         return dataRepository.findBySignBook(signBook);
     }
 
+    /**
+     * Supprime l'entité Data associée à un SignBook spécifique.
+     *
+     * @param signBook le SignBook pour lequel l'entité Data associée doit être supprimée
+     */
     public void deleteBySignBook(SignBook signBook) {
         Data data = getBySignBook(signBook);
         if(data != null) {
@@ -64,6 +92,16 @@ public class DataService {
         }
     }
 
+    /**
+     * Met à jour les données fournies en fonction du formulaire, des données déjà existantes et de l'utilisateur authentifié.
+     *
+     * @param form Le formulaire contenant les champs et les métadonnées nécessaires.
+     * @param data L'objet Data existant à mettre à jour.
+     * @param formDatas Une carte clé-valeur contenant les données saisies ou générées liées au formulaire.
+     * @param user L'utilisateur principal effectuant l'opération.
+     * @param authUser L'utilisateur authentifié exécutant la mise à jour.
+     * @return Un objet Data mis à jour avec les nouvelles informations.
+     */
     public Data updateDatas(Form form, Data data, Map<String, String> formDatas, User user, User authUser) {
         SignBook signBook = data.getSignBook();
         List<Field> fields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), form.getFields(), user, data.getSignBook().getSignRequests().get(0));
@@ -105,21 +143,16 @@ public class DataService {
         return data;
     }
 
-    public Data cloneData(Data data, String authUserEppn) {
-        User authUser = userService.getByEppn(authUserEppn);
-        Form form = formService.getFormByNameAndActiveVersion(data.getForm().getName(), true).get(0);
-        Data cloneData = new Data();
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-        cloneData.setName(format.format(new Date()) + "_" + form.getTitle());
-        cloneData.setStatus(SignRequestStatus.draft);
-        cloneData.setCreateBy(authUser);
-        cloneData.setCreateDate(new Date());
-        cloneData.getDatas().putAll(data.getDatas());
-        cloneData.setForm(form);
-        dataRepository.save(cloneData);
-        return cloneData;
-    }
-
+    /**
+     * Génère un fichier PDF basé sur un modèle et des données fournies.
+     * Si un InputStream est disponible, il sera utilisé comme modèle.
+     * Sinon, le document associé au formulaire des données sera utilisé comme modèle.
+     *
+     * @param data l'objet contenant les données et le formulaire à utiliser pour générer le fichier
+     * @param inputStream le flux d'entrée des données du modèle PDF (peut être null)
+     * @return un tableau de bytes représentant le fichier PDF généré, ou null si aucun modèle PDF n'est disponible
+     * @throws IOException si une erreur d'entrée/sortie se produit lors de la génération du fichier
+     */
     public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
@@ -132,25 +165,16 @@ public class DataService {
         return null;
     }
 
-    public List<Field> getPrefilledFields(Form form, User user, SignRequest signRequest) {
-        List<Field> prefilledFields;
-        if (form.getPreFillType() != null && !form.getPreFillType().isEmpty()) {
-            List<Field> fields = new ArrayList<>(form.getFields());
-            prefilledFields = preFillService.getPreFilledFieldsByServiceName(form.getPreFillType(), fields, user, signRequest);
-            for (Field field : prefilledFields) {
-                if(field.getName().equals("Su_DateSign")) {
-                    logger.info("test");
-                }
-                if(!field.getStepZero()) {
-                    field.setDefaultValue("");
-                }
-            }
-        } else {
-            prefilledFields = form.getFields();
-        }
-        return prefilledFields;
-    }
-
+    /**
+     * Ajoute ou met à jour des données dans un formulaire.
+     *
+     * @param id L'identifiant du formulaire auquel les données sont associées.
+     * @param dataId L'identifiant des données à mettre à jour, ou null si de nouvelles données doivent être créées.
+     * @param datas Une map contenant les données à ajouter ou à mettre à jour, avec les clés et valeurs correspondantes.
+     * @param userEppn L'identifiant eppn de l'utilisateur initiateur de l'opération.
+     * @param authUserEppn L'identifiant eppn de l'utilisateur authentifié réalisant l'opération.
+     * @return L'objet Data mis à jour ou créé, correspondant aux données fournies.
+     */
     @Transactional
     public Data addData(Long id, Long dataId, Map<String, String> datas, String userEppn, String authUserEppn) {
         Form form = formService.getById(id);
@@ -165,6 +189,13 @@ public class DataService {
         return updateDatas(form, data, datas, user, authUser);
     }
 
+    /**
+     * Ajoute une nouvelle instance de Data en la liant à un formulaire existant et à un utilisateur authentifié.
+     *
+     * @param formId l'identifiant du formulaire auquel la donnée sera associée
+     * @param authUserEppn l'identifiant ePPN de l'utilisateur authentifié qui crée la donnée
+     * @return l'objet Data nouvellement créé et enregistré en base de données
+     */
     @Transactional
     public Data addData(Long formId, String authUserEppn) {
         User authUser = userService.getByEppn(authUserEppn);
@@ -182,12 +213,25 @@ public class DataService {
         return data;
     }
 
-    public void deleteOnlyData(Long id) {
+    /**
+     * Supprime une instance de Data identifiée par son ID.
+     *
+     * @param id l'identifiant unique de l'instance de Data à supprimer
+     */
+    @Transactional
+    public void delete(Long id) {
         Data data = dataRepository.findById(id).get();
         data.setForm(null);
         dataRepository.delete(data);
     }
 
+    /**
+     * Anonymise les données associées à un utilisateur spécifique en modifiant les références
+     * à cet utilisateur par une entité utilisateur anonyme.
+     *
+     * @param userEppn Identifiant unique (eppn) de l'utilisateur dont les données doivent être anonymisées.
+     * @param anonymous Entité utilisateur anonyme qui remplacera l'utilisateur existant dans les données.
+     */
     @Transactional
     public void anonymize(String userEppn, User anonymous) {
         User user = userService.getByEppn(userEppn);

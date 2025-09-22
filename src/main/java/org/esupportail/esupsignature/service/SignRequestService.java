@@ -928,7 +928,7 @@ public class SignRequestService {
 		if (signRequest.getData() != null) {
 			Long dataId = signRequest.getData().getId();
 			signRequest.setData(null);
-			dataService.deleteOnlyData(dataId);
+			dataService.delete(dataId);
 		}
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).toList();
 		for (Long commentId : commentsIds) {

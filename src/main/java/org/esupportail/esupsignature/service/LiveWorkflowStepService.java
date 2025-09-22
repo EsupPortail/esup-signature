@@ -32,17 +32,15 @@ public class LiveWorkflowStepService {
     private final LiveWorkflowStepRepository liveWorkflowStepRepository;
     private final RecipientService recipientService;
     private final UserService userService;
-    private final SignTypeService signTypeService;
     private final SignRequestService signRequestService;
     private final SignBookRepository signBookRepository;
     private final ActionService actionService;
     private final OtpService otpService;
 
-    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignTypeService signTypeService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService) {
+    public LiveWorkflowStepService(LiveWorkflowStepRepository liveWorkflowStepRepository, RecipientService recipientService, UserService userService, SignRequestService signRequestService, SignBookRepository signBookRepository, ActionService actionService, OtpService otpService) {
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.recipientService = recipientService;
         this.userService = userService;
-        this.signTypeService = signTypeService;
         this.signRequestService = signRequestService;
         this.signBookRepository = signBookRepository;
         this.actionService = actionService;
@@ -185,7 +183,7 @@ public class LiveWorkflowStepService {
 
     public void delete(Long id) {
         Optional<LiveWorkflowStep> liveWorkflowStep = liveWorkflowStepRepository.findById(id);
-        liveWorkflowStep.ifPresent(workflowStep -> liveWorkflowStepRepository.delete(workflowStep));
+        liveWorkflowStep.ifPresent(liveWorkflowStepRepository::delete);
     }
 
     public List<LiveWorkflowStep> getLiveWorkflowStepByWorkflowStep(WorkflowStep workflowStep) {
