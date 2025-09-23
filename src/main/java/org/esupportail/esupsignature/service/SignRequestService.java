@@ -1026,8 +1026,12 @@ public class SignRequestService {
 						//TODO envoi mail spécifique
 					} else if (tempUser.getUserType().equals(UserType.external)) {
 						RecipientWsDto recipientWsDto = recipients.stream().filter(recipientWsDto1 -> recipientWsDto1.getEmail().toLowerCase().equals(tempUser.getEmail().toLowerCase(Locale.ROOT))).findFirst().get();
-						tempUser.setFirstname(recipientWsDto.getFirstName());
-						tempUser.setName(recipientWsDto.getName());
+                        if(StringUtils.hasText(recipientWsDto.getFirstName())) {
+                            tempUser.setFirstname(recipientWsDto.getFirstName());
+                        }
+                        if(StringUtils.hasText(recipientWsDto.getName())) {
+                            tempUser.setName(recipientWsDto.getName());
+                        }
 						if(StringUtils.hasText(recipientWsDto.getPhone())) {
 							userService.updatePhone(tempUser.getEppn(), recipientWsDto.getPhone());
 						}
