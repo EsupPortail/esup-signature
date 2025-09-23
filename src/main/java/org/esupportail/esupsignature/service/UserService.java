@@ -814,7 +814,13 @@ public class UserService {
                 throw new RuntimeException(e);
             }
         }
-        user.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
+        String phoneNormalized = PhoneNumberUtil.normalizeDiallableCharsOnly(phone);
+        User checkUser = getUserByPhone(phoneNormalized);
+        if(user.equals(checkUser)) {
+            throw new EsupSignatureRuntimeException("Le numéro de téléphone est déjà présent dans la base");
+        } else {
+            user.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
+        }
     }
 
     public List<String> getAllRoles() {
