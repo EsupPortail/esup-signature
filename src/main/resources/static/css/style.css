@@ -6,7 +6,6 @@ html {
     * {
         scrollbar-color: #E10F46 transparent;
         scrollbar-track-color: transparent;
-        scrollbar-gutter: stable;
         scrollbar-width: unset;
     }
 }

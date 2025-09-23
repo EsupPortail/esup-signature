@@ -294,12 +294,6 @@ header {
     position: relative;
 }
 
-.crop {
-    overflow: hidden;
-    margin: 0;
-    padding-bottom: 10px;
-}
-
 #signPad {
     display:block;
     position: relative;
