@@ -389,6 +389,7 @@ public class WorkflowService {
             entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
+            logger.warn(e.getMessage(), e);
             throw new EsupSignatureRuntimeException("compute workflow error", e);
         }
     }

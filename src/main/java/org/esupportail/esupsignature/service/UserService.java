@@ -814,7 +814,24 @@ public class UserService {
                 throw new RuntimeException(e);
             }
         }
-        user.setPhone(PhoneNumberUtil.normalizeDiallableCharsOnly(phone));
+        String phoneNormalized = PhoneNumberUtil.normalizeDiallableCharsOnly(phone);
+        User checkUser = getUserByPhone(phoneNormalized);
+        if(checkUser == null) {
+            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+            try {
+                Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNormalized, "FR");
+                String national = phoneUtil.format(number, PhoneNumberUtil.PhoneNumberFormat.NATIONAL);
+                String digitsOnly = national.replaceAll("\\s+", "");
+                checkUser = getUserByPhone(digitsOnly);
+            } catch (NumberParseException e) {
+                throw new EsupSignatureRuntimeException(e.getMessage());
+            }
+        }
+        if(checkUser != null && !user.equals(checkUser)) {
+            throw new EsupSignatureRuntimeException("Le numéro de téléphone est déjà présent dans la base");
+        } else {
+            user.setPhone(phoneNormalized);
+        }
     }
 
     public List<String> getAllRoles() {

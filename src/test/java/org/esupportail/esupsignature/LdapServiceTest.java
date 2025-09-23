@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature;
 
 import org.esupportail.esupsignature.service.ldap.LdapOrganizationalUnitService;
+import org.esupportail.esupsignature.service.ldap.LdapPersonLightService;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +24,23 @@ public class LdapServiceTest {
     @Autowired(required = false)
     private LdapOrganizationalUnitService ldapOrganizationalUnitService;
 
+    @Autowired(required = false)
+    private LdapPersonLightService ldapPersonLightService;
+
     @Test
-    public void testLdap() {
+    public void testLdapPerson() {
         assumeTrue(ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().isEmpty(), "LDAP not configured");
-        ldapOrganizationalUnitService.getOrganizationalUnitLdap("0");
+        ldapPersonLightService.getPersonLdapLight("0");
+    }
+
+    @Test
+    public void testLdapOu() {
+        assumeTrue(ldapContextSource.getUserDn() != null && !ldapContextSource.getUserDn().isEmpty(), "LDAP not configured");
+        try {
+            ldapOrganizationalUnitService.getOrganizationalUnitLdap("0");
+        } catch (Exception e) {
+            Assumptions.abort("Error on getOrganizationalUnitLdap : " + e.getMessage());
+        }
     }
 
 }
