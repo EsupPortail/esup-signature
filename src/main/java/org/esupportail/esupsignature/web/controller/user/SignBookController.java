@@ -406,18 +406,17 @@ public class SignBookController {
     @GetMapping(value = "/download-multiple", produces = "application/zip")
     @ResponseBody
     public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
-        httpServletResponse.setContentType("application/zip");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
         try {
             for(Long id : ids) {
                 if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) throw new EsupSignatureException("access denied");
             }
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
+            httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+            httpServletResponse.flushBuffer();
         } catch (Exception e) {
             logger.error("error while downloading multiple documents", e);
+            httpServletResponse.sendError(404);
         }
-        httpServletResponse.flushBuffer();
     }
 
     @ResponseBody

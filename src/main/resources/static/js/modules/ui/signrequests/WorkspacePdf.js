@@ -584,19 +584,37 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('title') !== undefined) {
+                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
-                            bootbox.confirm("Supprimer cette annotation ?", function (result) {
-                                if (result) {
-                                    $.ajax({
-                                        method: 'DELETE',
-                                        url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-                                        success: function () {
-                                            document.location.reload();
-                                            $("#addSpotButton").attr("disabled", false);
-                                        }
-                                    });
+                            bootbox.confirm({
+                                title: postitDiv.attr("es-comment-title"),
+                                message: postitDiv.attr("es-comment-text"),
+                                buttons: {
+                                    confirm: {
+                                        label: 'Supprimer',
+                                        className: 'btn-danger'
+                                    },
+                                    cancel: {
+                                        label: 'Fermer',
+                                        className: 'btn-secondary'
+                                    }
+                                },
+                                callback: function (result) {
+                                    if (result) {
+                                        bootbox.confirm('Confirmer la suppression', function (result2){
+                                            if(result2) {
+                                                $.ajax({
+                                                    method: 'DELETE',
+                                                    url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                                    success: function () {
+                                                        document.location.reload();
+                                                        $("#addSpotButton").attr("disabled", false);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
                                 }
                             });
                         });
