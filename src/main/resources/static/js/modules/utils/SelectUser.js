@@ -49,6 +49,24 @@ export default class SelectUser {
     initListeners() {
     }
 
+    bindEnterKeyPress() {
+        this.slimSelect.render.content.search.input.removeEventListener('keydown', (e) => this.enterkeyPressAction(e))
+        this.slimSelect.render.content.search.input.addEventListener('keydown', (e) => this.enterkeyPressAction(e));
+    }
+
+    enterkeyPressAction(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            this.slimSelect.render.content.list.querySelectorAll("div").forEach(item => {
+                console.info(item);
+                const highlighted = item.classList.contains(this.slimSelect.render.classes.highlighted);
+                if (highlighted) {
+                    item.click();
+                }
+            });
+        }
+    }
+
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
@@ -149,6 +167,8 @@ export default class SelectUser {
         this.selectField.css("height", 38);
         this.selectField.css("opacity", 0);
         this.selectField.css("z-index", -1);
+        this.bindEnterKeyPress();
+
     }
 
     getSelected() {
@@ -158,6 +178,8 @@ export default class SelectUser {
     checkSelect(emails) {
         console.log(emails);
         this.slimSelect.setData(emails);
+        this.bindEnterKeyPress();
+
     }
 
     displayTempUsers(e) {
@@ -398,6 +420,7 @@ export default class SelectUser {
                 }
             }
         }
+        this.bindEnterKeyPress();
         // if(this.favorites.length > 0) {
         //     this.slimSelect.setData(this.favorites);
         //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);

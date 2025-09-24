@@ -72,7 +72,7 @@ export class GlobalUi {
             const modal = e.target;
             const focusable = Array.from(
                 modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-            ).filter(el => !el.disabled && el.offsetParent !== null);
+            ).filter(el => !el.disabled && el.offsetParent !== null && el.hasAttribute("autofocus"));
 
             if (focusable) {
                 const last = focusable.at(-1);

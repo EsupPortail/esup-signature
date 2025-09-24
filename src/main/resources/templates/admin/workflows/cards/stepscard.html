@@ -77,10 +77,10 @@
                                 <div th:id="'conf_' + ${workflowStep.id}" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
                                     <div class="form-group mb-3">
                                         <label>Nombre maximum de participants:</label>
-                                        <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}"/>
+                                        <input name="maxRecipients" type="number" class="form-control" th:value="${workflowStep.maxRecipients}" />
                                     </div>
                                     <div class="form-check form-switch form-switch-md">
-                                        <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}"/>
+                                        <input type="checkbox" class="form-check-input" id="changeable" name="changeable" th:checked="${workflowStep.changeable}" autofocus>
                                         <label for="changeable" class="form-check-label">
                                             Le créateur du circuit pourra modifier les participants de cette étape
                                         </label>
