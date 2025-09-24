@@ -68,7 +68,7 @@
         <input type="submit" id="wiz-step-form-submit" class="d-none">
         <div class="col-12">
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() == 0}" class="form-group form-switch form-switch-md mb-3">
-                <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst"/>
+                <input type="checkbox" class="form-check-input" name="userSignFirst" id="userSignFirst" autofocus>
                 <label for="userSignFirst" class="form-check-label">
                     Je dois signer ce document avant l’envoi
                 </label>

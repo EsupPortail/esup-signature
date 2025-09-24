@@ -608,28 +608,7 @@ export class SignRequestParams extends EventFactory {
             },
             stop: function(event, ui) {
                 const dragRect = this.getBoundingClientRect();
-                let inside = false;
-                $(".pdf-page").each(function() {
-                    const pageRect = this.getBoundingClientRect();
-                    if (
-                        dragRect.left   >= pageRect.left &&
-                        dragRect.top    >= pageRect.top &&
-                        dragRect.right  <= pageRect.right &&
-                        dragRect.bottom <= pageRect.bottom
-                    ) {
-                        inside = true;
-                        return false; // break
-                    }
-                });
-
-                if (!inside) {
-                    console.log("La signature n'est pas entièrement dans une page !");
-                    $("#signLaunchButton").attr("disabled", "disabled");
-                    self.border.addClass("cross-danger");
-                } else {
-                    $("#signLaunchButton").removeAttr("disabled");
-                    self.border.removeClass("cross-danger");
-                }
+                self.checkInside(dragRect, self);
 
                 self.tools.removeClass("d-none");
                 if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && self.firstCrossAlert) {
@@ -648,6 +627,31 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         });
+    }
+
+    checkInside(dragRect, self) {
+        let inside = false;
+        $(".pdf-page").each(function () {
+            const pageRect = this.getBoundingClientRect();
+            if (
+                dragRect.left + 10 >= pageRect.left &&
+                dragRect.top + 10 >= pageRect.top &&
+                dragRect.right - 10 <= pageRect.right &&
+                dragRect.bottom - 10 <= pageRect.bottom
+            ) {
+                inside = true;
+                return false;
+            }
+        });
+
+        if (!inside) {
+            console.log("La signature n'est pas entièrement dans une page !");
+            $("#signLaunchButton").attr("disabled", "disabled");
+            self.border.addClass("cross-danger");
+        } else {
+            $("#signLaunchButton").removeAttr("disabled");
+            self.border.removeClass("cross-danger");
+        }
     }
 
     madeCrossResizable() {
@@ -672,6 +676,9 @@ export class SignRequestParams extends EventFactory {
                 if(self.isSign) {
                     localStorage.setItem("zoom", self.signScale);
                 }
+                const dragRect = this.getBoundingClientRect();
+                self.checkInside(dragRect, self);
+
             }
         });
     }

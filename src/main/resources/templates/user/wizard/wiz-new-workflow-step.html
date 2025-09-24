@@ -64,7 +64,7 @@
         <input type="submit" id="wiz-step-form-submit" class="d-none">
         <input th:if="${workflow != null}" type="hidden" id="workflowId" name="workflowId" th:value="${workflow.id}">
         <div class="form-check form-switch form-switch-md">
-            <input type="checkbox" class="form-check-input" id="changeable-1" name="changeable" onclick="if(this.checked) {$('#recipientsEmails-1').attr('required', false);} else {$('#recipientsEmails-1').attr('required', true);}"/>
+            <input type="checkbox" class="form-check-input" id="changeable-1" name="changeable" onclick="if(this.checked) {$('#recipientsEmails-1').attr('required', false);} else {$('#recipientsEmails-1').attr('required', true);}" autofocus>
             <label for="changeable-1" class="form-check-label">
                 Le créateur du circuit pourra modifier les participants de cette étape
             </label>
@@ -80,7 +80,7 @@
                 <label class="form-check-label" for="all-sign-to-complete-1">
                     Tous les participants doivent-ils signer ?
                 </label>
-                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
+                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete">
             </div>
         </div>
         <div class="align-self-start">
