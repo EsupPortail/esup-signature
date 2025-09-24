@@ -107,7 +107,7 @@ public class ManageController {
             recipientsFilter = null;
         }
         Workflow workflow = workflowService.getById(id);
-        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
