@@ -204,6 +204,14 @@ public class OtpService {
         return new String(Hex.encode(hash));
     }
 
+    /**
+     * Nettoie les OTP (One-Time Passwords) terminés, expirés ou associés à des demandes supprimées, refusées ou exportées.
+     *
+     * Cette méthode effectue les opérations suivantes :
+     * - Récupère tous les OTP associés à des demandes avec un état "SignRequestStatus.deleted", "SignRequestStatus.refused" ou "SignRequestStatus.exported".
+     * - Ajoute les OTP associés à des demandes terminées si la date de fin de leur demande est antérieure à 30 jours par rapport à la date actuelle.
+     * - Supprime ces OTP des données persistantes en appelant `clearOTP` pour nettoyer leurs identifiants (URL) et les retirer via le référentiel `otpRepository`.
+     */
     @Transactional
     public void cleanEndedOtp(){
         List<Otp> toCleanOtps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);

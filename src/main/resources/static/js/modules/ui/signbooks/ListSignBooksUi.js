@@ -257,7 +257,12 @@ export class ListSignBooksUi {
             i++;
         });
         if (ids.length > 0) {
-            window.open("/" + this.mode + "/signbooks/download-multiple?ids=" + ids, "_blank");
+            const a = document.createElement("a");
+            a.href = `/${this.mode}/signbooks/download-multiple?ids=${ids}`;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
     }
 
@@ -270,7 +275,12 @@ export class ListSignBooksUi {
             i++;
         });
         if (ids.length > 0) {
-            window.open("/" + this.mode + "/signbooks/download-multiple-with-report?ids=" + ids, "_blank");
+            const a = document.createElement("a");
+            a.href = `/${this.mode}/signbooks/download-multiple-with-report?ids=${ids}`;
+            a.download = "";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
         }
     }
 
