@@ -402,14 +402,16 @@ public class WorkflowService {
                 String userEmail = recipient.getEmail();
                 for(String realUserEmail : recipientService.getAllRecipientsEmails(Collections.singletonList(new RecipientWsDto(userEmail)))) {
                     User user = userService.getUserByEmail(realUserEmail);
-                    if(StringUtils.hasText(recipient.getPhone())) {
-                        userService.updatePhone(user.getEppn(), recipient.getPhone());
-                    }
-                    if(StringUtils.hasText(recipient.getName())) {
-                        user.setName(recipient.getName());
-                    }
-                    if(StringUtils.hasText(recipient.getFirstName())) {
-                        user.setFirstname(recipient.getFirstName());
+                    if(user.getUserType().equals(UserType.external)) {
+                        if (StringUtils.hasText(recipient.getPhone())) {
+                            userService.updatePhone(user.getEppn(), recipient.getPhone());
+                        }
+                        if (StringUtils.hasText(recipient.getName())) {
+                            user.setName(recipient.getName());
+                        }
+                        if (StringUtils.hasText(recipient.getFirstName())) {
+                            user.setFirstname(recipient.getFirstName());
+                        }
                     }
                     users.add(user);
                 }

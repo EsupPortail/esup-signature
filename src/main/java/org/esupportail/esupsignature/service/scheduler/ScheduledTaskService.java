@@ -83,8 +83,8 @@ public class ScheduledTaskService {
 	}
 
 	/**
-     * Scanne l'ensemble des signataires des SignBooks complets et tente
-     * d'envoyer leurs SignRequests aux cibles spécifiées.
+     * Scanne l'ensemble des SignBooks complets et tente
+     * d'envoyer les Documents aux cibles spécifiées.
      *
      * Cette méthode est planifiée pour s'exécuter périodiquement avec un délai
      * initial de 12 secondes et une fréquence d'exécution toutes les 30 secondes.
