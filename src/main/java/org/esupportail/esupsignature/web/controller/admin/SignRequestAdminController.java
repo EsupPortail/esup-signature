@@ -90,7 +90,7 @@ public class SignRequestAdminController {
 		model.addAttribute("signBookId", signBookId);
 		model.addAttribute("signBooks", signBooks);
 		model.addAttribute("statusFilter", statusFilter);
-		model.addAttribute("statuses", SignRequestStatus.values());
+		model.addAttribute("statuses", SignRequestStatus.activeValues());
 		return "admin/signbooks/list";
 	}
 

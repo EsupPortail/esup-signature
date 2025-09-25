@@ -52,7 +52,7 @@ public class LogController {
 		Page<Log> logs = logService.getAllLogs(pageable);
 		model.addAttribute("logs", logs);
 		model.addAttribute("statusFilter", this.statusFilter);
-		model.addAttribute("statuses", SignRequestStatus.values());
+		model.addAttribute("statuses", SignRequestStatus.activeValues());
 		return "admin/logs/list";
 	}
 }

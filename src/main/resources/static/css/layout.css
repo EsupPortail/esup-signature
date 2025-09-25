@@ -9,7 +9,7 @@ body {
 }
 
 header {
-    z-index: 1029 !important;
+    z-index: 1030 !important;
 }
 
 #navbar {
@@ -227,7 +227,7 @@ header {
     padding-top: 5px;
     background-color: white;
     width: 100%;
-    z-index: 1028;
+    z-index: 1029;
     position: fixed;
     padding-left: 10px;
 }
@@ -265,7 +265,7 @@ header {
     position: fixed;
     margin-left: 260px;
     width: calc(100vw - 269px);
-    z-index: 999;
+    z-index: 1029;
 }
 
 .breadcrumb-nav-full {

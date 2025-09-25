@@ -104,7 +104,7 @@ public class SignBookController {
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
-        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
         model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
         model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, false));
@@ -407,18 +407,17 @@ public class SignBookController {
     @GetMapping(value = "/download-multiple", produces = "application/zip")
     @ResponseBody
     public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
-        httpServletResponse.setContentType("application/zip");
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"download.zip\"");
         try {
             for(Long id : ids) {
                 if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) throw new EsupSignatureException("access denied");
             }
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
+            httpServletResponse.setStatus(HttpServletResponse.SC_OK);
+            httpServletResponse.flushBuffer();
         } catch (Exception e) {
             logger.error("error while downloading multiple documents", e);
+            httpServletResponse.sendError(404);
         }
-        httpServletResponse.flushBuffer();
     }
 
     @ResponseBody

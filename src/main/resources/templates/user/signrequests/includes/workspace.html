@@ -93,13 +93,22 @@
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'" title="Cliquer pour supprimer l'annotation">
+                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
+                    th:title="${comment.text}"
+                    th:es-comment-text="${comment.text}"
+                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                    es-comment-delete=true
+                >
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
                 <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'">
+                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
+                    th:title="${comment.text}"
+                    th:es-comment-text="${comment.text}"
+                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                >
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
             </th:block>
