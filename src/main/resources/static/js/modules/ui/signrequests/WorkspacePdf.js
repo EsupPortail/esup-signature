@@ -616,7 +616,7 @@ export class WorkspacePdf {
                                         });
                                     }
                                 }
-                            });
+                            }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
                         });
                     }
                 } else {

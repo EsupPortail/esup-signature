@@ -94,8 +94,9 @@
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
+                    th:title="${comment.text}"
                     th:es-comment-text="${comment.text}"
-                    th:es-comment-title="${comment.createBy.firstname + '' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
                     es-comment-delete=true
                 >
                     <i class="fa-solid fa-comment fa-3x"></i>
@@ -104,8 +105,9 @@
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
                     th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
+                    th:title="${comment.text}"
                     th:es-comment-text="${comment.text}"
-                    th:es-comment-title="${comment.createBy.firstname + '' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
                 >
                     <i class="fa-solid fa-comment fa-3x"></i>
                 </div>
