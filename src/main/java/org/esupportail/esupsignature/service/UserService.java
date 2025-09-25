@@ -439,6 +439,18 @@ public class UserService {
         authUser.setReturnToHomeAfterSign(returnToHomeAfterSign);
     }
 
+    /**
+     * Vérifie si une alerte par email peut être envoyée à l'utilisateur en fonction de
+     * sa fréquence d'alerte configurée, de l'heure et de la date actuelle, ainsi que
+     * de la dernière date d'envoi d'une alerte.
+     *
+     * @param user l'utilisateur pour lequel l'état de l'alerte doit être vérifié. Cet objet
+     *             contient les informations concernant la fréquence d'alerte par email,
+     *             la date de dernier envoi d'alerte, ainsi que les préférences spécifiques
+     *             de l'utilisateur.
+     * @return true si une alerte peut être envoyée à l'utilisateur en respectant les paramètres
+     *         configurés, sinon false.
+     */
     public boolean checkEmailAlert(User user) {
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
