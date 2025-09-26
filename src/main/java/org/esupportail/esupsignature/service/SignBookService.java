@@ -1356,7 +1356,7 @@ public class SignBookService {
                             return;
                         }
                     } else {
-                        if(signBook.getLiveWorkflow().getWorkflow() == null) {
+                        if(!signRequest.getSignRequestParams().isEmpty()) {
                             dispatchSignRequestParams(signRequest);
                         }
                     }
@@ -1548,6 +1548,7 @@ public class SignBookService {
                 }
             } else if(stepStatus.equals(StepStatus.completed)) {
                 if(signRequestService.isCurrentStepCompleted(signRequest)) {
+                    signRequest.getSignRequestParams().clear();
                     pendingSignBook(signRequest.getParentSignBook(), null, userEppn, authUserEppn, false, true);
                 }
             }
