@@ -33,10 +33,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (:docTitleFilter is null or sb.subject like concat('%', :docTitleFilter, '%'))
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (:statusFilter is null or sb.status = :statusFilter)
+            and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
+            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted is true and sb.status = 'deleted'))
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
-    Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, Boolean deleted, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
             select distinct sb from SignBook sb left join sb.team team
@@ -69,7 +70,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
-            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted)
+            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted is true and sb.status = 'deleted'))
             and size(sb.signRequests) > 0
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
@@ -183,7 +184,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where sb.createBy = :user
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
-            and sb.deleted = true
+            and (sb.deleted = true or sb.status = 'deleted')
             """)
     Page<SignBook> findByCreateByIdDeleted(User user, Pageable pageable);
 
