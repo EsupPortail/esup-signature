@@ -381,6 +381,7 @@ export class SignUi {
                     if (this &&
                         (key === "events"
                             || key === "globalProperties"
+                            || key === "signSpace"
                             || key === "cross"
                             || key === "defaultTools"
                             || key === "tools"

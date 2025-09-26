@@ -709,13 +709,13 @@ export class SignRequestParams extends EventFactory {
         $("#addSpotButton").attr("disabled", false);
         $("#addCommentButton").attr("disabled", false);
         $('#insert-btn').removeAttr('disabled');
-        if(this.signSpace != null) {
-            this.signSpace.addClass("sign-field");
-            this.signSpace.removeClass("sign-field-dropped");
-            this.ready = false;
-            this.signSpace.text("Vous devez placer une signature ici");
-            this.signSpace.css("pointer-events", "auto");
-            this.signSpace = null;
+        if(self.signSpace != null) {
+            self.signSpace.addClass("sign-field");
+            self.signSpace.removeClass("sign-field-dropped");
+            self.ready = false;
+            self.signSpace.text("Vous devez placer une signature ici");
+            self.signSpace.css("pointer-events", "auto");
+            self.signSpace = null;
         }
     }
 
