@@ -46,6 +46,7 @@ export class SignRequestParams extends EventFactory {
         this.firstLaunch = true;
         this.firstCrossAlert = true;
         this.cross = null;
+        this.signSpace = null;
         this.submitAddSpotBtn = null;
         this.border = null;
         this.tools = null;
@@ -122,7 +123,7 @@ export class SignRequestParams extends EventFactory {
                 e.stopPropagation();
             });
         }
-        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign()    );
+        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign());
         $("#signNextImage_" + this.id).on("mousedown", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
         $("#signPrevImage_" + this.id).on("mousedown", e => this.prevSignImage());
         $("#displayMoreTools_" + this.id).on("mousedown", e => this.displayMoreTools());
@@ -703,20 +704,19 @@ export class SignRequestParams extends EventFactory {
     deleteSign() {
         let self = this;
         this.cross.attr("remove", "true");
-        this.cross.draggable("enable");
-        this.cross.on("drag", function(e) {
-            self.cross.remove();
-            self.fireEvent("delete", ["ok"]);
-            $("#signLaunchButton").removeClass("pulse-success");
-            $("#addSpotButton").attr("disabled", false);
-            $("#addCommentButton").attr("disabled", false);
-            $('#insert-btn').removeAttr('disabled');
-        });
-        this.cross.simulate("drag", {
-            dx: 9999999999,
-            dy: 9999999999
-        });
-
+        self.cross.remove();
+        self.fireEvent("delete", ["ok"]);
+        $("#addSpotButton").attr("disabled", false);
+        $("#addCommentButton").attr("disabled", false);
+        $('#insert-btn').removeAttr('disabled');
+        if(self.signSpace != null) {
+            self.signSpace.addClass("sign-field");
+            self.signSpace.removeClass("sign-field-dropped");
+            self.ready = false;
+            self.signSpace.text("Vous devez placer une signature ici");
+            self.signSpace.css("pointer-events", "auto");
+            self.signSpace = null;
+        }
     }
 
     getTools() {

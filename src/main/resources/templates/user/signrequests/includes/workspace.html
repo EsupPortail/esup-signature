@@ -4,6 +4,7 @@
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div class="pdf-alerts" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''">
         <div id="warningSelectDiv" title="Masquer ce message" class="alert alert-danger border-dark warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}"
@@ -11,19 +12,19 @@
             En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}"
             onclick="$(this).remove();">
             Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div id="no-options-alert" class="alert border-dark alert-warning warning" title="Masquer ce message" th:if="${signable}" style="display: none;"
-            onclick="$(this).remove();">
-            Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
         <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
             onclick="$(this).remove();">
             Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
+            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
+        </div>
+        <div id="no-options-alert" class="alert border-dark alert-warning warning" title="Masquer ce message" th:if="${signable}" style="display: none;"
+            onclick="$(this).remove();">
+            Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
         <div id="signBookDesc" title="Masquer ce message" class="d-none alert alert-warning border-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
