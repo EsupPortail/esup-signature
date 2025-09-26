@@ -39,38 +39,22 @@ public class GlobalAttributsControllerAdvice {
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
 
     private final GlobalProperties globalProperties;
-
     private final SmsProperties smsProperties;
-
     private final SignRequestService signRequestService;
-
     private final SignBookService signBookService;
-
     private final WorkflowService workflowService;
-
     private final UserShareService userShareService;
-
     private final UserService userService;
-
     private final ReportService reportService;
-
-    private final SignTypeService signTypeService;
-
     private final PreAuthorizeService preAuthorizeService;
-
     private final ObjectMapper objectMapper;
-
     private final Environment environment;
-
     private final BuildProperties buildProperties;
-
     private final ValidationService validationService;
-
     private final CertificatService certificatService;
-
     private final ServletContext servletContext;
 
-    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, SignTypeService signTypeService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
+    public GlobalAttributsControllerAdvice(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, UserShareService userShareService, UserService userService, ReportService reportService, PreAuthorizeService preAuthorizeService, ObjectMapper objectMapper,
                                            @Autowired(required = false) BuildProperties buildProperties,
                                            ValidationService validationService,
                                            Environment environment, CertificatService certificatService, ServletContext servletContext) {
@@ -82,7 +66,6 @@ public class GlobalAttributsControllerAdvice {
         this.userShareService = userShareService;
         this.userService = userService;
         this.reportService = reportService;
-        this.signTypeService = signTypeService;
         this.preAuthorizeService = preAuthorizeService;
         this.objectMapper = objectMapper;
         this.buildProperties = buildProperties;

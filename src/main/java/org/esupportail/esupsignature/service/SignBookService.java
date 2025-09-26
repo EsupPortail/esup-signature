@@ -332,7 +332,7 @@ public class SignBookService {
         if(statusFilter != null && !statusFilter.isEmpty()) {
             status = SignRequestStatus.valueOf(statusFilter);
         }
-        return signBookRepository.findSignBooksAllPaged(status, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        return signBookRepository.findSignBooksAllPaged(status, SignRequestStatus.deleted.equals(status), workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     /**
