@@ -300,6 +300,7 @@ public class SignRequestParamsService {
             signRequestParams.setAddWatermark(requestParams.getAddWatermark());
             signRequestParams.setAllPages(requestParams.getAllPages());
             signRequestParams.setExtraOnTop(requestParams.getExtraOnTop());
+            signRequestParams.setFontSize(requestParams.getFontSize());
             signRequest.getSignRequestParams().add(signRequestParams);
         }
     }
