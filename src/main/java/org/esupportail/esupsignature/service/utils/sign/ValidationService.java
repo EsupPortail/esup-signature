@@ -103,9 +103,9 @@ public class ValidationService {
                 revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
                 break;
             } catch (Exception e) {
-                logger.warn("attempt " + revocationCheckAttempt + " : revocation check fail " + e.getMessage());
+                logger.warn("attempt " + (11 - revocationCheckAttempt) + " : revocation check fail " + e.getMessage());
                 if (certificateVerifier.isCheckRevocationForUntrustedChains() && revocationCheckAttempt == 1) {
-                    logger.warn("revocation check fail impossible, abort LTA signature");
+                    logger.warn("revocation check impossible, abort LTA signature");
                     //                    throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
                 }
             }
