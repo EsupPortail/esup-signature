@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -91,20 +90,26 @@ public class ValidationService {
     public void checkRevocation(AbstractSignatureForm signatureDocumentForm, CertificateToken certificateToken, AbstractSignatureParameters<?> parameters) {
         RevocationToken<OCSP> revocationToken = null;
         boolean containsBadSignature = false;
-        try {
-            Reports reports = validate(new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), null);
-            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                if(!reports.getSimpleReport().getIndication(signatureId).equals(Indication.TOTAL_FAILED)) {
-                    containsBadSignature = true;
-                    break;
+        int revocationCheckAttempt = 10;
+        while (revocationCheckAttempt > 0) {
+            try {
+                Reports reports = validate(new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), null);
+                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                    if (!reports.getSimpleReport().getIndication(signatureId).equals(Indication.TOTAL_FAILED)) {
+                        containsBadSignature = true;
+                        break;
+                    }
+                }
+                revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
+                break;
+            } catch (Exception e) {
+                logger.warn("attempt " + revocationCheckAttempt + " : revocation check fail " + e.getMessage());
+                if (certificateVerifier.isCheckRevocationForUntrustedChains() && revocationCheckAttempt == 1) {
+                    logger.warn("revocation check fail impossible, abort LTA signature");
+                    //                    throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
                 }
             }
-            revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-        } catch (Exception e) {
-            logger.warn("revocation check fail " + e.getMessage());
-            if(certificateVerifier.isCheckRevocationForUntrustedChains()) {
-                throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
-            }
+            revocationCheckAttempt--;
         }
         if(containsBadSignature
             || revocationToken == null
