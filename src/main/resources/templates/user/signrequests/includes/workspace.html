@@ -12,12 +12,12 @@
             En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}"
+        <div class="alert alert-success warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}"
             onclick="$(this).remove();">
             Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
         </div>
-        <div class="alert alert-success warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
+        <div class="alert alert-success warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
             onclick="$(this).remove();">
             Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
             <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
