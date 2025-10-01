@@ -131,7 +131,7 @@ public class SignService {
 			} else if (signWith.equals(SignWith.sealCert) &&
                     (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals()) || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())) {
 				try {
-					if(!userEppn.equals("system") || certificatService.getOpenSCKey() != null || StringUtils.hasText(globalProperties.getSealCertificatFile())) {
+					if(!userEppn.equals("system") || certificatService.getOpenSCKey() != null || StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile())) {
 						abstractKeyStoreTokenConnection = certificatService.getSealToken();
 					}
 				} catch (Exception e) {

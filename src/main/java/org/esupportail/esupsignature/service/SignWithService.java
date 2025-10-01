@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -105,13 +106,14 @@ public class SignWithService {
                     || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
                     || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))
                 )
-                && StringUtils.hasText(globalProperties.getSealCertificatPin())
+                && globalProperties.getSealCertificatProperties().containsKey("default")
+                && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin())
                 && (
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile()))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile()))
                 )
         ) {
             if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) {

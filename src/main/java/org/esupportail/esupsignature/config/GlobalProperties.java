@@ -1,12 +1,17 @@
 package org.esupportail.esupsignature.config;
 
+import jakarta.annotation.PostConstruct;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Configuration
 @ConfigurationProperties(prefix="global")
@@ -195,31 +200,40 @@ public class GlobalProperties {
     /**
      *  Type de certificat cachet (PKCS11, PKCS12, OPENSC)
      */
-    private TokenType sealCertificatType;
-
-    public enum TokenType {
-        PKCS11, PKCS12, OPENSC
-    }
+    @Deprecated
+    private SealCertificatProperties.TokenType sealCertificatType;
 
     /**
      *  Emplacement du certificat cachet (actif pour PKCS12)
      */
+    @Deprecated
     private String sealCertificatFile;
 
     /**
      *  Pilote du certificat cachet
      */
+    @Deprecated
     private String sealCertificatDriver;
 
     /**
      *  Pin du certificat cachet
      */
+    @Deprecated
     private String sealCertificatPin = "";
 
+    @PostConstruct
+    public void init() {
+        if (sealCertificatProperties.isEmpty()) {
+            if(sealCertificatType != null && StringUtils.hasText(sealCertificatPin)) {
+                sealCertificatProperties.put("default", new SealCertificatProperties(sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
+            }
+        }
+    }
+
     /**
-     *  Pin du certificat cachet
+     * Liste des propriétés de certificats cachet utilisées pour configurer ou gérer les certificats dans l'application.
      */
-    private Boolean signEmailWithSealCertificat = false;
+    public Map<String, SealCertificatProperties> sealCertificatProperties = new HashMap<>();
 
     /**
      *  Appliquer le cachet sur toutes les demandes terminées
@@ -634,11 +648,11 @@ public class GlobalProperties {
         this.exportAttachements = exportAttachements;
     }
 
-    public TokenType getSealCertificatType() {
+    public SealCertificatProperties.TokenType getSealCertificatType() {
         return sealCertificatType;
     }
 
-    public void setSealCertificatType(TokenType sealCertificatType) {
+    public void setSealCertificatType(SealCertificatProperties.TokenType sealCertificatType) {
         this.sealCertificatType = sealCertificatType;
     }
 
@@ -666,12 +680,12 @@ public class GlobalProperties {
         this.sealCertificatPin = sealCertificatPin;
     }
 
-    public Boolean getSignEmailWithSealCertificat() {
-        return signEmailWithSealCertificat;
+    public Map<String, SealCertificatProperties> getSealCertificatProperties() {
+        return sealCertificatProperties;
     }
 
-    public void setSignEmailWithSealCertificat(Boolean signEmailWithSealCertificat) {
-        this.signEmailWithSealCertificat = signEmailWithSealCertificat;
+    public void setSealCertificatProperties(Map<String, SealCertificatProperties> sealCertificatProperties) {
+        this.sealCertificatProperties = sealCertificatProperties;
     }
 
     public Boolean getSealAllDocs() {
