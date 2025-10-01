@@ -149,11 +149,13 @@ public class WorkflowStepService {
         if(maxRecipients != null) {
             workflowStep.setMaxRecipients(maxRecipients);
         }
-        if(minSignLevel.getValue() <= maxSignLevel.getValue()) {
-            workflowStep.setMinSignLevel(minSignLevel);
-            workflowStep.setMaxSignLevel(maxSignLevel);
-        } else {
-            throw new EsupSignatureRuntimeException("Le niveau minimum doit est inférieur ou équal au niveau maximum");
+        if(minSignLevel != null) {
+            if (minSignLevel.getValue() <= maxSignLevel.getValue()) {
+                workflowStep.setMinSignLevel(minSignLevel);
+                workflowStep.setMaxSignLevel(maxSignLevel);
+            } else {
+                throw new EsupSignatureRuntimeException("Le niveau minimum doit est inférieur ou équal au niveau maximum");
+            }
         }
     }
 

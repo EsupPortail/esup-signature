@@ -80,7 +80,6 @@ public class DataController {
 						  @RequestParam String dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		logger.info("aa");
 		TypeReference<HashMap<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;
