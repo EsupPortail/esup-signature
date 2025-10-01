@@ -1168,7 +1168,11 @@ export class WorkspacePdf {
         // });
         let self = this;
         $("#changeMode1").on("click", function(e) {
-            self.changeMode("comment");
+            if (self.mode === "comment") {
+                window.location.href = new URL(window.location.href).origin + new URL(window.location.href).pathname;
+            } else {
+                window.location.href = new URL(window.location.href).origin + new URL(window.location.href).pathname + "?annotation";
+            }
         });
         $("#changeMode2").on("click", function(e) {
             self.changeMode("sign");
