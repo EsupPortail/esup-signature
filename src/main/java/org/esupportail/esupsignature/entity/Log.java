@@ -35,6 +35,10 @@ public class Log {
     @JsonIgnore
 	private User user;
 
+    @Transient
+    @JsonIgnore
+    private User userFor;
+
     private String eppnFor;
 
 	private String action;
@@ -114,6 +118,14 @@ public class Log {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public User getUserFor() {
+        return userFor;
+    }
+
+    public void setUserFor(User userFor) {
+        this.userFor = userFor;
     }
 
     public String getEppnFor() {
