@@ -362,6 +362,12 @@ public class GlobalProperties {
      */
     private Boolean frenchPhoneNumberOnly = false;
 
+
+    /**
+     * Indique si les vérification (visas cachés) doivent être masqués dans l'interface utilisateur.
+     */
+    private Boolean hideHiddenVisa = false;
+
     public String getRootUrl() {
         return rootUrl;
     }
@@ -891,5 +897,13 @@ public class GlobalProperties {
 
     public void setExternalCanEdit(Boolean externalCanEdit) {
         this.externalCanEdit = externalCanEdit;
+    }
+
+    public Boolean getHideHiddenVisa() {
+        return hideHiddenVisa;
+    }
+
+    public void setHideHiddenVisa(Boolean hideHiddenVisa) {
+        this.hideHiddenVisa = hideHiddenVisa;
     }
 }
