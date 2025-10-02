@@ -69,7 +69,6 @@ import java.util.List;
 @EnableMethodSecurity(
 		securedEnabled = true,
 		jsr250Enabled = true)
-@EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);

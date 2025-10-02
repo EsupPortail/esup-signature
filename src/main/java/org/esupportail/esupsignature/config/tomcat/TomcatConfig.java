@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties({TomcatAjpProperties.class, GlobalProperties.class})
 public class TomcatConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(TomcatConfig.class);

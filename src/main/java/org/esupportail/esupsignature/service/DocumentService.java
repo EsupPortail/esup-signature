@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class DocumentService {
 
 	private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);

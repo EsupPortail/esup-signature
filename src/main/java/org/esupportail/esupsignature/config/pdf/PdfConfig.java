@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(PdfProperties.class)
 public class PdfConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfConfig.class);

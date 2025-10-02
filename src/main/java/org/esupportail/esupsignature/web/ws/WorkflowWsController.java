@@ -38,7 +38,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/ws/workflows")
-@EnableConfigurationProperties({WebSecurityProperties.class})
 public class WorkflowWsController {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowWsController.class);

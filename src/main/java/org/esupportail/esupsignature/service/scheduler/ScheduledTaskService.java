@@ -28,7 +28,6 @@ import java.util.List;
 @EnableScheduling
 @Profile("!dev")
 @Component
-@EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.io.IOException;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.admin"})
-@EnableConfigurationProperties(GlobalProperties.class)
 public class AdminControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminControllerAdvice.class);

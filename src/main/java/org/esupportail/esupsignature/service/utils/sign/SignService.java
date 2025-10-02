@@ -70,7 +70,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Service
-@EnableConfigurationProperties(SignProperties.class)
 public class SignService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignService.class);

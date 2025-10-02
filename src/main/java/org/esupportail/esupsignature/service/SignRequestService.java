@@ -64,7 +64,6 @@ import java.util.stream.Collectors;
  * @author David Lemaignent
  */
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestService {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);

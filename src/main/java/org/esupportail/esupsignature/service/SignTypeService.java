@@ -10,7 +10,6 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignTypeService {
 
     private final GlobalProperties globalProperties;

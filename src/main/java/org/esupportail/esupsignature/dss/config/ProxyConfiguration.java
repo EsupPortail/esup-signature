@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collections;
 
 @Configuration
-@EnableConfigurationProperties(DSSProxyProperties.class)
 public class ProxyConfiguration {
 
 	private DSSProxyProperties dssProxyProperties;

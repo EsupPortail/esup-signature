@@ -78,7 +78,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 @Configuration
-@EnableConfigurationProperties(DSSProperties.class)
 public class DSSBeanConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);

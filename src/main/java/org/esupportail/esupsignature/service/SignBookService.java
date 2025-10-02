@@ -69,7 +69,6 @@ import java.util.zip.ZipOutputStream;
  * @author David Lemaignent
  */
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignBookService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);

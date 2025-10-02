@@ -47,7 +47,6 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);

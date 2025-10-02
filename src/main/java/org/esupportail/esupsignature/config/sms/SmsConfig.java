@@ -9,7 +9,6 @@ import jakarta.annotation.Resource;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(SmsProperties.class)
 public class SmsConfig {
 
 	private SmsProperties smsProperties;

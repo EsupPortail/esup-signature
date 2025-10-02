@@ -54,7 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);

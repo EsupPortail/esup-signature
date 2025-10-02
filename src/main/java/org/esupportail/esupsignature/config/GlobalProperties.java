@@ -5,7 +5,6 @@ import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Configuration
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 

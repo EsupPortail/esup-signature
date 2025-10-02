@@ -33,7 +33,6 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/user/signrequests")
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestController.class);

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnProperty(prefix = "spring.mail", name = "host")
-@EnableConfigurationProperties(MailProperties.class)
 public class MailConfig {
 
 	private MailProperties mailProperties;

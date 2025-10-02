@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/otp/signrequests")
-@EnableConfigurationProperties(GlobalProperties.class)
 public class OtpSignRequestController {
 
     private static final Logger logger = LoggerFactory.getLogger(OtpSignRequestController.class);

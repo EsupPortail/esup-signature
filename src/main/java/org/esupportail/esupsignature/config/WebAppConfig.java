@@ -27,7 +27,6 @@ import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 @ComponentScan
 @EnableAsync
 @EnableAutoConfiguration
-@EnableConfigurationProperties(GlobalProperties.class)
 public class WebAppConfig implements WebMvcConfigurer {
 
 	private final GlobalProperties globalProperties;

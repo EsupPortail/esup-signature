@@ -100,7 +100,6 @@ import java.util.regex.Pattern;
  * @author David Lemaignent
  */
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);

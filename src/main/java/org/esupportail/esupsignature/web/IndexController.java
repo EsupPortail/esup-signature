@@ -51,7 +51,6 @@ import java.util.Objects;
 
 @RequestMapping("/")
 @Controller
-@EnableConfigurationProperties(GlobalProperties.class)
 public class IndexController {
 
 	private static final Logger logger = LoggerFactory.getLogger(IndexController.class);

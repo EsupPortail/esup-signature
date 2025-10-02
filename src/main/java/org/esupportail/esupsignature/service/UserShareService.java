@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class UserShareService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserShareService.class);

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Properties;
 
 @Configuration
-@EnableConfigurationProperties(FsProperties.class)
 public class FsConfig {
 
 	private final FsProperties fsProperties;

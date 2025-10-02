@@ -21,7 +21,6 @@ import java.util.List;
 
 @Service
 @ConditionalOnProperty(prefix = "spring.ldap", name = "base")
-@EnableConfigurationProperties(LdapProperties.class)
 public class LdapOrganizationalUnitService {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapOrganizationalUnitService.class);

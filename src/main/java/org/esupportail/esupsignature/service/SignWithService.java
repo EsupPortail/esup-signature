@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@EnableConfigurationProperties({GlobalProperties.class, SignProperties.class})
 public class SignWithService {
 
     private final UserService userService;
