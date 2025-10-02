@@ -17,6 +17,7 @@ import eu.europa.esig.dss.validation.CertificateValidator;
 import eu.europa.esig.dss.validation.reports.CertificateReports;
 import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.entity.AppliVersion;
 import org.esupportail.esupsignature.entity.Certificat;
@@ -81,7 +82,11 @@ public class CertificatService implements HealthIndicator {
         this.documentService = documentService;
         this.workflowStepRepository = workflowStepRepository;
         this.appliVersionRepository = appliVersionRepository;
-        this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray()), signProperties);
+        if(!globalProperties.getSealCertificatProperties().isEmpty()) {
+            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray()), signProperties);
+        } else {
+            this.openSCSignatureToken = null;
+        }
         this.signProperties = signProperties;
         privateKeysCache = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
             @Override
@@ -165,22 +170,22 @@ public class CertificatService implements HealthIndicator {
     }
 
     public SignatureTokenConnection getSealToken() {
-        if((StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if((StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()) && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11)) || globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12)) {
            return getPkcsToken();
-        } else if(globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)){
+        } else if(globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)){
             return openSCSignatureToken;
         }
         return null;
     }
 
     public AbstractKeyStoreTokenConnection getPkcsToken() throws EsupSignatureKeystoreException {
-        if(StringUtils.hasText(globalProperties.getSealCertificatPin())) {
-            if (StringUtils.hasText(globalProperties.getSealCertificatDriver()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11)) {
-                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatPin().toCharArray());
-                return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatDriver(), passwordProtection);
-            } else if (StringUtils.hasText(globalProperties.getSealCertificatFile()) && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12)) {
+        if(StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin())) {
+            if (StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()) && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11)) {
+                KeyStore.PasswordProtection passwordProtection = new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray());
+                return new eu.europa.esig.dss.token.Pkcs11SignatureToken(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver(), passwordProtection);
+            } else if (StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile()) && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12)) {
                 try {
-                    return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatFile()), globalProperties.getSealCertificatPin());
+                    return userKeystoreService.getPkcs12Token(new FileInputStream(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile()), globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin());
                 } catch (FileNotFoundException e) {
                     logger.error(e.getMessage());
                 }
@@ -214,14 +219,15 @@ public class CertificatService implements HealthIndicator {
         }
         if(privateKeysCache.getIfPresent("keys") != null) return privateKeysCache.getIfPresent("keys");
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = new ArrayList<>();
+
         try {
-            if (globalProperties.getSealCertificatType() != null &&
-                    ((globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
+            if (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null &&
+                    ((globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()))
                     ||
-                    (globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile())))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile())))
             ) {
                 dssPrivateKeyEntries = getPkcsToken().getKeys();
-            } else if (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC)) {
+            } else if (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC)) {
                 dssPrivateKeyEntries = openSCSignatureToken.getKeys();
             }
         } catch (Exception e) {
@@ -300,7 +306,7 @@ public class CertificatService implements HealthIndicator {
 
     @Override
     public Health health() {
-        if(!StringUtils.hasText(globalProperties.getSealCertificatPin())) return Health.up().build();
+        if(!StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin())) return Health.up().build();
         if(isCertificatWasPresent) {
             return Health.up().withDetail("seal certificat", "UP").build();
         } else {
