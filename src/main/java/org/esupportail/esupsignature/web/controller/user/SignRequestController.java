@@ -136,6 +136,7 @@ public class SignRequestController {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
         model.addAttribute("signatureIds", new ArrayList<>());
+        model.addAttribute("sealCertificatPropertieses", certificatService.getAuthorizedSealCertificatProperties(userEppn));
         Reports reports = signRequestService.validate(id);
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());

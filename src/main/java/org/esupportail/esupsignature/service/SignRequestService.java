@@ -282,7 +282,7 @@ public class SignRequestService {
      * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
      */
     @Transactional
-	public StepStatus sign(SignRequest signRequest, String password, String signWith, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
+	public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
 		User user = userService.getByEppn(userEppn);
 		if(signRequest.getAuditTrail() == null) {
 			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -369,7 +369,7 @@ public class SignRequestService {
 				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
 			}
 			SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
-			Document signedDocument = signService.certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), lastSignRequestParams);
+			Document signedDocument = signService.certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), sealCertificat, lastSignRequestParams);
 			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
 			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.signature, comment);
 
@@ -487,7 +487,7 @@ public class SignRequestService {
 	public void seal(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(getToSignDocuments(signRequestId), signRequest, true);
-		Document document = signService.certSign(signatureDocumentForm, signRequest, "system", "", SignWith.sealCert, null);
+		Document document = signService.certSign(signatureDocumentForm, signRequest, "system", "", SignWith.sealCert, "default", null);
 		if(signRequest.getSignedDocuments().size() > 1) {
 			signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
 		}

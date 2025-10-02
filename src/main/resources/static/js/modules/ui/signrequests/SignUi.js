@@ -31,6 +31,7 @@ export class SignUi {
         this.currentStepMinSignLevel = currentStepMinSignLevel;
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
+        this.sealCertificatSelect = $("#sealCertificat");
         this.nbSignRequests = nbSignRequests;
         this.attachmentRequire = attachmentRequire;
         this.attachmentAlert = attachmentAlert;
@@ -293,6 +294,11 @@ export class SignUi {
         } else {
             $("#alert-multi-sign-present").hide();
         }
+        if(value === "sealCert") {
+            $("#sealChoose").removeClass('d-none');
+        } else {
+            $("#sealChoose").addClass('d-none');
+        }
     }
 
     launchNoInfiniteSign(next) {
@@ -377,6 +383,7 @@ export class SignUi {
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
+                'sealCertificat' : this.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
                     if (this &&
                         (key === "events"

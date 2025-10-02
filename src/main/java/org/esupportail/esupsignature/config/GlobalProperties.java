@@ -223,8 +223,10 @@ public class GlobalProperties {
     public void init() {
         if (sealCertificatProperties.isEmpty()) {
             if(sealCertificatType != null && StringUtils.hasText(sealCertificatPin)) {
-                sealCertificatProperties.put("default", new SealCertificatProperties(sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
+                sealCertificatProperties.put("default", new SealCertificatProperties("Certificat cachet", sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
             }
+        } else if(!sealCertificatProperties.containsKey("default")){
+            throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
         }
     }
 

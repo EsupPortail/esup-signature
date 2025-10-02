@@ -40,7 +40,7 @@ public class CertificatController {
     public String list(Model model) {
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("roles", userService.getAllRoles());
-        model.addAttribute("sealCertificats", certificatService.getCheckedCertificate());
+        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         return "admin/certificats/list";
     }
 
@@ -65,6 +65,13 @@ public class CertificatController {
             RedirectAttributes redirectAttributes) {
         certificatService.delete(id);
         redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificat supprimé"));
+        return "redirect:/admin/certificats";
+    }
+
+    @GetMapping("/refresh")
+    public String refreshCertificat(RedirectAttributes redirectAttributes) {
+        certificatService.clearSealCertificatsCache();
+        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificats rafraichis"));
         return "redirect:/admin/certificats";
     }
 
