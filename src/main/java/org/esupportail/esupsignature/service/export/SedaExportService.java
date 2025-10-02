@@ -9,6 +9,7 @@ import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
 import fr.gouv.vitam.tools.sedalib.metadata.management.*;
 import fr.gouv.vitam.tools.sedalib.utils.SEDALibProgressLogger;
+import jakarta.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
@@ -22,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.io.*;
 import java.nio.file.Paths;
 import java.time.LocalDate;

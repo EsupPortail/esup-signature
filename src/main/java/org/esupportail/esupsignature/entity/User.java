@@ -2,12 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-
-import jakarta.validation.constraints.NotNull;
-import jakarta.persistence.*;
 import org.springframework.util.StringUtils;
 
 import java.time.DayOfWeek;

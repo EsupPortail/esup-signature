@@ -1,10 +1,12 @@
 package org.esupportail.esupsignature.entity;
 
+import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 public class Report {

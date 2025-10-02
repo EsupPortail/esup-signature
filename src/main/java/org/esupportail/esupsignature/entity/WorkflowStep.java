@@ -1,12 +1,11 @@
 package org.esupportail.esupsignature.entity;
 
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-
-import jakarta.persistence.*;
 
 import java.util.*;
 

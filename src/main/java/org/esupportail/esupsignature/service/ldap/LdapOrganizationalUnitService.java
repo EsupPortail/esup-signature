@@ -1,18 +1,16 @@
 package org.esupportail.esupsignature.service.ldap;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.mapper.OrganizationalUnitLdapAttributesMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.Resource;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;

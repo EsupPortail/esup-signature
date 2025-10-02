@@ -1,9 +1,10 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
 import java.io.IOException;
 import java.util.Set;
 

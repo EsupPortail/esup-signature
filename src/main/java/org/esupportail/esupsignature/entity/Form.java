@@ -2,10 +2,10 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

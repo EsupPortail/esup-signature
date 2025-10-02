@@ -1,13 +1,11 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;

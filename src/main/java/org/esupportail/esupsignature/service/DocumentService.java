@@ -16,7 +16,6 @@ import org.esupportail.esupsignature.service.interfaces.fs.UploadActionType;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;

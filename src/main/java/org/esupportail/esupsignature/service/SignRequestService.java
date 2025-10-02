@@ -39,7 +39,6 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;

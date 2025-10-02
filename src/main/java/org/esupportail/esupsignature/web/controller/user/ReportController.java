@@ -1,9 +1,10 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.service.ReportService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -14,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 
 @RequestMapping("/user/reports")

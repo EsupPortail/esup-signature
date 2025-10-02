@@ -1,11 +1,10 @@
 package org.esupportail.esupsignature.config.sms;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Configuration

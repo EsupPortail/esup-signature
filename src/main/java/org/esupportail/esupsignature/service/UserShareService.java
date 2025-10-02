@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -10,12 +11,10 @@ import org.esupportail.esupsignature.repository.UserShareRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
