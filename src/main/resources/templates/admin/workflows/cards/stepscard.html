@@ -31,7 +31,7 @@
                                     <div class="d-flex justify-content-around align-items-center gap-1">
                                         <div>
                                             <small>Niveau minimum</small>
-                                            <select class="form-select" name="minSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                            <select class="form-select" name="minSignLevel" th:id="'minSignLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                                 <th:block th:each="signLevel : ${signLevels}">
                                                     <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.minSignLevel == signLevel}"></option>
                                                 </th:block>
@@ -39,7 +39,7 @@
                                         </div>
                                         <div>
                                             <small>Niveau maximum</small>
-                                            <select class="form-select" name="maxSignLevel" th:id="'signLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                            <select class="form-select" name="maxSignLevel" th:id="'minSignLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                                 <th:block th:each="signLevel : ${signLevels}">
                                                     <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.maxSignLevel == signLevel}"></option>
                                                 </th:block>

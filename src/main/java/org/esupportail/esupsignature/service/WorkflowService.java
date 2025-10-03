@@ -183,7 +183,8 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow addStepToWorkflow(Long id, WorkflowStepDto step, User user) {
+    public Workflow addStepToWorkflow(Long id, WorkflowStepDto step, String userEppn) {
+        User user = userService.getByEppn(userEppn);
         Workflow workflow;
         if (id != null && id != -1) {
             workflow = getById(id);
@@ -200,6 +201,8 @@ public class WorkflowService {
                 workflowStep.setSingleSignWithAnnotation(step.getSingleSignWithAnnotation());
             }
             workflowStep.setSealVisa(step.getSealVisa());
+            workflowStep.setMinSignLevel(step.getMinSignLevel());
+            workflowStep.setSignType(step.getSignType());
             workflow.getWorkflowSteps().add(workflowStep);
             userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
         }
@@ -799,7 +802,7 @@ public class WorkflowService {
             step.setSignType(workflowStep.getSignType());
             step.setAttachmentAlert(workflowStep.getAttachmentAlert());
             step.setAttachmentRequire(workflowStep.getAttachmentRequire());
-            step.setSignLevel(workflowStep.getMinSignLevel());
+            step.setMinSignLevel(workflowStep.getMinSignLevel());
             step.setSealVisa(workflowStep.getSealVisa());
             LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
