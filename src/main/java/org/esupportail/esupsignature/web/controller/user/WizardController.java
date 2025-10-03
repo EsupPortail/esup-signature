@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -223,11 +222,10 @@ public class WizardController {
                                @RequestParam(name="name") String name,
                                @RequestParam(required = false) List<String> viewers,
                                Model model) {
-        User user = (User) model.getAttribute("user");
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
         try {
-            signBookService.saveSignBookAsWorkflow(id, name, name, user);
+            signBookService.saveSignBookAsWorkflow(id, name, name, userEppn);
             signBookService.addViewers(id, viewers);
         } catch (EsupSignatureRuntimeException e) {
             return "user/wizard/wiz-save";
@@ -242,12 +240,11 @@ public class WizardController {
                                @RequestParam(name="end", required = false) Boolean end,
                                @RequestBody List<WorkflowStepDto> steps,
                                Model model, HttpServletRequest request, HttpServletResponse response) {
-        User user = (User) model.getAttribute("user");
         JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
         IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
         final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
         Workflow workflow;
-        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), user);
+        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
         model.addAttribute("workflow", workflow);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {

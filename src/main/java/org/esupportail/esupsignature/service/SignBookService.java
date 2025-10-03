@@ -474,7 +474,7 @@ public class SignBookService {
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
         signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSignType(steps.get(0).getSignType());
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getSignLevel());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getMinSignLevel());
     }
 
     /**
@@ -2043,7 +2043,8 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException Si une erreur survient lors de l'exécution.
      */
     @Transactional
-    public void saveSignBookAsWorkflow(Long signBookId, String title, String description, User user) throws EsupSignatureRuntimeException {
+    public void saveSignBookAsWorkflow(Long signBookId, String title, String description, String userEppn) throws EsupSignatureRuntimeException {
+        User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
         Workflow workflow = workflowService.createWorkflow(title, description, user);
         workflow.getViewers().addAll(signBook.getViewers());

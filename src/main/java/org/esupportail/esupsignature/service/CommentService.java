@@ -149,7 +149,7 @@ public class CommentService {
             if(signRequest == null) {
                 signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
             }
-            if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
+            if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber() - 1) {
                     LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1);
                     Optional<SignRequestParams> signRequestParams = liveWorkflowStep.getSignRequestParams().stream().filter(srp -> srp.getxPos().equals(comment.get().getPosX()) && srp.getyPos().equals(comment.get().getPosY()) && srp.getSignPageNumber().equals(comment.get().getPageNumber())).findFirst();
