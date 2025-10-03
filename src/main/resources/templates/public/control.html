@@ -49,7 +49,7 @@
                             <h5>Le document n’a pas été modifié depuis sa signature.</h5>
                         </div>
                         <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
-                            <h4>Signatures</h4>
+                            <h5>Signatures</h5>
                             <table class="table table-sm table-hover">
                                 <thead class="table-secondary">
                                 <tr>
@@ -132,7 +132,8 @@
                         <thead class="table-secondary">
                         <tr>
                             <th>Date</th>
-                            <th>Nom</th>
+                            <th title="Utilisateur ayant effectué l'action">Opérateur</th>
+                            <th title="Utilisateur original au nom duquel l'action est effectuée">Mandant</th>
                             <th>Statut</th>
                             <th>Action</th>
                             <th>Commentaire</th>
@@ -144,6 +145,7 @@
                                 <td class="text-left"><span
                                         th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
                                 <td class="text-left"><span th:if="${log.user != null}" th:text="${log.user.firstname} + ' ' + ${log.user.name}"></span></td>
+                                <td class="text-left"><span th:if="${log.userFor != null}" th:text="${log.userFor.firstname} + ' ' + ${log.userFor.name}"></span></td>
                                 <td class="text-left">
                                     <span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span>
                                 </td>

@@ -94,6 +94,7 @@
                         <ul>
                             <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
                             <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
+                            <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
                         </ul>
                         <ul>
                             <li>
@@ -119,9 +120,9 @@
                         </th:block>
                     </select>
                 </div>
-                <div class="form-group w-50" id="signLevel" title="Avancée et qualifiée nécessitent un certificat">
-                    <label class="form-label" for="signLevel-1">Niveau minimum</label>
-                    <select class="form-select" name="minSignLevel" id="signLevel-1">
+                <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                    <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
+                    <select class="form-select" name="minSignLevel" id="minSignLevel-1">
                         <th:block th:each="signLevel : ${signLevels}">
                             <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
                         </th:block>

@@ -606,9 +606,9 @@ export class WizUi {
             if(signType.length) {
                 step.signType = signType.val();
             }
-            let signLevel = $('#signLevel-' + i);
-            if(signLevel.length) {
-                step.signLevel = signLevel.val();
+            let minSignLevel = $('#minSignLevel-' + i);
+            if(minSignLevel.length) {
+                step.minSignLevel = minSignLevel.val();
             }
             let sealVisa = $('#sealVisa-' + i);
             if(sealVisa.length) {
