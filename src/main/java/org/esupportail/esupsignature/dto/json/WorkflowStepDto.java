@@ -57,7 +57,7 @@ public class WorkflowStepDto {
     /**
      * Niveau de signature requis pour cette étape (valeur par défaut : simple).
      */
-    private SignLevel signLevel = SignLevel.simple;
+    private SignLevel minSignLevel = SignLevel.simple;
 
     /**
      * Type de signature utilisé pour cette étape.
@@ -222,12 +222,12 @@ public class WorkflowStepDto {
 		this.changeable = changeable;
 	}
 
-	public SignLevel getSignLevel() {
-		return signLevel;
+	public SignLevel getMinSignLevel() {
+		return minSignLevel;
 	}
 
-	public void setSignLevel(SignLevel signLevel) {
-		this.signLevel = signLevel;
+	public void setMinSignLevel(SignLevel minSignLevel) {
+		this.minSignLevel = minSignLevel;
 	}
 
 	public SignType getSignType() {
