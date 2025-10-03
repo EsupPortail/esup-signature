@@ -72,7 +72,7 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentAlert(Objects.requireNonNullElse(step.getAttachmentAlert(), false));
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         liveWorkflowStep.setSignType(step.getSignType());
-        liveWorkflowStep.setMinSignLevel(step.getSignLevel());
+        liveWorkflowStep.setMinSignLevel(step.getMinSignLevel());
         liveWorkflowStep.setSealVisa(step.getSealVisa());
         liveWorkflowStep.setConvertToPDFA(step.getConvertToPDFA());
         if(step.getSignType() == null) {

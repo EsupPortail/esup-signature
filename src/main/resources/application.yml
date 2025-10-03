@@ -37,6 +37,8 @@ global:
     csv-separator: ";"
     otp-validity: 1
 #    authorized-sign-types: imageStamp, nexuCert
+#    shib-users-domain-white-list:
+#    forced-externals-domain-list:
     export-attachements: true
     external-signature-params:
         add-watermark: false
@@ -51,6 +53,7 @@ global:
     search-for-external-users: false
     seal-for-externals: true
     seal-authorized-for-signed-files: false
+    hide-hidden-visa: false
 #    test-email: toto@univ-ville.fr
 
 #tomcat:

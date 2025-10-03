@@ -6,16 +6,16 @@
     <script>
         function toggleSignLevel() {
             const signType = document.getElementById("signType-1").value;
-            const signLevelDiv = $("#signLevel");
+            const minSignLevelDiv = $("#minSignLevel");
             const sealOptions = $("#seal-options")
             if (signType === "visa") {
-                signLevelDiv.hide();
+                minSignLevelDiv.hide();
                 sealOptions.show();
             } else if (signType === "signature") {
-                signLevelDiv.show();
+                minSignLevelDiv.show();
                 sealOptions.hide();
             } else {
-                signLevelDiv.hide();
+                minSignLevelDiv.hide();
                 sealOptions.hide();
             }
         }
