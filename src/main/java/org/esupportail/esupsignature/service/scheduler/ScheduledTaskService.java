@@ -234,7 +234,7 @@ public class ScheduledTaskService {
 	}
 
 	/**
-     * Nettoie les demandes de signature ayant le statut "en attente" et dont les
+	 * Nettoie les demandes de signature ayant le statut "en attente" et dont les
      * avertissements ont été marqués comme lus, si elles dépassent un certain délai.
      *
      * Cette tâche est programmée pour s'exécuter périodiquement, avec un délai initial
