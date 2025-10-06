@@ -746,7 +746,7 @@ public class SignBookService {
     public boolean deleteDefinitive(Long signBookId, String userEppn) {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        if(signBook != null && (signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || user.getRoles().contains("ROLE_ADMIN"))) {
+        if(signBook != null && (signBook.getCreateBy().equals(user) || userService.getSystemUser().equals(user) || userService.getSchedulerUser().equals(user) || user.getRoles().contains("ROLE_ADMIN"))) {
             signBook.getLiveWorkflow().setCurrentStep(null);
             List<Long> liveWorkflowStepIds = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream().map(LiveWorkflowStep::getId).toList();
             signBook.getLiveWorkflow().getLiveWorkflowSteps().clear();

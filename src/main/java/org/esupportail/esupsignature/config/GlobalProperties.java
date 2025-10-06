@@ -151,22 +151,27 @@ public class GlobalProperties {
      *  </ul>
      */
     private Integer shareMode = 0;
+
     /**
      * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
+
     /**
      * Activer/Désactiver la detection de robot à la connexion
      */
     private Boolean enableCaptcha = false;
+
     /**
      * Taille maximum des uploads de fichiers en bytes
      */
     private Integer maxUploadSize = 52428800;
+
     /**
      * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */
     private Integer nbDaysBeforeWarning = -1;
+
     /**
      * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
@@ -232,7 +237,7 @@ public class GlobalProperties {
     private Boolean sealForExternals = false;
 
     /**
-     * Autoriser automatiquement le certificat cachet pour les demandes internes déjà signés
+     * Autoriser automatiquement le certificat cachet pour les demandes internes déjà signés avec un certificat
      */
     private Boolean sealAuthorizedForSignedFiles = false;
 
