@@ -14,10 +14,8 @@ public enum SignType {
     public int getValue() { return value; }
 
     /**
-     * Custom deserialization logic for SignType enum.
-     * Maps legacy or deprecated string values (e.g., "pdfImageStamp", "certSign", "nexuSign") to the current enum values.
-     * Ensures backward compatibility with existing JSON payloads.
-     **/
+     * Cette méthode permet d’assurer la compatibilté avec les anciennes valeurs encore présentes en base.
+     */
     @JsonCreator
     public static SignType fromString(String key) {
         if ("pdfImageStamp".equalsIgnoreCase(key) || "certSign".equalsIgnoreCase(key) || "nexuSign".equalsIgnoreCase(key)) {

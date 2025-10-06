@@ -128,7 +128,7 @@
                             </td>
                             <td>
                                 <div th:if="${chartWorkflowSignBooksStatus.get(iterator.index) != null}" style="width: 40px">
-                                    <canvas th:onmouseover="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'chart-workflow-sign-books-status-' + ${iterator.index}"></canvas>
+                                    <canvas th:onclick="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'chart-workflow-sign-books-status-' + ${iterator.index}" style="cursor: pointer;" title="Cliquer pour voir le détail"></canvas>
                                     <script th:inline="javascript">
                                         let ctx[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-[[${iterator.index}]]');
                                         let chart[[${iterator.index}]] = new Chart(ctx[[${iterator.index}]], JSON.parse([[${chartWorkflowSignBooksStatus.get(iterator.index)}]]));
@@ -137,7 +137,7 @@
                                         chart[[${iterator.index}]].update();
                                     </script>
                                 </div>
-                                <div class="border border-secondary-subtle rounded-1 p-2 floating-chart" th:onmouseleave="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="display: none">
+                                <div class="border border-secondary-subtle rounded-1 p-2 floating-chart" th:onclick="'$(\'#big-chart-' + ${iterator.index} + '\').toggle();'" th:id="'big-chart-' + ${iterator.index}" style="display: none; cursor: pointer;">
                                     <canvas th:id="'chart-workflow-sign-books-status-big-' + ${iterator.index}"></canvas>
                                     <script th:inline="javascript">
                                         let ctxB[[${iterator.index}]] = document.getElementById('chart-workflow-sign-books-status-big-[[${iterator.index}]]');

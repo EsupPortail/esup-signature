@@ -94,21 +94,21 @@ public class NexuService {
 		return toBeSigned;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ToBeSigned getDataToSign(SignatureMultipleDocumentsForm form, List<DSSDocument> documentsToSign) throws DSSException, IOException {
-		logger.info("Start getDataToSign with multiple documents");
-		MultipleDocumentsSignatureService service = signService.getASiCSignatureService(form.getSignatureForm());
-		AbstractSignatureParameters parameters = getParameters(form, documentsToSign);
-		ToBeSigned toBeSigned = null;
-		try {
-			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
-			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
-		} catch (Exception e) {
-			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
-		}
-		logger.info("End getDataToSign with multiple documents");
-		return toBeSigned;
-	}
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	public ToBeSigned getDataToSign(SignatureMultipleDocumentsForm form, List<DSSDocument> documentsToSign) throws DSSException, IOException {
+//		logger.info("Start getDataToSign with multiple documents");
+//		MultipleDocumentsSignatureService service = signService.getASiCSignatureService(form.getSignatureForm());
+//		AbstractSignatureParameters parameters = getParameters(form, documentsToSign);
+//		ToBeSigned toBeSigned = null;
+//		try {
+//			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
+//			toBeSigned = service.getDataToSign(toSignDocuments, parameters);
+//		} catch (Exception e) {
+//			logger.error("Unable to execute getDataToSign : " + e.getMessage(), e);
+//		}
+//		logger.info("End getDataToSign with multiple documents");
+//		return toBeSigned;
+//	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
@@ -170,7 +170,7 @@ public class NexuService {
 	}
 
 	@Transactional
-	public NexuSignature saveNexuSignature(Long id, SignatureDocumentForm abstractSignatureForm, String userEppn) throws IOException {
+	public void saveNexuSignature(Long id, SignatureDocumentForm abstractSignatureForm, String userEppn) throws IOException {
 		User user = userService.getByEppn(userEppn);
 		NexuSignature nexuSignature = new NexuSignature();
 		nexuSignature.setSignRequest(signRequestRepository.findById(id).orElseThrow());
@@ -185,8 +185,7 @@ public class NexuService {
 		//nexuSignature.setSignWithExpiredCertificate(abstractSignatureForm.isSignWithExpiredCertificate());
 		nexuSignature.getDocumentToSign().add(documentService.createDocument(abstractSignatureForm.getDocumentToSign().getInputStream(), user, abstractSignatureForm.getDocumentToSign().getOriginalFilename(), abstractSignatureForm.getDocumentToSign().getContentType()));
 		nexuSignatureRepository.save(nexuSignature);
-		return nexuSignature;
-	}
+    }
 
 	@Transactional
 	public NexuSignature getNexuSignature(Long id) {
@@ -221,10 +220,10 @@ public class NexuService {
 		SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
 		List<Document> documentsToSign = signRequestService.getToSignDocuments(signRequest.getId());
 		byte[] bytes = documentsToSign.get(0).getInputStream().readAllBytes();
-		SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams());
+		SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest);
 		Reports reports = signRequestService.validate(signRequestId);
-		if ((reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > 1) {
-			bytes = signRequestService.stampImagesOnFirstSign(signRequest, signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams(), userEppn, userEppn, documentsToSign.get(0).getInputStream().readAllBytes(), date, null, lastSignRequestParams);
+		if ((reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) && signRequest.getSignRequestParams().size() > 1) {
+			bytes = signRequestService.stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, userEppn, documentsToSign.get(0).getInputStream().readAllBytes(), date, null, lastSignRequestParams);
 		} else {
 			logger.warn("skip add visuals because document already signed");
 		}
@@ -240,7 +239,7 @@ public class NexuService {
 			List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(signatureMultipleDocumentsForm.getDocumentsToSign());
 			parameters = getParameters(signatureMultipleDocumentsForm, toSignDocuments);
 		} else if(abstractSignatureForm instanceof SignatureDocumentForm signatureDocumentForm) {
-			SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams());
+			SignRequestParams lastSignRequestParams = signRequestService.findLastSignRequestParams(signRequest);
 			if(abstractSignatureForm.getSignatureForm().equals(SignatureForm.PAdES)) {
 				if(lastSignRequestParams != null) {
 					parameters = signService.fillVisibleParameters(signatureDocumentForm, lastSignRequestParams, user, abstractSignatureForm.getSigningDate());

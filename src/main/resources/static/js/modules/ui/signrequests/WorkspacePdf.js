@@ -93,6 +93,8 @@ export class WorkspacePdf {
             $('#end-button').on('click', e => this.pdfViewer.nextPage());
             $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton').on('click', e => this.enableSpotAdd());
+            $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
+            $('#addSpotButton2').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
             $("#showComments").on('click', e => this.enableCommentMode());
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
@@ -307,19 +309,25 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            if(this.signable) {
-                if (localStorage.getItem('mode') === 'comment') {
-                    this.enableCommentMode();
-                } else if (this.currentSignType !== 'form') {
-                    this.enableSignMode();
-                }
-            } else if(!this.editable) {
-                this.enableSignMode();
+            const url = new URL(window.location.href);
+            const hasAnnotation = url.searchParams.has("annotation");
+            if(hasAnnotation) {
+                this.enableCommentMode();
             } else {
-                if(this.status === 'draft') {
-                    this.enableCommentMode();
+                if (this.signable) {
+                    if (localStorage.getItem('mode') === 'comment') {
+                        this.enableCommentMode();
+                    } else if (this.currentSignType !== 'form') {
+                        this.enableSignMode();
+                    }
+                } else if (!this.editable) {
+                    this.enableSignMode();
                 } else {
-                    this.enableReadMode();
+                    if (this.status === 'draft') {
+                        this.enableCommentMode();
+                    } else {
+                        this.enableReadMode();
+                    }
                 }
             }
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
@@ -576,21 +584,39 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('title') !== undefined) {
+                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
-                            bootbox.confirm("Supprimer cette annotation ?", function (result) {
-                                if (result) {
-                                    $.ajax({
-                                        method: 'DELETE',
-                                        url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-                                        success: function () {
-                                            document.location.reload();
-                                            $("#addSpotButton").attr("disabled", false);
-                                        }
-                                    });
+                            bootbox.confirm({
+                                title: postitDiv.attr("es-comment-title"),
+                                message: postitDiv.attr("es-comment-text"),
+                                buttons: {
+                                    confirm: {
+                                        label: 'Supprimer',
+                                        className: 'btn-danger'
+                                    },
+                                    cancel: {
+                                        label: 'Fermer',
+                                        className: 'btn-secondary'
+                                    }
+                                },
+                                callback: function (result) {
+                                    if (result) {
+                                        bootbox.confirm('Confirmer la suppression', function (result2){
+                                            if(result2) {
+                                                $.ajax({
+                                                    method: 'DELETE',
+                                                    url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                                                    success: function () {
+                                                        document.location.reload();
+                                                        $("#addSpotButton").attr("disabled", false);
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
                                 }
-                            });
+                            }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
                         });
                     }
                 } else {
@@ -691,6 +717,7 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
+                        signRequestParams.signSpace = signSpaceDiv;
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
@@ -700,13 +727,17 @@ export class WorkspacePdf {
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
-                        if(signWidth / signHeight <= 2) {
-                            ui.size.width = parseInt(signSpaceDiv.css("width"));
-                            ui.size.height = height * (ui.size.width / width);
-                        } else {
-                            ui.size.height = parseInt(signSpaceDiv.css("height"));
-                            ui.size.width = width * (ui.size.height / height);
+                        let maxWidth  = parseInt(signSpaceDiv.css("width"));
+                        let maxHeight = parseInt(signSpaceDiv.css("height"));
+                        let ratio = width / height;
+                        ui.size.width  = maxWidth;
+                        ui.size.height = ui.size.width / ratio;
+                        if (ui.size.height > maxHeight) {
+                            ui.size.height = maxHeight;
+                            ui.size.width  = ui.size.height * ratio;
                         }
+                        ui.size.width = ui.size.width - 2;
+                        ui.size.height = ui.size.height - 2;
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
@@ -739,6 +770,7 @@ export class WorkspacePdf {
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
                         cross.resizable("enable");
+                        signRequestParams.signSpace = null;
                     }
                 }
             }
@@ -808,15 +840,9 @@ export class WorkspacePdf {
         if (this.mode !== 'comment') {
             return;
         }
-        this.addCommentEnabled = false;
-        this.disablePointer();
-        this.signPosition.pointItEnable = true;
-        let addCommentButton = $("#addCommentButton");
-        addCommentButton.toggleClass("btn-primary");
-        addCommentButton.toggleClass("btn-outline-dark");
-        $("#comment-div").hide();
-        $("#addSpotButton").attr("disabled", false);
-        $('#pdf').mousemove(e => this.moveAction(e));
+        const url = new URL(window.location.href);
+        url.searchParams.set("annotation", "");
+        window.location.href = url.toString();
     }
 
     enableReadMode() {
@@ -841,12 +867,11 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-primary').html('<i class="fa-solid fa-pen"></i> <span class="d-none d-xl-inline">Mode modification</span>')
+        $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
-        $("#changeMode1").attr("checked", true);
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
         this.mode = 'comment';
@@ -858,12 +883,15 @@ export class WorkspacePdf {
             this.changeModeSelector.setSelected("comment");
         }
         $('#signTools').addClass("d-none");
+        $('#addCommentButton2').removeClass('d-none');
+        $('#addSpotButton2').removeClass('d-none');
         $('#commentsBar').show();
         $('#infos').show();
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.hide();
-        $("#signModeBtns").addClass("d-none");
+        // $("#signModeBtns").addClass("d-none");
+        $("#signImageBtn").removeClass("d-lg-block");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
         $(".spot").each(function () {
@@ -902,6 +930,7 @@ export class WorkspacePdf {
             $(this).hide();
         });
         $('#signButtons').removeClass('d-none');
+        $('#forward-btn').removeClass('d-none');
         $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
@@ -948,7 +977,10 @@ export class WorkspacePdf {
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');
+        $('#addCommentButton2').addClass('d-none');
+        $('#addSpotButton2').addClass('d-none');
         $('#signLaunchButton').addClass('d-none');
+        $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
@@ -1025,7 +1057,11 @@ export class WorkspacePdf {
         saveCommentButton.unbind();
         hideCommentButton.unbind();
         $('#pdf').mousemove(e => this.moveAction(e));
-        let addCommentButton = $("#addCommentButton");
+        $("#addSpotButton").attr("disabled", true);
+        $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
+        $("#addCommentButton2").addClass("disable");
         // this.hideComment(e);
         if (this.addCommentEnabled) {
             this.disableAddComment();
@@ -1064,6 +1100,8 @@ export class WorkspacePdf {
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").attr("disabled", true);
+        $("#addSpotButton2").attr("disabled", true);
+        $("#addCommentButton2").attr("disabled", true);
         this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null);
     }
 
@@ -1130,7 +1168,11 @@ export class WorkspacePdf {
         // });
         let self = this;
         $("#changeMode1").on("click", function(e) {
-            self.changeMode("comment");
+            if (self.mode === "comment") {
+                window.location.href = new URL(window.location.href).origin + new URL(window.location.href).pathname;
+            } else {
+                window.location.href = new URL(window.location.href).origin + new URL(window.location.href).pathname + "?annotation";
+            }
         });
         $("#changeMode2").on("click", function(e) {
             self.changeMode("sign");
@@ -1153,7 +1195,9 @@ export class WorkspacePdf {
                 this.enableCommentMode();
             } else {
                 if(this.signable) {
-                    document.location.reload();
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("annotation");
+                    window.location.href = url.toString();
                 } else {
                     this.enableReadMode();
                 }
@@ -1174,21 +1218,21 @@ export class WorkspacePdf {
 
     autocollapse() {
         let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").width() - 100;
+        let maxWidth = $("#workspace").width() - 1000;
         console.info("maxWidth : " + maxWidth);
         const listItems = document.querySelectorAll('#ws-tabs > li');
         let totalWidth = 0;
         listItems.forEach(li => {
             totalWidth += li.offsetWidth;
         });
+        console.warn(totalWidth + " >= " + maxWidth);
         if (totalWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
             while (this.navWidth > maxWidth) {
                 let children = this.wsTabs.children(menu + ' li:not(:last-child)');
                 let count = children.length;
                 this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn(this.navWidth);
-
+                console.warn("nav width : " + this.navWidth);
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
             }
         } else if (this.navWidth < maxWidth - 300) {

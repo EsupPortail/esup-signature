@@ -49,6 +49,24 @@ export default class SelectUser {
     initListeners() {
     }
 
+    bindEnterKeyPress() {
+        this.slimSelect.render.content.search.input.removeEventListener('keydown', (e) => this.enterkeyPressAction(e))
+        this.slimSelect.render.content.search.input.addEventListener('keydown', (e) => this.enterkeyPressAction(e));
+    }
+
+    enterkeyPressAction(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            this.slimSelect.render.content.list.querySelectorAll("div").forEach(item => {
+                console.info(item);
+                const highlighted = item.classList.contains(this.slimSelect.render.classes.highlighted);
+                if (highlighted) {
+                    item.click();
+                }
+            });
+        }
+    }
+
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
@@ -149,6 +167,8 @@ export default class SelectUser {
         this.selectField.css("height", 38);
         this.selectField.css("opacity", 0);
         this.selectField.css("z-index", -1);
+        this.bindEnterKeyPress();
+
     }
 
     getSelected() {
@@ -158,6 +178,8 @@ export default class SelectUser {
     checkSelect(emails) {
         console.log(emails);
         this.slimSelect.setData(emails);
+        this.bindEnterKeyPress();
+
     }
 
     displayTempUsers(e) {
@@ -195,7 +217,7 @@ export default class SelectUser {
                         async: true,
                         data: JSON.stringify(recipientEmails),
                         success: datas => this.displayTempUsersSuccess(datas),
-                        error: e => this.displayExternalsError()
+                        error: e => this.displayExternalsError(e)
                     });
                 }
             }
@@ -215,14 +237,26 @@ export default class SelectUser {
         }
     }
 
-    displayExternalsError() {
+    displayExternalsError(e) {
         let name = '#tempUsers-' + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if($("#recipient_").length === 0) {
-            tempUsersDiv.append(
-                "<div class='alert alert-danger' id='recipient_'>" +
-                "<b>Le destinataire saisi n’est pas conforme</b><br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide" +
-                "</div>");
+        if ($("#recipient_").length === 0) {
+            if(e.status === 500) {
+                let message = "Une erreur inconnue est survenue :"
+                if (e.responseJSON && e.responseJSON.message) {
+                    message = e.responseJSON.message;
+                }
+                tempUsersDiv.append(
+                    "<div class='alert alert-danger' id='recipient_'>" +
+                    "<b>Le destinataire n’a pas pu être vérifié </b>: <br>Soit les destinataires externes ne sont pas autorisés, soit il s’agit d’un groupe vide.<br>" +
+                    "<small>Detail de l'erreur : " + message + "</small>" +
+                    "</div>");
+            } else {
+                tempUsersDiv.append(
+                    "<div class='alert alert-danger' id='recipient_'>" +
+                    "<b>Un problème s’est produit lors de la vérification des destinataires</b><br>Merci d’actualiser la page avant d’essayer de nouveau." +
+                    "</div>");
+            }
         }
     }
 
@@ -386,6 +420,7 @@ export default class SelectUser {
                 }
             }
         }
+        this.bindEnterKeyPress();
         // if(this.favorites.length > 0) {
         //     this.slimSelect.setData(this.favorites);
         //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);

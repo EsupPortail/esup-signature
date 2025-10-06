@@ -5,7 +5,6 @@ import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.util.ByteArrayDataSource;
-import jakarta.transaction.Transactional;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -208,7 +207,6 @@ public class MailService {
         }
     }
 
-    @Transactional
     public void sendCompletedCCMail(SignBook signBook, String userEppn, Set<String> toMails) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;

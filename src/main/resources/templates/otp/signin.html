@@ -45,7 +45,7 @@
                                 <h3 th:unless="${securityServices.isEmpty()}">Autre méthode</h3>
                             </button>
                         </h3>
-                        <div id="otherMethod" class="accordion-collapse collapse bg-light-subtle" th:classappend="${!securityServices.isEmpty() ? '' : 'show'}" style="min-width: 250px;">
+                        <div id="otherMethod" class="accordion-collapse bg-light-subtle" th:classappend="${!securityServices.isEmpty() ? '' : 'show'}" style="min-width: 250px;">
                             <div class="accordion-body">
                                 <th:block th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).sms)}">
                                     <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>

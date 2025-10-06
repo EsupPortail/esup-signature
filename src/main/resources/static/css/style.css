@@ -6,7 +6,6 @@ html {
     * {
         scrollbar-color: #E10F46 transparent;
         scrollbar-track-color: transparent;
-        scrollbar-gutter: stable;
         scrollbar-width: unset;
     }
 }
@@ -28,7 +27,7 @@ html {
 }
 
 body {
-    font-family: "Gravity", sans-serif;
+    font-family: "Lexend", sans-serif;
 }
 
 main {
@@ -153,6 +152,9 @@ td {
 
 .nav-tabs {
     border-bottom : 1px solid #555;
+    background-color: white;
+    margin-left: -5px;
+
 }
 
 .nav-link:focus-visible {
@@ -242,6 +244,7 @@ dd {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 10vw;
 }
 
 .form-switch.form-switch-md {
@@ -452,7 +455,7 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 1) !important;
-    opacity: 0.9;
+    opacity: 0.6;
     cursor: pointer !important;
     overflow: hidden;
     font-weight: bold;
@@ -749,8 +752,12 @@ textarea:placeholder-shown.required-field {
     transition: background-image 0.2s ease-in-out;
 }
 
-.cross-error {
+.cross-warning {
     background-color: rgba(255, 223, 151, 0.57) !important;
+}
+
+.cross-danger {
+    background-color: rgba(255, 151, 151, 0.75) !important;
 }
 
 .sign-textarea {
@@ -825,6 +832,11 @@ textarea:placeholder-shown.required-field {
 .hide-select {
     opacity: 0;
     position: absolute;
+}
+
+button[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 button.close {

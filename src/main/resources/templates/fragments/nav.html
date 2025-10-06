@@ -146,11 +146,17 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}" id="link-disconnect2" class="btn btn-light btn-outline-dark me-1"
-                       aria-label="Paramètres utilisateur "
-                       title="Déconnexion" href="/logout">
-                        <i class="fa-solid fa-power-off"></i> Déconnexion
-                    </a>
+                    <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
+                        th:action="@{/logout}"
+                        method="post"
+                        style="display:inline;">
+                        <button id="link-disconnect2"
+                                class="btn btn-light btn-outline-dark me-1"
+                                aria-label="Paramètres utilisateur"
+                                title="Déconnexion">
+                            <i class="fa-solid fa-power-off"></i> Déconnexion
+                        </button>
+                    </form>
                 </li>
                 <li class="nav-item">
                 <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
@@ -179,10 +185,6 @@
                 <tr>
                     <td>Identifiant</td>
                     <td th:text="${user.eppn}"></td>
-                </tr>
-                <tr>
-                    <td>Auth</td>
-                    <td th:text="${securityServiceName}"></td>
                 </tr>
                 <tr th:if="${user.userType.name == 'ldap'}">
                     <td>Token d’accès API</td>
@@ -240,11 +242,18 @@
                 <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres
             </a>
             <hr>
-            <a th:unless="${isUserOnSu}" id="link-disconnect" class="btn btn-sm btn-light btn-outline-dark"
-                aria-label="Paramètres utilisateur "
-                title="Déconnexion" href="/logout">
-                <i class="fa-solid fa-power-off"></i> Déconnexion
-            </a>
+            <form th:unless="${isUserOnSu}"
+                th:action="@{/logout}"
+                method="post"
+                style="display:inline; width: 100%;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <button id="link-disconnect"
+                        class="btn btn-sm btn-light btn-outline-dark w-100"
+                        aria-label="Paramètres utilisateur"
+                        title="Déconnexion">
+                    <i class="fa-solid fa-power-off"></i> Déconnexion
+                </button>
+            </form>
         </div>
     </div>
 </header>

@@ -78,6 +78,7 @@ public class LogService {
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
             log.setUser(userService.getByEppn(log.getEppn()));
+            log.setUserFor(userService.getByEppn(log.getEppnFor()));
         }
         return logs;
     }
@@ -91,8 +92,8 @@ public class LogService {
         List<Log> logs = logRepository.findBySignRequestId(id);
         for (Log log : logs) {
             if(log.getEppn() != null) {
-                User user = userService.getByEppn(log.getEppn());
-                log.setUser(user);
+                log.setUser(userService.getByEppn(log.getEppn()));
+                log.setUserFor(userService.getByEppn(log.getEppnFor()));
             }
         }
         return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
@@ -135,8 +136,10 @@ public class LogService {
         log.setSubject(subject);
         log.setWorkflowName(workflowName);
         User user = userService.getByEppn(authUserEppn);
+        if(user == null) {
+            user = userService.getByEppn(userEppn);
+        }
         log.setUser(user);
-        log.setEppnFor(userEppn);
         setClientIp(log);
         log.setLogDate(new Date());
         log.setAction(action);

@@ -39,6 +39,20 @@
 }
 
 @media (max-width: 1200px) {
+
+    .fixed-action-btns {
+        height: 100px;
+        width: 100%;
+        overflow: revert;
+    }
+
+    .fixed-action-btns ul {
+        -webkit-box-orient: revert;
+        -webkit-box-direction: revert;
+        -ms-flex-direction: revert;
+        flex-direction: revert;
+    }
+
     .new-max-w {
         width: 100%;
     }

@@ -112,7 +112,9 @@ export class SignPosition extends EventFactory {
         }
         this.disableForwardButton();
         $(window).bind("beforeunload", function (event) {
-            return "You have some unsaved changes";
+            console.log("beforeunload déclenché");
+            event.preventDefault();
+            event.returnValue = "";
         });
         this.addSignButton.removeClass("pulse-primary");
         $("#addSignButton2").removeClass("pulse-primary");

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="postits" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
@@ -56,6 +56,16 @@
         <div id="content" class="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <button th:if="${isManager && signRequest.data == null}" tabindex="1" id="addSpotButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0px solid #0d6efd;">
+                            <i class="fa-solid fa-signature fa-2xl text-dark" style="margin-top: -8px;"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button tabindex="1" id="addCommentButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter une annotation" style="border: 0px solid #0d6efd;">
+                            <i class="fa-solid fa-comment fa-2xl text-dark" style="margin-top: -8px;"></i>
+                        </button>
+                    </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
                         <button tabindex="1" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
                             <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
@@ -116,7 +126,7 @@
                            th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
                            title="Télécharger la dernière version des documents dans une archive ZIP"><i class="fa-solid fa-file-archive fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                    <li th:if="${signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                         <a tabindex="1" class="btn-lg btn-floating bg-primary"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
@@ -488,6 +498,32 @@
                         </div>
                     </div>
                     <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
+                        <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
+                                type="button" class="btn btn-sm btn-transparent">
+                            <span class="fa-solid fa-info-circle text-info"></span>
+                        </button>
+                        <div class="collapse" id="collapseHelpSignType">
+                            <div class="alert alert-info">
+                                <small>
+                                    <ul>
+                                        <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
+                                        <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
+                                        <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <b>Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
+                                        </li>
+                                        <li>
+                                            <b>Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
+                                        </li>
+                                        <li>
+                                            <b>Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
+                                        </li>
+                                    </ul>
+                                </small>
+                            </div>
+                        </div>
                         <label for="signType">Choisir un type de signature *</label>
                         <select name="signType" id="signType" class="form-select">
                             <th:block th:each="signType : ${signTypes}">
@@ -541,7 +577,6 @@
                 <h3 class="modal-title">Démarrer le circuit</h3>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
                         aria-label="Close">
-
                 </button>
             </div>
             <form th:action="'/user/signbooks/pending/' + ${signBook.id}" method="post">
@@ -552,6 +587,31 @@
                         </p>
                     </th:block>
                     <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                            <h5>
+                                Le circuit comporte <span
+                                    th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
+                                étape<span
+                                    th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
+                            </h5>
+                            <br>
+                            <ul class="list-group">
+                                <th:block th:each="step, iterator : ${steps}">
+                                    <li class="list-group-item">
+                                        <div class="form-group d-inline mb-1">
+                                            <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
+                                                th:text="${step.description != null ?  step.description + ' (' : ''}"></span>
+                                            <th:block th:if="${step.users.size() > 0}" th:each="user, iterator : ${step.users}">
+                                                <span th:if="${iterator.index > 0}"> ou </span>
+                                                <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                            </th:block>
+                                            <span th:text="${step.description != null ?  ')' : ''}"></span>
+                                        </div>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </th:block>
+
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
                             <h5>
                                 Le circuit comporte <span

@@ -3,13 +3,18 @@ package org.esupportail.esupsignature.service;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import eu.europa.esig.dss.enumerations.CertificateQualification;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.model.x509.CertificateToken;
+import eu.europa.esig.dss.simplecertificatereport.SimpleCertificateReport;
 import eu.europa.esig.dss.spi.DSSUtils;
+import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.token.AbstractKeyStoreTokenConnection;
 import eu.europa.esig.dss.token.DSSPrivateKeyEntry;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
+import eu.europa.esig.dss.validation.CertificateValidator;
+import eu.europa.esig.dss.validation.reports.CertificateReports;
 import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
@@ -57,6 +62,7 @@ public class CertificatService implements HealthIndicator {
     private static boolean firstStart = true;
     private final UserService userService;
     private final UserKeystoreService userKeystoreService;
+    private final CertificateVerifier certificateVerifier;
     private final MailService mailService;
     private final CertificatRepository certificatRepository;
     private final DocumentService documentService;
@@ -65,10 +71,11 @@ public class CertificatService implements HealthIndicator {
     private final SignProperties signProperties;
     private final AppliVersionRepository appliVersionRepository;
 
-    public CertificatService(GlobalProperties globalProperties, SignProperties signProperties, UserService userService, @Autowired(required = false) UserKeystoreService userKeystoreService, MailService mailService, CertificatRepository certificatRepository, DocumentService documentService, WorkflowStepRepository workflowStepRepository, AppliVersionRepository appliVersionRepository) {
+    public CertificatService(GlobalProperties globalProperties, SignProperties signProperties, UserService userService, @Autowired(required = false) UserKeystoreService userKeystoreService, CertificateVerifier certificateVerifier, MailService mailService, CertificatRepository certificatRepository, DocumentService documentService, WorkflowStepRepository workflowStepRepository, AppliVersionRepository appliVersionRepository) {
         this.globalProperties = globalProperties;
         this.userService = userService;
         this.userKeystoreService = userKeystoreService;
+        this.certificateVerifier = certificateVerifier;
         this.mailService = mailService;
         this.certificatRepository = certificatRepository;
         this.documentService = documentService;
@@ -276,6 +283,19 @@ public class CertificatService implements HealthIndicator {
             }
         }
         return certificatProblem;
+    }
+
+    public Map<DSSPrivateKeyEntry, Boolean> getCheckedCertificate() {
+        Map<DSSPrivateKeyEntry, Boolean> dssPrivateKeyEntryBooleanMap = new HashMap<>();
+        for(DSSPrivateKeyEntry dssPrivateKeyEntry : getSealCertificats()) {
+            CertificateValidator validator = CertificateValidator.fromCertificate(dssPrivateKeyEntry.getCertificate());
+            validator.setCertificateVerifier(certificateVerifier);
+            CertificateReports reports = validator.validate();
+            SimpleCertificateReport simpleReport = reports.getSimpleReport();
+            CertificateQualification qualificationAtValidationTime = simpleReport.getQualificationAtValidationTime();
+            dssPrivateKeyEntryBooleanMap.put(dssPrivateKeyEntry, qualificationAtValidationTime.isQc() && qualificationAtValidationTime.isQscd() && qualificationAtValidationTime.isForEseal());
+        }
+        return dssPrivateKeyEntryBooleanMap;
     }
 
     @Override

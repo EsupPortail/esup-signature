@@ -166,15 +166,17 @@ public class IndexController {
 			value = {"/login/proconnectentry", "/login/franceconnectentry"},
 			method = {RequestMethod.GET, RequestMethod.POST}
 	)	public String loginFranceConnectRedirectionPost(Authentication authentication, Model model) {
-		DefaultOidcUser defaultOidcUser = (DefaultOidcUser) authentication.getPrincipal();
-		String name = defaultOidcUser.getAttributes().get("given_name").toString() + " ";
-		name += defaultOidcUser.getAttributes().containsKey("family_name")
-			? defaultOidcUser.getAttributes().get("family_name").toString()
-			: defaultOidcUser.getAttributes().get("usual_name").toString();
-		model.addAttribute("errorMsg", "Bonjour " + name + ",<br>" +
-				"Merci de vous déconnecter et d'utiliser de nouveau le lien d'accès présent dans le mail que vous avez reçu pour signer votre document." +
-				"Une nouvelle connexion est necessaire pour chaque nouvelle demande à signer");
-		return "otp/error";
+        String name = authentication.getName();
+        if(authentication.getPrincipal() instanceof DefaultOidcUser defaultOidcUser) {
+            name = defaultOidcUser.getAttributes().get("given_name").toString() + " ";
+            name += defaultOidcUser.getAttributes().containsKey("family_name")
+                    ? defaultOidcUser.getAttributes().get("family_name").toString()
+                    : defaultOidcUser.getAttributes().get("usual_name").toString();
+        }
+        model.addAttribute("errorMsg", "Bonjour " + name + ",<br>" +
+                "Merci de vous déconnecter et d'utiliser de nouveau le lien d'accès présent dans le mail que vous avez reçu pour signer votre document." +
+                "Une nouvelle connexion est necessaire pour chaque nouvelle demande à signer");
+        return "otp/error";
 	}
 
 	public User getAuthUser(Authentication auth) {
@@ -207,19 +209,29 @@ public class IndexController {
 	public String loggedOut(HttpServletRequest httpServletRequest) {
 		String returnedState = httpServletRequest.getParameter("state");
 		String expectedState = null;
-		if (httpServletRequest.getCookies() != null) {
+		if (returnedState != null && httpServletRequest.getCookies() != null) {
 			for (Cookie cookie : httpServletRequest.getCookies()) {
 				if ("logout_state".equals(cookie.getName())) {
 					expectedState = cookie.getValue();
 				}
 			}
-		}
-		if (!Objects.equals(returnedState, expectedState)) {
-			throw new IllegalStateException("Échec vérification du state !");
+            if (!Objects.equals(returnedState, expectedState)) {
+                throw new IllegalStateException("Échec vérification du state !");
+            }
 		}
 		httpServletRequest.getSession().invalidate();
 		return "logged-out";
 	}
+
+    @GetMapping("/rgpd")
+    public String rgpd() {
+        return "rgpd";
+    }
+
+    @GetMapping("/rgaa")
+    public String rgaa() {
+        return "rgaa";
+    }
 
 	@RequestMapping(value={"/robots.txt", "/robot.txt"}, produces = "text/plain")
 	@ResponseBody

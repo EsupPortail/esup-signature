@@ -66,7 +66,7 @@ public class DataController {
 		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
 			Data data = dataService.addData(id, userEppn);
 			List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
-			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, null, true, null);
+			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, null);
 			return ResponseEntity.ok().body(signBook.getId().toString());
 		}
 		logger.warn("form id " + id + " not autorized");
@@ -80,7 +80,6 @@ public class DataController {
 						  @RequestParam String dataId,
 						  @RequestParam MultiValueMap<String, String> formData,
 						  RedirectAttributes redirectAttributes) throws JsonProcessingException {
-		logger.info("aa");
 		TypeReference<HashMap<String, String>> type = new TypeReference<>(){};
 		Map<String, String> datas = objectMapper.readValue(formData.getFirst("formData"), type);
 		Long dataLongId = null;

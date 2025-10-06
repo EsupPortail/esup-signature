@@ -107,7 +107,7 @@ public class ManageController {
             recipientsFilter = null;
         }
         Workflow workflow = workflowService.getById(id);
-        model.addAttribute("statuses", SignRequestStatus.values());
+        model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
@@ -169,7 +169,7 @@ public class ManageController {
         Data data = dataService.addData(id, creator.getEppn());
         try {
             Map<String, String> datas = new HashMap<>();
-            signBookService.sendForSign(data.getId(), null, null, null,  creator.getEppn(), creator.getEppn(), true, datas, null, null, null, true, null);
+            signBookService.sendForSign(data.getId(), null, null, null,  creator.getEppn(), creator.getEppn(), true, datas, null, null, true, null);
         } catch (EsupSignatureRuntimeException e) {
             logger.error("error on create form instance", e);
         }

@@ -18,7 +18,6 @@ import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.model.AbstractSignatureForm;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dss.model.SignatureDocumentForm;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -47,6 +46,13 @@ public class ValidationService {
         this.defaultPolicy = defaultPolicy;
     }
 
+    /**
+     * Validation DSS d'un document.
+     *
+     * @param docInputStream Flux de données contenant le document à valider.
+     * @param signInputStream Flux de données contenant la signature associée au document. Peut être null si celle-ci est intégrée au document.
+     * @return Un objet Reports contenant les résultats de la validation, ou null si la validation échoue ou si les données fournies sont invalides.
+     */
     public Reports validate(InputStream docInputStream, InputStream signInputStream) {
         try {
             List<DSSDocument> detachedContents = new ArrayList<>();
@@ -84,26 +90,36 @@ public class ValidationService {
     public void checkRevocation(AbstractSignatureForm signatureDocumentForm, CertificateToken certificateToken, AbstractSignatureParameters<?> parameters) {
         RevocationToken<OCSP> revocationToken = null;
         boolean containsBadSignature = false;
-        try {
-            Reports reports = validate(new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), null);
-            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                if(!reports.getSimpleReport().getIndication(signatureId).equals(Indication.TOTAL_FAILED)) {
-                    containsBadSignature = true;
-                    break;
+        int revocationCheckAttempt = 10;
+        while (revocationCheckAttempt > 0) {
+            try {
+                Reports reports = validate(new ByteArrayInputStream(((SignatureDocumentForm) signatureDocumentForm).getDocumentToSign().getBytes()), null);
+                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                    if (!reports.getSimpleReport().getIndication(signatureId).equals(Indication.TOTAL_FAILED)) {
+                        containsBadSignature = true;
+                        break;
+                    }
+                }
+                revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
+                break;
+            } catch (Exception e) {
+                logger.warn("attempt " + (11 - revocationCheckAttempt) + " : revocation check fail " + e.getMessage());
+                if (certificateVerifier.isCheckRevocationForUntrustedChains() && revocationCheckAttempt == 1) {
+                    logger.warn("revocation check impossible, abort LTA signature");
+                    //                    throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
                 }
             }
-            revocationToken = certificateVerifier.getOcspSource().getRevocationToken(certificateToken, certificateToken);
-        } catch (Exception e) {
-            logger.warn("revocation check fail " + e.getMessage());
-            if(certificateVerifier.isCheckRevocationForUntrustedChains()) {
-                throw new EsupSignatureRuntimeException("Impossible de signer avec ce certificat. Détails : " + e.getMessage());
-            }
+            revocationCheckAttempt--;
         }
         if(containsBadSignature
             || revocationToken == null
             || !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)
             || (!certificateToken.isValidOn(new Date()) && certificateVerifier.getAlertOnExpiredCertificate() instanceof SilentOnStatusAlert)) {
             logger.warn("LT or LTA signature level not supported, switching to T level");
+            logger.debug("containsBadSignature : " + containsBadSignature);
+            logger.debug("revocationToken null : " + (revocationToken == null));
+            logger.debug("revocationToken ok : " + (revocationToken != null && !certificateVerifier.getRevocationDataVerifier().isAcceptable(revocationToken)));
+            logger.debug("certificat valid : " + (!certificateToken.isValidOn(new Date()) && certificateVerifier.getAlertOnExpiredCertificate() instanceof SilentOnStatusAlert));
             if(parameters.getSignatureLevel().name().contains("_LT") || parameters.getSignatureLevel().name().contains("_LTA")) {
                 String newLevel = parameters.getSignatureLevel().name().replace("_LTA", "_T");
                 newLevel = newLevel.replace("_LT", "_T");

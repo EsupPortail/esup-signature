@@ -46,6 +46,7 @@ export class SignRequestParams extends EventFactory {
         this.firstLaunch = true;
         this.firstCrossAlert = true;
         this.cross = null;
+        this.signSpace = null;
         this.submitAddSpotBtn = null;
         this.border = null;
         this.tools = null;
@@ -122,7 +123,7 @@ export class SignRequestParams extends EventFactory {
                 e.stopPropagation();
             });
         }
-        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign()    );
+        $("#signDrop_" + this.id).on("mousedown", e => this.deleteSign());
         $("#signNextImage_" + this.id).on("mousedown", e => this.changeSignImage(parseInt(this.signImageNumber) + 1));
         $("#signPrevImage_" + this.id).on("mousedown", e => this.prevSignImage());
         $("#displayMoreTools_" + this.id).on("mousedown", e => this.displayMoreTools());
@@ -158,10 +159,17 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(150 / .75 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 / .75 * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(10 * this.currentScale)  + "px");
+        this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
+        });
+        let self = this;
+        $("#delete-add-spot").on("click", function (){
+            const url = new URL(window.location.href);
+            url.searchParams.set("annotation", "");
+            window.location.href = url.toString();
         });
         this.saveSpotButton = $("#save-spot-button")
         this.saveSpotButton.unbind();
@@ -192,8 +200,9 @@ export class SignRequestParams extends EventFactory {
                 method: 'POST',
                 url: url,
                 success: function (result) {
-                    location.reload();
-                }
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("annotation", "");
+                    window.location.href = url.toString();                }
             });
         }
     }
@@ -480,7 +489,7 @@ export class SignRequestParams extends EventFactory {
         }
 
         this.cross.css("position", "absolute");
-        this.cross.css("z-index", "100");
+        this.cross.css("z-index", "1028");
         this.cross.attr("data-id", this.id);
 
     }
@@ -587,6 +596,9 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.draggable({
             containment: "#pdf",
+            snap: ".pdf-page",
+            snapMode: "inner",
+            snapTolerance: 20,
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
@@ -596,8 +608,11 @@ export class SignRequestParams extends EventFactory {
                 self.tools.addClass("d-none");
             },
             stop: function(event, ui) {
+                const dragRect = this.getBoundingClientRect();
+                self.checkInside(dragRect, self);
+
                 self.tools.removeClass("d-none");
-                if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-error") && self.firstCrossAlert) {
+                if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && self.firstCrossAlert) {
                     self.firstCrossAlert = false;
                     bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
                 }
@@ -613,6 +628,31 @@ export class SignRequestParams extends EventFactory {
                 }
             }
         });
+    }
+
+    checkInside(dragRect, self) {
+        let inside = false;
+        $(".pdf-page").each(function () {
+            const pageRect = this.getBoundingClientRect();
+            if (
+                dragRect.left + 10 >= pageRect.left &&
+                dragRect.top + 10 >= pageRect.top &&
+                dragRect.right - 10 <= pageRect.right &&
+                dragRect.bottom - 10 <= pageRect.bottom
+            ) {
+                inside = true;
+                return false;
+            }
+        });
+
+        if (!inside) {
+            console.log("La signature n'est pas entièrement dans une page !");
+            $("#signLaunchButton").attr("disabled", "disabled");
+            self.border.addClass("cross-danger");
+        } else {
+            $("#signLaunchButton").removeAttr("disabled");
+            self.border.removeClass("cross-danger");
+        }
     }
 
     madeCrossResizable() {
@@ -637,6 +677,9 @@ export class SignRequestParams extends EventFactory {
                 if(self.isSign) {
                     localStorage.setItem("zoom", self.signScale);
                 }
+                const dragRect = this.getBoundingClientRect();
+                self.checkInside(dragRect, self);
+
             }
         });
     }
@@ -661,20 +704,19 @@ export class SignRequestParams extends EventFactory {
     deleteSign() {
         let self = this;
         this.cross.attr("remove", "true");
-        this.cross.draggable("enable");
-        this.cross.on("drag", function(e) {
-            self.cross.remove();
-            self.fireEvent("delete", ["ok"]);
-            $("#signLaunchButton").removeClass("pulse-success");
-            $("#addSpotButton").attr("disabled", false);
-            $("#addCommentButton").attr("disabled", false);
-            $('#insert-btn').removeAttr('disabled');
-        });
-        this.cross.simulate("drag", {
-            dx: 9999999999,
-            dy: 9999999999
-        });
-
+        self.cross.remove();
+        self.fireEvent("delete", ["ok"]);
+        $("#addSpotButton").attr("disabled", false);
+        $("#addCommentButton").attr("disabled", false);
+        $('#insert-btn').removeAttr('disabled');
+        if(self.signSpace != null) {
+            self.signSpace.addClass("sign-field");
+            self.signSpace.removeClass("sign-field-dropped");
+            self.ready = false;
+            self.signSpace.text("Vous devez placer une signature ici");
+            self.signSpace.css("pointer-events", "auto");
+            self.signSpace = null;
+        }
     }
 
     getTools() {
@@ -827,7 +869,7 @@ export class SignRequestParams extends EventFactory {
     show() {
         this.cross.css('opacity', '1');
         this.cross.draggable("enable");
-        this.cross.css("z-index", 5);
+        this.cross.css("z-index", 1028);
     }
 
     hide() {
@@ -1252,7 +1294,7 @@ export class SignRequestParams extends EventFactory {
             for(let i = 0; i < lines.length; i++) {
                 let c = document.createElement("canvas");
                 let ctx = c.getContext("2d");
-                ctx.font = fontSize + "px Gravity";
+                ctx.font = fontSize + "px";
                 let txt = lines[i];
                 if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")))) {
                     text += txt;

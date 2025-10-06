@@ -380,14 +380,16 @@ export class SignUi {
                 'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
                     if (this &&
                         (key === "events"
-                        || key === "cross"
-                        || key === "defaultTools"
-                        || key === "tools"
-                        || key === "signColorPicker"
-                        || key === "textareaExtra"
-                        || key === "divExtra"
-                        || key === "border"
-                        || key === "textareaPart")) {
+                            || key === "globalProperties"
+                            || key === "signSpace"
+                            || key === "cross"
+                            || key === "defaultTools"
+                            || key === "tools"
+                            || key === "signColorPicker"
+                            || key === "textareaExtra"
+                            || key === "divExtra"
+                            || key === "border"
+                            || key === "textareaPart")) {
                         return undefined;
                     }
                     return value;

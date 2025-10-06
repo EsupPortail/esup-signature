@@ -64,7 +64,7 @@
         <input type="submit" id="wiz-step-form-submit" class="d-none">
         <input th:if="${workflow != null}" type="hidden" id="workflowId" name="workflowId" th:value="${workflow.id}">
         <div class="form-check form-switch form-switch-md">
-            <input type="checkbox" class="form-check-input" id="changeable-1" name="changeable" onclick="if(this.checked) {$('#recipientsEmails-1').attr('required', false);} else {$('#recipientsEmails-1').attr('required', true);}"/>
+            <input type="checkbox" class="form-check-input" id="changeable-1" name="changeable" onclick="if(this.checked) {$('#recipientsEmails-1').attr('required', false);} else {$('#recipientsEmails-1').attr('required', true);}" autofocus>
             <label for="changeable-1" class="form-check-label">
                 Le créateur du circuit pourra modifier les participants de cette étape
             </label>
@@ -80,10 +80,36 @@
                 <label class="form-check-label" for="all-sign-to-complete-1">
                     Tous les participants doivent-ils signer ?
                 </label>
-                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
+                <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete">
             </div>
         </div>
         <div class="align-self-start">
+            <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
+                    type="button" class="btn btn-sm btn-transparent">
+                <span class="fa-solid fa-info-circle text-info"></span>
+            </button>
+            <div class="collapse" id="collapseHelpSignType">
+                <div class="alert alert-info">
+                    <small>
+                        <ul>
+                            <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
+                            <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
+                            <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
+                        </ul>
+                        <ul>
+                            <li>
+                                <b>Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
+                            </li>
+                            <li>
+                                <b>Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
+                            </li>
+                            <li>
+                                <b>Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
+                            </li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
             <div class="d-flex align-items-center gap-2 mb-2">
                 <div class="form-group w-50">
                     <label class="form-label" for="signType-1">Choisir un type de signature *</label>
@@ -94,9 +120,9 @@
                         </th:block>
                     </select>
                 </div>
-                <div class="form-group w-50" id="signLevel" title="Avancée et qualifiée nécessitent un certificat">
-                    <label class="form-label" for="signLevel-1">Niveau minimum</label>
-                    <select class="form-select" name="minSignLevel" id="signLevel-1">
+                <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                    <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
+                    <select class="form-select" name="minSignLevel" id="minSignLevel-1">
                         <th:block th:each="signLevel : ${signLevels}">
                             <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
                         </th:block>
