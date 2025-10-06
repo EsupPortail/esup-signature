@@ -37,6 +37,8 @@ global:
     csv-separator: ";"
     otp-validity: 1
 #    authorized-sign-types: imageStamp, nexuCert
+#    shib-users-domain-white-list:
+#    forced-externals-domain-list:
     export-attachements: true
     external-signature-params:
         add-watermark: false
@@ -304,6 +306,7 @@ sign:
     signature-packaging: ENVELOPED
     xades-digest-algorithm: SHA256
     xades-signature-level: XAdES_BASELINE_LTA
+    sign-with-expired-certificate: false
 
 logging:
     file.name: logs/esup-signature.log
