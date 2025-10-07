@@ -1218,12 +1218,12 @@ export class WorkspacePdf {
 
     autocollapse() {
         let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").width() - 1000;
+        let maxWidth = $("#workspace").innerWidth() - 50;
         console.info("maxWidth : " + maxWidth);
         const listItems = document.querySelectorAll('#ws-tabs > li');
         let totalWidth = 0;
         listItems.forEach(li => {
-            totalWidth += li.offsetWidth;
+            totalWidth += li.getBoundingClientRect().width;
         });
         console.warn(totalWidth + " >= " + maxWidth);
         if (totalWidth >= maxWidth) {
