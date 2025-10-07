@@ -402,7 +402,7 @@ public class SignRequestController {
                           @PathVariable("recipientId") Long recipientId,
                           @RequestParam(value = "phone", required = false) String phone,
                           RedirectAttributes redirectAttributes) {
-        if(otpService.generateOtpForSignRequest(id, recipientId, phone, true)){
+        if(otpService.generateOtpForSignRequest(id, recipientId, phone, true) != null){
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));
@@ -418,7 +418,7 @@ public class SignRequestController {
                           @PathVariable("recipientId") Long recipientId,
                           @RequestParam(value = "phone", required = false) String phone,
                           RedirectAttributes redirectAttributes) {
-        if(otpService.generateOtpForSignRequest(id, recipientId, phone, false)){
+        if(otpService.generateOtpForSignRequest(id, recipientId, phone, false) != null){
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));
