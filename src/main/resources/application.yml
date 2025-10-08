@@ -51,7 +51,7 @@ global:
     french-phone-number-only: false
     external-can-edit: false
     search-for-external-users: false
-    seal-for-externals: true
+    seal-for-externals: false
     seal-authorized-for-signed-files: false
     hide-hidden-visa: false
 #    test-email: toto@univ-ville.fr
