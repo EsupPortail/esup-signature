@@ -4,6 +4,7 @@ import eu.europa.esig.dss.asic.cades.ASiCWithCAdESSignatureParameters;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.ASiCWithXAdESSignatureParameters;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
+import eu.europa.esig.dss.cades.CAdESSignatureParameters;
 import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.model.DSSDocument;
@@ -23,6 +24,7 @@ import eu.europa.esig.dss.spi.x509.tsp.TimestampToken;
 import eu.europa.esig.dss.token.Pkcs11SignatureToken;
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
 import eu.europa.esig.dss.token.SignatureTokenConnection;
+import eu.europa.esig.dss.xades.XAdESSignatureParameters;
 import eu.europa.esig.dss.xades.signature.XAdESService;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -154,17 +156,8 @@ public class SignService {
 			}
 			signatureDocumentForm.setCertificateChain(base64CertificateChain);
 			AbstractSignatureParameters<?> parameters;
-			if(signatureForm.equals(SignatureForm.CAdES)) {
-				ASiCWithCAdESSignatureParameters aSiCWithCAdESSignatureParameters = new ASiCWithCAdESSignatureParameters();
-				aSiCWithCAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
-				aSiCWithCAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
-				parameters = aSiCWithCAdESSignatureParameters;
-				fillCommonsParameters(parameters, signatureDocumentForm);
-			} else if(signatureForm.equals(SignatureForm.XAdES)) {
-				ASiCWithXAdESSignatureParameters aSiCWithXAdESSignatureParameters = new ASiCWithXAdESSignatureParameters();
-				aSiCWithXAdESSignatureParameters.aSiC().setContainerType(ASiCContainerType.ASiC_E);
-				aSiCWithXAdESSignatureParameters.aSiC().setMimeType("application/vnd.etsi.asic-e+zip");
-				parameters = aSiCWithXAdESSignatureParameters;
+			if(signatureForm.equals(SignatureForm.CAdES) || signatureForm.equals(SignatureForm.XAdES)) {
+                parameters = getSignatureParameters(signProperties.getContainerType(), signatureForm);
 				fillCommonsParameters(parameters, signatureDocumentForm);
 			} else {
 				if((abstractKeyStoreTokenConnection instanceof OpenSCSignatureToken
@@ -277,6 +270,7 @@ public class SignService {
 	}
 
 	public void fillCommonsParameters(AbstractSignatureParameters<?> parameters, AbstractSignatureForm form) {
+        parameters.setSignaturePackaging(signProperties.getSignaturePackaging());
 		parameters.setSignatureLevel(form.getSignatureLevel());
 		parameters.setDigestAlgorithm(form.getDigestAlgorithm());
 		parameters.bLevel().setSigningDate(form.getSigningDate());
@@ -300,7 +294,7 @@ public class SignService {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
-		DocumentSignatureService service = getSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
+		DocumentSignatureService service = getDocumentSignatureService(signatureDocumentForm.getContainerType(), signatureDocumentForm.getSignatureForm());
 		DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()));
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
@@ -310,7 +304,7 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public DSSDocument certSignDocument(SignatureMultipleDocumentsForm form, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) {
 		logger.info("Start signDocument with multiple documents");
-		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
+		MultipleDocumentsSignatureService service = getMultipleDocumentSignatureService(form.getSignatureForm());
 		List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
@@ -322,67 +316,86 @@ public class SignService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public TimestampToken getContentTimestamp(SignatureMultipleDocumentsForm form, AbstractSignatureParameters<?> parameters) {
 		logger.info("Start getContentTimestamp with multiple documents");
-		MultipleDocumentsSignatureService service = getASiCSignatureService(form.getSignatureForm());
+		MultipleDocumentsSignatureService service = getMultipleDocumentSignatureService(form.getSignatureForm());
 		TimestampToken contentTimestamp = service.getContentTimestamp(dssUtilsService.toDSSDocuments(form.getDocumentsToSign()), parameters);
 		logger.info("End getContentTimestamp with  multiple documents");
 		return contentTimestamp;
 	}
 
-	@SuppressWarnings("rawtypes")
-	public DocumentSignatureService getSignatureService(ASiCContainerType containerType, SignatureForm signatureForm) {
-		DocumentSignatureService service = null;
+    public DocumentSignatureService<?, ?> getDocumentSignatureService(ASiCContainerType containerType, SignatureForm signatureForm) {
+        DocumentSignatureService<?, ?> service = null;
+        if (containerType != null) {
+            service = (DocumentSignatureService<?, ?>) getMultipleDocumentSignatureService(signatureForm);
+        } else {
+            switch (signatureForm) {
+                case CAdES:
+                    service = cadesService;
+                    break;
+                case PAdES:
+                    service = padesService;
+                    break;
+                case XAdES:
+                    service = xadesService;
+                    break;
+                default:
+                    logger.error("Unknow signature form : " + signatureForm);
+            }
+        }
+        return service;
+    }
+
+    public AbstractSignatureParameters<?> getSignatureParameters(ASiCContainerType containerType, SignatureForm signatureForm) {
+		AbstractSignatureParameters<?> parameters = null;
 		if (containerType != null) {
-			service = (DocumentSignatureService) getASiCSignatureService(signatureForm);
-		} else {
+            switch (signatureForm) {
+                case CAdES:
+                    ASiCWithCAdESSignatureParameters asicCadesParams = new ASiCWithCAdESSignatureParameters();
+                    asicCadesParams.aSiC().setContainerType(containerType);
+                    parameters = asicCadesParams;
+                    break;
+                case XAdES:
+                    ASiCWithXAdESSignatureParameters asicXadesParams = new ASiCWithXAdESSignatureParameters();
+                    asicXadesParams.aSiC().setContainerType(containerType);
+                    parameters = asicXadesParams;
+                    break;
+                default:
+                    logger.error("Unknow signature form for ASiC container: " + signatureForm);
+            }
+            return parameters;
+        } else {
 			switch (signatureForm) {
 				case CAdES:
-					service = cadesService;
+					parameters = new CAdESSignatureParameters();
 					break;
 				case PAdES:
-					service = padesService;
+					PAdESSignatureParameters padesParams = new PAdESSignatureParameters();
+					//signature size 32767 is max for PDF/A-2B
+					padesParams.setContentSize(32767);
+					parameters = padesParams;
 					break;
 				case XAdES:
-					service = xadesService;
+					parameters = new XAdESSignatureParameters();
 					break;
 				default:
 					logger.error("Unknow signature form : " + signatureForm);
-				}
-		}
-		return service;
-	}
-
-	public MultipleDocumentsSignatureService<?, ?> getASiCSignatureService(SignatureForm signatureForm) {
-		MultipleDocumentsSignatureService<?, ?> service = null;
-		switch (signatureForm) {
-		case CAdES:
-			service = asicWithCAdESService;
-			break;
-		case XAdES:
-			service = asicWithXAdESService;
-			break;
-		default:
-			logger.error("Unknow signature form : " + signatureForm);
-		}
-		return service;
-	}
-
-	public AbstractSignatureParameters<?> getASiCSignatureParameters(ASiCContainerType containerType, SignatureForm signatureForm) {
-		AbstractSignatureParameters<?> parameters = null;
-		switch (signatureForm) {
-			case CAdES:
-				ASiCWithCAdESSignatureParameters asicCadesParams = new ASiCWithCAdESSignatureParameters();
-				asicCadesParams.aSiC().setContainerType(containerType);
-				parameters = asicCadesParams;
-				break;
-			case XAdES:
-				ASiCWithXAdESSignatureParameters asicXadesParams = new ASiCWithXAdESSignatureParameters();
-				asicXadesParams.aSiC().setContainerType(containerType);
-				parameters = asicXadesParams;
-				break;
-			default:
-				logger.error("Unknow signature form for ASiC container: " + signatureForm);
+			}
 		}
 		return parameters;
 	}
+
+    public MultipleDocumentsSignatureService<?, ?> getMultipleDocumentSignatureService(SignatureForm signatureForm) {
+        MultipleDocumentsSignatureService<?, ?> service = null;
+        switch (signatureForm) {
+            case CAdES:
+                service = asicWithCAdESService;
+                break;
+            case XAdES:
+                service = asicWithXAdESService;
+                break;
+            default:
+                logger.error("Unknow signature form : " + signatureForm);
+        }
+        return service;
+    }
 
 }

@@ -14,7 +14,19 @@ public class SignProperties {
     private DigestAlgorithm cadesDigestAlgorithm;
     private SignatureLevel cadesSignatureLevel;
     private ASiCContainerType containerType;
-    private SignaturePackaging signaturePackaging;
+
+    /**
+     * Définit la méthode d'emballage de la signature à utiliser pour les documents non PDF
+     *
+     * SignaturePackaging représente une norme décrivant comment la signature est intégrée
+     * par rapport aux données. Les options possibles incluent notamment :
+     * - ENVELOPED : la signature est incluse dans les données signées.
+     * - ENVELOPING : la signature contient les données signées.
+     * - DETACHED : la signature est séparée des données signées.
+     *
+     * Cette variable est utilisée pour configurer le mode d'intégration de la signature par défaut.
+     */
+    private SignaturePackaging signaturePackaging = SignaturePackaging.ENVELOPED;
     private Boolean signWithExpiredCertificate = false;
     private Long passwordTimeout;
     private String aesKey;

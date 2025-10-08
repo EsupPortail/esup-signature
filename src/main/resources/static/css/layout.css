@@ -9,7 +9,7 @@ body {
 }
 
 header {
-    z-index: 1030 !important;
+    z-index: 1031 !important;
 }
 
 #navbar {
@@ -118,14 +118,14 @@ header {
 }
 
 .workspace {
-    margin-top: 128px;
+    margin-top: 130px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
 }
 
 .workspace-pdf {
-    margin-top: 128px;
+    margin-top: 130px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;

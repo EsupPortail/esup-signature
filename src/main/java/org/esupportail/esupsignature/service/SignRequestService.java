@@ -1988,7 +1988,7 @@ public class SignRequestService {
 				}
 				((SignatureMultipleDocumentsForm) abstractSignatureForm).setDocumentsToSign(multipartFiles);
 			}
-			((SignatureMultipleDocumentsForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
+			abstractSignatureForm.setContainerType(signProperties.getContainerType());
 		} else {
 			InputStream inputStream;
 			byte[] bytes;
@@ -2007,7 +2007,7 @@ public class SignRequestService {
 			abstractSignatureForm = new SignatureDocumentForm();
 			((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(new DssMultipartFile(toSignFile.getFileName(), toSignFile.getFileName(), toSignFile.getContentType(), bytes));
 			if(!signatureForm.equals(SignatureForm.PAdES)) {
-				((SignatureDocumentForm) abstractSignatureForm).setContainerType(signProperties.getContainerType());
+				abstractSignatureForm.setContainerType(signProperties.getContainerType());
 			}
 		}
 		abstractSignatureForm.setSignatureForm(signatureForm);
@@ -2023,6 +2023,7 @@ public class SignRequestService {
 		}
 		abstractSignatureForm.setSigningDate(new Date());
         assert abstractSignatureForm instanceof SignatureDocumentForm;
+        ((SignatureDocumentForm) abstractSignatureForm).setSignaturePackaging(signProperties.getSignaturePackaging());
         return (SignatureDocumentForm) abstractSignatureForm;
 	}
 
