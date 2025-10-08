@@ -16,8 +16,10 @@ import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -45,6 +47,8 @@ public class OtpSignRequestController {
 
     @Resource
     private DataService dataService;
+    @Autowired
+    private SignService signService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -149,7 +153,7 @@ public class OtpSignRequestController {
             }
         }
         model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signRequestService.validate(id);
+        Reports reports = signService.validate(id);
         if(reports != null) {
             model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty()));
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
