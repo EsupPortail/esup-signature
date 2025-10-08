@@ -311,11 +311,6 @@ public class DSSBeanConfig {
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setRevocationDataLoadingStrategyFactory(new OCSPFirstRevocationDataLoadingStrategyFactory());
 		certificateVerifier.setCheckRevocationForUntrustedChains(dssProperties.getCheckRevocationForUntrustedChains());
-        if(dssProperties.getCheckRevocationForUntrustedChains()) {
-            certificateVerifier.setAlertOnNoRevocationAfterBestSignatureTime(new ExceptionOnStatusAlert());
-        } else {
-            certificateVerifier.setAlertOnNoRevocationAfterBestSignatureTime(new SilentOnStatusAlert());
-        }
 		if(signProperties.getSignWithExpiredCertificate()) {
 			certificateVerifier.setAlertOnExpiredCertificate(new SilentOnStatusAlert());
 		} else {
