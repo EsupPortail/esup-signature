@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
+import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -108,8 +109,9 @@ public class SignBookService {
     private final ObjectMapper objectMapper;
     private final SignWithService signWithService;
     private final SmsProperties smsProperties;
+    private final SignService signService;
 
-    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties) {
+    public SignBookService(GlobalProperties globalProperties, MessageSource messageSource, AuditTrailService auditTrailService, SignBookRepository signBookRepository, SignRequestService signRequestService, UserService userService, FsAccessFactoryService fsAccessFactoryService, WebUtilsService webUtilsService, FileService fileService, PdfService pdfService, WorkflowService workflowService, MailService mailService, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, DataService dataService, LogService logService, TargetService targetService, UserPropertieService userPropertieService, CommentService commentService, OtpService otpService, DataRepository dataRepository, WorkflowRepository workflowRepository, UserShareService userShareService, RecipientService recipientService, DocumentService documentService, SignRequestParamsService signRequestParamsService, PreFillService preFillService, ReportService reportService, ActionService actionService, SignRequestParamsRepository signRequestParamsRepository, ObjectMapper objectMapper, SignWithService signWithService, SmsProperties smsProperties, SignService signService) {
         this.globalProperties = globalProperties;
         this.messageSource = messageSource;
         this.auditTrailService = auditTrailService;
@@ -144,6 +146,7 @@ public class SignBookService {
         this.objectMapper = objectMapper;
         this.signWithService = signWithService;
         this.smsProperties = smsProperties;
+        this.signService = signService;
     }
 
     /**
@@ -1418,7 +1421,7 @@ public class SignBookService {
     public void sealAllDocs(Long id) throws EsupSignatureRuntimeException, IOException {
         SignBook signBook = getById(id);
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            signRequestService.seal(signRequest.getId());
+            signService.seal(signRequest.getId());
         }
     }
 

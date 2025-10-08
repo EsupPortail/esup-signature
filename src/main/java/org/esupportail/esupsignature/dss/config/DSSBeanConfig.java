@@ -6,7 +6,6 @@ import eu.europa.esig.dss.alert.ExceptionOnStatusAlert;
 import eu.europa.esig.dss.alert.SilentOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
-import eu.europa.esig.dss.cades.signature.CAdESService;
 import eu.europa.esig.dss.model.DSSException;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.IPdfObjFactory;
@@ -52,7 +51,6 @@ import eu.europa.esig.dss.tsl.cache.CacheCleaner;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
-import eu.europa.esig.dss.xades.signature.XAdESService;
 import eu.europa.esig.dss.xml.common.DocumentBuilderFactoryBuilder;
 import eu.europa.esig.dss.xml.common.SchemaFactoryBuilder;
 import eu.europa.esig.dss.xml.common.ValidatorConfigurator;
@@ -331,20 +329,6 @@ public class DSSBeanConfig {
 	@Bean
 	public ClassPathResource defaultPolicy() {
 		return new ClassPathResource(dssProperties.getDefaultValidationPolicy());
-	}
-
-	@Bean
-	public CAdESService cadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
-		CAdESService cAdESService = new CAdESService(certificateVerifier);
-		cAdESService.setTspSource(tspSource);
-		return cAdESService;
-	}
-
-	@Bean
-	public XAdESService xadesService(CertificateVerifier certificateVerifier, TSPSource tspSource) {
-		XAdESService xAdESService = new XAdESService(certificateVerifier);
-		xAdESService.setTspSource(tspSource);
-		return xAdESService;
 	}
 
 	@Bean
