@@ -21,7 +21,7 @@ public class SignProperties {
      * dans les processus de signature numérique. Le choix du type de conteneur peut
      * influencer la structure et la gestion des fichiers signés.
      */
-    private ASiCContainerType containerType;
+    private ASiCContainerType containerType = ASiCContainerType.ASiC_E;
 
     /**
      * Définit la méthode d'emballage de la signature à utiliser pour les documents non PDF

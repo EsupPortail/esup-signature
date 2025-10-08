@@ -61,9 +61,9 @@ public class NexuService {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Transactional
 	public ToBeSigned getDataToSign(Long id, String userEppn, SignatureDocumentForm signatureDocumentForm) throws DSSException, IOException {
-		SignRequest signRequest = signRequestRepository.findById(id).get();
+		SignRequest signRequest = signRequestRepository.findById(id).orElseThrow();
 		logger.info("Start getDataToSign with one document");
-		DocumentSignatureService service = signService.getDocumentSignatureService(false, signatureDocumentForm.getSignatureForm());
+		DocumentSignatureService service = signService.getDocumentSignatureService(signatureDocumentForm.getSignatureForm());
 		DSSDocument toSignDocument = dssUtilsService.toDSSDocument(signatureDocumentForm.getDocumentToSign());
 		AbstractSignatureParameters parameters = signService.getSignatureParameters(signRequest, userEppn, signatureDocumentForm);
 		ToBeSigned toBeSigned = service.getDataToSign(toSignDocument, parameters);
