@@ -339,8 +339,7 @@ public class SignService {
 	public DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
         logger.debug("Start signDocument with single documents");
         DocumentSignatureService service = getDocumentSignatureService(signatureDocumentForm.getSignatureForm());
-        parameters.setDetachedContents(Collections.singletonList(dssUtilsService.toDSSDocument(signatureDocumentForm.getDocumentToSign())));
-        DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()));
+        DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()), "detached-file");
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
         logger.debug("End signDocument with single documents");
@@ -352,7 +351,6 @@ public class SignService {
 		logger.debug("Start signDocument with multiple documents");
 		MultipleDocumentsSignatureService service = getMultipleDocumentSignatureService(form.getSignatureForm());
 		List<DSSDocument> toSignDocuments = dssUtilsService.toDSSDocuments(form.getDocumentsToSign());
-        parameters.setDetachedContents(toSignDocuments);
 		ToBeSigned dataToSign = service.getDataToSign(toSignDocuments, parameters);
 		SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
 		DSSDocument signedDocument = service.signDocument(toSignDocuments, parameters, signatureValue);
