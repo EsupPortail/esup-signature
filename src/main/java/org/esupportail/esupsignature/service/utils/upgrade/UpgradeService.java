@@ -418,12 +418,18 @@ public class UpgradeService {
             END;
         $$;
         
+        update live_workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        
+        update live_workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
         
         update live_workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
         update workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
         
         update live_workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
         update workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+
         
         alter table public.workflow_step
             add constraint workflow_step_repeatable_sign_type_check
