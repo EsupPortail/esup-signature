@@ -19,6 +19,8 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -58,6 +60,27 @@ public class UpgradeService {
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         logger.info("##### Esup-signature Upgrade #####");
+        for(String update : updates) {
+            if(checkVersionUpToDate(update) < 0) {
+                logger.info("#### Starting update : " + update + " ####");
+                Method method = UpgradeService.class.getDeclaredMethod("update_" + update.replaceAll("\\.", "_"));
+                method.invoke(this);
+                List<AppliVersion> appliVersions = new ArrayList<>();
+                appliVersionRepository.findAll().forEach(appliVersions::add);
+                if(!appliVersions.isEmpty()) {
+                    appliVersions.get(0).setEsupSignatureVersion(update);
+                } else {
+                    AppliVersion appliVersion = new AppliVersion(update);
+                    appliVersionRepository.save(appliVersion);
+                }
+            } else {
+                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
+            }
+        }
+        logger.info("##### Esup-signature is up-to-date #####");
+    }
+
+    public void checkVersion() {
         Thread checkVersion = new Thread(() -> {
             try {
                 RestTemplate restTemplate = new RestTemplate();
@@ -83,24 +106,6 @@ public class UpgradeService {
             }
         });
         checkVersion.start();
-        for(String update : updates) {
-            if(checkVersionUpToDate(update) < 0) {
-                logger.info("#### Starting update : " + update + " ####");
-                Method method = UpgradeService.class.getDeclaredMethod("update_" + update.replaceAll("\\.", "_"));
-                method.invoke(this);
-                List<AppliVersion> appliVersions = new ArrayList<>();
-                appliVersionRepository.findAll().forEach(appliVersions::add);
-                if(!appliVersions.isEmpty()) {
-                    appliVersions.get(0).setEsupSignatureVersion(update);
-                } else {
-                    AppliVersion appliVersion = new AppliVersion(update);
-                    appliVersionRepository.save(appliVersion);
-                }
-            } else {
-                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
-            }
-        }
-        logger.info("##### Esup-signature is up-to-date #####");
     }
 
     private int checkVersionUpToDate(String updateVersion) {
@@ -423,6 +428,11 @@ public class UpgradeService {
             END;
         $$;
         
+        update live_workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        
+        update live_workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
         
         update live_workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
         update workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
