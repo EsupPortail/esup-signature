@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 

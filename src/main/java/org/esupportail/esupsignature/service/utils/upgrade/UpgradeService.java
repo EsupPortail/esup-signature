@@ -71,11 +71,11 @@ public class UpgradeService {
                 headers.add("X-API-Version", currentVersion);
                 HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                 String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-                logger.debug("##### Esup-signature  last version : " + version + " #####");
-                if (version != null && currentVersion.contains(version.trim())) {
-                    logger.debug("##### Esup-signature version is up-to-date #####");
+                logger.info("##### Esup-signature last version : " + version + " #####");
+                if (version != null && checkVersionUpToDate(version.trim()) < 0) {
+                    logger.info("##### Esup-signature version is up-to-date #####");
                 } else {
-                    logger.debug("##### Esup-signature version is not up-to-date #####");
+                    logger.info("##### Esup-signature version is not up-to-date #####");
                 }
             } catch (Exception e) {
                 logger.info("##### Unable to get last version #####", e);
@@ -96,7 +96,7 @@ public class UpgradeService {
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
-                logger.debug("##### Esup-signature is higher than " + update + ", skip update #####");
+                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");
