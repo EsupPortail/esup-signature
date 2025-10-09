@@ -1,7 +1,7 @@
 @font-face {
     font-family: 'FontAwesome';
-    src: url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.woff2') format('woff2'),
-    url('/webjars/font-awesome/6.2.0/webfonts/fa-solid-900.ttf') format('truetype');
+    src: url('/webjars/font-awesome/6.7.2/webfonts/fa-solid-900.woff2') format('woff2'),
+    url('/webjars/font-awesome/6.7.2/webfonts/fa-solid-900.ttf') format('truetype');
 }
 
 @font-face {

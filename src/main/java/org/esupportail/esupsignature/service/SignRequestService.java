@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -69,7 +68,6 @@ public class SignRequestService {
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestService.class);
 
 	private final GlobalProperties globalProperties;
-	private final SignProperties signProperties;
 	private final TargetService targetService;
 	private final WebUtilsService webUtilsService;
 	private final SignRequestRepository signRequestRepository;
@@ -98,9 +96,8 @@ public class SignRequestService {
     private final OtpService otpService;
     private final SignService signService;
 
-    public SignRequestService(GlobalProperties globalProperties, SignProperties signProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService) {
+    public SignRequestService(GlobalProperties globalProperties, TargetService targetService, WebUtilsService webUtilsService, SignRequestRepository signRequestRepository, ActionService actionService, PdfService pdfService, DocumentService documentService, CustomMetricsService customMetricsService, UserService userService, DataService dataService, CommentService commentService, MailService mailService, AuditTrailService auditTrailService, UserShareService userShareService, RecipientService recipientService, FsAccessFactoryService fsAccessFactoryService, WsAccessTokenRepository wsAccessTokenRepository, FileService fileService, PreFillService preFillService, LogService logService, SignRequestParamsService signRequestParamsService, ValidationService validationService, FOPService fopService, ObjectMapper objectMapper, SignBookRepository signBookRepository, NexuSignatureRepository nexuSignatureRepository, OtpService otpService, SignService signService) {
         this.globalProperties = globalProperties;
-        this.signProperties = signProperties;
         this.targetService = targetService;
         this.webUtilsService = webUtilsService;
         this.signRequestRepository = signRequestRepository;
@@ -1845,7 +1842,7 @@ public class SignRequestService {
     @Transactional
     public List<RecipientWsDto> getExternalRecipients(Long signRequestId) {
 		SignRequest signRequest = getById(signRequestId);
-		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail())).collect(Collectors.toList());
+		return signRequest.getParentSignBook().getTeam().stream().filter(user -> user.getUserType().equals(UserType.external)).map(user -> new RecipientWsDto(user.getId(), user.getEmail(), user.getPhone())).collect(Collectors.toList());
     }
 
 	/**
@@ -1911,7 +1908,7 @@ public class SignRequestService {
     @Transactional
 	public void cleanSignRequestParams(Long id) throws IOException {
 		SignRequest signRequest = getById(id);
-		Reports reports = signService.validate(id);
+		Reports reports = signService.validate(signRequest.getId());
 		if(reports.getSimpleReport().getSignatureIdList().isEmpty() && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() == null) {
 			signRequest.getSignRequestParams().clear();
 			signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().clear();

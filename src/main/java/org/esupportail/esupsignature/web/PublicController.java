@@ -37,15 +37,10 @@ public class PublicController {
     private final BuildProperties buildProperties;
     private final LogService logService;
     private final SignRequestService signRequestService;
-
     private final AuditTrailService auditTrailService;
-
     private final FileService fileService;
-
     private final UserService userService;
-
     private final XSLTService xsltService;
-
     private final PreAuthorizeService preAuthorizeService;
     private final ValidationService validationService;
     private final SignService signService;

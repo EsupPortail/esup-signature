@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 
@@ -95,6 +95,7 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+            myGlobalProperties.newVersion = globalProperties.newVersion;
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
