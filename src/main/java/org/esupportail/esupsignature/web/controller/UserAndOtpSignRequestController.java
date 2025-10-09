@@ -103,21 +103,24 @@ public class UserAndOtpSignRequestController {
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         model.addAttribute("currentStepMultiSign", true);
         model.addAttribute("currentStepSingleSignWithAnnotation", true);
+        SignLevel currentStepMinSignLevel = SignLevel.simple;
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-            model.addAttribute("currentStepMinSignLevel", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel());
+            currentStepMinSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel();
             if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
                 model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
             }
             model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
             model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
-        } else {
-            model.addAttribute("currentStepMinSignLevel", SignLevel.simple);
         }
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
         List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
+        if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
+            currentStepMinSignLevel = SignLevel.advanced;
+        }
+        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
         model.addAttribute("nextSignBook", nextSignBook);
