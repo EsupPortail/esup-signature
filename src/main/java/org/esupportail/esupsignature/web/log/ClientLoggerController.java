@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.log;
 
-import org.esupportail.esupsignature.web.controller.user.UserController;
+import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.js.JsError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,14 +12,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 @CrossOrigin(origins = "*")
-@RequestMapping("log")
+@RequestMapping("/log")
 @Controller
 public class ClientLoggerController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientLoggerController.class);
 
     @PostMapping(consumes = {"application/json"})
     public ResponseEntity<Boolean> log(@RequestBody JsError jsonClientSideError, HttpServletRequest httpServletRequest) {

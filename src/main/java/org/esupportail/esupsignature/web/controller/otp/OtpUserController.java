@@ -1,6 +1,5 @@
-package org.esupportail.esupsignature.web.otp;
+package org.esupportail.esupsignature.web.controller.otp;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
@@ -22,8 +21,11 @@ public class OtpUserController {
 
     private static final Logger logger = LoggerFactory.getLogger(OtpUserController.class);
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
+
+    public OtpUserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,

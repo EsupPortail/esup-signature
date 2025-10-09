@@ -52,7 +52,7 @@
                                 </form>
                             </td>
                             <td th:unless="${signRequest.createBy.eppn == userEppn}">
-                                <button type="submit" onclick="return confirm('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
+                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fa fa-trash-alt"></i></button>
                             </td>
                         </tr>
                     </th:block>
@@ -64,10 +64,10 @@
                         <label>Ajouter une pièce jointe</label>
                         <div class="custom-file">
                             <input aria-describedby="inputGroupLabel03" class="form-control"
-                                   data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
-                                   type="file">
+                                data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
+                                type="file">
                             <label class="custom-file-label" for="inputGroupFile03" id="inputGroupLabel03"
-                                   aria-label="Choisir un document">
+                                aria-label="Choisir un document">
                                 Choisir un document
                             </label>
                         </div>

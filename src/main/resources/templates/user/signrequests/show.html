@@ -210,11 +210,11 @@
                             <i th:es-postit-id="${postit.id}" class="fa-regular fa-copy"></i>
                         </button>
                         <p th:classappend="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
-                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/update/' + postit.id}" th:method="put">
+                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/update/' + ${postit.id}" th:method="put">
                             <textarea th:style="'width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
                             <button type="submit" class="btn btn-sm btn-dark float-end position-absolute" style="bottom: 10px;right: 25px;" title="Enregistrer"><i class="fa fa-save"></i></button>
                         </form>
-                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="${'/user/signrequests/comment/' + signRequest.id + '/delete/' + postit.id}" th:method="delete">
+                        <form th:if="${postit.createBy.eppn == userEppn}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/delete/' + ${postit.id}" th:method="delete">
                             <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute" title="Supprimer" style="bottom: 10px;">
                                 <i class="fa fa-trash"></i>
                             </button>
@@ -772,7 +772,7 @@
 <div data-bs-focus="false" class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
+            <form th:action="'/' + ${urlProfil} + '/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -834,7 +834,7 @@
                         <td th:text="${extrenalRecipient.email}"></td>
                         <td>
                             <form th:action="'/user/signrequests/send-otp-download/' + ${signRequest.parentSignBook.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
-                                <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
+                                <input type="text" name="phone" class="form-control me-1" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
                                 <button type="submit" class="btn btn-success" title="Envoyer un nouveau lien d'accès">Envoyer</button>
                             </form>
                         </td>
@@ -1009,7 +1009,7 @@
 <div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/user/signrequests/postit/' + ${signRequest.id}" method="post">
+            <form th:action="'/' + ${urlProfil} + '/signrequests/postit/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1052,7 +1052,7 @@
                                     <div class="carousel-item text-center" th:classappend="${iterator.index == 0} ? 'active'">
                                         <img height="145" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
                                         <a style="position: absolute; top: 110px; left: 30%;" th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '"
-                                            th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button"
+                                            th:href="'/' + ${urlProfil} + '/users/set-default-sign-image/' + ${iterator.index}" role="button"
                                             class="btn btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
                                             <i class="fa-solid fa-star"></i>
                                         </a>

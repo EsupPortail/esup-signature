@@ -71,11 +71,12 @@ public class UpgradeService {
                 headers.add("X-API-Version", currentVersion);
                 HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                 String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-                logger.debug("##### Esup-signature  last version : " + version + " #####");
-                if (version != null && currentVersion.contains(version.trim())) {
-                    logger.debug("##### Esup-signature version is up-to-date #####");
+                logger.info("##### Esup-signature last version : " + version + " #####");
+                if (version != null && compareVersions(version.trim(), currentVersion) >= 0) {
+                    logger.info("##### Esup-signature version is up-to-date #####");
                 } else {
-                    logger.debug("##### Esup-signature version is not up-to-date #####");
+                    logger.info("##### Esup-signature version is not up-to-date #####");
+                    globalProperties.newVersion = version;
                 }
             } catch (Exception e) {
                 logger.info("##### Unable to get last version #####", e);
@@ -96,7 +97,7 @@ public class UpgradeService {
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
-                logger.debug("##### Esup-signature is higher than " + update + ", skip update #####");
+                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");
@@ -107,8 +108,12 @@ public class UpgradeService {
         appliVersionRepository.findAll().forEach(appliVersions::add);
         if(appliVersions.isEmpty()) return -1;
         String databaseVersion = appliVersions.get(0).getEsupSignatureVersion().split("-")[0];
-        String[] codeVersionStrings = updateVersion.split("\\.");
-        String[] databaseVersionStrings = databaseVersion.split("\\.");
+        return compareVersions(updateVersion, databaseVersion);
+    }
+
+    private static int compareVersions(String targetVersion, String currentVersion) {
+        String[] codeVersionStrings = targetVersion.split("\\.");
+        String[] databaseVersionStrings = currentVersion.split("-")[0].split("\\.");
         int length = Math.max(codeVersionStrings.length, databaseVersionStrings.length);
 
         for(int i = 0; i < length; i++) {
