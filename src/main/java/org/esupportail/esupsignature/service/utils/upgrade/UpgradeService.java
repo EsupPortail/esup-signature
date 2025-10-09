@@ -78,6 +78,7 @@ public class UpgradeService {
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");
+        checkVersion();
     }
 
     public void checkVersion() {
