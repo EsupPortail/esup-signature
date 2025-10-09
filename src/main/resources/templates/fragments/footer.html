@@ -7,11 +7,12 @@
 		<div th:replace="~{fragments/message :: message}"></div>
 	</th:block>
 	<div id="footer">
-		<footer  class="footer bg-secondary fixed-bottom text-center text-white">
-			<div th:if="${certificatProblem == true && user.roles.contains('ROLE_ADMIN')}"  class="w-100 bg-danger text-center">
-				Au moins un des certificats serveur va ou est expirer, merci vérifier les certificats concernés
-			</div>
+		<footer class="footer bg-secondary fixed-bottom text-center text-white">
 			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span th:text="${versionApp}"></span><span th:if="${profile != null}" th:text="' - ' + ${profile}"></span> | <a class="text-white" href="/user">Accueil</a> | <a class="text-white" href="/rgpd">Données personnelles</a> | <a class="text-white" href="/rgaa" th:text="#{rgaa.title}"></a>
+            <span th:if="${user.roles.contains('ROLE_ADMIN')}"  class="w-100 bg-danger text-center">
+                <span th:if="${certificatProblem == true}">Au moins un des certificats serveur va, ou est expiré, merci vérifier les certificats concernés.</span>
+                <a target="_blank" class="text-white" th:href="'https://github.com/EsupPortail/esup-signature/releases/tag/' + ${globalProperties.newVersion}" th:if="${globalProperties.newVersion != null}" th:text="'Nouvelle version diponible : ' + ${globalProperties.newVersion}"></a>
+            </span>
 		</footer>
 	</div>
 	<div id="snackbar"></div>
