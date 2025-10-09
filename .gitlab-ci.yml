@@ -25,7 +25,7 @@ selenium_test:
   tags:
     - test
   retry:
-    max: 3
+    max: 2
     when: script_failure
 # Job pour le déploiement en environnement de test
 deploy_test:
