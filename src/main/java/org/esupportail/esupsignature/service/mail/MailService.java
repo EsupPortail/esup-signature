@@ -221,7 +221,7 @@ public class MailService {
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             if (!signBook.getTeam().isEmpty()) {
                 mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && (toMails == null || !toMails.contains(userTo.getEmail())) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
-                logger.info("send email completes cc for " + user.getEppn());
+                logger.debug("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
             } else {
                 logger.debug("no viewers to send mail");
