@@ -72,10 +72,11 @@ public class UpgradeService {
                 HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
                 String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
                 logger.info("##### Esup-signature last version : " + version + " #####");
-                if (version != null && checkVersionUpToDate(version.trim()) < 0) {
+                if (version != null && compareVersions(version.trim(), currentVersion) >= 0) {
                     logger.info("##### Esup-signature version is up-to-date #####");
                 } else {
                     logger.info("##### Esup-signature version is not up-to-date #####");
+                    globalProperties.newVersion = version;
                 }
             } catch (Exception e) {
                 logger.info("##### Unable to get last version #####", e);
@@ -107,8 +108,12 @@ public class UpgradeService {
         appliVersionRepository.findAll().forEach(appliVersions::add);
         if(appliVersions.isEmpty()) return -1;
         String databaseVersion = appliVersions.get(0).getEsupSignatureVersion().split("-")[0];
-        String[] codeVersionStrings = updateVersion.split("\\.");
-        String[] databaseVersionStrings = databaseVersion.split("\\.");
+        return compareVersions(updateVersion, databaseVersion);
+    }
+
+    private static int compareVersions(String targetVersion, String currentVersion) {
+        String[] codeVersionStrings = targetVersion.split("\\.");
+        String[] databaseVersionStrings = currentVersion.split("-")[0].split("\\.");
         int length = Math.max(codeVersionStrings.length, databaseVersionStrings.length);
 
         for(int i = 0; i < length; i++) {

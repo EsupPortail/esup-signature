@@ -95,6 +95,7 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+            myGlobalProperties.newVersion = globalProperties.newVersion;
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
