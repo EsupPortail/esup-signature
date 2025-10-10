@@ -53,20 +53,20 @@
             </ul>
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body">
-                    <div class="d-inline-flex">
-                        <h3 class="my-auto me-5">WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
-                        <div class="alert alert-info">Nombre de demandes pour ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
+                    <div class="d-inline-flex justify-content-between w-100">
+                        <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
+                        <div class="alert alert-info p-2 mb-2">Nombre de demandes pour ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
                     </div>
                     <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="accordion" id="accordionExample">
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                        Généralités
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        <h5>Généralités</h5>
                                     </button>
                                 </h2>
-                                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         <div class="form-group mb-3">
                                             <label for="description"><strong>Titre</strong></label>
@@ -120,17 +120,13 @@
                                             </div>
                                             <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
                                         </div>
-                                        <div class="form-group mb-3">
-                                            <label for="message"><strong>Message d’accueil</strong></label>
-                                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        Autorisations
+                                        <h5>Autorisations</h5>
                                     </button>
                                 </h2>
                                 <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
@@ -223,7 +219,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
-                                        Options
+                                        <h5>Options</h5>
                                     </button>
                                 </h2>
                                 <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
@@ -309,7 +305,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        Source et archivage
+                                        <h5>Source et archivage</h5>
                                     </button>
                                 </h2>
                                 <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
@@ -369,7 +365,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseThree">
-                                        Tags
+                                        <h5>Tags</h5>
                                     </button>
                                 </h2>
                                 <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
@@ -380,6 +376,21 @@
                                                     <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${workflow.tags.contains(tag)}"></option>
                                                 </th:block>
                                             </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseThree">
+                                        <h5>Communication</h5>
+                                    </button>
+                                </h2>
+                                <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                    <div class="accordion-body">
+                                        <div class="form-group mb-3">
+                                            <label for="message"><strong>Message d’accueil</strong></label>
+                                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
                                         </div>
                                     </div>
                                 </div>
