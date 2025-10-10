@@ -17,6 +17,15 @@ public class Tag {
     @ManyToOne
     private Tag parentTag;
 
+    public Tag(String name, String color) {
+        this.name = name;
+        this.color = color;
+    }
+
+    public Tag() {
+
+    }
+
     public Long getId() {
         return id;
     }

@@ -35,6 +35,10 @@
             title="Formulaires" href="/admin/forms" class="btn col-12 mb-1 text-left border-light-subtle">
             <i class="fa-solid fa-file-alt file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </a>
+        <a th:classappend="${activeMenu == 'tags'} ? 'btn-secondary' : 'btn-light'"
+           title="Formulaires" href="/admin/tags" class="btn col-12 mb-1 text-left border-light-subtle">
+            <i class="fa-solid fa-tags"></i> <span class="sidebar-label">Tags</span>
+        </a>
         <a th:classappend="${activeMenu == 'messages'} ? 'btn-secondary' : 'btn-light'"
             title="Messages" href="/admin/messages" class="btn col-12 mb-1 text-left border-light-subtle">
             <i class="fa-solid fa-envelope"></i> <span class="sidebar-label">Messages</span>

@@ -696,12 +696,27 @@ export class GlobalUi {
         });
     }
 
+    enableSpectrum() {
+        let tagColor = $('#tagColor');
+        if(tagColor.length) {
+            tagColor.spectrum({
+                type: "flat",
+                showPalette: false,
+                showPaletteOnly: true,
+                togglePaletteOnly: true,
+                showInput: true,
+                showAlpha: false
+            });
+        }
+    }
+
     onDocumentLoad() {
         console.info("global on load");
         // $.fn.modal.Constructor.prototype.enforceFocus = function () {};
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
+        this.enableSpectrum();
         this.adjustUi();
         this.sessionTimeout();
     }
