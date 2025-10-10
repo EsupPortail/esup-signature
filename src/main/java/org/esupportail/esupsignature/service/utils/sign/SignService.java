@@ -68,6 +68,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * Service dédié à la signature des documents.
+ *
+ * Cette classe contient les méthodes et services nécessaires pour signer,
+ * sceller, et valider les documents dans le cadre de processus de signature électronique.
+ * Elle prend en charge différents types de signatures tels que PAdES, CAdES, et XAdES.
+ *
+ * @author David Lemaignent
+ */
 @Service
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
