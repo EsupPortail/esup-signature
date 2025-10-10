@@ -6,12 +6,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasJwtDecoder;
-import org.esupportail.esupsignature.config.security.cas.CasProperties;
 import org.esupportail.esupsignature.config.security.jwt.CustomJwtAuthenticationConverter;
 import org.esupportail.esupsignature.config.security.jwt.MdcUsernameFilter;
 import org.esupportail.esupsignature.config.security.otp.OtpAuthenticationProvider;
-import org.esupportail.esupsignature.config.security.shib.DevShibProperties;
-import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.IndexEntryPoint;
@@ -34,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.client.ConditionalOnOAuth2ClientRegistrationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -70,7 +66,6 @@ import java.util.List;
 @EnableMethodSecurity(
 		securedEnabled = true,
 		jsr250Enabled = true)
-@EnableConfigurationProperties({WebSecurityProperties.class, ShibProperties.class, CasProperties.class, DevShibProperties.class})
 public class WebSecurityConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(WebSecurityConfig.class);

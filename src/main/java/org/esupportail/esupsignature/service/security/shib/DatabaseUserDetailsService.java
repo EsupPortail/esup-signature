@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.shib;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
@@ -13,7 +14,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 

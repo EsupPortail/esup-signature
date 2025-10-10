@@ -120,6 +120,7 @@ public class UserAndOtpSignRequestController {
         if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
+        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);

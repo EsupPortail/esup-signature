@@ -426,8 +426,9 @@ public class SignBookController {
                                            @RequestParam String ids,
                                            @RequestParam(value = "password", required = false) String password,
                                            @RequestParam(value = "signWith", required = false) String signWith,
+                                           @RequestParam(value = "sealCertificat", required = false) String sealCertificat,
                                            HttpSession httpSession) throws EsupSignatureRuntimeException, IOException {
-        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith);
+        String error = signBookService.initMassSign(userEppn, authUserEppn, ids, httpSession, password, signWith, sealCertificat);
         if(error == null) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {

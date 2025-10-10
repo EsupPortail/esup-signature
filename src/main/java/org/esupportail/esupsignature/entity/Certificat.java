@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;

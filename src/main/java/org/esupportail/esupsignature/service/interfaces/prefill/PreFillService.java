@@ -1,11 +1,11 @@
 package org.esupportail.esupsignature.service.interfaces.prefill;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service

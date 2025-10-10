@@ -157,7 +157,7 @@ public class SignRequestJwtController {
             }
             signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
             for(String signRequestId : signRequestIds) {
-                signBookService.initSign(Long.valueOf(signRequestId), null, null, null, "", SignWith.imageStamp.name(), null, user.getEppn(), user.getEppn());
+                signBookService.initSign(Long.valueOf(signRequestId), null, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn());
             }
             if(json) {
                 return ResponseEntity.ok(signRequestIds);

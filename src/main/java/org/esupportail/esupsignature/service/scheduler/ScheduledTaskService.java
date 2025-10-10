@@ -17,7 +17,6 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.upgrade.UpgradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +28,6 @@ import java.util.List;
 @EnableScheduling
 @Profile("!dev")
 @Component
-@EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);

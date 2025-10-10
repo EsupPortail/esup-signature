@@ -25,6 +25,7 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.esupportail.esupsignature.dss.DssUtilsService;
 import org.esupportail.esupsignature.dss.config.DSSProperties;
@@ -67,6 +68,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+/**
+ * Service dédié à la signature des documents.
+ *
+ * Cette classe contient les méthodes et services nécessaires pour signer,
+ * sceller, et valider les documents dans le cadre de processus de signature électronique.
+ * Elle prend en charge différents types de signatures tels que PAdES, CAdES, et XAdES.
+ *
+ * @author David Lemaignent
+ */
 @Service
 @EnableConfigurationProperties(SignProperties.class)
 public class SignService {
@@ -122,9 +132,9 @@ public class SignService {
      * @throws IOException si une erreur d'entrée/sortie se produit durant le processus de signature
      */
     @Transactional
-    public Document sign(List<Document> toSignDocuments, SignRequest signRequest, User signerUser, String password, String signWith, SignRequestParams lastSignRequestParams) throws IOException {
+    public Document sign(List<Document> toSignDocuments, SignRequest signRequest, User signerUser, String password, String signWith, String sealCertificat, SignRequestParams lastSignRequestParams) throws IOException {
         SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(toSignDocuments, signRequest, true);
-        return certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), lastSignRequestParams);
+        return certSign(signatureDocumentForm, signRequest, signerUser.getEppn(), password, SignWith.valueOf(signWith), sealCertificat, lastSignRequestParams);
     }
 
     /**
@@ -141,7 +151,7 @@ public class SignService {
     public void seal(Long signRequestId) throws IOException {
         SignRequest signRequest = signRequestRepository.findById(signRequestId).orElseThrow();
         SignatureDocumentForm signatureDocumentForm = getAbstractSignatureForm(getToSignDocuments(signRequest), signRequest, true);
-        Document document = certSign(signatureDocumentForm, signRequest, "system", "", SignWith.sealCert, null);
+        Document document = certSign(signatureDocumentForm, signRequest, "system", "", SignWith.sealCert, "default", null);
         if(signRequest.getSignedDocuments().size() > 1) {
             signRequest.getSignedDocuments().remove(signRequest.getSignedDocuments().size() - 1);
         }
@@ -169,11 +179,12 @@ public class SignService {
         return documents;
     }
 
-	private Document certSign(AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, String userEppn, String password, SignWith signWith, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
+    public Document certSign(AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, String userEppn, String password, SignWith signWith, String sealCertificat, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
+        CertificateToken certificateToken = null;
 		try {
 			if(signWith.equals(SignWith.userCert)) {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(user.getKeystore().getInputStream(), password);
@@ -183,14 +194,31 @@ public class SignService {
 			} else if(signWith.equals(SignWith.groupCert)){
 				Certificat certificat = certificatService.getCertificatByUser(userEppn).get(0);
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat.getPassword()));
-			} else if (signWith.equals(SignWith.sealCert) &&
-                    (userService.getRoles(userEppn).contains("ROLE_SEAL")) || userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals()) || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())) {
+			} else if (signWith.equals(SignWith.sealCert)
+                    &&
+                    (userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
+                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
+                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat)
+                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
+            ) {
 				try {
-					if(!userEppn.equals("system") || certificatService.getOpenSCKey() != null || StringUtils.hasText(globalProperties.getSealCertificatFile())) {
-						abstractKeyStoreTokenConnection = certificatService.getSealToken();
-					}
+                    abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(sealCertificat));
+                    userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 				} catch (Exception e) {
-					throw new EsupSignatureRuntimeException("unable to open seal token", e);
+                    logger.warn("unable to open seal token", e);
+                    // trying spares
+                    for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.getSealSpareOf().equals(sealCertificat)).toList()) {
+                        try {
+                            abstractKeyStoreTokenConnection = certificatService.getSealToken(sealCertificatProperties);
+                            certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
+                            break;
+                        } catch (Exception e1) {
+                            logger.warn("unable to open seal token", e1);
+                        }
+                    }
+                    if(certificateToken == null) {
+                        throw new EsupSignatureRuntimeException("unable to open seal token", e);
+                    }
 				}
 			} else if (signWith.equals(SignWith.openPkiCert)) {
 				abstractKeyStoreTokenConnection = openXPKICertificatGenerationService.generateTokenForUser(user);
@@ -198,7 +226,7 @@ public class SignService {
 			if(abstractKeyStoreTokenConnection == null) {
 				throw new EsupSignatureRuntimeException("Aucun certificat disponible pour signer ou sceller le document");
 			}
-			CertificateToken certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
+			certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 			CertificateToken[] certificateTokenChain = userKeystoreService.getCertificateTokenChain(abstractKeyStoreTokenConnection);
 			signatureForm = signatureDocumentForm.getSignatureForm();
 			signatureDocumentForm.setEncryptionAlgorithm(certificateToken.getSignatureAlgorithm().getEncryptionAlgorithm());

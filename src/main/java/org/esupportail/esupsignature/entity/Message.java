@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.entity;
 
+import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

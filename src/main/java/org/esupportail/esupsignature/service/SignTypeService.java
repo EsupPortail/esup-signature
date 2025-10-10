@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -10,7 +9,6 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignTypeService {
 
     private final GlobalProperties globalProperties;

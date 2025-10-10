@@ -9,7 +9,6 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.MultipartConfigElement;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +26,6 @@ import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 @ComponentScan
 @EnableAsync
 @EnableAutoConfiguration
-@EnableConfigurationProperties(GlobalProperties.class)
 public class WebAppConfig implements WebMvcConfigurer {
 
 	private final GlobalProperties globalProperties;
