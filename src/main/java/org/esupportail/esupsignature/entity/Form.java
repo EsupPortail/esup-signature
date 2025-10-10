@@ -85,8 +85,8 @@ public class Form {
 	@Transient
 	private Integer totalPageCount = 1;
 
-    @OneToMany
-    private List<Tag> tags;
+    @ManyToMany
+    private List<Tag> tags = new ArrayList<>();
 
 	public Long getId() {
 		return id;

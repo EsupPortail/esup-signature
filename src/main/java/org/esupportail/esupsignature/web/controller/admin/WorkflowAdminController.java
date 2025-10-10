@@ -7,6 +7,7 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
@@ -17,6 +18,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,8 +39,9 @@ import java.util.Set;
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
+    private final TagService tagService;
 
-	@ModelAttribute("activeMenu")
+    @ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "workflows";
 	}
@@ -53,7 +56,7 @@ public class WorkflowAdminController {
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<ExternalAuth> externalAuths;
 
-	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths) {
+	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, TagService tagService) {
 		this.targetService = targetService;
 		this.userService = userService;
 		this.recipientService = recipientService;
@@ -63,28 +66,52 @@ public class WorkflowAdminController {
 		this.certificatService = certificatService;
 		this.preAuthorizeService = preAuthorizeService;
         this.externalAuths = externalAuths;
+        this.tagService = tagService;
     }
 
 	@GetMapping
-	public String list(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType, Model model, HttpServletRequest httpServletRequest) {
+	public String list(@ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType,
+                       @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
+                       Model model, HttpServletRequest httpServletRequest) {
 		if (displayWorkflowType == null) {
 			displayWorkflowType = DisplayWorkflowType.system;
 		}
 		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		String path = httpServletRequest.getRequestURI();
 		if (path.startsWith("/admin")) {
-			model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowType(displayWorkflowType));
+			model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowTypeAndSelectedTags(displayWorkflowType, selectedTags));
 			model.addAttribute("workflowRole", "admin");
 		} else {
 			model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowRole", "manager");
 		}
-		return "admin/workflows/list";
+        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+        if(selectedTags == null) selectedTags = new ArrayList<>();
+        model.addAttribute("selectedTags", selectedTags);
+        return "admin/workflows/list";
 	}
 
-	@GetMapping(value = "/steps/{id}")
-	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+    @GetMapping(value = "/targets/{id}")
+    public String targets(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+        String path = httpServletRequest.getRequestURI();
+        if (!path.startsWith("/admin")) {
+            model.addAttribute("workflowRole", "manager");
+        } else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+            model.addAttribute("workflowRole", "admin");
+        } else {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+            return "redirect:/admin/workflows";
+        }
+        Workflow workflow = workflowService.getById(id);
+        model.addAttribute("workflow", workflow);
+        return "admin/workflows/targets";
+    }
+
+
+    @GetMapping(value = "/steps/{id}")
+	public String steps(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         String path = httpServletRequest.getRequestURI();
 		if (!path.startsWith("/admin")) {
 			model.addAttribute("workflowRole", "manager");
@@ -145,10 +172,11 @@ public class WorkflowAdminController {
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
-		return "admin/workflows/update";
+        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+        return "admin/workflows/update";
     }
 
-    @PostMapping(value = "/update")
+    @PutMapping(value = "/update")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn,
 						 @ModelAttribute Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
@@ -327,7 +355,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
 		}
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/targets/" + id;
 	}
 
 	@PostMapping(value = "/delete-target/{id}/{targetId}")
@@ -338,7 +366,7 @@ public class WorkflowAdminController {
 							   RedirectAttributes redirectAttributes) {
 		workflowService.deleteTarget(id, targetId, BooleanUtils.toBoolean(cascade));
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination supprimée"));
-		return "redirect:/admin/workflows/update/" + id;
+		return "redirect:/admin/workflows/targets/" + id;
 
 	}
 
@@ -348,7 +376,7 @@ public class WorkflowAdminController {
                                RedirectAttributes redirectAttributes) {
         workflowService.restartTargets(id);
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Exports relancés"));
-        return "redirect:/admin/workflows/update/" + id;
+        return "redirect:/admin/workflows/targets/" + id;
 
     }
 
@@ -388,7 +416,7 @@ public class WorkflowAdminController {
 	public String toggleSendDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendDocument(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des documents modifié"));
-		return "redirect:/admin/workflows/update/" + id + "#targets";
+		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-report/{id}/{targetId}")
@@ -396,7 +424,7 @@ public class WorkflowAdminController {
 	public String toggleSendReport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendReport(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi du rapport modifié"));
-		return "redirect:/admin/workflows/update/" + id + "#targets";
+		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-attachment/{id}/{targetId}")
@@ -404,7 +432,7 @@ public class WorkflowAdminController {
 	public String toggleSendAttachment(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendAttachment(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des pièces jointes modifié"));
-		return "redirect:/admin/workflows/update/" + id + "#targets";
+		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
 	@PutMapping("toggle-send-zip/{id}/{targetId}")
@@ -412,6 +440,6 @@ public class WorkflowAdminController {
 	public String toggleSendZip(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendZip(targetId);
 		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi par ZIP"));
-		return "redirect:/admin/workflows/update/" + id + "#targets";
+		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 }

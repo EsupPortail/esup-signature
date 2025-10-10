@@ -481,7 +481,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
+    public List<Workflow> getWorkflowsByDisplayWorkflowTypeAndSelectedTags(DisplayWorkflowType displayWorkflowType, List<Tag> selectedTags) {
         if (displayWorkflowType == null) {
             displayWorkflowType = DisplayWorkflowType.system;
         }
@@ -497,11 +497,19 @@ public class WorkflowService {
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }
-        return workflows.stream()
-                .sorted(Comparator.comparing(
-                        w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
-                        Comparator.naturalOrder()))
-                .collect(Collectors.toList());
+        if(selectedTags == null || selectedTags.isEmpty()) {
+            return workflows.stream()
+                    .sorted(Comparator.comparing(
+                            w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
+                            Comparator.naturalOrder()))
+                    .collect(Collectors.toList());
+        } else {
+            return workflows.stream().filter(w -> new HashSet<>(w.getTags()).containsAll(selectedTags))
+                    .sorted(Comparator.comparing(
+                            w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
+                            Comparator.naturalOrder()))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Transactional
@@ -569,6 +577,8 @@ public class WorkflowService {
         workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
         workflowToUpdate.getExternalAuths().clear();
         workflowToUpdate.setExternalAuths(workflow.getExternalAuths());
+        workflowToUpdate.getTags().clear();
+        workflowToUpdate.getTags().addAll(workflow.getTags());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }

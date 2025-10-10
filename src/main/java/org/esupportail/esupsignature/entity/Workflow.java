@@ -112,8 +112,8 @@ public class Workflow {
 
     private String archiveTarget;
 
-    @OneToMany
-    private List<Tag> tags;
+    @ManyToMany
+    private List<Tag> tags = new ArrayList<>();
 
     public Long getId() {
         return id;
