@@ -85,6 +85,9 @@ public class Form {
 	@Transient
 	private Integer totalPageCount = 1;
 
+    @OneToMany
+    private List<Tag> tags;
+
 	public Long getId() {
 		return id;
 	}
@@ -263,4 +266,12 @@ public class Form {
 	public void setTotalPageCount(Integer totalPageCount) {
 		this.totalPageCount = totalPageCount;
 	}
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
 }

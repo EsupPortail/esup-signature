@@ -25,6 +25,12 @@ public class RecipientWsDto {
         this.email = email;
     }
 
+    public RecipientWsDto(Long id, String email, String phone) {
+        this.id = id;
+        this.email = email;
+        this.phone = phone;
+    }
+
     public Long getId() {
         return id;
     }

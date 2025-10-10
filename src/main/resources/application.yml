@@ -51,7 +51,7 @@ global:
     french-phone-number-only: false
     external-can-edit: false
     search-for-external-users: false
-    seal-for-externals: true
+    seal-for-externals: false
     seal-authorized-for-signed-files: false
     hide-hidden-visa: false
 #    test-email: toto@univ-ville.fr
@@ -298,12 +298,12 @@ sign:
     aes-key : "0000000000000000"
     cades-digest-algorithm: SHA256
     cades-signature-level: CAdES_BASELINE_LTA
-    container-type: ASiC_E
+#    container-type: ASiC_E
     default-signature-form: XAdES
     pades-digest-algorithm: SHA256
     pades-signature-level: PAdES_BASELINE_LTA
     password-timeout: 60000
-    signature-packaging: ENVELOPED
+#    signature-packaging: ENVELOPED
     xades-digest-algorithm: SHA256
     xades-signature-level: XAdES_BASELINE_LTA
     sign-with-expired-certificate: false

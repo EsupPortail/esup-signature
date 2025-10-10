@@ -378,9 +378,11 @@ public class GlobalProperties {
 
 
     /**
-     * Indique si les vérification (visas cachés) doivent être masqués dans l'interface utilisateur.
+     * Indique si les vérifications (visas cachés) doivent être masqués dans l'interface utilisateur.
      */
     private Boolean hideHiddenVisa = false;
+
+    public String newVersion;
 
     public String getRootUrl() {
         return rootUrl;
@@ -920,4 +922,6 @@ public class GlobalProperties {
     public void setHideHiddenVisa(Boolean hideHiddenVisa) {
         this.hideHiddenVisa = hideHiddenVisa;
     }
+
+
 }

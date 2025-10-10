@@ -286,7 +286,7 @@
                             <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
                         </div>
                     </div>
-                    <div th:if="${pdfaReport != null}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
+                    <div th:if="${pdfaReport != null && pdfaReport.size() > 0}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                         <div th:class="'alert alert-' + ${pdfaReport[0]}">
                             <h2>Validation PDF/A</h2>
                             <ul>

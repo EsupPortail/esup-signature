@@ -219,7 +219,7 @@ public class MailService {
             mimeMessage.setSubject("Une demande de signature que vous suivez est terminée");
             if (!signBook.getTeam().isEmpty()) {
                 mimeMessage.setTo(signBook.getTeam().stream().filter(userTo -> !userTo.getUserType().equals(UserType.external) && (toMails == null || !toMails.contains(userTo.getEmail())) && !userTo.getUserType().equals(UserType.system) && !userTo.getEppn().equals(userEppn)).map(User::getEmail).toArray(String[]::new));
-                logger.info("send email completes cc for " + user.getEppn());
+                logger.debug("send email completes cc for " + user.getEppn());
                 sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
             } else {
                 logger.debug("no viewers to send mail");
@@ -391,6 +391,29 @@ public class MailService {
             mimeMessage.setText(htmlContent, true);
             mimeMessage.setTo(otp.getUser().getEmail());
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
+        } catch (MessagingException | IOException e) {
+            logger.error("unable to send OTP email", e);
+            throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
+        }
+    }
+
+
+    public void sendSignRequestReplayAlertOtp(Otp otp, SignBook signBook) throws EsupSignatureMailException {
+        final Context ctx = new Context(Locale.FRENCH);
+        setTemplate(ctx, signBook);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/otp-access/first/" + otp.getUrlId());
+        ctx.setVariable("urlControl", globalProperties.getRootUrl() + "/public/control/" + signBook.getSignRequests().get(0).getToken());
+        ctx.setVariable("otpValidity", new Date(otp.getCreateDate().getTime() + TimeUnit.MINUTES.toMillis(globalProperties.getOtpValidity())));
+        ctx.setVariable("otp", otp);
+        try {
+            MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+            String htmlContent = templateEngine.process("mail/email-replay-otp.html", ctx);
+            mimeMessage.setSubject("Relance pour la signature d'un document émanant de " + messageSource.getMessage("application.footer", null, Locale.FRENCH));
+            logger.info("send signature email otp for " + otp.getUser().getEmail());
+            mimeMessage.setText(htmlContent, true);
+            mimeMessage.setTo(otp.getUser().getEmail());
+            sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
+            signBook.setLastNotifDate(new Date());
         } catch (MessagingException | IOException e) {
             logger.error("unable to send OTP email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);

@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.config.security;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasJwtDecoder;
@@ -224,7 +225,15 @@ public class WebSecurityConfig {
 				.requestMatchers("/nexu-sign/**").hasAnyRole("USER", "OTP")
 				.requestMatchers("/otp/**").hasAnyRole("OTP")
 				.requestMatchers("/ws-secure/**").hasAnyRole("USER", "OTP")
-				.anyRequest().permitAll());
+                .requestMatchers("/log").authenticated()
+				.anyRequest().permitAll())
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, authException) ->
+                                        response.sendError(HttpServletResponse.SC_FORBIDDEN),
+                                PathPatternRequestMatcher.withDefaults().matcher("/log")
+                        )
+                );
 	}
 
 	private void setIpsAutorizations(HttpSecurity http, String[] authorizeIps) throws Exception {

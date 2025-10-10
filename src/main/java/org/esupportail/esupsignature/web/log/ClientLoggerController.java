@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @CrossOrigin(origins = "*")
-@RequestMapping("log")
+@RequestMapping("/log")
 @Controller
 public class ClientLoggerController {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientLoggerController.class);
 
     @PostMapping(consumes = {"application/json"})
     public ResponseEntity<Boolean> log(@RequestBody JsError jsonClientSideError, HttpServletRequest httpServletRequest) {

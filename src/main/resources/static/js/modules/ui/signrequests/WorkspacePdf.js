@@ -550,9 +550,15 @@ export class WorkspacePdf {
                 "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
                 "</div>");
         }
+        let url;
+        if(this.isOtp== null || !this.isOtp) {
+            url = "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
+        } else {
+            url = "/otp/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
+        }
         $.ajax({
             method: 'POST',
-            url: "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
+            url: url,
             success: function () {
                 document.location.reload();
             }
@@ -584,7 +590,7 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
+                    if((self.status === "draft" || self.status === "pending")) {
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
                             bootbox.confirm({
@@ -601,7 +607,7 @@ export class WorkspacePdf {
                                     }
                                 },
                                 callback: function (result) {
-                                    if (result) {
+                                    if (result &&  postitDiv.attr('es-comment-delete') === "true") {
                                         bootbox.confirm('Confirmer la suppression', function (result2){
                                             if(result2) {
                                                 $.ajax({
@@ -614,6 +620,8 @@ export class WorkspacePdf {
                                                 });
                                             }
                                         });
+                                    } else {
+                                        alert('Suppression à la charge du créateur de la demande');
                                     }
                                 }
                             }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
@@ -1218,12 +1226,12 @@ export class WorkspacePdf {
 
     autocollapse() {
         let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").width() - 1000;
+        let maxWidth = $("#workspace").innerWidth() - 50;
         console.info("maxWidth : " + maxWidth);
         const listItems = document.querySelectorAll('#ws-tabs > li');
         let totalWidth = 0;
         listItems.forEach(li => {
-            totalWidth += li.offsetWidth;
+            totalWidth += li.getBoundingClientRect().width;
         });
         console.warn(totalWidth + " >= " + maxWidth);
         if (totalWidth >= maxWidth) {

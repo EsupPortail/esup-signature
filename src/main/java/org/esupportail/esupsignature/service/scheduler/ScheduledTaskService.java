@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.upgrade.UpgradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
@@ -39,8 +40,9 @@ public class ScheduledTaskService {
 	private final UserService userService;
 	private final SignRequestRepository signRequestRepository;
 	private final OtpService otpService;
+    private final UpgradeService upgradeService;
 
-	public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService) {
+    public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService, UpgradeService upgradeService) {
         this.globalProperties = globalProperties;
         this.signBookRepository = signBookRepository;
         this.signBookService = signBookService;
@@ -49,7 +51,8 @@ public class ScheduledTaskService {
         this.userService = userService;
         this.signRequestRepository = signRequestRepository;
 		this.otpService = otpService;
-	}
+        this.upgradeService = upgradeService;
+    }
 
 	/**
      * Scanne toutes les sources de workflows disponibles et tente
@@ -274,4 +277,8 @@ public class ScheduledTaskService {
 		otpService.cleanEndedOtp();
 	}
 
+    @Scheduled(cron="00 02 02 * * *")
+    public void checkVersion() {
+        upgradeService.checkVersion();
+    }
 }

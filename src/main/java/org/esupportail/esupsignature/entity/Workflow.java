@@ -112,6 +112,9 @@ public class Workflow {
 
     private String archiveTarget;
 
+    @OneToMany
+    private List<Tag> tags;
+
     public Long getId() {
         return id;
     }
@@ -449,5 +452,13 @@ public class Workflow {
 
     public void setExternalAuths(Set<ExternalAuth> externalAuths) {
         this.externalAuths = externalAuths;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

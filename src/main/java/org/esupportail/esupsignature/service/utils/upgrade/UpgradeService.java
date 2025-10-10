@@ -19,6 +19,8 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -58,30 +60,6 @@ public class UpgradeService {
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         logger.info("##### Esup-signature Upgrade #####");
-        Thread checkVersion = new Thread(() -> {
-            try {
-                RestTemplate restTemplate = new RestTemplate();
-                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                HttpHeaders headers = new HttpHeaders();
-                headers.add("Referer", globalProperties.getDomain());
-                String currentVersion = "0.0.0";
-                if(buildProperties != null) {
-                    currentVersion = buildProperties.getVersion();
-                }
-                headers.add("X-API-Version", currentVersion);
-                HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-                String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-                logger.debug("##### Esup-signature  last version : " + version + " #####");
-                if (version != null && currentVersion.contains(version.trim())) {
-                    logger.debug("##### Esup-signature version is up-to-date #####");
-                } else {
-                    logger.debug("##### Esup-signature version is not up-to-date #####");
-                }
-            } catch (Exception e) {
-                logger.info("##### Unable to get last version #####", e);
-            }
-        });
-        checkVersion.start();
         for(String update : updates) {
             if(checkVersionUpToDate(update) < 0) {
                 logger.info("#### Starting update : " + update + " ####");
@@ -96,10 +74,39 @@ public class UpgradeService {
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
-                logger.debug("##### Esup-signature is higher than " + update + ", skip update #####");
+                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");
+        checkVersion();
+    }
+
+    public void checkVersion() {
+        Thread checkVersion = new Thread(() -> {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Referer", globalProperties.getDomain());
+                String currentVersion = "0.0.0";
+                if(buildProperties != null) {
+                    currentVersion = buildProperties.getVersion();
+                }
+                headers.add("X-API-Version", currentVersion);
+                HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
+                logger.info("##### Esup-signature last version : " + version + " #####");
+                if (version != null && compareVersions(version.trim(), currentVersion) >= 0) {
+                    logger.info("##### Esup-signature version is up-to-date #####");
+                } else {
+                    logger.info("##### Esup-signature version is not up-to-date #####");
+                    globalProperties.newVersion = version;
+                }
+            } catch (Exception e) {
+                logger.info("##### Unable to get last version #####", e);
+            }
+        });
+        checkVersion.start();
     }
 
     private int checkVersionUpToDate(String updateVersion) {
@@ -107,8 +114,12 @@ public class UpgradeService {
         appliVersionRepository.findAll().forEach(appliVersions::add);
         if(appliVersions.isEmpty()) return -1;
         String databaseVersion = appliVersions.get(0).getEsupSignatureVersion().split("-")[0];
-        String[] codeVersionStrings = updateVersion.split("\\.");
-        String[] databaseVersionStrings = databaseVersion.split("\\.");
+        return compareVersions(updateVersion, databaseVersion);
+    }
+
+    private static int compareVersions(String targetVersion, String currentVersion) {
+        String[] codeVersionStrings = targetVersion.split("\\.");
+        String[] databaseVersionStrings = currentVersion.split("-")[0].split("\\.");
         int length = Math.max(codeVersionStrings.length, databaseVersionStrings.length);
 
         for(int i = 0; i < length; i++) {
@@ -418,6 +429,11 @@ public class UpgradeService {
             END;
         $$;
         
+        update live_workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set min_sign_level = 'advanced' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        
+        update live_workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+        update workflow_step set max_sign_level = 'qualified' where repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
         
         update live_workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';
         update workflow_step set sign_type = 'signature' where sign_type = 'pdfImageStamp' or sign_type = 'certSign' or sign_type = 'nexuSign';

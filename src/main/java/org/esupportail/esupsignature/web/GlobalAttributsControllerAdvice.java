@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
 import org.springframework.ui.Model;
@@ -31,7 +32,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
+@EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalAttributsControllerAdvice.class);
@@ -93,6 +95,7 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+            myGlobalProperties.newVersion = globalProperties.newVersion;
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
