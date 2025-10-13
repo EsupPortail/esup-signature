@@ -39,7 +39,6 @@ import java.util.Set;
 public class WorkflowAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WorkflowAdminController.class);
-    private final TagService tagService;
 
     @ModelAttribute("activeMenu")
 	public String getActiveMenu() {
@@ -55,6 +54,7 @@ public class WorkflowAdminController {
 	private final CertificatService certificatService;
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<ExternalAuth> externalAuths;
+    private final TagService tagService;
 
 	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, TagService tagService) {
 		this.targetService = targetService;

@@ -406,71 +406,12 @@
     </div>
 </main>
 
-<div data-bs-focus="false" class="modal fade" id="addTarget"  role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <form class="form-group mb-3" th:action="'/' + ${workflowRole} + '/workflows/add-target/' + ${workflow.id}" method="post">
-                <div class="modal-header">
-                    <h3 class="modal-title">Ajout d'une destination</h3>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-3" id="documentsTargetUriDiv">
-                        <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
-                        <input id="documentsTargetUri" name="documentsTargetUri" class="form-control" type="text" autocomplete="on">
-                    </div>
-                    <p class="alert alert-info"><small>
-                        Utiliser le format uri pour saisir les destinations.
-                        <br>
-                        Pour les emails saisir comme suit : mailto:adresse1,adresse2,... sans espace
-                        <br>
-                        Pour plus de détails voir : <a href="https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI" target="_blank">https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI</a>
-                    </small></p>
-                    <label>
-                        <input type="checkbox" name="sendDocument" class="form-check-input" checked>
-                        Document
-                    </label>
-                    <br>
-                    <label>
-                        <input type="checkbox" name="sendReport" class="form-check-input">
-                        Rapports
-                    </label>
-                    <br>
-                    <label>
-                        <input type="checkbox" name="sendAttachment" class="form-check-input">
-                        Pièces jointes
-                    </label>
-                    <br>
-                    <label>
-                        <input type="checkbox" name="sendZip" class="form-check-input">
-                        Envoyer zippé
-                    </label>
-                    <br><br>
-                    <p>
-                    <label>
-                        <input type="checkbox" name="cascade" class="form-check-input">
-                        Appliquer à toutes les demandes en cours non encore exportées
-                    </label>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary float-end"
-                            data-bs-dismiss="modal">Annuler
-                    </button>
-                    <button type="submit" class="btn btn-success float-end">
-                        Ajouter
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <div data-bs-focus="false" class="modal fade" id="importWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form id="importFormSetup" th:action="'/' + ${workflowRole} + '/workflows/import/' + ${workflow.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'post'" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h3 class="modal-title">Importer une configuration</h3>
+                    <h3 class="modal-title">Importer une configuration</h3><button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                         <div class="form-group mb-3">

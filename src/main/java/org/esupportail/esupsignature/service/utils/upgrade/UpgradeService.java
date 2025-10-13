@@ -184,7 +184,7 @@ public class UpgradeService {
         }
         logger.info("#### Update end dates of signBooks completed ####");
         logger.info("#### Starting update manager of workflows ####");
-        List<Form> forms = formService.getAllForms();
+        List<Form> forms = formService.getAllForms(null);
         for(Form form : forms) {
             for(String manager : form.getManagers()) {
                 if(form.getWorkflow() != null && !form.getWorkflow().getManagers().contains(manager)) {

@@ -278,8 +278,12 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<Workflow> getAllWorkflows() {
-        return workflowRepository.findAll();
+    public List<Workflow> getAllWorkflows(List<Tag> selectedTags) {
+        List<Workflow> worflows = workflowRepository.findAll();
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            return worflows.stream().filter(w -> new HashSet<>(w.getTags()).containsAll(selectedTags)).toList();
+        }
+        return worflows;
     }
 
     @Transactional
@@ -491,9 +495,9 @@ public class WorkflowService {
         } else if(DisplayWorkflowType.classes.equals(displayWorkflowType)) {
             workflows.addAll(getClassesWorkflows());
         } else if(DisplayWorkflowType.all.equals(displayWorkflowType)) {
-            workflows.addAll(getAllWorkflows());
+            workflows.addAll(getAllWorkflows(null));
         } else if(DisplayWorkflowType.users.equals(displayWorkflowType)) {
-            workflows.addAll(getAllWorkflows());
+            workflows.addAll(getAllWorkflows(null));
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }

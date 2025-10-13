@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -56,23 +55,21 @@ public class SignBookAdminController {
 		return "adminsignrequests";
 	}
 
-	@Resource
-	private FormService formService;
+	private final FormService formService;
+	private final UserService userService;
+	private final WorkflowService workflowService;
+	private final SignBookService signBookService;
+	private final SignBookRepository signBookRepository;
+	private final TemplateEngine templateEngine;
 
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
-	private TemplateEngine templateEngine;
+    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine) {
+        this.formService = formService;
+        this.userService = userService;
+        this.workflowService = workflowService;
+        this.signBookService = signBookService;
+        this.signBookRepository = signBookRepository;
+        this.templateEngine = templateEngine;
+    }
 
 	@GetMapping
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -100,8 +97,8 @@ public class SignBookAdminController {
 //		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.activeValues());
-		model.addAttribute("forms", formService.getAllForms());
-		model.addAttribute("workflows", workflowService.getAllWorkflows());
+		model.addAttribute("forms", formService.getAllForms(null));
+		model.addAttribute("workflows", workflowService.getAllWorkflows(null));
 		model.addAttribute("workflowFilter", workflowFilter);
 		model.addAttribute("creatorFilter", creatorFilter);
 		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);

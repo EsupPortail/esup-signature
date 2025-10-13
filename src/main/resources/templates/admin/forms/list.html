@@ -6,6 +6,9 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
+<script>
+    const workflowRole = '[[${workflowRole}]]';
+</script>
 <main role="main">
     <div class="wrapper">
         <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
@@ -17,6 +20,14 @@
             </ol>
         </nav>
         <div id="content" class="content">
+            <div class="input-group mb-3">
+                <span class="input-group-text">Filtrer</span>
+                <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
+                    <th:block th:each="tag : ${allTags}">
+                        <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                    </th:block>
+                </select>
+            </div>
             <div id="addButton" class="fixed-action-btns" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a></li>
@@ -27,7 +38,8 @@
                     <thead class="table-secondary">
                     <tr>
                         <th>Id</th>
-                        <th class="w-50">Titre</th>
+                        <th class="w-25">Titre</th>
+                        <th>Tags</th>
                         <th>Circuit associé</th>
                         <th>Actif</th>
                         <th>Tuile masquée</th>
@@ -40,6 +52,11 @@
                     <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
                         <td><input type="text" th:value="${form.id}" disabled></td>
                         <td class="clickable-td" th:text="${form.title}"></td>
+                        <td th:class="${form.id != null}? 'clickable-td' : ''">
+                            <th:block th:each="tag : ${form.tags}">
+                                <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
+                            </th:block>
+                        </td>
                         <td>
                             <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                         </td>

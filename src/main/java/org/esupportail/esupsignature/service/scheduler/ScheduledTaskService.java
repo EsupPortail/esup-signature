@@ -72,7 +72,7 @@ public class ScheduledTaskService {
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
-		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
+		Iterable<Workflow> workflows = workflowService.getAllWorkflows(null);
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
 			try {
