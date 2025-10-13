@@ -505,6 +505,7 @@ public class UserService {
                 }
             }
             personLightLdaps.removeAll(personLightLdapsToRemove);
+            personLightLdaps.removeAll(personLightLdaps.stream().filter(personLightLdap -> globalProperties.getForcedExternalsDomainList().stream().anyMatch(personLightLdap.getMail()::contains)).toList());
             for (User user : users) {
                 if(user.getEppn().equals("creator")) {
                     personLightLdaps.add(getPersonLdapLightFromUser(user));
@@ -674,14 +675,15 @@ public class UserService {
         for (RecipientWsDto recipient : recipients) {
             if(recipient != null) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipient.getEmail());
-                if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
+                if(optionalUser.isPresent() && (optionalUser.get().getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(optionalUser.get().getEmail()::contains))) {
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
-                    if (groupUsers.isEmpty() && !recipient.getEmail().contains(globalProperties.getDomain())) {
+                    if (groupUsers.isEmpty() && (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                         User recipientUser = getUserByEmail(recipient.getEmail());
-                        if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
+                        if (recipientUser != null && (recipientUser.getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                             tempUsers.add(recipientUser);
+                            recipientUser.setUserType(UserType.external);
                         }
                     }
                 }
