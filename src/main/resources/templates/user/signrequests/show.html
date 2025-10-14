@@ -340,9 +340,6 @@
                 <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${!(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature) && signatureIds.size() > 0}">
                     Attention ce document comporte <span th:text="${signatureIds.size()}"></span> signature(s) électronique(s). Le fait d’apposer une signature calligraphique ou un visa visuel aura pour effet de détruire les précédentes signatures
                 </div>
-                <div id="alert-multi-sign-present" class="alert alert-warning mb-1" style="display: none">
-                    Attention vous allez signer avec un certificat alors que le document comporte plusieurs insertions. Seule la dernière signature, ainsi que les coches, seront visible sur le document final.
-                </div>
                 <div id="warningSelectDiv" class="alert alert-danger" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
                     En raison de la configuration des prochaines étapes, aucun mode de signature n'est disponible pour garantir l'intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
                 </div>
