@@ -219,17 +219,6 @@ public class GlobalProperties {
     @Deprecated
     private String sealCertificatPin = "";
 
-    @PostConstruct
-    public void init() {
-        if (sealCertificatProperties.isEmpty()) {
-            if(sealCertificatType != null && StringUtils.hasText(sealCertificatPin)) {
-                sealCertificatProperties.put("default", new SealCertificatProperties("Certificat cachet", sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
-            }
-        } else if(!sealCertificatProperties.containsKey("default")){
-            throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
-        }
-    }
-
     /**
      * Liste des propriétés de certificats cachet utilisées pour configurer ou gérer les certificats dans l'application.
      */
@@ -376,13 +365,28 @@ public class GlobalProperties {
      */
     private Boolean frenchPhoneNumberOnly = false;
 
-
     /**
      * Indique si les vérifications (visas cachés) doivent être masqués dans l'interface utilisateur.
      */
     private Boolean hideHiddenVisa = false;
 
+    /**
+     * Indique si une alerte concernant un problème de polices dans les fichiers PDF doit être désactivée.
+     */
+    private Boolean disablePdfFontAlert = false;
+
     public String newVersion;
+
+    @PostConstruct
+    public void init() {
+        if (sealCertificatProperties.isEmpty()) {
+            if(sealCertificatType != null && StringUtils.hasText(sealCertificatPin)) {
+                sealCertificatProperties.put("default", new SealCertificatProperties("Certificat cachet", sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
+            }
+        } else if(!sealCertificatProperties.containsKey("default")){
+            throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
+        }
+    }
 
     public String getRootUrl() {
         return rootUrl;
@@ -923,5 +927,11 @@ public class GlobalProperties {
         this.hideHiddenVisa = hideHiddenVisa;
     }
 
+    public Boolean getDisablePdfFontAlert() {
+        return disablePdfFontAlert;
+    }
 
+    public void setDisablePdfFontAlert(Boolean disablePdfFontAlert) {
+        this.disablePdfFontAlert = disablePdfFontAlert;
+    }
 }

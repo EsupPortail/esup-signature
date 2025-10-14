@@ -978,3 +978,12 @@ tr[aria-expanded="true"] .caret-toggle::before {
     top: 50%;
     transform: translateY(-50%);
 }
+
+.pdf-warning-bar {
+    position: absolute;
+    width: 8px;
+    min-height: 100%;
+    top: 0px;
+    left: 0px;
+    border-radius: 10px 0px 0px 10px;
+}
