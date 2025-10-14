@@ -528,13 +528,14 @@ public class SignRequestService {
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
-				String pdfaCheck = smallCheckPDFA(bytes);
 				String contentType = multipartFile.getContentType();
+                String pdfaCheck = null;
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern())))) {
-						bytes = pdfService.normalizePDF(bytes);
-						List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
+//						bytes = pdfService.normalizePDF(bytes);
+                        pdfaCheck = smallCheckPDFA(bytes);
+                        List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
 							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), true);
 						} else {

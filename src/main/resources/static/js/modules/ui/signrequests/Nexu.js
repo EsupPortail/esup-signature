@@ -64,6 +64,7 @@ export class Nexu {
                 // $("#nexuCheck").removeClass("d-none");
                 $("#no-options").show();
                 $("#no-options-alert").show();
+                $('#display-pdf-alerts-btn').append('1 <i class="fa-solid fa-triangle-exclamation text-danger"></i>');
                 $("#signCommentDiv").hide();
                 // $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();

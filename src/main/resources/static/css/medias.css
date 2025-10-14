@@ -115,11 +115,13 @@
         left: 50px;
     }
 
-    .pdf-alerts {
-        top:104px;
+    .pdf-alerts-btn {
+        left: 16px;
+        top:105px;
         position: fixed;
-        width: calc(100% - 26px);
+        z-index: 9999;
     }
+
 }
 
 @media (max-width: 768px) {
@@ -157,6 +159,10 @@
     .sign-preview {
         overflow: auto;
         margin-left: initial;
+    }
+
+    .pdf-alerts {
+        width: 350px !important;
     }
 
 }
@@ -233,7 +239,6 @@
         top:101px;
         left:0px;
         position: fixed;
-        width: calc(100%);
     }
 
     .pdf-alerts .btn {

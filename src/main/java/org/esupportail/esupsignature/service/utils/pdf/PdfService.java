@@ -713,6 +713,9 @@ public class PdfService {
                     process.destroy();
                 }
             }
+            if(isPdfEmpty(result)) {
+                return originalBytes;
+            }
             return result;
         } else {
             return originalBytes;
