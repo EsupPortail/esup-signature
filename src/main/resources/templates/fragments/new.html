@@ -20,18 +20,16 @@
             }
         }
     </script>
-    <button id="toggle-new-grid" class="btn btn-transparent text-dark btn-grid-display">
-        <i class="fa-solid fa-th"></i> Affichage
-    </button>
-    <div class="card border-0 w-100 h-100" th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}">
+    <div class="card border-0 w-100 h-100">
         <div class="card-body">
-            <div id="new-scroll" class="text-center text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style">
+            <div id="new-scroll" class="text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style new-min-h">
                 <div id="newContainer" class="d-inline">
+                    <div class="text-center">
                     <h5 class="newToggled d-none">Outils de signature</h5>
                     <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
-                       data-bs-toggle="modal"
-                       data-bs-target="#wiz-self-sign-modal"
-                       title="Vous devez signer un document présent sur votre poste de travail">
+                        data-bs-toggle="modal"
+                        data-bs-target="#wiz-self-sign-modal"
+                        title="Vous devez signer un document présent sur votre poste de travail">
                         <div class="d-flex flex-column align-items-center h-100 w-100">
                             <i class="fa-solid fa-signature fa-3x"></i>
                             <span class="h7">Auto signature</span>
@@ -59,7 +57,8 @@
                             <span class="h7">Créer une demande personnalisée</span>
                         </div>
                     </a>
-                    <hr class="newHr d-none">
+                    </div>
+                    <hr class="newHr">
                     <h5 class="newToggled d-none">Circuits</h5>
                     <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-3" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0"
                         data-bs-toggle="modal" data-bs-target="#wiz-modal" style="width: 120px; height: 170px;"
@@ -114,7 +113,7 @@
                             </div>
                         </a>
                     </th:block>
-                    <hr class="newHr d-none">
+                    <hr class="newHr">
                     <h5 class="newToggled d-none">Formulaires</h5>
                     <div class="d-inline-block" id="newForm">
                         <th:block th:each="form : ${forms}">

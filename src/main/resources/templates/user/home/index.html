@@ -24,202 +24,104 @@
             </ol>
         </nav>
         <div id="content" class="content flex align-content-center">
-            <div class="row gap-1">
-                <div id="new-div" style="z-index: 1030;">
-                    <div th:replace="~{fragments/new :: new}"></div>
-                </div>
-                <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
-                    <div id="to-sign-list" class="d-flex col-12 mb-2">
-                        <div class="col-12 card text-bg-light border-light mx-auto">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                                <h5 class="ms-4"><b>Demandes à signer</b></h5>
-                            </div>
-                            <div class="card-body">
-                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">
-                                <tbody>
-                                <th:block th:each="signBook : ${signBooksToSign}">
-                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
-                                        <td style="width: 15px;">
-                                            <div class="d-lg-inline-flex align-items-center gap-1">
-                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
-                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
-                                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                                                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
-                                                        th:text="${signBook.postits.size()}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                                                        type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                                                        th:text="${signBook.postits.size() + 1}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
-                                                    <li th:if="${signBook.description != null}" class="dropdown-item">
-                                                        <pre class="me-1" th:text="${signBook.description}"></pre>
-                                                    </li>
-                                                    <th:block th:each="postit : ${signBook.postits}">
-                                                        <li th:if="${postit}" class="dropdown-item">
-                                                            <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
-                                                        </li>
-                                                    </th:block>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="text-break d-none d-md-table-cell" style="width: 25px;">
-                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
-                                        </td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-30" style="width: 400px;">
-                                            <span th:if="${signBook.signRequests.size() > 1}">
-                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fa-solid fa-caret-down"></i>
-                                            </span>
-                                            <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
-                                        <td></td>
-                                        <td></td>
-                                        <td colspan="4">
-                                            <div class="collapse" th:id="'row_' + ${signBook.id}">
-                                                <table class="table table-hover">
-                                                    <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                                            <td>
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                            </td>
-                                                            <td th:text="${signRequest.title}"></td>
-                                                            <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
-                                                            </td>
-                                                        </tr>
-                                                    </th:block>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                            <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary">
-                                Aucun document à signer pour le moment
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                    <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
-                        <div class="col-12 card text-bg-light border-light mx-auto">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                                <h5 class="ms-4"><b>Demandes en attente de signature</b></h5>
-                            </div>
-                            <div class="card-body">
-                                <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
-                                <tbody>
-                                <th:block th:each="signBook : ${signBooksPending}">
-                                    <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
-                                        <td style="width: 15px;">
-                                            <div class="d-lg-inline-flex align-items-center gap-1">
-                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
-                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
-                                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                                                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
-                                                        th:text="${signBook.postits.size()}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null}"
-                                                        type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null}"
-                                                        th:text="${signBook.postits.size() + 1}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
-                                                    <th:block th:each="postit : ${signBook.postits}">
-                                                        <li th:if="${postit}" class="dropdown-item">
-                                                            <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
-                                                        </li>
-                                                    </th:block>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a></td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
-                                        </td>
-                                        <td class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
-                                        </td>
-                                        <td class="text-break w-30" style="width: 400px;">
-                                            <span th:if="${signBook.signRequests.size() > 1}">
-                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fa-solid fa-caret-down"></i>
-                                            </span>
-                                            <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
-                                        </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell" style="width: 300px;">
-                                            <ul>
-                                            <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
-                                                <li th:title="${recipient.user.email}" style="display: inline-flex;">
-                                                    <span class="me-1" th:text="'En attente chez : ' + ${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                </li>
-                                            </th:block>
-                                            </ul>
-                                        </td>
-                                        <td class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
-                                        <td></td>
-                                        <td></td>
-                                        <td colspan="4">
-                                            <div class="collapse" th:id="'row_' + ${signBook.id}">
-                                                <table class="table table-hover">
-                                                    <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                                            <td>
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                            </td>
-                                                            <td th:text="${signRequest.title}"></td>
-                                                            <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
-                                                            </td>
-                                                        </tr>
-                                                    </th:block>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                            <div th:unless="${signBooksPending.size() > 0}" class="alert alert-secondary">
-                                Aucun document en attente
-                            </div>
-                        </div>
-                        </div>
-                    </div>
-                </div>
+<!--            <div id="listSignRequestTable" class="div-scrollable scrollbar-style">-->
+<!--                <div id="to-sign-list" class="d-flex col-12 mb-2">-->
+<!--                    <div class="col-12 card text-bg-light border-light mx-auto">-->
+<!--                        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">-->
+<!--                            <h5 class="ms-4"><b>Demandes à signer</b></h5>-->
+<!--                        </div>-->
+<!--                        <div class="card-body">-->
+<!--                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">-->
+<!--                                <tbody>-->
+<!--                                <th:block th:each="signBook : ${signBooksToSign}">-->
+<!--                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">-->
+<!--                                        <td style="width: 15px;">-->
+<!--                                            <div class="d-lg-inline-flex align-items-center gap-1">-->
+<!--                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>-->
+<!--                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>-->
+<!--                                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>-->
+<!--                                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>-->
+<!--                                                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>-->
+<!--                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"-->
+<!--                                                        th:text="${signBook.postits.size()}" type="button"-->
+<!--                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">-->
+<!--                                                </button>-->
+<!--                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"-->
+<!--                                                        type="button"-->
+<!--                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1-->
+<!--                                                </button>-->
+<!--                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"-->
+<!--                                                        th:text="${signBook.postits.size() + 1}" type="button"-->
+<!--                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">-->
+<!--                                                </button>-->
+<!--                                                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">-->
+<!--                                                    <li th:if="${signBook.description != null}" class="dropdown-item">-->
+<!--                                                        <pre class="me-1" th:text="${signBook.description}"></pre>-->
+<!--                                                    </li>-->
+<!--                                                    <th:block th:each="postit : ${signBook.postits}">-->
+<!--                                                        <li th:if="${postit}" class="dropdown-item">-->
+<!--                                                            <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>-->
+<!--                                                        </li>-->
+<!--                                                    </th:block>-->
+<!--                                                </ul>-->
+<!--                                            </div>-->
+<!--                                        </td>-->
+<!--                                        <td class="text-break d-none d-md-table-cell" style="width: 25px;">-->
+<!--                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>-->
+<!--                                        </td>-->
+<!--                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">-->
+<!--                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>-->
+<!--                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>-->
+<!--                                        </td>-->
+<!--                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">-->
+<!--                                        </td>-->
+<!--                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-30" style="width: 400px;">-->
+<!--                                            <span th:if="${signBook.signRequests.size() > 1}">-->
+<!--                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>-->
+<!--                                                <i class="fa-solid fa-caret-down"></i>-->
+<!--                                            </span>-->
+<!--                                            <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>-->
+<!--                                        </td>-->
+<!--                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">-->
+<!--                                        </td>-->
+<!--                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">-->
+<!--                                        <td></td>-->
+<!--                                        <td></td>-->
+<!--                                        <td colspan="4">-->
+<!--                                            <div class="collapse" th:id="'row_' + ${signBook.id}">-->
+<!--                                                <table class="table table-hover">-->
+<!--                                                    <th:block th:each="signRequest : ${signBook.signRequests}">-->
+<!--                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">-->
+<!--                                                            <td>-->
+<!--                                                                <i class="fa-solid fa-file-alt"></i>-->
+<!--                                                            </td>-->
+<!--                                                            <td th:text="${signRequest.title}"></td>-->
+<!--                                                            <td>-->
+<!--                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>-->
+<!--                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>-->
+<!--                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>-->
+<!--                                                            </td>-->
+<!--                                                        </tr>-->
+<!--                                                    </th:block>-->
+<!--                                                </table>-->
+<!--                                            </div>-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </th:block>-->
+<!--                                </tbody>-->
+<!--                            </table>-->
+<!--                            <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary">-->
+<!--                                Aucun document à signer pour le moment-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+            <div id="new-div" style="z-index: 1030;">
+                <div th:replace="~{fragments/new :: new}"></div>
             </div>
         </div>
     </div>

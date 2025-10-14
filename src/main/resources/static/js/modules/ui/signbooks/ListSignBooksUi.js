@@ -44,7 +44,6 @@ export class ListSignBooksUi {
     initListeners() {
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#certType").on("change", e => this.checkAfterChangeSignType());
-        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
         $('#launchMassSignButton').on('click', e => this.launchMassSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
@@ -82,7 +81,6 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        $("#toggle-new-grid").css("top", "-55px");
         $(document).on('wheel', function(e){
             let delta = e.originalEvent.deltaY;
             let scrollAmount = delta > 0 ? 50 : -50;
@@ -94,7 +92,6 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
-        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
     }
 
     checkSignOptions() {
@@ -142,21 +139,6 @@ export class ListSignBooksUi {
                 }
             });
         });
-    }
-
-    toggleNewMenu() {
-        console.info("toggle new menu");
-        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        // $('#to-sign-list').toggleClass('d-flex d-none');
-        // $('#new-fragment').toggleClass('position-fixed');
-        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
-        $('.newHr').toggleClass('d-none');
-        $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
-        $('.newToggled').toggleClass('d-none');
-        $('.noForm').toggleClass('d-none');
-        $('.noWorkflow').toggleClass('d-none');
-        // this.menuToggled = !this.menuToggled;
-        // localStorage.setItem('menuToggled', this.menuToggled);
     }
 
     checkNbCheckboxes() {
@@ -474,11 +456,4 @@ export class ListSignBooksUi {
         bar.addClass("progress-bar-animated");
     }
 
-    activeHorizontalScrolling(e){
-        if(!this.menuToggled) {
-            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
-            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
-            e.preventDefault();
-        }
-    }
 }
