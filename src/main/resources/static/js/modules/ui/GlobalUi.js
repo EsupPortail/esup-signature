@@ -361,6 +361,7 @@ export class GlobalUi {
     }
 
     hideMenus(event) {
+        $("#mega-result").hide();
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
@@ -386,7 +387,6 @@ export class GlobalUi {
     }
 
     adjustUi() {
-
         if (window.innerWidth < 992) {
             console.info("auto adjust : hide");
             this.hideSideBar();
@@ -562,6 +562,12 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             let url = $(this).attr('es-search-url');
             let placeholderText = $(this).attr('es-search-text');
+            let addable = null;
+            if($(this).attr('es-search-addable') === "true") {
+                addable = function (value) {
+                    return value
+                };
+            }
             console.info("auto enable slim-select-filter-search for : " + selectName);
             let select = $("#" + selectName);
             new SlimSelect({
@@ -577,6 +583,7 @@ export class GlobalUi {
                     maxValuesShown: 40,
                 },
                 events: {
+                    addable: addable,
                     searchFilter: (option, search) => {
                         return true;
                     },
@@ -618,7 +625,7 @@ export class GlobalUi {
                 e.stopPropagation();
             });
             select.removeClass("spinner-border");
-            self.slimSelectHack($(this))
+            self.slimSelectHack($(this));
         })
 
         $(".slim-select-simple").each(function () {

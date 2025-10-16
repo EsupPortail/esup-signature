@@ -842,4 +842,10 @@ public class WorkflowService {
             }
         }
     }
+
+    public List<Workflow> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteWorkflows);
+        Set<Workflow> workflows = getWorkflowsByUser(userEppn, authUserEppn);
+        return workflows.stream().filter(w -> favoriteFormsIds.contains(w.getId())).toList();
+    }
 }

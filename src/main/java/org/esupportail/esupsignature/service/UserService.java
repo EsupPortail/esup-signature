@@ -619,6 +619,47 @@ public class UserService {
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
     }
 
+    @Transactional
+    public List<Long> getFavoriteIds(String authUserEppn, UiParams uiParams) {
+        User authUser = getByEppn(authUserEppn);
+        if(authUser.getUiParams().containsKey(uiParams)) {
+            return Arrays.stream(authUser.getUiParams().get(uiParams).split(",")).map(s -> {
+                try {
+                    return Long.valueOf(s);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull).toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Transactional
+    public void toggleFavorite(String authUserEppn, Long workflowId, UiParams uiParams) {
+        User authUser = getByEppn(authUserEppn);
+        String favorites = authUser.getUiParams().get(uiParams);
+        if(favorites.equals("null")) {
+            favorites = "";
+        }
+        List<Long> favoritesIds = new ArrayList<>(Arrays.stream(favorites.split(","))
+                .map(s -> {
+                    try {
+                        return Long.valueOf(s);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList());
+        if(favoritesIds.contains(workflowId)) {
+            favoritesIds.remove(workflowId);
+        } else {
+            favoritesIds.add(workflowId);
+        }
+        favorites = favoritesIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        authUser.getUiParams().put(uiParams, favorites);
+    }
+
     public UserType checkMailDomain(String email) {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {

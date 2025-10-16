@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<div id="new-tools" th:fragment="new-tools" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
+    <div class="d-flex flex-row flex-wrap justify-content-center gap-5">
+        <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button"
+            class="globalButton btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-2"
+            style="width: 300px; height: 170px;"
+            data-bs-toggle="modal"
+            data-bs-target="#wiz-self-sign-modal"
+            title="Vous devez signer un document présent sur votre poste de travail">
+            <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1">
+                <div style="height: 70px;" class="d-flex align-items-center">
+                    <i class="fi fi-tr-attribution-pencil" style="font-size: 50px;"></i>
+                </div>
+                <h5>Auto signature</h5>
+                <small>Signer vos documents</small>
+            </div>
+        </a>
+        <a tabindex="0" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal"
+           class="globalButton btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-2"
+           style="width: 300px; height: 170px;"
+           data-bs-toggle="modal"
+           data-bs-target="#wiz-fast-sign-modal"
+           title="Demander la signature d'un document présent sur votre poste de travail">
+            <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1">
+                <div style="height: 70px;" class="d-flex align-items-center">
+                    <i class="fi fi-tr-paper-plane-launch" style="font-size: 50px;"></i>
+                </div>
+                <h5>Demander une signature</h5>
+                <small>Envoyer un/des documents à vos destinataires</small>
+            </div>
+        </a>
+        <a tabindex="0" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
+           th:unless="${globalProperties.hideWizard}" role="button"
+           class="globalButton btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-2"
+           data-bs-toggle="modal" data-bs-target="#wiz-custom-sign-modal" style="width: 300px; height: 170px;"
+           title="Créer une nouvelle demande à l'aide de l'assistant">
+            <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1">
+                <div style="height: 70px;" class="d-flex align-items-center">
+                    <i class="fi fi-tr-plan"  style="font-size: 50px;"></i>
+                </div>
+                <h5>Demande personnalisée</h5>
+                <small>Envoyer des documents dans un circuit à plusieurs étapes</small>
+            </div>
+        </a>
+    </div>
+</div>
+</html>

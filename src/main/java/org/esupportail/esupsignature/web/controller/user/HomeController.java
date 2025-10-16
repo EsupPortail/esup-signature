@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -31,44 +30,37 @@ import java.util.Locale;
 public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
-
-    private final GlobalProperties globalProperties;
-
-    @Resource
-    private SignRequestRepository signRequestRepository;
-
-    public HomeController(GlobalProperties globalProperties) {
-        this.globalProperties = globalProperties;
-    }
+    private final TagService tagService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "home";
     }
 
-    @Resource
-    private FormService formService;
+    private final GlobalProperties globalProperties;
+    private final SignRequestRepository signRequestRepository;
+    private final FormService formService;
+    private final WorkflowService workflowService;
+    private final SignRequestService signRequestService;
+    private final SignBookService signBookService;
+    private final DataRepository dataRepository;
+    private final TemplateEngine templateEngine;
+    private final MessageService messageService;
+    private final UserService userService;
 
-    @Resource
-    private WorkflowService workflowService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private DataRepository dataRepository;
-
-    @Resource
-    private TemplateEngine templateEngine;
-
-    @Resource
-    private MessageService messageService;
-
-    @Resource
-    private UserService userService;
+    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, TemplateEngine templateEngine, MessageService messageService, UserService userService, TagService tagService) {
+        this.globalProperties = globalProperties;
+        this.signRequestRepository = signRequestRepository;
+        this.formService = formService;
+        this.workflowService = workflowService;
+        this.signRequestService = signRequestService;
+        this.signBookService = signBookService;
+        this.dataRepository = dataRepository;
+        this.templateEngine = templateEngine;
+        this.messageService = messageService;
+        this.userService = userService;
+        this.tagService = tagService;
+    }
 
     @GetMapping(value = {"", "/"})
     public String home(@ModelAttribute("userEppn") String userEppn,
@@ -108,7 +100,12 @@ public class HomeController {
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
-                model.addAttribute("startFormId", formId);
+            model.addAttribute("startFormId", formId);
+            model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+            model.addAttribute("selectedTags", new ArrayList<>());
+            model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
+            model.addAttribute("favoriteForms", formService.getByIds(userEppn, authUserEppn));
+
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");
@@ -118,6 +115,18 @@ public class HomeController {
     @GetMapping("/start-form/{formId}")
     public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
         return "redirect:/user?formId=" + formId;
+    }
+
+    @GetMapping("/toggle-favorite-workflow/{workflowId}")
+    public String toggleFavoriteWorkflow( @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+        userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
+        return "redirect:/user";
+    }
+
+    @GetMapping("/toggle-favorite-form/{formId}")
+    public String toggleFavoriteForm( @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+        userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
+        return "redirect:/user";
     }
 
 }

@@ -51,7 +51,7 @@ header {
 }
 
 .content {
-    /*width: calc(100vw - 275px);*/
+    width: calc(100vw - 275px);
     margin-top: 86px;
     margin-left: 260px;
     padding-left: 6px;

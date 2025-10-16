@@ -17,33 +17,36 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Validation d’un document signé</b></h5>
-                    <div id="collapseHelp" aria-expanded="true" style="">
-                        <div class="alert alert-dark">
-                            Vous pouvez contrôler la signature électronique d’un document ainsi que la compatibilité PDF/A pour les fichiers pdf.
+                    <div style="" th:fragment="validationForm">
+                        <div class="alert alert-dark mb-2">
+                            <p>Vérifiez la <strong>signature électronique</strong> et la <strong>conformité PDF/A</strong> d’un document PDF.</p>
+                            <ul>
+                                <li>Si le document contient une signature intégrée, remplissez uniquement le premier champ.</li>
+                                <li>Si la signature est séparée, déposez le document original dans le premier champ et la signature dans le second.</li>
+                            </ul>
                         </div>
-                    </div>
-                    <br/>
-                    <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
+                        <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                         <div class="form-group mb-3">
                         <div class="custom-file">
-                            <input required="required" class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file"/>
                             <label class="custom-file-label" for="multipartSignedDoc">
                                 Choisir un fichier signé
                             </label>
+                            <input required="required" class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file"/>
                         </div>
                         </div>
                         <div class="form-group mb-3">
                         <div class="custom-file">
-                            <input class="form-control" id="multipartSignature" name="multipartSignature" type="file"/>
                             <label class="custom-file-label" for="multipartSignature">
                                 Choisir un fichier signature (si la signature est détachée)
                             </label>
+                            <input class="form-control" id="multipartSignature" name="multipartSignature" type="file"/>
                         </div>
                         </div>
                         <div class="form-group mb-3">
                         <input alt="Upload" class="btn btn-success float-end" id="Upload" title="Upload" type="submit" value="Envoyer"/>
                         </div>
                     </form>
+                    </div>
                 </div>
             </div>
         </div>

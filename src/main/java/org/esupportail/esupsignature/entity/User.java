@@ -45,6 +45,9 @@ public class User {
     private Set<String> managersRoles = new HashSet<>();
 
     @ElementCollection
+    @CollectionTable(name = "user_ui_params", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "ui_params_key")
+    @Column(name = "ui_params", nullable = false)
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 

@@ -22,126 +22,17 @@
     </script>
     <div class="card border-0 w-100 h-100">
         <div class="card-body">
-            <div id="new-scroll" class="text-nowrap col-12 text-wrap scrollbar-lite scrollbar-style new-min-h">
-                <div id="newContainer" class="d-inline">
-                    <div class="text-center">
-                    <h5 class="newToggled d-none">Outils de signature</h5>
-                    <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
-                        data-bs-toggle="modal"
-                        data-bs-target="#wiz-self-sign-modal"
-                        title="Vous devez signer un document présent sur votre poste de travail">
-                        <div class="d-flex flex-column align-items-center h-100 w-100">
-                            <i class="fa-solid fa-signature fa-3x"></i>
-                            <span class="h7">Auto signature</span>
-                        </div>
-                    </a>
-                    <a tabindex="0" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0" style="width: 120px; height: 170px;"
-                        data-bs-toggle="modal"
-                        data-bs-target="#wiz-fast-sign-modal"
-                        title="Demander la signature d'un document présent sur votre poste de travail">
-                        <div class="d-flex flex-column align-items-center h-100 w-100">
-                            <i class="fa-solid fa-paper-plane fa-3x"></i>
-                            <span class="h7">Demander une signature</span>
-                        </div>
-                    </a>
-                    <a tabindex="0" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
-                        th:unless="${globalProperties.hideWizard}"
-                        role="button" class="globalButton btn btn-material btn-light text-center me-2 mb-2 overflow-hidden p-0" data-bs-toggle="modal"
-                        data-bs-target="#wiz-custom-sign-modal" style="width: 120px; height: 170px;"
-                        title="Créer une nouvelle demande à l'aide de l'assistant">
-                        <div class="d-flex flex-column align-items-center h-100 w-100">
-                            <span class="fa-stack fa-2xl">
-                                <i class="fa-solid fa-paper-plane fa-stack-1x me-3"></i>
-                                <i class="fa-solid fa-cog fa-stack-1x ms-3 mt-3 text-black-50"></i>
-                            </span>
-                            <span class="h7">Créer une demande personnalisée</span>
-                        </div>
-                    </a>
+            <div id="new-scroll" class="text-nowrap text-wrap">
+                <div id="newContainer">
+                    <div th:replace="~{fragments/new-tools :: new-tools}"></div>
+                    <div class="" id="newWorkflow">
+                        <hr>
+                        <div th:replace="~{fragments/new-workflow :: new-workflow}"></div>
                     </div>
-                    <hr class="newHr">
-                    <h5 class="newToggled d-none">Circuits</h5>
-                    <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${!isUserOnSu}" id="start-wizard-button-3" role="button" class="globalButton btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0"
-                        data-bs-toggle="modal" data-bs-target="#wiz-modal" style="width: 120px; height: 170px;"
-                        title="Créer un circuit personnel à l'aide de l'assistant" >
-                        <div class="d-flex flex-column align-items-center h-100 w-100">
-                            <i class="fa-solid fa-magic fa-3x "></i>
-                            <span class="h7">Assistant de création de circuit</span>
-                        </div>
-                    </a>
-                    <div class="d-inline-flex" id="newWorkflow">
-                        <th:block th:each="workflow : ${workflows}">
-                            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
-                                <a tabindex="0" role="button" class="workflow-btn start-wizard-workflow-button btn btn-material btn-light text-center pt-3 me-2 mb-2 overflow-hidden p-0 workflow-button"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#wiz-workflow-sign-modal"
-                                    style="width: 120px; display: inline-flex; flex-direction: column;"
-                                    th:title="${workflow.description}"
-                                    th:data-es-workflow-id="${workflow.id}"
-                                    th:alt="'Circuit : ' + ${workflow.description}">
-                                    <div class="d-flex flex-column align-items-center h-100 w-100">
-                                        <i class="fa-solid fa-project-diagram fa-3x project-diagram-color"></i>
-                                        <span class="h7" th:text="${workflow.description}"></span>
-                                    </div>
-                                </a>
-                                <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
-                                    <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
-                                            th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
-                                            th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
-                                        <i class="fa-solid fa-ellipsis-h"></i>
-                                    </button>
-                                </div>
-                                <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                                    <div class="inline-flex">
-                                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
-                                        </form>
-                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
-                                            <i class="fa-solid fa-trash-alt"></i>
-                                        </button>
-                                        <button  class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
-                                            <i class="fa-solid fa-cog"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </th:block>
+                    <div  id="newForm">
+                        <hr>
+                        <div th:replace="~{fragments/new-form :: new-form}"></div>
                     </div>
-                    <th:block th:if="${workflows != null && workflows.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 noWorkflow d-none"
-                            style="width: 120px; height: 170px;">
-                            <div class="d-flex flex-column align-items-center h-100 w-100">
-                                <span class="h7">Aucun circuit</span>
-                            </div>
-                        </a>
-                    </th:block>
-                    <hr class="newHr">
-                    <h5 class="newToggled d-none">Formulaires</h5>
-                    <div class="d-inline-block" id="newForm">
-                        <th:block th:each="form : ${forms}">
-                            <a tabindex="0" role="button" class="btn btn-material btn-light text-center pt-3 me-2 overflow-hidden p-0 form-button start-form-button"
-                                style="width: 120px; height: 170px;"
-                                th:classappend="${form.hideButton} ? 'd-none' : ''"
-                                th:title="${form.title}"
-                                th:id="'form-button-' + ${form.id}"
-                                th:data-es-form-id="${form.id}"
-                                th:href="'/user/start-form/' + ${form.id}"
-                                data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
-                                <div class="d-flex flex-column align-items-center h-100 w-100">
-                                    <i class="fa-solid fa-file-alt fa-3x file-alt-color"></i>
-                                    <!--                                    <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
-                                    <span class="h7" th:text="${form.title}"></span>
-
-                                </div>
-                            </a>
-                        </th:block>
-                    </div>
-                    <th:block th:if="${forms != null && forms.size() == 0}">
-                        <a role="button" class="btn btn-material btn-light text-center me-2 overflow-hidden p-0 noForm d-none"
-                            style="width: 120px; height: 170px;">
-                            <div class="d-flex flex-column align-items-center h-100 w-100">
-                                <span class="h7">Aucun formulaire</span>
-                            </div>
-                        </a>
-                    </th:block>
                 </div>
             </div>
         </div>
