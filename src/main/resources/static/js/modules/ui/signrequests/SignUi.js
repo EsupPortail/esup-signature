@@ -192,13 +192,7 @@ export class SignUi {
                 }
             });
         } else {
-            let signModal;
-            if (self.stepRepeatable) {
-                signModal = $('#stepRepeatableModal');
-            } else {
-                signModal = $("#signModal");
-            }
-            signModal.modal('show');
+            $("#signModal").modal('show');
             this.confirmLaunchSignModal();
         }
     }
@@ -255,12 +249,7 @@ export class SignUi {
             $("#launchNoInfiniteSignButtonNext").toggle();
             $("#signCommentNoInfinite").toggle();
         });
-        let signModal;
-        if (this.stepRepeatable) {
-            signModal = $('#stepRepeatableModal');
-        } else {
-            signModal = $("#signModal");
-        }
+        let signModal = $("#signModal");
         signModal.on('shown.bs.modal', function () {
             $("#checkValidateSignButtonEnd").focus();
             let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
@@ -295,7 +284,7 @@ export class SignUi {
     }
 
     launchNoInfiniteSign(next) {
-        this.signComment = $("#signCommentNoInfinite");
+        this.signComment = $("#signComment");
         this.launchSign(next);
     }
 
