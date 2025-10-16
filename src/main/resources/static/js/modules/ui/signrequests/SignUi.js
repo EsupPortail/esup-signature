@@ -296,7 +296,6 @@ export class SignUi {
 
     launchNoInfiniteSign(next) {
         this.signComment = $("#signCommentNoInfinite");
-        $("#password").val($("#passwordInfinite").val());
         this.launchSign(next);
     }
 
@@ -521,7 +520,6 @@ export class SignUi {
             contentType: "application/json",
             data: JSON.stringify(step),
             success: function() {
-                $("#password").val($("#passwordInfinite").val());
                 self.launchSign();
             }
         });
