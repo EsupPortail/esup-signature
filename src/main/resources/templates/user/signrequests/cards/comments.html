@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="comments" th:fragment="comments">
-    <div id="commentsBar" th:if="${toSignDocument.contentType == 'application/pdf'}" style="display: none; width: 250px; left: 285px;">
+    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="display: none; width: 250px; left: 285px;">
         <div class="hr">Annotations</div>
         <div th:if="${comments.size() > 0}" class="card card-body bg-light mb-1">
             <ul class="list-group">

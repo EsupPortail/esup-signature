@@ -126,7 +126,7 @@
                            th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
                            title="Télécharger la dernière version des documents dans une archive ZIP"><i class="fa-solid fa-file-archive fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <li th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                         <a tabindex="1" class="btn-lg btn-floating bg-primary"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
@@ -423,41 +423,40 @@
     </div>
 </div>
 
-<!--<div th:if="${signable}" data-bs-focus="false" class="modal fade" id="signAllModal"  role="dialog"-->
-<!--    aria-labelledby="signModalLabel" aria-hidden="true">-->
-<!--    <div class="modal-dialog modal-lg" role="document">-->
-<!--        <div class="modal-content">-->
-<!--            <div class="modal-header">-->
-<!--                <h5 class="modal-title" id="signAllModalLabel">Confirmer la signature des documents</h5>-->
-<!--                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>-->
-<!--            </div>-->
-<!--            <div class="modal-body">-->
-<!--                <form>-->
-<!--                    <input type="text" autocomplete="username" name="username" class="d-none">-->
-<!--                    <input autocomplete="new-password"-->
-<!--                        th:classappend="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).signature} ? 'd-none'"-->
-<!--                        class="form-control" type="password" id="passwordAll" name="passwordAll" value=""-->
-<!--                        placeholder="Mot de passe du keystore"/>-->
-<!--                </form>-->
-<!--            </div>-->
-<!--            <div class="modal-footer">-->
-<!--                <button type="button" class="btn btn-secondary col-12" data-bs-dismiss="modal">Annuler</button>-->
-<!--                <button id="checkValidateSignButton" class="mb-1 col-12 btn btn-success" title="Signer"-->
-<!--                        th:value="${signRequest.parentSignBook.id}">-->
-<!--                    <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">-->
-<!--                        <i class="fa-solid fa-signature"></i> Signer-->
-<!--                    </span>-->
-<!--                    <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">-->
-<!--                    <i class="fa-solid fa-check"></i> Viser-->
-<!--                        </span>-->
-<!--                </button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
+<div th:if="${signable}" data-bs-focus="false" class="modal fade" id="signAllModal"  role="dialog"
+    aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="signAllModalLabel">Confirmer la signature des documents</h5>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <input type="text" autocomplete="username" name="username" class="d-none">
+                    <input autocomplete="new-password"
+                        th:classappend="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).signature} ? 'd-none'"
+                        class="form-control" type="password" id="passwordAll" name="passwordAll" value=""
+                        placeholder="Mot de passe du keystore"/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary col-12" data-bs-dismiss="modal">Annuler</button>
+                <button id="checkValidateSignButton" class="mb-1 col-12 btn btn-success" title="Signer"
+                        th:value="${signRequest.parentSignBook.id}">
+                    <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <i class="fa-solid fa-signature"></i> Signer
+                    </span>
+                    <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <i class="fa-solid fa-check"></i> Viser
+                        </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}"
-    data-bs-focus="false" class="modal fade" id="stepRepeatableModal"  role="dialog"
+<div th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}" data-bs-focus="false" class="modal fade" id="stepRepeatableModal"  role="dialog"
     aria-labelledby="signModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -466,25 +465,9 @@
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="selectTypeDiv" class="alert alert-secondary mb-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
-                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
-                    <div class="input-group mt-2">
-                        <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>
-                            <th:block th:each="signWith : ${signWiths}">
-                                <th:block th:if="${signWith.name != 'sealCert'}">
-                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                </th:block>
-                                <th:block th:if="${signWith.name == 'sealCert'}">
-                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                </th:block>
-                            </th:block>
-                        </select>
-                        <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
-                    </div>
-                    <input type="text" autocomplete="username" name="username" class="d-none">
-                    <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
-                </div>
+                <input th:classappend="${signRequest.parentSignBook.liveWorkflow.currentStep.signType != T(org.esupportail.esupsignature.entity.enums.SignType).signature || user.keystore == null} ? 'd-none'"
+                    class="form-control mt-2 mb-1" type="password" id="passwordInfinite" name="password" value=""
+                    placeholder="Mot de passe du keystore" />
                 <p>
                     Vous avez la possibilité de demander une validation intermédiaire avant l’étape suivante.
                 </p>
@@ -807,13 +790,13 @@
 <div data-bs-focus="false" class="modal fade" id="refuseModal"  role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/' + ${urlProfil} + '/signrequests/refuse/' + ${signRequest.id}" method="post">
+            <form th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/signrequests/refuse/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <textarea id="refuseComment" placeholder="Vous devez ajouter un motif de refus. Celui-ci sera visible par tous les participants" class="form-control" name="comment" required></textarea>
+                    <textarea id="refuseComment" placeholder="Vous devez ajouter un motif de refuse. Celui-ci sera visible par tous les participants" class="form-control" name="comment" required></textarea>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
@@ -869,7 +852,7 @@
                         <td th:text="${extrenalRecipient.email}"></td>
                         <td>
                             <form th:action="'/user/signrequests/send-otp-download/' + ${signRequest.parentSignBook.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
-                                <input type="text" name="phone" class="form-control me-1" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
+                                <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
                                 <button type="submit" class="btn btn-success" title="Envoyer un nouveau lien d'accès">Envoyer</button>
                             </form>
                         </td>
@@ -1044,7 +1027,7 @@
 <div data-bs-focus="false" class="modal fade" id="addCommentModal"  role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form th:action="'/' + ${urlProfil} + '/signrequests/postit/' + ${signRequest.id}" method="post">
+            <form th:action="'/user/signrequests/postit/' + ${signRequest.id}" method="post">
                 <div class="modal-header">
                     <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -1087,7 +1070,7 @@
                                     <div class="carousel-item text-center" th:classappend="${iterator.index == 0} ? 'active'">
                                         <img height="145" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
                                         <a style="position: absolute; top: 110px; left: 30%;" th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '"
-                                            th:href="'/' + ${urlProfil} + '/users/set-default-sign-image/' + ${iterator.index}" role="button"
+                                            th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button"
                                             class="btn btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
                                             <i class="fa-solid fa-star"></i>
                                         </a>
