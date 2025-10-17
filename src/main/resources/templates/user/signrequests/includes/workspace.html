@@ -57,7 +57,6 @@
                 <div class="d-flex gap-2 align-items-center">
                     <div><i class="fa-solid fa-triangle-exclamation text-danger"></i></div><div>Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</div>
                 </div>
-
             </div>
             <div id="signBookDesc" title="Masquer ce message" class="d-none alert bg-light text-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
                 style="width: 100%;">
@@ -163,7 +162,7 @@
                     </div>
                 </div>
             </th:block>
-            <div id="comment-div" class="postit alert alert-warning border-dark">
+            <div id="comment-div" class="postit alert alert-warning border-dark" style="z-index: 100;">
                 <form>
                     <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                     <input id="commentPosX" name="commentPosX" type="hidden"/>

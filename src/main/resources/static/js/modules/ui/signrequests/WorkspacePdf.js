@@ -6,6 +6,8 @@ export class WorkspacePdf {
 
     constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
+        let url = new URL(window.location.href);
+        this.hasAnnotation = url.searchParams.has("annotation");
         this.ready = false;
         this.formInitialized = false;
         this.isPdf = isPdf;
@@ -48,7 +50,7 @@ export class WorkspacePdf {
             if(currentSignType === "form") {
                 this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, this.hasAnnotation);
             }
         }
         this.signPosition = new SignPosition(
@@ -309,9 +311,7 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            const url = new URL(window.location.href);
-            const hasAnnotation = url.searchParams.has("annotation");
-            if(hasAnnotation) {
+            if(this.hasAnnotation) {
                 this.enableCommentMode();
             } else {
                 if (this.signable) {
@@ -762,9 +762,9 @@ export class WorkspacePdf {
                         let newTop = oldTop + yOffset;
                         cross.css("left", newLeft);
                         cross.css("top", newTop);
-                        signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
-                        cross.resizable("disable");
+                        signRequestParams.dropped = true;
+                        signRequestParams.disableCrossResizable();
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
@@ -781,8 +781,9 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        cross.resizable("enable");
+                        signRequestParams.enableCrossResizable();
                         signRequestParams.signSpace = null;
+                        signRequestParams.dropped = false;
                     }
                 }
             }
