@@ -225,6 +225,17 @@
             <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
             </th:block>
+            <th:block th:if="${toSignDocument == null && (signBook.archiveStatus.equals(T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).archived) || signBook.archiveStatus.equals(T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned))}">
+                <div class="alert alert-success">
+                    <h5>Le document a été exporté vers son espace d’archivage.</h5>
+                    <p>Il se trouve à l’emplacement suivant : <br>
+                        <input type="text" disabled th:value="${signRequest.exportedDocumentURI}" class="w-100">
+                    </p>
+                    <a tabindex="1" class="btn btn-lg btn-primary"
+                       th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
+                       title="Télécharger le document"><i class="fa-solid fa-download"></i> Récupérer le document</a>
+                </div>
+            </th:block>
             <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                 <div class="alert alert-success">Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</div>
             </th:block>
