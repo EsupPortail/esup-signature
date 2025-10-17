@@ -513,16 +513,15 @@ export class WizUi {
     }
 
     sendForm(e) {
+        let self = this;
         this.disableButtons();
         let formId = $(e.target).attr('data-es-form-id');
-        let spinner = $("#send-form-spinner");
-        spinner.removeClass("d-none");
         let successCallback = function(id) {
             location.href = "/user/signbooks/" + id;
         };
         let errorCallback = function(e) {
             $("#send-form-submit").click();
-            spinner.addClass("d-none");
+            self.enableButtons();
         };
         this.sendSteps('/user/datas/send-form/' + formId + '?pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
     }
