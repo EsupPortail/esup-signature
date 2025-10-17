@@ -31,8 +31,6 @@
                         href="/user/signbooks" class="btn btn-transparent text-left me-1">
                         <i class="fa-solid fa-paste"></i> <span
                             class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
-                        <span aria-hidden="true" title="Demandes en attente" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}">
-                        </span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">

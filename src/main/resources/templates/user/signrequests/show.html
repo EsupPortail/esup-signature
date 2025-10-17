@@ -66,7 +66,7 @@
                             <i class="fa-solid fa-comment fa-2xl text-dark" style="margin-top: -8px;"></i>
                         </button>
                     </li>
-                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
+                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                         <button tabindex="1" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Inserer une signature" style="border: 0px solid #0d6efd;">
                             <i class="fa-solid fa-file-signature fa-2xl text-primary" style="margin-top: -8px;"></i>
                         </button>
@@ -256,7 +256,7 @@
             <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
                 Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
             </div>
-            <div th:if="${toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
+            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
                 Le document a bien été signé, vous pouvez le téléchargé
             </div>
             <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.json.SearchResult;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -127,6 +128,11 @@ public class HomeController {
     public String toggleFavoriteForm( @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
         userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
         return "redirect:/user";
+    }
+
+    @PostMapping("search")
+    public SearchResult search(@RequestParam String search) {
+        return new SearchResult();
     }
 
 }

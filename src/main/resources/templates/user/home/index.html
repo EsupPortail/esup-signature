@@ -35,8 +35,11 @@
                         </th:block>
                     </select>
                 </div>
-                <div id="mega-result" class="alert bg-white border-secondary-subtle position-absolute w-100" style="height: 500px;z-index: 1031;display: none;">
+                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 mt-1" style="height: 500px;z-index: 1031;display: none;">
+                    <div class="d-flex flex-row justify-content-between">
                     <h5>Résultats</h5>
+                    <button type="button" class="btn-close" title="Fermer" onclick="$('#mega-result').hide()"></button>
+                    </div>
                 </div>
                 <script>
                     let select = $("#mega-search");
@@ -50,7 +53,7 @@
                         };
                     }
                     console.info("auto enable slim-select-filter-search for : " + selectName);
-                    new SlimSelect({
+                    let slimselect = new SlimSelect({
                         select: '#' + selectName,
                         settings: {
                             placeholderText: placeholderText,
@@ -107,8 +110,11 @@
                     $(".ss-search > input").on("click" , function (e) {
                         e.stopPropagation();
                     });
-                    select.removeClass("spinner-border");
-                    self.slimSelectHack(select)
+
+                    $("#mega-result").click(function () {
+                        slimselect.close();
+                    });
+
                 </script>
             </div>
 
@@ -116,10 +122,15 @@
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
             <div class="w-100 d-flex justify-content-center gap-5 mb-2">
-                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="my-signatures-btn" role="button"
+                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
                     class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente">
-                    <i class="fa-solid fa-signature"></i> <span class="sidebar-label">Mes signatures</span>
+                    <i class="fa-solid fa-inbox"></i> <span class="sidebar-label">Documents à signer</span>
                     <span aria-hidden="true" title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
+                </a>
+                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                   class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées">
+                    <i class="fa-solid fa-paper-plane"></i> <span class="sidebar-label">Demandes envoyées</span>
+                    <span aria-hidden="true" title="Demandes envoyées" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
                 <a tabindex="10" title="Circuits" type="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#workflowsModal">
                     <i class="fa-solid fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Tous les circuits</span>
@@ -139,15 +150,15 @@
                 <div class="alert alert-light border-secondary-subtle d-flex flex-row w-100 gap-2">
                     <div class="d-flex flex-column w-50 border-end border-secondary-subtle">
                         <div class="d-flex flex-row w-100 align-items-center">
-                            <h6>Circuits
+                            <h5>Mes circuits favoris
                                 <a tabindex="0" role="button"
-                                   class="btn btn-sm btn-transparent text-dark text-center"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#workflowsModal"
-                                   title="Ajouter un circuit à vos favoris">
-                                    <i class="d-flex align-items-center fi fi-rr-customize" style="font-size: 20px;"></i>
+                                    class="btn btn-sm btn-transparent text-dark text-center"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#workflowsModal"
+                                    title="Ajouter un circuit à vos favoris">
+                                    <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
                                 </a>
-                            </h6>
+                            </h5>
 
                         </div>
                         <div class="d-flex flex-row flex-wrap">
@@ -188,15 +199,22 @@
                                 </div>
                             </th:block>
                             <th:block th:if="${favoriteWorkflows.size() == 0}">
-                                <div class="alert alert-secondary d-flex text-center align-items-center" style="width:200px; height: 170px; margin: .375rem;">
+                                <div class="alert alert-secondary d-flex flex-column text-center align-items-center" style="width:200px; height: 170px; margin: .375rem;">
                                     <p>Aucun circuit en favori pour l’instant</p>
+                                    <small>Cliquez sur <a tabindex="0" role="button"
+                                        class="btn btn-sm btn-transparent text-dark text-center"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#workflowsModal"
+                                        title="Ajouter un circuit à vos favoris">
+                                        <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
+                                    </a> puis sur l’étoile de la tuile que vous voulez ajouter</small>
                                 </div>
                                 <a tabindex="0" role="button"
-                                   class="btn btn-material bg-secondary-subtle shadow-sm border border-opacity-10 text-center me-2 mb-2 overflow-hidden p-0"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#workflowsModal"
-                                   style="width: 120px; height: 170px;"
-                                   title="Ajouter un circuit à vos favoris">
+                                    class="btn btn-material bg-secondary-subtle shadow-sm border border-opacity-10 text-center me-2 mb-2 overflow-hidden p-0"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#workflowsModal"
+                                    style="width: 120px; height: 170px;"
+                                    title="Ajouter un circuit à vos favoris">
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
                                         <i class="fi fi-sr-plus" style="font-size: 50px;"></i>
                                     </div>
@@ -206,27 +224,27 @@
                     </div>
                     <div class="d-flex flex-column w-50">
                         <div class="w-100">
-                            <h6>Formulaires
+                            <h5>Mes formulaires favoris
                                 <a tabindex="0" role="button"
-                                   class="btn btn-sm btn-transparent text-dark text-center"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#formsModal"
-                                   title="Ajouter un formulaire à vos favoris">
-                                    <i class="d-flex align-items-center fi fi-rr-customize" style="font-size: 20px;"></i>
+                                    class="btn btn-sm btn-transparent text-dark text-center"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#formsModal"
+                                    title="Ajouter un formulaire à vos favoris">
+                                    <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
                                 </a>
-                            </h6>
+                            </h5>
                         </div>
                         <div class="d-flex flex-row flex-wrap">
                             <th:block th:each="form : ${favoriteForms}">
                                 <a tabindex="0" role="button"
-                                   class="btn btn-material shadow-sm border border-opacity-10 btn-light text-center overflow-hidden form-button start-form-button"
-                                   style="width: 120px; height: 170px;"
-                                   th:classappend="${form.hideButton} ? 'd-none' : ''"
-                                   th:title="${form.title}"
-                                   th:id="'form-button-' + ${form.id}"
-                                   th:data-es-form-id="${form.id}"
-                                   th:href="'/user/start-form/' + ${form.id}"
-                                   data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
+                                    class="btn btn-material shadow-sm border border-opacity-10 btn-light text-center overflow-hidden form-button start-form-button"
+                                    style="width: 120px; height: 170px;"
+                                    th:classappend="${form.hideButton} ? 'd-none' : ''"
+                                    th:title="${form.title}"
+                                    th:id="'form-button-' + ${form.id}"
+                                    th:data-es-form-id="${form.id}"
+                                    th:href="'/user/start-form/' + ${form.id}"
+                                    data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
                                         <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
                                         <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
@@ -235,19 +253,15 @@
                                 </a>
                             </th:block>
                             <th:block th:if="${favoriteForms.size() == 0}">
-                                <div class="alert alert-secondary d-flex text-center align-items-center" style="width:200px; height: 170px; margin: .375rem;">
+                                <div class="alert alert-secondary d-flex flex-column text-center align-items-center" style="width:300px; height: 170px; margin: .375rem;">
                                     <p>Aucun formulaire en favori pour l’instant</p>
-                                </div>
-                                <a tabindex="0" role="button"
-                                    class="btn btn-material bg-secondary-subtle shadow-sm border border-opacity-10 text-center me-2 mb-2 overflow-hidden p-0"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#formsModal"
-                                    style="width: 120px; height: 170px;"
-                                    title="Ajouter un formulaire à vos favoris">
-                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
-                                        <i class="fi fi-sr-plus" style="font-size: 50px;"></i>
-                                    </div>
-                                </a>
+                                    <small>Cliquez sur <a tabindex="0" role="button"
+                                         class="btn btn-sm btn-transparent text-dark text-center"
+                                         data-bs-toggle="modal"
+                                         data-bs-target="#formsModal"
+                                         title="Ajouter un circuit à vos favoris">
+                                        <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
+                                    </a> puis sur l’étoile de la tuile que vous voulez ajouter</small>                                </div>
                             </th:block>
                         </div>
                     </div>
@@ -440,6 +454,120 @@
         </div>
     </div>
 </div>
+<div id="pendingsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Demandes envoyées</h3>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="listSignRequestTable" class="div-scrollable scrollbar-style rounded-3">
+                    <div id="to-sign-list" class="d-flex col-12 mb-2">
+                        <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-striped table-hover table-light">
+                            <thead class="table-secondary">
+                            <th style="width: 15px;">Lu</th>
+                            <th class="text-break d-none d-md-table-cell"></th>
+                            <th class="text-break w-5 d-none d-md-table-cell"></th>
+                            <th class="d-none d-xxl-table-cell">Type</th>
+                            <th>Nom</th>
+                            <th class="d-none d-md-table-cell">Créateur</th>
+                            <th>Date de création</th>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signBook : ${signBooksPending}">
+                                <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
+                                    <td style="width: 15px;">
+                                        <div class="d-flex flex-row align-items-center justify-content-around gap-1">
+                                            <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
+                                            <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
+                                            <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
+                                            <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
+                                            <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
+                                                    th:text="${signBook.postits.size()}" type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+                                            </button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                                                    type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
+                                            </button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                                                    th:text="${signBook.postits.size() + 1}" type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+                                            </button>
+                                            <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
+                                                <li th:if="${signBook.description != null}" class="dropdown-item">
+                                                    <pre class="me-1" th:text="${signBook.description}"></pre>
+                                                </li>
+                                                <th:block th:each="postit : ${signBook.postits}">
+                                                    <li th:if="${postit}" class="dropdown-item">
+                                                        <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
+                                                    </li>
+                                                </th:block>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td class="text-break d-none d-md-table-cell" style="width: 25px;">
+                                        <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
+                                    </td>
+                                    <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
+                                        <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
+                                        <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-30" style="width: 400px;">
+                                    <span th:if="${signBook.signRequests.size() > 1}">
+                                        <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
+                                        <i class="fa-solid fa-caret-down"></i>
+                                    </span>
+                                        <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </td>
+                                </tr>
+                                <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
+                                    <td></td>
+                                    <td></td>
+                                    <td colspan="4">
+                                        <div class="collapse" th:id="'row_' + ${signBook.id}">
+                                            <table class="table table-hover">
+                                                <th:block th:each="signRequest : ${signBook.signRequests}">
+                                                    <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                                        <td>
+                                                            <i class="fa-solid fa-file-alt"></i>
+                                                        </td>
+                                                        <td th:text="${signRequest.title}"></td>
+                                                        <td>
+                                                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
+                                                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
+                                                            <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
+                                                        </td>
+                                                    </tr>
+                                                </th:block>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                        <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary text-center w-100">
+                            Aucun document à signer pour le moment
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 
 </body>

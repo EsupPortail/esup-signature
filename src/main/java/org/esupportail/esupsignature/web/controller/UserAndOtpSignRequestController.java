@@ -121,7 +121,6 @@ public class UserAndOtpSignRequestController {
             currentStepMinSignLevel = SignLevel.advanced;
         }
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
-        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
         model.addAttribute("nextSignBook", nextSignBook);
@@ -145,7 +144,12 @@ public class UserAndOtpSignRequestController {
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
             List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
-            if(signable) model.addAttribute("signWiths", signWiths);
+            if(signable) {
+                model.addAttribute("signWiths", signWiths);
+                if(currentStepMinSignLevel.getValue() < 3) {
+                    currentStepMinSignLevel = SignLevel.advanced;
+                }
+            }
             model.addAttribute("signatureIssue", false);
             for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
                 if(!reports.getSimpleReport().isValid(signatureId)) {
@@ -155,6 +159,7 @@ public class UserAndOtpSignRequestController {
         } else {
             if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
+        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
