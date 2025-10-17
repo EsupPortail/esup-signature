@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -119,11 +120,13 @@ public class WorkflowAdminController {
 				workflow.setManagerRole(managerRole);
 				return "redirect:/manager/workflows/update/" + workflow.getId();
 			}
-		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Un circuit possède déjà ce préfixe"));
-			return "redirect:/admin/workflows";
-		}
-	}
+		} catch (DataIntegrityViolationException dive) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Un circuit possède déjà ce préfixe"));
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+        }
+        return "redirect:/admin/workflows";
+    }
 
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
