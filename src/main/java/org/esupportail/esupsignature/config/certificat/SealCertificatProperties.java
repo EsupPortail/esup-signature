@@ -70,6 +70,8 @@ public class SealCertificatProperties {
         this.sealCertificatFile = sealCertificatFile;
         this.sealCertificatDriver = sealCertificatDriver;
         this.sealCertificatPin = sealCertificatPin;
+        this.sealCertificatSlotId = 0;
+        this.roles = List.of("ROLE_SEAL");
     }
 
     public String getSealCertificatName() {
