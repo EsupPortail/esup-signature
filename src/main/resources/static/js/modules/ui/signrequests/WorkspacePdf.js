@@ -748,7 +748,11 @@ export class WorkspacePdf {
                         ui.size.height = ui.size.height - 2;
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
-                        cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
+                        if(signRequestParams.extraOnTop) {
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
+                        } else {
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale/2);
+                        }
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
                         let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
                         let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
