@@ -231,7 +231,7 @@ public class WorkflowService {
             workflowRepository.save(workflow);
             return workflow;
         } else {
-            throw new EsupSignatureRuntimeException("already exist");
+            throw new EsupSignatureRuntimeException("Un circuit possède déjà ce préfixe");
         }
     }
 
