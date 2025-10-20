@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.json.SearchRequest;
 import org.esupportail.esupsignature.dto.json.SearchResult;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,7 @@ import org.thymeleaf.context.Context;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -106,7 +109,6 @@ public class HomeController {
             model.addAttribute("selectedTags", new ArrayList<>());
             model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
             model.addAttribute("favoriteForms", formService.getByIds(userEppn, authUserEppn));
-
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");
@@ -119,20 +121,64 @@ public class HomeController {
     }
 
     @GetMapping("/toggle-favorite-workflow/{workflowId}")
-    public String toggleFavoriteWorkflow( @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+    public String toggleFavoriteWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
         userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
         return "redirect:/user";
     }
 
     @GetMapping("/toggle-favorite-form/{formId}")
-    public String toggleFavoriteForm( @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+    public String toggleFavoriteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
         userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
         return "redirect:/user";
     }
 
-    @PostMapping("search")
-    public SearchResult search(@RequestParam String search) {
-        return new SearchResult();
+    @PostMapping(value = "search", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public List<SearchResult> search(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<SearchRequest> searchRequests) {
+        List<SearchResult> searchResults = new ArrayList<>();
+        if(!searchRequests.isEmpty()) {
+            List<String> words = new ArrayList<>();
+            List<String> types = new ArrayList<>();
+            List<Tag> tags = new ArrayList<>();
+            for (SearchRequest searchRequest : searchRequests) {
+                if (searchRequest.getValue().startsWith("tag:")) {
+                    tags.add(tagService.getById(Long.valueOf(searchRequest.getValue().split(":")[1])));
+                } else if (searchRequest.getValue().startsWith("type:")) {
+                    types.add(searchRequest.getValue().split(":")[1]);
+                } else if (!searchRequest.getValue().contains(":")) {
+                    words.add(searchRequest.getValue());
+                }
+            }
+            if (types.isEmpty() || types.contains("workflow")) {
+                List<Workflow> workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
+                        .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                for (Workflow workflow : workflows) {
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setIcon("fa-solid fa-project-diagram project-diagram-color");
+                    searchResult.setTitle(workflow.getDescription());
+                    searchResult.setUrl(workflow.getId() + " ");
+                    searchResults.add(searchResult);
+                }
+            }
+            if(types.isEmpty() || types.contains("signBook")) {
+                List<SignBook> signBooks = new ArrayList<>();
+                if(words.isEmpty()) {
+                    signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent());
+                } else {
+                    for (String word : words) {
+                        signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, word, null, null, Pageable.unpaged()).getContent());
+                    }
+                }
+                for (SignBook signBook : signBooks) {
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setIcon("fa-solid fa-file");
+                    searchResult.setTitle(signBook.getSubject());
+                    searchResult.setUrl(signBook.getId() + " ");
+                    searchResults.add(searchResult);
+                }
+            }
+        }
+        return searchResults;
     }
 
 }

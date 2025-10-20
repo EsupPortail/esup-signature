@@ -6,6 +6,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<meta name="googlebot" content="noindex" />
 		<meta name="robots" content="noindex" />
+        <meta name="_csrf" th:content="${_csrf.token}">
+        <meta name="_csrf_header" th:content="${_csrf.headerName}">
 		<base href="/">
 		<link rel="stylesheet" th:href="@{/webjars/pdfjs-dist/legacy/web/pdf_viewer.css}" />
 		<link rel="stylesheet" th:href="@{/webjars/jquery-ui/dist/themes/vader/jquery-ui.css}" />

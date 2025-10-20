@@ -28,21 +28,38 @@
                 <div class="input-group">
                     <span class="input-group-text">Recherche</span>
                     <select id="mega-search" class="form-control slim-select-filter-search"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher sur un ou plusieurs critères" multiple>
-                        <option data-html='<i class="fa-solid fa-project-diagram project-diagram-color"></i> Circuits' value="type:circuits" th:selected="${typeCircuits}">Circuits</option>
-                        <option data-html='<i class="fa-solid fa-file-alt file-alt-color"></i> Formulaires' value="type:formulaires" th:selected="${typeFormulaires}">Formulaires</option>
+                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-regular fa-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
+                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-project-diagram project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
+                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-file-alt file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
                         <th:block th:each="tag : ${allTags}">
-                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                            <option th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fa-solid fa-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
                 </div>
-                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 mt-1" style="height: 500px;z-index: 1031;display: none;">
-                    <div class="d-flex flex-row justify-content-between">
+                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 mt-1 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none;">
+                    <div id="mega-result-header" class="d-flex flex-row justify-content-between">
                     <h5>Résultats</h5>
                     <button type="button" class="btn-close" title="Fermer" onclick="$('#mega-result').hide()"></button>
                     </div>
+                    <div id="mega-result-body">
+                        <div class="alert alert-secondary">Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.</div>
+                    </div>
                 </div>
                 <script>
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
                     let select = $("#mega-search");
+                    const selectEl = document.getElementById("mega-search");
+                    const initialOptions = Array.from(selectEl.options).map(o => ({
+                        text: o.text,
+                        value: o.value,
+                        html: o.dataset.html || o.text,
+                        selected: o.selected || false,
+                        disabled: o.disabled || false,
+                    }))
+                    let addedOptions = [];
+                    let fetchedOptions = [];
                     let selectName = select.attr('id');
                     let url = select.attr('es-search-url');
                     let placeholderText = select.attr('es-search-text');
@@ -68,41 +85,87 @@
                         events: {
                             beforeOpen: () => {
                                 $("#mega-result").show();
+                                const selectedValues = slimselect.getSelected();
+                                console.warn(selectedValues);
+                                console.warn(fetchedOptions);
+                                const merged = [
+                                    ...initialOptions,
+                                    ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
+                                    ...addedOptions
+                                ];
+                                console.warn(merged);
+                                slimselect.setData(merged);
+                                slimselect.setSelected(selectedValues);
                             },
-                            addable: addable,
-                            searchFilter: (option, search) => {
-                                return true;
+                            afterChange: (newVal) => {
+                                return new Promise((resolve, reject) => {
+                                    fetch('/user/search', {
+                                        method: 'POST',
+                                        headers: {
+                                            [csrfHeader]: csrfToken,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(newVal)
+                                    })
+                                        .then(response => response.text())
+                                        .then(data => {
+                                            let datas = JSON.parse(data);
+                                            if(datas.length > 0) {
+                                                const rows = datas.map(item => `
+                                                    <tr>
+                                                        <td><i class="${item.icon}"></i></td>
+                                                        <td>${item.title}</td>
+                                                        <td><a href="${item.url}">${item.url}</a></td>
+                                                    </tr>
+                                                `).join('');
+                                                $("#mega-result-body").html(`
+                                                    <table class="table">${rows}</table>
+                                                `);
+                                            } else {
+                                                $("#mega-result-body").html(`
+                                                    <div class="alert alert-secondary">Aucun résultat</div>
+                                                `);
+                                            }
+                                            resolve();
+                                        })
+                                        .catch(reject);
+                                });
+                            },
+                            addable: (value) => {
+                                const newOption = { text: value, value: value };
+                                addedOptions.push(newOption);
+                                const merged = [
+                                    ...initialOptions,
+                                    ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
+                                    ...addedOptions
+                                ];
+                                slimselect.setData(merged);
+                                const selectedValues = slimselect.getSelected();
+                                selectedValues.push(value);
+                                slimselect.setSelected(selectedValues);
+                                return newOption;
                             },
                             search: (search, currentData) => {
                                 return new Promise((resolve, reject) => {
                                     if (search.length < 3) {
                                         return reject('Merci de saisir au moins 3 caractères');
-                                    } else {
-                                        fetch(url + '?searchString=' + search, {
-                                            method: 'get',
-                                        })
-                                            .then((response) => {
-                                                return response.json()
-                                            })
-                                            .then((json) => {$
-                                                console.log(json);
-                                                let data = []
-                                                for (let i = 0; i < json.length; i++) {
-                                                    data.push({
-                                                        text: json[i],
-                                                        value: json[i]
-                                                    });
-                                                }
-                                                if (data.length > 0) {
-                                                    return resolve(data);
-                                                } else {
-                                                    return reject("Pas de résultat");
-                                                }
-                                            })
-                                            .catch(function () {
-                                                return reject("Recherche en cours");
-                                            });
                                     }
+                                    fetch('/user/signbooks/search-doc-titles?searchString=' + search)
+                                        .then(r => r.json())
+                                        .then(json => {
+                                            fetchedOptions = json.map(j => ({
+                                                text: j,
+                                                value: j,
+                                                html: null
+                                            }));
+                                            const merged = [
+                                                ...initialOptions,
+                                                ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value))
+                                            ];
+                                            if (merged.length > 0) resolve(merged);
+                                            else reject("Pas de résultat");
+                                        })
+                                        .catch(() => reject("Erreur de recherche"));
                                 });
                             }
                         }

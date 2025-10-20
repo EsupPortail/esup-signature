@@ -30,7 +30,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject like concat('%', :docTitleFilter, '%'))
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
@@ -46,7 +46,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where :user in (team)
             and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user)
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createBy = :user or sb.status <> 'draft')
             and size(sb.signRequests) > 0
@@ -66,7 +66,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join lws.recipients r
             left join r.user u
             where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
@@ -96,7 +96,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where :user in (team)
             and (sb.status != 'pending' or key(rhs).user = :user or :user in (u) or sb.createBy = :user)
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createBy = :user or sb.status <> 'draft')
@@ -117,7 +117,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
@@ -146,11 +146,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join sb.signRequests sr
             left join sr.recipientHasSigned rhs
             where key(rhs).user = :user and rhs.actionType = :actionType
-            and (sb.workflowName = :workflowFilter or :workflowFilter is null)
-            and (sb.subject = :docTitleFilter or :docTitleFilter is null)
+            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and :user not member of sb.hidedBy
-            and (sb.createBy = :creatorFilter or :creatorFilter is null)
+            and (:creatorFilter is null or sb.createBy = :creatorFilter)
             """)
     Page<SignBook> findByRecipientAndActionTypeNotDeleted(User user, ActionType actionType, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
 
@@ -261,13 +261,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
             left join sb.team team
-            where (sb.workflowName = :workflowFilter or :workflowFilter is null)
-            and (sb.subject = :docTitleFilter or :docTitleFilter is null)
+            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            and (sb.createBy = :creatorFilter or :creatorFilter is null)
+            and (:creatorFilter is null or sb.createBy = :creatorFilter)
             """)
     List<UserDto> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
 
@@ -296,7 +296,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join r.user u
             where sr.id in (select l.signRequestId from Log as l where l.eppn = :eppn and l.eppn != l.eppnFor)
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (sb.createDate between :startDateFilter and :endDateFilter)
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
