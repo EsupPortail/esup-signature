@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.js.JsSlimSelect;
 import org.esupportail.esupsignature.dto.json.SearchRequest;
 import org.esupportail.esupsignature.dto.json.SearchResult;
 import org.esupportail.esupsignature.entity.*;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +26,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @RequestMapping("/user")
 @Controller
@@ -157,11 +156,30 @@ public class HomeController {
                     searchResult.setIcon("fa-solid fa-project-diagram project-diagram-color");
                     searchResult.setTitle(workflow.getDescription());
                     searchResult.setUrl(workflow.getId() + " ");
+                    for(Tag tag : workflow.getTags()) {
+                        searchResult.setTags(searchResult.getTags() +
+                                "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
+                    }
                     searchResults.add(searchResult);
                 }
             }
-            if(types.isEmpty() || types.contains("signBook")) {
-                List<SignBook> signBooks = new ArrayList<>();
+            if (types.isEmpty() || types.contains("form")) {
+                List<Form> forms = formService.getFormsByUser(authUserEppn, authUserEppn)
+                        .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                for (Form form : forms) {
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setIcon("fa-solid fa-file-alt file-alt-color");
+                    searchResult.setTitle(form.getTitle());
+                    searchResult.setUrl(form.getId() + " ");
+                    for(Tag tag : form.getTags()) {
+                        searchResult.setTags(searchResult.getTags() +
+                                "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
+                    }
+                    searchResults.add(searchResult);
+                }
+            }
+            if((types.isEmpty() || types.contains("signBook")) && tags.isEmpty()) {
+                Set<SignBook> signBooks = new HashSet<>();
                 if(words.isEmpty()) {
                     signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent());
                 } else {
@@ -179,6 +197,25 @@ public class HomeController {
             }
         }
         return searchResults;
+    }
+
+    @GetMapping(value = "/search-titles")
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
+    @ResponseBody
+    public List<JsSlimSelect> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                              @RequestParam(value = "searchString", required = false) String searchString) {
+        List<JsSlimSelect> results = new ArrayList<>();
+        for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
+            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fa-regular fa-file \"></i> " + docTitle));
+
+        }
+        for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
+            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fa-solid fa-project-diagram project-diagram-color\"></i> " + workflowTile));
+        }
+        for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
+            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fa-solid fa-file-alt file-alt-color\"></i> " + formTitle));
+        }
+        return results;
     }
 
 }

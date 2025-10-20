@@ -28,11 +28,11 @@
                 <div class="input-group">
                     <span class="input-group-text">Recherche</span>
                     <select id="mega-search" class="form-control slim-select-filter-search"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher sur un ou plusieurs critères" multiple>
-                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-regular fa-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
-                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-project-diagram project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
-                        <option data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-file-alt file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
+                        <option title="Filter sur mes documents" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-regular fa-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
+                        <option title="Filter sur mes circuits" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-project-diagram project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
+                        <option title="Filter sur mes formulaires" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-file-alt file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
                         <th:block th:each="tag : ${allTags}">
-                            <option th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fa-solid fa-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                            <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fa-solid fa-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
                 </div>
@@ -89,9 +89,9 @@
                                 console.warn(selectedValues);
                                 console.warn(fetchedOptions);
                                 const merged = [
-                                    ...initialOptions,
+                                    ...addedOptions,
                                     ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
-                                    ...addedOptions
+                                    ...initialOptions
                                 ];
                                 console.warn(merged);
                                 slimselect.setData(merged);
@@ -110,11 +110,13 @@
                                         .then(response => response.text())
                                         .then(data => {
                                             let datas = JSON.parse(data);
+                                            console.warn(datas);
                                             if(datas.length > 0) {
                                                 const rows = datas.map(item => `
                                                     <tr>
                                                         <td><i class="${item.icon}"></i></td>
                                                         <td>${item.title}</td>
+                                                        <td>${item.tags}</td>
                                                         <td><a href="${item.url}">${item.url}</a></td>
                                                     </tr>
                                                 `).join('');
@@ -135,9 +137,9 @@
                                 const newOption = { text: value, value: value };
                                 addedOptions.push(newOption);
                                 const merged = [
-                                    ...initialOptions,
+                                    ...addedOptions,
                                     ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
-                                    ...addedOptions
+                                    ...initialOptions
                                 ];
                                 slimselect.setData(merged);
                                 const selectedValues = slimselect.getSelected();
@@ -147,21 +149,24 @@
                             },
                             search: (search, currentData) => {
                                 return new Promise((resolve, reject) => {
-                                    if (search.length < 3) {
-                                        return reject('Merci de saisir au moins 3 caractères');
-                                    }
-                                    fetch('/user/signbooks/search-doc-titles?searchString=' + search)
+                                    fetch('/user/search-titles?searchString=' + search)
                                         .then(r => r.json())
                                         .then(json => {
-                                            fetchedOptions = json.map(j => ({
-                                                text: j,
-                                                value: j,
-                                                html: null
-                                            }));
+                                            console.warn(json);
+                                            // options du fetch
+                                            fetchedOptions = json;
+
+                                            // filtre initialOptions sur le texte saisi (ignore case)
+                                            const filteredInitial = initialOptions.filter(o =>
+                                                o.text.toLowerCase().includes(search.toLowerCase())
+                                            );
+
+                                            // fusion : fetch + filtered initial
                                             const merged = [
-                                                ...initialOptions,
-                                                ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value))
+                                                ...fetchedOptions.filter(f => !filteredInitial.some(o => o.value === f.value)),
+                                                ...filteredInitial
                                             ];
+
                                             if (merged.length > 0) resolve(merged);
                                             else reject("Pas de résultat");
                                         })

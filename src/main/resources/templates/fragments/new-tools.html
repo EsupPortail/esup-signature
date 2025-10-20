@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-tools" th:fragment="new-tools" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <div class="d-flex flex-row flex-wrap justify-content-center gap-5">
+    <div class="d-flex flex-row flex-wrap justify-content-center gap-lg-4">
         <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button"
             class="globalButton btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-2"
             style="width: 300px; height: 170px;"
