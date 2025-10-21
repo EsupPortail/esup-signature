@@ -28,6 +28,7 @@
                 <a tabindex="0" role="button" class="workflow-btn start-wizard-workflow-button btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0 workflow-button"
                     data-bs-toggle="modal"
                     data-bs-target="#wiz-workflow-sign-modal"
+                    th:id="'workflow-button-' + ${workflow.id}"
                     style="width: 120px; display: inline-flex; flex-direction: column;"
                     th:title="${workflow.description}"
                     th:data-es-workflow-id="${workflow.id}"

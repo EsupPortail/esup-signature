@@ -69,6 +69,7 @@ public class HomeController {
     public String home(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
+                       @RequestParam(required = false, name = "workflowId") Long workflowId,
                        Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
         User authUser = userService.getByEppn(authUserEppn);
         if(authUser != null) {
@@ -104,6 +105,7 @@ public class HomeController {
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
             model.addAttribute("startFormId", formId);
+            model.addAttribute("startWorkflowId", workflowId);
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
             model.addAttribute("selectedTags", new ArrayList<>());
             model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
@@ -117,6 +119,11 @@ public class HomeController {
     @GetMapping("/start-form/{formId}")
     public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
         return "redirect:/user?formId=" + formId;
+    }
+
+    @GetMapping("/start-workflow/{workflowId}")
+    public String startWorkflow(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+        return "redirect:/user?workflowId=" + workflowId;
     }
 
     @GetMapping("/toggle-favorite-workflow/{workflowId}")
@@ -155,7 +162,7 @@ public class HomeController {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fa-solid fa-project-diagram project-diagram-color");
                     searchResult.setTitle(workflow.getDescription());
-                    searchResult.setUrl(workflow.getId() + " ");
+                    searchResult.setUrl("/user/start-workflow/" + workflow.getId());
                     for(Tag tag : workflow.getTags()) {
                         searchResult.setTags(searchResult.getTags() +
                                 "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
@@ -170,7 +177,7 @@ public class HomeController {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fa-solid fa-file-alt file-alt-color");
                     searchResult.setTitle(form.getTitle());
-                    searchResult.setUrl(form.getId() + " ");
+                    searchResult.setUrl("/user/start-form/" + form.getId());
                     for(Tag tag : form.getTags()) {
                         searchResult.setTags(searchResult.getTags() +
                                 "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
@@ -191,7 +198,7 @@ public class HomeController {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fa-solid fa-file");
                     searchResult.setTitle(signBook.getSubject());
-                    searchResult.setUrl(signBook.getId() + " ");
+                    searchResult.setUrl("/user/signbooks/" + signBook.getId());
                     searchResults.add(searchResult);
                 }
             }

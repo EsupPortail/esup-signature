@@ -11,7 +11,7 @@
 </script>
 <script th:inline="javascript" type="module">
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
-    new HomeUi([[${startFormId}]]);
+    new HomeUi([[${startFormId}]], [[${startWorkflowId}]]);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -36,7 +36,7 @@
                         </th:block>
                     </select>
                 </div>
-                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 mt-1 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none;">
+                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none; margin-top: .15rem !important;">
                     <div id="mega-result-header" class="d-flex flex-row justify-content-between">
                     <h5>Résultats</h5>
                     <button type="button" class="btn-close" title="Fermer" onclick="$('#mega-result').hide()"></button>
@@ -69,7 +69,6 @@
                             return value
                         };
                     }
-                    console.info("auto enable slim-select-filter-search for : " + selectName);
                     let slimselect = new SlimSelect({
                         select: '#' + selectName,
                         settings: {
@@ -86,18 +85,22 @@
                             beforeOpen: () => {
                                 $("#mega-result").show();
                                 const selectedValues = slimselect.getSelected();
-                                console.warn(selectedValues);
-                                console.warn(fetchedOptions);
                                 const merged = [
                                     ...addedOptions,
-                                    ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
+                                    // ...fetchedOptions,
                                     ...initialOptions
                                 ];
-                                console.warn(merged);
                                 slimselect.setData(merged);
                                 slimselect.setSelected(selectedValues);
                             },
                             afterChange: (newVal) => {
+                                console.error(newVal);
+                                const merged = [
+                                    ...newVal,
+                                    ...addedOptions,
+                                    ...initialOptions
+                                ];
+                                console.warn(merged);
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search', {
                                         method: 'POST',
@@ -110,18 +113,14 @@
                                         .then(response => response.text())
                                         .then(data => {
                                             let datas = JSON.parse(data);
-                                            console.warn(datas);
                                             if(datas.length > 0) {
                                                 const rows = datas.map(item => `
-                                                    <tr>
-                                                        <td><i class="${item.icon}"></i></td>
-                                                        <td>${item.title}</td>
-                                                        <td>${item.tags}</td>
-                                                        <td><a href="${item.url}">${item.url}</a></td>
-                                                    </tr>
+                                                    <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-start align-items-center gap-5">
+                                                        <i class="${item.icon}" style="width: 50px;"></i><span style="width: 300px;">${item.title}</span> <div>${item.tags}</div>
+                                                    </a>
                                                 `).join('');
                                                 $("#mega-result-body").html(`
-                                                    <table class="table">${rows}</table>
+                                                    <div class="list-group list-group-flush">${rows}</div>
                                                 `);
                                             } else {
                                                 $("#mega-result-body").html(`
@@ -134,40 +133,24 @@
                                 });
                             },
                             addable: (value) => {
-                                const newOption = { text: value, value: value };
-                                addedOptions.push(newOption);
-                                const merged = [
-                                    ...addedOptions,
-                                    ...fetchedOptions.filter(f => !initialOptions.some(o => o.value === f.value)),
-                                    ...initialOptions
-                                ];
-                                slimselect.setData(merged);
-                                const selectedValues = slimselect.getSelected();
-                                selectedValues.push(value);
-                                slimselect.setSelected(selectedValues);
-                                return newOption;
+                                const newOption = { text: value, value: value, html: '<i class="fa-solid fa-magnifying-glass"></i> ' + value};
+                                const existing = fetchedOptions.find(opt => opt.value === value);
+                                if(existing != null) {
+                                    return existing;
+                                } else {
+                                    addedOptions.push(newOption);
+                                    return newOption;
+                                }
                             },
                             search: (search, currentData) => {
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search-titles?searchString=' + search)
                                         .then(r => r.json())
                                         .then(json => {
-                                            console.warn(json);
-                                            // options du fetch
                                             fetchedOptions = json;
-
-                                            // filtre initialOptions sur le texte saisi (ignore case)
-                                            const filteredInitial = initialOptions.filter(o =>
-                                                o.text.toLowerCase().includes(search.toLowerCase())
-                                            );
-
-                                            // fusion : fetch + filtered initial
-                                            const merged = [
-                                                ...fetchedOptions.filter(f => !filteredInitial.some(o => o.value === f.value)),
-                                                ...filteredInitial
-                                            ];
-
-                                            if (merged.length > 0) resolve(merged);
+                                            if (fetchedOptions.length > 0) {
+                                                resolve(fetchedOptions);
+                                            }
                                             else reject("Pas de résultat");
                                         })
                                         .catch(() => reject("Erreur de recherche"));
@@ -309,7 +292,6 @@
                                     style="width: 120px; height: 170px;"
                                     th:classappend="${form.hideButton} ? 'd-none' : ''"
                                     th:title="${form.title}"
-                                    th:id="'form-button-' + ${form.id}"
                                     th:data-es-form-id="${form.id}"
                                     th:href="'/user/start-form/' + ${form.id}"
                                     data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >

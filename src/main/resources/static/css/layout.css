@@ -19,7 +19,8 @@ header {
 }
 
 .navbar-brand {
-    width: 250px;
+    width: 260px;
+    margin-right: 0px;
 }
 
 .navbar-nav {
@@ -28,7 +29,6 @@ header {
 
 #logo {
     position: relative;
-    margin-left: 60px;
     height: 40px;
 }
 

@@ -2,7 +2,7 @@ import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
-    constructor(startFormId) {
+    constructor(startFormId, startWorkflowId) {
         console.info("Starting home UI");
         this.noFilterButton = $("#noFilterButton");
         this.workflowFilterButton = $("#workflowFilterButton");
@@ -28,6 +28,9 @@ export class HomeUi {
             }
             if(startFormId != null) {
                 $('#form-button-' + startFormId)[0].click();
+            }
+            if(startWorkflowId != null) {
+                $('#workflow-button-' + startWorkflowId)[0].click();
             }
         });
     }
