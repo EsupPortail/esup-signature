@@ -10,7 +10,7 @@
             data-bs-toggle="modal"
             data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
             style="width: 120px; display: inline-flex; flex-direction: column;">
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                 <i class="fi fi-tr-customization" style="font-size: 50px;"></i>
                 <h6>Créez un nouveau circuit à l'aide de l'assistant</h6>
             </div>
@@ -33,7 +33,7 @@
                     th:title="${workflow.description}"
                     th:data-es-workflow-id="${workflow.id}"
                     th:alt="'Circuit : ' + ${workflow.description}">
-                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
                         <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
                     </div>

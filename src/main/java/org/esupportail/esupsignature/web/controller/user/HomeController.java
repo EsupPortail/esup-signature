@@ -160,7 +160,7 @@ public class HomeController {
                         .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fa-solid fa-project-diagram project-diagram-color");
+                    searchResult.setIcon("fi fi-sr-diagram-project project-diagram-color");
                     searchResult.setTitle(workflow.getDescription());
                     searchResult.setUrl("/user/start-workflow/" + workflow.getId());
                     for(Tag tag : workflow.getTags()) {
@@ -175,7 +175,7 @@ public class HomeController {
                         .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fa-solid fa-file-alt file-alt-color");
+                    searchResult.setIcon("fi fi-sr-poll-h file-alt-color");
                     searchResult.setTitle(form.getTitle());
                     searchResult.setUrl("/user/start-form/" + form.getId());
                     for(Tag tag : form.getTags()) {
@@ -196,7 +196,7 @@ public class HomeController {
                 }
                 for (SignBook signBook : signBooks) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fa-solid fa-file");
+                    searchResult.setIcon("fi fi-sr-file");
                     searchResult.setTitle(signBook.getSubject());
                     searchResult.setUrl("/user/signbooks/" + signBook.getId());
                     searchResults.add(searchResult);
@@ -213,14 +213,14 @@ public class HomeController {
                                               @RequestParam(value = "searchString", required = false) String searchString) {
         List<JsSlimSelect> results = new ArrayList<>();
         for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
-            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fa-regular fa-file \"></i> " + docTitle));
+            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-sr-file \"></i> " + docTitle));
 
         }
         for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fa-solid fa-project-diagram project-diagram-color\"></i> " + workflowTile));
+            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fi fi-sr-diagram-project project-diagram-color\"></i> " + workflowTile));
         }
         for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fa-solid fa-file-alt file-alt-color\"></i> " + formTitle));
+            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fi fi-sr-poll-h file-alt-color\"></i> " + formTitle));
         }
         return results;
     }

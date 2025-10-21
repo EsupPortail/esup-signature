@@ -534,3 +534,10 @@ textarea:invalid {
 .form-check-input {
     border-color: #6c757d;
 }
+
+.fi {
+    vertical-align: middle;
+    transform: translateY(0px);
+    display: inline-flex;
+    align-items: center;
+}

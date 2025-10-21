@@ -28,11 +28,11 @@
                 <div class="input-group">
                     <span class="input-group-text">Recherche</span>
                     <select id="mega-search" class="form-control slim-select-filter-search"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher sur un ou plusieurs critères" multiple>
-                        <option title="Filter sur mes documents" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-regular fa-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
-                        <option title="Filter sur mes circuits" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-project-diagram project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
-                        <option title="Filter sur mes formulaires" data-html='<i class="fa-solid fa-filter text-secondary"></i> <i class="fa-solid fa-file-alt file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
+                        <option title="Filter sur mes documents" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
+                        <option title="Filter sur mes circuits" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-diagram-project project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
+                        <option title="Filter sur mes formulaires" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-poll-h file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
                         <th:block th:each="tag : ${allTags}">
-                            <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fa-solid fa-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                            <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fi fi-sr-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
                 </div>
@@ -174,27 +174,32 @@
             </div>
             <div class="w-100 d-flex justify-content-center gap-5 mb-2">
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
-                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente">
-                    <i class="fa-solid fa-inbox"></i> <span class="sidebar-label">Documents à signer</span>
+                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente">
+                    <i class="fi fi-ss-inbox-full"></i>
+                    <span class="sidebar-label">Documents à signer</span>
                     <span aria-hidden="true" title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
                 </a>
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
-                   class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées">
-                    <i class="fa-solid fa-paper-plane"></i> <span class="sidebar-label">Demandes envoyées</span>
+                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées">
+                    <i class="fi fi-sr-paper-plane"></i>
+                    <span class="sidebar-label">Demandes envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
-                <a tabindex="10" title="Circuits" type="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#workflowsModal">
-                    <i class="fa-solid fa-project-diagram project-diagram-color"></i> <span class="sidebar-label">Tous les circuits</span>
+                <a tabindex="10" title="Circuits" type="button" class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#workflowsModal">
+                    <i class="fi fi-sr-diagram-project project-diagram-color"></i>
+                    <span class="sidebar-label">Tous les circuits</span>
                 </a>
-                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#formsModal">
-                    <i class="fi fi-sr-poll-h file-alt-color" style="font-size: 17px;"></i> <span class="sidebar-label">Tous les formulaires</span>
+                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal">
+                    <i class="fi fi-sr-poll-h file-alt-color"></i>
+                    <span class="sidebar-label">Tous les formulaires</span>
                 </a>
-                <a tabindex="10" title="Valider la signature d'un document" role="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#controlModal">
-                    <i class="fa-solid fa-shield-alt"></i> <span class="sidebar-label">Contrôler un document</span>
+                <a tabindex="10" title="Valider la signature d'un document" role="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal">
+                    <i class="fi fi-sr-registration-paper"></i>
+                    <span class="sidebar-label">Contrôler un document</span>
                 </a>
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="start-wizard-button-2" role="button"
-                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
-                    <i class="fa-solid fa-magic"></i> <span class="sidebar-label">Assistant de création de circuit</span>
+                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant">
+                    <i class="fi fi-sr-customization"></i> <span class="sidebar-label">Assistant de création de circuit</span>
                 </a>
             </div>
             <div class="w-100 p-2">
@@ -223,7 +228,7 @@
                                         th:title="${workflow.description}"
                                         th:data-es-workflow-id="${workflow.id}"
                                         th:alt="'Circuit : ' + ${workflow.description}">
-                                        <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                                        <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                             <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
                                             <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
                                         </div>
@@ -266,7 +271,7 @@
                                     data-bs-target="#workflowsModal"
                                     style="width: 120px; height: 170px;"
                                     title="Ajouter un circuit à vos favoris">
-                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                         <i class="fi fi-sr-plus" style="font-size: 50px;"></i>
                                     </div>
                                 </a>
@@ -295,7 +300,7 @@
                                     th:data-es-form-id="${form.id}"
                                     th:href="'/user/start-form/' + ${form.id}"
                                     data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
-                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100">
+                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                         <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
                                         <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
                                         <h6 style="height: 50px;" th:text="${form.title}"></h6>
