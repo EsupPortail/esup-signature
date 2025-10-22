@@ -270,7 +270,7 @@ public class WorkflowStep {
     }
 
     public void setMinSignLevel(SignLevel minSignLevel) {
-        if(minSignLevel.getValue() > this.maxSignLevel.getValue()) {
+        if(minSignLevel.getValue() > getMaxSignLevel().getValue()) {
             throw new EsupSignatureRuntimeException("minSignLevel can't be up to maxSignLevel");
         }
         this.minSignLevel = minSignLevel;
@@ -282,7 +282,7 @@ public class WorkflowStep {
     }
 
     public void setMaxSignLevel(SignLevel maxSignLevel) {
-        if(this.minSignLevel.getValue() > maxSignLevel.getValue()) {
+        if(getMinSignLevel().getValue() > maxSignLevel.getValue()) {
             throw new EsupSignatureRuntimeException("minSignLevel can't be up to maxSignLevel");
         }
         this.maxSignLevel = maxSignLevel;

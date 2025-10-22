@@ -174,16 +174,18 @@
             </div>
             <div class="w-100 d-flex justify-content-center gap-5 mb-2">
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
-                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente">
+                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente"
+                    th:classappend="${nbToSign > 0} ? '' : 'disabled'">
                     <i class="fi fi-ss-inbox-full"></i>
                     <span class="sidebar-label">Documents à signer</span>
-                    <span aria-hidden="true" title="Demandes à signer" th:if="${nbToSign > 0  && userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
+                    <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
                 </a>
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
-                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées">
+                    class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
+                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'">
                     <i class="fi fi-sr-paper-plane"></i>
                     <span class="sidebar-label">Demandes envoyées</span>
-                    <span aria-hidden="true" title="Demandes envoyées" th:if="${nbSignRequests > 0  && userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
+                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
                 <a tabindex="10" title="Circuits" type="button" class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#workflowsModal">
                     <i class="fi fi-sr-diagram-project project-diagram-color"></i>
@@ -206,7 +208,7 @@
                 <div class="alert alert-light border-secondary-subtle d-flex flex-row w-100 gap-2">
                     <div class="d-flex flex-column border-end border-secondary-subtle pe-3" style="width: 35%;" >
                         <div class="w-100">
-                            <h5>Demandes à signer</h5>
+                            <h5>Documents à signer</h5>
                         </div>
                         <div>
                             <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>

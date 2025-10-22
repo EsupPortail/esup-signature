@@ -556,6 +556,8 @@ public class SignBookService {
                                     if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                             && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
                                             && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
+                                        signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
                                         addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
                                     }
                                 }
