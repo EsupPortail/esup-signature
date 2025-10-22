@@ -23,7 +23,7 @@
 <!--                <li class="breadcrumb-item active">Accueil</li>-->
 <!--            </ol>-->
 <!--        </nav>-->
-        <div id="content" class="content-full flex align-content-center" style="margin-top: 60px; margin-left: 0px;">
+        <div id="content" class="content-full-fixed flex align-content-center">
             <div class="w-75 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
                     <span class="input-group-text">Recherche</span>
@@ -194,7 +194,7 @@
                     <span class="sidebar-label">Tous les formulaires</span>
                 </a>
                 <a tabindex="10" title="Valider la signature d'un document" role="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal">
-                    <i class="fi fi-sr-registration-paper"></i>
+                    <i class="fi fi-sr-registration-paper text-success"></i>
                     <span class="sidebar-label">Contrôler un document</span>
                 </a>
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="start-wizard-button-2" role="button"
@@ -339,9 +339,6 @@
             </div>
             <div class="modal-body">
                 <div th:insert="~{user/validation/form :: validationForm}"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
             </div>
         </div>
     </div>

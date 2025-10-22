@@ -16,7 +16,6 @@
 </script>
 <header th:unless="${frameMode}" th:replace="~{fragments/nav :: nav}"></header>
 <script>
-    // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
         constructor(id, eppn, name, firstname, email) {
@@ -31,8 +30,6 @@
     const user = new User("[[${user.id}]]", "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
     const creator = new User("[[${signRequest.createBy.id}]]", "[[${signRequest.createBy.eppn}]]", "[[${signRequest.createBy.name}]]", "[[${signRequest.createBy.firstname}]]");
     const currentStepNumber = "[[${currentStepNumber}]]";
-    const supervisors = "[[${supervisors}]]";
-    const isLastStep = "[[${isLastStep}]]";
     /*]]>*/
 </script>
 
@@ -42,10 +39,7 @@
         <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
-                <li th:if="${editable && userEppn == authUserEppn && user.userType.name() != 'external'}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
-                    de bord</a></li>
-                <li th:if="${userEppn == authUserEppn  && user.userType.name() != 'external'}" th:unless="${editable}" class="breadcrumb-item"><a
-                        href="/user/signbooks?statusFilter=toSign">Documents à signer</a></li>
+                <li class="breadcrumb-item"><a href="/user/signbooks">Tableau de bord</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
