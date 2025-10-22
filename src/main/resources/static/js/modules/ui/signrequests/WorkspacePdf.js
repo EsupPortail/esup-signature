@@ -883,7 +883,8 @@ export class WorkspacePdf {
         $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
-        $("#postitHelp").remove();
+        $("#display-pdf-alerts-btn").remove();
+        $("#pdf-alerts").remove();
         this.disableAllModes();
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");

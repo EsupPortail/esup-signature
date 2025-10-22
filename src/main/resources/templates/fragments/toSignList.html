@@ -5,24 +5,28 @@
     <div class="d-flex col-12 mb-2">
         <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-striped table-hover table-light">
             <thead class="table-secondary">
-            <th style="width: 15px;">Lu</th>
-            <th class="text-break d-none d-md-table-cell"></th>
-            <th class="text-break w-5 d-none d-md-table-cell"></th>
-            <th class="d-none d-xxl-table-cell">Type</th>
-            <th>Nom</th>
-            <th class="d-none d-md-table-cell">Créateur</th>
-            <th>Émis le</th>
+                <th class="text-break w-5 d-none d-md-table-cell"></th>
+                <th style="width: 15px;"></th>
+                <th class="text-break d-none d-md-table-cell"></th>
+                <th class="d-none d-xxl-table-cell">Type</th>
+                <th>Nom</th>
+                <th class="d-none d-md-table-cell">Créateur</th>
+                <th>Émis le</th>
             </thead>
             <tbody>
             <th:block th:each="signBook : ${signBooksToSign}">
                 <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
+                    <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
+                        <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
+                        <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
+                    </td>
                     <td style="width: 15px;">
                         <div class="d-flex flex-row align-items-center justify-content-around gap-1">
                             <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
                             <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
                             <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                            <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                            <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
+                            <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light opacity-0"></i>
+                            <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0 opacity-0">0</button>
                             <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
                                     th:text="${signBook.postits.size()}" type="button"
                                     class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
@@ -49,10 +53,6 @@
                     </td>
                     <td class="text-break d-none d-md-table-cell" style="width: 25px;">
                         <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
-                    </td>
-                    <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                        <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                        <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
                     </td>
                     <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
                     </td>
