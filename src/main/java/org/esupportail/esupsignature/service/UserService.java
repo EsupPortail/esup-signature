@@ -147,6 +147,10 @@ public class UserService {
         return list;
     }
 
+    public List<User> getAllLdapUsers() {
+        return userRepository.findAllByUserType(UserType.ldap);
+    }
+
     @Transactional
     public User getUserByEmail(String email) {
         if(EmailValidator.getInstance().isValid(email) || email.equals("system") || email.equals("creator") || email.equals("scheduler") || email.equals("generic")) {

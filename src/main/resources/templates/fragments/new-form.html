@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-workflow" th:fragment="new-form" class="clear">
-    <div class="d-inline-flex">
+    <div class="d-inline-flex flex-wrap">
         <th:block th:each="form : ${forms}">
             <div th:id="'btn-form-' + ${form.id}" class="workflow-button" style="height: 184px;">
                 <div style="margin-top: 8px; margin-left: 8px; text-align: end; position: fixed">

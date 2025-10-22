@@ -39,6 +39,8 @@ export class ListSignBooksUi {
         $("#password").hide();
         new Nexu(null, null, null, null, null);
         $(document).ready(e => this.initListeners());
+        $("#sealChoose").addClass('d-none');
+
     }
 
     initListeners() {
@@ -115,6 +117,11 @@ export class ListSignBooksUi {
         }
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
+        }
+        if(value === "sealCert") {
+            $("#sealChoose").removeClass('d-none');
+        } else {
+            $("#sealChoose").addClass('d-none');
         }
     }
 
@@ -362,7 +369,8 @@ export class ListSignBooksUi {
         signRequestUrlParams = {
             "ids" : JSON.stringify(ids),
             "signWith" : $("#certType").val(),
-            "password" : $("#password").val()
+            "password" : $("#password").val(),
+            "sealCertificat" : $("#sealCertificat").val()
         };
         this.reset();
         let self = this;

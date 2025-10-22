@@ -166,7 +166,7 @@
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning">Le système de signature en masse essaie de signer toutes les demandes sélectionnées, peu importe leur type ou leur statut. Cependant, il peut ne pas prendre en compte certaines demandes en fonction du type de signature, du statut du document ou de la présence d'un emplacement de signature. Après la signature, un rapport d'erreurs est généré pour identifier les problèmes éventuels.</div>
-                <div id="selectTypeDiv" class="alert alert-secondary mt-1">
+                <div id="selectTypeDiv" class="alert alert-secondary mb-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
                     <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
                     <div class="input-group mt-2">
                         <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>
@@ -185,6 +185,51 @@
                     <input type="text" autocomplete="username" name="username" class="d-none">
                     <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
                 </div>
+                <div id="nexuCheck" th:classappend="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).signature ? 'd-none' : ''}">
+                    <div id="nexu_version_alert" class="alert alert-warning mt-1 mb-1 col-12 text-center" style="display: none;">
+                        L'application Esup-DSS-Client n’a pas la bonne version
+                        <br>
+                        <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning">
+                            <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+                        </button>
+                    </div>
+                    <div id="no-options" class="alert alert-warning mt-1 mb-1 col-12" style="display: none;">
+                        <p class="mx-auto">Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande.</p>
+                        <p>Si une signature avancée ou qualifiée est requise, merci d’installer et de démarrer <strong>Esup-DSS-Client</strong> pour utiliser votre certificat :</p>
+                        <p>
+                            <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">
+                                > Télécharger la dernière version d'Esup-DSS-Client
+                            </a>
+                        </p>
+                        <p>Choisissez le fichier adapté à votre système : <em>esup-dss-client-win64.zip</em> (Windows), <em>esup-dss-client.pkg</em> (macOS) ou <em>esup-dss-client-installer.jar</em> (Linux).</p>
+                        <p>En cas de difficulté, merci de contacter la personne ou le service émetteur de cette demande.</p>
+                    </div>
+
+                    <div id="nexu_ready_alert" class="alert alert-success mt-1 mb-1 col-12 text-center" style="display: none;">
+                        L’application Esup-DSS-Client est fonctionnelle
+                        <br/>
+                        <small>Après validation, vous allez être redirigé vers le système signature eIDas</small>
+                    </div>
+                    <div id="nexu_missing_alert" class="alert alert-warning text-center mt-1" style="display: none;">
+                        <p>L’application Esup-DSS-Client n’a pas été détectée</p>
+                        <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
+                            Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
+                            <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
+                        </p>
+                    </div>
+                </div>
+                <div id="sealChoose" class="alert alert-secondary mb-1">
+                    <label for="certType">Merci de sélectionner le certificat à utiliser</label>
+                    <div class="input-group mt-2">
+                        <select id="sealCertificat" name="sealCertificat" class="form-control form-select border-light-subtle">
+                            <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
+                                <option th:value="${sealCertificatProperties.sealCertificatName}" th:text="${sealCertificatProperties.sealCertificatTitle}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <input type="text" autocomplete="username" name="username" class="d-none">
+                <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>

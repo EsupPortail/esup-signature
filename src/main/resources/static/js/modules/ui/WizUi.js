@@ -129,13 +129,17 @@ export class WizUi {
     }
 
     fastStartSign() {
+        let self = this;
         console.info("start fast signbook");
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-start-sign/fast',
             dataType : 'html',
             cache: false,
-            success : html => this.fastSignDisplayForm(html),
+            success : function(html) {
+                self.fastSignDisplayForm(html);
+                self.manageMinMaxLevels();
+            }
         });
     }
 
@@ -220,13 +224,17 @@ export class WizUi {
     }
 
     workflowSignStart() {
+        let self = this;
         console.info("start workflow signbook");
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-start-sign/workflow?workflowId=' + this.workflowId,
             dataType : 'html',
             cache: false,
-            success : html => this.workflowSignDisplayForm(html)
+            success : function(html) {
+                self.workflowSignDisplayForm(html);
+                self.manageMinMaxLevels();
+            }
         });
     }
 
@@ -281,13 +289,17 @@ export class WizUi {
     }
 
     wizardWorkflowStart() {
+        let self = this;
         console.info("start wizard workflow");
         $.ajax({
             type: "GET",
             url: '/user/wizard/wiz-start-workflow',
             dataType : 'html',
             cache: false,
-            success : html => this.workflowSignNextStepDisplay(html)
+            success : function(html) {
+                self.workflowSignNextStepDisplay(html);
+                self.manageMinMaxLevels();
+            }
         });
     }
 
@@ -312,6 +324,7 @@ export class WizUi {
         console.info("Last workflow step");
         let self = this;
         this.div.html(html);
+        self.manageMinMaxLevels();
         $('[id^="recipientsEmails-"]').each(function (){
             if($(this).is('select')) {
                 let maxRecipient = $(this).attr('data-es-max-recipient');
@@ -381,6 +394,7 @@ export class WizUi {
         }
         let successCallback = function(html) {
             self.workflowSignNextStepDisplay(html)
+            self.manageMinMaxLevels();
         };
         let errorCallback = function (data) {
             $("#wiz-step-form-submit").click();
@@ -651,6 +665,40 @@ export class WizUi {
         if (annotationOption) {
             annotationOption.disabled = element.checked;
         }
+    }
+
+    manageMinMaxLevels() {
+        const signLevelMap = {
+            'simple': 2,
+            'advanced': 3,
+            'qualified': 4
+        };
+
+        document.querySelectorAll('select[id^="minSignLevel-"]').forEach(minSelect => {
+            const idSuffix = minSelect.id.replace('minSignLevel-', '');
+            const maxSelect = document.getElementById('maxSignLevel-' + idSuffix);
+            if (!maxSelect) return;
+
+            const updateMaxOptions = () => {
+                const minValueNum = signLevelMap[minSelect.value] || 0;
+                Array.from(maxSelect.options).forEach(option => {
+                    const optionValueNum = signLevelMap[option.value] || 0;
+                    option.disabled = optionValueNum < minValueNum;
+                });
+
+                // Ajuste la valeur actuelle si elle est inférieure au min
+                if ((signLevelMap[maxSelect.value] || 0) < minValueNum) {
+                    maxSelect.value = minSelect.value;
+                }
+            };
+
+            // Initial update au chargement
+            updateMaxOptions();
+
+            // Update au changement
+            minSelect.removeEventListener('change', updateMaxOptions);
+            minSelect.addEventListener('change', updateMaxOptions);
+        });
     }
 
 }
