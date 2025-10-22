@@ -26,7 +26,7 @@
         <div id="content" class="content-full-fixed flex align-content-center">
             <div class="w-75 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
-                    <span class="input-group-text">Recherche</span>
+                    <button id="mega-search-title" class="input-group-text">Recherche</button>
                     <select id="mega-search" class="form-control slim-select-filter-search"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher sur un ou plusieurs critères" multiple>
                         <option title="Filter sur mes documents" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
                         <option title="Filter sur mes circuits" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-diagram-project project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
@@ -35,6 +35,7 @@
                             <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fi fi-sr-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
+                    <button title="Réinitialiser la recherche" id="reset-mega-search" class="input-group-append btn btn-light border-secondary-subtle"><i class="fa-solid fa-ban"></i></button>
                 </div>
                 <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none; margin-top: .15rem !important;">
                     <div id="mega-result-header" class="d-flex flex-row justify-content-between">
@@ -60,6 +61,7 @@
                     }))
                     let addedOptions = [];
                     let fetchedOptions = [];
+                    let savedOptions = [];
                     let selectName = select.attr('id');
                     let url = select.attr('es-search-url');
                     let placeholderText = select.attr('es-search-text');
@@ -85,22 +87,41 @@
                             beforeOpen: () => {
                                 $("#mega-result").show();
                                 const selectedValues = slimselect.getSelected();
-                                const merged = [
-                                    ...addedOptions,
-                                    // ...fetchedOptions,
-                                    ...initialOptions
-                                ];
+                                let merged;
+                                if(savedOptions.length > 0) {
+                                    merged = [
+                                        ...savedOptions,
+                                        ...initialOptions
+                                    ];
+                                } else {
+                                    merged = [
+                                        ...addedOptions,
+                                        ...fetchedOptions,
+                                        ...initialOptions
+                                    ];
+                                }
                                 slimselect.setData(merged);
                                 slimselect.setSelected(selectedValues);
                             },
+                            beforeClose: () => {
+                                const selectedValues = slimselect.getSelected();
+                                const allOptions = [
+                                    ...[...fetchedOptions, ...addedOptions].filter(
+                                        (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
+                                    ),
+                                    ...initialOptions
+                                ];
+                                savedOptions = allOptions.filter(
+                                    o => selectedValues.includes(o.value) &&
+                                        !initialOptions.some(init => init.value === o.value)
+                                );
+                            },
                             afterChange: (newVal) => {
-                                console.error(newVal);
                                 const merged = [
                                     ...newVal,
                                     ...addedOptions,
                                     ...initialOptions
                                 ];
-                                console.warn(merged);
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search', {
                                         method: 'POST',
@@ -115,8 +136,8 @@
                                             let datas = JSON.parse(data);
                                             if(datas.length > 0) {
                                                 const rows = datas.map(item => `
-                                                    <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-start align-items-center gap-5">
-                                                        <i class="${item.icon}" style="width: 50px;"></i><span style="width: 300px;">${item.title}</span> <div>${item.tags}</div>
+                                                    <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-between align-items-center gap-5">
+                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${item.tags}</div>
                                                     </a>
                                                 `).join('');
                                                 $("#mega-result-body").html(`
@@ -158,6 +179,11 @@
                             }
                         }
                     });
+
+                    $("#mega-search-title").click(function () {
+                        $("#mega-result").show();
+                    });
+
                     $(".ss-search > input").on("click" , function (e) {
                         e.stopPropagation();
                     });
@@ -166,6 +192,9 @@
                         slimselect.close();
                     });
 
+                    $("#reset-mega-search").click(function (){
+                        slimselect.setSelected([]);
+                    });
                 </script>
             </div>
 
@@ -183,17 +212,19 @@
                 <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
                     class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
                     th:classappend="${nbSignRequests > 0} ? '' : 'disabled'">
-                    <i class="fi fi-sr-paper-plane"></i>
+                    <i class="fi fi-sr-paper-plane-top"></i>
                     <span class="sidebar-label">Demandes envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
                 <a tabindex="10" title="Circuits" type="button" class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#workflowsModal">
                     <i class="fi fi-sr-diagram-project project-diagram-color"></i>
                     <span class="sidebar-label">Tous les circuits</span>
+                    <span aria-hidden="true" th:title="${workflows.size() - favoriteWorkflows.size()} + ' nouveaux circuits'" class="badge project-diagram-color d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${workflows.size() - favoriteWorkflows.size()}"></span>
                 </a>
                 <a tabindex="10" title="Formulaires" type="button" class="btn btn-light mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal">
                     <i class="fi fi-sr-poll-h file-alt-color"></i>
                     <span class="sidebar-label">Tous les formulaires</span>
+                    <span aria-hidden="true" th:title="${forms.size() - favoriteForms.size()} + ' nouveaux formulaired'" class="badge file-alt-color d-none d-lg-inline" th:if="${(forms.size() - favoriteForms.size()) > 0}" th:text="${forms.size() - favoriteForms.size()}"></span>
                 </a>
                 <a tabindex="10" title="Valider la signature d'un document" role="button" class="btn btn-light  mb-1 text-left border-secondary-subtle rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal">
                     <i class="fi fi-sr-registration-paper text-success"></i>

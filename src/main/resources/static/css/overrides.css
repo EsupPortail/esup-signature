@@ -327,6 +327,10 @@ textarea:invalid {
     background-color: rgba(var(--bs-danger-rgb),var(--bs-bg-opacity))!important;
 }
 
+.btn .badge {
+    top: 0;
+}
+
 .bootbox-backdrop {
     z-index: 120001;
 }

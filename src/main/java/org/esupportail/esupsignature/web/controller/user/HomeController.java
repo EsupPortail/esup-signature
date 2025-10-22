@@ -18,7 +18,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -157,7 +156,7 @@ public class HomeController {
             }
             if (types.isEmpty() || types.contains("workflow")) {
                 List<Workflow> workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                        .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fi fi-sr-diagram-project project-diagram-color");
@@ -172,7 +171,7 @@ public class HomeController {
             }
             if (types.isEmpty() || types.contains("form")) {
                 List<Form> forms = formService.getFormsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                        .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fi fi-sr-poll-h file-alt-color");
@@ -207,7 +206,6 @@ public class HomeController {
     }
 
     @GetMapping(value = "/search-titles")
-    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn)")
     @ResponseBody
     public List<JsSlimSelect> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                               @RequestParam(value = "searchString", required = false) String searchString) {
@@ -216,10 +214,10 @@ public class HomeController {
             results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-sr-file \"></i> " + docTitle));
 
         }
-        for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
+        for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s !=null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
             results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fi fi-sr-diagram-project project-diagram-color\"></i> " + workflowTile));
         }
-        for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
+        for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s != null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
             results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fi fi-sr-poll-h file-alt-color\"></i> " + formTitle));
         }
         return results;
