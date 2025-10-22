@@ -46,7 +46,7 @@ export class ListSignBooksUi {
     initListeners() {
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#certType").on("change", e => this.checkAfterChangeSignType());
-        $('#launchMassSignButton').on('click', e => this.launchMassSign());
+        $('#checkValidateSignButtonEnd').on('click', e => this.launchMassSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
         let creatorFilter = document.querySelector('#creatorFilter');

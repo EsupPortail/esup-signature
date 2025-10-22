@@ -115,6 +115,8 @@ public class SignBookController {
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
+        model.addAttribute("signable", true);
+        model.addAttribute("currentSignType", SignType.signature);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));

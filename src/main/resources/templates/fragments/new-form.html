@@ -6,7 +6,7 @@
     <div class="d-inline-flex flex-wrap">
         <th:block th:each="form : ${forms}">
             <div th:id="'btn-form-' + ${form.id}" class="workflow-button" style="height: 184px;">
-                <div style="margin-top: 8px; margin-left: 8px; text-align: end; position: fixed">
+                <div class="favorite-icon">
                     <button title="Mettre en favori"
                             class="btn btn-transparent btn-sm text-dark toggle-form-start rounded-0"
                             type="button"

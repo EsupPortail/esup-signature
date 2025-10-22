@@ -146,14 +146,16 @@ public class UserAndOtpSignRequestController {
             List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
             if(signable) {
                 model.addAttribute("signWiths", signWiths);
-                if(currentStepMinSignLevel.getValue() < 3) {
-                    currentStepMinSignLevel = SignLevel.advanced;
-                }
             }
             model.addAttribute("signatureIssue", false);
-            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                if(!reports.getSimpleReport().isValid(signatureId)) {
-                    model.addAttribute("signatureIssue", true);
+            if(!reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                    if (!reports.getSimpleReport().isValid(signatureId)) {
+                        model.addAttribute("signatureIssue", true);
+                    }
+                }
+                if(currentStepMinSignLevel.getValue() < 3) {
+                    currentStepMinSignLevel = SignLevel.advanced;
                 }
             }
         } else {

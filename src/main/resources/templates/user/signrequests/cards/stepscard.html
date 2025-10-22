@@ -6,12 +6,12 @@
     <div class="card card-body bg-light mb-1">
             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
                 <div id="stepper" class="bs-stepper vertical">
-                    <div class="bs-stepper-header" role="tablist">
+                    <div class="bs-stepper-header w-100" role="tablist">
                         <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
                             Le circuit n’est pas démarré
                         </th:block>
                         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
+                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary-subtle border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                     <span title="Étape à venir" class="bs-stepper-circle">
                                         <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
