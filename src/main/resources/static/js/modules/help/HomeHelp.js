@@ -42,17 +42,24 @@ export class HomeHelp {
             intro: "Vous pouvez accéder à votre profil pour insérer votre signature et modifier vos paramètres en cliquant sur votre nom en haut à droite, puis sur 'Modifier mes paramètres'.",
             position: 'left'
         });
+        if($.trim($("#new-self-sign").html()) !== '') {
+            this.intro.addStep({
+                element: '#new-self-sign',
+                intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail.",
+                position: 'right'
+            });
+        }
         if($.trim($("#new-fast-sign").html()) !== '') {
             this.intro.addStep({
                 element: '#new-fast-sign',
-                intro: "Ce bouton vous permet de signer un document présent sur votre poste de travail.",
+                intro: "Utilisez la demande simple pour faire signer le document à quelqu'un.",
                 position: 'right'
             });
         }
         if($.trim($("#newSignDemand").html()) !== '') {
             this.intro.addStep({
                 element: '#newSignDemand',
-                intro: "Utilisez la demande simple pour faire signer le document à quelqu'un.",
+                intro: "La demande personnalisée permet de créer un circuit à plusieurs étapes. Ce circuit pourra être sauvegardé pour être réutiliser à posteriori",
                 position: 'right'
             });
         }

@@ -14,7 +14,7 @@
                         <i class="fa-solid fa-star" th:classappend="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms).contains('' + form.id)} ? 'text-warning' : 'text-secondary'"></i>
                     </button>
                 </div>
-                <a tabindex="0" role="button" class="btn btn-material btn btn-material shadow-sm border border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0 form-button start-form-button"
+                <a tabindex="0" role="button" class="btn btn-material btn btn-material shadow-sm border border-opacity-10 btn-light text-center overflow-hidden p-0 form-button start-form-button"
                     style="width: 120px; height: 170px;"
                     th:classappend="${form.hideButton} ? 'd-none' : ''"
                     th:title="${form.title}"

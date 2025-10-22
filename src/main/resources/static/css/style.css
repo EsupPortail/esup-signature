@@ -586,7 +586,7 @@ input:focus, textarea:focus, select:focus {
     background-color: white;
     font-weight: normal;
     padding: .375rem .90rem;
-    margin: .375rem;
+    margin: .15rem;
     word-wrap: break-word;
     white-space: normal;
     cursor: pointer;
