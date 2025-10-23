@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -26,17 +25,17 @@ import java.util.List;
 @RequestMapping("/user/workflows")
 public class WorkflowController {
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
+    private final WorkflowStepService workflowStepService;
+    private final CertificatService certificatService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private WorkflowStepService workflowStepService;
-
-    @Resource
-    private CertificatService certificatService;
-
-    @Resource
-    private RecipientService recipientService;
+    public WorkflowController(WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, RecipientService recipientService) {
+        this.workflowService = workflowService;
+        this.workflowStepService = workflowStepService;
+        this.certificatService = certificatService;
+        this.recipientService = recipientService;
+    }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")

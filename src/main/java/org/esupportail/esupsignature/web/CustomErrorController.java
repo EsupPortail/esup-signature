@@ -1,12 +1,16 @@
 package org.esupportail.esupsignature.web;
 
+import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.service.utils.CustomErrorService;
+import org.hibernate.exception.ConstraintViolationException;
+import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +68,24 @@ public class CustomErrorController implements ErrorController {
     public ResponseEntity<String> mediaTypeNotAcceptable(HttpServletRequest request) {
         HttpStatus status = customErrorService.getStatus(request);
         return ResponseEntity.status(status).build();
+    }
+
+    @ExceptionHandler({
+            DataIntegrityViolationException.class,
+            ConstraintViolationException.class,
+            PersistenceException.class
+    })
+    public String handleConstraintViolation(Exception ex, HttpServletRequest request, HttpServletResponse response) {
+        Throwable root = ex;
+        while (root.getCause() != null) root = root.getCause();
+        request.setAttribute("javax.servlet.error.status_code", HttpStatus.CONFLICT.value());
+        request.setAttribute("javax.servlet.error.message",
+                (root instanceof PSQLException || root instanceof ConstraintViolationException)
+                        ? "Action déjà effectuée ou clé dupliquée"
+                        : "Erreur interne");
+        request.setAttribute("javax.servlet.error.exception", ex);
+        response.setStatus(HttpStatus.CONFLICT.value());
+        return "forward:/error";
     }
 
 }

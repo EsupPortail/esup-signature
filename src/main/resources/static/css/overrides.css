@@ -1,3 +1,21 @@
+:root {
+    --ss-spacing-l: 10px;
+    --angle: 2deg;
+}
+
+.modal {
+    --bs-modal-border-color: tranparent;
+    --bs-modal-border-radius: var(--bs-border-radius-sm);
+}
+
+.modal-header {
+    border-bottom: revert;
+}
+
+.modal-footer {
+    border-top: revert;
+}
+
 section {
     border-width: 0 !important;
 }
@@ -73,9 +91,12 @@ textarea:invalid {
     content: "Parcourir" !important;
 }
 
-:root {
-    --ss-spacing-l: 10px;
-    --angle: 2deg;
+.accordion {
+    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    --bs-accordion-btn-focus-box-shadow: var(--bs-dark-bg-subtle);
+    --bs-accordion-active-color: white;
+    --bs-accordion-active-bg: var(--bs-dark);
+    --bs-accordion-btn-bg: var(--bs-light);
 }
 
 .ss-value-text {
@@ -306,6 +327,10 @@ textarea:invalid {
     background-color: rgba(var(--bs-danger-rgb),var(--bs-bg-opacity))!important;
 }
 
+.btn .badge {
+    top: 0;
+}
+
 .bootbox-backdrop {
     z-index: 120001;
 }
@@ -512,4 +537,11 @@ textarea:invalid {
 
 .form-check-input {
     border-color: #6c757d;
+}
+
+.fi {
+    vertical-align: middle;
+    transform: translateY(-1px);
+    display: inline-flex;
+    align-items: center;
 }

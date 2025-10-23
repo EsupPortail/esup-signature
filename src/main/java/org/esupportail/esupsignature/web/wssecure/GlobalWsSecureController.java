@@ -74,12 +74,13 @@ public class GlobalWsSecureController {
                                        @RequestParam(value = "formData", required = false) String formData,
                                        @RequestParam(value = "password", required = false) String password,
                                        @RequestParam(value = "certType", required = false) String certType,
+                                       @RequestParam(value = "sealCertificat", required = false) String sealCertificat,
                                        HttpSession httpSession) throws IOException {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
+            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
             if(stepStatus.equals(StepStatus.nexu_redirect)) {
                 return ResponseEntity.ok().body("initNexu");
             }

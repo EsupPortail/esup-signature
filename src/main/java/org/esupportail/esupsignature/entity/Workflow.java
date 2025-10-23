@@ -1,11 +1,11 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,6 +111,9 @@ public class Workflow {
     private Date startArchiveDate;
 
     private String archiveTarget;
+
+    @ManyToMany
+    private List<Tag> tags = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -449,5 +452,13 @@ public class Workflow {
 
     public void setExternalAuths(Set<ExternalAuth> externalAuths) {
         this.externalAuths = externalAuths;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

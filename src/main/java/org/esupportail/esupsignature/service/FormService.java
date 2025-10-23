@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.dto.js.JsSpot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
@@ -125,9 +126,12 @@ public class FormService {
 		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
-	public List<Form> getAllForms(){
+	public List<Form> getAllForms(List<Tag> selectedTags){
 		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(list::add);
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            return list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        }
 		return list;
 	}
 
@@ -171,6 +175,8 @@ public class FormService {
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
+        form.getTags().clear();
+        form.getTags().addAll(updateForm.tags);
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
@@ -479,13 +485,16 @@ public class FormService {
 		return false;
 	}
 
-	public Set<Form> getManagerForms(String userEppn) {
+	public List<Form> getManagerForms(List<Tag> selectedTags, String userEppn) {
 		User manager = userService.getByEppn(userEppn);
 		Set<Form> formsManaged = new HashSet<>();
 		for (String role : manager.getManagersRoles()) {
 			formsManaged.addAll(formRepository.findByManagerRole(role));
 		}
-		return formsManaged;
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            return formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        }
+		return new ArrayList<>(formsManaged);
 	}
 
 	@Transactional
@@ -635,4 +644,11 @@ public class FormService {
     public String getAllFormsJson() throws JsonProcessingException {
 		return objectMapper.writeValueAsString(formRepository.findAllJson());
 	}
+
+    @Transactional
+    public List<Form> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteForms);
+        List<Form> forms = getFormsByUser(userEppn, authUserEppn);
+        return forms.stream().filter(f -> favoriteFormsIds.contains(f.getId())).toList();
+    }
 }

@@ -17,8 +17,9 @@
  */
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.service.MessageService;
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.service.MessageService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
 import java.text.ParseException;
 
 @RequestMapping("/admin/messages")

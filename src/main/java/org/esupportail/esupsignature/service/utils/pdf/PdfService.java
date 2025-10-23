@@ -58,7 +58,6 @@ import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -100,7 +99,6 @@ import java.util.regex.Pattern;
  * @author David Lemaignent
  */
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class PdfService {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfService.class);
@@ -715,6 +713,9 @@ public class PdfService {
                     process.destroy();
                 }
             }
+            if(isPdfEmpty(result)) {
+                return originalBytes;
+            }
             return result;
         } else {
             return originalBytes;
@@ -756,7 +757,7 @@ public class PdfService {
                 result.add("success");
                 result.add("Le document est conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
             } else {
-                result.add("danger");
+                result.add("secondary");
                 result.add("Le document n'est pas conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
                 if (fillResults) {
                     for (TestAssertion test : validationResult.getTestAssertions()) {

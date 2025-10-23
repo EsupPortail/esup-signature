@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.config.ldap;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import jakarta.annotation.PostConstruct;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;

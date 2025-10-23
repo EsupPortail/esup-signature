@@ -618,8 +618,6 @@ export class SignRequestParams extends EventFactory {
                 }
                 if(!self.dropped) {
                     self.afterDropRefresh(ui);
-                } else {
-                    self.dropped = false;
                 }
                 let signLaunchButton = $("#signLaunchButton");
                 if(signLaunchButton.length) {
@@ -653,6 +651,16 @@ export class SignRequestParams extends EventFactory {
             $("#signLaunchButton").removeAttr("disabled");
             self.border.removeClass("cross-danger");
         }
+    }
+
+    enableCrossResizable() {
+        if(!this.dropped) {
+            this.cross.resizable("enable");
+        }
+    }
+
+    disableCrossResizable() {
+        this.cross.resizable("disable");
     }
 
     madeCrossResizable() {
@@ -776,7 +784,7 @@ export class SignRequestParams extends EventFactory {
 
     lock() {
         if(this.textareaPart == null) {
-            this.cross.resizable("enable");
+            this.enableCrossResizable();
         }
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
@@ -1137,6 +1145,9 @@ export class SignRequestParams extends EventFactory {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
+        // if(!this.firstLaunch) {
+        //     this.simulateDrag(this.xPos / this.currentScale, this.yPos / this.currentScale / 2);
+        // }
     }
 
     refreshDate() {

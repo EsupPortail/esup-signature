@@ -63,12 +63,16 @@ public class DataController {
 						   @RequestBody List<WorkflowStepDto> steps,
 						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
 		logger.info("create form " + id);
-		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			Data data = dataService.addData(id, userEppn);
-			List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
-			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, null);
-			return ResponseEntity.ok().body(signBook.getId().toString());
-		}
+        try {
+            if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
+                Data data = dataService.addData(id, userEppn);
+                List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
+                SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, null);
+                return ResponseEntity.ok().body(signBook.getId().toString());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
 		logger.warn("form id " + id + " not autorized");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Formulaire non autorisé");
 	}

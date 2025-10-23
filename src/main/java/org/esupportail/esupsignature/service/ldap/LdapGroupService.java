@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.ldap;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -7,7 +8,6 @@ import org.esupportail.esupsignature.service.security.GroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.ContextMapper;
 import org.springframework.ldap.core.DirContextAdapter;
 import org.springframework.ldap.core.LdapTemplate;
@@ -16,8 +16,6 @@ import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.Resource;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
@@ -28,7 +26,6 @@ import java.util.stream.Collectors;
 
 @Service
 @ConditionalOnProperty({"spring.ldap.base"})
-@EnableConfigurationProperties({GlobalProperties.class, LdapProperties.class})
 public class LdapGroupService implements GroupService {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapGroupService.class);
