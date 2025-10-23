@@ -47,7 +47,6 @@ export class Nexu {
                 // $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
                 $("#alertNexu").show();
                 $("#nexu_missing_alert").show();
-                $("#signLaunchButton").hide();
                 self.updateSignModal()
             });
         });
