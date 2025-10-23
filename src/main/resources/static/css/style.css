@@ -72,6 +72,7 @@ pre {
     user-select: text !important;
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
+    height: 100%;
 }
 
 #listSignRequestTable th {
@@ -247,19 +248,14 @@ dd {
     max-width: 10vw;
 }
 
-.form-switch.form-switch-md {
-    padding-left: 4.5em;
-    height: 2.5em;
-}
-
 .form-switch.form-switch-md .form-check-input {
-    margin-left: -4.5em;
-    height: 2em;
-    width: 4em;
+    height: 20px;
+    width: 40px;
 }
 
 .form-switch.form-switch-md .form-check-label {
-    padding-top: 0.5em;
+    margin-top: 2px;
+    margin-left: 5px;
     font-weight: bold;
 }
 
@@ -984,4 +980,8 @@ tr[aria-expanded="true"] .caret-toggle::before {
     top: 0px;
     left: 0px;
     border-radius: 10px 0px 0px 10px;
+}
+
+.sidebar-label {
+    font-size: 14px;
 }

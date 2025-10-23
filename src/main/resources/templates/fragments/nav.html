@@ -38,7 +38,7 @@
                     <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager" href="/user/manage"
                         class="btn text-white btn-transparent text-left me-1 d-flex align-items-center gap-2">
                         <i class="fi fi-sr-list-check" style="line-height: 14px;"></i>
-                        <span class="nav-item-label d-inline">Espace superviseur</span>
+                        <span class="nav-item-label d-none d-xl-inline">Espace superviseur</span>
                     </a>
                 </li>
 <!--                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">-->
@@ -114,7 +114,7 @@
                         id="link-admin-space"
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75' : ''">
                         <i class="fi fi-sr-chess-queen"></i>
-                        <span class="nav-item-label d-none d-xxl-inline">Admin</span>
+                        <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
                         <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge bg-danger d-none d-lg-inline ms-1">!</span>
                     </a>
                 </li>

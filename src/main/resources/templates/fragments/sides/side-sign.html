@@ -3,8 +3,7 @@
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign">
-    <div class="ms-1 mt-3">
-        <p class="mb-2" th:if="${signRequest != null}"><b>Créé par <span th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span></b></p>
+    <div class="ms-1 mt-1">
         <div class="hr">Statut</div>
         <div class="card card-body bg-light">
             <th:block th:if="${signRequest != null}">
@@ -14,19 +13,17 @@
                         <i class="fa-solid fa-box-archive"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
                     </div>
                 </div>
-                <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
+                <p class="mb-2" th:if="${signRequest != null}">Créé par <b th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></b></p>
                 <th:block th:if="${signBook.viewers.size() > 0 }">
-                    <span>
+                    <p>
                     Suivi par :
                         <ul>
                             <li th:each="user : ${signBook.viewers}" >
-
                                 <span th:if="${user.firstname != '' && user.name != ''}" th:text="${user.firstname + ' ' + user.name}"></span>
                                 <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>
-
                             </li>
                         </ul>
-                    </span>
+                    </p>
                 </th:block>
             </th:block>
             <th:block th:unless="${signRequest != null}">
