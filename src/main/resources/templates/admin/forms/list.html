@@ -44,6 +44,7 @@
                         <th>Actif</th>
                         <th>Tuile masquée</th>
                         <th>Supprimé</th>
+                        <th>Public</th>
                         <th>Rôle</th>
                         <th class="text-center">Action</th>
                     </tr>
@@ -70,6 +71,10 @@
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.deleted}" class="fa-solid fa-times text-danger"></i>
+                        </td>
+                        <td class="clickable-td">
+                            <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
+                            <i th:unless="${form.publicUsage}" class="fa-solid fa-times text-danger"></i>
                         </td>
                         <td class="clickable-td" th:text="${form.roles}"></td>
                         <td class="text-center">

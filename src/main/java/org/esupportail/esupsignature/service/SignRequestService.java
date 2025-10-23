@@ -1510,6 +1510,7 @@ public class SignRequestService {
 				notifTime = Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours();
 			}
 			if (!recipientEmails.isEmpty() && notifTime >= globalProperties.getHoursBeforeRefreshNotif() && signRequest.getStatus().equals(SignRequestStatus.pending)) {
+                logger.info("sending replay for signRequest : " + signRequest.getId());
                 for(Recipient recipient : recipients) {
                     if(recipient.getUser().getUserType().equals(UserType.external)) {
                         mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());

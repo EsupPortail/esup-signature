@@ -43,6 +43,8 @@
                             <th>Id</th>
                             <th>Nom</th>
                             <th>Tags</th>
+                            <th>Public</th>
+                            <th>Roles</th>
                             <th>Créé par</th>
                             <th>Destinataires</th>
                             <th class="text-center">Actions</th>
@@ -60,6 +62,11 @@
                                         <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
                                     </th:block>
                                 </td>
+                                <td class="clickable-td">
+                                    <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
+                                    <i th:unless="${workflow.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                                </td>
+                                <td class="clickable-td" th:text="${workflow.roles}"></td>
                                 <td th:class="${workflow.id != null}? 'clickable-td' : ''" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
@@ -71,7 +78,8 @@
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}">À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fa-solid fa-hand"></i> À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fa-solid fa-warning"></i> Non configuré</span>
                                             <span th:if="${workflowStep.autoSign}"><i class="fa-solid fa-robot"></i> Signature automatique</span>
                                         </li>
                                     </th:block>

@@ -2,7 +2,7 @@ import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
-    constructor(startFormId) {
+    constructor(startFormId, startWorkflowId) {
         console.info("Starting home UI");
         this.noFilterButton = $("#noFilterButton");
         this.workflowFilterButton = $("#workflowFilterButton");
@@ -11,12 +11,8 @@ export class HomeUi {
         this.workflowFilterStatus = true;
         this.formFilterStatus = true;
         this.globalFilterStatus = true;
-        this.menuToggled = false;
         this.uiParams = new UiParams();
         this.initListeners();
-        if(localStorage.getItem('menuToggled') === "true") {
-            this.toggleNewMenu();
-        }
         $(document).ready(function () {
             let oldSignRequests = $("#oldSignRequests");
             if(oldSignRequests.length) {
@@ -33,12 +29,13 @@ export class HomeUi {
             if(startFormId != null) {
                 $('#form-button-' + startFormId)[0].click();
             }
+            if(startWorkflowId != null) {
+                $('#workflow-button-' + startWorkflowId)[0].click();
+            }
         });
     }
 
     initListeners() {
-        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
-        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
         this.noFilterButton.on('click', e => this.showAll(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
         this.globalFilterButton.on('click', e => this.filterGlobal(e));
@@ -54,26 +51,6 @@ export class HomeUi {
                 });
             });
         });
-    }
-
-    toggleNewMenu() {
-        console.info("toggle new menu");
-        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        // $('#to-sign-list').toggleClass('d-flex d-none');
-        let newDiv = $('#new-div');
-        newDiv.toggleClass('position-fixed');
-        newDiv.toggleClass('new-width');
-        newDiv.toggleClass('new-height');
-        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
-        $('#listSignRequestTable').toggleClass('d-none');
-        $('.newHr').toggleClass('d-none');
-        $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
-        $('.newToggled').toggleClass('d-none');
-        $('.noForm').toggleClass('d-none');
-        $('.noWorkflow').toggleClass('d-none');
-        this.menuToggled = !this.menuToggled;
-        localStorage.setItem('menuToggled', this.menuToggled);
-        $('#toggle-new-grid').toggleClass("btn-grid-display2")
     }
 
     hideAll() {
@@ -133,11 +110,4 @@ export class HomeUi {
         return this.uiParams.set("formFilterStatus", this.formFilterStatus);
     }
 
-    activeHorizontalScrolling(e){
-        if(!this.menuToggled) {
-            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
-            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
-            e.preventDefault();
-        }
-    }
 }

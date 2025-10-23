@@ -1,3 +1,21 @@
+:root {
+    --ss-spacing-l: 10px;
+    --angle: 2deg;
+}
+
+.modal {
+    --bs-modal-border-color: tranparent;
+    --bs-modal-border-radius: var(--bs-border-radius-sm);
+}
+
+.modal-header {
+    border-bottom: revert;
+}
+
+.modal-footer {
+    border-top: revert;
+}
+
 section {
     border-width: 0 !important;
 }
@@ -71,11 +89,6 @@ textarea:invalid {
 
 .custom-file-input:lang(en) ~ .custom-file-label::after {
     content: "Parcourir" !important;
-}
-
-:root {
-    --ss-spacing-l: 10px;
-    --angle: 2deg;
 }
 
 .accordion {
@@ -314,6 +327,10 @@ textarea:invalid {
     background-color: rgba(var(--bs-danger-rgb),var(--bs-bg-opacity))!important;
 }
 
+.btn .badge {
+    top: 0;
+}
+
 .bootbox-backdrop {
     z-index: 120001;
 }
@@ -520,4 +537,11 @@ textarea:invalid {
 
 .form-check-input {
     border-color: #6c757d;
+}
+
+.fi {
+    vertical-align: middle;
+    transform: translateY(0px);
+    display: inline-flex;
+    align-items: center;
 }

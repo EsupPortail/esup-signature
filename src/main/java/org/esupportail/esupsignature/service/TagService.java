@@ -44,4 +44,7 @@ public class TagService {
         tagRepository.delete(tag);
     }
 
+    public Tag getById(Long id) {
+        return tagRepository.findById(id).orElseThrow();
+    }
 }

@@ -29,7 +29,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +48,7 @@ import java.util.Locale;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+    private final CertificatService certificatService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -65,7 +65,7 @@ public class SignBookController {
     private final FormService formService;
     private final TemplateEngine templateEngine;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -75,6 +75,7 @@ public class SignBookController {
         this.signRequestService = signRequestService;
         this.formService = formService;
         this.templateEngine = templateEngine;
+        this.certificatService = certificatService;
     }
 
     @GetMapping
@@ -113,6 +114,9 @@ public class SignBookController {
         model.addAttribute("docTitleFilter", docTitleFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
+        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
+        model.addAttribute("signable", true);
+        model.addAttribute("currentSignType", SignType.signature);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
@@ -160,9 +164,9 @@ public class SignBookController {
         }
         Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
-        CsrfToken token = new HttpSessionCsrfTokenRepository().loadToken(httpServletRequest);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
+        CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         ctx.setVariable("_csrf", token);
         return templateEngine.process("user/signbooks/includes/list-elem.html", ctx);
     }

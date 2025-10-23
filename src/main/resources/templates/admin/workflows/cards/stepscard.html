@@ -39,7 +39,7 @@
                                         </div>
                                         <div>
                                             <small>Niveau maximum</small>
-                                            <select class="form-select" name="maxSignLevel" th:id="'minSignLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
+                                            <select class="form-select" name="maxSignLevel" th:id="'maxSignLevel-' + ${workflowStep.id}" th:disabled="${workflowStep.autoSign}">
                                                 <th:block th:each="signLevel : ${signLevels}">
                                                     <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${workflowStep.maxSignLevel == signLevel}"></option>
                                                 </th:block>

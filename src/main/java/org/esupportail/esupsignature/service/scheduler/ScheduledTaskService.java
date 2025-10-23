@@ -196,7 +196,7 @@ public class ScheduledTaskService {
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
-		List<User> users = userService.getAllUsers();
+		List<User> users = userService.getAllLdapUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {

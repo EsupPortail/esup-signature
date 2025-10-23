@@ -72,6 +72,7 @@ pre {
     user-select: text !important;
     -moz-user-select: text !important;
     -webkit-user-select: text !important;
+    height: 100%;
 }
 
 #listSignRequestTable th {
@@ -247,19 +248,14 @@ dd {
     max-width: 10vw;
 }
 
-.form-switch.form-switch-md {
-    padding-left: 4.5em;
-    height: 2.5em;
-}
-
 .form-switch.form-switch-md .form-check-input {
-    margin-left: -4.5em;
-    height: 2em;
-    width: 4em;
+    height: 20px;
+    width: 40px;
 }
 
 .form-switch.form-switch-md .form-check-label {
-    padding-top: 0.5em;
+    margin-top: 2px;
+    margin-left: 5px;
     font-weight: bold;
 }
 
@@ -586,14 +582,12 @@ input:focus, textarea:focus, select:focus {
     background-color: white;
     font-weight: normal;
     padding: .375rem .90rem;
-    margin: .375rem;
+    margin: .15rem;
     word-wrap: break-word;
     white-space: normal;
     cursor: pointer;
     border: 0;
     border-radius: .3rem;
-    -webkit-box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12) !important;
-    box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12) !important;
     -webkit-transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,-webkit-box-shadow 0.15s ease-in-out !important;
     transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,-webkit-box-shadow 0.15s ease-in-out !important;
     /*transition: color 0.15s ease-in-out,background-color 0.15s ease-in-out,border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out;*/
@@ -986,4 +980,8 @@ tr[aria-expanded="true"] .caret-toggle::before {
     top: 0px;
     left: 0px;
     border-radius: 10px 0px 0px 10px;
+}
+
+.sidebar-label {
+    font-size: 14px;
 }

@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.dto.js.JsSpot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
@@ -643,4 +644,11 @@ public class FormService {
     public String getAllFormsJson() throws JsonProcessingException {
 		return objectMapper.writeValueAsString(formRepository.findAllJson());
 	}
+
+    @Transactional
+    public List<Form> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteForms);
+        List<Form> forms = getFormsByUser(userEppn, authUserEppn);
+        return forms.stream().filter(f -> favoriteFormsIds.contains(f.getId())).toList();
+    }
 }

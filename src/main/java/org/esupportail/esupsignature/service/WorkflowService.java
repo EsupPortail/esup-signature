@@ -231,7 +231,7 @@ public class WorkflowService {
             workflowRepository.save(workflow);
             return workflow;
         } else {
-            throw new EsupSignatureRuntimeException("already exist");
+            throw new EsupSignatureRuntimeException("Un circuit possède déjà ce préfixe");
         }
     }
 
@@ -841,5 +841,11 @@ public class WorkflowService {
                 target.setNbRetry(0);
             }
         }
+    }
+
+    public List<Workflow> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteWorkflows);
+        Set<Workflow> workflows = getWorkflowsByUser(userEppn, authUserEppn);
+        return workflows.stream().filter(w -> favoriteFormsIds.contains(w.getId())).toList();
     }
 }

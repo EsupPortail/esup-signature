@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <div class="modal-header">
-    <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
+    <h4 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h4>
     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
@@ -66,23 +66,36 @@
                         </small>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="form-group w-50">
+                <div class="d-flex flex-column gap-2 mb-2">
+                    <div class="form-group w-100">
                         <label class="form-label" for="signType-1">Choisir un type de signature *</label>
                         <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
                             <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || globalProperties.hideHiddenVisa == false}"
+                                <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
-                        <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
-                        <select class="form-select" name="minSignLevel" id="minSignLevel-1">
-                            <th:block th:each="signLevel : ${signLevels}">
-                                <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
-                            </th:block>
-                        </select>
+                    <div class="form-group w-10" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                        <label class="form-label">Niveaux de signature autorisés :</label>
+                        <div class="d-flex gap-5">
+                            <div>
+                                <small>Niveau minimum</small>
+                                <select class="form-select" name="minSignLevel" id="minSignLevel-1">
+                                    <th:block th:each="signLevel : ${signLevels}">
+                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <div>
+                                <small>Niveau maximum</small>
+                                <select class="form-select" name="maxSignLevel" id="maxSignLevel-1">
+                                    <th:block th:each="signLevel : ${signLevels}">
+                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
                         <label class="form-check-label">

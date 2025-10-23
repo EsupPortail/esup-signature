@@ -19,7 +19,8 @@ header {
 }
 
 .navbar-brand {
-    width: 250px;
+    width: 260px;
+    margin-right: 0px;
 }
 
 .navbar-nav {
@@ -28,7 +29,6 @@ header {
 
 #logo {
     position: relative;
-    margin-left: 60px;
     height: 40px;
 }
 
@@ -51,7 +51,7 @@ header {
 }
 
 .content {
-    /*width: calc(100vw - 275px);*/
+    width: calc(100vw - 275px);
     margin-top: 86px;
     margin-left: 260px;
     padding-left: 6px;
@@ -61,6 +61,18 @@ header {
 .content-full {
     /*width: calc(100vw - 75px);*/
     margin-left: 60px;
+}
+
+.content-full-fixed {
+    margin-left: 0;
+    margin-top: 50px;
+}
+
+.content-fixed-breadcrumb {
+    padding: 10px;
+    width: calc(100vw - 75px);
+    margin-left: 0;
+    margin-top: 72px;
 }
 
 .th-fixed{
@@ -187,7 +199,6 @@ header {
 
 .div-scrollable {
     overflow-y: auto;
-    height: calc(100vh - 350px);
 }
 
 .page {
@@ -275,6 +286,12 @@ header {
     width: calc(100vw - 75px);
 }
 
+.breadcrumb-nav-full-fixed {
+    z-index: 1;
+    padding: 5px;
+    margin-left: 0;
+}
+
 .breadcrumb {
     margin: 0 !important;
 }
@@ -340,4 +357,11 @@ header {
     clear: both;
     display: block;
     width: 100%;
+}
+
+.favorite-icon {
+    margin-top: 8px;
+    margin-left: 8px;
+    text-align: end;
+    position: absolute;
 }

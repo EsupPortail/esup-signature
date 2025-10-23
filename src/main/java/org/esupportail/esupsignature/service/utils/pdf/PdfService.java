@@ -757,7 +757,7 @@ public class PdfService {
                 result.add("success");
                 result.add("Le document est conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
             } else {
-                result.add("danger");
+                result.add("secondary");
                 result.add("Le document n'est pas conforme PDF/A-" + validationResult.getPDFAFlavour().getId() + " !");
                 if (fillResults) {
                     for (TestAssertion test : validationResult.getTestAssertions()) {

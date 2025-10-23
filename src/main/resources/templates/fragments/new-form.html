@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<div id="new-workflow" th:fragment="new-form" class="clear">
+    <div class="d-inline-flex flex-wrap">
+        <th:block th:each="form : ${forms}">
+            <div th:id="'btn-form-' + ${form.id}" class="workflow-button" style="height: 184px;">
+                <div class="favorite-icon">
+                    <button title="Mettre en favori"
+                            class="btn btn-transparent btn-sm text-dark toggle-form-start rounded-2"
+                            style="margin-top: -5px; margin-left: -5px;"
+                            type="button"
+                            th:id="'star_' + ${form.id}">
+                        <i class="fa-solid fa-star" th:classappend="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms).contains('' + form.id)} ? 'text-warning' : 'text-secondary'"></i>
+                    </button>
+                </div>
+                <a tabindex="0" role="button" class="btn btn-material btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 form-button start-form-button"
+                    style="width: 120px; height: 170px;"
+                    th:classappend="${form.hideButton} ? 'd-none' : ''"
+                    th:title="${form.title}"
+                    th:id="'form-button-' + ${form.id}"
+                    th:data-es-form-id="${form.id}"
+                    th:href="'/user/start-form/' + ${form.id}"
+                    data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                        <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
+                        <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
+                        <h6 style="height: 50px;" th:text="${form.title}"></h6>
+                    </div>
+                </a>
+            </div>
+        </th:block>
+        <script>
+            document.querySelectorAll('.toggle-form-start').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.id.replace('star_', '');
+                    const icon = btn.querySelector('i');
+
+                    try {
+                        location.href=`/user/toggle-favorite-form/${id}`;
+                    } catch (err) {
+                        console.error('Erreur lors de la mise en favori :', err);
+                    }
+                });
+            });
+        </script>
+        <th:block th:if="${forms != null && forms.size() == 0}">
+            <div class="alert alert-secondary">
+                <h6>Aucun formulaire</h6>
+            </div>
+        </th:block>
+    </div>
+</div>
+</html>

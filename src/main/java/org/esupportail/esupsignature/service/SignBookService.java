@@ -556,6 +556,8 @@ public class SignBookService {
                                     if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                             && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
                                             && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
+                                        signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
                                         addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
                                     }
                                 }
@@ -1502,7 +1504,7 @@ public class SignBookService {
         }
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
-            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(srp -> signRequest.getSignRequestParams().contains(srp)).toList();
+            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
                 signRequestParamse.setAddExtra(true);
@@ -1575,9 +1577,6 @@ public class SignBookService {
      */
     @Transactional
     public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith, String sealCertificat) throws IOException, EsupSignatureRuntimeException {
-        if (SignWith.valueOf(signWith).equals(SignWith.nexuCert)) {
-            return "initNexu";
-        }
         String error = null;
         TypeReference<List<String>> type = new TypeReference<>(){};
         List<String> idsString = objectMapper.readValue(ids, type);
@@ -1614,6 +1613,9 @@ public class SignBookService {
                 }
             }
             stepStatuses.add(stepStatus);
+        }
+        if(stepStatuses.stream().allMatch(s -> s.equals(StepStatus.nexu_redirect))) {
+            return "initNexu";
         }
         if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed) || s.equals(StepStatus.last_end))) {
             error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
