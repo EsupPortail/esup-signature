@@ -541,7 +541,7 @@ textarea:invalid {
 
 .fi {
     vertical-align: middle;
-    transform: translateY(0px);
+    transform: translateY(-1px);
     display: inline-flex;
     align-items: center;
 }

@@ -85,8 +85,8 @@ public class Form {
 	@Transient
 	private Integer totalPageCount = 1;
 
-    @ManyToMany
-    private List<Tag> tags = new ArrayList<>();
+    @Transient
+    public List<Tag> tags = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -268,7 +268,10 @@ public class Form {
 	}
 
     public List<Tag> getTags() {
-        return tags;
+        if(this.workflow != null) {
+            return workflow.getTags();
+        }
+        return new ArrayList<>();
     }
 
     public void setTags(List<Tag> tags) {

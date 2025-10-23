@@ -176,7 +176,7 @@ public class FormService {
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
         form.getTags().clear();
-        form.getTags().addAll(updateForm.getTags());
+        form.getTags().addAll(updateForm.tags);
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {

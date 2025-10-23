@@ -51,7 +51,7 @@ public class WorkflowService {
     private final  FsAccessFactoryService fsAccessFactoryService;
     private final  UserService userService;
     private final  UserShareService userShareService;
-    private final UserPropertieService userPropertieService;
+    private final  UserPropertieService userPropertieService;
     private final  TargetService targetService;
     private final  FieldService fieldService;
     private final  SignBookRepository signBookRepository;

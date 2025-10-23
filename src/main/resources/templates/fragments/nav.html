@@ -41,35 +41,6 @@
                         <span class="nav-item-label d-none d-xl-inline">Espace superviseur</span>
                     </a>
                 </li>
-<!--                <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">-->
-<!--                    <a class="btn btn-transparent text-left me-1 text-white dropdown-toggle" id="link-tools" href="#"-->
-<!--                        role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">-->
-<!--                        <i class="fi fi-rr-tool-box" style="line-height: 15px;"></i> <span class="nav-item-label d-none d-lg-inline">Outils</span>-->
-<!--                    </a>-->
-<!--                    <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="link-tools" >-->
-<!--                        <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager" href="/user/manage"-->
-<!--                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >-->
-<!--                            <i class="fa-solid fa-tasks"></i> <span class="nav-item-label d-inline">Espace superviseur</span>-->
-<!--                        </a>-->
-<!--                        <div th:if="${managedWorkflowsSize > 0}" class="dropdown-divider"></div>-->
-<!--                        <a tabindex="0" id="start-wizard-button" th:unless="${globalProperties.hideWizardWorkflow}" class="btn text-white btn-transparent text-left m-1" data-bs-toggle="modal"-->
-<!--                            data-bs-target="#wiz-modal"-->
-<!--                            title="Créez un nouveau circuit à l'aide de l'assistant">-->
-<!--                                <i class="fa-solid fa-magic"></i> Assistant de création de circuit-->
-<!--                        </a>-->
-<!--                        <div th:unless="${globalProperties.hideWizardWorkflow}" class="dropdown-divider"></div>-->
-<!--                        <a class="btn text-white btn-transparent text-left m-1" id="link-user" style="width: 250px;" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users">-->
-<!--                            <i class="fa-solid fa-user-cog"></i> Modifier mes paramètres-->
-<!--                        </a>-->
-<!--                        <div class="dropdown-divider"></div>-->
-<!--                        <a th:classappend="${activeMenu == 'validation'} ? 'bg-secondary fw-bold bg-opacity-75'"-->
-<!--                            id="link-control"-->
-<!--                            title="Valider la signature d'un document" href="/user/validation"-->
-<!--                            class="btn text-white btn-transparent text-left m-1" style="width: 250px;" >-->
-<!--                            <i class="fa-solid fa-shield-alt"></i> <span class="nav-item-label d-inline">Contrôler un document</span>-->
-<!--                        </a>-->
-<!--                    </div>-->
-<!--                </li>-->
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && globalProperties.shareMode > 0 && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white me-1 dropdown-toggle d-flex align-items-center gap-2"
                         id="link-rigths"
@@ -125,13 +96,6 @@
                         <button id="link-su" type="submit" class="btn bg-dark text-white me-1"><i class="fa-solid fa-user-secret"></i></button>
                     </form>
                 </li>
-<!--                <li class="nav-item text-white" >-->
-<!--                <a th:unless="${isUserOnSu}" class="btn text-white btn-transparent"-->
-<!--                   aria-label="Paramètres utilisateur "-->
-<!--                   title="Paramètres" href="/user/users?form">-->
-<!--                    <i class="fa-solid fa-user-cog"></i>-->
-<!--                </a>-->
-<!--                </li>-->
                 <li class="nav-item">
                     <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
                         th:classappend="${paramMenu}" type="button" href="#user-infos"

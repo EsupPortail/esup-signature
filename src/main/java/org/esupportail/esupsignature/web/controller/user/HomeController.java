@@ -145,6 +145,8 @@ public class HomeController {
             List<String> words = new ArrayList<>();
             List<String> types = new ArrayList<>();
             List<Tag> tags = new ArrayList<>();
+            List<Workflow> workflows = new ArrayList<>();
+            List<Form> forms = new ArrayList<>();
             for (SearchRequest searchRequest : searchRequests) {
                 if (searchRequest.getValue().startsWith("tag:")) {
                     tags.add(tagService.getById(Long.valueOf(searchRequest.getValue().split(":")[1])));
@@ -155,7 +157,7 @@ public class HomeController {
                 }
             }
             if (types.isEmpty() || types.contains("workflow")) {
-                List<Workflow> workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
+                workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
                         .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
                     SearchResult searchResult = new SearchResult();
@@ -170,7 +172,7 @@ public class HomeController {
                 }
             }
             if (types.isEmpty() || types.contains("form")) {
-                List<Form> forms = formService.getFormsByUser(authUserEppn, authUserEppn)
+                forms = formService.getFormsByUser(authUserEppn, authUserEppn)
                         .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
                     SearchResult searchResult = new SearchResult();
@@ -186,11 +188,18 @@ public class HomeController {
             }
             if((types.isEmpty() || types.contains("signBook")) && tags.isEmpty()) {
                 Set<SignBook> signBooks = new HashSet<>();
-                if(words.isEmpty()) {
-                    signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent());
+                List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent();
+                if(words.isEmpty() && workflows.isEmpty() && forms.isEmpty()) {
+                    signBooks.addAll(allSignBooks);
                 } else {
                     for (String word : words) {
                         signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, word, null, null, Pageable.unpaged()).getContent());
+                    }
+                    for (Workflow workflow : workflows) {
+                        signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(workflow)).toList());
+                    }
+                    for (Form form : forms) {
+                        signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(form.getWorkflow())).toList());
                     }
                 }
                 for (SignBook signBook : signBooks) {
@@ -198,6 +207,12 @@ public class HomeController {
                     searchResult.setIcon("fi fi-sr-file");
                     searchResult.setTitle(signBook.getSubject());
                     searchResult.setUrl("/user/signbooks/" + signBook.getId());
+                    if(signBook.getLiveWorkflow().getWorkflow() != null) {
+                        for (Tag tag : signBook.getLiveWorkflow().getWorkflow().getTags()) {
+                            searchResult.setTags(searchResult.getTags() +
+                                    "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
+                        }
+                    }
                     searchResults.add(searchResult);
                 }
             }
