@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 
-import jakarta.persistence.*;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;

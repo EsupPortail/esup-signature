@@ -2,12 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
-
-import jakarta.validation.constraints.NotNull;
-import jakarta.persistence.*;
 import org.springframework.util.StringUtils;
 
 import java.time.DayOfWeek;
@@ -46,6 +45,9 @@ public class User {
     private Set<String> managersRoles = new HashSet<>();
 
     @ElementCollection
+    @CollectionTable(name = "user_ui_params", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "ui_params_key")
+    @Column(name = "ui_params", nullable = false)
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 

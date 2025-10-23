@@ -7,22 +7,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.FieldService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -58,8 +57,9 @@ public class FormAdminController {
 	private final FieldService fieldService;
 	private final ObjectMapper objectMapper;
 	private final PreAuthorizeService preAuthorizeService;
+    private final TagService tagService;
 
-	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService) {
+	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService) {
 		this.formService = formService;
 		this.workflowService = workflowService;
 		this.userService = userService;
@@ -68,19 +68,22 @@ public class FormAdminController {
 		this.fieldService = fieldService;
 		this.objectMapper = objectMapper;
 		this.preAuthorizeService = preAuthorizeService;
-	}
+        this.tagService = tagService;
+    }
 
 	@GetMapping()
-	public String list(@ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) {
+	public String list(@ModelAttribute("authUserEppn") String authUserEppn,
+                       @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
+                       Model model, HttpServletRequest httpServletRequest) {
 		String path = httpServletRequest.getRequestURI();
 		Set<Form> forms = new HashSet<>();
 		if (path.startsWith("/admin")) {
-			forms.addAll(formService.getAllForms());
+			forms.addAll(formService.getAllForms(selectedTags));
 			model.addAttribute("roles", userService.getAllRoles());
 			model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
 			model.addAttribute("workflowRole", "admin");
 		} else {
-			forms.addAll(formService.getManagerForms(authUserEppn));
+			forms.addAll(formService.getManagerForms(selectedTags, authUserEppn));
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
 			model.addAttribute("workflowRole", "manager");
@@ -88,6 +91,9 @@ public class FormAdminController {
 		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(f -> f.getTitle().toLowerCase(), Comparator.nullsFirst(String::compareTo))).collect(Collectors.toList()));
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
+        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+        if(selectedTags == null) selectedTags = new ArrayList<>();
+        model.addAttribute("selectedTags", selectedTags);
 		return "admin/forms/list";
 	}
 
@@ -267,7 +273,8 @@ public class FormAdminController {
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("model", form.getDocument());
-		return "admin/forms/update";
+        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+        return "admin/forms/update";
 	}
 
 

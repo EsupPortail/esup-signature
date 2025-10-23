@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.entity.Target;
 import org.esupportail.esupsignature.entity.User;
@@ -8,7 +9,6 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 

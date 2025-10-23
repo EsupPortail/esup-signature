@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -8,16 +12,12 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @CrossOrigin(origins = "*")

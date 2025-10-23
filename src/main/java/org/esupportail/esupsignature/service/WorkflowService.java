@@ -51,7 +51,7 @@ public class WorkflowService {
     private final  FsAccessFactoryService fsAccessFactoryService;
     private final  UserService userService;
     private final  UserShareService userShareService;
-    private final UserPropertieService userPropertieService;
+    private final  UserPropertieService userPropertieService;
     private final  TargetService targetService;
     private final  FieldService fieldService;
     private final  SignBookRepository signBookRepository;
@@ -231,7 +231,7 @@ public class WorkflowService {
             workflowRepository.save(workflow);
             return workflow;
         } else {
-            throw new EsupSignatureRuntimeException("already exist");
+            throw new EsupSignatureRuntimeException("Un circuit possède déjà ce préfixe");
         }
     }
 
@@ -278,8 +278,12 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<Workflow> getAllWorkflows() {
-        return workflowRepository.findAll();
+    public List<Workflow> getAllWorkflows(List<Tag> selectedTags) {
+        List<Workflow> worflows = workflowRepository.findAll();
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            return worflows.stream().filter(w -> new HashSet<>(w.getTags()).containsAll(selectedTags)).toList();
+        }
+        return worflows;
     }
 
     @Transactional
@@ -481,7 +485,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public List<Workflow> getWorkflowsByDisplayWorkflowType(DisplayWorkflowType displayWorkflowType) {
+    public List<Workflow> getWorkflowsByDisplayWorkflowTypeAndSelectedTags(DisplayWorkflowType displayWorkflowType, List<Tag> selectedTags) {
         if (displayWorkflowType == null) {
             displayWorkflowType = DisplayWorkflowType.system;
         }
@@ -491,17 +495,25 @@ public class WorkflowService {
         } else if(DisplayWorkflowType.classes.equals(displayWorkflowType)) {
             workflows.addAll(getClassesWorkflows());
         } else if(DisplayWorkflowType.all.equals(displayWorkflowType)) {
-            workflows.addAll(getAllWorkflows());
+            workflows.addAll(getAllWorkflows(null));
         } else if(DisplayWorkflowType.users.equals(displayWorkflowType)) {
-            workflows.addAll(getAllWorkflows());
+            workflows.addAll(getAllWorkflows(null));
             workflows.removeAll(getClassesWorkflows());
             workflows.removeAll(getWorkflowsBySystemUser());
         }
-        return workflows.stream()
-                .sorted(Comparator.comparing(
-                        w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
-                        Comparator.naturalOrder()))
-                .collect(Collectors.toList());
+        if(selectedTags == null || selectedTags.isEmpty()) {
+            return workflows.stream()
+                    .sorted(Comparator.comparing(
+                            w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
+                            Comparator.naturalOrder()))
+                    .collect(Collectors.toList());
+        } else {
+            return workflows.stream().filter(w -> new HashSet<>(w.getTags()).containsAll(selectedTags))
+                    .sorted(Comparator.comparing(
+                            w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
+                            Comparator.naturalOrder()))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Transactional
@@ -569,6 +581,8 @@ public class WorkflowService {
         workflowToUpdate.setArchiveTarget(workflow.getArchiveTarget());
         workflowToUpdate.getExternalAuths().clear();
         workflowToUpdate.setExternalAuths(workflow.getExternalAuths());
+        workflowToUpdate.getTags().clear();
+        workflowToUpdate.getTags().addAll(workflow.getTags());
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }
@@ -827,5 +841,11 @@ public class WorkflowService {
                 target.setNbRetry(0);
             }
         }
+    }
+
+    public List<Workflow> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteWorkflows);
+        Set<Workflow> workflows = getWorkflowsByUser(userEppn, authUserEppn);
+        return workflows.stream().filter(w -> favoriteFormsIds.contains(w.getId())).toList();
     }
 }

@@ -42,6 +42,7 @@ export class WorkflowUi {
                 self.toggleVisibility(stepId, $(this).val());
             });
         });
+        this.manageMinMaxLevels();
     }
 
     toggleVisibility(stepId, selectedVal) {
@@ -101,6 +102,40 @@ export class WorkflowUi {
             if(result) {
                 $('#del_' + $(e.currentTarget).attr("id")).submit();
             }
+        });
+    }
+
+    manageMinMaxLevels() {
+        const signLevelMap = {
+            'simple': 2,
+            'advanced': 3,
+            'qualified': 4
+        };
+
+        document.querySelectorAll('select[id^="minSignLevel-"]').forEach(minSelect => {
+            const idSuffix = minSelect.id.replace('minSignLevel-', '');
+            const maxSelect = document.getElementById('maxSignLevel-' + idSuffix);
+            if (!maxSelect) return;
+
+            const updateMaxOptions = () => {
+                const minValueNum = signLevelMap[minSelect.value] || 0;
+                Array.from(maxSelect.options).forEach(option => {
+                    const optionValueNum = signLevelMap[option.value] || 0;
+                    option.disabled = optionValueNum < minValueNum;
+                });
+
+                // Ajuste la valeur actuelle si elle est inférieure au min
+                if ((signLevelMap[maxSelect.value] || 0) < minValueNum) {
+                    maxSelect.value = minSelect.value;
+                }
+            };
+
+            // Initial update au chargement
+            updateMaxOptions();
+
+            // Update au changement
+            minSelect.removeEventListener('change', updateMaxOptions);
+            minSelect.addEventListener('change', updateMaxOptions);
         });
     }
 

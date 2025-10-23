@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -173,8 +174,11 @@ public class LiveWorkflowStep {
         return minSignLevel;
     }
 
-    public void setMinSignLevel(SignLevel signLevel) {
-        this.minSignLevel = signLevel;
+    public void setMinSignLevel(SignLevel minSignLevel) {
+        if(minSignLevel.getValue() > getMaxSignLevel().getValue()) {
+            throw new EsupSignatureRuntimeException("minSignLevel can't be up to maxSignLevel");
+        }
+        this.minSignLevel = minSignLevel;
     }
 
     public SignLevel getMaxSignLevel() {
@@ -183,6 +187,9 @@ public class LiveWorkflowStep {
     }
 
     public void setMaxSignLevel(SignLevel maxSignLevel) {
+        if(getMinSignLevel().getValue() > maxSignLevel.getValue()) {
+            throw new EsupSignatureRuntimeException("minSignLevel can't be up to maxSignLevel");
+        }
         this.maxSignLevel = maxSignLevel;
     }
 

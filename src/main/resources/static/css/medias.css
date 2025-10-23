@@ -1,9 +1,3 @@
-@media (max-height: 600px) {
-    #listSignRequestTable {
-        height: 100%;
-    }
-}
-
 @media (min-width: 1600px) {
     .d-xxxl-table-cell {
         display: table-cell !important;
@@ -115,11 +109,13 @@
         left: 50px;
     }
 
-    .pdf-alerts {
-        top:104px;
+    .pdf-alerts-btn {
+        left: 16px;
+        top:105px;
         position: fixed;
-        width: calc(100% - 26px);
+        z-index: 9999;
     }
+
 }
 
 @media (max-width: 768px) {
@@ -132,9 +128,9 @@
         margin-left: 5px;
     }
 
-    .new-width-full {
-        width: calc(100vw);
-    }
+    /*.new-width-full {*/
+    /*    width: calc(100vw);*/
+    /*}*/
 
     #breadcrumb {
         display: none;
@@ -157,6 +153,10 @@
     .sign-preview {
         overflow: auto;
         margin-left: initial;
+    }
+
+    .pdf-alerts {
+        width: 350px !important;
     }
 
 }
@@ -209,6 +209,10 @@
         padding: 3px;
     }
 
+    .content-full-fixed {
+        width: 100% ;
+    }
+
     .content {
         overflow: auto;
         margin-top: 55px;
@@ -233,7 +237,6 @@
         top:101px;
         left:0px;
         position: fixed;
-        width: calc(100%);
     }
 
     .pdf-alerts .btn {

@@ -5,8 +5,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side :: side}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
             <div class="navbar-nav">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active"><a href="/user/validation">Outil de validation</a></li>
@@ -14,9 +13,10 @@
                 </ol>
             </div>
         </nav>
-        <div id="content" class="content">
-            <div class="col-12 mx-auto">
-                <ul class="nav nav-tabs nav-justified d-print-none" id="tabsResult">
+        <div id="content" class="content-fixed-breadcrumb flex align-content-center">
+            <div>
+                <h5 class="text-center">Résultats de la validation</h5>
+                <ul class="nav nav-pills nav-justified d-print-none" id="tabsResult">
                     <li class="nav-item" th:if="${simpleReport} != null" role="presentation">
                         <a class="nav-link active" href="#simple-report" th:text="#{label.simple.report}" data-bs-toggle="tab" role="tab"
                             aria-controls="simple-report" aria-selected="true"></a>
@@ -37,10 +37,10 @@
                         <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
                     </li>
                 </ul>
-                <div class="tab-content mt-2">
+                <div class="tab-content mt-1">
                     <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
                         <div class="position-relative">
-                            <div class="alert alert-danger" th:if="${auditTrail == null && signCount == 0}">
+                            <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
                                 Ce document ne comporte pas de signature reconnue par le système de contrôle.
                             </div>
                             <th:block th:if="${auditTrail != null}">
@@ -129,10 +129,9 @@
                                     </div>
                                 </div>
                             </th:block>
-                            <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                            <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
                                 <div id="simple-report-buttons" class="btn-group d-print-none" role="toolbar">
-                                    <h4>Signatures avec certificats</h4>
-
+                                    <h4>Signatures présentes dans le document</h4>
                                     <button type="button" class="btn btn-light float-end"
                                             onclick="window.print();">
                                         <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
@@ -149,8 +148,12 @@
                         </div>
                     </div>
                     <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
+                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                        </div>
                         <div class="position-relative">
-                            <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                            <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                                <h4>Détail des signatures présentes dans le document</h4>
                                 <div id="detailed-report-buttons" class="btn-group ml-auto align-self-center d-print-none" role="toolbar">
                                     <button type="button" class="btn btn-light switch-annotations">
                                         <i class="icon fa fa-commenting-o"></i>&nbsp;
@@ -172,7 +175,11 @@
                         </div>
                     </div>
                     <div th:if="${diagnosticDataXml} != null" role="tabcard" class="tab-pane fade report" id="diagnostic-tree">
-                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                        </div>
+                        <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                            <h4>Diagnostique technique des signatures</h4>
 
                         <div class="card mb-2">
                             <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
@@ -282,13 +289,17 @@
                         </div>
                     </div>
                     <div th:if="${etsiValidationReport} != null" role="tabcard" class="tab-pane fade report" id="etsi-validation-report">
-                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                        </div>
+                        <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                            <h4>Rapport ETSI au format XML</h4>
                             <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
                         </div>
                     </div>
                     <div th:if="${pdfaReport != null && pdfaReport.size() > 0}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
                         <div th:class="'alert alert-' + ${pdfaReport[0]}">
-                            <h2>Validation PDF/A</h2>
+                            <h4>Validation PDF/A</h4>
                             <ul>
                                 <th:block th:each="line : ${pdfaReport}">
                                     <li th:if="${lineStat.index > 0}">

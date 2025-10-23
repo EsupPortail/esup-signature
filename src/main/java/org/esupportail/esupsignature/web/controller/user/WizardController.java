@@ -72,7 +72,7 @@ public class WizardController {
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-workflow", produces = "text/html")
-    public String wizStartWorkflow( @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
+    public String wizStartWorkflow(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
         return "user/wizard/wiz-new-workflow-step";
     }
 

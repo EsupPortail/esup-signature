@@ -1,14 +1,17 @@
 package org.esupportail.esupsignature.config;
 
+import jakarta.annotation.PostConstruct;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@Configuration
 @ConfigurationProperties(prefix="global")
 public class GlobalProperties {
 
@@ -151,27 +154,22 @@ public class GlobalProperties {
      *  </ul>
      */
     private Integer shareMode = 0;
-
     /**
      * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
-
     /**
      * Activer/Désactiver la detection de robot à la connexion
      */
     private Boolean enableCaptcha = false;
-
     /**
      * Taille maximum des uploads de fichiers en bytes
      */
     private Integer maxUploadSize = 52428800;
-
     /**
      * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */
     private Integer nbDaysBeforeWarning = -1;
-
     /**
      * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
@@ -200,31 +198,31 @@ public class GlobalProperties {
     /**
      *  Type de certificat cachet (PKCS11, PKCS12, OPENSC)
      */
-    private TokenType sealCertificatType;
-
-    public enum TokenType {
-        PKCS11, PKCS12, OPENSC
-    }
+    @Deprecated
+    private SealCertificatProperties.TokenType sealCertificatType;
 
     /**
      *  Emplacement du certificat cachet (actif pour PKCS12)
      */
+    @Deprecated
     private String sealCertificatFile;
 
     /**
      *  Pilote du certificat cachet
      */
+    @Deprecated
     private String sealCertificatDriver;
 
     /**
      *  Pin du certificat cachet
      */
+    @Deprecated
     private String sealCertificatPin = "";
 
     /**
-     *  Pin du certificat cachet
+     * Liste des propriétés de certificats cachet utilisées pour configurer ou gérer les certificats dans l'application.
      */
-    private Boolean signEmailWithSealCertificat = false;
+    public Map<String, SealCertificatProperties> sealCertificatProperties = new HashMap<>();
 
     /**
      *  Appliquer le cachet sur toutes les demandes terminées
@@ -237,7 +235,7 @@ public class GlobalProperties {
     private Boolean sealForExternals = false;
 
     /**
-     * Autoriser automatiquement le certificat cachet pour les demandes internes déjà signés avec un certificat
+     * Autoriser automatiquement le certificat cachet pour les demandes internes déjà signés
      */
     private Boolean sealAuthorizedForSignedFiles = false;
 
@@ -367,13 +365,28 @@ public class GlobalProperties {
      */
     private Boolean frenchPhoneNumberOnly = false;
 
-
     /**
      * Indique si les vérifications (visas cachés) doivent être masqués dans l'interface utilisateur.
      */
     private Boolean hideHiddenVisa = false;
 
+    /**
+     * Indique si une alerte concernant un problème de polices dans les fichiers PDF doit être désactivée.
+     */
+    private Boolean disablePdfFontAlert = false;
+
     public String newVersion;
+
+    @PostConstruct
+    public void init() {
+        if (sealCertificatProperties.isEmpty()) {
+            if(sealCertificatType != null && StringUtils.hasText(sealCertificatPin)) {
+                sealCertificatProperties.put("default", new SealCertificatProperties("Certificat cachet", sealCertificatType, sealCertificatFile, sealCertificatDriver, sealCertificatPin));
+            }
+        } else if(!sealCertificatProperties.containsKey("default")){
+            throw new IllegalStateException("La configuration 'seal-certificat-properties' doit contenir une entrée 'default' lorsqu'elle n'est pas vide.");
+        }
+    }
 
     public String getRootUrl() {
         return rootUrl;
@@ -647,11 +660,11 @@ public class GlobalProperties {
         this.exportAttachements = exportAttachements;
     }
 
-    public TokenType getSealCertificatType() {
+    public SealCertificatProperties.TokenType getSealCertificatType() {
         return sealCertificatType;
     }
 
-    public void setSealCertificatType(TokenType sealCertificatType) {
+    public void setSealCertificatType(SealCertificatProperties.TokenType sealCertificatType) {
         this.sealCertificatType = sealCertificatType;
     }
 
@@ -679,12 +692,12 @@ public class GlobalProperties {
         this.sealCertificatPin = sealCertificatPin;
     }
 
-    public Boolean getSignEmailWithSealCertificat() {
-        return signEmailWithSealCertificat;
+    public Map<String, SealCertificatProperties> getSealCertificatProperties() {
+        return sealCertificatProperties;
     }
 
-    public void setSignEmailWithSealCertificat(Boolean signEmailWithSealCertificat) {
-        this.signEmailWithSealCertificat = signEmailWithSealCertificat;
+    public void setSealCertificatProperties(Map<String, SealCertificatProperties> sealCertificatProperties) {
+        this.sealCertificatProperties = sealCertificatProperties;
     }
 
     public Boolean getSealAllDocs() {
@@ -914,5 +927,11 @@ public class GlobalProperties {
         this.hideHiddenVisa = hideHiddenVisa;
     }
 
+    public Boolean getDisablePdfFontAlert() {
+        return disablePdfFontAlert;
+    }
 
+    public void setDisablePdfFontAlert(Boolean disablePdfFontAlert) {
+        this.disablePdfFontAlert = disablePdfFontAlert;
+    }
 }

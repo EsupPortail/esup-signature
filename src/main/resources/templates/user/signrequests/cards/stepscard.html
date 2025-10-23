@@ -4,43 +4,30 @@
 <div id="stepscard" th:fragment="stepscard">
     <div class="hr">Étapes du circuit</div>
     <div class="card card-body bg-light mb-1">
-            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
-                <div id="stepper" class="bs-stepper vertical">
-                    <div class="bs-stepper-header" role="tablist">
-                        <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
-                            Le circuit n’est pas démarré
-                        </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
-                                <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                                    <span title="Étape à venir" class="bs-stepper-circle">
-                                        <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
-                                        <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
-                                    </span>
-                                </th:block>
-                                <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                    <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
-                                        <i class="fa-solid fa-hourglass-half"></i>
-                                    </span>
-                                    <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                        <i class="fa-solid fa-times"></i>
-                                    </span>
-                                    <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="bs-stepper-circle bg-success">
-                                        <th:block title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}">
-                                            <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                                <i class="fa-solid fa-check"></i>
-                                            </span>
-                                            <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
-                                                <i class="fa-solid fa-signature"></i>
-                                            </span>
-                                        </th:block>
-                                        <span title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="bs-stepper-circle bg-success">
-                                            <i class="fa-solid fa-robot"></i>
-                                        </span>
-                                    </th:block>
-                                </th:block>
-                                <th:block th:if="${iterator.index + 1 < signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
-                                    <th:block th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+        <p th:if="${workflow != null}">Circuit : <b th:text="${workflow.description}"></b></p>
+        <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
+            <div id="stepper" class="bs-stepper vertical">
+                <div class="bs-stepper-header w-100" role="tablist">
+                    <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        Le circuit n’est pas démarré
+                    </th:block>
+                    <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                        <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary-subtle border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
+                            <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                                <span title="Étape à venir" class="bs-stepper-circle">
+                                    <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
+                                    <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
+                                </span>
+                            </th:block>
+                            <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                                <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
+                                    <i class="fa-solid fa-hourglass-half"></i>
+                                </span>
+                                <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
+                                    <i class="fa-solid fa-times"></i>
+                                </span>
+                                <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="bs-stepper-circle bg-success">
+                                    <th:block title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}">
                                         <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
                                             <i class="fa-solid fa-check"></i>
                                         </span>
@@ -48,100 +35,114 @@
                                             <i class="fa-solid fa-signature"></i>
                                         </span>
                                     </th:block>
-                                    <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                        <i class="fa-solid fa-times"></i>
+                                    <span title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="bs-stepper-circle bg-success">
+                                        <i class="fa-solid fa-robot"></i>
                                     </span>
                                 </th:block>
-                                <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
-                                <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
-                                <div>
-                                    <th:block th:if="${liveWorkflowStep.description != null}">
-                                        <span th:text="${liveWorkflowStep.description}"></span>
-                                    </th:block>
-                                    <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
-                                    <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                        <tr>
-                                            <td th:title="${recipient.user.email}" style="max-width: 140px;">
-                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
-                                                <br/>
-                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
-                                            </td>
-                                            <td class="text-right">
-                                                <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
-                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
-                                                <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
-                                                <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
-                                            </td>
-                                            <td>
-                                                <a class="btn btn-sm btn-outline-primary"
-                                                    th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.signedDocuments.size() > iterator.index && signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
-                                                    th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
-                                                    title="Récupérer le document signé à cette étape">
-                                                    <i class="fa-solid fa-download"></i></a>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm"
-                                                        title="Envoyer un nouveau lien d'accès"
-                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                        th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber && isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                                                    <i class="fa-solid fa-key"></i></button>
-                                            </td>
-                                        </tr>
-                                        <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
-                                                    <div class="modal-body">
-                                                        <p>Confirmer l’envoi un nouveau lien d’accès</p>
-                                                        <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
-                                                        <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
-                                                        <br>
-                                                        <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
-                                                        </form>
-                                                        <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
-                                                    </div>
+                            </th:block>
+                            <th:block th:if="${iterator.index + 1 < signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
+                                <th:block th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                                    <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
+                                        <i class="fa-solid fa-check"></i>
+                                    </span>
+                                    <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
+                                        <i class="fa-solid fa-signature"></i>
+                                    </span>
+                                </th:block>
+                                <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
+                                    <i class="fa-solid fa-times"></i>
+                                </span>
+                            </th:block>
+                            <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                            <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
+                            <div>
+                                <th:block th:if="${liveWorkflowStep.description != null}">
+                                    <span th:text="${liveWorkflowStep.description}"></span>
+                                </th:block>
+                                <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
+                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                    <tr>
+                                        <td th:title="${recipient.user.email}" style="max-width: 140px;">
+                                            <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                            <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
+                                            <br/>
+                                            <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
+                                        </td>
+                                        <td class="text-right">
+                                            <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
+                                            <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
+                                            <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
+                                            <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-primary"
+                                                th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.signedDocuments.size() > iterator.index && signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
+                                                th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
+                                                title="Récupérer le document signé à cette étape">
+                                                <i class="fa-solid fa-download"></i></a>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm"
+                                                    title="Envoyer un nouveau lien d'accès"
+                                                    th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
+                                                    th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber && isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                                                <i class="fa-solid fa-key"></i></button>
+                                        </td>
+                                    </tr>
+                                    <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
+                                                <div class="modal-body">
+                                                    <p>Confirmer l’envoi un nouveau lien d’accès</p>
+                                                    <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
+                                                    <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
+                                                    <br>
+                                                    <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
+                                                    </form>
+                                                    <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </th:block>
-                                    </table>
-                                    <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
-                                    <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
-                                    <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
-                                    <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fa-solid fa-infinity"></i></span>
+                                    </div>
+                                </th:block>
+                                </table>
+                                <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
+                                <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
+                                <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
+                                <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fa-solid fa-infinity"></i></span>
 
-                                </div>
                             </div>
-                            <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
-                        </th:block>
-                        <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
-                            <div class="bs-stepper-line"></div>
-                            <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
-                                <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
-                                Export vers :<br/>
-                                <span th:text="${target.protectedTargetUri}" ></span>
-                            </div>
-                        </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
-                            <div class="bs-stepper-line"></div>
-                            <div class="step border border-dark rounded">
-                                <div title="Fin" class="bs-stepper-circle bg-success">
-                                    <i class="fa-solid fa-flag-checkered"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
-                            </div>
-                        </th:block>
-                        <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                            <div class="bs-stepper-line"></div>
-                            <div class="step border border-dark rounded">
-                                <div title="Fin" class="bs-stepper-circle bg-danger">
-                                    <i class="fa-solid fa-exclamation-triangle"></i></div>
-                                <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
-                            </div>
-                        </th:block>
-                    </div>
+                        </div>
+                        <div th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
+                    </th:block>
+                    <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
+                        <div class="bs-stepper-line"></div>
+                        <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
+                            <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
+                            Export vers :<br/>
+                            <span th:text="${target.protectedTargetUri}" ></span>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
+                        <div class="bs-stepper-line"></div>
+                        <div class="step border border-dark rounded">
+                            <div title="Fin" class="bs-stepper-circle bg-success">
+                                <i class="fa-solid fa-flag-checkered"></i></div>
+                            <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
+                        </div>
+                    </th:block>
+                    <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                        <div class="bs-stepper-line"></div>
+                        <div class="step border border-dark rounded">
+                            <div title="Fin" class="bs-stepper-circle bg-danger">
+                                <i class="fa-solid fa-exclamation-triangle"></i></div>
+                            <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
+                        </div>
+                    </th:block>
                 </div>
-            </th:block>
+            </div>
+        </th:block>
     </div>
 </div>
 </html>

@@ -47,6 +47,9 @@
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>

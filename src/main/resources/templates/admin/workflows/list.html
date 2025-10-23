@@ -22,21 +22,29 @@
                 </a>
             </div>
             <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                    <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
-                    <select name="displayWorkflowType" class="form-select" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
+                    <select name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
                         <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
                         <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
                         <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
                         <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
                     </select>
-                    </div>
-                    <div class="table-fix-head scrollbar-style rounded-3">
+                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
+                        <th:block th:each="tag : ${allTags}">
+                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="table-fix-head scrollbar-style rounded-3">
                     <table class="table table-light table-sm table-borderless table-hover table-striped">
                         <thead class="table-secondary">
                         <tr>
                             <th>Id</th>
                             <th>Nom</th>
+                            <th>Tags</th>
+                            <th>Public</th>
+                            <th>Roles</th>
                             <th>Créé par</th>
                             <th>Destinataires</th>
                             <th class="text-center">Actions</th>
@@ -45,11 +53,21 @@
                         <tbody>
                         <th:block th:each="workflow : ${workflows}">
                             <tr th:data-href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">
-                                <td class="clickable-td">
+                                <td th:class="${workflow.id != null}? 'clickable-td' : ''">
                                     <input type="text" th:value="${workflow.id}" disabled>
                                 </td>
-                                <td class="clickable-td" th:text="${workflow.description}"></td>
-                                <td class="clickable-td" th:text="${workflow.createBy.eppn}"></td>
+                                <td th:class="${workflow.id != null}? 'clickable-td' : ''" th:text="${workflow.description}"></td>
+                                <td th:class="${workflow.id != null}? 'clickable-td' : ''">
+                                    <th:block th:each="tag : ${workflow.tags}">
+                                        <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
+                                    </th:block>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
+                                    <i th:unless="${workflow.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                                </td>
+                                <td class="clickable-td" th:text="${workflow.roles}"></td>
+                                <td th:class="${workflow.id != null}? 'clickable-td' : ''" th:text="${workflow.createBy.eppn}"></td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
                                     <ul class="list-group">
                                     <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
@@ -60,7 +78,8 @@
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}">À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fa-solid fa-hand"></i> À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fa-solid fa-warning"></i> Non configuré</span>
                                             <span th:if="${workflowStep.autoSign}"><i class="fa-solid fa-robot"></i> Signature automatique</span>
                                         </li>
                                     </th:block>

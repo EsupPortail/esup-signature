@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="sign-modal" th:if="${signable}" th:with="signType = ${currentSignType}" id="signModal" data-bs-focus="false" class="modal fade" role="dialog" aria-labelledby="signModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="signModalLabel">
+                    <span th:if="${signRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer le visa du document</span>
+                    <span th:if="${signRequest != null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la signature du document</span>
+                    <span th:if="${signRequest == null}">Confirmer la signature en masse des documents sélectionnés</span>
+                </h3>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="visaFormConfirm" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <div class="alert alert-primary mb-1">
+                        <p th:utext="'<p>Le visa vous permet de valider le document et de le passer à l’étape suivante.</p><p>L’opération sera enregistrée mais aucune trace n’apparaîtra sur le document.</p>'"></p>
+                    </div>
+                </div>
+                <div id="signFormConfirm" th:if="${signRequests!= null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <div class="alert alert-primary mb-1">
+                        <span th:utext="'Niveau de signature minimum pour signer ce document : <b>' + #{'signlevel.' + ${currentStepMinSignLevel}} + '</b>'"></span>
+                    </div>
+                </div>
+                <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-warning mb-1" style="display: none;">
+                    La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Si possible, vous pouvez utiliser un autre type de signature sinon merci de refaire un essai ultérieurement.
+                </div>
+                <div id="selectTypeDiv" class="alert alert-secondary mb-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
+                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
+                    <div class="input-group mt-2 mb-2">
+                        <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>
+                            <th:block th:each="signWith : ${signWiths}">
+                                <th:block th:if="${signWith.name != 'sealCert'}">
+                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                </th:block>
+                                <th:block th:if="${signWith.name == 'sealCert'}">
+                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                                </th:block>
+                            </th:block>
+                        </select>
+                        <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
+                    </div>
+                    <input type="text" autocomplete="username" name="username" class="d-none">
+                    <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Saisir le passe de votre magasin de certificats" />
+                    <div id="sealChoose">
+                        <label for="certType">Merci de sélectionner le certificat à utiliser</label>
+                        <div class="input-group mt-2">
+                            <select id="sealCertificat" name="sealCertificat" class="form-control form-select border-light-subtle">
+                                <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
+                                    <option th:value="${sealCertificatProperties.sealCertificatName}" th:text="${sealCertificatProperties.sealCertificatTitle}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="nexuCheck" class="d-none">
+                        <div id="nexu_version_alert" class="alert alert-warning mt-1 mb-1 col-12 text-center" style="display: none;">
+                            L'application Esup-DSS-Client n’a pas la bonne version
+                            <br>
+                            <button onclick="location.reload();" class="mt-2 mx-auto btn btn-warning">
+                                <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+                            </button>
+                        </div>
+                        <div id="no-options" class="alert alert-warning mt-1 mb-1 col-12" style="display: none;">
+                            <p class="mx-auto">Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande.</p>
+                            <p>Si une signature avancée ou qualifiée est requise, merci d’installer et de démarrer <strong>Esup-DSS-Client</strong> pour utiliser votre certificat :</p>
+                            <p>
+                                <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">
+                                    > Télécharger la dernière version d'Esup-DSS-Client
+                                </a>
+                            </p>
+                            <p>Choisissez le fichier adapté à votre système : <em>esup-dss-client-win64.zip</em> (Windows), <em>esup-dss-client.pkg</em> (macOS) ou <em>esup-dss-client-installer.jar</em> (Linux).</p>
+                            <p>En cas de difficulté, merci de contacter la personne ou le service émetteur de cette demande.</p>
+                        </div>
+                        <div id="nexu_ready_alert" class="alert alert-success mt-1 mb-1 col-12 text-center" style="display: none;">
+                            L’application Esup-DSS-Client est fonctionnelle
+                            <br/>
+                            <small>Après validation, vous allez être redirigé vers le système signature eIDas</small>
+                        </div>
+                        <div id="nexu_missing_alert" class="alert alert-warning mt-1" style="display: none;">
+                            <p>L’application Esup-DSS-Client n’a pas été détectée</p>
+                            <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
+                                Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
+                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${signRequest != null && !(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature) && signatureIds.size() > 0}">
+                    Attention ce document comporte <span th:text="${signatureIds.size()}"></span> signature(s) électronique(s). Le fait d’apposer une signature calligraphique ou un visa visuel aura pour effet de détruire les précédentes signatures
+                </div>
+                <div id="warningSelectDiv" class="alert alert-danger" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+                    En raison de la configuration des prochaines étapes, aucun mode de signature n'est disponible pour garantir l'intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
+                </div>
+                <div id="signCommentDiv" class="mb-1">
+                    <label for="signComment">Commentaire (facultatif)</label>
+                    <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
+                </div>
+
+                <div th:if="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
+                    <h5 class="modal-title" id="stepRepeatableModalLabel" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">Étape supplémentaire ?</h5>
+                    <p>
+                        Vous avez la possibilité de demander une validation intermédiaire avant l’étape suivante.
+                    </p>
+                    <button id="enableInfinite" class="mb-1 w-100 btn btn-primary" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                        <i class="fa-solid fa-caret-down"></i> Ajouter une étape <i class="fa-solid fa-caret-down"></i>
+                    </button>
+                    <form id="infiniteForm" class="d-none">
+                        <input type="submit" id="infiniteFormSubmit" class="d-none">
+                        <label for="recipientsEmails">Choisir les participants *</label>
+                        <div class="form-group mb-3">
+                            <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
+                                <option data-placeholder="true"></option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-3">
+                            <div class="form-check form-switch form-switch-md">
+                                <label  class="form-check-label" for="allSignToComplete">Tous les participants doivent-ils signer ?</label>
+                                <input type="checkbox" class="form-check-input" name="allSignToComplete" id="allSignToComplete"/>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3" id="multi-sign">
+                            <div class="form-check form-switch form-switch-md">
+                                <label  class="form-check-label" for="multiSign">L'utilisateur peut apposer plusieurs signatures ?</label>
+                                <input type="checkbox" class="form-check-input" name="multiSign" id="multiSign"/>
+                            </div>
+                        </div>
+                        <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
+                            <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
+                                    type="button" class="btn btn-sm btn-transparent">
+                                <span class="fa-solid fa-info-circle text-info"></span>
+                            </button>
+                            <div class="collapse" id="collapseHelpSignType">
+                                <div class="alert alert-info">
+                                    <small>
+                                        <ul>
+                                            <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
+                                            <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
+                                            <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
+                                        </ul>
+                                        <ul>
+                                            <li>
+                                                <b>Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
+                                            </li>
+                                            <li>
+                                                <b>Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
+                                            </li>
+                                            <li>
+                                                <b>Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
+                                            </li>
+                                        </ul>
+                                    </small>
+                                </div>
+                            </div>
+                            <label for="signType">Choisir un type de signature *</label>
+                            <select name="signType" id="signType" class="form-select">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}"
+                                            th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <input th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType != null}" type="hidden" id="signType" name="signType" th:value="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType}">
+                        <button type="button" id="launch-infinite-sign-button" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                        <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-signature"></i> Confirmer la signature et l'ajout de l'étape
+                        </span>
+                            <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Confirmer le visa et l'ajout de l'étape
+                        </span>
+                        </button>
+                    </form>
+                    <p id="signCommentNoInfinite">
+                        Sans modification de votre part,
+                        <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
+                            vous resterez le dernier destinataire de ce document
+                        </span>
+                        <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
+                            le document sera envoyé pour l’étape suivante  :
+                            <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() >= (signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() + 1) && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
+                                  th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
+                            </span>
+                            <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() >= (signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() + 1) && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
+                                  th:text="${signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() + 1}">
+                            </span>
+                            .
+                        </span>
+                    </p>
+                    <button id="launchNoInfiniteSignButtonEnd" class="mt-1 col-12 btn btn-success" title="Signer"
+                            th:value="${signRequest.parentSignBook.id}">
+                        <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape
+                        </span>
+                        <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape
+                        </span>
+                    </button>
+                    <button id="launchNoInfiniteSignButtonNext" class="mt-1 col-12 btn btn-success" title="Signer"
+                            th:value="${signRequest.parentSignBook.id}">
+                        <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape et aller à la suivante
+                        </span>
+                        <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape et aller à la suivante
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}"  th:unless="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
+                    <button id="checkValidateSignButtonEnd"
+                            class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
+                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
+                    </button>
+                    <button id="checkValidateSignButtonNext" th:if="${nextSignRequest != null}"
+                            th:data-es-next-url="'/user/signrequests/' + ${nextSignRequest.id}"
+                            class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
+                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
+                        <i class="fa-solid fa-arrow-alt-circle-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>
