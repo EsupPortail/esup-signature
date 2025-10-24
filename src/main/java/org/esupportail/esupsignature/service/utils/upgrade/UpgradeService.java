@@ -45,7 +45,7 @@ public class UpgradeService {
     private final FileService fileService;
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -296,6 +296,13 @@ public class UpgradeService {
         logger.info("#### Starting update signRequestParams ####");
         entityManager.createNativeQuery("alter table sign_request_params alter column x_pos drop not null").executeUpdate();
         entityManager.createNativeQuery("alter table sign_request_params alter column y_pos drop not null").executeUpdate();
+        logger.info("#### Update signRequestParams completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_36_1() {
+        logger.info("#### Starting update signRequestParams ####");
+        entityManager.createNativeQuery("ALTER TABLE user_ui_params DROP CONSTRAINT IF EXISTS user_ui_params_ui_params_key_check;").executeUpdate();
         logger.info("#### Update signRequestParams completed ####");
     }
 
