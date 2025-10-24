@@ -137,17 +137,15 @@ public class SeleniumTest {
         // Type file path
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
-        // Click the recipient field
-        WebElement selectContainer = wait.until(
-                ExpectedConditions.elementToBeClickable(By.cssSelector("#recipientsEmails-1 + div"))
-        );
-        selectContainer.click();
         String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
+        WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
+        selectContainer.click();
         WebElement searchInput = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
+                ExpectedConditions.elementToBeClickable(
                         By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
                 )
         );
+        searchInput.click();
         searchInput.sendKeys("justin");
         WebElement option = wait.until(
                 ExpectedConditions.elementToBeClickable(
