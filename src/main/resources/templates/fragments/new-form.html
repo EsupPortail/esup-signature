@@ -7,7 +7,7 @@
         <th:block th:each="form : ${forms}">
             <div th:id="'btn-form-' + ${form.id}" class="workflow-button" style="height: 184px;">
                 <div class="favorite-icon">
-                    <button title="Mettre en favori"
+                    <button th:title="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteForms).contains('' + form.id)} ? 'Supprimer des favoris' : 'Ajouter aux favoris'"
                             class="btn btn-transparent btn-sm text-dark toggle-form-start rounded-2"
                             style="margin-top: -5px; margin-left: -5px;"
                             type="button"
@@ -18,7 +18,7 @@
                 <a tabindex="10" role="button" class="btn btn-material btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 form-button start-form-button"
                     style="width: 120px; height: 170px;"
                     th:classappend="${form.hideButton} ? 'd-none' : ''"
-                    th:title="${form.title}"
+                    th:title="'Lancer le formulaire : ' + ${form.title}"
                     th:id="'form-button-' + ${form.id}"
                     th:data-es-form-id="${form.id}"
                     th:href="'/user/start-form/' + ${form.id}"
