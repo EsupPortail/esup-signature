@@ -30,6 +30,27 @@
                     </select>
                     <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>
                     <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-cross-circle"></i></button>
+                    <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;">
+                        <div class="modal-dialog modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Résultats de la recherche</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="mega-result-body">
+                                        <div class="alert alert-secondary">
+                                            Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
                 <script>
                     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -163,7 +184,7 @@
                     $("#submit-mega-search").click(function () {
                         $("#mega-result").modal("show");
                         $(".modal-backdrop").each(function (e) {
-                            $(this).css("opacity", "0.1");
+                            $(this).css("opacity", "0.2");
                         });
                     });
 
@@ -184,7 +205,7 @@
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
             <div class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-5 mb-3 p-1">
-                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
                     class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente"
                     th:classappend="${nbToSign > 0} ? '' : 'disabled'"
                     style="font-size: 14px;">
@@ -192,7 +213,7 @@
                     <span class="d-none d-xl-block">Documents à signer</span>
                     <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
                 </a>
-                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
                     class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
                     th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                     style="font-size: 14px;">
@@ -200,7 +221,7 @@
                     <span class="d-none d-xl-block">Demandes envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
-                <a tabindex="10" title="Circuits" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#allModal"
+                <a tabindex="0" title="Circuits" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#allModal"
                     style="font-size: 14px;">
                     <i class="fi fi-rr-apps text-dark-emphasis"></i>
 <!--                    <i class="fi fi-sr-diagram-project text-dark-emphasis"></i>-->
@@ -213,12 +234,12 @@
 <!--                    <span class="d-none d-xl-block">Tous les formulaires</span>-->
 <!--                    <span aria-hidden="true" th:title="${forms.size() - favoriteForms.size()} + ' nouveaux formulaired'" class="badge file-alt-color d-none d-lg-inline" th:if="${(forms.size() - favoriteForms.size()) > 0}" th:text="${forms.size() - favoriteForms.size()}"></span>-->
 <!--                </a>-->
-                <a tabindex="10" title="Valider la signature d'un document" role="button" class="btn btn-light  text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal"
+                <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light  text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal"
                     style="font-size: 14px;">
                     <i class="fi fi-sr-registration-paper text-dark-emphasis"></i>
                     <span class="d-none d-xl-block">Contrôler un document</span>
                 </a>
-                <a tabindex="10" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="start-wizard-button-2" role="button"
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="start-wizard-button-2" role="button"
                     class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
                     style="font-size: 14px;">
                     <i class="fi fi-sr-customization text-dark-emphasis"></i>
@@ -239,7 +260,7 @@
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
                             <h5>Mes circuits favoris</h5>
-                            <a tabindex="0" role="button"
+                            <a tabindex="1" role="button"
                                 class="btn btn-sm btn-light border-secondary-subtle text-dark text-center"
                                 data-bs-toggle="modal"
                                 data-bs-target="#workflowsModal"
@@ -305,7 +326,7 @@
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
                             <h5>Mes formulaires favoris</h5>
-                            <a tabindex="0" role="button"
+                            <a tabindex="1" role="button"
                                 class="btn btn-sm btn-light border-secondary-subtle text-dark text-center"
                                 data-bs-toggle="modal"
                                 data-bs-target="#formsModal"
