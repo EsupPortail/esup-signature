@@ -213,6 +213,15 @@
                     <span class="d-none d-xl-block">Documents à signer</span>
                     <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
                 </a>
+
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                   class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
+                   th:classappend="${nbSigned > 0} ? '' : 'disabled'"
+                   style="font-size: 14px;">
+                    <i class="fi fi-sr-file-signature text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Documents signés</span>
+                    <span aria-hidden="true" title="Documents signés" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
+                </a>
                 <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
                     class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
                     th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
@@ -220,13 +229,6 @@
                     <i class="fi fi-sr-paper-plane-top text-dark-emphasis"></i>
                     <span class="d-none d-xl-block">Demandes envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
-                </a>
-                <a tabindex="0" title="Circuits" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#allModal"
-                    style="font-size: 14px;">
-                    <i class="fi fi-rr-apps text-dark-emphasis"></i>
-<!--                    <i class="fi fi-sr-diagram-project text-dark-emphasis"></i>-->
-                    <span class="d-none d-xl-block">Parcourir les procédures</span>
-                    <span aria-hidden="true" th:title="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())} + ' nouveaux éléments'" class="badge bg-secondary d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())}"></span>
                 </a>
 <!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
 <!--                    style="font-size: 14px;">-->
@@ -256,6 +258,13 @@
                     </div>
                 </div>
                 <div id="myFavorites" class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-3" style="width: 60%;">
+                    <a tabindex="0" title="Circuits" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#allModal"
+                       style="font-size: 14px;">
+                        <i class="fi fi-rr-apps text-dark-emphasis"></i>
+                        <!--                    <i class="fi fi-sr-diagram-project text-dark-emphasis"></i>-->
+                        <span class="d-none d-xl-block">Parcourir les procédures</span>
+                        <span aria-hidden="true" th:title="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())} + ' nouveaux éléments'" class="badge bg-secondary d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())}"></span>
+                    </a>
                     <div class="w-100">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
