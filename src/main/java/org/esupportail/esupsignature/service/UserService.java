@@ -642,7 +642,7 @@ public class UserService {
     public void toggleFavorite(String authUserEppn, Long workflowId, UiParams uiParams) {
         User authUser = getByEppn(authUserEppn);
         String favorites = authUser.getUiParams().get(uiParams);
-        if(favorites.equals("null")) {
+        if(favorites == null || favorites.equals("null")) {
             favorites = "";
         }
         List<Long> favoritesIds = new ArrayList<>(Arrays.stream(favorites.split(","))
