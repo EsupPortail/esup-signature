@@ -328,8 +328,7 @@ public class UserAndOtpSignRequestController {
                                         @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
                                         @RequestParam(value = "commentHeight", required = false) Integer commentHeight,
                                         @RequestParam(value = "postit", required = false) String postit,
-                                        @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend,
-                                        Model model) {
+                                        @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend) {
         Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, commentWidth, commentHeight, postit, spotStepNumber, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             return ResponseEntity.ok().body(commentId);

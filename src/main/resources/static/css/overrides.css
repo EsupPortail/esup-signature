@@ -545,3 +545,8 @@ textarea:invalid {
     display: inline-flex;
     align-items: center;
 }
+
+.introjs-tooltip {
+    min-width: 300px;
+    max-width: 500px;
+}
