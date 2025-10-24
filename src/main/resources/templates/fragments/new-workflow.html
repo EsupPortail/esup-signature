@@ -18,7 +18,7 @@
         <th:block th:each="workflow : ${workflows}">
             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                 <div class="favorite-icon">
-                    <button title="Mettre en favori"
+                    <button th:title="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows).contains('' + workflow.id)} ? 'Supprimer des favoris' : 'Ajouter aux favoris'"
                             class="btn btn-transparent btn-sm text-dark toggle-workflow-start rounded-2"
                             style="margin-top: -6px; margin-left: -6px;"
                             type="button"
@@ -32,7 +32,7 @@
                     th:id="'workflow-button-' + ${workflow.id}"
                     th:href="'/user/start-workflow/' + ${workflow.id}"
                     style="width: 120px; display: inline-flex; flex-direction: column;"
-                    th:title="${workflow.description}"
+                    th:title="'Lancer le circuit : ' + ${workflow.description}"
                     th:data-es-workflow-id="${workflow.id}"
                     th:alt="'Circuit : ' + ${workflow.description}">
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
