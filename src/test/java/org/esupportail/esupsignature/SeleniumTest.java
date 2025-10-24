@@ -98,7 +98,7 @@ public class SeleniumTest {
         // Exécuter du JavaScript pour récupérer "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Récupérer l'attribut "signBookId"
-        String signBookId = driver.findElement(By.id("content")).getAttribute("data-es-signbook-id");
+        String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Cliquer sur le bouton "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Cliquer sur le bouton "checkValidateSignButtonEnd"
@@ -137,13 +137,22 @@ public class SeleniumTest {
         // Type file path
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
-        // Click the recipient field
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#recipientsEmails-1 + div"))).click();
-        // Type "justin"
-        WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".ss-search > input")));
+        String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
+        WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
+        selectContainer.click();
+        WebElement searchInput = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
+                )
+        );
+        searchInput.click();
         searchInput.sendKeys("justin");
-        // Select the recipient from the list
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ss-list > .ss-option"))).click();
+        WebElement option = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-list .ss-option")
+                )
+        );
+        option.click();
         // Click "send-pending-button"
         WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
         sendPendingButton.click();
@@ -153,7 +162,7 @@ public class SeleniumTest {
         // Execute JavaScript to store "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Store attribute "signBookId"
-        String signBookId = driver.findElement(By.id("content")).getAttribute("data-es-signbook-id");
+        String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Click "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Click "checkValidateSignButtonEnd"

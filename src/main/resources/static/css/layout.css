@@ -365,3 +365,15 @@ header {
     text-align: end;
     position: absolute;
 }
+
+#mega-result {
+    height: 500px;
+    display: block;
+    margin-top: 30px;
+    position: absolute;
+    width: 100% !important;
+}
+
+#mega-result .modal-dialog {
+    max-width:100%
+}
