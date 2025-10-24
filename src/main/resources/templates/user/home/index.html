@@ -17,12 +17,6 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-<!--        <nav th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" th:replace="~{fragments/sides/side-home :: side-home}"></nav>-->
-<!--        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav" style="margin-left: revert !important;">-->
-<!--            <ol id="breadcrumb-ol" class="breadcrumb">-->
-<!--                <li class="breadcrumb-item active">Accueil</li>-->
-<!--            </ol>-->
-<!--        </nav>-->
         <div id="content" class="content-full-fixed flex align-content-center p-2">
             <div class="col-12 col-xxl-10 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
@@ -37,62 +31,6 @@
                     <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>
                     <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-cross-circle"></i></button>
                 </div>
-                <div class="modal modal-xl fade" id="mega-result" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h4 class="modal-title">Résultats de la recherche</h4>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="mega-result-body">
-                                    <div class="alert alert-secondary">
-                                        Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-<!--                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none; margin-top: .15rem !important;">-->
-<!--                    <div id="mega-result-header" class="d-flex flex-row justify-content-between">-->
-<!--                    <h5>Résultats</h5>-->
-<!--                    <button type="button" class="btn-close" title="Fermer" onclick="$('#mega-result').hide()"></button>-->
-<!--                    </div>-->
-<!--                    <div id="mega-result-body">-->
-<!--                        <div class="alert alert-secondary">Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.</div>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <style>
-                    /*.ss-main .ss-arrow {*/
-                    /*    display: none;*/
-                    /*}*/
-                    /*.ss-main::after {*/
-                    /*    content: '🔍';*/
-                    /*    font-size: 18px;*/
-                    /*    pointer-events: none;*/
-                    /*    position: absolute;*/
-                    /*    right: 12px;*/
-                    /*    top: 50%;*/
-                    /*    transform: translateY(-50%);*/
-                    /*}*/
-                    /*.ss-main::after {*/
-                    /*    content: '';*/
-                    /*    width: 20px;*/
-                    /*    height: 20px;*/
-                    /*    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>');*/
-                    /*    background-size: contain;*/
-                    /*    background-repeat: no-repeat;*/
-                    /*    position: absolute;*/
-                    /*    right: 12px;*/
-                    /*    top: 50%;*/
-                    /*    transform: translateY(-50%);*/
-                    /*    pointer-events: none;*/
-                    /*}*/
-                </style>
                 <script>
                     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
@@ -223,8 +161,10 @@
                     });
 
                     $("#submit-mega-search").click(function () {
-
                         $("#mega-result").modal("show");
+                        $(".modal-backdrop").each(function (e) {
+                            $(this).css("opacity", "0.1");
+                        });
                     });
 
                     $(".ss-search > input").on("click" , function (e) {
@@ -265,7 +205,7 @@
                     <i class="fi fi-rr-apps text-dark-emphasis"></i>
 <!--                    <i class="fi fi-sr-diagram-project text-dark-emphasis"></i>-->
                     <span class="d-none d-xl-block">Parcourir les procédures</span>
-                    <span aria-hidden="true" th:title="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())} + ' nouveaux éléments'" class="badge project-diagram-color d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${workflows.size() - favoriteWorkflows.size()}"></span>
+                    <span aria-hidden="true" th:title="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())} + ' nouveaux éléments'" class="badge bg-secondary d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())}"></span>
                 </a>
 <!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
 <!--                    style="font-size: 14px;">-->
@@ -313,13 +253,14 @@
                         <th:block th:each="workflow : ${favoriteWorkflows}">
                             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                                 <a tabindex="0" role="button"
-                                   class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 workflow-button"
-                                   data-bs-toggle="modal"
-                                   data-bs-target="#wiz-workflow-sign-modal"
-                                   style="width: 120px; display: inline-flex; flex-direction: column;"
-                                   th:title="${workflow.description}"
-                                   th:data-es-workflow-id="${workflow.id}"
-                                   th:alt="'Circuit : ' + ${workflow.description}">
+                                    class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 workflow-button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#wiz-workflow-sign-modal"
+                                    th:href="'/user/start-workflow/' + ${workflow.id}"
+                                    style="width: 120px; display: inline-flex; flex-direction: column;"
+                                    th:title="${workflow.description}"
+                                    th:data-es-workflow-id="${workflow.id}"
+                                    th:alt="'Circuit : ' + ${workflow.description}">
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
                                         <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
@@ -347,26 +288,17 @@
                             </div>
                         </th:block>
                         <th:block th:if="${favoriteWorkflows.size() == 0}">
-                            <div class="alert alert-secondary d-flex flex-column text-center align-items-center" style="width:200px; height: 170px; margin: .375rem;">
-                                <p>Aucun circuit en favori pour l’instant</p>
-                                <small>Cliquez sur <a tabindex="0" role="button"
-                                                      class="btn btn-sm btn-transparent text-dark text-center"
-                                                      data-bs-toggle="modal"
-                                                      data-bs-target="#workflowsModal"
-                                                      title="Ajouter un circuit à vos favoris">
-                                    <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
-                                </a> puis sur l’étoile de la tuile que vous voulez ajouter</small>
+                            <div class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
+                                <i class="fi fi-sr-plus m-3" style="font-size: 30px;"></i>
+                                <p>Aucun circuit en favori pour le moment</p>
+                                <a tabindex="0" role="button"
+                                    class="btn btn-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#workflowsModal"
+                                    title="Ajouter un circuit à vos favoris">
+                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                </a>
                             </div>
-                            <a tabindex="0" role="button"
-                               class="btn btn-material bg-secondary-subtle border border-secondary-subtle border-opacity-10 text-center me-2 mb-2 overflow-hidden p-0"
-                               data-bs-toggle="modal"
-                               data-bs-target="#workflowsModal"
-                               style="width: 120px; height: 170px;"
-                               title="Ajouter un circuit à vos favoris">
-                                <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
-                                    <i class="fi fi-sr-plus" style="font-size: 50px;"></i>
-                                </div>
-                            </a>
                         </th:block>
                     </div>
                     <div class="w-100">
@@ -401,15 +333,17 @@
                             </a>
                         </th:block>
                         <th:block th:if="${favoriteForms.size() == 0}">
-                            <div class="alert alert-secondary d-flex flex-column text-center align-items-center" style="width:300px; height: 170px; margin: .375rem;">
-                                <p>Aucun formulaire en favori pour l’instant</p>
-                                <small>Cliquez sur <a tabindex="0" role="button"
-                                     class="btn btn-sm btn-transparent text-dark text-center"
-                                     data-bs-toggle="modal"
-                                     data-bs-target="#formsModal"
-                                     title="Ajouter un circuit à vos favoris">
-                                    <i class="d-flex align-items-center fi fi-sr-icon-star" style="font-size: 20px;"></i>
-                                </a> puis sur l’étoile de la tuile que vous voulez ajouter</small>                                </div>
+                            <div class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
+                                <i class="fi fi-sr-plus m-3" style="font-size: 30px;"></i>
+                                <p>Aucun formulaire en favori pour le moment</p>
+                                <a tabindex="0" role="button"
+                                    class="btn btn-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#formsModal"
+                                    title="Ajouter un circuit à vos favoris">
+                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                </a>
+                            </div>
                         </th:block>
                     </div>
                 </div>

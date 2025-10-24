@@ -30,6 +30,7 @@
                     data-bs-toggle="modal"
                     data-bs-target="#wiz-workflow-sign-modal"
                     th:id="'workflow-button-' + ${workflow.id}"
+                    th:href="'/user/start-workflow/' + ${workflow.id}"
                     style="width: 120px; display: inline-flex; flex-direction: column;"
                     th:title="${workflow.description}"
                     th:data-es-workflow-id="${workflow.id}"

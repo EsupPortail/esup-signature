@@ -361,7 +361,7 @@ export class GlobalUi {
     }
 
     hideMenus(event) {
-        $("#mega-result").hide();
+        $("#mega-result").modal('hide');
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
