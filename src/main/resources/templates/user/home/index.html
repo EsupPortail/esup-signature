@@ -205,7 +205,7 @@
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
             <div class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-5 mb-3 p-1">
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
                     class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente"
                     th:classappend="${nbToSign > 0} ? '' : 'disabled'"
                     style="font-size: 14px;">
@@ -213,7 +213,7 @@
                     <span class="d-none d-xl-block">Documents à signer</span>
                     <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
                 </a>
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
                     class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#pendingsModal" title="Afficher les demandes que j'ai envoyées"
                     th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                     style="font-size: 14px;">

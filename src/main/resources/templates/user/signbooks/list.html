@@ -8,7 +8,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    const listSignBooksUi = new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[creatorFilter]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    const listSignBooksUi = new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -64,9 +64,9 @@
             <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-11 p-0 m-2" style="outline: none;">
                 <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                 <table class="table table-borderless table-hover table-light">
-                <thead class="table-secondary">
+                <thead class="table-secondary" style="height: 90px;">
                 <tr style="z-index: 2;">
-                    <th class="w-20 d-none d-lg-table-cell">
+                    <th class="w-20 d-none d-lg-table-cell" style="z-index: 3;">
                         <div class="dropdown position-relative">
                             <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                 <i class="fa-solid fa-ellipsis-v"></i>
@@ -104,7 +104,7 @@
                             </th:block>
                         </select>
                     </th>
-                    <th class="text-center" style="width: 100%;">
+                    <th class="text-center" style="width: 35%;">
                         <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
