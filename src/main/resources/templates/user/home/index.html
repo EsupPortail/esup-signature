@@ -17,12 +17,6 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-<!--        <nav th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" th:replace="~{fragments/sides/side-home :: side-home}"></nav>-->
-<!--        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav" style="margin-left: revert !important;">-->
-<!--            <ol id="breadcrumb-ol" class="breadcrumb">-->
-<!--                <li class="breadcrumb-item active">Accueil</li>-->
-<!--            </ol>-->
-<!--        </nav>-->
         <div id="content" class="content-full-fixed flex align-content-center p-2">
             <div class="col-12 col-xxl-10 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
@@ -37,62 +31,6 @@
                     <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>
                     <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-cross-circle"></i></button>
                 </div>
-                <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;">
-                    <div class="modal-dialog modal-dialog-scrollable">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Résultats de la recherche</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div id="mega-result-body">
-                                    <div class="alert alert-secondary">
-                                        Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-<!--                <div id="mega-result" class="alert alert-light position-absolute w-100 rounded-2 overflow-y-scroll" style="height: 500px;z-index: 1031;display: none; margin-top: .15rem !important;">-->
-<!--                    <div id="mega-result-header" class="d-flex flex-row justify-content-between">-->
-<!--                    <h5>Résultats</h5>-->
-<!--                    <button type="button" class="btn-close" title="Fermer" onclick="$('#mega-result').hide()"></button>-->
-<!--                    </div>-->
-<!--                    <div id="mega-result-body">-->
-<!--                        <div class="alert alert-secondary">Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.</div>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <style>
-                    /*.ss-main .ss-arrow {*/
-                    /*    display: none;*/
-                    /*}*/
-                    /*.ss-main::after {*/
-                    /*    content: '🔍';*/
-                    /*    font-size: 18px;*/
-                    /*    pointer-events: none;*/
-                    /*    position: absolute;*/
-                    /*    right: 12px;*/
-                    /*    top: 50%;*/
-                    /*    transform: translateY(-50%);*/
-                    /*}*/
-                    /*.ss-main::after {*/
-                    /*    content: '';*/
-                    /*    width: 20px;*/
-                    /*    height: 20px;*/
-                    /*    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>');*/
-                    /*    background-size: contain;*/
-                    /*    background-repeat: no-repeat;*/
-                    /*    position: absolute;*/
-                    /*    right: 12px;*/
-                    /*    top: 50%;*/
-                    /*    transform: translateY(-50%);*/
-                    /*    pointer-events: none;*/
-                    /*}*/
-                </style>
                 <script>
                     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');

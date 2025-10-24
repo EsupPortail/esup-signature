@@ -247,7 +247,7 @@ public class GlobalProperties {
     /**
      * Liste permettant de forcer des domaines comme externes
      */
-    private List<String> forcedExternalsDomainList;
+    private List<String> forcedExternalsDomainList = new ArrayList<>();
 
     /**
      *  Adresse du web service de données externes

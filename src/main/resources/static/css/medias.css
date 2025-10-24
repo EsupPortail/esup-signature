@@ -56,7 +56,8 @@
     }
 
     #breadcrumb {
-        display: none;
+        /*display: none;*/
+        margin-left: 0;
     }
 
     .tools {
