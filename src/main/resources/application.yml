@@ -35,7 +35,7 @@ global:
     file-name-spaces-replace-by: " "
     csv-quote: "\""
     csv-separator: ";"
-    otp-validity: 1
+    otp-validity: 10
 #    authorized-sign-types: imageStamp, nexuCert
 #    shib-users-domain-white-list:
 #    forced-externals-domain-list:
