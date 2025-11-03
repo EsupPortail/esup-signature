@@ -75,6 +75,13 @@ export class Home2Help {
                 position: 'right'
             });
         }
+        if($.trim($("#all-modal-button").html()) !== '') {
+            this.intro.addStep({
+                element: '#all-modal-button',
+                intro: "Ici, afficher la liste des procédures (circuits et formulaires) disponibles pour vous. Vous pourrez ajouter vos préférés en favoris.",
+                position: 'right'
+            });
+        }
         if($.trim($("#newSignDemand").html()) !== '') {
             this.intro.addStep({
                 element: '#newSignDemand',
@@ -87,10 +94,9 @@ export class Home2Help {
                 element: '#shortcuts',
                 intro: "Retrouvez les principaux raccourcis : " +
                     "<ul>" +
-                    "<li>Vos demandes</li>" +
-                    "<li>Toutes les procédures disponibles</li>" +
-                    "<li>L'outil de contrôle des signatures</li>" +
-                    "<li>L'assistant de création de circuits réutilisables</li>" +
+                    "<li>Vos demandes (signées, à signer et envoyées)</li>" +
+                    "<li>L’outil de contrôle des signatures</li>" +
+                    "<li>L’assistant de création de circuits réutilisables</li>" +
                     "</ul>",
                 position: 'right'
             });

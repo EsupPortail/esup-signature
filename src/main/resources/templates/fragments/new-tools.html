@@ -46,6 +46,19 @@
                 <small>Envoyer des documents dans un circuit à plusieurs étapes</small>
             </div>
         </a>
+        <a tabindex="0" id="all-modal-button" th:if="${!isUserOnSu}"
+           class="globalButton btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
+           style="height: 170px; flex: 1 1 280px; max-width: 400px; margin: 0;"
+           data-bs-toggle="modal" data-bs-target="#allModal"
+           title="Afficher la liste complète des circuits et formulaires disponibles">
+            <div class="d-flex flex-column align-items-center justify-content-start h-100 w-100 gap-1">
+                <div style="height: 70px;" class="d-flex align-items-center">
+                    <i class="fi fi-tr-category" style="font-size: 50px;"></i>
+                </div>
+                <h5>Toutes les procédures</h5>
+                <small>Afficher la liste complète des circuits et formulaires disponibles</small>
+            </div>
+        </a>
     </div>
 </div>
 </html>

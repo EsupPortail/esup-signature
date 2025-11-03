@@ -99,6 +99,11 @@ public class HomeController {
                 signBooksPending = signBookService.getSignBooks(userEppn, authUserEppn, "pending", null, null, null, null, null, pageable).toList();
             }
             model.addAttribute("signBooksPending", signBooksPending);
+            List<SignBook> signBooksSigned = new ArrayList<>();
+            if(userEppn.equals(authUserEppn)) {
+                signBooksSigned = signBookService.getSignBooks(userEppn, authUserEppn, "signedByMe", null, null, null, null, null, pageable).toList();
+            }
+            model.addAttribute("signBooksSigned", signBooksSigned);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));

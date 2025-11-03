@@ -4,17 +4,18 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-workflow" th:fragment="new-workflow" class="clear">
     <div class="d-inline-flex flex-wrap">
-        <a tabindex="10" role="button"
-            id="start-wizard-button-3"
-            class="btn btn-material border border-secondary-subtle border-opacity-10 text-center overflow-hidden p-0"
-            data-bs-toggle="modal"
-            data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
-            style="width: 120px; display: inline-flex; flex-direction: column;">
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
-                <i class="fi fi-tr-customization" style="font-size: 50px;"></i>
-                <h6>Créez un nouveau circuit à l'aide de l'assistant</h6>
-            </div>
-        </a>
+        <div class="" style="height: 184px;">
+            <button tabindex="10" role="button"
+                class="start-wizard-buttons workflow-btn btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
+                data-bs-toggle="modal" data-bs-target="#wiz-modal"
+                style="width: 120px; display: inline-flex; flex-direction: column;"
+                title="Créez un nouveau circuit à l'aide de l'assistant">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                    <i class="fi fi-tr-customization" style="font-size: 50px;"></i>
+                    <h6>Créez un nouveau circuit à l’aide de l’assistant</h6>
+                </div>
+            </button>
+        </div>
         <th:block th:each="workflow : ${workflows}">
             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                 <div class="favorite-icon">
