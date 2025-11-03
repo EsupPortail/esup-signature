@@ -5,7 +5,7 @@
 <div id="new-tools" th:fragment="new-tools" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="w-100 d-flex flex-row flex-wrap justify-content-center justify-content-lg-between gap-3 gap-md-4">
         <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button"
-            class="globalButton btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
+            class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
             style="height: 170px; flex: 1 1 280px; max-width: 400px; margin: 0;"
             data-bs-toggle="modal"
             data-bs-target="#wiz-self-sign-modal"
@@ -19,7 +19,7 @@
             </div>
         </a>
         <a tabindex="0" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal"
-            class="globalButton btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
+            class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
             style="height: 170px; flex: 1 1 280px; max-width: 400px; margin: 0;"
             data-bs-toggle="modal"
             data-bs-target="#wiz-fast-sign-modal"
@@ -34,7 +34,7 @@
         </a>
         <a tabindex="0" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
             th:unless="${globalProperties.hideWizard}" role="button"
-            class="globalButton btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
+            class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
             style="height: 170px; flex: 1 1 280px; max-width: 400px; margin: 0;"
             data-bs-toggle="modal" data-bs-target="#wiz-custom-sign-modal"
             title="Créer une nouvelle demande à l'aide de l'assistant">
@@ -47,7 +47,7 @@
             </div>
         </a>
         <a tabindex="0" id="all-modal-button" th:if="${!isUserOnSu}"
-           class="globalButton btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
+           class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
            style="height: 170px; flex: 1 1 280px; max-width: 400px; margin: 0;"
            data-bs-toggle="modal" data-bs-target="#allModal"
            title="Afficher la liste complète des circuits et formulaires disponibles">
