@@ -132,15 +132,15 @@ public class HomeController {
     }
 
     @GetMapping("/toggle-favorite-workflow/{workflowId}")
-    public String toggleFavoriteWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
-        userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
-        return "redirect:/user";
-    }
+    @ResponseBody
+    public Boolean toggleFavoriteWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+        return userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
+   }
 
     @GetMapping("/toggle-favorite-form/{formId}")
-    public String toggleFavoriteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
-        userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
-        return "redirect:/user";
+    @ResponseBody
+    public Boolean toggleFavoriteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+        return userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
     }
 
     @PostMapping(value = "search", consumes = MediaType.APPLICATION_JSON_VALUE)

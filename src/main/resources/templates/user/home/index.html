@@ -319,7 +319,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="d-flex flex-row flex-wrap">
+                    <div id="myFavoritesWorkflows" class="d-flex flex-row flex-wrap">
                         <th:block th:each="workflow : ${favoriteWorkflows}">
                             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                                 <a tabindex="0" role="button"
@@ -366,7 +366,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="d-flex flex-row flex-wrap">
+                    <div id="myFavoritesForms" class="d-flex flex-row flex-wrap">
                         <th:block th:each="form : ${favoriteForms}">
                             <a tabindex="0" role="button"
                                 class="btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden form-button start-form-button"
@@ -443,8 +443,7 @@
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div th:insert="~{fragments/new-workflow :: new-workflow}"></div>
-                <div th:insert="~{fragments/new-form :: new-form}"></div>
+                <div th:insert="~{fragments/new-all :: new-all}"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>

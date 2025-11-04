@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-workflow" th:fragment="new-form" class="clear">
     <div class="d-inline-flex flex-wrap">
@@ -38,7 +38,16 @@
                     const icon = btn.querySelector('i');
 
                     try {
-                        location.href=`/user/toggle-favorite-form/${id}`;
+                        const response = await fetch(`/user/toggle-favorite-form/${id}`, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (response.ok) {
+                            location.href=`/user/`;
+                        }
                     } catch (err) {
                         console.error('Erreur lors de la mise en favori :', err);
                     }
