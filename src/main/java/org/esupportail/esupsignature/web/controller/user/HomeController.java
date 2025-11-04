@@ -20,6 +20,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -230,6 +231,7 @@ public class HomeController {
     public List<JsSlimSelect> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                               @RequestParam(value = "searchString", required = false) String searchString) {
         List<JsSlimSelect> results = new ArrayList<>();
+        if(!StringUtils.hasText(searchString)) return results;
         for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
             results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-sr-file \"></i> " + docTitle));
 

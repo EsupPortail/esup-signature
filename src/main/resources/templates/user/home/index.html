@@ -20,7 +20,7 @@
         <div id="content" class="content-full-fixed flex align-content-center p-2">
             <div class="col-12 col-xxl-10 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
-                    <select id="mega-search" class="form-control slim-select-filter-search rounded-start-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple>
+                    <select id="mega-search" class="form-control rounded-start-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple style="z-index: 2;">
                         <option title="Filter sur mes documents" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
                         <option title="Filter sur mes circuits" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-diagram-project project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
                         <option title="Filter sur mes formulaires" data-html='<i class="fi fi-sr-filter text-secondary"></i> <i class="fi fi-sr-poll-h file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
@@ -28,35 +28,31 @@
                             <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fi fi-sr-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                         </th:block>
                     </select>
-                    <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>
+<!--                    <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>-->
                     <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle rounded-end-2"><i class="fi fi-rr-cross-circle"></i></button>
-                    <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;">
-                        <div class="modal-dialog modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Résultats de la recherche</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="mega-result-body">
-                                        <div class="alert alert-secondary">
-                                            Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
-                                        </div>
+                </div>
+                <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;" data-bs-focus="false" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-dialog-scrollable">
+                        <div class="modal-content" style="height: 100%;">
+                            <div class="modal-body">
+                                <h6 class="modal-title">Résultats de la recherche</h6>
+                                <div id="mega-result-body">
+                                    <div class="alert alert-secondary">
+                                        Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
+
                 <script>
                     const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                     const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                    let select = $("#mega-search");
+                    const select = $("#mega-search");
+                    const megaResult = $("#mega-result");
+                    const megaBody = $("#mega-result-body");
                     const selectEl = document.getElementById("mega-search");
                     const initialOptions = Array.from(selectEl.options).map(o => ({
                         text: o.text,
@@ -77,6 +73,24 @@
                             return value
                         };
                     }
+
+                    if (selectEl) {
+                        const observer = new MutationObserver((mutations) => {
+                            for (const m of mutations) {
+                                if (m.type === 'attributes' && m.attributeName === 'data-id') {
+                                    const id = selectEl.getAttribute('data-id');
+                                    const el = $(`div[data-id="${id}"]`);
+                                    let list = el.find('.ss-list');
+                                    $(list).addClass("border border-secondary-subtl rounded-2");
+                                    $(list).css("max-height", "170px");
+                                    el.css("min-height", "80%");
+                                    if (el.length) el.append(megaResult);
+                                }
+                            }
+                        });
+                        observer.observe(selectEl, { attributes: true });
+                    }
+
                     let slimselect = new SlimSelect({
                         select: '#' + selectName,
                         settings: {
@@ -86,28 +100,32 @@
                             searchPlaceholder: 'Rechercher',
                             searchHighlight: false,
                             hideSelectedOption: true,
-                            closeOnSelect: true,
+                            closeOnSelect: false,
+                            allowDeselect: true,
                             maxValuesShown: 40,
                         },
                         events: {
                             beforeOpen: () => {
-                                // $("#mega-result").show();
-                                const selectedValues = slimselect.getSelected();
-                                let merged;
-                                if(savedOptions.length > 0) {
-                                    merged = [
-                                        ...savedOptions,
-                                        ...initialOptions
-                                    ];
-                                } else {
-                                    merged = [
-                                        ...addedOptions,
-                                        ...fetchedOptions,
-                                        ...initialOptions
-                                    ];
-                                }
-                                slimselect.setData(merged);
-                                slimselect.setSelected(selectedValues);
+                                // let merged;
+                                // if(savedOptions.length > 0) {
+                                //     merged = [
+                                //         ...savedOptions,
+                                //         ...initialOptions
+                                //     ];
+                                // } else {
+                                //     merged = [
+                                //         ...addedOptions,
+                                //         ...fetchedOptions,
+                                //         ...initialOptions
+                                //     ];
+                                // }
+                                // slimselect.setData(merged);
+                                // slimselect.setSelected(slimselect.getSelected());
+                                megaResult.modal("show");
+                                $(".modal-backdrop").each(function (e) {
+                                    $(this).css("opacity", "0.2");
+                                    $(this).css("z-index", "1");
+                                });
                             },
                             beforeClose: () => {
                                 const selectedValues = slimselect.getSelected();
@@ -121,14 +139,27 @@
                                     o => selectedValues.includes(o.value) &&
                                         !initialOptions.some(init => init.value === o.value)
                                 );
+                                megaResult.modal("hide");
                             },
                             afterClose: () => {
-                                if(slimselect.getSelected().length > 0) {
-                                    $("#mega-result").modal("show");
-                                    $(".modal-backdrop").each(function (e) {
-                                        $(this).css("opacity", "0.2");
-                                    });
-                                }
+                                // if(slimselect.getSelected().length > 0) {
+                                //     $("#mega-result").modal("show");
+                                //     $(".modal-backdrop").each(function (e) {
+                                //         $(this).css("opacity", "0.2");
+                                //         $(this).css("z-index", "1");
+                                //     });
+                                // }
+                            },
+                            beforeChange: (newVal, oldVal) => {
+                                // // savedOptions = [
+                                // //     ...[...fetchedOptions, ...addedOptions].filter(
+                                // //         (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
+                                // //     ),
+                                // //     ...initialOptions
+                                // // ];
+                                // slimselect.setData(savedOptions);
+                                // slimselect.setSelected(newVal);
+                                return true;
                             },
                             afterChange: (newVal) => {
                                 return new Promise((resolve, reject) => {
@@ -149,11 +180,11 @@
                                                         <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${item.tags}</div>
                                                     </a>
                                                 `).join('');
-                                                $("#mega-result-body").html(`
+                                                megaBody.html(`
                                                     <div class="list-group list-group-flush">${rows}</div>
                                                 `);
                                             } else {
-                                                $("#mega-result-body").html(`
+                                                megaBody.html(`
                                                     <div class="alert alert-secondary">Aucun résultat</div>
                                                 `);
                                             }
@@ -173,13 +204,27 @@
                                 }
                             },
                             search: (search, currentData) => {
+                                if(search == null || search === "" ) {
+                                    slimselect.setData(savedOptions);
+                                    slimselect.setSelected(slimselect.getSelected());
+                                    return new Promise((resolve, reject) => {
+                                        resolve(savedOptions);
+                                    });
+                                }
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search-titles?searchString=' + search)
                                         .then(r => r.json())
                                         .then(json => {
-                                            fetchedOptions = json;
-                                            if (fetchedOptions.length > 0) {
-                                                resolve(fetchedOptions);
+                                            if (json.length > 0) {
+                                                savedOptions = [
+                                                    ...Array.from(new Map(json.map(item => [item.id, item]))).values(),
+                                                    ...[...fetchedOptions, ...addedOptions].filter(
+                                                        (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
+                                                    ),
+                                                    ...initialOptions
+                                                ]
+
+                                                resolve(json);
                                             }
                                             else reject("Pas de résultat");
                                         })
@@ -189,20 +234,17 @@
                         }
                     });
 
-                    $("#submit-mega-search").click(function () {
-                        $("#mega-result").modal("show");
-                        $(".modal-backdrop").each(function (e) {
-                            $(this).css("opacity", "0.2");
-                        });
-                    });
+                    // $("#submit-mega-search").click(function () {
+                    //     slimselect.search(slimselect.getSelected());
+                    // });
 
                     $(".ss-search > input").on("click" , function (e) {
                         e.stopPropagation();
                     });
 
-                    $("#mega-result").click(function () {
-                        slimselect.close();
-                    });
+                    // $("#mega-result").click(function () {
+                    //     slimselect.close();
+                    // });
 
                     $("#reset-mega-search").click(function (){
                         slimselect.setSelected([]);
