@@ -54,7 +54,7 @@ export class HomeUi {
     }
 
     hideAll() {
-        $('.globalButton').addClass('d-none');
+        $('.global-button').addClass('d-none');
         $('.workflow-button').addClass('d-none');
         $('.form-button').addClass('d-none');
         this.noFilterButton.removeClass('btn-secondary');
@@ -68,7 +68,7 @@ export class HomeUi {
     }
 
     showAll() {
-        $('.globalButton').removeClass('d-none');
+        $('.global-button').removeClass('d-none');
         $('.workflow-button').removeClass('d-none');
         $('.form-button').removeClass('d-none');
         this.noFilterButton.addClass('btn-secondary');
@@ -87,7 +87,7 @@ export class HomeUi {
         this.hideAll();
         this.globalFilterButton.removeClass('btn-light');
         this.globalFilterButton.addClass('btn-secondary');
-        $('.globalButton').removeClass('d-none');
+        $('.global-button').removeClass('d-none');
         this.globalFilterStatus = !this.globalFilterStatus;
         return this.uiParams.set("globalFilterStatus", this.globalFilterStatus);
     }

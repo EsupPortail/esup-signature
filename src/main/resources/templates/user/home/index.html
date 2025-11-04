@@ -122,6 +122,14 @@
                                         !initialOptions.some(init => init.value === o.value)
                                 );
                             },
+                            afterClose: () => {
+                                if(slimselect.getSelected().length > 0) {
+                                    $("#mega-result").modal("show");
+                                    $(".modal-backdrop").each(function (e) {
+                                        $(this).css("opacity", "0.2");
+                                    });
+                                }
+                            },
                             afterChange: (newVal) => {
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search', {
@@ -205,8 +213,14 @@
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
             <div id="shortcuts" class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-5 mb-3 p-1">
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="signeds-btn" role="button"
+                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#signedsModal" title="Afficher les demandes que j'ai envoyées"
+                    style="font-size: 14px;">
+                    <i class="fi fi-sr-folder-times text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Documents signés</span>
+                </a>
                 <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
-                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-²2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente"
+                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#toSignModal" title="Afficher mes signature en attente"
                     th:classappend="${nbToSign > 0} ? '' : 'disabled'"
                     style="font-size: 14px;">
                     <i class="fi fi-ss-inbox-full text-dark-emphasis"></i>
@@ -221,13 +235,6 @@
                     <span class="d-none d-xl-block">Demandes envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
-                <a tabindex="0" title="Circuits" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#allModal"
-                    style="font-size: 14px;">
-                    <i class="fi fi-rr-apps text-dark-emphasis"></i>
-<!--                    <i class="fi fi-sr-diagram-project text-dark-emphasis"></i>-->
-                    <span class="d-none d-xl-block">Parcourir les procédures</span>
-                    <span aria-hidden="true" th:title="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())} + ' nouveaux éléments'" class="badge bg-secondary d-none d-lg-inline" th:if="${(workflows.size() - favoriteWorkflows.size()) > 0}" th:text="${(workflows.size() - favoriteWorkflows.size()) + (forms.size() - favoriteForms.size())}"></span>
-                </a>
 <!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
 <!--                    style="font-size: 14px;">-->
 <!--                    <i class="fi fi-sr-poll-h text-dark-emphasis"></i>-->
@@ -239,8 +246,8 @@
                     <i class="fi fi-sr-registration-paper text-dark-emphasis"></i>
                     <span class="d-none d-xl-block">Contrôler un document</span>
                 </a>
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" id="start-wizard-button-2" role="button"
-                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" role="button"
+                    class="start-wizard-buttons btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
                     style="font-size: 14px;">
                     <i class="fi fi-sr-customization text-dark-emphasis"></i>
                     <span class="d-none d-xl-block">Assistant de création de circuit</span>
@@ -249,7 +256,7 @@
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-row gap-3">
                 <div class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-3" style="width: 40%;">
                     <div class="w-100">
-                        <h5>Documents à signer</h5>
+                        <h5><i class="fi fi-rs-inbox-full text-dark-emphasis" style="font-size: 15px;"></i> Documents à signer</h5>
                     </div>
                     <div>
                         <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
@@ -387,7 +394,10 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
+                <div>
                 <h4>Démarrer une procédure</h4>
+                <small>Vous pouvez créer des favoris en cliquant sur l’étoile <i class="fa-solid fa-star text-secondary"></i></small>
+                </div>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -568,6 +578,120 @@
         </div>
     </div>
 </div>
+<div id="signedsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Historique de mes signatures</h4>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="listSignRequestTable" class="div-scrollable scrollbar-style rounded-3">
+                    <div id="to-sign-list" class="d-flex col-12 mb-2">
+                        <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-striped table-hover table-light">
+                            <thead class="table-secondary">
+                            <th style="width: 15px;">Lu</th>
+                            <th class="text-break d-none d-md-table-cell"></th>
+                            <th class="text-break w-5 d-none d-md-table-cell"></th>
+                            <th class="d-none d-xxl-table-cell">Type</th>
+                            <th>Nom</th>
+                            <th class="d-none d-md-table-cell">Créateur</th>
+                            <th>Date de création</th>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="signBook : ${signBooksSigned}">
+                                <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
+                                    <td style="width: 15px;">
+                                        <div class="d-flex flex-row align-items-center justify-content-around gap-1">
+                                            <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
+                                            <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
+                                            <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
+                                            <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
+                                            <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
+                                                    th:text="${signBook.postits.size()}" type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+                                            </button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                                                    type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
+                                            </button>
+                                            <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
+                                                    th:text="${signBook.postits.size() + 1}" type="button"
+                                                    class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
+                                            </button>
+                                            <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
+                                                <li th:if="${signBook.description != null}" class="dropdown-item">
+                                                    <pre class="me-1" th:text="${signBook.description}"></pre>
+                                                </li>
+                                                <th:block th:each="postit : ${signBook.postits}">
+                                                    <li th:if="${postit}" class="dropdown-item">
+                                                        <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
+                                                    </li>
+                                                </th:block>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td class="text-break d-none d-md-table-cell" style="width: 25px;">
+                                        <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
+                                    </td>
+                                    <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
+                                        <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
+                                        <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-30" style="width: 400px;">
+                                    <span th:if="${signBook.signRequests.size() > 1}">
+                                        <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
+                                        <i class="fa-solid fa-caret-down"></i>
+                                    </span>
+                                        <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
+                                    </td>
+                                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                    </td>
+                                </tr>
+                                <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
+                                    <td></td>
+                                    <td></td>
+                                    <td colspan="4">
+                                        <div class="collapse" th:id="'row_' + ${signBook.id}">
+                                            <table class="table table-hover">
+                                                <th:block th:each="signRequest : ${signBook.signRequests}">
+                                                    <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
+                                                        <td>
+                                                            <i class="fa-solid fa-file-alt"></i>
+                                                        </td>
+                                                        <td th:text="${signRequest.title}"></td>
+                                                        <td>
+                                                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
+                                                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
+                                                            <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
+                                                        </td>
+                                                    </tr>
+                                                </th:block>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                        <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary text-center w-100">
+                            Aucun document à signer pour le moment
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 

@@ -170,40 +170,18 @@ export class GlobalUi {
             wizUi.workflowSignStart();
         });
 
-        let startWizardButton = $("#start-wizard-button");
-        startWizardButton.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
+        $(".start-wizard-buttons").each(function(){
+            $(this).on('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.target.click();
+                }
+            });
+            $(this).on('click', function(e) {
+                let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
+                wizUi.wizardWorkflowStart();
+            });
         });
-        startWizardButton.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
-        });
-
-        let startWizardButton2 = $("#start-wizard-button-2");
-        startWizardButton2.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
-        });
-        startWizardButton2.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
-        });
-
-        let startWizardButton3 = $("#start-wizard-button-3");
-        startWizardButton3.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
-        });
-        startWizardButton3.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
-        });
-
-        let startFormButton = $(".start-form-button");
+                let startFormButton = $(".start-form-button");
         startFormButton.on('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.target.click();

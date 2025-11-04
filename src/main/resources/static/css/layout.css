@@ -377,3 +377,7 @@ header {
 #mega-result .modal-dialog {
     max-width:100%
 }
+
+.global-button {
+    width: 200px;
+}

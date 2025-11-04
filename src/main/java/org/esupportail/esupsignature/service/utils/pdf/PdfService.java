@@ -954,7 +954,7 @@ public class PdfService {
                         List<PDAnnotation> annotationsToRemove = new ArrayList<>();
                         List<PDAnnotation> pdAnnotations = pdPage.getAnnotations();
                         for (PDAnnotation pdAnnotation : pdAnnotations) {
-                            if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink) {
+                            if (pdAnnotation instanceof PDAnnotationLink pdAnnotationLink && pdAnnotationLink.getAction() != null) {
                                 String signFieldName = ((PDActionURI) pdAnnotationLink.getAction()).getURI();
                                 Pattern pattern = Pattern.compile(workflow.getSignRequestParamsDetectionPattern().split("]")[1], Pattern.CASE_INSENSITIVE);
                                 if(pattern.matcher(signFieldName).find()) {

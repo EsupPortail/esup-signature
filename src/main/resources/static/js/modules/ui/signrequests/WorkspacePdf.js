@@ -70,16 +70,14 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
-        this.navWidth = this.wsTabs.innerWidth();
         this.addSignButton = $("#addSignButton")
         if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
-                let self = this;
-                $(window).on('resize', function (e) {
-                    if(e.target.tagName == null) {
-                        self.autocollapse();
-                    }
+                let resizeTimer;
+                $(window).on("resize", () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => this.autocollapse(), 200);
                 });
             }
         }
@@ -578,7 +576,6 @@ export class WorkspacePdf {
             if(comment.stepNumber == null) {
                 let postitDiv = $('#inDocComment_' + comment.id);
                 let postitButton = $('#postit' + comment.id);
-                if (this.mode === 'comment') {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
                     let pageOffset = $("#page_" + comment.pageNumber).offset();
@@ -627,10 +624,11 @@ export class WorkspacePdf {
                             }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
                         });
                     }
-                } else {
-                    postitDiv.hide();
-                    postitButton.css("background-color", "#EEE");
+                if (this.mode !== 'comment') {
+                    postitDiv.css("color", "transparent");
+                    postitButton.css("background-color", "#FFF");
                     postitDiv.unbind('mouseup');
+                    postitDiv.css("pointer-events", "none");
                 }
             }
         });
@@ -881,6 +879,7 @@ export class WorkspacePdf {
 
     enableCommentMode() {
         $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
+        $("#signModeBtns").toggleClass("d-inline-flex d-none");
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
         $("#display-pdf-alerts-btn").remove();
@@ -923,7 +922,6 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -999,7 +997,7 @@ export class WorkspacePdf {
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
-        $('#commentsBar').hide();
+        // $('#commentsBar').hide();
         $('#sign-tools').addClass("d-none");
         $('#infos').hide();
         $('#postit').hide();
@@ -1231,38 +1229,30 @@ export class WorkspacePdf {
     }
 
     autocollapse() {
-        let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").innerWidth() - 50;
-        console.info("maxWidth : " + maxWidth);
-        const listItems = document.querySelectorAll('#ws-tabs > li');
-        let totalWidth = 0;
-        listItems.forEach(li => {
-            totalWidth += li.getBoundingClientRect().width;
-        });
-        console.warn(totalWidth + " >= " + maxWidth);
-        if (totalWidth >= maxWidth) {
-            $(menu + ' .dropdown').removeClass('d-none');
-            while (this.navWidth > maxWidth) {
-                let children = this.wsTabs.children(menu + ' li:not(:last-child)');
-                let count = children.length;
-                this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn("nav width : " + this.navWidth);
-                $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
-            }
-        } else if (this.navWidth < maxWidth - 300) {
-            let collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
-            if (collapsed.length===0) {
-                $(menu + ' .dropdown').addClass('d-none');
-            }
-            collapsed = $(menu + ' .dropdown-menu').children('li');
-            let i = 0;
-            while (this.navWidth < maxWidth && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > i + 1) {
-                $(collapsed[i]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
-                this.navWidth = this.navWidth + $(collapsed[i]).width();
-                if(this.navWidth >= maxWidth) break;
-                i++;
-            }
+        const $menu = $("#ws-tabs");
+        const $workspace = $("#workspace");
+        const maxWidth = Math.round($workspace.innerWidth() - 50);
+        const $dropdownToggle = $menu.children("li.dropdown");
+        const $dropdownMenu = $menu.find(".dropdown-menu");
 
+        // 🔹 tout déplier avant de recalculer
+        $dropdownMenu.children("li").insertBefore($dropdownToggle);
+        $dropdownToggle.addClass("d-none");
+
+        let $visibleTabs = $menu.children("li:not(.dropdown)");
+        let visibleWidth = 0;
+        $visibleTabs.each((_, el) => visibleWidth += Math.round($(el).outerWidth(true)));
+
+        // collapse si besoin
+        if (visibleWidth > maxWidth) {
+            $dropdownToggle.removeClass("d-none");
+            const dropdownWidth = Math.round($dropdownToggle.outerWidth(true));
+            while (visibleWidth + dropdownWidth > maxWidth && $visibleTabs.length > 0) {
+                const $last = $menu.children("li:not(.dropdown)").last();
+                visibleWidth -= Math.round($last.outerWidth(true));
+                $last.prependTo($dropdownMenu);
+                $visibleTabs = $menu.children("li:not(.dropdown)");
+            }
         }
     }
 }

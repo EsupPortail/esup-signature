@@ -1329,7 +1329,7 @@ public class SignRequestService {
 				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
-		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+		if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			Document document;
 			if(!documents.isEmpty()) {
@@ -1357,7 +1357,7 @@ public class SignRequestService {
     @Transactional
 	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
-		if (!signRequest.getStatus().equals(SignRequestStatus.exported)) {
+        if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			Document document;
 			if(!documents.isEmpty()) {

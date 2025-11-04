@@ -25,19 +25,40 @@
                     </div>
                     <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
                     <div class="form-group mb-3">
-                    <div class="custom-file">
-                        <label class="custom-file-label" for="multipartSignedDoc">
-                            Choisir un fichier signé
-                        </label>
-                        <input required="required" class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file"/>
-                    </div>
+                        <div class="position-relative">
+                            <input required class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file">
+                            <button type="button" id="clearFileBtn"
+                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                    title="Effacer le fichier">
+                                ✕
+                            </button>
+                        </div>
+                        <script>
+                            document.getElementById('clearFileBtn').addEventListener('click', () => {
+                                const input = document.getElementById('multipartSignedDoc');
+                                input.value = '';
+                            });
+                        </script>
                     </div>
                     <div class="form-group mb-3">
                     <div class="custom-file">
                         <label class="custom-file-label" for="multipartSignature">
                             Choisir un fichier signature (si la signature est détachée)
                         </label>
-                        <input class="form-control" id="multipartSignature" name="multipartSignature" type="file"/>
+                        <div class="position-relative">
+                            <input class="form-control" id="multipartSignature" name="multipartSignature" type="file">
+                            <button type="button" id="clearSignatureBtn"
+                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                    title="Effacer le fichier">
+                                ✕
+                            </button>
+                        </div>
+                        <script>
+                            document.getElementById('clearSignatureBtn').addEventListener('click', () => {
+                                const input = document.getElementById('multipartSignature');
+                                input.value = '';
+                            });
+                        </script>
                     </div>
                     </div>
                     <div class="form-group w-100 text-end">

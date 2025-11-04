@@ -118,15 +118,6 @@
                     <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-triangle-exclamation text-danger"></i>Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
 
                 </div>
-                <div id="alertNexu" class="alert bg-light text-dark border-dark text-center" style="display: none;">
-                    L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.
-                    <br>
-                    Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>
-                    <br>
-                    <button id="refresh-certType2" class="mt-2 mx-auto btn btn-secondary align-self-center">
-                        <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
-                    </button>
-                </div>
                 <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                     <div id="commentHelp" th:unless="${signRequest.comments.size() > 0 || signRequest.parentSignBook.description != null}" class="alert alert-warning border-dark d-none" style="width: 100%">
                         Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
