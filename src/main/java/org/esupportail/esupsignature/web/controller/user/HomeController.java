@@ -81,7 +81,7 @@ public class HomeController {
             List<SignRequest> recipientNotPresentSignRequests = signRequestService.getRecipientNotPresentSignRequests(userEppn);
             model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
             List<Message> messages = new ArrayList<>();
-            if ((authUser.getUiParams().get(UiParams.homeHelp) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+            if ((authUser.getUiParams().get(UiParams.home2Help) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
                 Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
                 ctx.setVariable("splashMessage", true);

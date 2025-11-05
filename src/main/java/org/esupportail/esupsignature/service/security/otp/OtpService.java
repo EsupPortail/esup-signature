@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
@@ -117,6 +118,7 @@ public class OtpService {
         return password;
     }
 
+    @Transactional
     public Otp getAndCheckOtpFromDatabase(String urlId){
         Otp otp = otpRepository.findByUrlId(urlId);
         if(otp != null) {
@@ -127,7 +129,8 @@ public class OtpService {
                     .plusMinutes(globalProperties.getOtpValidity());
             LocalDateTime now = LocalDateTime.now();
             if (validDate.isAfter(now)) {
-                return otpRepository.findByUrlId(urlId);
+                Workflow forceFetchWorkflow = otp.getSignBook().getLiveWorkflow().getWorkflow();
+                return otp;
             }
         }
         return null;

@@ -270,7 +270,7 @@
                     style="font-size: 14px;">
                     <i class="fi fi-sr-paper-plane-top text-dark-emphasis"></i>
                     <span class="d-none d-xl-block">Demandes envoyées</span>
-                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning d-none d-lg-inline" th:text="${nbSignRequests}"></span>
+                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge bg-warning text-dark d-none d-lg-inline" th:text="${nbSignRequests}"></span>
                 </a>
                 <a tabindex="0" th:if="${userEppn == authUserEppn}" id="signeds-btn" role="button"
                     class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"

@@ -83,6 +83,7 @@ public class OtpAccessController {
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
+            model.addAttribute("globalProperties", globalProperties);
             return "otp/signin";
         }
         if(signBookService.renewOtp(urlId, true)) {
