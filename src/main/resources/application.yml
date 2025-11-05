@@ -83,6 +83,11 @@ management:
             show-details: ALWAYS
 
 spring:
+    cache:
+        type: caffeine
+        cache-names: ldapLightCache
+        caffeine:
+            spec: maximumSize=1000,expireAfterWrite=24h
     session:
         timeout: 30m
     threads:

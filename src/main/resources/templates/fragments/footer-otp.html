@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<div th:fragment="footer">
+	<div id="footer">
+		<footer class="footer bg-secondary fixed-bottom text-center text-white">
+			<span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> | <a class="text-white" href="/user">Accueil</a> | <a class="text-white" href="/rgpd">Données personnelles</a> | <a class="text-white" href="/rgaa" th:text="#{rgaa.title}"></a>
+		</footer>
+	</div>
+    <div id="helpModal" data-bs-focus="false" class="modal fade">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Aide</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="alert alert-light border mb-2">
+                            <p class="mb-2"><strong>Contact :</strong></p>
+                            <p class="mb-0">
+                                Pour toute question spécifique concernant ce document, contactez l’émetteur :
+                                <a th:href="'mailto:' + ${otp.signBook.createBy.email}" class="external-link" th:text="${otp.signBook.createBy.email}"></a>
+                            </p>
+                            <p class="mb-0">
+                                Pour toute question liée à l’utilisation de l’outil :
+                                <a th:if="${otp.signBook.liveWorkflow.workflow == null || otp.signBook.liveWorkflow.workflow.mailFrom == null}" th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
+                                <a th:if="${otp.signBook.liveWorkflow.workflow != null && otp.signBook.liveWorkflow.workflow.mailFrom != null}" th:href="'mailto:' + ${otp.signBook.liveWorkflow.workflow.mailFrom}" target="_blank" th:text="${otp.signBook.liveWorkflow.workflow.mailFrom}"></a>
+                            </p>
+                        </div>
+                        <!-- Section Introduction -->
+                        <div class="help-section">
+                            <h4>Méthodes de connexion disponibles</h4>
+                            <div class="alert alert-info mb-2">
+                                <i class="fas fa-key me-2"></i>
+                                <strong>Esup-Signature propose plusieurs méthodes d'authentification sécurisées</strong> selon votre profil :
+                                <ul class="mt-2 mb-0">
+                                    <li><strong>ProConnect</strong> pour les professionnels (agents publics et secteur privé)</li>
+                                    <li><strong>FranceConnect</strong> pour les particuliers</li>
+                                    <li><strong>Code SMS (OTP)</strong> en solution alternative</li>
+                                </ul>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="comparison-card proconnect-card">
+                                        <h5>ProConnect</h5>
+                                        <p><strong>Pour qui ?</strong></p>
+                                        <ul>
+                                            <li>Agents publics</li>
+                                            <li>Professionnels (SIRET)</li>
+                                            <li>Consultants</li>
+                                        </ul>
+                                        <p class="mb-0"><strong>Méthode recommandée</strong> pour les utilisateurs professionnels</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="comparison-card franceconnect-card">
+                                        <h5>FranceConnect</h5>
+                                        <p><strong>Pour qui ?</strong></p>
+                                        <ul>
+                                            <li>Particuliers</li>
+                                            <li>Citoyens français ou résidents</li>
+                                            <li>Toute personne majeure</li>
+                                        </ul>
+                                        <p class="mb-0"><strong>Méthode recommandée</strong> pour les particuliers</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section ProConnect -->
+                        <div class="help-section">
+                            <h4>ProConnect - Authentification professionnelle</h4>
+
+                            <div class="alert alert-info mb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>ProConnect est le moyen d'authentification officiel de l'État pour les professionnels.</strong>
+                                Il remplace AgentConnect et permet aux professionnels de se connecter de manière simple et sécurisée aux services numériques de l'État.
+                            </div>
+
+                            <h5></i>Qui peut utiliser ProConnect ?</h5>
+                            <ul>
+                                <li><strong>Agents publics</strong> (fonction publique d'État, territoriale et hospitalière)</li>
+                                <li><strong>Professionnels du secteur privé</strong> disposant d'un numéro SIRET</li>
+                                <li><strong>Consultants indépendants</strong> et travailleurs rattachés à une organisation</li>
+                            </ul>
+
+                            <h5></i>Comment se connecter avec ProConnect ?</h5>
+                            <div class="method-card">
+                                <p><span class="step-number">1</span> Cliquez sur le bouton <strong>"S'identifier avec ProConnect"</strong></p>
+                                <p><span class="step-number">2</span> Saisissez votre <strong>adresse email professionnelle</strong></p>
+                                <p><span class="step-number">3</span> ProConnect vous redirige automatiquement vers votre fournisseur d'identité (Cerbère, Passage2, etc.)</p>
+                                <p><span class="step-number">4</span> Identifiez-vous avec vos identifiants habituels</p>
+                                <p><span class="step-number">5</span> Vous êtes redirigé vers Esup-Signature pour signer votre document</p>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Important :</strong> L'adresse email utilisée avec ProConnect doit être <strong>identique</strong> à celle qui a reçu le lien de signature.
+                            </div>
+
+                            <p class="mt-3">
+                                <i class="fas fa-external-link-alt icon-wrapper"></i>
+                                <a href="https://proconnect.crisp.help/fr/" target="_blank" rel="noopener noreferrer" class="external-link">
+                                    Centre d'aide ProConnect <i class="fas fa-arrow-up-right-from-square ms-1" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </p>
+                            <p>
+                                <i class="fas fa-external-link-alt icon-wrapper"></i>
+                                <a href="https://www.proconnect.gouv.fr/" target="_blank" rel="noopener noreferrer" class="external-link">
+                                    Site officiel ProConnect <i class="fas fa-arrow-up-right-from-square ms-1" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </p>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section FranceConnect -->
+                        <div class="help-section">
+                            <h4></i>FranceConnect - Authentification pour les particuliers</h4>
+
+                            <div class="alert alert-info mb-2">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>FranceConnect est la solution proposée par l'État pour simplifier la connexion des particuliers aux services publics en ligne.</strong>
+                                Plus de 1400 services utilisent FranceConnect pour sécuriser et faciliter vos démarches.
+                            </div>
+
+                            <h5>Qui peut utiliser FranceConnect ?</h5>
+                            <ul>
+                                <li><strong>Tous les particuliers</strong> disposant d'un compte chez un des fournisseurs d'identité</li>
+                                <li><strong>Citoyens français</strong> et résidents en France</li>
+                                <li><strong>Personnes majeures</strong> (accessible dès 16 ans)</li>
+                            </ul>
+
+                            <h5>Comment se connecter avec FranceConnect ?</h5>
+                            <div class="method-card" style="border-left-color: #00ac8c;">
+                                <p><span class="step-number">1</span> Cliquez sur le bouton <strong>"S'identifier avec FranceConnect"</strong></p>
+                                <p><span class="step-number">2</span> Choisissez votre <strong>fournisseur d'identité</strong> parmi :</p>
+                                <ul class="mb-3">
+                                    <li><strong>impots.gouv.fr</strong> (recommandé)</li>
+                                    <li><strong>Ameli</strong> (Assurance Maladie)</li>
+                                    <li><strong>L'Identité Numérique La Poste</strong></li>
+                                    <li><strong>MSA</strong> (Mutualité Sociale Agricole)</li>
+                                    <li><strong>France Identité</strong></li>
+                                    <li><strong>Mobile Connect et Moi</strong></li>
+                                    <li><strong>Yris</strong> ou <strong>TrustMe</strong></li>
+                                </ul>
+                                <p><span class="step-number">3</span> Saisissez vos identifiants sur le site du fournisseur choisi</p>
+                                <p><span class="step-number">4</span> Vous êtes redirigé vers Esup-Signature pour signer votre document</p>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Important :</strong> L'adresse email associée à votre compte FranceConnect doit être <strong>identique</strong> à celle qui a reçu le lien de signature.
+                            </div>
+
+                            <p class="mt-3">
+                                <i class="fas fa-external-link-alt icon-wrapper"></i>
+                                <a href="https://franceconnect.gouv.fr/" target="_blank" rel="noopener noreferrer" class="external-link">
+                                    Site officiel FranceConnect <i class="fas fa-arrow-up-right-from-square ms-1" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </p>
+                            <p>
+                                <i class="fas fa-external-link-alt icon-wrapper"></i>
+                                <a href="https://aide.franceconnect.gouv.fr/" target="_blank" rel="noopener noreferrer" class="external-link">
+                                    Centre d'aide FranceConnect <i class="fas fa-arrow-up-right-from-square ms-1" style="font-size: 0.8rem;"></i>
+                                </a>
+                            </p>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section Authentification par SMS (OTP) -->
+                        <div class="help-section">
+                            <h4>Authentification par code SMS (OTP)</h4>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Cette méthode est proposée en alternative. <strong>Nous vous recommandons de privilégier ProConnect ou FranceConnect</strong> pour une authentification plus sécurisée.
+                            </div>
+
+                            <h5>Comment utiliser le code SMS ?</h5>
+                            <div class="method-card">
+                                <p><span class="step-number">1</span> Cliquez sur <strong>"Autre méthode"</strong> pour déplier les options alternatives</p>
+                                <p><span class="step-number">2</span> Saisissez votre <strong>numéro de téléphone mobile</strong> avec l'indicatif pays</p>
+                                <p><span class="step-number">3</span> Cliquez sur <strong>"Envoyer"</strong></p>
+                                <p><span class="step-number">4</span> Vous recevez un <strong>code à 6 chiffres</strong> par SMS</p>
+                                <p><span class="step-number">5</span> Saisissez ce code dans le champ prévu et cliquez sur <strong>"Confirmer"</strong></p>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-clock me-2"></i>
+                                Le code SMS est valable pendant une durée limitée. En cas d'expiration, vous pouvez demander un nouveau code.
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section Problèmes courants -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-question-circle icon-wrapper"></i>Problèmes fréquents et solutions</h4>
+
+                            <h5>Je ne reçois pas le code SMS</h5>
+                            <ul>
+                                <li>Vérifiez que votre numéro de téléphone est correct</li>
+                                <li>Vérifiez l'indicatif pays (par défaut +33 pour la France)</li>
+                                <li>Attendez quelques minutes, les SMS peuvent parfois être retardés</li>
+                                <li>Vérifiez que vous avez du réseau mobile</li>
+                                <li>Essayez d'utiliser ProConnect ou FranceConnect à la place</li>
+                            </ul>
+
+                            <h5>ProConnect ne reconnaît pas mon adresse email</h5>
+                            <ul>
+                                <li>Vérifiez que vous utilisez bien votre <strong>adresse email professionnelle</strong></li>
+                                <li>L'adresse doit être <strong>identique</strong> à celle qui a reçu l'invitation</li>
+                                <li>Contactez l'administrateur de votre organisation si nécessaire</li>
+                            </ul>
+
+                            <h5>FranceConnect : problème de connexion</h5>
+                            <ul>
+                                <li>Vérifiez vos identifiants sur le site du fournisseur (impots.gouv.fr, ameli.fr, etc.)</li>
+                                <li>Assurez-vous d'utiliser l'adresse email qui a reçu l'invitation</li>
+                                <li>Si vous avez oublié vos identifiants, utilisez la fonction "Mot de passe oublié" sur le site du fournisseur</li>
+                                <li>Vérifiez qu'il n'y a pas de maintenance en cours sur FranceConnect</li>
+                            </ul>
+
+                            <h5>Je n'arrive pas à me connecter</h5>
+                            <ul>
+                                <li>Assurez-vous que votre navigateur est à jour</li>
+                                <li>Désactivez temporairement les bloqueurs de publicités</li>
+                                <li>Essayez avec un autre navigateur (Chrome, Firefox, Edge)</li>
+                                <li>Videz le cache de votre navigateur</li>
+                            </ul>
+
+                            <h5>Quelle méthode choisir : ProConnect ou FranceConnect ?</h5>
+                            <ul>
+                                <li>Si vous êtes un <strong>professionnel</strong> (agent public ou secteur privé) → utilisez <strong>ProConnect</strong></li>
+                                <li>Si vous êtes un <strong>particulier</strong> → utilisez <strong>FranceConnect</strong></li>
+                                <li>En cas de doute, essayez les deux méthodes : elles sont toutes deux sécurisées</li>
+                            </ul>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Section Contact et ressources -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-life-ring icon-wrapper"></i>Besoin d'aide supplémentaire ?</h4>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="method-card">
+                                        <h6><i class="fas fa-book icon-wrapper"></i>Documentation Esup-Signature</h6>
+                                        <p>Consultez la documentation complète et la FAQ du projet Esup-Signature.</p>
+                                        <a href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i> Documentation utilisateur
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="method-card">
+                                        <h6><i class="fas fa-comments icon-wrapper"></i>FAQ Esup-Signature</h6>
+                                        <p>Questions fréquentes sur l'utilisation d'Esup-Signature, ProConnect et FranceConnect.</p>
+                                        <a href="https://www.esup-portail.org/wiki/spaces/SIGN/pages/858980355/FAQ" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-external-link-alt me-1"></i> Consulter la FAQ
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Section Sécurité -->
+                        <div class="help-section">
+                            <h4><i class="fas fa-shield-halved icon-wrapper"></i>Sécurité et confidentialité</h4>
+
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Vos données sont protégées</strong>
+                            </div>
+
+                            <ul>
+                                <li>ProConnect et FranceConnect utilisent les <strong>standards de sécurité les plus élevés</strong> (protocole OpenID Connect)</li>
+                                <li>Vos données d'authentification sont <strong>hébergées en France</strong></li>
+                                <li>Aucune donnée personnelle n'est partagée sans votre consentement</li>
+                                <li>La connexion est <strong>chiffrée de bout en bout</strong></li>
+                                <li>Ces services sont <strong>officiels et gratuits</strong></li>
+                            </ul>
+
+                            <p class="mt-3">
+                                <a href="/rgpd" class="external-link">
+                                    <i class="fas fa-user-shield icon-wrapper"></i> En savoir plus sur la protection de vos données personnelles
+                                </a>
+                            </p>
+                        </div>
+
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+</html>
