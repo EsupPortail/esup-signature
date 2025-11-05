@@ -825,7 +825,7 @@ public class SignRequestService {
      *                                  traitement de l'URI du document exporté.
      */
     public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
-		if(signRequest.getStatus().equals(SignRequestStatus.exported)) {
+		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
 			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
 				FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
 				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
