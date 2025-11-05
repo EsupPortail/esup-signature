@@ -20,6 +20,7 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -94,16 +95,6 @@ public class HomeController {
             model.addAttribute("messageNews", messages);
             List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, authUserEppn, "toSign", null, null, null, null, null, pageable).toList();
             model.addAttribute("signBooksToSign", signBooksToSign);
-            List<SignBook> signBooksPending = new ArrayList<>();
-            if(userEppn.equals(authUserEppn)) {
-                signBooksPending = signBookService.getSignBooks(userEppn, authUserEppn, "pending", null, null, null, null, null, pageable).toList();
-            }
-            model.addAttribute("signBooksPending", signBooksPending);
-            List<SignBook> signBooksSigned = new ArrayList<>();
-            if(userEppn.equals(authUserEppn)) {
-                signBooksSigned = signBookService.getSignBooks(userEppn, authUserEppn, "signedByMe", null, null, null, null, null, pageable).toList();
-            }
-            model.addAttribute("signBooksSigned", signBooksSigned);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
@@ -131,15 +122,15 @@ public class HomeController {
     }
 
     @GetMapping("/toggle-favorite-workflow/{workflowId}")
-    public String toggleFavoriteWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
-        userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
-        return "redirect:/user";
-    }
+    @ResponseBody
+    public Boolean toggleFavoriteWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+        return userService.toggleFavorite(authUserEppn, workflowId, UiParams.favoriteWorkflows);
+   }
 
     @GetMapping("/toggle-favorite-form/{formId}")
-    public String toggleFavoriteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
-        userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
-        return "redirect:/user";
+    @ResponseBody
+    public Boolean toggleFavoriteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+        return userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
     }
 
     @PostMapping(value = "search", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -230,6 +221,7 @@ public class HomeController {
     public List<JsSlimSelect> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                               @RequestParam(value = "searchString", required = false) String searchString) {
         List<JsSlimSelect> results = new ArrayList<>();
+        if(!StringUtils.hasText(searchString)) return results;
         for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
             results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-sr-file \"></i> " + docTitle));
 

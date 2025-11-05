@@ -639,7 +639,8 @@ public class UserService {
     }
 
     @Transactional
-    public void toggleFavorite(String authUserEppn, Long workflowId, UiParams uiParams) {
+    public boolean toggleFavorite(String authUserEppn, Long id, UiParams uiParams) {
+        boolean result;
         User authUser = getByEppn(authUserEppn);
         String favorites = authUser.getUiParams().get(uiParams);
         if(favorites == null || favorites.equals("null")) {
@@ -655,13 +656,17 @@ public class UserService {
                 })
                 .filter(Objects::nonNull)
                 .toList());
-        if(favoritesIds.contains(workflowId)) {
-            favoritesIds.remove(workflowId);
+        if(favoritesIds.contains(id)) {
+            favoritesIds.remove(id);
+            result = false;
         } else {
-            favoritesIds.add(workflowId);
+            favoritesIds.add(id);
+            result = true;
         }
         favorites = favoritesIds.stream().map(String::valueOf).collect(Collectors.joining(","));
         authUser.getUiParams().put(uiParams, favorites);
+        return result;
+
     }
 
     public UserType checkMailDomain(String email) {

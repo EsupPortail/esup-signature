@@ -8,6 +8,10 @@ body {
     width: 100%;
 }
 
+body.modal-open {
+    overflow: auto !important;
+}
+
 header {
     z-index: 1031 !important;
 }
@@ -369,8 +373,8 @@ header {
 #mega-result {
     height: 500px;
     display: block;
-    margin-top: 30px;
-    position: absolute;
+    /*margin-top: 30px;*/
+    position: relative;
     width: 100% !important;
 }
 

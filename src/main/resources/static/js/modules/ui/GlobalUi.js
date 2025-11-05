@@ -181,7 +181,8 @@ export class GlobalUi {
                 wizUi.wizardWorkflowStart();
             });
         });
-                let startFormButton = $(".start-form-button");
+
+        let startFormButton = $(".start-form-button");
         startFormButton.on('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.target.click();
