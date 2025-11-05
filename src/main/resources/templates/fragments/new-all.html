@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
+<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
+<div id="new-all" th:fragment="new-all" class="clear">
+    <div class="d-inline-flex flex-wrap">
+        <div class="" style="height: 184px;">
+            <button tabindex="10" role="button"
+                class="start-wizard-buttons workflow-btn btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
+                data-bs-toggle="modal" data-bs-target="#wiz-modal"
+                style="width: 120px; display: inline-flex; flex-direction: column;"
+                title="Créez un nouveau circuit à l'aide de l'assistant">
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                    <i class="fi fi-tr-customization" style="font-size: 50px;"></i>
+                    <h6>Créez un nouveau circuit à l’aide de l’assistant</h6>
+                </div>
+            </button>
+        </div>
+        <th:block th:each="workflow : ${workflows}">
+            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
+                <a tabindex="10" role="button" class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0 workflow-button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#wiz-workflow-sign-modal"
+                    th:id="'workflow-button-' + ${workflow.id}"
+                    th:href="'/user/start-workflow/' + ${workflow.id}"
+                    style="width: 120px; height: 170px;"
+                    th:title="'Lancer le circuit : ' + ${workflow.description}"
+                    th:data-es-workflow-id="${workflow.id}"
+                    th:alt="'Circuit : ' + ${workflow.description}">
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                        <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
+                        <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
+                    </div>
+                </a>
+                <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
+                    <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
+                            th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
+                            th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                        <i class="fa-solid fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                    <div class="inline-flex">
+                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
+                        </form>
+                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                            <i class="fa-solid fa-trash-alt"></i>
+                        </button>
+                        <button class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
+                            <i class="fa-solid fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </th:block>
+        <th:block th:if="${workflows != null && workflows.size() == 0}">
+            <div class="alert alert-secondary">
+                <h6>Aucun circuit</h6>
+            </div>
+        </th:block>
+    </div>
+    <div class="d-inline-flex flex-wrap">
+        <th:block th:each="form : ${forms}">
+            <div th:id="'btn-form-' + ${form.id}" class="form-button" style="height: 184px;">
+                <a tabindex="10" role="button" class="form-btn start-form-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
+                    style="width: 120px; height: 170px;"
+                    th:classappend="${form.hideButton} ? 'd-none' : ''"
+                    th:title="'Lancer le formulaire : ' + ${form.title}"
+                    th:id="'form-button-' + ${form.id}"
+                    th:data-es-form-id="${form.id}"
+                    th:href="'/user/start-form/' + ${form.id}"
+                    data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
+                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                        <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
+                        <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
+                        <h6 style="height: 50px;" th:text="${form.title}"></h6>
+                    </div>
+                </a>
+            </div>
+        </th:block>
+        <th:block th:if="${forms != null && forms.size() == 0}">
+            <div class="alert alert-secondary">
+                <h6>Aucun formulaire</h6>
+            </div>
+        </th:block>
+    </div>
+</div>
+</html>

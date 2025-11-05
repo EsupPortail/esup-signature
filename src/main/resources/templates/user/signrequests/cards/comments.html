@@ -2,14 +2,14 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="comments" th:fragment="comments">
-    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="display: none; width: 250px; left: 285px;">
+    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="width: 250px; left: 285px;">
         <div class="hr">Annotations</div>
         <div th:if="${comments.size() > 0}" class="card card-body bg-light mb-1">
             <ul class="list-group">
                 <th:block th:each="comment : ${comments}">
                     <li th:id="'postit' + ${comment.id}" class="list-group-item border border-2" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
-                        <b th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}"></b>
-                        <p th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></p>
+                        <span th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}" class="step-type"></span>
+                        <small th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></small><br>
                         <p class="postitarea" th:text="${comment.text}"></p>
                     </li>
                 </th:block>

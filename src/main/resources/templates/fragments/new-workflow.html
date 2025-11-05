@@ -1,22 +1,11 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
+<!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
 <div id="new-workflow" th:fragment="new-workflow" class="clear">
     <div class="d-inline-flex flex-wrap">
-        <a tabindex="10" role="button"
-            id="start-wizard-button-3"
-            class="btn btn-material border border-secondary-subtle border-opacity-10 text-center overflow-hidden p-0"
-            data-bs-toggle="modal"
-            data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
-            style="width: 120px; display: inline-flex; flex-direction: column;">
-            <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
-                <i class="fi fi-tr-customization" style="font-size: 50px;"></i>
-                <h6>Créez un nouveau circuit à l'aide de l'assistant</h6>
-            </div>
-        </a>
         <th:block th:each="workflow : ${workflows}">
-            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
+            <div th:id="'btn-workflow2-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
                 <div class="favorite-icon">
                     <button th:title="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows).contains('' + workflow.id)} ? 'Supprimer des favoris' : 'Ajouter aux favoris'"
                             class="btn btn-transparent btn-sm text-dark toggle-workflow-start rounded-2"
@@ -31,52 +20,53 @@
                     data-bs-target="#wiz-workflow-sign-modal"
                     th:id="'workflow-button-' + ${workflow.id}"
                     th:href="'/user/start-workflow/' + ${workflow.id}"
-                    style="width: 120px; display: inline-flex; flex-direction: column;"
+                    style="width: 120px; height: 170px;"
                     th:title="'Lancer le circuit : ' + ${workflow.description}"
                     th:data-es-workflow-id="${workflow.id}"
-                    th:alt="'Circuit : ' + ${workflow.description}">
+                    >
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
                         <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
                     </div>
                 </a>
-                <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
-                    <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
-                            th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
-                            th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
-                        <i class="fa-solid fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                    <div class="inline-flex">
-                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
-                        </form>
-                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
-                            <i class="fa-solid fa-trash-alt"></i>
-                        </button>
-                        <button  class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
-                            <i class="fa-solid fa-cog"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
         </th:block>
-
         <script>
             document.querySelectorAll('.toggle-workflow-start').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.id.replace('star_', '');
                     const icon = btn.querySelector('i');
+                    const favoriteItem = $('#myFavoritesWorkflows [data-es-workflow-id="' + id + '"]');
 
                     try {
-                        location.href=`/user/toggle-favorite-workflow/${id}`;
+                        const response = await fetch(`/user/toggle-favorite-workflow/${id}`, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+
+                        if (response.ok) {
+                            if (icon.classList.contains('text-secondary')) {
+                                const noFavoritesWorkflows = document.getElementById('noFavoritesWorkflows');
+                                if(noFavoritesWorkflows) noFavoritesWorkflows.remove();
+                                icon.classList.remove('text-secondary');
+                                icon.classList.add('text-warning');
+                                btn.title = 'Supprimer des favoris';
+                                favoriteItem.removeClass("d-none");
+                            } else {
+                                icon.classList.remove('text-warning');
+                                icon.classList.add('text-secondary');
+                                btn.title = 'Ajouter aux favoris';
+                                favoriteItem.addClass("d-none");
+                            }
+                        }
                     } catch (err) {
                         console.error('Erreur lors de la mise en favori :', err);
                     }
                 });
             });
         </script>
-
         <th:block th:if="${workflows != null && workflows.size() == 0}">
             <div class="alert alert-secondary">
                 <h6>Aucun circuit</h6>

@@ -24,7 +24,7 @@
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left me-1 d-flex align-items-center gap-2">
                         <i class="fi fi-sr-paste" style="line-height: 14px;"></i>
-                        <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
+                        <span class="nav-item-label d-none d-xl-inline">Mes documents</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">
