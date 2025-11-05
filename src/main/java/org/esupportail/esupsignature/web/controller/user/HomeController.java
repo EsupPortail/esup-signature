@@ -70,18 +70,38 @@ public class HomeController {
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
                        @RequestParam(required = false, name = "workflowId") Long workflowId,
-                       Model model, @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 100) Pageable pageable) throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+                       Model model,
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC)
+                       @PageableDefault(size = 100) Pageable pageable)
+            throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+
+        long start = System.currentTimeMillis();
+
         User authUser = userService.getByEppn(authUserEppn);
-        if(authUser != null) {
+        logger.info("⏱ userService.getByEppn: {} ms", System.currentTimeMillis() - start);
+
+        if (authUser != null) {
+            long t = System.currentTimeMillis();
+
             List<SignRequest> oldSignRequests = new ArrayList<>();
-            if(globalProperties.getNbDaysBeforeWarning() > - 1) {
+            if (globalProperties.getNbDaysBeforeWarning() > -1) {
                 oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
             }
+            logger.info("⏱ oldSignRequests: {} ms", System.currentTimeMillis() - t);
+
             model.addAttribute("oldSignRequests", oldSignRequests);
+
+            t = System.currentTimeMillis();
             List<SignRequest> recipientNotPresentSignRequests = signRequestService.getRecipientNotPresentSignRequests(userEppn);
+            logger.info("⏱ getRecipientNotPresentSignRequests: {} ms", System.currentTimeMillis() - t);
             model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
+
             List<Message> messages = new ArrayList<>();
-            if ((authUser.getUiParams().get(UiParams.home2Help) == null) && globalProperties.getEnableSplash() && !authUser.getEppn().equals("system")) {
+
+            if ((authUser.getUiParams().get(UiParams.home2Help) == null)
+                    && globalProperties.getEnableSplash()
+                    && !authUser.getEppn().equals("system")) {
+                t = System.currentTimeMillis();
                 Context ctx = new Context(Locale.FRENCH);
                 ctx.setVariable("globalProperties", globalProperties);
                 ctx.setVariable("splashMessage", true);
@@ -89,22 +109,48 @@ public class HomeController {
                 splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
                 splashMessage.setId(0L);
                 model.addAttribute("splashMessage", splashMessage);
+                logger.info("⏱ templateEngine.process: {} ms", System.currentTimeMillis() - t);
             } else if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
+                t = System.currentTimeMillis();
                 messages.addAll(messageService.getByUserNeverRead(authUser));
+                logger.info("⏱ messageService.getByUserNeverRead: {} ms", System.currentTimeMillis() - t);
             }
+
             model.addAttribute("messageNews", messages);
+
+            t = System.currentTimeMillis();
             List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, authUserEppn, "toSign", null, null, null, null, null, pageable).toList();
+            logger.info("⏱ signBookService.getSignBooks: {} ms", System.currentTimeMillis() - t);
             model.addAttribute("signBooksToSign", signBooksToSign);
+
+            t = System.currentTimeMillis();
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
+            logger.info("⏱ dataRepository.findByCreateByAndStatus: {} ms", System.currentTimeMillis() - t);
             model.addAttribute("datas", datas);
+
+            t = System.currentTimeMillis();
             model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
+            logger.info("⏱ formService.getFormsByUser: {} ms", System.currentTimeMillis() - t);
+
+            t = System.currentTimeMillis();
             model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+            logger.info("⏱ workflowService.getWorkflowsByUser: {} ms", System.currentTimeMillis() - t);
+
             model.addAttribute("startFormId", formId);
             model.addAttribute("startWorkflowId", workflowId);
+
+            t = System.currentTimeMillis();
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
-            model.addAttribute("selectedTags", new ArrayList<>());
+            logger.info("⏱ tagService.getAllTags: {} ms", System.currentTimeMillis() - t);
+
+            t = System.currentTimeMillis();
             model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
             model.addAttribute("favoriteForms", formService.getByIds(userEppn, authUserEppn));
+            logger.info("⏱ favorites load: {} ms", System.currentTimeMillis() - t);
+
+            logger.info("⏱ TOTAL home(): {} ms", System.currentTimeMillis() - start);
+
+            model.addAttribute("selectedTags", new ArrayList<>());
             return "user/home/index";
         } else {
             throw new EsupSignatureUserException("not reconized user");
