@@ -322,14 +322,13 @@
                     </div>
                     <div id="myFavoritesWorkflows" class="d-flex flex-row flex-wrap">
                         <th:block th:each="workflow : ${workflows}">
-                            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">
+                            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;" th:classappend="${!favoriteWorkflows.contains(workflow)} ? 'd-none' : ''">
                                 <a tabindex="0" role="button"
                                     class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 workflow-button"
                                     data-bs-toggle="modal"
                                     data-bs-target="#wiz-workflow-sign-modal"
                                     th:href="'/user/start-workflow/' + ${workflow.id}"
                                     style="width: 120px; display: inline-flex; flex-direction: column;"
-                                    th:classappend="${!favoriteWorkflows.contains(workflow)} ? 'd-none' : ''"
                                     th:title="${workflow.description}"
                                     th:data-es-workflow-id="${workflow.id}"
                                     th:alt="'Circuit : ' + ${workflow.description}">
@@ -338,6 +337,25 @@
                                         <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
                                     </div>
                                 </a>
+                                <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
+                                    <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
+                                            th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
+                                            th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                        <i class="fa-solid fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                    <div class="inline-flex">
+                                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
+                                        </form>
+                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                                            <i class="fa-solid fa-trash-alt"></i>
+                                        </button>
+                                        <button class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
+                                            <i class="fa-solid fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </th:block>
                         <th:block th:if="${favoriteWorkflows.size() == 0}">
