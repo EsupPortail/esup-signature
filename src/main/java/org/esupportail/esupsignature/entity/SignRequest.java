@@ -155,7 +155,7 @@ public class SignRequest {
     }
 
     public ArchiveStatus getArchiveStatus() {
-        if(archiveStatus == null) return ArchiveStatus.none;
+        if(archiveStatus == null) return parentSignBook.getArchiveStatus();
         return archiveStatus;
     }
 
