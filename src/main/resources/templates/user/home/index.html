@@ -13,6 +13,23 @@
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
     new HomeUi([[${startFormId}]], [[${startWorkflowId}]]);
 </script>
+<script>
+    function toggleSignLevel() {
+        const signType = document.getElementById("signType-1").value;
+        const minSignLevelDiv = $("#minSignLevel");
+        const sealOptions = $("#seal-options")
+        if (signType === "visa") {
+            minSignLevelDiv.hide();
+            sealOptions.show();
+        } else if (signType === "signature") {
+            minSignLevelDiv.show();
+            sealOptions.hide();
+        } else {
+            minSignLevelDiv.hide();
+            sealOptions.hide();
+        }
+    }
+</script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">

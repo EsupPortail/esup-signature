@@ -953,7 +953,7 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
-        insertBtn.addClass("pulse-primary");
+        // insertBtn.addClass("pulse-primary");
         insertBtn.addClass("btn-outline-primary");
         insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
