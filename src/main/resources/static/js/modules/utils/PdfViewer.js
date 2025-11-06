@@ -591,6 +591,9 @@ export class PdfViewer extends EventFactory {
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
+                    } else {
+                        inputField.removeAttr("checked");
+                        inputField.prop("checked", false);
                     }
                     inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
