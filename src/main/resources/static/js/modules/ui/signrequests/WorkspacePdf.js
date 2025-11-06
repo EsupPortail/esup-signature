@@ -352,15 +352,16 @@ export class WorkspacePdf {
         }
     }
 
-    saveData(disableAlert) {
-        let self = this;
-        for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
-            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
-                if(i === self.pdfViewer.pdfDoc.numPages) {
-                    self.pushData(false, disableAlert);
-                }
-            }));
+    async saveData(disableAlert) {
+        const total = this.pdfViewer.pdfDoc.numPages;
+
+        for (let i = 1; i <= total; i++) {
+            const page = await this.pdfViewer.pdfDoc.getPage(i);
+            const items = await page.getAnnotations();
+            await this.pdfViewer.saveValues(items);
         }
+
+        this.pushData(false, disableAlert);
     }
 
     pushData(redirect, disableAlert) {
@@ -373,7 +374,6 @@ export class WorkspacePdf {
         pdfViewer.dataFields.forEach(function (dataField) {
             formData[dataField.name] = self.pdfViewer.savedFields.get(dataField.name);
         });
-
         if (redirect || this.dataId != null) {
             let json = JSON.stringify(formData);
             let dataId = $('#dataId');
