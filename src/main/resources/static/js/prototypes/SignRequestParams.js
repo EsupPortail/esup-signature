@@ -357,7 +357,7 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.isShare && this.isSign) {
             if(this.signColorPicker != null) {
-                this.signColorPicker.spectrum("destroy");
+                // this.signColorPicker.spectrum("destroy");
                 this.signColorPicker.hide();
             }
             this.addWatermark = true;
@@ -919,16 +919,16 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    createColorPicker() {
-        this.signColorPicker = $('#signColorPicker_' + this.id);
-        this.signColorPicker.spectrum({
-            type: "color",
-            showPaletteOnly: true,
-            hideAfterPaletteSelect: true,
-            preferredFormat: "hex",
-            change: color => this.changeSignColor(color)
-        });
-    }
+    // createColorPicker() {
+    //     this.signColorPicker = $('#signColorPicker_' + this.id);
+    //     this.signColorPicker.spectrum({
+    //         type: "color",
+    //         showPaletteOnly: true,
+    //         hideAfterPaletteSelect: true,
+    //         preferredFormat: "hex",
+    //         change: color => this.changeSignColor(color)
+    //     });
+    // }
 
     toggleAllPages() {
         if(this.allPages) {
@@ -1342,7 +1342,7 @@ export class SignRequestParams extends EventFactory {
         $("#signExtraOnTop_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         if(this.signColorPicker != null) {
-            this.signColorPicker.spectrum("destroy");
+            // this.signColorPicker.spectrum("destroy");
             this.signColorPicker.hide();
         }
         $("#signColorPicker_" + this.id).hide();

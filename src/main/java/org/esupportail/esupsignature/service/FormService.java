@@ -94,9 +94,7 @@ public class FormService {
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
 		Set<Form> forms = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-			for(String role : userService.getRoles(userEppn)) {
-				forms.addAll(formRepository.findAuthorizedForms(role));
-			}
+            forms.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)));
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {

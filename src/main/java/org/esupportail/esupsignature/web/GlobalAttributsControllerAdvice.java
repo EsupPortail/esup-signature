@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -101,7 +100,6 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user " + userEppn + " not found");
                 return;
             }
-            List<String> roles = userService.getRoles(userEppn);
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
@@ -134,7 +132,7 @@ public class GlobalAttributsControllerAdvice {
 
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
-            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));
+            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(userService.getRoles(userEppn)));
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());

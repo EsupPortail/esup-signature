@@ -16,14 +16,14 @@
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" type="button"
                         href="/user" class="btn btn-transparent text-left me-1 d-flex align-items-center gap-2">
-                        <i class="fi fi-sr-home"  style="line-height: 14px;"></i>
+                        <i class="fi fi-rr-home"  style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left me-1 d-flex align-items-center gap-2">
-                        <i class="fi fi-sr-paste" style="line-height: 14px;"></i>
+                        <i class="fi fi-rr-paste" style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xl-inline">Mes documents</span>
                     </a>
                 </li>
@@ -37,7 +37,7 @@
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager" href="/user/manage"
                         class="btn text-white btn-transparent text-left me-1 d-flex align-items-center gap-2">
-                        <i class="fi fi-sr-list-check" style="line-height: 14px;"></i>
+                        <i class="fi fi-rr-list-check" style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xl-inline">Espace superviseur</span>
                     </a>
                 </li>
@@ -47,16 +47,16 @@
                         th:classappend="${activeMenu == 'shares'} ? 'bg-secondary fw-bold bg-opacity-75'"
                         href="#"
                         role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fi fi-sr-users-gear"></i>
+                        <i class="fi fi-rr-users-gear"></i>
                         <span class="nav-item-label d-none d-lg-inline">Autorisations</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="link-rigths" >
                         <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-replace" aria-label="Paramètres utilisateur " title="Remplacement" href="/user/users/replace">
-                            <i class="fi fi-sr-people-arrows-left-right" style="line-height: 14px;"></i>
+                            <i class="fi fi-rr-people-arrows-left-right" style="line-height: 14px;"></i>
                             <span class="nav-item-label">Remplacement</span>
                         </a>
                         <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-delegate" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
-                            <i class="fi fi-sr-refer" style="line-height: 14px;"></i>
+                            <i class="fi fi-rr-refer" style="line-height: 14px;"></i>
                             <span class="nav-item-label">Délégations</span>
                         </a>
                         <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
@@ -76,7 +76,7 @@
                     <a href="/manager/workflows" class="btn text-white btn-transparent d-flex align-items-center gap-2"
                         id="link-manager-space"
                         th:classappend="${managerMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75'">
-                        <i class= "fi fi-sr-practice"></i>
+                        <i class= "fi fi-rr-practice"></i>
                         <span class="nav-item-label d-none d-xxl-inline">Gestionnaire</span>
                     </a>
                 </li>
@@ -84,7 +84,7 @@
                     <a href="/admin" class="btn text-white btn-transparent d-flex align-items-center gap-2"
                         id="link-admin-space"
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75' : ''">
-                        <i class="fi fi-sr-chess-queen"></i>
+                        <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
                         <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge bg-danger d-none d-lg-inline ms-1">!</span>
                     </a>

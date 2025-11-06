@@ -18,11 +18,6 @@ export class Home2Help {
     }
 
     initStep() {
-        if(this.splashMessage != null) {
-            this.intro.addStep({
-                intro: this.splashMessage.text
-            });
-        }
         this.intro.addStep({
             element: 'main',
             intro: "<h5>Bienvenue sur le nouvel accueil d'Esup-signature</h5>" +
