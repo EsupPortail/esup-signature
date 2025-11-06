@@ -18,13 +18,6 @@ export class HomeHelp {
     }
 
     initStep() {
-        if(this.splashMessage != null) {
-            this.intro.addStep({
-                intro: this.splashMessage.text
-            });
-        }
-
-
         this.intro.addStep({
             element: '#navbar-buttons',
             intro: "Voici les principaux éléments de navigation : " +

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div id="to-sign-list" th:fragment="to-sign-list">
-<div id="listSignRequestTable" class="div-scrollable scrollbar-style rounded-3">
+<div id="listSignRequestTable" class="div-scrollable scrollbar-style rounded-3" style="max-height: 400px;">
     <div class="d-flex col-12 mb-2">
         <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-striped table-hover table-light">
             <thead class="table-secondary">

@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head:: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
     new ShareUi();

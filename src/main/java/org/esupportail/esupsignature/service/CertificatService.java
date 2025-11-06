@@ -277,7 +277,7 @@ public class CertificatService implements HealthIndicator {
         return dssPrivateKeyEntries;
     }
 
-    public boolean checkCertificatProblem(List<String> roles) {
+    public boolean checkCertificatProblem(Set<String> roles) {
         if(!roles.contains("ROLE_ADMIN")) return false;
         boolean certificatProblem = false;
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();

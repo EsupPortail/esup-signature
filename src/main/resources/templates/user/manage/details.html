@@ -154,6 +154,11 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
+                                                <i class="fa-solid fa-eye-slash pr-2"></i> Masquer
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a th:if="${!signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
                                                 <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                             </a>

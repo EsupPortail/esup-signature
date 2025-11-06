@@ -2,6 +2,8 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
+<link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
+<script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
 <script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
     new WorkflowUi();

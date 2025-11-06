@@ -176,6 +176,8 @@ public class WorkflowService {
     public Workflow createWorkflow(User user) {
         Workflow workflow;
         workflow = new Workflow();
+        workflow.setName("Circuit de " + user.getFirstname() + " " + user.getName());
+        workflow.setDescription("Circuit de " + user.getFirstname() + " " + user.getName());
         workflow.setCreateDate(new Date());
         workflow.setCreateBy(user);
         workflowRepository.save(workflow);
@@ -235,12 +237,11 @@ public class WorkflowService {
         }
     }
 
+    @Transactional
     public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
         User authUser = userService.getByEppn(authUserEppn);
-        Set<Workflow> authorizedWorkflows = new HashSet<>();
-        for (String role : userService.getRoles(userEppn)) {
-            authorizedWorkflows.addAll(workflowRepository.findAuthorizedForms(role));
-        }
+        Set<Workflow> authorizedWorkflows =
+                new HashSet<>(workflowRepository.findAuthorizedFormsByRoles(authUser.getRoles()));
         Set<Workflow> workflows = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
             workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));

@@ -1082,9 +1082,9 @@ public class UserService {
     }
 
     @Transactional
-    public List<String> getRoles(String userEppn) {
+    public Set<String> getRoles(String userEppn) {
         User user = getByEppn(userEppn);
-        return new ArrayList<>(user.getRoles());
+        return user.getRoles();
     }
 
     @Transactional
