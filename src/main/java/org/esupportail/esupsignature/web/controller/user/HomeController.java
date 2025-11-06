@@ -22,11 +22,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/user")
 @Controller
@@ -47,11 +48,10 @@ public class HomeController {
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
     private final DataRepository dataRepository;
-    private final TemplateEngine templateEngine;
     private final MessageService messageService;
     private final UserService userService;
 
-    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, TemplateEngine templateEngine, MessageService messageService, UserService userService, TagService tagService) {
+    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, MessageService messageService, UserService userService, TagService tagService) {
         this.globalProperties = globalProperties;
         this.signRequestRepository = signRequestRepository;
         this.formService = formService;
@@ -59,7 +59,6 @@ public class HomeController {
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.dataRepository = dataRepository;
-        this.templateEngine = templateEngine;
         this.messageService = messageService;
         this.userService = userService;
         this.tagService = tagService;
@@ -97,25 +96,11 @@ public class HomeController {
             model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
 
             List<Message> messages = new ArrayList<>();
-
-            if ((authUser.getUiParams().get(UiParams.home2Help) == null)
-                    && globalProperties.getEnableSplash()
-                    && !authUser.getEppn().equals("system")) {
-                t = System.currentTimeMillis();
-                Context ctx = new Context(Locale.FRENCH);
-                ctx.setVariable("globalProperties", globalProperties);
-                ctx.setVariable("splashMessage", true);
-                Message splashMessage = new Message();
-                splashMessage.setText(templateEngine.process("fragments/help.html", ctx));
-                splashMessage.setId(0L);
-                model.addAttribute("splashMessage", splashMessage);
-                logger.info("⏱ templateEngine.process: {} ms", System.currentTimeMillis() - t);
-            } else if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
+            if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
                 t = System.currentTimeMillis();
                 messages.addAll(messageService.getByUserNeverRead(authUser));
                 logger.info("⏱ messageService.getByUserNeverRead: {} ms", System.currentTimeMillis() - t);
             }
-
             model.addAttribute("messageNews", messages);
 
             t = System.currentTimeMillis();
@@ -203,7 +188,7 @@ public class HomeController {
                         .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fi fi-sr-diagram-project project-diagram-color");
+                    searchResult.setIcon("fi fi-rr-diagram-project project-diagram-color");
                     searchResult.setTitle(workflow.getDescription());
                     searchResult.setUrl("/user/start-workflow/" + workflow.getId());
                     for(Tag tag : workflow.getTags()) {
@@ -218,7 +203,7 @@ public class HomeController {
                         .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fi fi-sr-poll-h file-alt-color");
+                    searchResult.setIcon("fi fi-rr-poll-h file-alt-color");
                     searchResult.setTitle(form.getTitle());
                     searchResult.setUrl("/user/start-form/" + form.getId());
                     for(Tag tag : form.getTags()) {
@@ -246,7 +231,7 @@ public class HomeController {
                 }
                 for (SignBook signBook : signBooks) {
                     SearchResult searchResult = new SearchResult();
-                    searchResult.setIcon("fi fi-sr-file");
+                    searchResult.setIcon("fi fi-rr-file");
                     searchResult.setTitle(signBook.getSubject());
                     searchResult.setUrl("/user/signbooks/" + signBook.getId());
                     if(signBook.getLiveWorkflow().getWorkflow() != null) {
@@ -269,14 +254,14 @@ public class HomeController {
         List<JsSlimSelect> results = new ArrayList<>();
         if(!StringUtils.hasText(searchString)) return results;
         for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
-            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-sr-file \"></i> " + docTitle));
+            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-rr-file \"></i> " + docTitle));
 
         }
         for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s !=null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fi fi-sr-diagram-project project-diagram-color\"></i> " + workflowTile));
+            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fi fi-rr-diagram-project project-diagram-color\"></i> " + workflowTile));
         }
         for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s != null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fi fi-sr-poll-h file-alt-color\"></i> " + formTitle));
+            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fi fi-rr-poll-h file-alt-color\"></i> " + formTitle));
         }
         return results;
     }
