@@ -17,8 +17,8 @@
             <th:block th:each="signBook : ${signBooksToSign}">
                 <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
                     <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                        <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                        <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
+                        <i th:if="${signBook.signRequests.size() > 1}" class="fi fi-rr-folder-open p-2"></i>
+                        <i th:unless="${signBook.signRequests.size() > 1}" class="fi fi-rr-file p-2"></i>
                     </td>
                     <td style="width: 15px;">
                         <div class="d-flex flex-row align-items-center justify-content-around gap-1">
@@ -77,7 +77,7 @@
                                 <th:block th:each="signRequest : ${signBook.signRequests}">
                                     <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
                                         <td>
-                                            <i class="fa-solid fa-file-alt"></i>
+                                            <i class="fi fi-rr-file"></i>
                                         </td>
                                         <td th:text="${signRequest.title}"></td>
                                         <td>

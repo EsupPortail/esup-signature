@@ -39,22 +39,27 @@
                 </ul>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}" th:text="${signBook.workflowName}"></td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;" th:text="${signBook.subject}"></td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
+            <span th:text="${signBook.workflowName}"></span>
+        </td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+            <i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span>
+        </td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-folder-open"></i>
+                <button th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                    <i class="fi fi-rr-folder-open"></i>
                     <span th:if="${signBook.subject == signRequest.originalDocuments.get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                     <span th:if="${signBook.subject != signRequest.originalDocuments.get(0).getFileName()}" th:text="${signBook.subject}"></span>
                 </button>
                 <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
                     <th:block th:each="signRequest : ${signBook.signRequests}">
-                        <li class="dropdown-item" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
-                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></span>
-                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="fa-solid fa-circle-check text-success"></span>
-                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="fa-solid fa-circle-check text-danger"></span>
+                        <li class="dropdown-item d-flex justify-content-between align-items-center" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
+                            <i class="fi fi-rr-file"></i>
                             <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:title="#{signbook.status.pending}" class="fa-solid fa-clock text-warning"></span>
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" th:title="#{signbook.status.completed}" class="fa-solid fa-circle-check text-success"></span>
+                            <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" th:title="#{signbook.status.refused}" class="fa-solid fa-circle-check text-danger"></span>
                         </li>
                     </th:block>
                 </ul>
@@ -69,7 +74,7 @@
             <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fa-solid fa-list"></i> Liste des participants
+                        <i class="fi fi-rr-queue-alt"></i> Participants
                     </button>
                     <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
                         <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">

@@ -21,9 +21,19 @@
             </ol>
         </nav>
         <div id="content" class="content-fixed-breadcrumb">
-            <h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5>
+            <div class="d-inline-flex mt-2"><h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5> <h5 th:if="${hided}">(Demandes masquées)</h5></div>
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
+                    <li th:if="${hided}">
+                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
+                            <i class="fa-solid fa-eye fa-2xl"></i>
+                        </a>
+                    </li>
+                    <li th:unless="${hided}">
+                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
+                            <i class="fa-solid fa-eye-slash fa-2xl"></i>
+                        </a>
+                    </li>
                     <li>
                         <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-file-csv fa-2xl"></i>
@@ -89,7 +99,7 @@
 <!--                                               th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
 <!--                                               th:data-es-signbook-id="${signBook.id}">-->
 <!--                                    </td>-->
-                            <td class="clickable-td text-break"><span th:text="${signBook.subject}"></span></td>
+                            <td class="clickable-td text-break"><i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span></td>
                             <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
                             <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>
@@ -151,6 +161,11 @@
                                         <li>
                                             <a th:if="${signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
                                                 <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
+                                                <i class="fa-solid fa-eye-slash pr-2"></i> Masquer
                                             </a>
                                         </li>
                                         <li>

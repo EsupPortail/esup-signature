@@ -982,6 +982,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
     border-radius: 10px 0px 0px 10px;
 }
 
-.sidebar-label {
-    font-size: 14px;
-}
+/*.sidebar-label {*/
+/*    font-size: 14px;*/
+/*}*/

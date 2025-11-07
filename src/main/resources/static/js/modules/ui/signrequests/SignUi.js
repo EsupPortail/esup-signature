@@ -192,8 +192,7 @@ export class SignUi {
                 }
             });
         } else {
-            $("#signModal").modal('show');
-            this.confirmLaunchSignModal();
+            self.checkAttachement();
         }
     }
 

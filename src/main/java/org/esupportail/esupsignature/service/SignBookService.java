@@ -187,7 +187,8 @@ public class SignBookService {
      * @return une page contenant la liste des SignBooks correspondant aux critères donnés
      */
     @Transactional
-    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable, String userEppn, Boolean hided) {
+        User user = userService.getByEppn(userEppn);
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getUserByEmail(creatorFilter);
@@ -212,8 +213,11 @@ public class SignBookService {
             } catch (ParseException e) {
                 logger.error("unable to parse date : " + dateFilter);
             }
+        } if(hided) {
+            return signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+        } else {
+            return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         }
-        return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     /**
@@ -2045,7 +2049,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du SignBook à sauvegarder.
      * @param title Le titre du Workflow à créer.
      * @param description La description du Workflow.
-     * @param user L'utilisateur qui initie la création du Workflow.
+     * @param userEppn L'utilisateur qui initie la création du Workflow.
      * @throws EsupSignatureRuntimeException Si une erreur survient lors de l'exécution.
      */
     @Transactional

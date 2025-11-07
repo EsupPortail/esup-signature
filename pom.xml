@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.6</version>
+		<version>3.5.7</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
@@ -183,7 +183,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>4.6.82</version>
+			<version>5.4.149</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>

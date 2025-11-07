@@ -5,7 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="signModalLabel">
-                    <span th:if="${signRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer le visa du document</span>
+                    <span th:if="${signRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider le document</span>
                     <span th:if="${signRequest != null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la signature du document</span>
                     <span th:if="${signRequest == null}">Confirmer la signature en masse des documents sélectionnés</span>
                 </h3>
@@ -23,7 +23,7 @@
 <!--                </div>-->
                 <div id="visaFormConfirm" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <div class="alert alert-primary mb-1">
-                        <p th:utext="'<p>Le visa vous permet de valider le document et de le passer à l’étape suivante.</p><p>L’opération sera enregistrée mais aucune trace n’apparaîtra sur le document.</p>'"></p>
+                        <p th:utext="'<p>La validation vous permet d’approuver le document et de le passer à l’étape suivante.</p><p>L’opération sera enregistrée mais aucune trace n’apparaîtra sur le document.</p>'"></p>
                     </div>
                 </div>
                 <div id="signFormConfirm" th:if="${signRequests!= null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">

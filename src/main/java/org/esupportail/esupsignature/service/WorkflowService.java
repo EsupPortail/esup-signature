@@ -176,6 +176,8 @@ public class WorkflowService {
     public Workflow createWorkflow(User user) {
         Workflow workflow;
         workflow = new Workflow();
+        workflow.setName("Circuit de " + user.getFirstname() + " " + user.getName());
+        workflow.setDescription("Circuit de " + user.getFirstname() + " " + user.getName());
         workflow.setCreateDate(new Date());
         workflow.setCreateBy(user);
         workflowRepository.save(workflow);

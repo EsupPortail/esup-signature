@@ -53,12 +53,12 @@
                                 icon.classList.remove('text-secondary');
                                 icon.classList.add('text-warning');
                                 btn.title = 'Supprimer des favoris';
-                                favoriteItem.removeClass("d-none");
+                                favoriteItem.parent().removeClass("d-none");
                             } else {
                                 icon.classList.remove('text-warning');
                                 icon.classList.add('text-secondary');
                                 btn.title = 'Ajouter aux favoris';
-                                favoriteItem.addClass("d-none");
+                                favoriteItem.parent().addClass("d-none");
                             }
                         }
                     } catch (err) {

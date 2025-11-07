@@ -814,6 +814,8 @@ public class PdfService {
                         if (pdField instanceof PDCheckBox) {
                             if (datas.get(filedName) != null && datas.get(filedName).equals("on")) {
                                 ((PDCheckBox) pdField).check();
+                            } else {
+                                ((PDCheckBox) pdField).unCheck();
                             }
                         } else if (pdField instanceof PDRadioButton pdRadioButton) {
                             try {
