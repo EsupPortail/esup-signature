@@ -2,24 +2,23 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-user" id="sidebar">
-    <div th:unless="${user.userType.name() == 'external'}" class="ms-1 mt-2">
-        <h5 class="text-center sidebar-label"><b>Paramètres</b></h5>
-        <a class="btn col-12 mb-1 text-left border-light-subtle"
-           th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
-           href="/user/users?form" title="Paramètres de signature">
-            <i class="fa-solid fa-user-cog"></i> <span class="sidebar-label">Paramètres de signature</span>
+    <div th:unless="${user.userType.name() == 'external'}" class="d-flex flex-column gap-1 ms-1 mt-2">
+        <a class="btn text-left rounded-5 d-flex align-items-center gap-2"
+            th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
+            href="/user/users?form" title="Paramètres de signature">
+            <i class="fi fi-rr-user-gear"></i> <span class="sidebar-label">Paramètres de signature</span>
         </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/replace"
-           th:classappend="${activeMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
-            <i class="fa-solid fa-people-arrows"></i> <span class="sidebar-label">Remplacement</span>
+        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/replace"
+            th:classappend="${activeMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
+            <i class="fi fi-rr-together-people"></i> <span class="sidebar-label">Remplacement</span>
         </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/shares"
-           th:classappend="${activeMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
-            <i class="fa-solid fa-share-alt"></i> <span class="sidebar-label">Délégations</span>
+        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/shares"
+            th:classappend="${activeMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
+            <i class="fi fi-rr-share"></i> <span class="sidebar-label">Délégations</span>
         </a>
-        <a class="btn col-12 mb-1 text-left border-light-subtle" href="/user/users/properties"
-           th:classappend="${activeMenu == 'properties'} ? 'btn-secondary' : 'btn-light'" title="Favoris">
-            <i class="fa-solid fa-bookmark"></i> <span class="sidebar-label">Favoris</span>
+        <a class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/properties"
+            th:classappend="${activeMenu == 'properties'} ? 'btn-secondary' : 'btn-light'" title="Favoris">
+            <i class="fi fi-rr-keyboard-down"></i> <span class="sidebar-label">Mes saisies</span>
         </a>
     </div>
 </nav>

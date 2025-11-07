@@ -1697,7 +1697,7 @@ public class SignRequestService {
 				(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire() != null
 				&& signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAttachmentRequire())
 			)
-		&& signRequest.getAttachments().isEmpty()) {
+		&& signRequest.getAttachments().isEmpty() && signRequest.getLinks().isEmpty()) {
 			attachmentRequire = true;
 		}
 		return attachmentRequire;

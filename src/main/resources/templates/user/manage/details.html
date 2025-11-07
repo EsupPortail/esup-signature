@@ -99,7 +99,7 @@
 <!--                                               th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
 <!--                                               th:data-es-signbook-id="${signBook.id}">-->
 <!--                                    </td>-->
-                            <td class="clickable-td text-break"><span th:text="${signBook.subject}"></span></td>
+                            <td class="clickable-td text-break"><i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span></td>
                             <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
                             <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>

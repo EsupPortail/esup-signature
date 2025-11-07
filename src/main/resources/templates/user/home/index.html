@@ -13,6 +13,23 @@
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
     new HomeUi([[${startFormId}]], [[${startWorkflowId}]]);
 </script>
+<script>
+    function toggleSignLevel() {
+        const signType = document.getElementById("signType-1").value;
+        const minSignLevelDiv = $("#minSignLevel");
+        const sealOptions = $("#seal-options")
+        if (signType === "visa") {
+            minSignLevelDiv.hide();
+            sealOptions.show();
+        } else if (signType === "signature") {
+            minSignLevelDiv.show();
+            sealOptions.hide();
+        } else {
+            minSignLevelDiv.hide();
+            sealOptions.hide();
+        }
+    }
+</script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -107,21 +124,6 @@
                         },
                         events: {
                             beforeOpen: () => {
-                                // let merged;
-                                // if(savedOptions.length > 0) {
-                                //     merged = [
-                                //         ...savedOptions,
-                                //         ...initialOptions
-                                //     ];
-                                // } else {
-                                //     merged = [
-                                //         ...addedOptions,
-                                //         ...fetchedOptions,
-                                //         ...initialOptions
-                                //     ];
-                                // }
-                                // slimselect.setData(merged);
-                                // slimselect.setSelected(slimselect.getSelected());
                                 megaResult.modal("show");
                                 $(".modal-backdrop").each(function (e) {
                                     $(this).css("opacity", "0.2");
@@ -142,26 +144,6 @@
                                 );
                                 megaResult.modal("hide");
                             },
-                            afterClose: () => {
-                                // if(slimselect.getSelected().length > 0) {
-                                //     $("#mega-result").modal("show");
-                                //     $(".modal-backdrop").each(function (e) {
-                                //         $(this).css("opacity", "0.2");
-                                //         $(this).css("z-index", "1");
-                                //     });
-                                // }
-                            },
-                            beforeChange: (newVal, oldVal) => {
-                                // // savedOptions = [
-                                // //     ...[...fetchedOptions, ...addedOptions].filter(
-                                // //         (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
-                                // //     ),
-                                // //     ...initialOptions
-                                // // ];
-                                // slimselect.setData(savedOptions);
-                                // slimselect.setSelected(newVal);
-                                return true;
-                            },
                             afterChange: (newVal) => {
                                 return new Promise((resolve, reject) => {
                                     fetch('/user/search', {
@@ -176,11 +158,15 @@
                                         .then(data => {
                                             let datas = JSON.parse(data);
                                             if(datas.length > 0) {
-                                                const rows = datas.map(item => `
+
+                                                const rows = datas.map(item => {
+                                                    const d = new Date(item.date);
+                                                    const pad = n => String(n).padStart(2, "0");
+                                                    return `
                                                     <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-between align-items-center gap-5">
-                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${item.tags}</div>
+                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div><div style="width: 300px;">${item.tags}</div>
                                                     </a>
-                                                `).join('');
+                                                `}).join('');
                                                 megaBody.html(`
                                                     <div class="list-group list-group-flush">${rows}</div>
                                                 `);
@@ -235,17 +221,9 @@
                         }
                     });
 
-                    // $("#submit-mega-search").click(function () {
-                    //     slimselect.search(slimselect.getSelected());
-                    // });
-
                     $(".ss-search > input").on("click" , function (e) {
                         e.stopPropagation();
                     });
-
-                    // $("#mega-result").click(function () {
-                    //     slimselect.close();
-                    // });
 
                     $("#reset-mega-search").click(function (){
                         slimselect.setSelected([]);

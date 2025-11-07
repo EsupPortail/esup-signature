@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="field" type="org.esupportail.esupsignature.entity.Field"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head-full :: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=@[(${versionApp})]@';
     new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);

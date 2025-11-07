@@ -307,12 +307,15 @@ export class PdfViewer extends EventFactory {
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
                 textLayerMode: 1,
-                renderer: "canvas",
+                renderer: "canvas"
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
-                container.style.width = Math.round(pdfPageView.viewport.width) + "px";
-                container.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                const annotationLayer = container.querySelector('.annotationLayer');
+                if (annotationLayer) {
+                    annotationLayer.style.width = Math.round(pdfPageView.viewport.width) + "px";
+                    annotationLayer.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                }
                 self.pages.push(page);
                 resolve("ok");
             });
@@ -374,26 +377,29 @@ export class PdfViewer extends EventFactory {
     }
 
     saveValues(items) {
-        console.log("saving " + items.length + " fields");
-        if(this.dataFields.length > 0) {
-            for (let i = 0; i < this.dataFields.length; i++) {
-                let dataField = this.dataFields[i];
-                let item = items.filter(function (e) {
-                    return e.fieldName != null && e.fieldName === dataField.name
-                })[0];
-                if (item != null && item.fieldName != null) {
-                    this.saveValue(item);
-                } else {
-                    if(this.savedFields.get(dataField.name) == null) {
-                        this.savedFields.set(dataField.name, dataField.defaultValue);
+        return new Promise((resolve, reject) => {
+            console.log("saving " + items.length + " fields");
+            if (this.dataFields.length > 0) {
+                for (let i = 0; i < this.dataFields.length; i++) {
+                    let dataField = this.dataFields[i];
+                    let item = items.filter(function (e) {
+                        return e.fieldName != null && e.fieldName === dataField.name
+                    })[0];
+                    if (item != null && item.fieldName != null) {
+                        this.saveValue(item);
+                    } else {
+                        if (this.savedFields.get(dataField.name) == null) {
+                            this.savedFields.set(dataField.name, dataField.defaultValue);
+                        }
                     }
                 }
+            } else {
+                for (let i = 0; i < items.length; i++) {
+                    this.saveValue(items[i]);
+                }
             }
-        } else {
-            for (let i = 0; i < items.length; i++) {
-                this.saveValue(items[i]);
-            }
-        }
+            resolve();
+        });
     }
 
     saveValue(item) {
@@ -591,6 +597,9 @@ export class PdfViewer extends EventFactory {
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
+                    } else {
+                        inputField.removeAttr("checked");
+                        inputField.prop("checked", false);
                     }
                     inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
