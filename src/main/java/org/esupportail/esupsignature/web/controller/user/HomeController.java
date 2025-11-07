@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @Controller
@@ -164,7 +165,7 @@ public class HomeController {
         return userService.toggleFavorite(authUserEppn, formId, UiParams.favoriteForms);
     }
 
-    @PostMapping(value = "search", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<SearchResult> search(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<SearchRequest> searchRequests) {
         List<SearchResult> searchResults = new ArrayList<>();
@@ -213,7 +214,7 @@ public class HomeController {
                     searchResults.add(searchResult);
                 }
             }
-            if((types.isEmpty() || types.contains("signBook")) && tags.isEmpty()) {
+            if(types.isEmpty() || types.contains("signBook")) {
                 Set<SignBook> signBooks = new HashSet<>();
                 List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent();
                 if(words.isEmpty() && workflows.isEmpty() && forms.isEmpty()) {
@@ -229,11 +230,15 @@ public class HomeController {
                         signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(form.getWorkflow())).toList());
                     }
                 }
+                if(!tags.isEmpty()) {
+                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && new HashSet<>(s.getLiveWorkflow().getWorkflow().getTags()).containsAll(tags)).collect(Collectors.toSet());
+                }
                 for (SignBook signBook : signBooks) {
                     SearchResult searchResult = new SearchResult();
                     searchResult.setIcon("fi fi-rr-file");
                     searchResult.setTitle(signBook.getSubject());
                     searchResult.setUrl("/user/signbooks/" + signBook.getId());
+                    searchResult.setDate(signBook.getCreateDate());
                     if(signBook.getLiveWorkflow().getWorkflow() != null) {
                         for (Tag tag : signBook.getLiveWorkflow().getWorkflow().getTags()) {
                             searchResult.setTags(searchResult.getTags() +

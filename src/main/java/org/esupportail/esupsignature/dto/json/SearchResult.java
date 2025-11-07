@@ -1,11 +1,14 @@
 package org.esupportail.esupsignature.dto.json;
 
+import java.util.Date;
+
 public class SearchResult {
 
     String icon;
     String title;
     String url;
     String tags = "";
+    Date date;
 
     public String getIcon() {
         return icon;
@@ -37,5 +40,13 @@ public class SearchResult {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 }

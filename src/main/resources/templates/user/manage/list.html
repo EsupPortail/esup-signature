@@ -2,6 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="formManage" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
+<script th:src="@{/webjars/chart.js/dist/chart.umd.js}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -29,8 +30,8 @@
                     <th:block th:each="workflow, iterator : ${managedWorkflows}">
                         <tr>
                             <td>
-                                <i th:unless="${managedForms.contains(workflow)}" class="fa-solid fa-project-diagram project-diagram-color fa-2xl"></i>
-                                <i th:if="${managedForms.contains(workflow)}" class="fa-solid fa-file-alt file-alt-color fa-2xl"></i>
+                                <i th:unless="${managedForms.contains(workflow)}" class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 30px"></i>
+                                <i th:if="${managedForms.contains(workflow)}" class="fi fi-tr-poll-h file-alt-color" style="font-size: 30px"></i>
                             </td>
                             <td th:text="${workflow.description}"></td>
                             <td>
