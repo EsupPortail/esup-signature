@@ -23,8 +23,7 @@
                             </p>
                             <p class="mb-0">
                                 Pour toute question liée à l’utilisation de l’outil :
-                                <a th:if="${otp.signBook.liveWorkflow.workflow == null || otp.signBook.liveWorkflow.workflow.mailFrom == null}" th:href="'mailto:' + ${globalProperties.applicationEmail}" target="_blank" th:text="${globalProperties.applicationEmail}"></a>
-                                <a th:if="${otp.signBook.liveWorkflow.workflow != null && otp.signBook.liveWorkflow.workflow.mailFrom != null}" th:href="'mailto:' + ${otp.signBook.liveWorkflow.workflow.mailFrom}" target="_blank" th:text="${otp.signBook.liveWorkflow.workflow.mailFrom}"></a>
+                                <a th:href="'mailto:' + ${otp.mailFrom}" target="_blank" th:text="${otp.mailFrom}"></a>
                             </p>
                         </div>
                         <!-- Section Introduction -->
