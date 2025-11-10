@@ -59,6 +59,7 @@ textarea:invalid {
 
 .file-drop-zone-title {
     padding: 10px 10px !important;
+    font-size: 3vh;
 }
 
 .file-details-cell {

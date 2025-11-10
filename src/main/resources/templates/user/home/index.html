@@ -233,7 +233,7 @@
             <div class="col-12 col-xxl-10 mb-3 mx-auto" id="new-div" >
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
-            <div id="shortcuts" class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-5 mb-3 p-1">
+            <div id="shortcuts" class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-4 gap-xl-5 mb-3 p-1">
                 <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
                     class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"
                     th:classappend="${nbToSign > 0} ? '' : 'disabled'"
@@ -274,8 +274,8 @@
                     <span class="d-none d-xl-block">Assistant de création de circuit</span>
                 </a>
             </div>
-            <div class="col-12 col-xxl-10 mx-auto d-flex flex-row gap-3">
-                <div class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-3" style="width: 40%;">
+            <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xxl-row gap-3">
+                <div class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;">
                     <div class="w-100">
                         <h5><i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: 15px;"></i> Documents à signer</h5>
                     </div>
@@ -283,7 +283,7 @@
                         <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
                     </div>
                 </div>
-                <div id="myFavorites" class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-3" style="width: 60%;">
+                <div id="myFavorites" class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
                     <div class="w-100">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>

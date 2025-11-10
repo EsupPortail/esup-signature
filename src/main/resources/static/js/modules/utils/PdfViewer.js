@@ -313,13 +313,15 @@ export class PdfViewer extends EventFactory {
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    if(self.hasTouchSupport()) {
-                        annotationLayer.style.width = Math.round(pdfPageView.width * 2) + "px";
-                        annotationLayer.style.height = Math.round(pdfPageView.height * 2) + "px";
-                    } else {
-                        annotationLayer.style.width = Math.round(pdfPageView.width) + "px";
-                        annotationLayer.style.height = Math.round(pdfPageView.height) + "px";
-                    }
+                    // Utiliser les dimensions du viewport au lieu de pdfPageView.width/height
+                    const viewport = pdfPageView.viewport;
+
+                    annotationLayer.style.width = Math.floor(viewport.width) + "px";
+                    annotationLayer.style.height = Math.floor(viewport.height) + "px";
+
+                    // Appliquer la même transformation que le canvas
+                    annotationLayer.style.transform = `scale(${pdfPageView.outputScale.sx}, ${pdfPageView.outputScale.sy})`;
+                    annotationLayer.style.transformOrigin = '0 0';
                 }
                 self.pages.push(page);
                 resolve("ok");
@@ -799,7 +801,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut(e) {
-        if (this.scale <= 0.4) {
+        if ((this.scale <= 0.4 && !this.hasTouchSupport()) || this.scale <= 0.3) {
             return;
         }
         this.scale = this.scale - this.zoomStep;

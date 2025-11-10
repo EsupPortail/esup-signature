@@ -90,6 +90,18 @@ export class GlobalUi {
             document.addEventListener('keydown', escHandler);
         });
 
+        document.querySelector('#shortcuts')
+            ?.querySelectorAll('a[role="button"]')
+            .forEach(el => {
+                el.addEventListener('keydown', e => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        el.click();
+                    }
+                });
+            });
+
         document.addEventListener('hidden.bs.modal', function (e) {
             const modal = e.target;
             if (modal._escHandler) {

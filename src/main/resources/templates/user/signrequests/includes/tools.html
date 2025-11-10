@@ -50,7 +50,7 @@
             <button id="rotateright" class="btn btn-light btn-outline-dark me-1 d-none">
                 <i class="fa-solid fa-redo"></i>
             </button>
-            <div class="border ms-1 me-2"></div>
+            <div class="border ms-1 me-2 d-none d-lg-block"></div>
             <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                 <button class="btn btn-warning me-1 d-none d-lg-block"
                         name="changeMode"
