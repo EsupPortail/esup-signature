@@ -36,7 +36,7 @@
                             <div class="form-group d-inline">
                                 <div>
                                     <h3 class="d-inline">
-                                        <span class="badge rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
+                                        <span class="badge rounded-pill rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
                                     </h3>
                                     <b th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></b>
                                     <th:block th:if="${step.users.size() > 0}">

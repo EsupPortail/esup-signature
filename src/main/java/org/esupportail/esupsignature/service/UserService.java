@@ -778,7 +778,7 @@ public class UserService {
         return new ArrayList<>(users);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
         User authUser = getByEppn(authUserEppn);
         Map<String, Object> keystore = new HashMap<>();
@@ -788,7 +788,7 @@ public class UserService {
         return keystore;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getSignatureByUserAndId(String authUserEppn, Long id) throws IOException {
         Map<String, Object> signature = new HashMap<>();
         User authUser = getByEppn(authUserEppn);

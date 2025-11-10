@@ -10,11 +10,11 @@
         </td>
         <td class="w-20 d-none d-lg-table-cell">
             <div class="d-lg-inline-flex align-items-center gap-1">
-                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
+                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
                 <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
                 <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
                 <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
+                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge rounded-pill bg-light text-light border-0">0</button>
                 <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
                         th:text="${signBook.postits.size()}" type="button"
                         class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
@@ -38,9 +38,6 @@
                     </th:block>
                 </ul>
             </div>
-        </td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
-            <span th:text="${signBook.workflowName}"></span>
         </td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
             <i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span>
@@ -66,8 +63,11 @@
             </div>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xxxxl-table-cell text-nowrap" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xl-table-cell">
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td text-break d-none d-xxl-table-cell overflow-hidden" th:data-href="'/user/signrequests/' + ${signRequest.id}">
+            <span th:text="${signBook.workflowName}"></span>
+        </td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-xxxxl-table-cell overflow-hidden" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" class="clickable-td d-none d-sm-table-cell">
             <span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
         </td>
         <td class="d-none d-xxxl-table-cell">

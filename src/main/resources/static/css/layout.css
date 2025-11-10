@@ -244,7 +244,7 @@ header {
     width: 100%;
     z-index: 1029;
     position: fixed;
-    padding-left: 10px;
+    /*padding-left: 10px;*/
 }
 
 .tools-admin {

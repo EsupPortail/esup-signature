@@ -50,11 +50,11 @@
             <button id="rotateright" class="btn btn-light btn-outline-dark me-1 d-none">
                 <i class="fa-solid fa-redo"></i>
             </button>
-            <div class="border ms-1 me-2"></div>
+            <div class="border ms-1 me-2 d-none d-lg-block"></div>
             <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                 <button class="btn btn-warning me-1 d-none d-lg-block"
                         name="changeMode"
-                        id="changeMode1"><i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span> <span class="badge bg-dark" th:text="${comments.size()}"></span></button>
+                        id="changeMode1"><i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span> <span class="badge rounded-pill bg-dark" th:text="${comments.size()}"></span></button>
             </th:block>
             <div id="insert-btn-div" class="d-none d-sm-block">
                 <button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary"
@@ -120,7 +120,7 @@
                 <i class="fa-solid fa-paperclip"></i> <span class="d-none d-xxxxl-inline">Pièces jointes</span>
                 <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
                     th:text="${attachments.size() + signRequest.links.size()}"
-                    class="badge bg-primary"></div>
+                    class="badge rounded-pill bg-primary"></div>
             </button>
             <button th:if="${editable}" class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
                     data-bs-target="#addCommentModal">

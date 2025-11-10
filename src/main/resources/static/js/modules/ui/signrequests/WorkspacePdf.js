@@ -339,7 +339,7 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        $("#content").on('mousedown', e => this.clickAction(e));
+        $("#pdf").on('mousedown', e => this.clickAction(e));
     }
 
     initForm() {

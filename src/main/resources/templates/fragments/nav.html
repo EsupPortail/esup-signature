@@ -11,6 +11,9 @@
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar_toggle" aria-controls="navbar_toggle" aria-expanded="false" aria-label="Ouvrir le menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
@@ -86,7 +89,7 @@
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75' : ''">
                         <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge bg-danger d-none d-lg-inline ms-1">!</span>
+                        <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge rounded-pill bg-danger d-none d-lg-inline ms-1">!</span>
                     </a>
                 </li>
             </ul>

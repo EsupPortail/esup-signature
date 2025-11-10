@@ -84,6 +84,7 @@ public class UserWsSecureController {
         return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
+
     @GetMapping(value = "/get-sign-image/{id}")
     public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, HttpServletResponse response) throws IOException {
         Map<String, Object> signature = userService.getSignatureByUserAndId(userEppn, id);
@@ -130,6 +131,7 @@ public class UserWsSecureController {
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
         response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
+        response.setHeader("Cache-Control", "public, max-age=86400");
         response.setContentType(contentType);
         IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);
