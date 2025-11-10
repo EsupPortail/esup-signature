@@ -27,8 +27,6 @@ public class JpaTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private StandardServiceRegistry serviceRegistry;
-
     @Test
     public void testJpaConnexion() {
         entityManager.createNativeQuery("SELECT 1").getSingleResult();
@@ -37,7 +35,7 @@ public class JpaTest {
     @Test
     public void testUpdateDatabase() throws ClassNotFoundException {
         Session session = (Session) entityManager.getDelegate();
-        serviceRegistry = new StandardServiceRegistryBuilder().applySettings(session.getSessionFactory().getProperties()).build();
+        StandardServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(session.getSessionFactory().getProperties()).build();
         MetadataSources metadataSources = new MetadataSources(serviceRegistry);
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
@@ -46,6 +44,7 @@ public class JpaTest {
             metadataSources.addAnnotatedClass(Class.forName(beanDefinition.getBeanClassName()));
         }
         Metadata metadata =  metadataSources.buildMetadata();
+        System.out.println(metadata.toString());
     }
 
 }
