@@ -57,7 +57,7 @@
         <div class="hr"><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
             title="Sessions courantes" href="/admin/currentsessions" class="btn text-left rounded-5 d-flex align-items-center gap-2">
-            <i class="fi fi-rr-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary"></span>
+            <i class="fi fi-rr-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
         </a>
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
             title="Switch user" href="/admin/su" class="btn text-left rounded-5 d-flex align-items-center gap-2">

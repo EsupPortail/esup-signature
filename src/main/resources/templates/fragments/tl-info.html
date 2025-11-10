@@ -164,7 +164,7 @@
 		<div class="mb-1 col-xl-9">
 			<p class="m-0 next-update" th:text="${parsingResult.nextUpdateDate != null} ?
 					${#dates.format(parsingResult.nextUpdateDate, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></p>
-			<span class="badge bg-danger" th:if="${parsingResult.nextUpdateDate != null and parsingResult.nextUpdateDate.before(#dates.createNow())}" th:text="#{label.summary.tl.info}"></span>
+			<span class="badge rounded-pill bg-danger" th:if="${parsingResult.nextUpdateDate != null and parsingResult.nextUpdateDate.before(#dates.createNow())}" th:text="#{label.summary.tl.info}"></span>
 		</div>
 	</div>
 	<div class="row" th:if="${parsingResult != null and parsingResult.isResultExist()}">
@@ -221,7 +221,7 @@
 <div th:fragment="tl-tsp(serviceProvider, sp)">
 	<div class="card mb-2" >
 		<div class="card-header cursor-pointer" data-bs-toggle="collapse" aria-expanded="true" th:data-bs-target="'#countryProviders' + ${sp.index}">
-			<span class="badge bg-secondary pull-right mt-1" th:text="${#lists.size(serviceProvider.services)}" title="Number of Trust Services"></span>
+			<span class="badge rounded-pill bg-secondary pull-right mt-1" th:text="${#lists.size(serviceProvider.services)}" title="Number of Trust Services"></span>
 			<th:block th:each="name : ${serviceProvider.names}">
 				<h3 th:if="${name.key == 'en'}" th:text="${name.value[0]}" th:remove="tag"></h3>
 			</th:block>
@@ -357,7 +357,7 @@
 	<div class="card card-primary" th:if="${not #lists.isEmpty(service.certificates)}">
 		<div class="card-header cursor-pointer" data-bs-toggle="collapse"
 			 th:data-bs-target="'#countryCertificates' + ${country} + ${sp.index} + '-' + ${ser.index}">
-			<span class="badge bg-secondary pull-right mt-1" th:text="${#lists.size(service.certificates)}" title="Number of Certificates"></span>
+			<span class="badge rounded-pill bg-secondary pull-right mt-1" th:text="${#lists.size(service.certificates)}" title="Number of Certificates"></span>
 			<span th:text="#{label.certificates}"></span>
 		</div>
 		<div class="card-body collapse in" th:id="'countryCertificates' + ${country} + ${sp.index} + '-' + ${ser.index}">
