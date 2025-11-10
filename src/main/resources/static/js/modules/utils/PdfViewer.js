@@ -313,14 +313,23 @@ export class PdfViewer extends EventFactory {
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    annotationLayer.style.width = Math.round(pdfPageView.viewport.width) + "px";
-                    annotationLayer.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                    if(self.hasTouchSupport()) {
+                        annotationLayer.style.width = Math.round(pdfPageView.width * 2) + "px";
+                        annotationLayer.style.height = Math.round(pdfPageView.height * 2) + "px";
+                    } else {
+                        annotationLayer.style.width = Math.round(pdfPageView.width) + "px";
+                        annotationLayer.style.height = Math.round(pdfPageView.height) + "px";
+                    }
                 }
                 self.pages.push(page);
                 resolve("ok");
             });
             pdfPageView.draw();
         });
+    }
+
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
 
     postRenderAll() {
