@@ -24,6 +24,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.StringUtils;
@@ -339,7 +340,7 @@ public class WorkflowService {
         signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
     }
 
-    @Transactional
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public Workflow computeWorkflow(Long workflowId, List<WorkflowStepDto> steps, String userEppn, boolean computeForDisplay) throws EsupSignatureRuntimeException {
         try {
             Workflow modelWorkflow = getById(workflowId);
@@ -350,7 +351,7 @@ public class WorkflowService {
             }
             int stepNumber = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
-                entityManager.detach(workflowStep);
+//                entityManager.detach(workflowStep);
                 replaceStepSystemUsers(userEppn, workflowStep);
                 if(!computeForDisplay) {
                     int finalStep = stepNumber;
@@ -394,7 +395,7 @@ public class WorkflowService {
                 }
                 stepNumber++;
             }
-            entityManager.detach(modelWorkflow);
+//            entityManager.detach(modelWorkflow);
             return modelWorkflow;
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);

@@ -8,7 +8,6 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.service.CommentService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -40,14 +39,13 @@ public class SignRequestController {
     private final UserService userService;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
-    private final CommentService commentService;
+
     private final OtpService otpService;
 
-    public SignRequestController(UserService userService, SignRequestService signRequestService, SignBookService signBookService, CommentService commentService, OtpService otpService) {
+    public SignRequestController(UserService userService, SignRequestService signRequestService, SignBookService signBookService, OtpService otpService) {
         this.userService = userService;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
-        this.commentService = commentService;
         this.otpService = otpService;
     }
 

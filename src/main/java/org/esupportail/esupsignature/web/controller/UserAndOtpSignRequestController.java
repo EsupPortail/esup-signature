@@ -73,36 +73,82 @@ public class UserAndOtpSignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
+
+        long startTime = System.currentTimeMillis();
+        long stepTime = startTime;
+
+        // Initialisation
         String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
+
+        // 1. Récupération SignRequest
         SignRequest signRequest = signRequestService.getById(id);
+        logTime("getById", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // Configuration profil
         if(path.startsWith("/otp")) {
             urlProfil = "otp";
             model.addAttribute("displayNotif", false);
             model.addAttribute("isTempUsers", false);
         } else {
             model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
+            logTime("isDisplayNotif", stepTime);
+            stepTime = System.currentTimeMillis();
+
             model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
+            logTime("isTempUsers", stepTime);
+            stepTime = System.currentTimeMillis();
         }
+
+        // 2. Vérifications de droits
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        logTime("checkSignRequestSignable", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", urlProfil);
+
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
+        logTime("checkUserManageRights", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 3. Données de base
         model.addAttribute("signRequest", signRequest);
         model.addAttribute("signBook", signRequest.getParentSignBook());
         Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
         model.addAttribute("workflow", workflow);
+
+        // 4. Récupération des données liées
         model.addAttribute("postits", signRequestService.getPostits(id));
+        logTime("getPostits", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("comments", signRequestService.getComments(id));
+        logTime("getComments", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("spots", signRequestService.getSpots(id));
+        logTime("getSpots", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 5. Alertes pièces jointes
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
-        model.addAttribute("attachmentAlert", attachmentAlert);
+        logTime("isAttachmentAlert", stepTime);
+        stepTime = System.currentTimeMillis();
+
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
+        logTime("isAttachmentRequire", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        model.addAttribute("attachmentAlert", attachmentAlert);
         model.addAttribute("attachmentRequire", attachmentRequire);
         model.addAttribute("currentSignType", signRequest.getCurrentSignType());
         model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
         model.addAttribute("currentStepMultiSign", true);
         model.addAttribute("currentStepSingleSignWithAnnotation", true);
+
+        // 6. Configuration étape courante
         SignLevel currentStepMinSignLevel = SignLevel.simple;
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
             currentStepMinSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel();
@@ -112,22 +158,55 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
             model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
         }
+
         model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
+
+        // 7. Documents à signer
         List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
+        logTime("getToSignDocuments", stepTime);
+        stepTime = System.currentTimeMillis();
+
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
         if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
+
+        // 8. Certificats
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
+        logTime("getCheckedSealCertificates", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 9. Pièces jointes
         model.addAttribute("attachments", signRequestService.getAttachments(id));
+        logTime("getAttachments", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 10. Navigation
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
+        logTime("getNextSignBook", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("nextSignBook", nextSignBook);
         model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), nextSignBook));
+        logTime("getNextSignRequest", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 11. Champs et paramètres
         model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
+        logTime("prefillSignRequestFields", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
+        logTime("getToUseSignRequestParams", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
+        logTime("getFavoriteSignRequestParamsJson", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 12. Images de signature
         try {
             Object userShareString = httpSession.getAttribute("userShareId");
             Long userShareId = null;
@@ -135,18 +214,32 @@ public class UserAndOtpSignRequestController {
                 userShareId = Long.valueOf(userShareString.toString());
             }
             List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
+            logTime("getSignImagesForSignRequest", stepTime);
+            stepTime = System.currentTimeMillis();
+
             model.addAttribute("signImages", signImages);
         } catch (EsupSignatureUserException e) {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
+
         model.addAttribute("signatureIds", new ArrayList<>());
+
+        // 13. Validation et rapports (POTENTIELLEMENT TRÈS LENT)
         Reports reports = signService.validate(id);
+        logTime("signService.validate", stepTime);
+        stepTime = System.currentTimeMillis();
+
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
+
             List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
+            logTime("getAuthorizedSignWiths", stepTime);
+            stepTime = System.currentTimeMillis();
+
             if(signable) {
                 model.addAttribute("signWiths", signWiths);
             }
+
             model.addAttribute("signatureIssue", false);
             if(!reports.getSimpleReport().getSignatureIdList().isEmpty()) {
                 for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
@@ -161,12 +254,21 @@ public class UserAndOtpSignRequestController {
         } else {
             if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
+
         model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
+
+        // 14. Rapport et audit trail
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
+                logTime("generateShortReport", stepTime);
+                stepTime = System.currentTimeMillis();
             }
+
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+            logTime("getAuditTrailByToken", stepTime);
+            stepTime = System.currentTimeMillis();
+
             if(auditTrail != null) {
                 model.addAttribute("auditTrail", auditTrail);
                 if(auditTrail.getDocumentSize() != null) {
@@ -174,44 +276,102 @@ public class UserAndOtpSignRequestController {
                 }
             }
         }
+
+        // 15. Certificats et édition
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
+        logTime("checkSealCertificat", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("allSignWiths", SignWith.values());
+
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
+        logTime("getCertificatByUser", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
+        logTime("isEditable", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
+        logTime("isSigned", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
+        logTime("isCurrentUserAsSigned", stepTime);
+        stepTime = System.currentTimeMillis();
+
+        // 16. Workflow steps
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
             model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
+            logTime("getWorkflowStepsFromSignRequest", stepTime);
+            stepTime = System.currentTimeMillis();
         }
+
+        // 17. Logs de refus
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
+        logTime("getRefuseLogs", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
+        logTime("checkUserViewRights", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("frameMode", frameMode);
+
+        // 18. Form data
         if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
             model.addAttribute("action", signRequest.getData().getForm().getAction());
             model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
         }
+
+        // 19. Visa alert
         if(signable
                 && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
                 && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
             model.addAttribute("message", new JsMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
-
         }
+
+        // 20. Form
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
+        logTime("getBySignBook", stepTime);
+        stepTime = System.currentTimeMillis();
+
         if(data != null && data.getForm() != null) {
             model.addAttribute("form", data.getForm());
         }
+
+        // 21. Logs complets
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
+        logTime("getFullBySignRequest", stepTime);
+        stepTime = System.currentTimeMillis();
+
         model.addAttribute("logs", logs);
+
         if(!toSignDocuments.isEmpty()) {
             model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
         }
+
+        // 22. Destinataires externes
         if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported)) {
             model.addAttribute("auditTrailChecked", true);
             model.addAttribute("externalsRecipients", signRequestService.getExternalRecipients(signRequest.getId()));
+            logTime("getExternalRecipients", stepTime);
+            stepTime = System.currentTimeMillis();
         }
+
+        long totalTime = System.currentTimeMillis() - startTime;
+        logger.info("PERFORMANCE - show() total execution time: {}ms", totalTime);
+
         return "user/signrequests/show";
+    }
+
+    private void logTime(String operation, long startTime) {
+        long duration = System.currentTimeMillis() - startTime;
+        if(duration > 50) { // Log seulement si > 50ms
+            logger.info("PERFORMANCE - {}: {}ms", operation, duration);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
