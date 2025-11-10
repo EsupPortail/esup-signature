@@ -72,7 +72,7 @@ public class UserAndOtpSignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, @RequestParam(required = false) String annotation, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
         String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
         SignRequest signRequest = signRequestService.getById(id);
@@ -85,6 +85,7 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
         }
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        model.addAttribute("annotation", annotation);
         model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", urlProfil);
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));

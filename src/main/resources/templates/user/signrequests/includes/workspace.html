@@ -6,9 +6,10 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-    <div id="display-pdf-alerts-dropdown" class="dropdown d-none d-lg-block" style="position: fixed; width: 100%;z-index: 1030;">
-        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light btn-outline-dark dropdown-toggle pdf-alerts-btn d-none d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''">
-            <i class="fa-solid fa-bell"></i> Afficher les alertes
+    <div id="display-pdf-alerts-dropdown" class="dropdown d-none d-lg-block" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
+        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-none d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
+        title="Afficher les alertes">
+            <i class="fa-solid fa-bell"></i> 
         </button>
         <script>
             const displayPdfAlertsBtn = $('#display-pdf-alerts-btn');
@@ -127,6 +128,9 @@
             </div>
         </div>
     </div>
+    <script>
+        displayPdfAlertsBtn.click()
+    </script>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf" class="mx-auto" style="position: relative !important;">
