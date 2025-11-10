@@ -310,7 +310,7 @@ dd {
     --bs-bg-opacity: 1;
     background-color: #FFF740 !important;
     color: black;
-    border: 1px solid black !important;
+    border: 1px solid #1a1a1a !important;
 }
 
 .postit-global > .ui-resizable-s {

@@ -109,7 +109,7 @@
                                     <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
                                         <tr>
                                             <td>
-                                                <span class="badge rounded-5 text-bg-primary" th:text="${signBook.liveWorkflow.currentStepNumber}" th:title="${signBook.liveWorkflow.workflow.workflowSteps.size >= signBook.liveWorkflow.currentStepNumber ? signBook.liveWorkflow.workflow.workflowSteps.get(signBook.liveWorkflow.currentStepNumber - 1).description : ''}"></span>
+                                                <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${signBook.liveWorkflow.currentStepNumber}" th:title="${signBook.liveWorkflow.workflow.workflowSteps.size >= signBook.liveWorkflow.currentStepNumber ? signBook.liveWorkflow.workflow.workflowSteps.get(signBook.liveWorkflow.currentStepNumber - 1).description : ''}"></span>
                                             </td>
                                             <td class="w-100" th:title="${recipient.user.email}">
                                                 <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>

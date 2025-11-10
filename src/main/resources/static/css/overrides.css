@@ -290,7 +290,7 @@ textarea:invalid {
     text-align: left;
     font-size: 100%;
     font-weight: 500;
-    border-radius: revert !important;
+    /*border-radius: revert !important;*/
     height: 25px;
     display: inline-block;
     padding: 0 !important;
@@ -302,6 +302,10 @@ textarea:invalid {
     padding: 0 6px 1px 6px;
     line-height: 25px;
     color: white;
+    border-top-left-radius: var(--bs-border-radius-pill) !important;
+    border-bottom-left-radius: var(--bs-border-radius-pill) !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
 }
 
 .badge-status > p {
