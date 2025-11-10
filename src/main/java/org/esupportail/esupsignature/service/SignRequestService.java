@@ -1317,7 +1317,7 @@ public class SignRequestService {
      * @throws EsupSignatureRuntimeException Si une erreur non contrôlée spécifique à l'application survient.
      * @throws EsupSignatureException Si une exception liée à la logique métier survient, comme une interdiction de téléchargement.
      */
-    @Transactional
+    @Transactional(readOnly = true)
 	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
 		if(!force && !disposition.equals("form-data")
@@ -1355,7 +1355,7 @@ public class SignRequestService {
      * @throws EsupSignatureRuntimeException si une erreur spécifique à l'application survient pendant le traitement
      * @throws WriterException si une erreur survient lors de la génération du QR code
      */
-    @Transactional
+    @Transactional(readOnly = true)
 	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
         if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {

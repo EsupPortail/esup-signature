@@ -2109,7 +2109,7 @@ public class SignBookService {
      * @throws EsupSignatureUserException Exception levée en cas d'erreur liée à l'utilisateur.
      * @throws IOException Exception levée en cas d'erreur d'entrée/sortie lors de la récupération des images.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
         User user = userService.getByEppn(userEppn);
