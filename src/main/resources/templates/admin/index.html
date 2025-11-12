@@ -15,64 +15,67 @@
             <div class="card">
                 <div class="card-body">
                     <h5>Supervision</h5>
-                    <div class="row mt-4 mb-4">
-                        <a title="Toutes les demandes" type="button" href="/admin/signbooks" class="btn text-center col-2">
-                            <i class="fa-solid fa-paste fa-2xl"></i><br><span>Demandes</span>
+                    <div class="row mt-4 mb-4 gap-3">
+                        <a title="Toutes les demandes" type="button" href="/admin/signbooks" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-paste" style="font-size: 40px;"></i><br><span>Demandes</span>
                         </a>
-                        <a title="Tous les logs" type="button" href="/admin/logs" class="btn text-center col-2">
-                            <i class="fa-solid fa-clipboard-list fa-2xl"></i><br><span>Logs</span>
+                        <a title="Tous les logs" type="button" href="/admin/logs" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-overview" style="font-size: 40px;"></i><br><span>Logs</span>
                         </a>
-                        <a title="Tous les utilisateurs" type="button" href="/admin/users" class="btn text-center col-2">
-                            <i class="fa-solid fa-user-group fa-2xl"></i><br><span>Utilisateurs</span>
+                        <a title="Tous les utilisateurs" type="button" href="/admin/users" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-users-alt" style="font-size: 40px;"></i><br><span>Utilisateurs</span>
                         </a>
-                        <a title="Statistiques" type="button" href="/admin/charts" class="btn text-center col-2">
-                            <i class="fa-solid fa-chart-column fa-2xl"></i><br><span>Statistiques</span>
+                        <a title="Statistiques" type="button" href="/admin/charts" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-chart-histogram" style="font-size: 40px;"></i><br><span>Statistiques</span>
                         </a>
-                        <a title="Exports" type="button" href="/admin/export" class="btn text-center col-2">
-                            <i class="fa-solid fa-file-export fa-2xl"></i><br><span>Exports</span>
+                        <a title="Exports" type="button" href="/admin/export" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-file-export" style="font-size: 40px;"></i><br><span>Exports</span>
                         </a>
                     </div>
                     <hr class="newHr">
                     <h5>Configuration</h5>
-                    <div class="row mt-4 mb-4">
-                        <a title="Circuits de signature" href="/admin/workflows" class="btn text-center col-2">
-                            <i class="fa-solid fa-project-diagram project-diagram-color fa-2xl"></i><br><span>Circuits</span>
+                    <div class="row mt-4 mb-4 gap-3">
+                        <a title="Circuits de signature" href="/admin/workflows" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 40px;"></i><br><span>Circuits</span>
                         </a>
-                        <a title="Formulaires" href="/admin/forms" class="btn text-center col-2">
-                            <i class="fa-solid fa-file-alt file-alt-color fa-2xl"></i><br><span>Formulaires</span>
+                        <a title="Formulaires" href="/admin/forms" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 40px;"></i><br><span>Formulaires</span>
                         </a>
-                        <a title="Messages" href="/admin/messages" class="btn text-center col-2">
-                            <i class="fa-solid fa-envelope fa-2xl"></i><br><span>Messages</span>
+                        <a title="Formulaires" href="/admin/tags" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-tags" style="font-size: 40px;"></i><br><span>Tags</span>
                         </a>
-                        <a title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn text-center col-2">
-                            <i class="fa-solid fa-user-tie fa-2xl"></i><br><span>Gestionnaires de rôles</span>
+                        <a title="Messages" href="/admin/messages" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-megaphone" style="font-size: 40px;"></i><br><span>Messages</span>
                         </a>
-                        <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn text-center col-2">
-                            <i class="fa-solid fa-certificate fa-2xl"  th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
+                        <a title="Gestionnaires de rôles" href="/admin/roles-managers" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-employee-man-alt" style="font-size: 40px;"></i><br><span>Gestionnaires de rôles</span>
                         </a>
-                        <a title="Tokens API" type="button" href="/admin/ws-access-token" class="btn text-center col-2">
-                            <i class="fa-solid fa-key fa-2xl"></i><br>Tokens API
+                        <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-diploma" style="font-size: 40px;" th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
+                        </a>
+                        <a title="Tokens API" type="button" href="/admin/ws-access-token" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-key" style="font-size: 40px;"></i><br>Tokens API
                         </a>
                     </div>
                     <hr class="newHr">
                     <h5>Outils</h5>
-                    <div class="row mt-4 mb-4">
-                        <a title="Sessions courantes" href="/admin/currentsessions" class="btn text-center col-2">
-                            <i class="fa-solid fa-user-lock fa-2xl"></i>
+                    <div class="row mt-4 mb-4 gap-3">
+                        <a title="Sessions courantes" href="/admin/currentsessions" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-user-lock" style="font-size: 40px;"></i>
                             <br>
-                            <span>Sessions courantes</span> <span th:text="${nbSessions}" class="badge bg-primary"></span>
+                            <span>Sessions courantes</span> <span th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
                         </a>
-                        <a title="Switch user" href="/admin/su" class="btn text-center col-2">
-                            <i class="fa-solid fa-user-secret fa-2xl"></i><br><span>Switch user</span>
+                        <a title="Switch user" href="/admin/su" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-spy" style="font-size: 40px;"></i><br><span>Switch user</span>
                         </a>
-                        <a title="Sessions courantes" href="/admin/tasks" class="btn text-center col-2">
-                            <i class="fa-solid fa-tasks fa-2xl"></i><br><span>Tâches planifiées</span>
+                        <a title="Sessions courantes" href="/admin/tasks" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-completed" style="font-size: 40px;"></i><br><span>Tâches planifiées</span>
                         </a>
-                        <a title="Statut DSS" type="button" href="/admin/dss" class="btn text-center col-2">
-                            <i class="fa-solid fa-shield-heart fa-2xl" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'">Statut DSS</span>
+                        <a title="Statut DSS" type="button" href="/admin/dss" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-shield-trust" style="font-size: 40px;" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'">Statut DSS</span>
                         </a>
-                        <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn text-center col-2">
-                            <i class="fa-solid fa-code fa-2xl"></i><br><span>APIs Doc</span>
+                        <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn btn-light py-4 text-center col-2">
+                            <i class="fi fi-tr-api" style="font-size: 40px;"></i><br><span>APIs Doc</span>
                         </a>
                     </div>
                 </div>

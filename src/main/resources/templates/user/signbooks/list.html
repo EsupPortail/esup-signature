@@ -25,7 +25,7 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <a type="button" id="massSignModalButton"
-                            data-bs-toggle="modal" data-bs-target="#massSignModal"
+                            data-bs-toggle="modal" data-bs-target="#signModal"
                             title="Signer en masse les demandes sélectionnées"
                             class="btn-floating btn-lg bg-success d-none">
                             <i class="fa-solid fa-file-signature fa-2xl"></i>
@@ -61,12 +61,12 @@
                     </li>
                 </ul>
             </div>
-            <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2" style="outline: none;">
+            <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-11 p-0 m-2" style="outline: none;">
                 <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                 <table class="table table-borderless table-hover table-light">
-                <thead class="table-secondary">
+                <thead class="table-secondary" style="height: 90px;">
                 <tr style="z-index: 2;">
-                    <th class="w-20 d-none d-lg-table-cell">
+                    <th class="w-20 d-none d-lg-table-cell" style="z-index: 3;">
                         <div class="dropdown position-relative">
                             <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                 <i class="fa-solid fa-ellipsis-v"></i>
@@ -95,6 +95,12 @@
                         </div>
                     </th>
                     <th class="w-20 d-none d-lg-table-cell"></th>
+                    <th class="text-center" style="width: 35%;">
+                        <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                            <option data-placeholder="true"></option>
+                            <option value="all">Tout</option>
+                        </select>
+                    </th>
                     <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
                         <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
@@ -102,12 +108,6 @@
                             <th:block th:each="workflow : ${workflowNames}">
                                 <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
                             </th:block>
-                        </select>
-                    </th>
-                    <th class="text-center" style="width: 10%;">
-                        <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
-                            <option data-placeholder="true"></option>
-                            <option value="all">Tout</option>
                         </select>
                     </th>
                     <th class="d-none d-xxxxl-table-cell">
@@ -122,7 +122,7 @@
                             <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fa-solid fa-sort"></i></a>
                         </div>
                     </th>
-                    <th class="d-none d-xl-table-cell">
+                    <th class="d-none d-sm-table-cell">
                         <div class="d-flex text-center">
                             <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
                             <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fa-solid fa-sort"></i></a>
@@ -136,7 +136,7 @@
                     </th>
                     <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
                     <th class=""><a class="sorted" sd:pagination-sort="status">Statut</a></th>
-                    <th class=""><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
+                    <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
                     <th >Actions</th>
                 </tr>
                 </thead>
@@ -156,45 +156,7 @@
         </div>
     </div>
 </main>
-<div data-bs-focus="false" class="modal fade" id="massSignModal" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="checkCertSignModalLabel">Signature en masse</h3>
-                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning">Le système de signature en masse essaie de signer toutes les demandes sélectionnées, peu importe leur type ou leur statut. Cependant, il peut ne pas prendre en compte certaines demandes en fonction du type de signature, du statut du document ou de la présence d'un emplacement de signature. Après la signature, un rapport d'erreurs est généré pour identifier les problèmes éventuels.</div>
-                <div id="selectTypeDiv" class="alert alert-secondary mt-1">
-                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
-                    <div class="input-group mt-2">
-                        <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>
-                            <th:block th:each="signWith : ${signWiths}">
-                                <th:block th:if="${signWith.name != 'sealCert'}">
-                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                </th:block>
-                                <th:block th:if="${signWith.name == 'sealCert'}">
-                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                </th:block>
-                            </th:block>
-                        </select>
-                        <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
-                    </div>
-                    <input type="text" autocomplete="username" name="username" class="d-none">
-                    <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Mot de passe du keystore" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button id="launchMassSignButton" class="btn btn-success" title="Lancer la signature en masse" autofocus>
-                    <i class="fa-solid fa-signature"></i> Lancer la signature en masse
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<div th:replace="~{fragments/sign-modal :: sign-modal}"></div>
 <div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">

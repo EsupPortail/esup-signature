@@ -37,4 +37,6 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByManagersRolesNotNull();
     Long countByEmailIgnoreCaseAndUserType(String email, UserType userType);
     User findByPhone(String phone);
+
+    List<User> findAllByUserType(UserType userType);
 }

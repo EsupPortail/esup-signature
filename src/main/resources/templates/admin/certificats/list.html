@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="certificats" type="java.util.List<org.esupportail.esupsignature.entity.Certificat>"*/-->
-<!--/*@thymesVar id="sealCertificats" type="java.util.Map<eu.europa.esig.dss.token.DSSPrivateKeyEntry, java.lang.Boolean>"*/-->
+<!--/*@thymesVar id="sealCertificatPropertieses" type="java.util.ArrayList<org.esupportail.esupsignature.config.certificat.SealCertificatProperties>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -15,33 +15,41 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card mb-1 col-lg-10 mx-auto" th:if="${sealCertificats != null && sealCertificats.size() > 0}">
+            <div class="card mb-1 mx-auto" th:if="${sealCertificatPropertieses != null && !sealCertificatPropertieses.isEmpty()}">
                 <div class="card-body">
                     <h5 class="text-center"><b>Certificat cachet</b></h5>
                     <table class="table table-sm table-hover">
                         <thead class="table-secondary">
                         <tr>
+                            <th>Nom</th>
+                            <th>Secours de</th>
                             <th>Titre</th>
+                            <th>Certificat</th>
+                            <th>Rôles</th>
                             <th>Date de création</th>
                             <th>Date de fin</th>
                             <th class="text-center">Validité eIDas</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <th:block th:each="certificat : ${sealCertificats.entrySet()}">
+                        <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
                             <tr>
-                                <td style="width: 600px; word-break: break-all" th:text="${certificat.getKey().certificate.subject.principal}"></td>
-                                <td th:text="${#dates.format(certificat.getKey().certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${sealCertificatProperties.sealCertificatName}"></td>
+                                <td th:text="${sealCertificatProperties.sealSpareOf}"></td>
+                                <td th:text="${sealCertificatProperties.sealCertificatTitle}"></td>
+                                <td style="width: 600px; word-break: break-all" th:text="${sealCertificatProperties.dssPrivateKeyEntry.certificate.subject.principal}"></td>
+                                <td th:text="${sealCertificatProperties.roles}"></td>
+                                <td th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td>
-                                    <i th:if="${certificat.getKey().certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${certificat.getKey().certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-xmark text-danger fa-2x"></i>
-                                    <span th:text="${#dates.format(certificat.getKey().certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
+                                    <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
+                                    <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-xmark text-danger fa-2x"></i>
+                                    <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
 
                                 </td>
 
                                 <td class="text-center">
-                                    <i th:if="${certificat.getValue()}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${certificat.getValue()}" class="fa-solid fa-xmark text-danger fa-2x"></i>
+                                    <i th:if="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-check text-success fa-2x"></i>
+                                    <i th:unless="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-xmark text-danger fa-2x"></i>
                                 </td>
                             </tr>
                         </th:block>
@@ -49,11 +57,15 @@
                     </table>
                 </div>
             </div>
-
-            <div id="addButton" class="fixed-action-simple-btn" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+            <div class="fixed-action-simple-btn gap-4" style="flex-direction: column">
+            <div id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn-floating btn-lg bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
             </div>
-            <div class="card mb-1 col-lg-10 mx-auto">
+            <div id="refreshButton" onmouseover="$('#refreshButton').toggleClass('active');" onmouseout="$('#refreshButton').toggleClass('active');">
+                <a title="Rafraichir les certificats" href="/admin/certificats/refresh" class="btn-floating btn-lg bg-secondary"><i class="fa-solid fa-sync fa-2xl"></i></a>
+            </div>
+            </div>
+            <div class="card mb-1 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Certificats pour les rôles</b></h5>
                     <table class="table table-sm table-hover">

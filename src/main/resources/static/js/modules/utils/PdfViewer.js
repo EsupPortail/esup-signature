@@ -307,17 +307,31 @@ export class PdfViewer extends EventFactory {
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
                 textLayerMode: 1,
-                renderer: "canvas",
+                renderer: "canvas"
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
-                container.style.width = Math.round(pdfPageView.viewport.width) + "px";
-                container.style.height = Math.round(pdfPageView.viewport.height) + "px";
+                const annotationLayer = container.querySelector('.annotationLayer');
+                if (annotationLayer) {
+                    // Utiliser les dimensions du viewport au lieu de pdfPageView.width/height
+                    const viewport = pdfPageView.viewport;
+
+                    annotationLayer.style.width = Math.floor(viewport.width) + "px";
+                    annotationLayer.style.height = Math.floor(viewport.height) + "px";
+
+                    // Appliquer la même transformation que le canvas
+                    annotationLayer.style.transform = `scale(${pdfPageView.outputScale.sx}, ${pdfPageView.outputScale.sy})`;
+                    annotationLayer.style.transformOrigin = '0 0';
+                }
                 self.pages.push(page);
                 resolve("ok");
             });
             pdfPageView.draw();
         });
+    }
+
+    hasTouchSupport() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
 
     postRenderAll() {
@@ -374,26 +388,29 @@ export class PdfViewer extends EventFactory {
     }
 
     saveValues(items) {
-        console.log("saving " + items.length + " fields");
-        if(this.dataFields.length > 0) {
-            for (let i = 0; i < this.dataFields.length; i++) {
-                let dataField = this.dataFields[i];
-                let item = items.filter(function (e) {
-                    return e.fieldName != null && e.fieldName === dataField.name
-                })[0];
-                if (item != null && item.fieldName != null) {
-                    this.saveValue(item);
-                } else {
-                    if(this.savedFields.get(dataField.name) == null) {
-                        this.savedFields.set(dataField.name, dataField.defaultValue);
+        return new Promise((resolve, reject) => {
+            console.log("saving " + items.length + " fields");
+            if (this.dataFields.length > 0) {
+                for (let i = 0; i < this.dataFields.length; i++) {
+                    let dataField = this.dataFields[i];
+                    let item = items.filter(function (e) {
+                        return e.fieldName != null && e.fieldName === dataField.name
+                    })[0];
+                    if (item != null && item.fieldName != null) {
+                        this.saveValue(item);
+                    } else {
+                        if (this.savedFields.get(dataField.name) == null) {
+                            this.savedFields.set(dataField.name, dataField.defaultValue);
+                        }
                     }
                 }
+            } else {
+                for (let i = 0; i < items.length; i++) {
+                    this.saveValue(items[i]);
+                }
             }
-        } else {
-            for (let i = 0; i < items.length; i++) {
-                this.saveValue(items[i]);
-            }
-        }
+            resolve();
+        });
     }
 
     saveValue(item) {
@@ -591,6 +608,9 @@ export class PdfViewer extends EventFactory {
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
+                    } else {
+                        inputField.removeAttr("checked");
+                        inputField.prop("checked", false);
                     }
                     inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
@@ -781,7 +801,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut(e) {
-        if (this.scale <= 0.4) {
+        if ((this.scale <= 0.4 && !this.hasTouchSupport()) || this.scale <= 0.3) {
             return;
         }
         this.scale = this.scale - this.zoomStep;

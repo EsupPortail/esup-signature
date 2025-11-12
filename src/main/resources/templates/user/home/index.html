@@ -5,228 +5,472 @@
 <!--/*@thymesVar id="authUser" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
-    import {HomeHelp} from '/js/modules/help/HomeHelp.js?version=@[(${versionApp})]@';
-    let help = new HomeHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).homeHelp)}]]);
-    help.autoStart();
+    import {Home2Help} from '/js/modules/help/Home2Help.js?version=@[(${versionApp})]@';
+    let help2 = new Home2Help([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).home2Help)}]]);
+    help2.autoStart();
 </script>
 <script th:inline="javascript" type="module">
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';
-    new HomeUi([[${startFormId}]]);
+    new HomeUi([[${startFormId}]], [[${startWorkflowId}]]);
+</script>
+<script>
+    function toggleSignLevel() {
+        const signType = document.getElementById("signType-1").value;
+        const minSignLevelDiv = $("#minSignLevel");
+        const sealOptions = $("#seal-options")
+        if (signType === "visa") {
+            minSignLevelDiv.hide();
+            sealOptions.show();
+        } else if (signType === "signature") {
+            minSignLevelDiv.show();
+            sealOptions.hide();
+        } else {
+            minSignLevelDiv.hide();
+            sealOptions.hide();
+        }
+    }
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" th:replace="~{fragments/sides/side-home :: side-home}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-            <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Accueil</li>
-            </ol>
-        </nav>
-        <div id="content" class="content flex align-content-center">
-            <div class="row gap-1">
-                <div id="new-div" style="z-index: 1030;">
-                    <div th:replace="~{fragments/new :: new}"></div>
+        <div id="content" class="content-full-fixed flex align-content-center p-2">
+            <div class="col-12 col-xxl-10 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
+                <div class="input-group">
+                    <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
+                    <select id="mega-search" class="form-control rounded-end-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple style="z-index: 2;">
+                        <option title="Filter sur mes documents" data-html='<i class="fi fi-rr-filter text-secondary"></i> <i class="fi fi-rr-file"></i> Document' value="type:signBook" th:selected="${typeDocument}">type:Document</option>
+                        <option title="Filter sur mes circuits" data-html='<i class="fi fi-rr-filter text-secondary"></i> <i class="fi fi-rr-diagram-project project-diagram-color"></i> Circuit' value="type:workflow" th:selected="${typeWorkflow}">type:Circuit</option>
+                        <option title="Filter sur mes formulaires" data-html='<i class="fi fi-rr-filter text-secondary"></i> <i class="fi fi-rr-poll-h file-alt-color"></i> Formulaire' value="type:form" th:selected="${typeForm}">type:Formulaire</option>
+                        <th:block th:each="tag : ${allTags}">
+                            <option th:title="'Filter sur le tag ' + tag" th:style="'color:' + ${tag.color}" th:data-html="'<i class=\'fi fi-rr-filter text-secondary\'> </i><span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="'tag:' + ${tag.id}" th:text="'tag:' + ${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                        </th:block>
+                    </select>
+<!--                    <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>-->
+<!--                    <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle rounded-end-2"><i class="fi fi-rr-cross-circle"></i></button>-->
                 </div>
-                <div id="listSignRequestTable" class="div-scrollable scrollbar-style">
-                    <div id="to-sign-list" class="d-flex col-12 mb-2">
-                        <div class="col-12 card text-bg-light border-light mx-auto">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                                <h5 class="ms-4"><b>Demandes à signer</b></h5>
+                <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;" data-bs-focus="false" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-dialog-scrollable">
+                        <div class="modal-content" style="height: 100%;">
+                            <div class="modal-body">
+                                <h6 class="modal-title">Résultats de la recherche</h6>
+                                <div id="mega-result-body">
+                                    <div class="alert alert-secondary">
+                                        Sélectionnez des éléments dans la barre de recherche pour obtenir des résultats.
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-body">
-                            <table th:if="${signBooksToSign.size() > 0}" class="table table-sm table-borderless table-hover table-light">
-                                <tbody>
-                                <th:block th:each="signBook : ${signBooksToSign}">
-                                    <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
-                                        <td style="width: 15px;">
-                                            <div class="d-lg-inline-flex align-items-center gap-1">
-                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
-                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
-                                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                                                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
-                                                        th:text="${signBook.postits.size()}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                                                        type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null && signBook.description != ''}"
-                                                        th:text="${signBook.postits.size() + 1}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}" style="width: 50%;">
-                                                    <li th:if="${signBook.description != null}" class="dropdown-item">
-                                                        <pre class="me-1" th:text="${signBook.description}"></pre>
-                                                    </li>
-                                                    <th:block th:each="postit : ${signBook.postits}">
-                                                        <li th:if="${postit}" class="dropdown-item">
-                                                            <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
-                                                        </li>
-                                                    </th:block>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="text-break d-none d-md-table-cell" style="width: 25px;">
-                                            <a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a>
-                                        </td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-30" style="width: 400px;">
-                                            <span th:if="${signBook.signRequests.size() > 1}">
-                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fa-solid fa-caret-down"></i>
-                                            </span>
-                                            <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20 d-none d-md-table-cell" style="width: 300px;" th:text="'Créé par : ' + ${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">
-                                        </td>
-                                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
-                                        <td></td>
-                                        <td></td>
-                                        <td colspan="4">
-                                            <div class="collapse" th:id="'row_' + ${signBook.id}">
-                                                <table class="table table-hover">
-                                                    <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                                            <td>
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                            </td>
-                                                            <td th:text="${signRequest.title}"></td>
-                                                            <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
-                                                            </td>
-                                                        </tr>
-                                                    </th:block>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                            <div th:unless="${signBooksToSign.size() > 0}" class="alert alert-secondary">
-                                Aucun document à signer pour le moment
-                            </div>
-                        </div>
                         </div>
                     </div>
-                    <div id="pendingList" class="d-flex col-12" th:if="${userEppn == authUserEppn}">
-                        <div class="col-12 card text-bg-light border-light mx-auto">
-                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                                <h5 class="ms-4"><b>Demandes en attente de signature</b></h5>
-                            </div>
-                            <div class="card-body">
-                                <table th:if="${signBooksPending.size() > 0}" class="table table-sm table-borderless table-hover table-light">
-                                <tbody>
-                                <th:block th:each="signBook : ${signBooksPending}">
-                                    <tr th:title="${signBook.description}" th:data-href="'/user/signbooks/' + ${signBook.id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}">
-                                        <td style="width: 15px;">
-                                            <div class="d-lg-inline-flex align-items-center gap-1">
-                                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-success" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
-                                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
-                                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light"></i>
-                                                <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0">0</button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
-                                                        th:text="${signBook.postits.size()}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${signBook.postits.isEmpty() && signBook.description != null}"
-                                                        type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">1
-                                                </button>
-                                                <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description != null}"
-                                                        th:text="${signBook.postits.size() + 1}" type="button"
-                                                        class="badge bg-postit border-0" th:id="commentButton- + ${signBook.id}" data-bs-toggle="dropdown">
-                                                </button>
-                                                <ul class="dropdown-menu striped-list" th:aria-labelledby="'commentButton-' + ${signBook.id}">
-                                                    <th:block th:each="postit : ${signBook.postits}">
-                                                        <li th:if="${postit}" class="dropdown-item">
-                                                            <pre class="me-1" th:text="${postit.createBy.firstname} + ' ' + ${postit.createBy.name} + ' : ' + ${postit.text}"></pre>
-                                                        </li>
-                                                    </th:block>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;"><a th:if="${signBook.signRequests.size() > 1}" class="btn btn-sm text-dark" ><i class="fa-solid fa-plus"></i></a></td>
-                                        <td class="text-break w-5 d-none d-md-table-cell" style="width: 25px;">
-                                            <i th:if="${signBook.signRequests.size() > 1}" class="fa-solid fa-folder-open p-2"></i>
-                                            <i th:unless="${signBook.signRequests.size() > 1}" class="fa-solid fa-file-alt p-2"></i>
-                                        </td>
-                                        <td class="text-break d-none d-xxl-table-cell" style="width: 200px;" th:text="${signBook.workflowName}">
-                                        </td>
-                                        <td class="text-break w-30" style="width: 400px;">
-                                            <span th:if="${signBook.signRequests.size() > 1}">
-                                                <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                                <i class="fa-solid fa-caret-down"></i>
-                                            </span>
-                                            <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
-                                        </td>
-                                        <td class="text-break w-20 d-none d-md-table-cell" style="width: 300px;">
-                                            <ul>
-                                            <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
-                                                <li th:title="${recipient.user.email}" style="display: inline-flex;">
-                                                    <span class="me-1" th:text="'En attente chez : ' + ${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                </li>
-                                            </th:block>
-                                            </ul>
-                                        </td>
-                                        <td class="text-break w-20" style="width: 250px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                        </td>
-                                    </tr>
-                                    <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
-                                        <td></td>
-                                        <td></td>
-                                        <td colspan="4">
-                                            <div class="collapse" th:id="'row_' + ${signBook.id}">
-                                                <table class="table table-hover">
-                                                    <th:block th:each="signRequest : ${signBook.signRequests}">
-                                                        <tr class='clickable-row' th:data-href="'/user/signrequests/' + ${signRequest.id}">
-                                                            <td>
-                                                                <i class="fa-solid fa-file-alt"></i>
-                                                            </td>
-                                                            <td th:text="${signRequest.title}"></td>
-                                                            <td>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge bg-warning"><i class="fa-solid fa-clock"></i> À signer</span>
-                                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-danger"><i class="fa-solid fa-clock"></i> Refusé</span></span>
-                                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge bg-success"><i class="fa-solid fa-check-circle"></i> Terminé</span></span>
-                                                            </td>
-                                                        </tr>
-                                                    </th:block>
-                                                </table>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </th:block>
-                                </tbody>
-                            </table>
-                            <div th:unless="${signBooksPending.size() > 0}" class="alert alert-secondary">
-                                Aucun document en attente
-                            </div>
+                </div>
+
+                <script>
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                    const select = $("#mega-search");
+                    const megaResult = $("#mega-result");
+                    const megaBody = $("#mega-result-body");
+                    const selectEl = document.getElementById("mega-search");
+                    const initialOptions = Array.from(selectEl.options).map(o => ({
+                        text: o.text,
+                        value: o.value,
+                        html: o.dataset.html || o.text,
+                        selected: o.selected || false,
+                        disabled: o.disabled || false,
+                    }))
+                    let addedOptions = [];
+                    let fetchedOptions = [];
+                    let savedOptions = [];
+                    let selectName = select.attr('id');
+                    let url = select.attr('es-search-url');
+                    let placeholderText = select.attr('es-search-text');
+                    let addable = null;
+                    if(select.attr('es-search-addable') === "true") {
+                        addable = function (value) {
+                            return value
+                        };
+                    }
+
+                    if (selectEl) {
+                        const observer = new MutationObserver((mutations) => {
+                            for (const m of mutations) {
+                                if (m.type === 'attributes' && m.attributeName === 'data-id') {
+                                    const id = selectEl.getAttribute('data-id');
+                                    const el = $(`div[data-id="${id}"]`);
+                                    let list = el.find('.ss-list');
+                                    $(list).addClass("border border-secondary-subtl rounded-2");
+                                    $(list).css("max-height", "170px");
+                                    el.css("min-height", "80%");
+                                    if (el.length) el.append(megaResult);
+                                }
+                            }
+                        });
+                        observer.observe(selectEl, { attributes: true });
+                    }
+
+                    let slimselect = new SlimSelect({
+                        select: '#' + selectName,
+                        settings: {
+                            placeholderText: placeholderText,
+                            searchText: 'Aucun résultat',
+                            searchingText: 'Recherche en cours',
+                            searchPlaceholder: 'Rechercher',
+                            searchHighlight: false,
+                            hideSelectedOption: true,
+                            closeOnSelect: false,
+                            allowDeselect: true,
+                            maxValuesShown: 40,
+                        },
+                        events: {
+                            beforeOpen: () => {
+                                megaResult.modal("show");
+                                $(".modal-backdrop").each(function (e) {
+                                    $(this).css("opacity", "0.2");
+                                    $(this).css("z-index", "1");
+                                });
+                            },
+                            beforeClose: () => {
+                                const selectedValues = slimselect.getSelected();
+                                const allOptions = [
+                                    ...[...fetchedOptions, ...addedOptions].filter(
+                                        (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
+                                    ),
+                                    ...initialOptions
+                                ];
+                                savedOptions = allOptions.filter(
+                                    o => selectedValues.includes(o.value) &&
+                                        !initialOptions.some(init => init.value === o.value)
+                                );
+                                megaResult.modal("hide");
+                            },
+                            afterChange: (newVal) => {
+                                return new Promise((resolve, reject) => {
+                                    fetch('/user/search', {
+                                        method: 'POST',
+                                        headers: {
+                                            [csrfHeader]: csrfToken,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify(newVal)
+                                    })
+                                        .then(response => response.text())
+                                        .then(data => {
+                                            let datas = JSON.parse(data);
+                                            if(datas.length > 0) {
+
+                                                const rows = datas.map(item => {
+                                                    const d = new Date(item.date);
+                                                    const pad = n => String(n).padStart(2, "0");
+                                                    return `
+                                                    <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-between align-items-center gap-5">
+                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div><div style="width: 300px;">${item.tags}</div>
+                                                    </a>
+                                                `}).join('');
+                                                megaBody.html(`
+                                                    <div class="list-group list-group-flush">${rows}</div>
+                                                `);
+                                            } else {
+                                                megaBody.html(`
+                                                    <div class="alert alert-secondary">Aucun résultat</div>
+                                                `);
+                                            }
+                                            resolve();
+                                        })
+                                        .catch(reject);
+                                });
+                            },
+                            addable: (value) => {
+                                const newOption = { text: value, value: value, html: '<i class="fa-solid fa-magnifying-glass"></i> ' + value};
+                                const existing = fetchedOptions.find(opt => opt.value === value);
+                                if(existing != null) {
+                                    return existing;
+                                } else {
+                                    addedOptions.push(newOption);
+                                    return newOption;
+                                }
+                            },
+                            search: (search, currentData) => {
+                                if(search == null || search === "" ) {
+                                    slimselect.setData(savedOptions);
+                                    slimselect.setSelected(slimselect.getSelected());
+                                    return new Promise((resolve, reject) => {
+                                        resolve(savedOptions);
+                                    });
+                                }
+                                return new Promise((resolve, reject) => {
+                                    fetch('/user/search-titles?searchString=' + search)
+                                        .then(r => r.json())
+                                        .then(json => {
+                                            if (json.length > 0) {
+                                                savedOptions = [
+                                                    ...Array.from(new Map(json.map(item => [item.id, item]))).values(),
+                                                    ...[...fetchedOptions, ...addedOptions].filter(
+                                                        (opt, index, arr) => arr.findIndex(o => o.value === opt.value) === index
+                                                    ),
+                                                    ...initialOptions
+                                                ]
+
+                                                resolve(json);
+                                            }
+                                            else reject("Pas de résultat");
+                                        })
+                                        .catch(() => reject("Erreur de recherche"));
+                                });
+                            }
+                        }
+                    });
+
+                    $(".ss-search > input").on("click" , function (e) {
+                        e.stopPropagation();
+                    });
+
+                    $("#reset-mega-search").click(function (){
+                        slimselect.setSelected([]);
+                    });
+                </script>
+            </div>
+            <div class="col-12 col-xxl-10 mb-3 mx-auto" id="new-div" >
+                <div th:replace="~{fragments/new-tools :: new-tools}"></div>
+            </div>
+            <div id="shortcuts" class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-4 gap-xl-5 mb-3 p-1">
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
+                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"
+                    th:classappend="${nbToSign > 0} ? '' : 'disabled'"
+                    style="font-size: 16px;">
+                    <i class="fi fi-rr-inbox-full text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Documents à signer</span>
+                    <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
+                </a>
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                    class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=pending" title="Afficher les demandes que j'ai envoyées"
+                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
+                    style="font-size: 16px;">
+                    <i class="fi fi-rr-paper-plane-top text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Demandes envoyées</span>
+                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-warning text-dark d-none d-lg-inline" th:text="${nbSignRequests}"></span>
+                </a>
+                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="signeds-btn" role="button"
+                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
+                    style="font-size: 16px;">
+                    <i class="fi fi-rr-folder-times text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Historique de mes signatures</span>
+                </a>
+<!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
+<!--                    style="font-size: 16px;">-->
+<!--                    <i class="fi fi-rr-poll-h text-dark-emphasis"></i>-->
+<!--                    <span class="d-none d-xl-block">Tous les formulaires</span>-->
+<!--                    <span aria-hidden="true" th:title="${forms.size() - favoriteForms.size()} + ' nouveaux formulaired'" class="badge rounded-pill file-alt-color d-none d-lg-inline" th:if="${(forms.size() - favoriteForms.size()) > 0}" th:text="${forms.size() - favoriteForms.size()}"></span>-->
+<!--                </a>-->
+                <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light  text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal"
+                    style="font-size: 16px;">
+                    <i class="fi fi-rr-registration-paper text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Contrôler un document</span>
+                </a>
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" role="button"
+                    class="start-wizard-buttons btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
+                    style="font-size: 16px;">
+                    <i class="fi fi-rr-customization text-dark-emphasis"></i>
+                    <span class="d-none d-xl-block">Assistant de création de circuit</span>
+                </a>
+            </div>
+            <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xxl-row gap-3">
+                <div class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;">
+                    <div class="w-100">
+                        <h5><i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: 15px;"></i> Documents à signer</h5>
+                    </div>
+                    <div>
+                        <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
+                    </div>
+                </div>
+                <div id="myFavorites" class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                    <div class="w-100">
+                        <div class="d-flex align-items-center w-100 gap-2">
+                            <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
+                            <h5>Mes circuits favoris</h5>
+                            <a tabindex="1" role="button"
+                                class="btn btn-sm btn-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#workflowsModal"
+                                style="margin-bottom: .5rem;"
+                                title="Ajouter un circuit à vos favoris">
+                                <i class="d-flex align-items-center fi fi-rr-apps-add"></i>
+                            </a>
                         </div>
+                    </div>
+                    <div id="myFavoritesWorkflows" class="d-flex flex-row flex-wrap">
+                        <th:block th:each="workflow : ${workflows}">
+                            <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;" th:classappend="${!favoriteWorkflows.contains(workflow)} ? 'd-none' : ''">
+                                <a tabindex="0" role="button"
+                                    class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden p-0 workflow-button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#wiz-workflow-sign-modal"
+                                    th:href="'/user/start-workflow/' + ${workflow.id}"
+                                    style="width: 120px; display: inline-flex; flex-direction: column;"
+                                    th:title="${workflow.description}"
+                                    th:data-es-workflow-id="${workflow.id}"
+                                    th:alt="'Circuit : ' + ${workflow.description}">
+                                    <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                                        <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
+                                        <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
+                                    </div>
+                                </a>
+                                <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
+                                    <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
+                                            th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
+                                            th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
+                                        <i class="fa-solid fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                                <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
+                                    <div class="inline-flex">
+                                        <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
+                                        </form>
+                                        <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
+                                            <i class="fa-solid fa-trash-alt"></i>
+                                        </button>
+                                        <button class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
+                                            <i class="fa-solid fa-cog"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </th:block>
+                        <th:block th:if="${favoriteWorkflows.size() == 0}">
+                            <div id="noFavoritesWorkflows" class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
+                                <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i>
+                                <p>Aucun circuit en favori pour le moment</p>
+                                <a tabindex="0" role="button"
+                                    class="btn btn-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#workflowsModal"
+                                    title="Ajouter un circuit à vos favoris">
+                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                </a>
+                            </div>
+                        </th:block>
+                    </div>
+                    <div class="w-100">
+                        <div class="d-flex align-items-center w-100 gap-2">
+                            <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
+                            <h5>Mes formulaires favoris</h5>
+                            <a tabindex="1" role="button"
+                                class="btn btn-sm btn-secondary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#formsModal"
+                                style="margin-bottom: .5rem;"
+                                title="Ajouter un formulaire à vos favoris">
+                                <i class="d-flex align-items-center fi fi-rr-apps-add"></i>
+                            </a>
                         </div>
+                    </div>
+                    <div id="myFavoritesForms" class="d-flex flex-row flex-wrap">
+                        <th:block th:each="form : ${forms}">
+                            <a tabindex="0" role="button"
+                                class="btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden form-button start-form-button"
+                                style="width: 120px; height: 170px;"
+                                th:classappend="${form.hideButton || !favoriteForms.contains(form)} ? 'd-none' : ''"
+                                th:title="${form.title}"
+                                th:data-es-form-id="${form.id}"
+                                th:href="'/user/start-form/' + ${form.id}"
+                                data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
+                                <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
+                                    <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
+                                    <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
+                                    <h6 style="height: 50px;" th:text="${form.title}"></h6>
+                                </div>
+                            </a>
+                        </th:block>
+                        <th:block th:if="${favoriteForms.size() == 0}">
+                            <div id="noFavoritesForms" class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
+                                <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i>
+                                <p>Aucun formulaire en favori pour le moment</p>
+                                <a tabindex="0" role="button"
+                                    class="btn btn-secondary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#formsModal"
+                                    title="Ajouter un circuit à vos favoris">
+                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                </a>
+                            </div>
+                        </th:block>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </main>
-<footer th:replace="~{fragments/footer :: footer}"></footer>
-<div id="oldSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
+<div id="controlModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Vérification de la conformité du document</h4>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div th:insert="~{user/validation/form :: validationForm}"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="workflowsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
     <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4>Liste des circuits disponibles</h4>
+                    <small>Vous pouvez créer des favoris en cliquant sur l’étoile <i class="fa-solid fa-star text-secondary"></i></small>
+                </div>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div th:insert="~{fragments/new-workflow :: new-workflow}"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="allModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                <h4>Démarrer une procédure</h4>
+                </div>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div th:insert="~{fragments/new-all :: new-all}"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="formsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h4>Liste des formulaires disponibles</h4>
+                    <small>Vous pouvez créer des favoris en cliquant sur l’étoile <i class="fa-solid fa-star text-secondary"></i></small>
+                </div>
+                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div th:insert="~{fragments/new-form :: new-form}"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="oldSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${oldSignRequests.size() > 0}">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h4>Demandes en retard</h4>
@@ -248,28 +492,8 @@
         </div>
     </div>
 </div>
-<div id="recipientNotPresentSignRequests" data-bs-focus="false" class="modal fade" role="dialog" th:if="${recipientNotPresentSignRequests.size() > 0}">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>Demandes non affectées</h4>
-            </div>
-            <div class="modal-body">
-                <p>Les demandes suivantes sont en attente auprès de personnes n'étant plus présentes dans le référentiel de l'établissement</p>
-                <p>Ces demandes sont à supprimer et à recréer si besoin en précisant un nouveau destinataire</p>
-                <ul>
-                    <th:block th:each="signRequest : ${recipientNotPresentSignRequests}">
-                        <li>
-                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.title}"></a>
-                        </li>
-                    </th:block>
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
 </body>
 </html>

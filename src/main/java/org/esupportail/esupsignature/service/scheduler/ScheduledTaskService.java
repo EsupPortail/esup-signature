@@ -17,7 +17,6 @@ import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.utils.upgrade.UpgradeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +28,6 @@ import java.util.List;
 @EnableScheduling
 @Profile("!dev")
 @Component
-@EnableConfigurationProperties(GlobalProperties.class)
 public class ScheduledTaskService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScheduledTaskService.class);
@@ -74,7 +72,7 @@ public class ScheduledTaskService {
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	public void scanAllWorkflowsSources() {
 		logger.debug("scan workflows sources");
-		Iterable<Workflow> workflows = workflowService.getAllWorkflows();
+		Iterable<Workflow> workflows = workflowService.getAllWorkflows(null);
 		User userScheduler = userService.getSchedulerUser();
 		for(Workflow workflow : workflows) {
 			try {
@@ -198,7 +196,7 @@ public class ScheduledTaskService {
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
-		List<User> users = userService.getAllUsers();
+		List<User> users = userService.getAllLdapUsers();
 		for(User user : users) {
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {

@@ -1,10 +1,11 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.annotation.Resource;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.utils.AnonymizeService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,8 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import jakarta.annotation.Resource;
 
 @RequestMapping("/admin/users")
 @Controller

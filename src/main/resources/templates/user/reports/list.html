@@ -2,35 +2,28 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
 <!--/*@thymesVar id="report" type="org.esupportail.esupsignature.entity.Report"*/-->
 <!--/*@thymesVar id="reportsMap" type="java.util.Map<org.esupportail.esupsignature.entity.Report, java.util.Map<org.esupportail.esupsignature.entity.enums.ReportStatus, java.util.Set<java.lang.Long>>>"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head-full :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side :: side}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-            <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active">Mes rapports</li>
-            </ol>
-        </nav>
-        <div id="content" class="content">
+        <div id="content" class="content-full flex align-content-center">
             <div class="fixed-action-btn" >
                 <a title="Supprimer tous les rapports" data-bs-toggle="modal" data-bs-target="#deleteAllModal" type="button"
                     class="btn-floating btn-lg bg-danger">
                     <i class="fa-solid fa-dumpster-fire fa-2xl"></i>
                 </a>
             </div>
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Mes rapports</b></h5>
-                    <div id="accordion">
+            <li class="card card text-bg-light" style="width: calc(100% - 100px);">
+                <ul class="card-body">
+                    <h5 class="card-title">Rapport de signature en masse</h5>
+                    <ul class="list-group list-group-flush">
                         <th:block th:each="report, iterator : ${reports}">
-                            <div class="card">
-                                <div class="card-header" th:id="'heading' + ${iterator.index}">
+                            <li class="list-group-item" th:id="'heading' + ${iterator.index}">
                                     <div class="row">
                                         <div class="col-md-10">
                                             <h5 class="mb-0">
-                                                <button th:text="'Rapport de la signature de masse du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${iterator.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${iterator.index}">
+                                                <button th:text="'Rapport du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${iterator.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${iterator.index}">
                                                 </button>
                                             </h5>
                                         </div>
@@ -42,8 +35,6 @@
                                             </form>
                                         </div>
                                     </div>
-                                </div>
-
                                 <div th:id="'collapse'  + ${iterator.index}" class="collapse" th:classappend="${iterator.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${iterator.index}" data-parent="#accordion">
                                     <div class="card-body">
                                         <ul>
@@ -63,9 +54,12 @@
                                         </ul>
                                     </div>
                                 </div>
-                            </div>
+                            </li>
                         </th:block>
-                    </div>
+                        <th:block th:if="${reports.size() == 0}">
+                            <div class="alert alert-secondary">Aucun rapport</div>
+                        </th:block>
+                    </ul>
                 </div>
             </div>
         </div>

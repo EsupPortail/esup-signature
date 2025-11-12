@@ -92,6 +92,7 @@ public class ManageController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
+                       @RequestParam(value = "hided", required = false, defaultValue = "false") Boolean hided,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
         SignRequestStatus signRequestStatus = null;
         if(StringUtils.hasText(statusFilter) && !statusFilter.equals("all")) {
@@ -114,9 +115,9 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("hided", hided);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
         model.addAttribute("signBooks", signBooks);
-//        model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getId()));
         return "user/manage/details";
     }
 

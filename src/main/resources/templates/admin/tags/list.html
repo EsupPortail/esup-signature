@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<link rel="stylesheet" th:href="@{/webjars/github-com-seballot-spectrum/spectrum.min.css}" />
+<script th:src="@{/webjars/github-com-seballot-spectrum/spectrum.min.js}"></script>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item active">Tags</li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="card mb-1 mx-auto">
+                <div class="card-body">
+                    <h5 class="text-center"><b>Tags</b></h5>
+                    <table class="table table-sm table-hover">
+                        <thead class="table-secondary">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Couleur</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="tag : ${tags}">
+                            <tr>
+                                <td th:text="${tag.name}"></td>
+                                <td>
+                                    <h4><span class="badge" th:style="'background-color:' + ${tag.color}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></h4>
+                                </td>
+                                <td>
+                                    <div class="dropdown position-relative" th:if="${tag.id != null}">
+                                        <button type="button" th:id="'menu-toggle_' + ${tag.id}" class="btn text-dark" th:title="'Actions ' + ${tag.id}"
+                                                th:data-bs-target="'#menu-' + ${tag.id}" th:aria-controls="'menu-' + ${tag.id}" data-bs-toggle="dropdown">
+                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${tag.id}">
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${tag.id}">
+                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
+                                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${tag.id}">
+                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${tag.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/admin/tags/' + ${tag.id}" th:method="'delete'">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">
+                                                            Le tag sera enlevé des tous les éléments auxquels il est associé.
+                                                            Confirmez-vous la suppression du tag ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
+                                                        <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="100%">
+                                <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="fixed-action-simple-btn gap-4" style="flex-direction: column">
+                <div id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                    <a title="Ajouter un tag" data-bs-toggle="modal" data-bs-target="#newTag" class="btn-floating btn-lg bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-bs-focus="false" class="modal fade" id="newTag"  role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ajouter un tag</h5>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <form id="addCertificat" th:action="'/admin/tags?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="tagName" class="col-form-label">Nom du tag</label>
+                            <input id="tagName" class="form-control" type="text" name="name">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="tagColor" class="col-form-label">Couleur du tag</label>
+                            <br>
+                            <input id="tagColor" class="form-control" type="text" name="color">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <input type="submit" class="btn btn-success" value="Valider">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

@@ -24,7 +24,6 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -47,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class MailService {
 
     private static final Logger logger = LoggerFactory.getLogger(MailService.class);

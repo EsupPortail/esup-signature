@@ -33,7 +33,7 @@ import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,7 +54,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -147,6 +146,10 @@ public class UserService {
         List<User> list = new ArrayList<>();
         userRepository.findAll().forEach(list::add);
         return list;
+    }
+
+    public List<User> getAllLdapUsers() {
+        return userRepository.findAllByUserType(UserType.ldap);
     }
 
     @Transactional
@@ -507,6 +510,7 @@ public class UserService {
                 }
             }
             personLightLdaps.removeAll(personLightLdapsToRemove);
+            personLightLdaps.removeAll(personLightLdaps.stream().filter(personLightLdap -> globalProperties.getForcedExternalsDomainList().stream().anyMatch(personLightLdap.getMail()::contains)).toList());
             for (User user : users) {
                 if(user.getEppn().equals("creator")) {
                     personLightLdaps.add(getPersonLdapLightFromUser(user));
@@ -581,6 +585,7 @@ public class UserService {
         return personLdap;
     }
 
+    @Cacheable(value = "ldapLightCache", key = "#user.id")
     public PersonLightLdap findPersonLdapLightByUser(User user) {
         PersonLightLdap personLdap = null;
         if (ldapPersonLightService != null) {
@@ -618,6 +623,52 @@ public class UserService {
     public void disableIntro(String authUserEppn, String name) {
         User authUser = getByEppn(authUserEppn);
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
+    }
+
+    @Transactional
+    public List<Long> getFavoriteIds(String authUserEppn, UiParams uiParams) {
+        User authUser = getByEppn(authUserEppn);
+        if(authUser.getUiParams().containsKey(uiParams)) {
+            return Arrays.stream(authUser.getUiParams().get(uiParams).split(",")).map(s -> {
+                try {
+                    return Long.valueOf(s);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull).toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Transactional
+    public boolean toggleFavorite(String authUserEppn, Long id, UiParams uiParams) {
+        boolean result;
+        User authUser = getByEppn(authUserEppn);
+        String favorites = authUser.getUiParams().get(uiParams);
+        if(favorites == null || favorites.equals("null")) {
+            favorites = "";
+        }
+        List<Long> favoritesIds = new ArrayList<>(Arrays.stream(favorites.split(","))
+                .map(s -> {
+                    try {
+                        return Long.valueOf(s);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList());
+        if(favoritesIds.contains(id)) {
+            favoritesIds.remove(id);
+            result = false;
+        } else {
+            favoritesIds.add(id);
+            result = true;
+        }
+        favorites = favoritesIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        authUser.getUiParams().put(uiParams, favorites);
+        return result;
+
     }
 
     public UserType checkMailDomain(String email) {
@@ -676,14 +727,15 @@ public class UserService {
         for (RecipientWsDto recipient : recipients) {
             if(recipient != null) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipient.getEmail());
-                if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
+                if(optionalUser.isPresent() && (optionalUser.get().getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(optionalUser.get().getEmail()::contains))) {
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
-                    if (groupUsers.isEmpty() && !recipient.getEmail().contains(globalProperties.getDomain())) {
+                    if (groupUsers.isEmpty() && (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                         User recipientUser = getUserByEmail(recipient.getEmail());
-                        if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
+                        if (recipientUser != null && (recipientUser.getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                             tempUsers.add(recipientUser);
+                            recipientUser.setUserType(UserType.external);
                         }
                     }
                 }
@@ -726,7 +778,7 @@ public class UserService {
         return new ArrayList<>(users);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
         User authUser = getByEppn(authUserEppn);
         Map<String, Object> keystore = new HashMap<>();
@@ -736,7 +788,7 @@ public class UserService {
         return keystore;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getSignatureByUserAndId(String authUserEppn, Long id) throws IOException {
         Map<String, Object> signature = new HashMap<>();
         User authUser = getByEppn(authUserEppn);
@@ -1030,9 +1082,9 @@ public class UserService {
     }
 
     @Transactional
-    public List<String> getRoles(String userEppn) {
+    public Set<String> getRoles(String userEppn) {
         User user = getByEppn(userEppn);
-        return new ArrayList<>(user.getRoles());
+        return user.getRoles();
     }
 
     @Transactional

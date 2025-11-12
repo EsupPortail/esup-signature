@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.service.LogService;
@@ -17,8 +18,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.annotation.Resource;
 
 @RequestMapping("/admin/logs")
 @Controller

@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 
-import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 

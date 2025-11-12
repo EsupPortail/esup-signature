@@ -45,6 +45,7 @@ export class SignRequestParams extends EventFactory {
         this.signScale = 1;
         this.firstLaunch = true;
         this.firstCrossAlert = true;
+        this.firstCrossAlert = true;
         this.cross = null;
         this.signSpace = null;
         this.submitAddSpotBtn = null;
@@ -357,7 +358,7 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.isShare && this.isSign) {
             if(this.signColorPicker != null) {
-                this.signColorPicker.spectrum("destroy");
+                // this.signColorPicker.spectrum("destroy");
                 this.signColorPicker.hide();
             }
             this.addWatermark = true;
@@ -586,9 +587,9 @@ export class SignRequestParams extends EventFactory {
 
     getNewScale(ui) {
         if (!this.addExtra || this.extraOnTop) {
-            return Math.round((ui.size.width / this.currentScale) / (this.originalWidth) * 100) / 100;
+            return Math.round(ui.size.width / (this.currentScale * this.getBrowserZoom()) / (this.originalWidth) * 100) / 100;
         } else {
-            return Math.round((ui.size.height / this.currentScale) / (this.originalHeight) * 100) / 100;
+            return Math.round((ui.size.height / (this.currentScale * this.getBrowserZoom())) / (this.originalHeight) * 100) / 100;
         }
     }
 
@@ -618,8 +619,6 @@ export class SignRequestParams extends EventFactory {
                 }
                 if(!self.dropped) {
                     self.afterDropRefresh(ui);
-                } else {
-                    self.dropped = false;
                 }
                 let signLaunchButton = $("#signLaunchButton");
                 if(signLaunchButton.length) {
@@ -655,6 +654,16 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
+    enableCrossResizable() {
+        if(!this.dropped) {
+            this.cross.resizable("enable");
+        }
+    }
+
+    disableCrossResizable() {
+        this.cross.resizable("disable");
+    }
+
     madeCrossResizable() {
         let self = this;
         this.cross.resizable({
@@ -687,8 +696,10 @@ export class SignRequestParams extends EventFactory {
     afterDropRefresh(ui) {
         let self = this;
         self.signPageNumber = self.cross.attr("page");
-        self.xPos = Math.round(ui.position.left / self.currentScale);
-        self.yPos = Math.round((ui.position.top - (($("#page_" + self.signPageNumber).offset().top) - $("#page_1").offset().top)) / self.currentScale);
+        const z = this.getBrowserZoom();
+        this.xPos = Math.round(ui.position.left / (this.currentScale * z));
+        const deltaTop = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
+        this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * z));
         if (self.yPos < 0) self.yPos = 0;
         console.log("x : " + self.xPos + ", y : " + self.yPos);
         if(self.textareaPart != null) {
@@ -697,8 +708,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     applyCurrentSignRequestParams(offset) {
-        this.cross.css('top', Math.round(this.yPos * this.currentScale + offset) + 'px');
-        this.cross.css('left', Math.round(this.xPos * this.currentScale) + 'px');
+        const z = this.getBrowserZoom();
+        this.cross.css('top', Math.round(this.yPos * this.currentScale * z + offset) + 'px');
+        this.cross.css('left', Math.round(this.xPos * this.currentScale * z) + 'px');
     }
 
     deleteSign() {
@@ -741,13 +753,14 @@ export class SignRequestParams extends EventFactory {
     updateScale(scale) {
         let width = parseInt(this.cross.css("width"), 10);
         let height = parseInt(this.cross.css("height"), 10);
-        let newWidth = Math.round(width / this.currentScale * scale);
-        let newHeight = Math.round(height / this.currentScale * scale);
+        const z = this.getBrowserZoom();
+        let newWidth = Math.round(width / (this.currentScale * z) * scale);
+        let newHeight = Math.round(height / (this.currentScale * z) * scale);
         let thisPos = this.cross.position();
         let x = thisPos.left;
         let y = thisPos.top;
-        let xNew = Math.round((x / this.currentScale * scale));
-        let yNew = Math.round((y / this.currentScale * scale));
+        let xNew = Math.round((x / (this.currentScale * z) * scale));
+        let yNew = Math.round((y / (this.currentScale * z) * scale));
         this.cross.css("width", newWidth + "px");
         this.cross.css("height", newHeight + "px");
         this.canvas.css("width", (newWidth - this.extraWidth) + "px");
@@ -776,7 +789,7 @@ export class SignRequestParams extends EventFactory {
 
     lock() {
         if(this.textareaPart == null) {
-            this.cross.resizable("enable");
+            this.enableCrossResizable();
         }
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
@@ -860,8 +873,8 @@ export class SignRequestParams extends EventFactory {
             }
             this.updateSize();
         } else {
-            this.signWidth = Math.round(parseInt(this.cross.css("width")) / this.currentScale);
-            this.signHeight = Math.round(parseInt(this.cross.css("height")) / this.currentScale);
+            this.signWidth = Math.round(parseInt(this.cross.css("width"))/ (this.currentScale * this.getBrowserZoom()));
+            this.signHeight = Math.round(parseInt(this.cross.css("height"))/ (this.currentScale * this.getBrowserZoom()));
         }
         this.fireEvent("sizeChanged", ['ok']);
     }
@@ -911,16 +924,16 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    createColorPicker() {
-        this.signColorPicker = $('#signColorPicker_' + this.id);
-        this.signColorPicker.spectrum({
-            type: "color",
-            showPaletteOnly: true,
-            hideAfterPaletteSelect: true,
-            preferredFormat: "hex",
-            change: color => this.changeSignColor(color)
-        });
-    }
+    // createColorPicker() {
+    //     this.signColorPicker = $('#signColorPicker_' + this.id);
+    //     this.signColorPicker.spectrum({
+    //         type: "color",
+    //         showPaletteOnly: true,
+    //         hideAfterPaletteSelect: true,
+    //         preferredFormat: "hex",
+    //         change: color => this.changeSignColor(color)
+    //     });
+    // }
 
     toggleAllPages() {
         if(this.allPages) {
@@ -1047,7 +1060,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.removeClass("d-none");
             }
             this.refreshExtraDiv();
-            this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+            this.extraHeight = Math.round(parseInt(this.divExtra.css("height"))/ (this.currentScale * this.getBrowserZoom()));
             this.signHeight += this.extraHeight;
             // if(!this.restoreExtra && this.restore && !this.isVisa) {
             //     this.restoreUserParams();
@@ -1088,7 +1101,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.removeClass("d-none");
                 this.extraOnTop = true;
                 this.refreshExtraDiv();
-                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                this.extraHeight = Math.round(parseInt(this.divExtra.css("height"))/ (this.currentScale * this.getBrowserZoom()));
                 this.signHeight = this.originalHeight * this.signScale + this.extraHeight
                 if(this.light == null || !this.light) {
                     this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
@@ -1119,7 +1132,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.removeClass("d-none");
                 this.extraOnTop = false;
                 this.refreshExtraDiv();
-                this.signWidth = parseInt(this.cross.css("width")) / this.currentScale * 2;
+                this.signWidth = parseInt(this.cross.css("width"))/ (this.currentScale * this.getBrowserZoom()) * 2;
                 this.extraWidth = this.signWidth / 2;
                 if(this.light == null || !this.light) {
                     this.cross.css("width", this.signWidth * this.currentScale + "px");
@@ -1137,6 +1150,9 @@ export class SignRequestParams extends EventFactory {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
+        // if(!this.firstLaunch) {
+        //     this.simulateDrag(this.xPos/ (this.currentScale * this.getBrowserZoom()), this.yPos/ (this.currentScale * this.getBrowserZoom()) / 2);
+        // }
     }
 
     refreshDate() {
@@ -1246,7 +1262,7 @@ export class SignRequestParams extends EventFactory {
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
             if(this.divExtra != null) {
-                this.extraHeight = Math.round(parseInt(this.divExtra.css("height")) / this.currentScale);
+                this.extraHeight = Math.round(parseInt(this.divExtra.css("height"))/ (this.currentScale * this.getBrowserZoom()));
             }
             this.signHeight += this.extraHeight;
             this.cross.css("height", this.signHeight * this.currentScale + "px");
@@ -1331,7 +1347,7 @@ export class SignRequestParams extends EventFactory {
         $("#signExtraOnTop_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         if(this.signColorPicker != null) {
-            this.signColorPicker.spectrum("destroy");
+            // this.signColorPicker.spectrum("destroy");
             this.signColorPicker.hide();
         }
         $("#signColorPicker_" + this.id).hide();
@@ -1422,8 +1438,8 @@ export class SignRequestParams extends EventFactory {
         this.textareaPart.attr("cols", Math.max(minCols, Math.ceil(finalPxWidth / avgCharWidth)));
 
         // recalculer les tailles sign en tenant compte du scale
-        this.signWidth = Math.round(parseInt(this.textareaPart.css("width")) / this.currentScale);
-        this.signHeight = Math.round(parseInt(this.textareaPart.css("height")) / this.currentScale);
+        this.signWidth = Math.round(parseInt(this.textareaPart.css("width"))/ (this.currentScale * this.getBrowserZoom()));
+        this.signHeight = Math.round(parseInt(this.textareaPart.css("height"))/ (this.currentScale * this.getBrowserZoom()));
 
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
@@ -1536,6 +1552,10 @@ export class SignRequestParams extends EventFactory {
             this.userUI = new UserUi();
         }
         $("#add-sign-image").modal("show");
+    }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
     }
 
 }

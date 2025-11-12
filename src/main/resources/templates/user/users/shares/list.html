@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="userShare" type="org.esupportail.esupsignature.entity.UserShare"*/-->
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head:: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as ShareUi} from '/js/modules/ui/users/ShareUi.js?version=@[(${versionApp})]@';
     new ShareUi();
@@ -24,21 +24,20 @@
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Délégations</b></h5>
-                    <table class="table table-hover table-striped table-borderless">
+            <h5 class="text-center"><b>Délégations</b></h5>
+                <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+                    <table class="table table-borderless table-striped">
                         <thead class="table-secondary">
                         <tr>
-                            <th style="width: 15%">Elément délégué</th>
-                            <th style="width: 15%">Type de délégation</th>
-                            <th style="width: 15%">Modalité de signature</th>
-                            <th style="width: 15%">Forcer l’envoi de mail au délégué</th>
-                            <th style="width: 15%">Délégataire</th>
-                            <th style="width: 10%">Date de création</th>
-                            <th style="width: 10%">Date de début</th>
-                            <th style="width: 10%">Date de fin</th>
-                            <th style="width: 15%">Actions</th>
+                            <th>Elément délégué</th>
+                            <th>Type de délégation</th>
+                            <th>Modalité de signature</th>
+                            <th>Forcer l’envoi de mail au délégué</th>
+                            <th>Délégataire</th>
+                            <th>Date de création</th>
+                            <th>Date de début</th>
+                            <th>Date de fin</th>
+                            <th>Actions</th>
                         </tr>
                         </thead>
                         <tbody>

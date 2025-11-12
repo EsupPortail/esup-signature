@@ -19,7 +19,10 @@ import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
-import org.esupportail.esupsignature.repository.*;
+import org.esupportail.esupsignature.repository.DataRepository;
+import org.esupportail.esupsignature.repository.SignBookRepository;
+import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
+import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -36,7 +39,6 @@ import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -70,7 +72,6 @@ import java.util.zip.ZipOutputStream;
  * @author David Lemaignent
  */
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class SignBookService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookService.class);
@@ -186,7 +187,8 @@ public class SignBookService {
      * @return une page contenant la liste des SignBooks correspondant aux critères donnés
      */
     @Transactional
-    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable, String userEppn, Boolean hided) {
+        User user = userService.getByEppn(userEppn);
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getUserByEmail(creatorFilter);
@@ -211,8 +213,11 @@ public class SignBookService {
             } catch (ParseException e) {
                 logger.error("unable to parse date : " + dateFilter);
             }
+        } if(hided) {
+            return signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+        } else {
+            return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         }
-        return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     /**
@@ -555,6 +560,8 @@ public class SignBookService {
                                     if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                             && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
                                             && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                        signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
+                                        signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
                                         addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
                                     }
                                 }
@@ -1333,7 +1340,7 @@ public class SignBookService {
                                 }
                                 try {
                                     signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "autoCert", null, null,"system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "autoCert", "default", null, null,"system", "system", null, "");
                                                                     } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
@@ -1342,7 +1349,7 @@ public class SignBookService {
                             } else {
                                 try {
                                     signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "sealCert", null, null,"system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "sealCert", "default", null, null,"system", "system", null, "");
                                 } catch (IOException | EsupSignatureRuntimeException e) {
                                     logger.error("auto sign fail", e);
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
@@ -1451,7 +1458,7 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException Si une exception liée au processus de signature se produit.
      */
     @Transactional
-    public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+    public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, String sealCertificat, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         if(signRequest.getAuditTrail() == null) {
             signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -1501,7 +1508,7 @@ public class SignBookService {
         }
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
-            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(srp -> signRequest.getSignRequestParams().contains(srp)).toList();
+            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
                 signRequestParamse.setAddExtra(true);
@@ -1530,7 +1537,7 @@ public class SignBookService {
             }
             return StepStatus.nexu_redirect;
         } else {
-            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
+            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, sealCertificat, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
                     if(globalProperties.getSealAllDocs() ||
@@ -1573,10 +1580,7 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException Si une exception liée à l'exécution de la logique de signature se produit.
      */
     @Transactional
-    public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith) throws IOException, EsupSignatureRuntimeException {
-        if (SignWith.valueOf(signWith).equals(SignWith.nexuCert)) {
-            return "initNexu";
-        }
+    public String initMassSign(String userEppn, String authUserEppn, String ids, HttpSession httpSession, String password, String signWith, String sealCertificat) throws IOException, EsupSignatureRuntimeException {
         String error = null;
         TypeReference<List<String>> type = new TypeReference<>(){};
         List<String> idsString = objectMapper.readValue(ids, type);
@@ -1606,13 +1610,16 @@ public class SignBookService {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.noSignField);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
                 } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                    stepStatus = initSign(signRequest.getId(), null, null, null, password, signWith, userShareId, userEppn, authUserEppn);
+                    stepStatus = initSign(signRequest.getId(), null, null, null, password, signWith, sealCertificat, userShareId, userEppn, authUserEppn);
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.signed);
                 } else {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.error);
                 }
             }
             stepStatuses.add(stepStatus);
+        }
+        if(stepStatuses.stream().allMatch(s -> s.equals(StepStatus.nexu_redirect))) {
+            return "initNexu";
         }
         if(!stepStatuses.stream().allMatch(s -> s.equals(StepStatus.completed) || s.equals(StepStatus.last_end))) {
             error = messageSource.getMessage("report.reportstatus." + ReportStatus.error, null, Locale.FRENCH);
@@ -2042,7 +2049,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du SignBook à sauvegarder.
      * @param title Le titre du Workflow à créer.
      * @param description La description du Workflow.
-     * @param user L'utilisateur qui initie la création du Workflow.
+     * @param userEppn L'utilisateur qui initie la création du Workflow.
      * @throws EsupSignatureRuntimeException Si une erreur survient lors de l'exécution.
      */
     @Transactional
@@ -2102,7 +2109,7 @@ public class SignBookService {
      * @throws EsupSignatureUserException Exception levée en cas d'erreur liée à l'utilisateur.
      * @throws IOException Exception levée en cas d'erreur d'entrée/sortie lors de la récupération des images.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<String> getSignImagesForSignRequest(Long id, String userEppn, String authUserEppn, Long userShareId) throws EsupSignatureUserException, IOException {
         SignRequest signRequest = signRequestService.getById(id);
         User user = userService.getByEppn(userEppn);

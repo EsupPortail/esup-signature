@@ -6,6 +6,8 @@ export class WorkspacePdf {
 
     constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
+        let url = new URL(window.location.href);
+        this.hasAnnotation = url.searchParams.has("annotation");
         this.ready = false;
         this.formInitialized = false;
         this.isPdf = isPdf;
@@ -48,7 +50,7 @@ export class WorkspacePdf {
             if(currentSignType === "form") {
                 this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, this.hasAnnotation);
             }
         }
         this.signPosition = new SignPosition(
@@ -68,16 +70,14 @@ export class WorkspacePdf {
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
-        this.navWidth = this.wsTabs.innerWidth();
         this.addSignButton = $("#addSignButton")
         if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
-                let self = this;
-                $(window).on('resize', function (e) {
-                    if(e.target.tagName == null) {
-                        self.autocollapse();
-                    }
+                let resizeTimer;
+                $(window).on("resize", () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => this.autocollapse(), 200);
                 });
             }
         }
@@ -309,9 +309,7 @@ export class WorkspacePdf {
                 localStorage.setItem('mode', this.mode);
             }
             console.info("init to " + this.mode + " mode");
-            const url = new URL(window.location.href);
-            const hasAnnotation = url.searchParams.has("annotation");
-            if(hasAnnotation) {
+            if(this.hasAnnotation) {
                 this.enableCommentMode();
             } else {
                 if (this.signable) {
@@ -341,7 +339,7 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        $("#content").on('mousedown', e => this.clickAction(e));
+        $("#pdf").on('mousedown', e => this.clickAction(e));
     }
 
     initForm() {
@@ -354,15 +352,16 @@ export class WorkspacePdf {
         }
     }
 
-    saveData(disableAlert) {
-        let self = this;
-        for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
-            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
-                if(i === self.pdfViewer.pdfDoc.numPages) {
-                    self.pushData(false, disableAlert);
-                }
-            }));
+    async saveData(disableAlert) {
+        const total = this.pdfViewer.pdfDoc.numPages;
+
+        for (let i = 1; i <= total; i++) {
+            const page = await this.pdfViewer.pdfDoc.getPage(i);
+            const items = await page.getAnnotations();
+            await this.pdfViewer.saveValues(items);
         }
+
+        this.pushData(false, disableAlert);
     }
 
     pushData(redirect, disableAlert) {
@@ -375,7 +374,6 @@ export class WorkspacePdf {
         pdfViewer.dataFields.forEach(function (dataField) {
             formData[dataField.name] = self.pdfViewer.savedFields.get(dataField.name);
         });
-
         if (redirect || this.dataId != null) {
             let json = JSON.stringify(formData);
             let dataId = $('#dataId');
@@ -578,7 +576,6 @@ export class WorkspacePdf {
             if(comment.stepNumber == null) {
                 let postitDiv = $('#inDocComment_' + comment.id);
                 let postitButton = $('#postit' + comment.id);
-                if (this.mode === 'comment') {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
                     let pageOffset = $("#page_" + comment.pageNumber).offset();
@@ -627,10 +624,11 @@ export class WorkspacePdf {
                             }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
                         });
                     }
-                } else {
-                    postitDiv.hide();
-                    postitButton.css("background-color", "#EEE");
+                if (this.mode !== 'comment') {
+                    postitDiv.css("color", "transparent");
+                    postitButton.css("background-color", "#FFF");
                     postitDiv.unbind('mouseup');
+                    postitDiv.css("pointer-events", "none");
                 }
             }
         });
@@ -748,7 +746,11 @@ export class WorkspacePdf {
                         ui.size.height = ui.size.height - 2;
                         signRequestParams.resize(ui);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
-                        cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
+                        if(signRequestParams.extraOnTop) {
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
+                        } else {
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale/2);
+                        }
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
                         let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
                         let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
@@ -758,9 +760,9 @@ export class WorkspacePdf {
                         let newTop = oldTop + yOffset;
                         cross.css("left", newLeft);
                         cross.css("top", newTop);
-                        signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
-                        cross.resizable("disable");
+                        signRequestParams.dropped = true;
+                        signRequestParams.disableCrossResizable();
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
@@ -777,8 +779,9 @@ export class WorkspacePdf {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
-                        cross.resizable("enable");
+                        signRequestParams.enableCrossResizable();
                         signRequestParams.signSpace = null;
+                        signRequestParams.dropped = false;
                     }
                 }
             }
@@ -876,9 +879,11 @@ export class WorkspacePdf {
 
     enableCommentMode() {
         $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
+        $("#signModeBtns").toggleClass("d-inline-flex d-none");
         console.info("enable comments mode");
         localStorage.setItem('mode', 'comment');
-        $("#postitHelp").remove();
+        $("#display-pdf-alerts-btn").remove();
+        $("#pdf-alerts").remove();
         this.disableAllModes();
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
@@ -917,7 +922,6 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -949,7 +953,7 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
-        insertBtn.addClass("pulse-primary");
+        // insertBtn.addClass("pulse-primary");
         insertBtn.addClass("btn-outline-primary");
         insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
@@ -993,7 +997,7 @@ export class WorkspacePdf {
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
-        $('#commentsBar').hide();
+        // $('#commentsBar').hide();
         $('#sign-tools').addClass("d-none");
         $('#infos').hide();
         $('#postit').hide();
@@ -1225,38 +1229,30 @@ export class WorkspacePdf {
     }
 
     autocollapse() {
-        let menu = "#ws-tabs";
-        let maxWidth = $("#workspace").innerWidth() - 50;
-        console.info("maxWidth : " + maxWidth);
-        const listItems = document.querySelectorAll('#ws-tabs > li');
-        let totalWidth = 0;
-        listItems.forEach(li => {
-            totalWidth += li.getBoundingClientRect().width;
-        });
-        console.warn(totalWidth + " >= " + maxWidth);
-        if (totalWidth >= maxWidth) {
-            $(menu + ' .dropdown').removeClass('d-none');
-            while (this.navWidth > maxWidth) {
-                let children = this.wsTabs.children(menu + ' li:not(:last-child)');
-                let count = children.length;
-                this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn("nav width : " + this.navWidth);
-                $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
-            }
-        } else if (this.navWidth < maxWidth - 300) {
-            let collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
-            if (collapsed.length===0) {
-                $(menu + ' .dropdown').addClass('d-none');
-            }
-            collapsed = $(menu + ' .dropdown-menu').children('li');
-            let i = 0;
-            while (this.navWidth < maxWidth && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > i + 1) {
-                $(collapsed[i]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
-                this.navWidth = this.navWidth + $(collapsed[i]).width();
-                if(this.navWidth >= maxWidth) break;
-                i++;
-            }
+        const $menu = $("#ws-tabs");
+        const $workspace = $("#workspace");
+        const maxWidth = Math.round($workspace.innerWidth() - 50);
+        const $dropdownToggle = $menu.children("li.dropdown");
+        const $dropdownMenu = $menu.find(".dropdown-menu");
 
+        // 🔹 tout déplier avant de recalculer
+        $dropdownMenu.children("li").insertBefore($dropdownToggle);
+        $dropdownToggle.addClass("d-none");
+
+        let $visibleTabs = $menu.children("li:not(.dropdown)");
+        let visibleWidth = 0;
+        $visibleTabs.each((_, el) => visibleWidth += Math.round($(el).outerWidth(true)));
+
+        // collapse si besoin
+        if (visibleWidth > maxWidth) {
+            $dropdownToggle.removeClass("d-none");
+            const dropdownWidth = Math.round($dropdownToggle.outerWidth(true));
+            while (visibleWidth + dropdownWidth > maxWidth && $visibleTabs.length > 0) {
+                const $last = $menu.children("li:not(.dropdown)").last();
+                visibleWidth -= Math.round($last.outerWidth(true));
+                $last.prependTo($dropdownMenu);
+                $visibleTabs = $menu.children("li:not(.dropdown)");
+            }
         }
     }
 }

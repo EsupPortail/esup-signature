@@ -5,45 +5,66 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side :: side}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
             <div class="navbar-nav">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Outil de validation</li>
                 </ol>
             </div>
         </nav>
-        <div id="content" class="content">
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Validation d’un document signé</b></h5>
-                    <div id="collapseHelp" aria-expanded="true" style="">
-                        <div class="alert alert-dark">
-                            Vous pouvez contrôler la signature électronique d’un document ainsi que la compatibilité PDF/A pour les fichiers pdf.
-                        </div>
+        <div id="content" class="content-fixed-breadcrumb">
+            <h5 class="text-center">Validation d’un document signé</h5>
+            <div class="alert alert-light">
+                <div style="" th:fragment="validationForm">
+                    <div class="alert alert-dark mb-2">
+                        <p>Vérifiez la <strong>signature électronique</strong> et la <strong>conformité PDF/A</strong> d’un document PDF.</p>
+                        <ul>
+                            <li>Si le document contient une signature intégrée, remplissez uniquement le premier champ.</li>
+                            <li>Si la signature est séparée, déposez le document original dans le premier champ et la signature dans le second.</li>
+                        </ul>
                     </div>
-                    <br/>
                     <form th:action="'/user/validation?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" method="post">
-                        <div class="form-group mb-3">
-                        <div class="custom-file">
-                            <input required="required" class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file"/>
-                            <label class="custom-file-label" for="multipartSignedDoc">
-                                Choisir un fichier signé
-                            </label>
+                    <div class="form-group mb-3">
+                        <div class="position-relative">
+                            <input required class="form-control" id="multipartSignedDoc" name="multipartSignedDoc" type="file">
+                            <button type="button" id="clearFileBtn"
+                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                    title="Effacer le fichier">
+                                ✕
+                            </button>
                         </div>
+                        <script>
+                            document.getElementById('clearFileBtn').addEventListener('click', () => {
+                                const input = document.getElementById('multipartSignedDoc');
+                                input.value = '';
+                            });
+                        </script>
+                    </div>
+                    <div class="form-group mb-3">
+                    <div class="custom-file">
+                        <label class="custom-file-label" for="multipartSignature">
+                            Choisir un fichier signature (si la signature est détachée)
+                        </label>
+                        <div class="position-relative">
+                            <input class="form-control" id="multipartSignature" name="multipartSignature" type="file">
+                            <button type="button" id="clearSignatureBtn"
+                                    class="btn btn-sm btn-light position-absolute top-0 end-0 me-1 mt-1 border"
+                                    title="Effacer le fichier">
+                                ✕
+                            </button>
                         </div>
-                        <div class="form-group mb-3">
-                        <div class="custom-file">
-                            <input class="form-control" id="multipartSignature" name="multipartSignature" type="file"/>
-                            <label class="custom-file-label" for="multipartSignature">
-                                Choisir un fichier signature (si la signature est détachée)
-                            </label>
-                        </div>
-                        </div>
-                        <div class="form-group mb-3">
-                        <input alt="Upload" class="btn btn-success float-end" id="Upload" title="Upload" type="submit" value="Envoyer"/>
-                        </div>
-                    </form>
+                        <script>
+                            document.getElementById('clearSignatureBtn').addEventListener('click', () => {
+                                const input = document.getElementById('multipartSignature');
+                                input.value = '';
+                            });
+                        </script>
+                    </div>
+                    </div>
+                    <div class="form-group w-100 text-end">
+                        <input alt="Upload" class="btn btn-success end" id="Upload" title="Upload" type="submit" value="Envoyer"/>
+                    </div>
+                </form>
                 </div>
             </div>
         </div>

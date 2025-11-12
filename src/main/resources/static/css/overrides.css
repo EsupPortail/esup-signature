@@ -1,3 +1,21 @@
+:root {
+    --ss-spacing-l: 10px;
+    --angle: 2deg;
+}
+
+.modal {
+    --bs-modal-border-color: tranparent;
+    --bs-modal-border-radius: var(--bs-border-radius-sm);
+}
+
+.modal-header {
+    border-bottom: revert;
+}
+
+.modal-footer {
+    border-top: revert;
+}
+
 section {
     border-width: 0 !important;
 }
@@ -41,6 +59,7 @@ textarea:invalid {
 
 .file-drop-zone-title {
     padding: 10px 10px !important;
+    font-size: 3vh;
 }
 
 .file-details-cell {
@@ -73,9 +92,12 @@ textarea:invalid {
     content: "Parcourir" !important;
 }
 
-:root {
-    --ss-spacing-l: 10px;
-    --angle: 2deg;
+.accordion {
+    --bs-accordion-btn-active-icon: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    --bs-accordion-btn-focus-box-shadow: var(--bs-dark-bg-subtle);
+    --bs-accordion-active-color: white;
+    --bs-accordion-active-bg: var(--bs-dark);
+    --bs-accordion-btn-bg: var(--bs-light);
 }
 
 .ss-value-text {
@@ -209,9 +231,9 @@ textarea:invalid {
 }
 
 .drop-shadows {
-    -moz-box-shadow: 3px 3px 5px 3px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 3px 3px 5px 3px rgba(0, 0, 0, 0.3);
-    box-shadow: 3px 3px 5px 3px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.3);
+    box-shadow: 2px 2px 6px 0px rgba(0, 0, 0, 0.3);
 }
 
 .backdrop {
@@ -269,7 +291,7 @@ textarea:invalid {
     text-align: left;
     font-size: 100%;
     font-weight: 500;
-    border-radius: revert !important;
+    /*border-radius: revert !important;*/
     height: 25px;
     display: inline-block;
     padding: 0 !important;
@@ -281,6 +303,10 @@ textarea:invalid {
     padding: 0 6px 1px 6px;
     line-height: 25px;
     color: white;
+    border-top-left-radius: var(--bs-border-radius-pill) !important;
+    border-bottom-left-radius: var(--bs-border-radius-pill) !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
 }
 
 .badge-status > p {
@@ -304,6 +330,10 @@ textarea:invalid {
 .badge-danger {
     --bs-bg-opacity: 1;
     background-color: rgba(var(--bs-danger-rgb),var(--bs-bg-opacity))!important;
+}
+
+.btn .badge {
+    top: 0;
 }
 
 .bootbox-backdrop {
@@ -512,4 +542,16 @@ textarea:invalid {
 
 .form-check-input {
     border-color: #6c757d;
+}
+
+.fi {
+    vertical-align: middle;
+    transform: translateY(-1px);
+    display: inline-flex;
+    align-items: center;
+}
+
+.introjs-tooltip {
+    min-width: 300px;
+    max-width: 500px;
 }

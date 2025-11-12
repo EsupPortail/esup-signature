@@ -117,6 +117,7 @@ public class OtpService {
         return password;
     }
 
+    @Transactional
     public Otp getAndCheckOtpFromDatabase(String urlId){
         Otp otp = otpRepository.findByUrlId(urlId);
         if(otp != null) {
@@ -127,7 +128,12 @@ public class OtpService {
                     .plusMinutes(globalProperties.getOtpValidity());
             LocalDateTime now = LocalDateTime.now();
             if (validDate.isAfter(now)) {
-                return otpRepository.findByUrlId(urlId);
+                if(otp.getSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(otp.getSignBook().getLiveWorkflow().getWorkflow().getMailFrom())) {
+                    otp.setMailFrom(otp.getSignBook().getLiveWorkflow().getWorkflow().getMailFrom());
+                } else {
+                    otp.setMailFrom(globalProperties.getApplicationEmail());
+                }
+                return otp;
             }
         }
         return null;

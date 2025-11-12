@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.interfaces.certificat.impl;
 
 import eu.europa.esig.dss.token.Pkcs12SignatureToken;
+import jakarta.annotation.Resource;
 import org.apache.commons.text.RandomStringGenerator;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.ContentSigner;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.annotation.Resource;
 import javax.security.auth.x500.X500Principal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

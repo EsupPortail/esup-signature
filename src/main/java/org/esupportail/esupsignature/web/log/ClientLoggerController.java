@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.log;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.js.JsError;
+import org.esupportail.esupsignature.web.controller.user.UserController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

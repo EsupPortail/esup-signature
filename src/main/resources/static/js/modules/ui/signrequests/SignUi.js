@@ -31,6 +31,7 @@ export class SignUi {
         this.currentStepMinSignLevel = currentStepMinSignLevel;
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
+        this.sealCertificatSelect = $("#sealCertificat");
         this.nbSignRequests = nbSignRequests;
         this.attachmentRequire = attachmentRequire;
         this.attachmentAlert = attachmentAlert;
@@ -191,14 +192,7 @@ export class SignUi {
                 }
             });
         } else {
-            let signModal;
-            if (self.stepRepeatable) {
-                signModal = $('#stepRepeatableModal');
-            } else {
-                signModal = $("#signModal");
-            }
-            signModal.modal('show');
-            this.confirmLaunchSignModal();
+            self.checkAttachement();
         }
     }
 
@@ -254,12 +248,7 @@ export class SignUi {
             $("#launchNoInfiniteSignButtonNext").toggle();
             $("#signCommentNoInfinite").toggle();
         });
-        let signModal;
-        if (this.stepRepeatable) {
-            signModal = $('#stepRepeatableModal');
-        } else {
-            signModal = $("#signModal");
-        }
+        let signModal = $("#signModal");
         signModal.on('shown.bs.modal', function () {
             $("#checkValidateSignButtonEnd").focus();
             let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
@@ -286,18 +275,15 @@ export class SignUi {
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
         }
-        if(value === "userCert" || value === "sealCert" || value === "nexuCert") {
-            if(this.workspace.signPosition.signRequestParamses.size > 1) {
-                $("#alert-multi-sign-present").show();
-            }
+        if(value === "sealCert") {
+            $("#sealChoose").removeClass('d-none');
         } else {
-            $("#alert-multi-sign-present").hide();
+            $("#sealChoose").addClass('d-none');
         }
     }
 
     launchNoInfiniteSign(next) {
-        this.signComment = $("#signCommentNoInfinite");
-        $("#password").val($("#passwordInfinite").val());
+        this.signComment = $("#signComment");
         this.launchSign(next);
     }
 
@@ -377,6 +363,7 @@ export class SignUi {
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
+                'sealCertificat' : this.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
                     if (this &&
                         (key === "events"

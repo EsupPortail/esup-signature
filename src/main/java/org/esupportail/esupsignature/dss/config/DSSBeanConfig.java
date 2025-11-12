@@ -61,7 +61,6 @@ import org.esupportail.esupsignature.config.sign.SignProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -76,7 +75,6 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 @Configuration
-@EnableConfigurationProperties(DSSProperties.class)
 public class DSSBeanConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);

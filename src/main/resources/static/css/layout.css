@@ -8,6 +8,10 @@ body {
     width: 100%;
 }
 
+body.modal-open {
+    overflow: auto !important;
+}
+
 header {
     z-index: 1031 !important;
 }
@@ -19,7 +23,8 @@ header {
 }
 
 .navbar-brand {
-    width: 250px;
+    width: 260px;
+    margin-right: 0px;
 }
 
 .navbar-nav {
@@ -28,7 +33,6 @@ header {
 
 #logo {
     position: relative;
-    margin-left: 60px;
     height: 40px;
 }
 
@@ -51,7 +55,7 @@ header {
 }
 
 .content {
-    /*width: calc(100vw - 275px);*/
+    width: calc(100vw - 275px);
     margin-top: 86px;
     margin-left: 260px;
     padding-left: 6px;
@@ -61,6 +65,18 @@ header {
 .content-full {
     /*width: calc(100vw - 75px);*/
     margin-left: 60px;
+}
+
+.content-full-fixed {
+    margin-left: 0;
+    margin-top: 50px;
+}
+
+.content-fixed-breadcrumb {
+    padding: 10px;
+    width: calc(100vw - 75px);
+    margin-left: 0;
+    margin-top: 72px;
 }
 
 .th-fixed{
@@ -73,7 +89,7 @@ header {
 
 .table-fix-head {
     overflow-y: auto;
-    height: calc(100vh - 150px);
+    height: calc(100vh - 190px);
 }
 
 .table-fix-head thead th {
@@ -187,7 +203,6 @@ header {
 
 .div-scrollable {
     overflow-y: auto;
-    height: calc(100vh - 350px);
 }
 
 .page {
@@ -229,7 +244,7 @@ header {
     width: 100%;
     z-index: 1029;
     position: fixed;
-    padding-left: 10px;
+    /*padding-left: 10px;*/
 }
 
 .tools-admin {
@@ -273,6 +288,12 @@ header {
     padding: 5px;
     margin-left: 60px;
     width: calc(100vw - 75px);
+}
+
+.breadcrumb-nav-full-fixed {
+    z-index: 1;
+    padding: 5px;
+    margin-left: 0;
 }
 
 .breadcrumb {
@@ -320,15 +341,47 @@ header {
     -o-transition:opacity 2s linear;
 }
 
-.pdf-alerts {
-    top:130px;
+.pdf-alerts-btn {
+    left: 277px;
+    top:135px;
     position: fixed;
-    width: calc(100% - 282px);
+    z-index: 9999;
+}
+
+.pdf-alerts {
     z-index: 999;
+    margin-left: 0px !important;
+    margin-top: 0px !important;
+    padding: 10px;
+    gap: 1rem;
+    width: 500px !important;
 }
 
 .bs-stepper-bottom {
     clear: both;
     display: block;
     width: 100%;
+}
+
+.favorite-icon {
+    margin-top: 8px;
+    margin-left: 8px;
+    text-align: end;
+    position: absolute;
+}
+
+#mega-result {
+    height: 500px;
+    display: block;
+    /*margin-top: 30px;*/
+    position: relative;
+    width: 100% !important;
+}
+
+#mega-result .modal-dialog {
+    max-width:100%
+}
+
+.global-button {
+    width: 200px;
 }

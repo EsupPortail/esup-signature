@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.service.interfaces.extvalue;
 
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.Resource;
 import java.util.List;
 
 @Service

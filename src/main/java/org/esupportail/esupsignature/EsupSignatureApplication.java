@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.SessionTrackingMode;
@@ -10,22 +9,25 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Collections;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class EsupSignatureApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
-	@Resource
-	private ApplicationContext applicationContext;
+	private final ApplicationContext applicationContext;
+	private final GlobalProperties globalProperties;
+	private final UpgradeService upgradeService;
 
-	@Resource
-	private GlobalProperties globalProperties;
-
-	@Resource
-	private UpgradeService upgradeService;
+    public EsupSignatureApplication(ApplicationContext applicationContext, GlobalProperties globalProperties, UpgradeService upgradeService) {
+        this.applicationContext = applicationContext;
+        this.globalProperties = globalProperties;
+        this.upgradeService = upgradeService;
+    }
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {

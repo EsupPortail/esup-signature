@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.6</version>
+		<version>3.5.7</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.35.12-SNAPSHOT</version>
+	<version>1.36.1-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -124,6 +124,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
@@ -175,7 +183,7 @@
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>pdfjs-dist</artifactId>
-			<version>4.6.82</version>
+			<version>5.4.149</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
@@ -272,11 +280,11 @@
 			<artifactId>slim-select</artifactId>
 			<version>2.12.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>spectrum-seballot</artifactId>
-			<version>2.0.5</version>
-		</dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>github-com-seballot-spectrum</artifactId>
+            <version>2.0.10</version>
+        </dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
 			<artifactId>signature_pad</artifactId>
@@ -292,6 +300,11 @@
 			<artifactId>intl-tel-input</artifactId>
 			<version>25.3.0</version>
 		</dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>flaticon__flaticon-uicons</artifactId>
+            <version>3.3.1</version>
+        </dependency>
 
 		<!-- DSS Framework dependencies -->
 

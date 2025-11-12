@@ -72,7 +72,7 @@ public class UserAndOtpSignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
+    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, @RequestParam(required = false) String annotation, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
         String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
         SignRequest signRequest = signRequestService.getById(id);
@@ -85,6 +85,7 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
         }
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        model.addAttribute("annotation", annotation);
         model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", urlProfil);
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
@@ -120,7 +121,7 @@ public class UserAndOtpSignRequestController {
         if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
-        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
+        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         model.addAttribute("attachments", signRequestService.getAttachments(id));
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
         model.addAttribute("nextSignBook", nextSignBook);
@@ -144,16 +145,24 @@ public class UserAndOtpSignRequestController {
         if(reports != null) {
             model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
             List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
-            if(signable) model.addAttribute("signWiths", signWiths);
+            if(signable) {
+                model.addAttribute("signWiths", signWiths);
+            }
             model.addAttribute("signatureIssue", false);
-            for(String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                if(!reports.getSimpleReport().isValid(signatureId)) {
-                    model.addAttribute("signatureIssue", true);
+            if(!reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
+                    if (!reports.getSimpleReport().isValid(signatureId)) {
+                        model.addAttribute("signatureIssue", true);
+                    }
+                }
+                if(currentStepMinSignLevel.getValue() < 3) {
+                    currentStepMinSignLevel = SignLevel.advanced;
                 }
             }
         } else {
             if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
+        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             if (reports != null) {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
@@ -320,8 +329,7 @@ public class UserAndOtpSignRequestController {
                                         @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
                                         @RequestParam(value = "commentHeight", required = false) Integer commentHeight,
                                         @RequestParam(value = "postit", required = false) String postit,
-                                        @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend,
-                                        Model model) {
+                                        @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend) {
         Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, commentWidth, commentHeight, postit, spotStepNumber, authUserEppn, userEppn, forceSend);
         if(commentId != null) {
             return ResponseEntity.ok().body(commentId);

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head-lite :: head-lite}"></head>
+<head th:replace="~{fragments/head-lite :: head}"></head>
 <body>
     <th:block th:if="${userEppn != null}">
     <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
@@ -9,7 +9,7 @@
     <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
     </th:block>
     <main role="main" style="padding-bottom: 65px !important;">
-    <div class="card col-lg-10 mx-auto" style="top: 60px;">
+    <div class="card col-lg-12 mx-auto" style="top: 60px;">
         <div class="card-body">
             <h1>Une erreur s’est produite.<span th:if="${userEppn != null}" th:text=" ' : ' + ${status} + ' ' + ${error}"></span></h1>
             <p>Merci de contacter le gestionnaire de cette application</p>
@@ -19,60 +19,60 @@
                 <i class="fa-solid fa-chevron-down"></i> Détails de l’erreur
             </button>
             <div id="collapseError" class="collapse mt-2" th:if="${userEppn != null}">
-                <table class="table table-striped">
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                <table class="table table-striped table-responsive">
+                    <tr >
+                        <td class="col-md-2 ms-auto">
                             <span class="legend">Date</span>
                         </td>
-                        <td class="col-md-8">
+                        <td class="col-md-10">
                             <span th:text="${timestamp}"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Path</span>
                         </td>
-                        <td class="col-md-8">
+                        <td >
                             <span th:text="${path}"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Error</span>
                         </td>
-                        <td class="col-md-8">
+                        <td >
                             <span th:text="${error}"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Status</span>
                         </td>
-                        <td class="col-md-8">
+                        <td >
                             <span th:text="${status}"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Message</span>
                         </td>
-                        <td class="col-md-8">
-                            <span th:text="${message}"></span>
+                        <td >
+                            <span th:text="${message}" style="word-break: break-word; overflow-wrap: anywhere;"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Exception</span>
                         </td>
-                        <td class="col-md-8">
+                        <td >
                             <span th:text="${exception}"></span>
                         </td>
                     </tr>
-                    <tr class="row rowDesign">
-                        <td class="col-md-4 ms-auto">
+                    <tr >
+                        <td class="ms-auto">
                             <span class="legend">Trace</span>
                         </td>
-                        <td class="col-md-8">
+                        <td >
                             <textarea disabled th:text="${trace}" style="width: 100%; height: 390px"></textarea>
                         </td>
                     </tr>

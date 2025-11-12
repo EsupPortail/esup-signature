@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head-full :: head}"></head>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
     let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
@@ -31,273 +31,256 @@
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
-                <div class="card text-bg-light mb-1 col-lg-11 m-2">
-                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                        <h5 class="ms-4"><b>Paramètres généraux</b></h5>
+                <div class="alert alert-light mb-1 col-lg-11 m-2">
+                    <h5>Paramètres généraux</h5>
+                    <div class="form-check form-switch form-switch-md">
+                        <input id="returnToHomeAfterSign" class="form-check-input" type="checkbox" name="returnToHomeAfterSign" th:checked="${(user.returnToHomeAfterSign != null && user.returnToHomeAfterSign) || (user.returnToHomeAfterSign == null && globalProperties.returnToHomeAfterSign)}">
+                        <label class="form-check-label" for="returnToHomeAfterSign">Retourner à l’accueil après chaque signature</label>
                     </div>
-                    <div class="card-body">
-                        <div class="form-check form-switch form-switch-md">
-                            <input id="returnToHomeAfterSign" class="form-check-input" type="checkbox" name="returnToHomeAfterSign" th:checked="${(user.returnToHomeAfterSign != null && user.returnToHomeAfterSign) || (user.returnToHomeAfterSign == null && globalProperties.returnToHomeAfterSign)}">
-                            <label class="form-check-label" for="returnToHomeAfterSign">Retourner à l’accueil après chaque signature</label>
-                        </div>
-                        <div id="emailAlertFrequency" th:unless="${user.userType.name() == 'external'}">
-                            <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
-                                d'alerte</strong>
-                                <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
-                                        type="button" class="btn btn-sm btn-transparent">
-                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                </button>
-                                <div class="collapse" id="collapseHelpEmailAlertFrequency">
-                                    <div class="alert alert-info">
-                                        <small>Vous pouvez choisir une fréquence pour les alertes</small>
-                                    </div>
+                    <div id="emailAlertFrequency" th:unless="${user.userType.name() == 'external'}">
+                        <label class="col-form-label" for="emailAlertFrequency_id"> <strong>Fréquence
+                            d'alerte</strong>
+                            <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
+                                    type="button" class="btn btn-sm btn-transparent">
+                                <span class="fa-solid fa-info-circle text-info"></span>
+                            </button>
+                            <div class="collapse" id="collapseHelpEmailAlertFrequency">
+                                <div class="alert alert-info">
+                                    <small>Vous pouvez choisir une fréquence pour les alertes</small>
                                 </div>
-                            </label>
-                            <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
-                                    size="1">
-                                <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
-                                <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
-                                    <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
-                                            selected="selected" th:value="${emailAlertFrequency}"
-                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-                                    <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}"
-                                            th:value="${emailAlertFrequency}"
-                                            th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
-                                </th:block>
-                            </select>
+                            </div>
+                        </label>
+                        <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
+                                size="1">
+                            <option data-placeholder="true" value="">Choisir votre préférence d'alerte</option>
+                            <th:block th:each="emailAlertFrequency : ${emailAlertFrequencies}">
+                                <option th:if="${emailAlertFrequency == user.emailAlertFrequency}"
+                                        selected="selected" th:value="${emailAlertFrequency}"
+                                        th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                                <option th:unless="${emailAlertFrequency == user.emailAlertFrequency}"
+                                        th:value="${emailAlertFrequency}"
+                                        th:text="#{'user.emailAlertFrequency.' + ${emailAlertFrequency}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="csvToken"><strong>Token d'accès API</strong></label>
+                        <div class="input-group">
+                            <input disabled id="csvToken" class="form-control" type="text" th:field="*{accessToken}" value="">
+                            <button id="refresh-token" data-bs-toggle="modal" data-bs-target="#accessTokenModal" type="button" class="btn border-light-subtle" title="Actualiser le token"><i class="fa-solid fa-arrows-rotate"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group d-none" id="emailAlertHourDiv" th:unless="${user.userType.name() == 'external'}">
+                        <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
+                        </label>
+                        <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
+                            <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group d-none" id="emailAlertDayDiv" th:unless="${user.userType.name() == 'external'}">
+                        <label class="col-form-label" for="emailAlertDay"> <strong>Jour de l’alerte</strong></label>
+                        <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
+                            <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
+                                <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
+                                        th:value="${emailAlertDay}"
+                                        th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                                <option th:unless="${emailAlertDay == user.emailAlertDay}"
+                                        th:value="${emailAlertDay}"
+                                        th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                </div>
+                <div class="alert alert-light mb-1 col-lg-11 m-2">
+                    <h5>Images de ma signature</h5>
+                    <div id="signImageForm">
+                        <div class="row">
+                            <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
+                                <label><strong>Mes signatures</strong></label>
+                                <table class="table table-borderless table-striped">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th class="text-left">Aperçu</th>
+                                        <th class="text-left">Préférée</th>
+                                        <th>Supprimer</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                            <img class="thumbnail" th:src="'/ws-secure/users/get-default-paraphe'"  alt="Image avec paraphe"/>
+                                        </td>
+                                        <td>
+                                            <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999997'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999997} ? 'text-warning' : 'text-secondary'">
+                                                <i class="fa-solid fa-star"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                            <img class="thumbnail" th:src="'/ws-secure/users/get-default-image'"  alt="Image avec nom prénom"/>
+                                        </td>
+                                        <td>
+                                            <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
+                                                <i class="fa-solid fa-star"></i>
+                                            </a>
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    <th:block th:each="signImageId, iterator : ${userImagesIds}">
+                                        <tr>
+                                            <td class="text-left w-100" style="position: relative;height: 74px;" >
+                                                <img th:id="'sign-image-' + ${iterator.index}" class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature ' + ${iterator.index}"/>
+                                            </td>
+                                            <td>
+                                                <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </a>
+                                            </td>
+                                            <td>
+                                                <button th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
+                                                    <i class="fa-solid fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-12 col-xl-8 mb-2 text-center">
+                                <label class="col-form-label">
+                                    <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                                    <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
+                                            type="button"
+                                            class="btn btn-sm btn-transparent">
+                                        <i class="fa-solid fa-info-circle text-info"></i>
+                                    </button>
+                                    <div class="collapse" id="collapseHelpSignImage">
+                                        <div class="alert alert-info">
+                                            <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                                taille pour
+                                                que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </label>
+                                <div class="mx-auto mb-1" style="width: 600px;">
+                                    <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                                </div>
+                                <br/>
+                                <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
+                                <div id="signPad">
+                                    <div id="signPadTip" style="
+                                        position: absolute;
+                                        top: 0;
+                                        left: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: rgba(0, 0, 0, 0.2); /* Texte transparent */
+                                        font-size: 48px;
+                                        font-family: Arial, sans-serif;
+                                        pointer-events: none; /* Empêche l'interaction avec le texte */
+                                        user-select: none; /* Rend le texte non sélectionnable */
+                                    ">
+                                        Dessinez votre signature ici
+                                    </div>
+                                    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                    <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                        Valider la signature
+                                    </button>
+                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                    <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                        Réinitialiser
+                                    </button>
+                                </div>
+                                <div id="sign-crop" class="mx-auto">
+                                <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
+                                    <div class="d-flex justify-content-center">
+                                        <button type="button" id="crop-zoomout"
+                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                            <i class="fa-solid fa-search-minus"></i></button>
+                                        <button type="button" id="crop-zoomin"
+                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                            <i class="fa-solid fa-search-plus"></i></button>
+                                        <button type="button"
+                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                                data-deg="90"><i class="fa-solid fa-undo"></i></button>
+                                        <button type="button"
+                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                                data-deg="-90"><i class="fa-solid fa-redo"></i></button>
+                                    </div>
+                                    <div id="vanilla-crop" class="mt-2"></div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" th:field="*{signImageBase64}"/>
+                </div>
+                <div class="alert alert-light mb-1 col-lg-11 m-2">
+                    <h5>Configuration de la signature par défaut</h5>
+                    <div class="form-check form-switch form-switch-md mx-auto">
+                        <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
+                        <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
+                    </div>
+                    <div id="signRequestParamsCleanDiv" class="mx-auto">
+                        <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
+                    </div>
+                    <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="width:400px; min-height: 400px;">
+                        <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
+                    </div>
+                </div>
+
+                <div th:unless="${user.userType.name() == 'external'}" class="alert alert-light mb-1 col-lg-11 m-2" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
+                    <h5>Paramètres de signature électronique (Facultatif)</h5>
+                    <div id="keyForm" class="form-group col-10 mx-auto">
+                        <label class="col-form-label"><strong>Magasin de certificats</strong>
+                            <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
+                                    class="btn btn-sm btn-transparent">
+                        <span class="fa-solid fa-info-circle text-info"> <!-- -->
+                        </span>
+                            </button>
+                            <div class="collapse collapse" id="collapseHelpKeyStore">
+                                <div class="alert alert-info">
+                                    <small> Pour demander un certificat merci de contacter le RSSI de l'établissement : <a
+                                            th:href="'mailto:' + #{application.rssi}"
+                                            target="_blank" th:text="#{application.rssi}"></a>
+                                    </small>
+                                </div>
+                            </div>
+                        </label>
+                        <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
+                            Keystore actuel : <a
+                                href="/ws-secure/users/get-keystore"><span
+                                th:text="${keystoreFileName}"></span></a>
+                            <br>
+                            <button type="button"
+                                    class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
+                                    data-bs-target="#testKeystore">
+                                <i class="fa-solid fa-certificate"></i> Tester mon certificat
+                            </button>
+                            <button type="button"
+                                    class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
+                                    data-bs-target="#removeKeystore">
+                                <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
+                            </button>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="csvToken"><strong>Token d'accès API</strong></label>
-                            <div class="input-group">
-                                <input disabled id="csvToken" class="form-control" type="text" th:field="*{accessToken}" value="">
-                                <button id="refresh-token" data-bs-toggle="modal" data-bs-target="#accessTokenModal" type="button" class="btn border-light-subtle" title="Actualiser le token"><i class="fa-solid fa-arrows-rotate"></i></button>
-                            </div>
-                        </div>
-                        <div class="form-group d-none" id="emailAlertHourDiv" th:unless="${user.userType.name() == 'external'}">
-                            <label class="col-form-label" for="emailAlertHour"> <strong>Heure d’alerte</strong>
-                            </label>
-                            <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
-                                <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
-                            </select>
-                        </div>
-                        <div class="form-group d-none" id="emailAlertDayDiv" th:unless="${user.userType.name() == 'external'}">
-                            <label class="col-form-label" for="emailAlertDay"> <strong>Jour de l’alerte</strong></label>
-                            <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
-                                <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
-                                    <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
-                                            th:value="${emailAlertDay}"
-                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-                                    <option th:unless="${emailAlertDay == user.emailAlertDay}"
-                                            th:value="${emailAlertDay}"
-                                            th:text="#{'user.emailAlertDay.' + ${emailAlertDay}}"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="card text-bg-light mb-1 col-lg-11 m-2">
-                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                        <h5 class="ms-4"><b>Paramètres de signature calligraphique</b></h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="signImageForm">
-                            <div class="row">
-                                <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
-                                    <label><strong>Mes signatures</strong></label>
-                                    <table class="table table-borderless table-striped">
-                                        <thead class="table-secondary">
-                                        <tr>
-                                            <th class="text-left">Aperçu</th>
-                                            <th class="text-left">Préférée</th>
-                                            <th>Supprimer</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                <img class="thumbnail" th:src="'/ws-secure/users/get-default-paraphe'"  alt="Image avec paraphe"/>
-                                            </td>
-                                            <td>
-                                                <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999997'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999997} ? 'text-warning' : 'text-secondary'">
-                                                    <i class="fa-solid fa-star"></i>
-                                                </a>
-                                            </td>
-                                            <td>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                <img class="thumbnail" th:src="'/ws-secure/users/get-default-image'"  alt="Image avec nom prénom"/>
-                                            </td>
-                                            <td>
-                                                <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
-                                                    <i class="fa-solid fa-star"></i>
-                                                </a>
-                                            </td>
-                                            <td>
-                                            </td>
-                                        </tr>
-                                        <th:block th:each="signImageId, iterator : ${userImagesIds}">
-                                            <tr>
-                                                <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                    <img th:id="'sign-image-' + ${iterator.index}" class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature ' + ${iterator.index}"/>
-                                                </td>
-                                                <td>
-                                                    <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
-                                                        <i class="fa-solid fa-star"></i>
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    <button th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
-                                                        <i class="fa-solid fa-trash-alt"></i>
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </th:block>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-12 col-xl-8 mb-2 text-center">
-                                    <label class="col-form-label">
-                                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                                        <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
-                                                type="button"
-                                                class="btn btn-sm btn-transparent">
-                                            <i class="fa-solid fa-info-circle text-info"></i>
-                                        </button>
-                                        <div class="collapse" id="collapseHelpSignImage">
-                                            <div class="alert alert-info">
-                                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
-                                                    taille pour
-                                                    que la signature entre dans le carré blanc. La résolution de l’image sera de 600*300 pixels.
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </label>
-                                    <div class="mx-auto mb-1" style="width: 600px;">
-                                        <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                    </div>
-                                    <br/>
-                                    <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
-                                    <div id="signPad">
-                                        <div id="signPadTip" style="
-                                            position: absolute;
-                                            top: 0;
-                                            left: 0;
-                                            width: 100%;
-                                            height: 100%;
-                                            display: flex;
-                                            align-items: center;
-                                            justify-content: center;
-                                            color: rgba(0, 0, 0, 0.2); /* Texte transparent */
-                                            font-size: 48px;
-                                            font-family: Arial, sans-serif;
-                                            pointer-events: none; /* Empêche l'interaction avec le texte */
-                                            user-select: none; /* Rend le texte non sélectionnable */
-                                        ">
-                                            Dessinez votre signature ici
-                                        </div>
-                                        <canvas id="canvas" style="border: 1px solid black;"></canvas>
-                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                            Valider la signature
-                                        </button>
-                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                            Réinitialiser
-                                        </button>
-                                    </div>
-                                    <div id="sign-crop" class="mx-auto">
-                                    <div id="crop-div" class="alert alert-light text-dark text-center" style="display: none;">
-                                        <div class="d-flex justify-content-center">
-                                            <button type="button" id="crop-zoomout"
-                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i class="fa-solid fa-search-minus"></i></button>
-                                            <button type="button" id="crop-zoomin"
-                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                                <i class="fa-solid fa-search-plus"></i></button>
-                                            <button type="button"
-                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                    data-deg="90"><i class="fa-solid fa-undo"></i></button>
-                                            <button type="button"
-                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                    data-deg="-90"><i class="fa-solid fa-redo"></i></button>
-                                        </div>
-                                        <div id="vanilla-crop" class="mt-2"></div>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <input type="hidden" th:field="*{signImageBase64}"/>
-                    </div>
-                </div>
-
-                <div class="card text-bg-light mb-1 col-lg-11 m-2">
-                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                        <h5 class="ms-4"><b>Configuration de la signature par défaut</b></h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check form-switch form-switch-md mx-auto">
-                            <input id="saveSignRequestParams" class="form-check-input" type="checkbox" name="saveSignRequestParams" value="true" th:checked="${user.favoriteSignRequestParams == null}">
-                            <label class="form-check-label" for="saveSignRequestParams">Enregistrer automatiquement mes paramètres après chaque signature</label>
-                        </div>
-                        <div id="signRequestParamsCleanDiv" class="mx-auto">
-                            <button type="button" id="signRequestParamsClean" class="btn btn-warning">Nettoyer mes paramètres enregistrés</button>
-                        </div>
-                        <div id="signRequestParamsFormDiv" class="card-body mx-auto" style="width:400px; min-height: 400px;">
-                            <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div th:unless="${user.userType.name() == 'external'}" class="card text-bg-light mb-1 col-lg-11 m-2" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
-                    <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                        <h5 class="ms-4"><b>Paramètres de signature électronique (Facultatif)</b></h5>
-                    </div>
-                    <div class="card-body">
-                        <div id="keyForm" class="form-group col-10 mx-auto">
-                            <label class="col-form-label"><strong>Magasin de certificats</strong>
-                                <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
-                                        class="btn btn-sm btn-transparent">
-                            <span class="fa-solid fa-info-circle text-info"> <!-- -->
-                            </span>
-                                </button>
-                                <div class="collapse collapse" id="collapseHelpKeyStore">
-                                    <div class="alert alert-info">
-                                        <small> Pour demander un certificat merci de contacter le RSSI de l'établissement : <a
-                                                th:href="'mailto:' + #{application.rssi}"
-                                                target="_blank" th:text="#{application.rssi}"></a>
-                                        </small>
-                                    </div>
-                                </div>
-                            </label>
-                            <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
-                                Keystore actuel : <a
-                                    href="/ws-secure/users/get-keystore"><span
-                                    th:text="${keystoreFileName}"></span></a>
-                                <br>
-                                <button type="button"
-                                        class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
-                                        data-bs-target="#testKeystore">
-                                    <i class="fa-solid fa-certificate"></i> Tester mon certificat
-                                </button>
-                                <button type="button"
-                                        class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
-                                        data-bs-target="#removeKeystore">
-                                    <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
-                                </button>
-                            </div>
-                            <div class="form-group mb-3">
-                                <div class="custom-file">
-                                    <input id="inputGroupFile03" type="file" accept="application/x-pkcs12"
-                                        class="form-control" name="multipartKeystore" value="Choose a file"
-                                        aria-describedby="inputGroupFileAddon02"/>
-                                    <label for="inputGroupFile03" class="custom-file-label"> Choisir un fichier au
-                                        format pkcs12 (.P12)
-                                    </label>
-                                </div>
+                            <div class="custom-file">
+                                <input id="inputGroupFile03" type="file" accept="application/x-pkcs12"
+                                    class="form-control" name="multipartKeystore" value="Choose a file"
+                                    aria-describedby="inputGroupFileAddon02"/>
+                                <label for="inputGroupFile03" class="custom-file-label"> Choisir un fichier au
+                                    format pkcs12 (.P12)
+                                </label>
                             </div>
                         </div>
                     </div>
