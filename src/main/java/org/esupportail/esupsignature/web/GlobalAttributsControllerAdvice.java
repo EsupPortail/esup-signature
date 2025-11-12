@@ -110,7 +110,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
             model.addAttribute("managedWorkflowsSize",  workflowService.getWorkflowByManagersContains(authUserEppn).size());
-            model.addAttribute("isManager", preAuthorizeService.isManager(authUserEppn));
+            model.addAttribute("isRoleManager", preAuthorizeService.isManager(authUserEppn));
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
             model.addAttribute("globalProperties", myGlobalProperties);

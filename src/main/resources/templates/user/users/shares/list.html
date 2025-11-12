@@ -24,111 +24,109 @@
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
-            <h5 class="text-center"><b>Délégations</b></h5>
-                <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                    <table class="table table-borderless table-striped">
-                        <thead class="table-secondary">
+            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+                <table class="table table-borderless table-striped">
+                    <thead class="table-secondary">
+                    <tr>
+                        <th>Elément délégué</th>
+                        <th>Type de délégation</th>
+                        <th>Modalité de signature</th>
+                        <th>Forcer l’envoi de mail au délégué</th>
+                        <th>Délégataire</th>
+                        <th>Date de création</th>
+                        <th>Date de début</th>
+                        <th>Date de fin</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="userShare : ${userShares}">
                         <tr>
-                            <th>Elément délégué</th>
-                            <th>Type de délégation</th>
-                            <th>Modalité de signature</th>
-                            <th>Forcer l’envoi de mail au délégué</th>
-                            <th>Délégataire</th>
-                            <th>Date de création</th>
-                            <th>Date de début</th>
-                            <th>Date de fin</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="userShare : ${userShares}">
-                            <tr>
-                                <td>
-                                    <span th:if="${userShare.form}" class="text-left" th:text="'Formulaire : ' + ${userShare.form.title}"></span>
-                                    <span th:if="${userShare.workflow}" class="text-left" th:text="'Circuit : ' + ${userShare.workflow.description}"></span>
-                                    <span th:if="${userShare.allSignRequests}" class="text-left">Toutes les demandes</span>
-                                </td>
-                                <td>
-                                    <ul class="text-left">
-                                        <th:block th:each="shareType : ${userShare.shareTypes}">
-                                            <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
-                                        </th:block>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
-                                        <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec sa propre signature</span>
-                                        <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div>
-                                        <span th:if="${userShare.forceTransmitEmails}" class="text-left">Oui</span>
-                                        <span th:unless="${userShare.forceTransmitEmails}" class="text-left">Non</span>
-                                    </div>
-                                <td>
-                                    <ul class="text-left">
-                                    <th:block th:each="toUser : ${userShare.toUsers}">
-                                        <li th:text="${toUser.firstname} + ' ' + ${toUser.name}"></li>
+                            <td>
+                                <span th:if="${userShare.form}" class="text-left" th:text="'Formulaire : ' + ${userShare.form.title}"></span>
+                                <span th:if="${userShare.workflow}" class="text-left" th:text="'Circuit : ' + ${userShare.workflow.description}"></span>
+                                <span th:if="${userShare.allSignRequests}" class="text-left">Toutes les demandes</span>
+                            </td>
+                            <td>
+                                <ul class="text-left">
+                                    <th:block th:each="shareType : ${userShare.shareTypes}">
+                                        <li th:text="#{'usershare.sharetype.' + ${shareType}}"></li>
                                     </th:block>
-                                    </ul>
-                                </td>
-                                <td>
-                                    <span th:text="${#dates.format(userShare.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                </td>
-                                <td>
-                                    <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                </td>
-                                <td>
-                                    <a type="button" title="Modifier" th:href="'/user/users/shares/update/' + ${userShare.id}"
-                                            class="btn btn-warning me-2">
-                                        <i class="fa-solid fa-pencil-alt text-white"></i>
-                                    </a>
-                                    <button type="button" title="Supprimer"
-                                            data-bs-toggle="modal" data-bs-target="#modal-warning"
-                                            th:attr="data-bs-target='#modal-warning'+${userShare.id }"
-                                            class="btn btn-danger">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                    <div data-bs-focus="false" class="modal modal-warning fade in"
-                                        th:id="modal-warning+${userShare.id}">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form id="command"
-                                                    th:action="'/user/users/shares/del/' + ${userShare.id}"
-                                                    th:method="delete">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
-                                                                aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
+                                </ul>
+                            </td>
+                            <td>
+                                <div th:if="${userShare.shareTypes.contains(T(org.esupportail.esupsignature.entity.enums.ShareType).sign)}">
+                                    <span th:if="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec sa propre signature</span>
+                                    <span th:unless="${userShare.signWithOwnSign}" class="text-left">Le délégué signe avec votre signature</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <span th:if="${userShare.forceTransmitEmails}" class="text-left">Oui</span>
+                                    <span th:unless="${userShare.forceTransmitEmails}" class="text-left">Non</span>
+                                </div>
+                            <td>
+                                <ul class="text-left">
+                                <th:block th:each="toUser : ${userShare.toUsers}">
+                                    <li th:text="${toUser.firstname} + ' ' + ${toUser.name}"></li>
+                                </th:block>
+                                </ul>
+                            </td>
+                            <td>
+                                <span th:text="${#dates.format(userShare.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </td>
+                            <td>
+                                <span th:text="${#dates.format(userShare.beginDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </td>
+                            <td>
+                                <span th:text="${#dates.format(userShare.endDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            </td>
+                            <td>
+                                <a type="button" title="Modifier" th:href="'/user/users/shares/update/' + ${userShare.id}"
+                                        class="btn btn-warning me-2">
+                                    <i class="fa-solid fa-pencil-alt text-white"></i>
+                                </a>
+                                <button type="button" title="Supprimer"
+                                        data-bs-toggle="modal" data-bs-target="#modal-warning"
+                                        th:attr="data-bs-target='#modal-warning'+${userShare.id }"
+                                        class="btn btn-danger">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                                <div data-bs-focus="false" class="modal modal-warning fade in"
+                                    th:id="modal-warning+${userShare.id}">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form id="command"
+                                                th:action="'/user/users/shares/del/' + ${userShare.id}"
+                                                th:method="delete">
+                                                <div class="modal-header">
+                                                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="alert alert-danger text-center">Confirmez-vous la
+                                                        suppression ?
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <div class="alert alert-danger text-center">Confirmez-vous la
-                                                            suppression ?
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline pull-left"
-                                                                data-bs-dismiss="modal">Fermer
-                                                        </button>
-                                                        <button type="submit"
-                                                                class="btn btn-outline pull-left btn-danger">Valider
-                                                        </button>
-                                                    </div>
-                                                </form>
-                                            </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline pull-left"
+                                                            data-bs-dismiss="modal">Fermer
+                                                    </button>
+                                                    <button type="submit"
+                                                            class="btn btn-outline pull-left btn-danger">Valider
+                                                    </button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </th:block>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -144,7 +142,7 @@
                     <div class="modal-body">
 
                         <div class="form-group mb-3">
-                            <label for="selectTarget">Type d’élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
+                            <label class="form-label" for="selectTarget">Type d’élément à déléguer (un circuit, un formulaire ou toutes mes demandes)</label>
                             <select class="form-select" id="selectTarget" name="target" required="required">
                                 <option value="" data-placeholder="true">Choisir un type</option>
                                 <option value="all">Toutes les demandes</option>
@@ -161,7 +159,7 @@
                         </div>
 
                         <div id="selectFormDiv" class="form-group d-none">
-                            <label for="selectForm">Formulaires à déléguer</label>
+                            <label class="form-label" for="selectForm">Formulaires à déléguer</label>
                             <select class="form-select" id="selectForm" name="form">
                                 <option value="" data-placeholder="true">Choisir un formulaire</option>
                                 <th:block th:each="form : ${forms}">
@@ -171,7 +169,7 @@
                         </div>
 
                         <div id="selectWorkflowDiv" class="form-group d-none">
-                            <label for="selectWorkflow">Circuits à déléguer</label>
+                            <label class="form-label" for="selectWorkflow">Circuits à déléguer</label>
                             <select class="form-select" id="selectWorkflow" name="workflow">
                                 <option value="" data-placeholder="true">Choisir un circuit</option>
                                 <th:block th:each="workflow : ${workflows}">
@@ -181,7 +179,7 @@
                         </div>
 
                         <div class="form-group mb-3">
-                            <label>Type de délégation</label>
+                            <label class="form-label">Type de délégation</label>
                             <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
                                 <div class="form-check text-left required">
                                     <input th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types" th:value="${shareType.name()}" disabled/>
@@ -190,28 +188,28 @@
                             </th:block>
                         </div>
 
-                        <div id="sign-mod" class="form-group d-none" th:if="${globalProperties.shareMode > 2}">
-                            <label for="signWithOwnSign">Modalité de signature</label>
+                        <div id="sign-mod" class="form-group d-none mb-3" th:if="${globalProperties.shareMode > 2}">
+                            <label class="form-label" for="signWithOwnSign">Modalité de signature</label>
                             <select class="slim-select-simple" id="signWithOwnSign" name="signWithOwnSign">
                                 <option value="" data-placeholder="true">Choisir un type</option>
-                                <option value="true">Le délégué signe avec sa propre signature</option>
+                                <option value="true" selected>Le délégué signe avec sa propre signature</option>
                                 <option value="false">Le délégué signe avec votre signature</option>
                             </select>
                         </div>
 
                         <div class="form-group mb-3">
-                            <label for="selectUsers">Choix des délégués</label>
+                            <label class="form-label"for="selectUsers">Choix des délégués</label>
                             <select id="selectUsers" class="auto-select-users" name="userIds" multiple="multiple"
                                     required="required">
                                 <option data-placeholder="true"></option>
                             </select>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="beginDate">Date de début</label>
+                            <label class="form-label"for="beginDate">Date de début</label>
                             <input type="datetime-local" id="beginDate" name="beginDate" class="form-control">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="endDate">Date de fin</label>
+                            <label class="form-label"for="endDate">Date de fin</label>
                             <input type="datetime-local" id="endDate" name="endDate" class="form-control">
                         </div>
                     </div>

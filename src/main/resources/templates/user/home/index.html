@@ -233,26 +233,26 @@
             <div class="col-12 col-xxl-10 mx-auto" id="new-div" >
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
-            <div id="shortcuts" class="col-12 col-xxl-10 alert rounded-3 border-secondary-subtle mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
+            <div id="shortcuts" th:if="${userEppn == authUserEppn}" class="col-12 col-xxl-10 alert rounded-3 border-secondary-subtle mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
+                <a tabindex="0"  id="to-sign-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"
                    th:classappend="${nbToSign > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
                     <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Documents à signer</span>
                     <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">À signer</span>
-                    <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                    <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
+                <a tabindex="0" id="pendings-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=pending" title="Afficher les demandes que j'ai envoyées"
                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-paper-plane-top text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
                     <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Demandes envoyées</span>
                     <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Envoyées</span>
-                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                    <span aria-hidden="true" title="Demandes envoyées" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="signeds-btn" role="button"
+                <a tabindex="0" id="signeds-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-folder-times text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
@@ -271,7 +271,7 @@
                     <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler un document</span>
                     <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler</span>
                 </a>
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" role="button"
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" role="button"
                    class="start-wizard-buttons btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-customization text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
@@ -280,7 +280,7 @@
                 </a>
             </div>
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-1 gap-xxl-3">
-                <div class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;">
+                <div class="alert rounded-3 border-secondary-subtle  gap-2 border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;" th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
                     <div class="w-100">
                         <h5><i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: 15px;"></i> Documents à signer</h5>
                     </div>
@@ -288,7 +288,7 @@
                         <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
                     </div>
                 </div>
-                <div id="myFavorites" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                <div id="myFavorites" th:if="${userEppn == authUserEppn}" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
                     <div class="w-100">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
