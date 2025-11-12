@@ -579,7 +579,6 @@ input:focus, textarea:focus, select:focus {
 }
 
 .btn-material {
-    background-color: white;
     font-weight: normal;
     padding: .375rem .90rem;
     margin: .15rem;
