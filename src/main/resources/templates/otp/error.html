@@ -8,7 +8,17 @@
         <div id="content" class="content">
             <div class="alert alert-danger w-75 me-1 mb-2" th:utext="${errorMsg}">
             </div>
-            <a href="/logout" class="btn btn-dark">Déconnexion</a>
+            <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
+                th:action="@{/logout}"
+                method="post"
+                style="display:inline;">
+                <button id="link-disconnect2"
+                        class="btn btn-light btn-outline-dark"
+                        aria-label="Paramètres utilisateur"
+                        title="Déconnexion">
+                    <i class="fa-solid fa-power-off"></i> Déconnexion
+                </button>
+            </form>
         </div>
     </div>
 </main>
