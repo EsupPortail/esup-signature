@@ -498,6 +498,10 @@ textarea:invalid {
     font-weight: bold;
 }
 
+.form-check-label {
+    font-weight: bold;
+}
+
 .form-group {
     text-align: left;
 }

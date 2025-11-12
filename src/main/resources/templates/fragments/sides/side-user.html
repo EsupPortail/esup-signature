@@ -3,21 +3,21 @@
 <!--/*@thymesVar id="SignRequestStatus" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <nav th:fragment="side-user" id="sidebar">
     <div th:unless="${user.userType.name() == 'external'}" class="d-flex flex-column gap-1 ms-1 mt-2">
-        <a class="btn text-left rounded-5 d-flex align-items-center gap-2"
-            th:classappend="${activeMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
-            href="/user/users?form" title="Paramètres de signature">
-            <i class="fi fi-rr-user-gear"></i> <span class="sidebar-label">Paramètres de signature</span>
-        </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/replace"
-            th:classappend="${activeMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
-            <i class="fi fi-rr-together-people"></i> <span class="sidebar-label">Remplacement</span>
-        </a>
-        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/shares"
-            th:classappend="${activeMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
+        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2" href="/user/users/shares"
+           th:classappend="${paramMenu == 'shares'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
             <i class="fi fi-rr-share"></i> <span class="sidebar-label">Délégations</span>
         </a>
-        <a class="btn text-left rounded-5 d-flex align-items-center gap-2" href="/user/users/properties"
-            th:classappend="${activeMenu == 'properties'} ? 'btn-secondary' : 'btn-light'" title="Favoris">
+        <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2" href="/user/users/replace"
+            th:classappend="${paramMenu == 'replace'} ? 'btn-secondary' : 'btn-light'" title="Délégations">
+            <i class="fi fi-rr-together-people"></i> <span class="sidebar-label">Remplacement</span>
+        </a>
+        <a class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2"
+           th:classappend="${paramMenu == 'settings'} ? 'btn-secondary' : 'btn-light'"
+           href="/user/users?form" title="Mes paramètres">
+            <i class="fi fi-rr-user-gear"></i> <span class="sidebar-label">Mes paramètres</span>
+        </a>
+        <a class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2" href="/user/users/properties"
+            th:classappend="${paramMenu == 'properties'} ? 'btn-secondary' : 'btn-light'" title="Favoris">
             <i class="fi fi-rr-keyboard-down"></i> <span class="sidebar-label">Mes saisies</span>
         </a>
     </div>
