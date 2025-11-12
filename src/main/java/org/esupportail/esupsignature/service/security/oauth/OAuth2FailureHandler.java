@@ -20,6 +20,6 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
         logger.error(exception.getMessage(), exception);
-        response.sendRedirect("/error/oauth2");
+        response.sendRedirect("/otp-access/oauth2");
     }
 }
