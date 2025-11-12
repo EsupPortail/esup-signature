@@ -48,13 +48,13 @@ import java.util.Locale;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
-    private final CertificatService certificatService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
         return "signbooks";
     }
 
+    private final CertificatService certificatService;
     private final RecipientService recipientService;
     private final SignWithService signWithService;
     private final LiveWorkflowStepService liveWorkflowStepService;

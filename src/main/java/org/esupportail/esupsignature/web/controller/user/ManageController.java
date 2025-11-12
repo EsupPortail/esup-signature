@@ -37,24 +37,21 @@ public class ManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageController.class);
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "manage";
+    }
+
     private static final byte[] EXCEL_UTF8_HACK = new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF};
 
     private final DataExportService dataExportService;
-
     private final DataService dataService;
-
     private final SignBookService signBookService;
-
     private final FormService formService;
-
     private final UserService userService;
-
     private final WorkflowService workflowService;
-
     private final WorkflowExportService workflowExportService;
-
     private final SignRequestService signRequestService;
-
     private final ChartsService chartsService;
 
     public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService, ChartsService chartsService) {

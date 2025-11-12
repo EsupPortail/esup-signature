@@ -26,11 +26,6 @@ import java.util.List;
 @ConditionalOnExpression("${global.share-mode} > 0")
 public class UserShareController {
 
-    @ModelAttribute("paramMenu")
-    public String getActiveMenu() {
-        return "bg-secondary";
-    }
-
     @Resource
     private UserShareService userShareService;
 
@@ -51,6 +46,7 @@ public class UserShareController {
         model.addAttribute("forms", formService.getAuthorizedToShareForms());
         model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
         model.addAttribute("activeMenu", "shares");
+        model.addAttribute("paramMenu", "shares");
         return "user/users/shares/list";
     }
 
