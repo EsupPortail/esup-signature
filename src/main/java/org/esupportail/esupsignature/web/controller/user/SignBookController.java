@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/user/signbooks")
@@ -418,7 +419,7 @@ public class SignBookController {
             httpServletResponse.setStatus(HttpServletResponse.SC_OK);
             httpServletResponse.flushBuffer();
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents", e);
+            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
             httpServletResponse.sendError(404);
         }
     }
@@ -449,7 +450,7 @@ public class SignBookController {
         try {
             signBookService.getMultipleSignedDocumentsWithReport(ids, httpServletRequest, httpServletResponse);
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents", e);
+            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
         }
         httpServletResponse.flushBuffer();
     }
