@@ -6,12 +6,13 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-    <div id="display-pdf-alerts-dropdown" class="dropdown d-none d-lg-block" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
-        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-none d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
+    <div id="display-pdf-alerts-dropdown" class="dropdown d-none" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
+        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
         title="Afficher les alertes">
             <i class="fa-solid fa-bell"></i> 
         </button>
         <script>
+            const displayPdfAlertsDropdown = $('#display-pdf-alerts-dropdown');
             const displayPdfAlertsBtn = $('#display-pdf-alerts-btn');
         </script>
         <div id="pdf-alerts" class="pdf-alerts dropdown-menu">
@@ -21,7 +22,7 @@
                     <script>
                         const commentCount = '[[${comments.size()}]]';
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
                         <div class="pdf-warning-bar bg-warning"></div>
@@ -32,7 +33,7 @@
                 <div id="warningSelectDiv" title="Masquer ce message" class="alert bg-light text-dark border-dark warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div class="pdf-warning-bar bg-success"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -42,7 +43,7 @@
                 <div class="alert bg-light text-dark warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-success" title="Document déjà signé"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div class="pdf-warning-bar bg-success"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -52,7 +53,7 @@
                 <div class="alert bg-light text-dark warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info  text-success" title="Document déjà signé"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div class="pdf-warning-bar bg-success"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -70,7 +71,7 @@
                     style="width: 100%;">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div class="pdf-warning-bar bg-danger"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -97,7 +98,7 @@
                     <span style="line-height: 33px;" th:if="${signatureIssue}">
                         <script>
                             displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-warning" title="Signature électronique présente sur le document"></i>');
-                            displayPdfAlertsBtn.removeClass("d-none");
+                            displayPdfAlertsDropdown.removeClass("d-none");
                         </script>
                         <div class="d-flex gap-2 align-items-center">
                             <i class="fa-solid fa-circle-exclamation text-warning"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
@@ -113,7 +114,7 @@
                     th:if="${pdfaCheck != null && pdfaCheck.contains('6.3.5') && !globalProperties.disablePdfFontAlert}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-triangle-exclamation text-danger"></i>');
-                        displayPdfAlertsBtn.removeClass("d-none");
+                        displayPdfAlertsDropdown.removeClass("d-none");
                     </script>
                     <div class="pdf-warning-bar bg-danger"></div>
                     <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-triangle-exclamation text-danger"></i>Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
