@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RequestMapping("/admin/signbooks")
 @Controller
@@ -205,7 +206,7 @@ public class SignBookAdminController {
             httpServletResponse.setStatus(HttpServletResponse.SC_OK);
             httpServletResponse.flushBuffer();
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents", e);
+            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
             httpServletResponse.sendError(404);
         }
     }
