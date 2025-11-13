@@ -421,26 +421,6 @@ export class SignRequestParams extends EventFactory {
     }
 
     resize(ui) {
-        let maxWidth = ((this.originalWidth + this.extraWidth / this.signScale) * 2 * this.currentScale);
-        let maxHeight = ((this.originalHeight + this.extraHeight / this.signScale) * 2 * this.currentScale);
-        let minWidth = ((this.originalWidth + this.extraWidth / this.signScale) * .5 * this.currentScale);
-        let minHeight = ((this.originalHeight + this.extraHeight / this.signScale) * .5 * this.currentScale);
-        let refresh = false;
-        if (ui.size.width >= maxWidth
-            ||
-            ui.size.height >= maxHeight
-        ) {
-            ui.size.width = maxWidth;
-            ui.size.height = maxHeight;
-        } else if (ui.size.width <= minWidth
-            ||
-            ui.size.height <= minHeight) {
-            ui.size.width = minWidth;
-            ui.size.height = minHeight;
-        } else {
-            refresh = true;
-        }
-        if (refresh) {
         let newScale = this.getNewScale(ui);
         this.signWidth = this.signWidth / this.signScale * newScale;
         this.signHeight = this.signHeight / this.signScale * newScale;
@@ -462,7 +442,6 @@ export class SignRequestParams extends EventFactory {
         }
         this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale);
         this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale);
-    }
     }
 
     createCross() {
@@ -669,6 +648,22 @@ export class SignRequestParams extends EventFactory {
         this.cross.resizable({
             aspectRatio: true,
             resize: function(event, ui) {
+                let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale);
+                let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale);
+                let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .5 * self.currentScale);
+                let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .5 * self.currentScale);
+                if (ui.size.width > maxWidth) {
+                    ui.size.width = maxWidth;
+                }
+                if (ui.size.height > maxHeight) {
+                    ui.size.height = maxHeight;
+                }
+                if (ui.size.width < minWidth) {
+                    ui.size.width = minWidth;
+                }
+                if (ui.size.height < minHeight) {
+                    ui.size.height = minHeight;
+                }
                 if(self.textareaPart != null) {
                     self.signScale = self.getNewScale(ui);
                     self.resizeText();
