@@ -730,21 +730,21 @@ export class WorkspacePdf {
                         let signWidth = signSpaceDiv.attr("data-es-sign-width");
                         let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
-                        let ui = { size: { width: 0, height: 0 }};
+                        let newSize = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
                         let maxWidth  = parseInt(signSpaceDiv.css("width"));
                         let maxHeight = parseInt(signSpaceDiv.css("height"));
                         let ratio = width / height;
-                        ui.size.width  = maxWidth;
-                        ui.size.height = ui.size.width / ratio;
-                        if (ui.size.height > maxHeight) {
-                            ui.size.height = maxHeight;
-                            ui.size.width  = ui.size.height * ratio;
+                        newSize.size.width  = maxWidth;
+                        newSize.size.height = newSize.size.width / ratio;
+                        if (newSize.size.height > maxHeight) {
+                            newSize.size.height = maxHeight;
+                            newSize.size.width  = newSize.size.height * ratio;
                         }
-                        ui.size.width = ui.size.width - 2;
-                        ui.size.height = ui.size.height - 2;
-                        signRequestParams.resize(ui);
+                        newSize.size.width = newSize.size.width - 2;
+                        newSize.size.height = newSize.size.height - 2;
+                        signRequestParams.resize(newSize);
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         if(signRequestParams.extraOnTop) {
                             cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
@@ -762,7 +762,7 @@ export class WorkspacePdf {
                         cross.css("top", newTop);
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                         signRequestParams.dropped = true;
-                        signRequestParams.disableCrossResizable();
+                        // signRequestParams.disableCrossResizable();
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
