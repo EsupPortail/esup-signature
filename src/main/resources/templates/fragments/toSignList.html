@@ -77,7 +77,7 @@
                                             </td>
                                             <td th:text="${signRequest.title}" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></td>
                                             <td style="min-width: 100px;">
-                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill bg-warning" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> À signer</span>
+                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill bg-warning text-dark" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> À signer</span>
                                                 <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill bg-danger" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> Refusé</span>
                                                 <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill bg-success" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-check-circle"></i> Terminé</span>
                                             </td>
