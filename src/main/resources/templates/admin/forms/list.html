@@ -27,6 +27,12 @@
                         <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
                     </th:block>
                 </select>
+                <span class="input-group-text">Actifs</span>
+                <select id="activeVersion" name="activeVersion" class="form-select" data-placeholder="Tous" onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?activeVersion=' + this.value">
+                    <option data-placeholder="true" readonly="">Tous</option>
+                    <option value="true" th:selected="${activeVersion != null && activeVersion}">Oui</option>
+                    <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
+                </select>
             </div>
             <div id="addButton" class="fixed-action-btns" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
