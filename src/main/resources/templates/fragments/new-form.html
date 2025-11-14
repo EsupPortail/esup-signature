@@ -16,15 +16,11 @@
                     </button>
                 </div>
                 <a tabindex="10" role="button" class="form-btn start-form-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0"
-                    data-bs-toggle="modal"
-                    data-bs-target="#wiz-start-form-modal"
-                    th:id="'form-button-' + ${form.id}"
-                    th:href="'/user/start-form/' + ${form.id}"
                     style="width: 120px; height: 170px;"
-                    th:title="'Lancer le formulaire : ' + ${form.title}"
-                    th:data-es-form-id="${form.id}"
+                    th:title="'Ajouter le formulaire : ' + ${form.title}"
                     th:classappend="${form.hideButton} ? 'd-none' : ''"
-                    >
+                    th:attr="onclick='document.getElementById(`star_'+${form.id}+'`).click()'"
+                >
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                         <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
                         <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
