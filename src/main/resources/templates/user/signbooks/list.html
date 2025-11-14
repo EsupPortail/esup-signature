@@ -53,7 +53,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
+                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" type="button" href="/user"
                             title="Créer une nouvelle demande"
                             class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-plus fa-2xl"></i>
@@ -157,22 +157,6 @@
     </div>
 </main>
 <div th:replace="~{fragments/sign-modal :: sign-modal}"></div>
-<div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Créer une nouvelle demande</h3>
-                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div th:replace="~{fragments/new :: new}"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
 <div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

@@ -141,9 +141,11 @@ public class OtpAccessController {
                 } else {
                     return ResponseEntity.ok().body("Merci d'utiliser le code du dernier SMS reçu.");
                 }
+            } else {
+                return ResponseEntity.internalServerError().body("Numéro de mobile déjà attribué, merci de prendre contact avec l'émetteur via le mail ci-dessus");
             }
         }
-        return ResponseEntity.internalServerError().body("Un sms a déjà été transmis, merci de prendre contact via le mail ci-dessus");
+        return ResponseEntity.internalServerError().body("Une erreur c'est produite, merci de prendre contact avec l'émetteur via le mail ci-dessus");
     }
 
     @PostMapping

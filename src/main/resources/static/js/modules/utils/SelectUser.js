@@ -210,7 +210,7 @@ export default class SelectUser {
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
-                        url: "/ws-secure/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/user/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
                         type: 'POST',
                         contentType: "application/json",
                         dataType: 'json',
