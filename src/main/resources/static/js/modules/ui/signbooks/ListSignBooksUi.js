@@ -275,6 +275,10 @@ export class ListSignBooksUi {
 
     addToPage() {
         console.info("Add to page");
+        this.listSignRequestTable.unbind('scroll');
+        this.listSignRequestTable.addClass("wait");
+        $("#loader").show();
+        this.page++;
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);
         let sort = "";
