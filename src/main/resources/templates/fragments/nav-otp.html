@@ -10,6 +10,19 @@
             <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
                data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white float-end align-middle d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fa-solid fa-question"></i></a>
         </li>
+        <li class="nav-item">
+            <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
+                  th:action="@{/logout}"
+                  method="post"
+                  style="display:inline;">
+                <button id="link-disconnect2"
+                        class="btn btn-light btn-outline-dark ms-1 me-1"
+                        aria-label="Paramètres utilisateur"
+                        title="Déconnexion">
+                    <i class="fa-solid fa-power-off"></i> Déconnexion
+                </button>
+            </form>
+        </li>
     </nav>
 </header>
 

@@ -103,6 +103,11 @@ public class OtpAccessController {
         return "otp/completed";
     }
 
+    @GetMapping(value = "/transfered")
+    public String transfered() {
+        return "otp/transfered";
+    }
+
     @GetMapping(value = "/expired")
     public String expired() {
         return "otp/expired";
