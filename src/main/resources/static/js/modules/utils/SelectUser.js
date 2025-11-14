@@ -210,7 +210,7 @@ export default class SelectUser {
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
-                        url: "/user/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/ws-secure/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
                         type: 'POST',
                         contentType: "application/json",
                         dataType: 'json',
@@ -302,7 +302,7 @@ export default class SelectUser {
     }
 
     displayTempUsersSuccess(datas) {
-        console.log("display temp users");
+        console.log("display temp users in " + this.selectField.attr("id"));
         let tempUsersDiv = $('#tempUsers-' + this.selectField.attr("id"));
         tempUsersDiv.empty();
         datas.forEach(e => this.appendTempUser(e));
@@ -319,7 +319,7 @@ export default class SelectUser {
         if(this.globalProperties.smsRequired) {
             html +=
                 "<b>Destinataire externe : <span>" + id + "</span></b>" +
-                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
+                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
@@ -331,7 +331,7 @@ export default class SelectUser {
         } else {
             html +=
                 "<b>Destinataire externe : <span>" + id + "</span></b>" +
-                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"email\" value=\"" + id + "\">" +
+                "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +

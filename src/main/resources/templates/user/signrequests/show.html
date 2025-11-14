@@ -293,7 +293,7 @@
     </div>
 </div>
 
-<div th:replace="~{fragments/sign-modal :: sign-modal}"></div>
+<div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
 
 <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
     data-bs-focus="false" class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">

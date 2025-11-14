@@ -2,9 +2,11 @@ package org.esupportail.esupsignature.web.wssecure;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.FieldPropertieService;
+import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -27,11 +29,19 @@ public class UserWsSecureController {
     private final UserPropertieService userPropertieService;
     private final FieldPropertieService fieldPropertieService;
     private final UserService userService;
+    private final RecipientService recipientService;
 
-    public UserWsSecureController(UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, UserService userService) {
+    public UserWsSecureController(UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, UserService userService, RecipientService recipientService) {
         this.userPropertieService = userPropertieService;
         this.fieldPropertieService = fieldPropertieService;
         this.userService = userService;
+        this.recipientService = recipientService;
+    }
+
+    @ResponseBody
+    @PostMapping(value ="/check-temp-users")
+    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
     @ResponseBody

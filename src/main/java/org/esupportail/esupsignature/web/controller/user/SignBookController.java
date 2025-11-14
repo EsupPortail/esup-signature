@@ -333,21 +333,6 @@ public class SignBookController {
         return "redirect:/user/signbooks/update/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-    @PostMapping(value = "/add-repeatable-step/{id}")
-    @ResponseBody
-    public ResponseEntity<String> addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
-                                                    @PathVariable("id") Long id,
-                                                    @RequestBody WorkflowStepDto step) {
-        try {
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step, step.getStepNumber(), authUserEppn);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureRuntimeException e) {
-            logger.error(e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
     public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {

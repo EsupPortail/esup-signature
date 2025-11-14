@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
@@ -267,12 +266,6 @@ public class UserController {
         ExtValue extValue = extValueService.getExtValueServiceByName(serviceName);
         List<Map<String, Object>> values = extValue.search(searchType, searchString, searchReturn);
         return values.stream().sorted(Comparator.comparing(v -> v.values().iterator().next().toString())).collect(Collectors.toList());
-    }
-
-    @ResponseBody
-    @PostMapping(value ="/check-temp-users")
-    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
 }

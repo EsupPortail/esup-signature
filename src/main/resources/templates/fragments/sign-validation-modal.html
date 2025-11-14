@@ -105,7 +105,7 @@
                     <label for="signComment">Commentaire (facultatif)</label>
                     <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
-                <div th:if="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable && user.userType.name() != 'external'}">
+                <div th:if="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
                     <h5 class="modal-title" id="stepRepeatableModalLabel" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">Étape supplémentaire ?</h5>
                     <p>
                         Vous avez la possibilité de demander une validation intermédiaire avant l’étape suivante.
@@ -120,6 +120,7 @@
                             <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                                 <option data-placeholder="true"></option>
                             </select>
+                            <div id="tempUsers-recipientsEmails"></div>
                         </div>
                         <div class="form-group mb-3">
                             <div class="form-check form-switch form-switch-md">
@@ -133,7 +134,7 @@
                                 <input type="checkbox" class="form-check-input" name="multiSign" id="multiSign"/>
                             </div>
                         </div>
-                        <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null || user.userType.name() == 'external'}">
+                        <div class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType == null}">
                             <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
                                     type="button" class="btn btn-sm btn-transparent">
                                 <span class="fa-solid fa-info-circle text-info"></span>
@@ -216,9 +217,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}"
-                    th:unless="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable && user.userType.name() != 'external'}">
-                    <button id="checkValidateSignButtonEnd"
+                <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}"  th:unless="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
+                <button id="checkValidateSignButtonEnd"
                             class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
