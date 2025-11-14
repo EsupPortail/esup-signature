@@ -977,7 +977,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
     min-height: 100%;
     top: 0px;
     left: 0px;
-    border-radius: 10px 0px 0px 10px;
+    border-radius: 4px 0px 0px 4px;
 }
 
 /*.sidebar-label {*/

@@ -287,7 +287,7 @@ textarea:invalid {
 }
 
 .badge-status {
-    width: 200px;
+    width: 100%;
     text-align: left;
     font-size: 100%;
     font-weight: 500;

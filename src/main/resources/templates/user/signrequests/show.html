@@ -89,7 +89,7 @@
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"><i
                                 class="fa-solid fa-file-excel fa-2xl" style="margin-top: -8px;"></i></button>
                     </li>
-                    <li th:if="${!user.userType.name.equals('external')}">
+                    <li>
                         <a tabindex="1" id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
                             <i class="fa-solid fa-people-arrows fa-2xl text-dark"></i>
                         </a>
@@ -293,7 +293,7 @@
     </div>
 </div>
 
-<div th:replace="~{fragments/sign-modal :: sign-modal}"></div>
+<div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
 
 <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
     data-bs-focus="false" class="modal fade" id="sendModal"  role="dialog" aria-hidden="true">
@@ -585,7 +585,7 @@
             <div class="modal-body">
                 <div class="form-group mb-3">
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                    <form id="send-sign-form" method="post" th:action="'/user/signrequests/transfert/' + ${signRequest.id}">
+                    <form id="send-sign-form" method="post" th:action="'/' + ${urlProfil} + '/signrequests/transfert/' + ${signRequest.id}">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                     <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
                         <option data-placeholder="true"></option>

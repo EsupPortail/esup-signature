@@ -483,17 +483,15 @@ export class SignUi {
         recipientsEmails.forEach(function(email) {
             let recipient = new Recipient();
             recipient.email = email;
+            let id = email.replaceAll("@", "_").replaceAll(".", "_");
+            let extInfos = $("div[id='recipient_" + id + "']");
+            recipient.name = extInfos.find("#name_" + id).val();
+            recipient.firstName = extInfos.find("#firstname_" + id).val();
+            recipient.phone = extInfos.find("#phone_" + id).val();
+            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked");
             step.recipients.push(recipient);
         });
-        $("div[id^='recipient_']").each(function() {
-            let recipient = new Recipient();
-            recipient.email = $(this).find("#emails").val();
-            recipient.name = $(this).find("#names").val();
-            recipient.firstName = $(this).find("#firstnames").val();
-            recipient.phone = $(this).find("#phones").val();
-            recipient.forceSms = $(this).find("#forcesmses").val();
-            step.recipients.push(recipient);
-        });
+
         let self = this;
         this.signComment = $("#signComment");
         step.stepNumber = this.currentStepNumber;
@@ -502,8 +500,14 @@ export class SignUi {
         step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signType').val();
         step.repeatable = true;
+        let url;
+        if(self.isOtp== null || !self.isOtp) {
+            url = "/user/signrequests/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token
+        } else {
+            url = "/otp/signrequests/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token
+        }
         $.ajax({
-            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token,
+            url: url,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),

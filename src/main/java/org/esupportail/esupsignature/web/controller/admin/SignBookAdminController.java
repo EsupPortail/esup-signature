@@ -97,7 +97,7 @@ public class SignBookAdminController {
 //		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.activeValues());
-		model.addAttribute("forms", formService.getAllForms(null));
+		model.addAttribute("forms", formService.getAllForms(null, null));
 		model.addAttribute("workflows", workflowService.getAllWorkflows(null));
 		model.addAttribute("workflowFilter", workflowFilter);
 		model.addAttribute("creatorFilter", creatorFilter);

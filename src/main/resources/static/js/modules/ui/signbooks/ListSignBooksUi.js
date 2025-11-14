@@ -40,7 +40,7 @@ export class ListSignBooksUi {
         new Nexu(null, null, null, null, null);
         $(document).ready(e => this.initListeners());
         $("#sealChoose").addClass('d-none');
-
+        this.detectEndDiv();
     }
 
     initListeners() {
@@ -188,12 +188,12 @@ export class ListSignBooksUi {
     }
 
     detectEndDiv(e) {
-        if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
-            if(this.totalElementsToDisplay > 0 ) {
+        if ( e== null || ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling))) {
+            // if(this.totalElementsToDisplay > 0 ) {
                 this.addToPage();
-            } else {
-                this.signRequestTable.parent().children('tfoot').remove();
-            }
+            // } else {
+                // this.signRequestTable.parent().children('tfoot').remove();
+            // }
         }
     }
 
@@ -285,24 +285,36 @@ export class ListSignBooksUi {
         if(urlParams.get("sort") != null) {
             sort = urlParams.get("sort");
         }
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&creatorFilter=" + this.creatorFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
-            self.signRequestTable.append(data);
-            let clickableRows = $(".clickable-row");
-            clickableRows.off('click').on('click', function(e) {
-                let url = $(this).closest('tr').attr('data-href');
-                if (e.ctrlKey || e.metaKey) {
-                    window.open(url, '_blank');
-                } else {
-                    window.location = url;
-                }
-            });
-            $(document).trigger("refreshClickableTd");
-            self.listSignRequestTable.removeClass("wait");
+        let direction = "";
+        if(urlParams.get("direction") != null) {
+            direction = urlParams.get("direction");
+        }
+        $("#loader").show();
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "," + direction + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             $("#loader").hide();
-            self.refreshListeners();
-            self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
-            let displayedElements = $("#signRequestTable tr").length;
-            self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
+            if(typeof data === 'string' && data.trim().length > 0) {
+                self.listSignRequestTable.unbind('scroll');
+                self.listSignRequestTable.addClass("wait");
+                self.page++;
+                self.signRequestTable.append(data);
+                let clickableRows = $(".clickable-row");
+                clickableRows.off('click').on('click', function (e) {
+                    let url = $(this).closest('tr').attr('data-href');
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(url, '_blank');
+                    } else {
+                        window.location = url;
+                    }
+                });
+                $(document).trigger("refreshClickableTd");
+                self.listSignRequestTable.removeClass("wait");
+                self.refreshListeners();
+                self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
+                let displayedElements = $("#signRequestTable tr").length;
+                self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
+            } else {
+                self.signRequestTable.parent().children('tfoot').remove();
+            }
         });
     }
 

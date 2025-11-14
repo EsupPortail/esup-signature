@@ -8,6 +8,7 @@ import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.XSLTService;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -20,6 +21,7 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -335,6 +337,44 @@ public class UserAndOtpSignRequestController {
             return ResponseEntity.ok().body(commentId);
         } else {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
+    @PostMapping(value = "/add-repeatable-step/{id}")
+    @ResponseBody
+    public ResponseEntity<String> addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
+                                                    @PathVariable("id") Long id,
+                                                    @RequestBody WorkflowStepDto step) {
+        try {
+            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step, step.getStepNumber(), authUserEppn);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (EsupSignatureRuntimeException e) {
+            logger.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
+    @PostMapping(value = "/transfert/{id}")
+    public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                           @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
+                           @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
+                           RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        if(keepFollow == null) keepFollow = false;
+        try {
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);
+            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
+            if(keepFollow) {
+                return "redirect:/user/signrequests/" + id;
+            } else {
+                String path = httpServletRequest.getRequestURI();
+                String basePath = path.startsWith("/otp") ? "/otp-access/transfered" : "/user/signrequests/" + id;
+                return "redirect:" + basePath;
+            }
+        } catch (EsupSignatureRuntimeException e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
+            return "redirect:/user/signrequests/" + id;
         }
     }
 

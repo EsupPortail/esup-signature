@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="securityServices" type="java.util.List<org.esupportail.esupsignature.service.security.SecurityService>"*/-->
-<head th:replace="~{fragments/head :: head}"></head>
+<head th:replace="~{fragments/head-full :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
     <div class="card col-lg-10 mx-auto" style="top: 60px;">
         <div class="card-body text-center">
-            <img th:src="@{/images/logo-univ-rouen-normandie-noir.png}" width="250" class="mb-4">
             <div class="d-none" th:if="${#authorization.expression('isAuthenticated()')}">
                 <span th:if="${auth != null}" th:text="${auth}"></span>
             </div>
