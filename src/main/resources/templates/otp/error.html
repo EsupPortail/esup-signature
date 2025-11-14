@@ -2,13 +2,23 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head-lite :: head}"></head>
 <body>
-<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<header th:replace="~{fragments/nav-otp :: nav-otp}"></header>
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content">
             <div class="alert alert-danger w-75 me-1 mb-2" th:utext="${errorMsg}">
             </div>
-            <a href="/logout" class="btn btn-dark">Déconnexion</a>
+            <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
+                th:action="@{/logout}"
+                method="post"
+                style="display:inline;">
+                <button id="link-disconnect2"
+                        class="btn btn-light btn-outline-dark"
+                        aria-label="Paramètres utilisateur"
+                        title="Déconnexion">
+                    <i class="fa-solid fa-power-off"></i> Déconnexion
+                </button>
+            </form>
         </div>
     </div>
 </main>

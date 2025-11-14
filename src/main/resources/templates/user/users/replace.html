@@ -24,24 +24,20 @@
                     <i class="fa-solid fa-plus fa-2xl"></i>
                 </a>
             </div>
-            <div class="card col-lg-10 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Remplacements</b></h5>
-                    <div class="alert alert-success" th:if="${user.replaceByUser != null}">
-                        Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
-                        <span th:if="${user.replaceBeginDate != null}"> du <b th:text="${#dates.format(user.replaceBeginDate, 'dd/MM/yyyy HH:mm')}"></b> au <b th:text="${#dates.format(user.replaceEndDate, 'dd/MM/yyyy HH:mm')}"></b></span>
-                        <div th:if="${signRequests.size() > 0 && user.currentReplaceByUser != null}" class="m-2">
-                            <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
-                                class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
-                        </div>
-                        <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
-                            <input type="submit" class="btn btn-danger" value="Supprimer la redirection">
-                        </form>
-                    </div>
-                    <div class="alert alert-danger" th:unless="${user.replaceByUser != null}">
-                        Aucune redirection n’est mise en place actuellement
-                    </div>
+            <div class="alert border-secondary-subtle" th:if="${user.replaceByUser != null}">
+                Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
+                <span th:if="${user.replaceBeginDate != null}"> du <b th:text="${#dates.format(user.replaceBeginDate, 'dd/MM/yyyy HH:mm')}"></b> au <b th:text="${#dates.format(user.replaceEndDate, 'dd/MM/yyyy HH:mm')}"></b></span>
+                <div th:if="${signRequests.size() > 0 && user.currentReplaceByUser != null}" class="m-2">
+                    <a onclick="return confirm('Merci de confirmer le transfert de toutes vos demandes. Les demandes ne pourront plus être récupérées')"
+                        class="btn btn-primary" href="/user/users/replace/transfer">Transférer toutes mes demandes en cours</a>
                 </div>
+                <form id="shareForm" th:action="'/user/users/replace/update'" method="post" class="m-2">
+                    <input type="submit" class="btn btn-danger" value="Supprimer la redirection">
+                </form>
+            </div>
+            <div class="alert alert-secondary" th:unless="${user.replaceByUser != null}">
+                Aucun remplacement n’est mise en place actuellement
+            </div>
             </div>
         </div>
     </div>

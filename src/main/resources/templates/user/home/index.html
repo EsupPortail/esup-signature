@@ -34,8 +34,8 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <div id="content" class="content-full-fixed flex align-content-center p-2">
-            <div class="col-12 col-xxl-10 mx-auto mb-3 position-relative" onclick="event.stopPropagation();">
+        <div id="content" class="content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3 p-2">
+            <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
                     <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
                     <select id="mega-search" class="form-control rounded-end-2"  name="megaSearch" es-search-addable="true" es-search-text="Rechercher documents, circuits ou formulaires..." multiple style="z-index: 2;">
@@ -230,52 +230,57 @@
                     });
                 </script>
             </div>
-            <div class="col-12 col-xxl-10 mb-3 mx-auto" id="new-div" >
+            <div class="col-12 col-xxl-10 mx-auto" id="new-div" >
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
-            <div id="shortcuts" class="col-12 col-xxl-10 alert alert-light border-secondary-subtle mx-auto d-flex justify-content-center gap-4 gap-xl-5 mb-3 p-1">
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="to-sign-btn" role="button"
-                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"
-                    th:classappend="${nbToSign > 0} ? '' : 'disabled'"
-                    style="font-size: 16px;">
-                    <i class="fi fi-rr-inbox-full text-dark-emphasis"></i>
-                    <span class="d-none d-xl-block">Documents à signer</span>
-                    <span aria-hidden="true" title="Demandes à signer" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-danger d-none d-lg-inline" th:text="${nbToSign}"></span>
+            <div id="shortcuts" th:if="${userEppn == authUserEppn}" class="col-12 col-xxl-10 alert rounded-3 border-secondary-subtle mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
+                <a tabindex="0"  id="to-sign-btn" role="button"
+                   class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"
+                   th:classappend="${nbToSign > 0} ? '' : 'disabled'"
+                   style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Documents à signer</span>
+                    <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">À signer</span>
+                    <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="pendings-btn" role="button"
-                    class="btn btn-light text-left  rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=pending" title="Afficher les demandes que j'ai envoyées"
-                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
-                    style="font-size: 16px;">
-                    <i class="fi fi-rr-paper-plane-top text-dark-emphasis"></i>
-                    <span class="d-none d-xl-block">Demandes envoyées</span>
-                    <span aria-hidden="true" title="Demandes envoyées" th:if="${userEppn == authUserEppn}" class="badge rounded-pill bg-warning text-dark d-none d-lg-inline" th:text="${nbSignRequests}"></span>
+                <a tabindex="0" id="pendings-btn" role="button"
+                   class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=pending" title="Afficher les demandes que j'ai envoyées"
+                   th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
+                   style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-paper-plane-top text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Demandes envoyées</span>
+                    <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Envoyées</span>
+                    <span aria-hidden="true" title="Demandes envoyées" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
-                <a tabindex="0" th:if="${userEppn == authUserEppn}" id="signeds-btn" role="button"
-                    class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
-                    style="font-size: 16px;">
-                    <i class="fi fi-rr-folder-times text-dark-emphasis"></i>
-                    <span class="d-none d-xl-block">Historique de mes signatures</span>
+                <a tabindex="0" id="signeds-btn" role="button"
+                   class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
+                   style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-folder-times text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Historique de mes signatures</span>
+                    <span class="d-none d-xxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Historique</span>
                 </a>
-<!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
-<!--                    style="font-size: 16px;">-->
-<!--                    <i class="fi fi-rr-poll-h text-dark-emphasis"></i>-->
-<!--                    <span class="d-none d-xl-block">Tous les formulaires</span>-->
-<!--                    <span aria-hidden="true" th:title="${forms.size() - favoriteForms.size()} + ' nouveaux formulaired'" class="badge rounded-pill file-alt-color d-none d-lg-inline" th:if="${(forms.size() - favoriteForms.size()) > 0}" th:text="${forms.size() - favoriteForms.size()}"></span>-->
-<!--                </a>-->
-                <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light  text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#controlModal"
-                    style="font-size: 16px;">
-                    <i class="fi fi-rr-registration-paper text-dark-emphasis"></i>
-                    <span class="d-none d-xl-block">Contrôler un document</span>
+                <!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
+                <!--                    style="font-size: 16px;">-->
+                <!--                    <i class="fi fi-rr-poll-h text-dark-emphasis"></i>-->
+                <!--                    <span class="d-none d-xl-block">Tous les formulaires</span>-->
+                <!--                    <span aria-hidden="true" th:title="${forms.size() - favoriteForms.size()} + ' nouveaux formulaired'" class="badge rounded-pill file-alt-color d-none d-lg-inline" th:if="${(forms.size() - favoriteForms.size()) > 0}" th:text="${forms.size() - favoriteForms.size()}"></span>-->
+                <!--                </a>-->
+                <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#controlModal"
+                   style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-registration-paper text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler un document</span>
+                    <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler</span>
                 </a>
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" th:if="${userEppn == authUserEppn}" role="button"
-                    class="start-wizard-buttons btn btn-light text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
-                    style="font-size: 16px;">
-                    <i class="fi fi-rr-customization text-dark-emphasis"></i>
-                    <span class="d-none d-xl-block">Assistant de création de circuit</span>
+                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" role="button"
+                   class="start-wizard-buttons btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
+                   style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
+                    <i class="fi fi-rr-customization text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Assistant de création de circuit</span>
+                    <span class="d-none d-xxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Assistant</span>
                 </a>
             </div>
-            <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xxl-row gap-3">
-                <div class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;">
+            <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-1 gap-xxl-3">
+                <div class="alert rounded-3 border-secondary-subtle  gap-2 border-end border-secondary-subtle pe-xxl-3" style="max-width: 100%;" th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
                     <div class="w-100">
                         <h5><i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: 15px;"></i> Documents à signer</h5>
                     </div>
@@ -283,7 +288,7 @@
                         <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
                     </div>
                 </div>
-                <div id="myFavorites" class="alert alert-light border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                <div id="myFavorites" th:if="${userEppn == authUserEppn}" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end border-secondary-subtle pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
                     <div class="w-100">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
@@ -345,7 +350,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#workflowsModal"
                                     title="Ajouter un circuit à vos favoris">
-                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                    Ajouter un circuit dans mes favoris <i class="fi fi-rr-apps-add"></i>
                                 </a>
                             </div>
                         </th:block>
@@ -390,7 +395,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#formsModal"
                                     title="Ajouter un circuit à vos favoris">
-                                    Ajouter <i class="fi fi-rr-apps-add"></i>
+                                    Ajouter un formulaire dans mes favoris <i class="fi fi-rr-apps-add"></i>
                                 </a>
                             </div>
                         </th:block>
@@ -492,8 +497,7 @@
         </div>
     </div>
 </div>
-
+<div th:replace="~{fragments/new-modals :: new-modals}"></div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-
 </body>
 </html>

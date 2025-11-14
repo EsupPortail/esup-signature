@@ -74,16 +74,17 @@ public class FormAdminController {
 	@GetMapping()
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
+                       @RequestParam(name = "activeVersion", required = false) Boolean activeVersion,
                        Model model, HttpServletRequest httpServletRequest) {
 		String path = httpServletRequest.getRequestURI();
 		Set<Form> forms = new HashSet<>();
 		if (path.startsWith("/admin")) {
-			forms.addAll(formService.getAllForms(selectedTags));
+			forms.addAll(formService.getAllForms(selectedTags, activeVersion));
 			model.addAttribute("roles", userService.getAllRoles());
 			model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
 			model.addAttribute("workflowRole", "admin");
 		} else {
-			forms.addAll(formService.getManagerForms(selectedTags, authUserEppn));
+			forms.addAll(formService.getManagerForms(selectedTags, activeVersion, authUserEppn));
 			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
 			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
 			model.addAttribute("workflowRole", "manager");
@@ -92,6 +93,7 @@ public class FormAdminController {
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
         model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+        model.addAttribute("activeVersion", activeVersion);
         if(selectedTags == null) selectedTags = new ArrayList<>();
         model.addAttribute("selectedTags", selectedTags);
 		return "admin/forms/list";

@@ -1,14 +1,13 @@
-<html th:remove="tag" lang="fr" xmlns:th="http://www.thymeleaf.org">
 <th:block th:each="signBook : ${signBooks}">
     <tr th:if="${statusFilter != 'empty' && signBook.signRequests.size() > 0}" th:with="signRequest = ${signBook.signRequests.get(0)}" th:id="'signbook-' + ${signBook.id}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.subject}">
-        <td class="w-20 d-none d-lg-table-cell">
+        <td class="d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}"
                 th:id="'checkbox-signrequest-' + ${signRequest.id}"
                 th:data-es-signrequest-status="${signRequest.parentSignBook.status}"
                 th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                 th:data-es-signbook-id="${signBook.id}" th:data-es-viewed="${signRequest.viewedBy.contains(user)} ? 'true' : 'false'">
         </td>
-        <td class="w-20 d-none d-lg-table-cell">
+        <td class="d-none d-lg-table-cell">
             <div class="d-lg-inline-flex align-items-center gap-1">
                 <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
                 <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
@@ -200,7 +199,7 @@
         </td>
     </tr>
     <tr th:if="${statusFilter == 'empty'}" th:title="${signBook.subject}">
-        <td class="w-20 d-none d-lg-table-cell" >
+        <td class="d-none d-lg-table-cell" >
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]"
                 th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"
                 th:data-es-signbook-id="${signBook.id}">
@@ -232,7 +231,7 @@
             </div>
         </td>
         <td></td>
-        <td class="d-none d-md-table-cell" style="width: 100px;">
+        <td class="d-none d-md-table-cell">
             <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </td>
         <td>

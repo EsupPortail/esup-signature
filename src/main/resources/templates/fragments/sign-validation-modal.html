@@ -101,12 +101,10 @@
                 <div id="noSeal" th:if="${!sealCertOK}" class="alert alert-warning mb-1" style="display: none;">
                     La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Si possible, utiliser un autre type de signature sinon merci de refaire un essai ultérieurement.
                 </div>
-
                 <div id="signCommentDiv" class="mb-1">
                     <label for="signComment">Commentaire (facultatif)</label>
                     <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
-
                 <div th:if="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
                     <h5 class="modal-title" id="stepRepeatableModalLabel" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">Étape supplémentaire ?</h5>
                     <p>
@@ -122,6 +120,7 @@
                             <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                                 <option data-placeholder="true"></option>
                             </select>
+                            <div id="tempUsers-recipientsEmails"></div>
                         </div>
                         <div class="form-group mb-3">
                             <div class="form-check form-switch form-switch-md">
@@ -219,7 +218,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <div th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0}"  th:unless="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
-                    <button id="checkValidateSignButtonEnd"
+                <button id="checkValidateSignButtonEnd"
                             class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>

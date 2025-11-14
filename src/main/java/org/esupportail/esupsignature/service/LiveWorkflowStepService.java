@@ -211,6 +211,9 @@ public class LiveWorkflowStepService {
                 }
                 for (Recipient recipient : recipients) {
                     signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+                    if(recipient.getUser().getUserType().equals(UserType.external)) {
+                        otpService.generateOtpForSignRequest(signBookId, recipient.getUser().getId(), recipient.getUser().getPhone(), true);
+                    }
                 }
             }
         }

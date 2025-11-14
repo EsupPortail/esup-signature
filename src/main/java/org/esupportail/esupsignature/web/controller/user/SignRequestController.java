@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.List;
-
 @Controller
 @RequestMapping("/user/signrequests")
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -105,27 +103,6 @@ public class SignRequestController {
         SignRequest signRequest = signRequestService.getById(id);
         signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(signType);
         return "redirect:/user/signrequests/" + id + "?form";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
-    @PostMapping(value = "/transfert/{id}")
-    public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                           @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
-                           @RequestParam(value = "keepFollow", required = false) Boolean keepFollow,
-                           RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-        if(keepFollow == null) keepFollow = false;
-        try {
-            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
-            if(keepFollow) {
-                return "redirect:/user/signrequests/" + id;
-            } else {
-                return "redirect:/user";
-            }
-        } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
-            return "redirect:/user/signrequests/" + id;
-        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
