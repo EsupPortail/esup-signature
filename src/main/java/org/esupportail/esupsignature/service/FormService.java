@@ -124,11 +124,14 @@ public class FormService {
 		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
-	public List<Form> getAllForms(List<Tag> selectedTags){
+	public List<Form> getAllForms(List<Tag> selectedTags, Boolean activeVersion){
 		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(list::add);
+        if(activeVersion != null) {
+            list = list.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
+        }
         if(selectedTags != null && !selectedTags.isEmpty()) {
-            return list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+            list = list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
         }
 		return list;
 	}
@@ -483,16 +486,20 @@ public class FormService {
 		return false;
 	}
 
-	public List<Form> getManagerForms(List<Tag> selectedTags, String userEppn) {
+	public List<Form> getManagerForms(List<Tag> selectedTags, Boolean activeVersion, String userEppn) {
 		User manager = userService.getByEppn(userEppn);
 		Set<Form> formsManaged = new HashSet<>();
 		for (String role : manager.getManagersRoles()) {
 			formsManaged.addAll(formRepository.findByManagerRole(role));
 		}
-        if(selectedTags != null && !selectedTags.isEmpty()) {
-            return formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        List<Form> resultForms = new ArrayList<>(formsManaged);
+        if(activeVersion != null) {
+            resultForms = formsManaged.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
         }
-		return new ArrayList<>(formsManaged);
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            resultForms = formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        }
+		return resultForms;
 	}
 
 	@Transactional

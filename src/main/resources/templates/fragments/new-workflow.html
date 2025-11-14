@@ -11,18 +11,15 @@
                             class="btn btn-transparent btn-sm text-dark toggle-workflow-start rounded-2"
                             style="margin-top: -6px; margin-left: -6px;"
                             type="button"
-                            th:id="'star_' + ${workflow.id}">
+                            th:id="'star_' + ${workflow.id}"
+                            >
                         <i class="fa-solid fa-star" th:classappend="${user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows) != null && user.uiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).favoriteWorkflows).contains('' + workflow.id)} ? 'text-warning' : 'text-secondary'"></i>
                     </button>
                 </div>
                 <a tabindex="10" role="button" class="workflow-btn start-wizard-workflow-button btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center me-2 mb-2 overflow-hidden p-0 workflow-button"
-                    data-bs-toggle="modal"
-                    data-bs-target="#wiz-workflow-sign-modal"
-                    th:id="'workflow-button-' + ${workflow.id}"
-                    th:href="'/user/start-workflow/' + ${workflow.id}"
                     style="width: 120px; height: 170px;"
-                    th:title="'Lancer le circuit : ' + ${workflow.description}"
-                    th:data-es-workflow-id="${workflow.id}"
+                    th:title="'Ajouter le circuit : ' + ${workflow.description}"
+                    th:attr="onclick='document.getElementById(`star_'+${workflow.id}+'`).click()'"
                     >
                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>

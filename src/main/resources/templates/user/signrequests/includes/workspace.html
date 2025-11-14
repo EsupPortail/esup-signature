@@ -30,7 +30,7 @@
                         <div><button id="showComments" class="btn btn-sm btn-warning" >Voir les annotations</button></div>
                     </div>
                 </th:block>
-                <div id="warningSelectDiv" title="Masquer ce message" class="alert bg-light text-dark border-dark warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+                <div id="warningSelectDiv" title="Masquer ce message" class="alert bg-light text-dark border-secondary warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
@@ -40,7 +40,7 @@
                     En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
                     </div>
                 </div>
-                <div class="alert bg-light text-dark warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}">
+                <div class="alert bg-light text-dark warning border-secondary" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}">
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-success" title="Document déjà signé"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
@@ -121,7 +121,7 @@
 
                 </div>
                 <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-                    <div id="commentHelp" th:unless="${signRequest.comments.size() > 0 || signRequest.parentSignBook.description != null}" class="alert alert-warning border-dark d-none" style="width: 100%">
+                    <div id="commentHelp" th:unless="${signRequest.comments.size() > 0 || signRequest.parentSignBook.description != null}" class="alert alert-warning border-secondary d-none" style="width: 100%">
                         Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
 
                     </div>
@@ -168,7 +168,7 @@
                     </div>
                 </div>
             </th:block>
-            <div id="comment-div" class="postit alert alert-warning border-dark" style="z-index: 100;">
+            <div id="comment-div" class="postit alert alert-warning border-secondary" style="z-index: 100;">
                 <form>
                     <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                     <input id="commentPosX" name="commentPosX" type="hidden"/>

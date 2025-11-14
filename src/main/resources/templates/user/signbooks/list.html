@@ -53,7 +53,7 @@
                         </a>
                     </li>
                     <li>
-                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" data-bs-toggle="modal" data-bs-target="#newFomModal" type="button"
+                        <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" type="button" href="/user"
                             title="Créer une nouvelle demande"
                             class="btn-floating btn-lg bg-primary">
                             <i class="fa-solid fa-plus fa-2xl"></i>
@@ -66,7 +66,7 @@
                 <table class="table table-borderless table-hover table-light">
                 <thead class="table-secondary">
                 <tr style="z-index: 2;">
-                    <th class="w-20 d-none d-lg-table-cell" style="z-index: 3;">
+                    <th class="d-none d-lg-table-cell" style="width: 20px; z-index: 3;">
                         <div class="dropdown position-relative">
                             <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                 <i class="fa-solid fa-ellipsis-v"></i>
@@ -94,14 +94,14 @@
                             </ul>
                         </div>
                     </th>
-                    <th class="w-20 d-none d-lg-table-cell"></th>
-                    <th class="text-center" style="width: 35%;">
+                    <th class="d-none d-lg-table-cell" style="width: 60px;"></th>
+                    <th class="text-center" style="width: 300px;">
                         <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
                         </select>
                     </th>
-                    <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
+                    <th class="d-none d-xxl-table-cell text-center" style="width: 150px;">
                         <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
@@ -110,7 +110,7 @@
                             </th:block>
                         </select>
                     </th>
-                    <th class="d-none d-xxxxl-table-cell">
+                    <th class="d-none d-xxxxl-table-cell" style="width: 150px;">
                         <div class="d-flex text-center">
                             <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true">
                                 <option data-placeholder="true"></option>
@@ -119,29 +119,61 @@
                                     <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
                                 </th:block>
                             </select>
-                            <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fa-solid fa-sort"></i></a>
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('createBy')}">
+                                <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1">
+                                    <i th:class="${order != null && order.direction.name() == 'ASC'
+                     ? 'fi fi-rr-sort-amount-up'
+                     : 'fi fi-rr-sort-amount-down'}"></i>
+                                </a>
+                            </th:block>
                         </div>
                     </th>
-                    <th class="d-none d-sm-table-cell">
+                    <th class="d-none d-sm-table-cell" style="width: 150px;">
                         <div class="d-flex text-center">
                             <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
-                            <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fa-solid fa-sort"></i></a>
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
+                                <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1">
+                                    <i th:class="${order != null && order.direction.name() == 'ASC'
+                                    ? 'fi fi-rr-sort-amount-up'
+                                    : 'fi fi-rr-sort-amount-down'}"></i>
+                                </a>
+                            </th:block>
                         </div>
                     </th>
-                    <th class="d-none d-xxxl-table-cell">
+                    <th class="d-none d-xxxl-table-cell" style="width: 150px">
                         <select id="recipientsFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Participants" data-allow-deselect="true">
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
                         </select>
                     </th>
-                    <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
-                    <th class=""><a class="sorted" sd:pagination-sort="status">Statut</a></th>
-                    <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
+                    <th class="d-none d-xxxl-table-cell" style="min-width:138px">
+                        <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
+                            <a sd:pagination-sort="endDate" class="sorted">
+                                Modification 
+                                <i th:class="${order != null && order.direction.name() == 'ASC'
+                     ? 'fi fi-rr-sort-amount-up'
+                     : 'fi fi-rr-sort-amount-down'}"></i>
+                            </a>
+                        </th:block>
+                    </th>
+                    <th class="text-center" style="width: 150px;">
+                        <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
+                            <a sd:pagination-sort="status" class="sorted">
+                                Statut 
+                                <i th:class="${order != null && order.direction.name() == 'ASC'
+                     ? 'fi fi-rr-sort-amount-up'
+                     : 'fi fi-rr-sort-amount-down'}"></i>
+                            </a>
+                        </th:block>
+                    </th>
+                    <th class="d-none d-xxl-table-cell">
+                        <a class="sorted" sd:pagination-sort="archiveStatus"></a>
+                    </th>
                     <th >Actions</th>
                 </tr>
                 </thead>
                 <tbody id="signRequestTable">
-                <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>
+<!--                <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>-->
                 </tbody>
                 <tfoot>
                 <tr>
@@ -156,23 +188,7 @@
         </div>
     </div>
 </main>
-<div th:replace="~{fragments/sign-modal :: sign-modal}"></div>
-<div data-bs-focus="false" class="modal fade" id="newFomModal"  role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Créer une nouvelle demande</h3>
-                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div th:replace="~{fragments/new :: new}"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-            </div>
-        </div>
-    </div>
-</div>
+<div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
 <div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

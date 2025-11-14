@@ -119,8 +119,8 @@
                         },
                         body: formData
                     })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Erreur lors de l’envoi du numéro de mobile');
+                        .then(async response => {
+                            if (!response.ok) throw new Error(await response.text());
                             return response.text();
                         })
                         .then(data => {

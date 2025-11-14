@@ -14,11 +14,13 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -49,6 +51,7 @@ import java.util.stream.Collectors;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+    private final SignBookRepository signBookRepository;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -66,7 +69,7 @@ public class SignBookController {
     private final FormService formService;
     private final TemplateEngine templateEngine;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, SignBookRepository signBookRepository) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -77,6 +80,7 @@ public class SignBookController {
         this.formService = formService;
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
+        this.signBookRepository = signBookRepository;
     }
 
     @GetMapping
@@ -103,8 +107,9 @@ public class SignBookController {
             recipientsFilter = null;
         }
         model.addAttribute("statusFilter", statusFilter);
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-        model.addAttribute("signBooks", signBooks);
+//        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+//        model.addAttribute("signBooks", signBooks);
+        model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
@@ -122,7 +127,7 @@ public class SignBookController {
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
+//            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
         }
         model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
         model.addAttribute("workflowNames", workflowNames);
@@ -326,21 +331,6 @@ public class SignBookController {
         }
 
         return "redirect:/user/signbooks/update/" + id;
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-    @PostMapping(value = "/add-repeatable-step/{id}")
-    @ResponseBody
-    public ResponseEntity<String> addRepeatableStep(@ModelAttribute("authUserEppn") String authUserEppn, @ModelAttribute("userEppn") String userEppn,
-                                                    @PathVariable("id") Long id,
-                                                    @RequestBody WorkflowStepDto step) {
-        try {
-            signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step, step.getStepNumber(), authUserEppn);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureRuntimeException e) {
-            logger.error(e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
