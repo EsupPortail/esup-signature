@@ -14,7 +14,6 @@ import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.slf4j.Logger;
@@ -51,7 +50,6 @@ import java.util.stream.Collectors;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
-    private final SignBookRepository signBookRepository;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -69,7 +67,7 @@ public class SignBookController {
     private final FormService formService;
     private final TemplateEngine templateEngine;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, SignBookRepository signBookRepository) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -80,7 +78,6 @@ public class SignBookController {
         this.formService = formService;
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
-        this.signBookRepository = signBookRepository;
     }
 
     @GetMapping
@@ -92,7 +89,11 @@ public class SignBookController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 15) Pageable pageable, Model model) {
+                       @PageableDefault(size = 15)
+                           @SortDefault.SortDefaults({
+                                   @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
+                           })
+                           Pageable pageable, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
             workflowFilter = null;
@@ -154,7 +155,11 @@ public class SignBookController {
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                          @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                         @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+                         @PageableDefault(size = 15)
+                             @SortDefault.SortDefaults({
+                                     @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
+                             })
+                             Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
             workflowFilter = null;
