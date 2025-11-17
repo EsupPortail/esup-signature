@@ -210,13 +210,13 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
-        this.disableScrollBtn();
+        // this.disableScrollBtn();
         this.resetProgress();
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
         this.render();
         this.refreshTools();
-        this.fireEvent("ready", ['ok']);
+        // this.fireEvent("ready", ['ok']);
     }
 
     render() {

@@ -229,6 +229,13 @@ export class WorkspacePdf {
         }
     }
 
+    hideSignFields() {
+        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let signSpace = $("#signSpace_" + i);
+            signSpace.hide();
+        }
+    }
+
     initSignFields() {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
             let currentSignRequestParams = this.currentSignRequestParamses[i];
@@ -483,6 +490,7 @@ export class WorkspacePdf {
 
     refreshWorkspace() {
         console.info("refresh workspace");
+        this.hideSignFields();
         this.pdfViewer.startRender();
         this.signPosition.updateScales(this.pdfViewer.scale);
         // this.refreshAfterPageChange();
@@ -664,7 +672,7 @@ export class WorkspacePdf {
                         signDiv.css("font-size", 10 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
-                    if(signDiv.attr("data-es-delete")) {
+                    if(signDiv != null && signDiv.attr("data-es-delete")) {
                         spotDiv.on('mouseup', function (e) {
                             e.stopPropagation();
                             bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
