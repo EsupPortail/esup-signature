@@ -22,12 +22,6 @@ export class WheelDetector extends EventFactory {
             }
             this.lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
         }, false);
-
-        window.addEventListener("resize", (e) => {
-            if (window.devicePixelRatio === 1) {
-                this.fireEvent("zoominit", [e]);
-            }
-        });
     }
 
     computeWhellEvent(event) {
