@@ -277,16 +277,15 @@ export class ListSignBooksUi {
         console.info("Add to page");
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);
-        let sort = "";
-        if(urlParams.get("sort") != null) {
-            sort = urlParams.get("sort");
-        }
-        let direction = "";
-        if(urlParams.get("direction") != null) {
-            direction = urlParams.get("direction");
+        let sortParam = "";
+        const sort = urlParams.get("sort");
+        const direction = urlParams.get("direction");
+
+        if (sort && direction) {
+            sortParam = `&sort=${sort},${direction}`;
         }
         $("#loader").show();
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "," + direction + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             $("#loader").hide();
             if(typeof data === 'string' && data.trim().length > 0) {
                 self.listSignRequestTable.unbind('scroll');
