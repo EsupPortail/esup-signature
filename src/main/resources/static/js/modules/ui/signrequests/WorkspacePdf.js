@@ -48,12 +48,13 @@ export class WorkspacePdf {
         }
         if (this.isPdf) {
             if(currentSignType === "form") {
-                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true);
+                this.pdfViewer = new PdfViewer('/' + userName + '/forms/get-file/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, true, this.getBrowserZoom());
             } else {
-                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, this.hasAnnotation);
+                this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, this.hasAnnotation, this.getBrowserZoom());
             }
         }
         this.signPosition = new SignPosition(
+            this.getBrowserZoom(),
             currentSignType,
             currentSignRequestParamses,
             currentStepMultiSign,
@@ -253,13 +254,15 @@ export class WorkspacePdf {
                 }
                 signSpaceDiv.show();
                 let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
-                let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
-                let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
+                let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale * this.getBrowserZoom());
+                let yPos = Math.round((currentSignRequestParams.yPos * this.pdfViewer.scale + offset) * this.getBrowserZoom());
+                let width = Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale * this.getBrowserZoom());
+                let height = Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale * this.getBrowserZoom());
+                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale * this.getBrowserZoom());
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale);
+                signSpaceDiv.css("width", width + "px");
+                signSpaceDiv.css("height", height + "px");
                 this.makeItDroppable(signSpaceDiv);
             }
         }
@@ -745,15 +748,15 @@ export class WorkspacePdf {
                         newSize.size.width = newSize.size.width - 2;
                         newSize.size.height = newSize.size.height - 2;
                         signRequestParams.resize(newSize);
-                        cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
+                        cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale * signRequestParams.getBrowserZoom());
                         if(signRequestParams.extraOnTop) {
-                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale * signRequestParams.getBrowserZoom());
                         } else {
-                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale/2);
+                            cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale / 2 * signRequestParams.getBrowserZoom());
                         }
-                        cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
-                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
-                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
+                        cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale * signRequestParams.getBrowserZoom());
+                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale));
+                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale));
                         let oldLeft = parseInt(cross.css("left"));
                         let oldTop = parseInt(cross.css("top"));
                         let newLeft = oldLeft + xOffset;
@@ -1254,5 +1257,9 @@ export class WorkspacePdf {
                 $visibleTabs = $menu.children("li:not(.dropdown)");
             }
         }
+    }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
     }
 }

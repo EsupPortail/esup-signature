@@ -4,9 +4,10 @@ import {DataField} from "../../prototypes/DataField.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
+    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields, browserZoom) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
+        this.browserZoom = browserZoom;
         this.timer = null;
         this.viewed = false;
         this.url= url;
@@ -28,10 +29,8 @@ export class PdfViewer extends EventFactory {
             });
         }
         this.disableAllFields = disableAllFields;
-        this.scale = 1;
-        if(localStorage.getItem('scale')) {
-            this.scale = parseFloat(localStorage.getItem('scale'));
-        }
+        this.scale = 0.8 / this.browserZoom;
+        this.adjustZoom();
         this.zoomStep = 0.1;
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
@@ -69,7 +68,7 @@ export class PdfViewer extends EventFactory {
         $('#fullheight').on('click', e => this.fullHeight());
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
-        $(window).on('resize', e => this.adjustZoom(e));
+        $(window).on('resize', e => this.adjustZoom());
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
@@ -169,31 +168,33 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    adjustZoom(e) {
-        if(e.target.tagName == null) {
-            let newScale = 1;
-            if (localStorage.getItem('scale')) {
-                newScale = parseFloat(localStorage.getItem('scale'));
-            }
-            if (window.innerWidth < 1200) {
-                newScale = 0.9;
-            }
-            if (window.innerWidth < 992) {
-                newScale = 0.8;
-            }
-            if (window.innerWidth < 768) {
-                newScale = 0.7;
-            }
-            if (window.innerWidth < 576) {
-                newScale = 0.5;
-            }
-            if (newScale !== this.scale) {
-                console.info("adjust zoom to screen wide " + window.innerWidth);
-                this.scale = newScale;
-                console.info('zoom in, scale = ' + this.scale);
-                this.fireEvent('scaleChange', ['in']);
-            }
+    adjustZoom() {
+
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        let newScale = 1.4 / this.browserZoom;
+        if (workspaceWidth < 1300) {
+            newScale = 1.2 / this.browserZoom;
         }
+        if (workspaceWidth < 1200) {
+            newScale = 1 / this.browserZoom;
+        }
+        if (workspaceWidth < 1000) {
+            newScale = 0.8 / this.browserZoom;
+        }
+        if (workspaceWidth < 768) {
+            newScale = 0.6 / this.browserZoom;
+        }
+        if (workspaceWidth < 576) {
+            newScale = 0.4 / this.browserZoom;
+        }
+
+        // if (newScale !== this.scale) {
+            console.info("adjust zoom to workspace width " + workspaceWidth);
+            this.scale = newScale;
+            console.info('zoom in, scale = ' + this.scale);
+            this.fireEvent('scaleChange', ['in']);
+        // }
     }
 
     startRender(pdf) {
@@ -313,13 +314,9 @@ export class PdfViewer extends EventFactory {
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    // Utiliser les dimensions du viewport au lieu de pdfPageView.width/height
                     const viewport = pdfPageView.viewport;
-
                     annotationLayer.style.width = Math.floor(viewport.width) + "px";
                     annotationLayer.style.height = Math.floor(viewport.height) + "px";
-
-                    // Appliquer la même transformation que le canvas
                     annotationLayer.style.transform = `scale(${pdfPageView.outputScale.sx}, ${pdfPageView.outputScale.sy})`;
                     annotationLayer.style.transformOrigin = '0 0';
                 }
@@ -328,10 +325,6 @@ export class PdfViewer extends EventFactory {
             });
             pdfPageView.draw();
         });
-    }
-
-    hasTouchSupport() {
-        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     }
 
     postRenderAll() {
@@ -801,7 +794,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut(e) {
-        if ((this.scale <= 0.4 && !this.hasTouchSupport()) || this.scale <= 0.3) {
+        if ((this.scale <= 0.4 && this.browserZoom === 1) || this.scale <= 0.2) {
             return;
         }
         this.scale = this.scale - this.zoomStep;
