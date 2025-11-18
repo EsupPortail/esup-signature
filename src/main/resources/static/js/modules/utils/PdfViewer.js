@@ -4,10 +4,9 @@ import {DataField} from "../../prototypes/DataField.js?version=@version@";
 
 export class PdfViewer extends EventFactory {
 
-    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields, browserZoom) {
+    constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
-        this.browserZoom = browserZoom;
         this.timer = null;
         this.viewed = false;
         this.url= url;
@@ -29,8 +28,10 @@ export class PdfViewer extends EventFactory {
             });
         }
         this.disableAllFields = disableAllFields;
-        this.scale = 0.8 / this.browserZoom;
-        this.adjustZoom();
+        this.scale = 1;
+        if(localStorage.getItem('scale')) {
+            this.scale = parseFloat(localStorage.getItem('scale'));
+        }
         this.zoomStep = 0.1;
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
@@ -68,19 +69,23 @@ export class PdfViewer extends EventFactory {
         $('#fullheight').on('click', e => this.fullHeight());
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
-        $(window).on('resize', e => this.adjustZoom());
+        // $(window).on('resize', e => this.adjustZoom(e));
+        $(window).on('resize', e => {
+            if (window.__isResizingCross) return;
+            this.adjustZoom();
+        });
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
-   }
+    }
 
-   restoreScrolling() {
-       window.scrollTo({
-           top: this.saveScrolling * this.scale,
-           left: 0,
-           behavior: 'instant',
-       });
-   }
+    restoreScrolling() {
+        window.scrollTo({
+            top: this.saveScrolling * this.scale,
+            left: 0,
+            behavior: 'instant',
+        });
+    }
 
     listenToSearchCompletion() {
         let controller = new AbortController();
@@ -98,7 +103,7 @@ export class PdfViewer extends EventFactory {
                         controller = new AbortController()
                         signal = controller.signal;
                         $.ajax({
-                            url: "/user/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             signal: signal,
                             data: {
@@ -169,39 +174,35 @@ export class PdfViewer extends EventFactory {
     }
 
     adjustZoom() {
-
-        const workspaceDiv = document.getElementById('workspace');
-        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = 1.4 / this.browserZoom;
-        if (workspaceWidth < 1300) {
-            newScale = 1.2 / this.browserZoom;
+        let newScale = 1;
+        if (localStorage.getItem('scale')) {
+            newScale = parseFloat(localStorage.getItem('scale'));
         }
-        if (workspaceWidth < 1200) {
-            newScale = 1 / this.browserZoom;
+        if (window.innerWidth < 1200) {
+            newScale = 0.9;
         }
-        if (workspaceWidth < 1000) {
-            newScale = 0.8 / this.browserZoom;
+        if (window.innerWidth < 992) {
+            newScale = 0.8;
         }
-        if (workspaceWidth < 768) {
-            newScale = 0.6 / this.browserZoom;
+        if (window.innerWidth < 768) {
+            newScale = 0.7;
         }
-        if (workspaceWidth < 576) {
-            newScale = 0.4 / this.browserZoom;
+        if (window.innerWidth < 576) {
+            newScale = 0.5;
         }
-
-        // if (newScale !== this.scale) {
-            console.info("adjust zoom to workspace width " + workspaceWidth);
+        if (newScale !== this.scale) {
+            console.info("adjust zoom to screen wide " + window.innerWidth);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent('scaleChange', ['in']);
-        // }
+        }
     }
 
     startRender(pdf) {
         // this.pdfDiv.css('opacity', 0);
         this.saveScrolling = window.scrollY / this.scale;
         $(".pdf-page").each(function(e) {
-           $(this).remove();
+            $(this).remove();
         });
         if(this.pdfDoc == null) {
             this.pdfDoc = pdf;
@@ -210,13 +211,13 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
-        // this.disableScrollBtn();
+        this.disableScrollBtn();
         this.resetProgress();
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
         this.render();
         this.refreshTools();
-        // this.fireEvent("ready", ['ok']);
+        this.fireEvent("ready", ['ok']);
     }
 
     render() {
@@ -308,7 +309,7 @@ export class PdfViewer extends EventFactory {
                 useOnlyCssZoom: false,
                 defaultZoomDelay: 0,
                 textLayerMode: 1,
-                renderer: "canvas"
+                renderer: "canvas",
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
@@ -323,6 +324,7 @@ export class PdfViewer extends EventFactory {
                 self.pages.push(page);
                 resolve("ok");
             });
+
             pdfPageView.draw();
         });
     }
@@ -346,7 +348,7 @@ export class PdfViewer extends EventFactory {
             resolve("Réussite");
         });
     }
-    
+
     promiseToggleFields(enable) {
         if(this.pdfDoc != null) {
             for (let i = 1; i < this.pdfDoc.numPages + 1; i++) {
@@ -381,29 +383,26 @@ export class PdfViewer extends EventFactory {
     }
 
     saveValues(items) {
-        return new Promise((resolve, reject) => {
-            console.log("saving " + items.length + " fields");
-            if (this.dataFields.length > 0) {
-                for (let i = 0; i < this.dataFields.length; i++) {
-                    let dataField = this.dataFields[i];
-                    let item = items.filter(function (e) {
-                        return e.fieldName != null && e.fieldName === dataField.name
-                    })[0];
-                    if (item != null && item.fieldName != null) {
-                        this.saveValue(item);
-                    } else {
-                        if (this.savedFields.get(dataField.name) == null) {
-                            this.savedFields.set(dataField.name, dataField.defaultValue);
-                        }
+        console.log("saving " + items.length + " fields");
+        if(this.dataFields.length > 0) {
+            for (let i = 0; i < this.dataFields.length; i++) {
+                let dataField = this.dataFields[i];
+                let item = items.filter(function (e) {
+                    return e.fieldName != null && e.fieldName === dataField.name
+                })[0];
+                if (item != null && item.fieldName != null) {
+                    this.saveValue(item);
+                } else {
+                    if(this.savedFields.get(dataField.name) == null) {
+                        this.savedFields.set(dataField.name, dataField.defaultValue);
                     }
                 }
-            } else {
-                for (let i = 0; i < items.length; i++) {
-                    this.saveValue(items[i]);
-                }
             }
-            resolve();
-        });
+        } else {
+            for (let i = 0; i < items.length; i++) {
+                this.saveValue(items[i]);
+            }
+        }
     }
 
     saveValue(item) {
@@ -601,9 +600,6 @@ export class PdfViewer extends EventFactory {
                     if (dataField.defaultValue === 'on') {
                         inputField.attr("checked", "checked");
                         inputField.prop("checked", true);
-                    } else {
-                        inputField.removeAttr("checked");
-                        inputField.prop("checked", false);
                     }
                     inputField.unbind();
                     inputField.on('click', e => this.fireEvent('change', ['checked']));
@@ -794,7 +790,7 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut(e) {
-        if ((this.scale <= 0.4 && this.browserZoom === 1) || this.scale <= 0.2) {
+        if (this.scale <= 0.4) {
             return;
         }
         this.scale = this.scale - this.zoomStep;
@@ -943,7 +939,7 @@ export class PdfViewer extends EventFactory {
                         radio.removeClass('highlight');
                     }
                     i++;
-                    },
+                },
                 1000
             );
         });

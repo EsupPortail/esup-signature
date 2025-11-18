@@ -28,6 +28,7 @@ export class GlobalUi {
         this.initSideBar();
         this.checkCurrentPage();
         this.initTooltips();
+        window.__isResizingCross = false;
     }
 
     initListeners() {
