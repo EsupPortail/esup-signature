@@ -543,7 +543,7 @@ export class SignRequestParams extends EventFactory {
             containment: "#pdf",
             snap: ".pdf-page",
             snapMode: "inner",
-            snapTolerance: 20,
+            snapTolerance: 5,
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
