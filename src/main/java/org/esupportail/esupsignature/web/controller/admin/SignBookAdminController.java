@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -91,9 +92,10 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
 			docTitleFilter = "";
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-		model.addAttribute("statusFilter", statusFilter);
-		model.addAttribute("signBooks", signBooks);
+//		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+        model.addAttribute("statusFilter", statusFilter);
+//		model.addAttribute("signBooks", signBooks);
 //		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.activeValues());

@@ -466,6 +466,10 @@ input:focus, textarea:focus, select:focus {
     border: 1px solid rgb(123, 246, 123) !important;
 }
 
+.sign-field.ui-droppable-hover {
+    background-color: rgb(123, 246, 123) !important;
+}
+
 .sign-field-dropped {
     background-color: transparent !important;
     cursor: default;
@@ -984,12 +988,3 @@ tr[aria-expanded="true"] .caret-toggle::before {
     left: 0px;
     border-radius: 4px 0px 0px 4px;
 }
-
-.ui-droppable-hover {
-    background-color: rgb(123, 246, 123) !important;
-}
-
-
-/*.sidebar-label {*/
-/*    font-size: 14px;*/
-/*}*/
