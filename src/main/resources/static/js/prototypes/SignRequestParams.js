@@ -160,7 +160,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("width", Math.round(150 / .75 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 / .75 * this.currentScale) + "px");
-        this.divExtra.css("font-size", Math.round(10 * this.currentScale)  + "px");
+        this.cross.css("font-size", Math.round(10 * this.currentScale)  + "px");
         this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
