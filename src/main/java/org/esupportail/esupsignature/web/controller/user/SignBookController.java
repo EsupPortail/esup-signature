@@ -119,6 +119,7 @@ public class SignBookController {
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
@@ -128,7 +129,7 @@ public class SignBookController {
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
         } else {
-//            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
+            workflowNames.add(workflowFilter);
         }
         model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
         model.addAttribute("workflowNames", workflowNames);

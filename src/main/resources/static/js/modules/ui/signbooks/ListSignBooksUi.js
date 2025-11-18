@@ -3,17 +3,17 @@ import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, infiniteScrolling, csrf, mode) {
+    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode) {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.mode = mode;
         this.infiniteScrolling = infiniteScrolling;
-        this.totalElementsToDisplay = this.signRequests.totalElements - this.signRequests.numberOfElements;
         this.statusFilter = "";
         this.recipientsFilter = "";
         this.workflowFilter = "";
         this.docTitleFilter = "";
-        this.creatorFilter = null;
+        this.creatorFilter = "";
+        this.dateFilter = "";
         if(statusFilter != null) {
             this.statusFilter = statusFilter;
         }
@@ -23,11 +23,14 @@ export class ListSignBooksUi {
         if(workflowFilter != null) {
             this.workflowFilter = workflowFilter;
         }
+        if(docTitleFilter != null) {
+            this.docTitleFilter = docTitleFilter;
+        }
         if(creatorFilter != null) {
             this.creatorFilter = creatorFilter;
         }
-        if(docTitleFilter != null) {
-            this.docTitleFilter = docTitleFilter;
+        if(dateFilter != null) {
+            this.dateFilter = dateFilter;
         }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable");
@@ -189,11 +192,7 @@ export class ListSignBooksUi {
 
     detectEndDiv(e) {
         if ( e== null || ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling))) {
-            // if(this.totalElementsToDisplay > 0 ) {
-                this.addToPage();
-            // } else {
-                // this.signRequestTable.parent().children('tfoot').remove();
-            // }
+            this.addToPage();
         }
     }
 
@@ -279,13 +278,12 @@ export class ListSignBooksUi {
         const urlParams = new URLSearchParams(window.location.search);
         let sortParam = "";
         const sort = urlParams.get("sort");
-        const direction = urlParams.get("direction");
 
-        if (sort && direction) {
-            sortParam = `&sort=${sort},${direction}`;
+        if (sort) {
+            sortParam = `&sort=${sort}`;
         }
         $("#loader").show();
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             $("#loader").hide();
             if(typeof data === 'string' && data.trim().length > 0) {
                 self.listSignRequestTable.unbind('scroll');
@@ -306,7 +304,6 @@ export class ListSignBooksUi {
                 self.refreshListeners();
                 self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
                 let displayedElements = $("#signRequestTable tr").length;
-                self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
             } else {
                 self.signRequestTable.parent().children('tfoot').remove();
             }

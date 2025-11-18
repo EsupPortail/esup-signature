@@ -541,6 +541,10 @@ textarea:invalid {
     border-radius: var(--bs-border-radius-sm);
 }
 
+.sign-request-filter .ss-value-text {
+    font-size: 10px !important;
+}
+
 .sign-request-filter.ss-content.ss-open-below {
     width: revert !important;
 }
