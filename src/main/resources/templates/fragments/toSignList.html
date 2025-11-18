@@ -50,7 +50,7 @@
                             <i th:if="${signBook.signRequests.size() > 1}" class="fi fi-rr-folder-open" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                             <i th:unless="${signBook.signRequests.size() > 1}" class="fi fi-rr-file" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                         </td>
-                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                             <span th:if="${signBook.signRequests.size() > 1}">
                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                                 <i class="fa-solid fa-caret-down"></i>
