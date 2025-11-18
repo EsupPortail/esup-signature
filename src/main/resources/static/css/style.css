@@ -449,7 +449,7 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field {
     border: 1px solid transparent !important;
-    background-color: rgba(189, 255, 189, 1) !important;
+    background-color: rgba(189, 255, 189, 1);
     opacity: 0.6;
     cursor: pointer !important;
     overflow: hidden;
@@ -457,8 +457,17 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-field:hover {
-    background-color: rgb(220, 250, 220) !important;
-    border: 1px solid green !important;
+    background-color: rgb(220, 250, 220);
+    border: 1px solid rgb(123, 246, 123) !important;
+}
+
+.sign-field.ui-droppable-active {
+    background-color: rgb(220, 250, 220);
+    border: 1px solid rgb(123, 246, 123) !important;
+}
+
+.sign-field.ui-droppable-hover {
+    background-color: rgb(123, 246, 123) !important;
 }
 
 .sign-field-dropped {
@@ -979,7 +988,3 @@ tr[aria-expanded="true"] .caret-toggle::before {
     left: 0px;
     border-radius: 4px 0px 0px 4px;
 }
-
-/*.sidebar-label {*/
-/*    font-size: 14px;*/
-/*}*/

@@ -100,6 +100,7 @@ public class HomeController {
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
             model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
             model.addAttribute("favoriteForms", formService.getByIds(userEppn, authUserEppn));
+            model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
             model.addAttribute("selectedTags", new ArrayList<>());
             return "user/home/index";
         } else {

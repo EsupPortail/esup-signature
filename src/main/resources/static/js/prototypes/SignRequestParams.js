@@ -160,7 +160,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("width", Math.round(150 / .75 * this.currentScale) + "px");
         this.cross.css("height", Math.round(75 / .75 * this.currentScale) + "px");
-        this.divExtra.css("font-size", Math.round(10 * this.currentScale)  + "px");
+        this.cross.css("font-size", Math.round(10 * this.currentScale)  + "px");
         this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
@@ -213,7 +213,7 @@ export class SignRequestParams extends EventFactory {
         this.border = $("#borders_" + this.id);
         this.tools = $("#crossTools_" + this.id);
         this.canvas = $("#canvas_" + this.id);
-        this.signwidth = 300;
+        this.signWidth = 300;
         this.signHeight = 150;
         this.restoreFromFavorite();
     }
@@ -249,14 +249,12 @@ export class SignRequestParams extends EventFactory {
 
     init() {
         this.createCross();
-        let self = this;
         this.madeCrossDraggable();
         this.madeCrossResizable();
         this.createBorder();
         this.createTools();
         this.extraWidth = 0;
         this.extraHeight = 0;
-        this.moreTools = $("#moreTools_" + this.id);
         this.defaultTools = $("#defaultTools_" + this.id);
         if(this.isSign) {
             // this.createColorPicker();
@@ -382,9 +380,17 @@ export class SignRequestParams extends EventFactory {
 
     resize(ui) {
         let newScale = this.getNewScale(ui);
-        this.signWidth = this.signWidth / this.signScale * newScale;
-        this.signHeight = this.signHeight / this.signScale * newScale;
-        this.extraWidth = this.extraWidth / this.signScale * newScale;
+
+        // On calcule le ratio de changement pour mettre à jour les éléments "extra"
+        // (On est obligé d'utiliser le ratio pour extraWidth/Height car on n'a pas de "originalExtraWidth")
+        let ratio = newScale / this.signScale;
+        this.extraWidth = this.extraWidth * ratio;
+        this.extraHeight = this.extraHeight * ratio;
+
+        this.signScale = newScale;
+        this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
+        this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
+
         if (this.addExtra) {
             if (!this.extraOnTop) {
                 this.divExtra.css('width', Math.round(this.extraWidth * this.currentScale) + "px");
@@ -392,8 +398,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.css('width', Math.round(this.originalWidth * this.signScale * this.currentScale) + "px");
             }
         }
-        this.extraHeight = this.extraHeight / this.signScale * newScale;
-        this.signScale = newScale;
+
         if (this.addImage) {
             this.cross.css('background-size', Math.round(ui.size.width - this.extraWidth * this.currentScale) + "px");
         }
@@ -538,7 +543,7 @@ export class SignRequestParams extends EventFactory {
             containment: "#pdf",
             snap: ".pdf-page",
             snapMode: "inner",
-            snapTolerance: 20,
+            snapTolerance: 5,
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
@@ -854,8 +859,9 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
-            let x = Math.round(this.xPos * this.currentScale);
-            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
+            const z = this.getBrowserZoom();
+            let x = Math.round(this.xPos * this.currentScale * z);
+            let y = Math.round(this.yPos * this.currentScale * z + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.scrollTop + $(window).height();

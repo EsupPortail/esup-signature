@@ -706,7 +706,8 @@ export class WorkspacePdf {
     makeItDroppable(signSpaceDiv) {
         let self = this;
         signSpaceDiv.droppable({
-            tolerance: 'touch',
+            tolerance: "intersect",
+            hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
                 $(this).removeClass("sign-field");
@@ -752,7 +753,6 @@ export class WorkspacePdf {
                         cross.css("top", newTop);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
-                        cross.resizable("disable");
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;

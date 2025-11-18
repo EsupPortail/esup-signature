@@ -8,7 +8,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user/manage/workflow/[[${workflow.id}]]");
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user/manage/workflow/[[${workflow.id}]]");
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>

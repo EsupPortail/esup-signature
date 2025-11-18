@@ -8,7 +8,7 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    const listSignBooksUi = new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -102,7 +102,7 @@
                         </select>
                     </th>
                     <th class="d-none d-xxl-table-cell text-center" style="width: 150px;">
-                        <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">
+                        <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Circuit" data-allow-deselect="true" multiple>
                             <option data-placeholder="true"></option>
                             <option value="all">Tout</option>
                             <th:block th:each="workflow : ${workflowNames}">
@@ -112,7 +112,7 @@
                     </th>
                     <th class="d-none d-xxxxl-table-cell" style="width: 150px;">
                         <div class="d-flex text-center">
-                            <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true">
+                            <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true" multiple>
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
                                 <th:block th:each="creator : ${creators}">
@@ -120,10 +120,11 @@
                                 </th:block>
                             </select>
                             <th:block th:with="order=${signBooks.sort.getOrderFor('createBy')}">
-                                <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1">
-                                    <i th:class="${order != null && order.direction.name() == 'ASC'
-                     ? 'fi fi-rr-sort-amount-up'
-                     : 'fi fi-rr-sort-amount-down'}"></i>
+                                <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                    <i th:class="${order == null || order.direction.name() == 'ASC'
+                                        ? 'fi fi-rr-sort-amount-down'
+                                        : 'fi fi-rr-sort-amount-up'}">
+                                    </i>
                                 </a>
                             </th:block>
                         </div>
@@ -132,10 +133,11 @@
                         <div class="d-flex text-center">
                             <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
                             <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
-                                <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1">
-                                    <i th:class="${order != null && order.direction.name() == 'ASC'
-                                    ? 'fi fi-rr-sort-amount-up'
-                                    : 'fi fi-rr-sort-amount-down'}"></i>
+                                <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                    <i th:class="${order == null || order.direction.name() == 'ASC'
+                                    ? 'fi fi-rr-sort-amount-down'
+                                    : 'fi fi-rr-sort-amount-up'}">
+                                    </i>
                                 </a>
                             </th:block>
                         </div>
@@ -148,21 +150,23 @@
                     </th>
                     <th class="d-none d-xxxl-table-cell" style="min-width:138px">
                         <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
-                            <a sd:pagination-sort="endDate" class="sorted">
+                            <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
                                 Modification 
-                                <i th:class="${order != null && order.direction.name() == 'ASC'
-                     ? 'fi fi-rr-sort-amount-up'
-                     : 'fi fi-rr-sort-amount-down'}"></i>
+                                <i th:class="${order == null || order.direction.name() == 'ASC'
+                                    ? 'fi fi-rr-sort-amount-down'
+                                    : 'fi fi-rr-sort-amount-up'}">
+                                </i>
                             </a>
                         </th:block>
                     </th>
                     <th class="text-center" style="width: 150px;">
                         <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
-                            <a sd:pagination-sort="status" class="sorted">
+                            <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
                                 Statut 
-                                <i th:class="${order != null && order.direction.name() == 'ASC'
-                     ? 'fi fi-rr-sort-amount-up'
-                     : 'fi fi-rr-sort-amount-down'}"></i>
+                                <i th:class="${order == null || order.direction.name() == 'ASC'
+                                    ? 'fi fi-rr-sort-amount-down'
+                                    : 'fi fi-rr-sort-amount-up'}">
+                                </i>
                             </a>
                         </th:block>
                     </th>

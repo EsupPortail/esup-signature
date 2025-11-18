@@ -1,3 +1,22 @@
+@media (min-width: 1900px) {
+    .d-xxxxl-table-cell {
+        display: table-cell !important;
+    }
+
+    .d-xxxxl-block { display: block !important; }
+
+    .d-xxxxl-none { display: none !important; }
+
+    .d-xxxxl-inline {
+        display: inline !important;
+    }
+    .d-xxxxl-inline-flex {
+        display: inline-flex !important;
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
 @media (min-width: 1620px) {
     .d-xxxl-table-cell {
         display: table-cell !important;
