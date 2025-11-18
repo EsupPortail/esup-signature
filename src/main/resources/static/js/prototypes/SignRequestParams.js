@@ -710,16 +710,18 @@ export class SignRequestParams extends EventFactory {
     }
 
     updateScale(scale) {
+
+        // alert(this.currentScale + "  " + scale);
         let width = parseInt(this.cross.css("width"), 10);
         let height = parseInt(this.cross.css("height"), 10);
         const z = this.getBrowserZoom();
-        let newWidth = Math.round(width / (this.currentScale * z) * scale);
-        let newHeight = Math.round(height / (this.currentScale * z) * scale);
+        let newWidth = Math.round(width / (this.currentScale) * scale);
+        let newHeight = Math.round(height / (this.currentScale) * scale);
         let thisPos = this.cross.position();
         let x = thisPos.left;
         let y = thisPos.top;
-        let xNew = Math.round((x / (this.currentScale * z) * scale));
-        let yNew = Math.round((y / (this.currentScale * z) * scale));
+        let xNew = Math.round((x / (this.currentScale) * scale));
+        let yNew = Math.round((y / (this.currentScale) * scale));
         this.cross.css("width", newWidth + "px");
         this.cross.css("height", newHeight + "px");
         this.canvas.css("width", (newWidth - this.extraWidth) + "px");
