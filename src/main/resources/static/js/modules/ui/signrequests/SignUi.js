@@ -348,24 +348,26 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
-            signRequestParamses.forEach(function (signRequestParams){
-                signRequestParams.signScale = signRequestParams.signScale / signRequestParams.getBrowserZoom();
-                delete signRequestParams.signImages;
-                if(signRequestParams.userSignaturePad != null) {
-                    if(signRequestParams.userSignaturePad.signaturePad.isEmpty()) {
+            let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
+                let paramToSend = Object.assign({}, originalParams);
+                paramToSend.signScale = originalParams.signScale / originalParams.getBrowserZoom();
+                delete paramToSend.signImages;
+                if(originalParams.userSignaturePad != null) {
+                    if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
                         signaturesCheck = false;
                     } else {
-                        signRequestParams.userSignaturePad.save();
-                        signRequestParams.imageBase64 = signRequestParams.userSignaturePad.signImageBase64Val;
-                        delete signRequestParams.userSignaturePad;
+                        originalParams.userSignaturePad.save();
+                        paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
+                        delete paramToSend.userSignaturePad;
                     }
                 }
+                return paramToSend;
             });
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
                 'sealCertificat' : this.sealCertificatSelect.val(),
-                'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
+                'signRequestParams' : JSON.stringify(signRequestParamsesToSend, function replacer(key, value) {
                     if (this &&
                         (key === "events"
                             || key === "globalProperties"

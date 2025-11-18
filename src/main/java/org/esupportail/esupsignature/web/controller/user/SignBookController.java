@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -119,6 +120,7 @@ public class SignBookController {
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("workflowFilter", workflowFilter);
         model.addAttribute("docTitleFilter", docTitleFilter);
+        model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
@@ -127,8 +129,8 @@ public class SignBookController {
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
         if(statusFilter.isEmpty() && (workflowFilter == null || workflowFilter.equals("Hors circuit")) && docTitleFilter == null && recipientsFilter == null) {
             workflowNames.addAll(signBookService.getWorkflowNames(userEppn));
-        } else {
-//            workflowNames.addAll(signBooks.stream().map(SignBook::getWorkflowName).toList());
+        } else if(StringUtils.hasText(workflowFilter)) {
+            workflowNames.add(workflowFilter);
         }
         model.addAttribute("creators", signBookService.getCreators(userEppn, workflowFilter, docTitleFilter, creatorFilter));
         model.addAttribute("workflowNames", workflowNames);

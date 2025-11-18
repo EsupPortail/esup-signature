@@ -286,7 +286,7 @@ header {
     padding: 5px;
     position: fixed;
     margin-left: 260px;
-    width: calc(100vw - 269px);
+    width: 100%;
     z-index: 1029;
 }
 
