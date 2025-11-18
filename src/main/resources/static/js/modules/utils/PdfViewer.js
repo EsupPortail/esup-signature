@@ -28,10 +28,10 @@ export class PdfViewer extends EventFactory {
             });
         }
         this.disableAllFields = disableAllFields;
-        this.scale = 1;
-        if(localStorage.getItem('scale')) {
-            this.scale = parseFloat(localStorage.getItem('scale'));
-        }
+        this.scale;
+        // if(localStorage.getItem('scale')) {
+        //     this.scale = parseFloat(localStorage.getItem('scale'));
+        // }
         this.zoomStep = 0.1;
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
@@ -42,6 +42,7 @@ export class PdfViewer extends EventFactory {
         this.events = {};
         this.rotation = 0;
         this.renderedPages = 0
+        this.browserZoom = window.devicePixelRatio || 1;
         this.initListeners();
         let self = this;
         $(document).ready(function() {
@@ -74,6 +75,7 @@ export class PdfViewer extends EventFactory {
             if (window.__isResizingCross) return;
             this.adjustZoom();
         });
+        this.adjustZoom();
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
@@ -174,28 +176,34 @@ export class PdfViewer extends EventFactory {
     }
 
     adjustZoom() {
-        let newScale = 1;
-        if (localStorage.getItem('scale')) {
-            newScale = parseFloat(localStorage.getItem('scale'));
+
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        let newScale = 1.6;
+        // alert(workspaceWidth)
+        // alert(workspaceWidth / this.getBrowserZoom());
+        if (workspaceWidth  / this.getBrowserZoom() < 1500) {
+            newScale = 1.4;
         }
-        if (window.innerWidth < 1200) {
-            newScale = 0.9;
+        if (workspaceWidth / this.getBrowserZoom() < 1200) {
+            newScale = 1.2;
         }
-        if (window.innerWidth < 992) {
+        if (workspaceWidth / this.getBrowserZoom() < 1000) {
+            newScale = 1;
+        }
+        if (workspaceWidth / this.getBrowserZoom() < 768) {
             newScale = 0.8;
         }
-        if (window.innerWidth < 768) {
-            newScale = 0.7;
+        if (workspaceWidth / this.getBrowserZoom() < 576) {
+            newScale = 0.3;
         }
-        if (window.innerWidth < 576) {
-            newScale = 0.5;
-        }
-        if (newScale !== this.scale) {
-            console.info("adjust zoom to screen wide " + window.innerWidth);
+
+        // if (newScale !== this.scale) {
+            console.info("adjust zoom to workspace width " + workspaceWidth);
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
             this.fireEvent('scaleChange', ['in']);
-        }
+        // }
     }
 
     startRender(pdf) {
@@ -965,5 +973,9 @@ export class PdfViewer extends EventFactory {
     resetProgress() {
         $(".progress-bar").css("width","0%").attr("aria-valuenow", 0);
         clearInterval(this.interval);
+    }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
     }
 }

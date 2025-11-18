@@ -607,6 +607,9 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.resizable({
             aspectRatio: true,
+            start: function(event, ui) {
+                window.__isResizingCross = true;
+            },
             resize: function(event, ui) {
                 let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale);
                 let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale);
@@ -644,7 +647,7 @@ export class SignRequestParams extends EventFactory {
                 // }
                 const dragRect = this.getBoundingClientRect();
                 self.checkInside(dragRect, self);
-
+                window.__isResizingCross = false;
             }
         });
     }
