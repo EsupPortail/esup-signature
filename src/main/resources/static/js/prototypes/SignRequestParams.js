@@ -740,6 +740,7 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.addExtra) {
             this.divExtra.css("width", this.extraWidth * scale + "px");
+            this.divExtra.css("font-size", Math.round(8 * this.currentScale * this.signScale) + "px");
         }
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
@@ -750,7 +751,6 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaPart != null) {
             this.resizeText();
         }
-        this.divExtra.css("font-size", Math.round(8 * this.currentScale * this.signScale) + "px");
     }
 
     lock() {
