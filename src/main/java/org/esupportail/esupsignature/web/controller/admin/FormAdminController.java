@@ -441,12 +441,11 @@ public class FormAdminController {
 	public Long addSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 						  @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
 						  @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
-						  @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
-						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                          @RequestParam(value = "commentScale", required = false) Float commentScale,
 						  @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
 						  @RequestParam(value = "commentHeight", required = false) Integer commentHeight
 						) {
-		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY, commentWidth, commentHeight);
+		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, Math.round(200 * commentScale), Math.round(100 * commentScale), commentWidth, commentHeight);
 	}
 
 }

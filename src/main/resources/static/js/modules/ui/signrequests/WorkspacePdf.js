@@ -255,11 +255,11 @@ export class WorkspacePdf {
                 let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
-                signSpaceDiv.css("top", yPos);
-                signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale);
+                signSpaceDiv.css("top", yPos * this.getBrowserZoom());
+                signSpaceDiv.css("left", xPos * this.getBrowserZoom());
+                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale * this.getBrowserZoom());
                 this.makeItDroppable(signSpaceDiv);
             }
         }
@@ -638,8 +638,8 @@ export class WorkspacePdf {
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
-                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
-                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
+                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale * this.getBrowserZoom()));
+                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale * this.getBrowserZoom()) + offset);
                     console.log("spot pos : " + posX + ", " + posY);
                     spotDiv.css('left',  posX + "px");
                     spotDiv.css('top',  posY + "px");
@@ -647,12 +647,12 @@ export class WorkspacePdf {
                         if(signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
                             spot.signWidth = signDiv.attr('data-es-width');
                             spot.signHeight = signDiv.attr('data-es-height');
-                            spotDiv.css("width", signDiv.attr('data-es-width') / .75 * this.pdfViewer.scale);
-                            spotDiv.css("height", signDiv.attr('data-es-height') / .75 * this.pdfViewer.scale);
+                            spotDiv.css("width", signDiv.attr('data-es-width') * this.pdfViewer.scale * this.getBrowserZoom());
+                            spotDiv.css("height", signDiv.attr('data-es-height') * this.pdfViewer.scale * this.getBrowserZoom());
                         }
-                        signDiv.css("width", Math.round(spot.signWidth / .75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("height", Math.round(spot.signHeight / .75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("font-size", 10 * self.pdfViewer.scale);
+                        signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                        signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                        signDiv.css("font-size", 12 * self.pdfViewer.scale * this.getBrowserZoom());
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {
@@ -743,8 +743,8 @@ export class WorkspacePdf {
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
-                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
-                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
+                        let xOffset = Math.round((signWidth * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale / signRequestParams.signScale / self.getBrowserZoom()) / 2);
+                        let yOffset = Math.round((signHeight * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale / signRequestParams.signScale / self.getBrowserZoom()) / 2);
                         let oldLeft = parseInt(cross.css("left"));
                         let oldTop = parseInt(cross.css("top"));
                         let newLeft = oldLeft + xOffset;
@@ -846,7 +846,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -909,7 +909,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -1251,4 +1251,9 @@ export class WorkspacePdf {
 
         }
     }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
+    }
+
 }

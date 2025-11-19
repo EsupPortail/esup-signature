@@ -217,4 +217,9 @@ export class SignPosition extends EventFactory {
             signRequestParams.textareaPart.focus();
         }
     }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
+    }
+
 }

@@ -205,8 +205,8 @@ public class FileService {
 			}
 			int widthOffset = (int) (extraWidth * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
 			int heightOffset = (int) (extraHeight  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
-			int width = (int) ((300 + extraWidth)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
-			int height = (int) ((150 + extraHeight)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			int width = (int) ((200 + extraWidth)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+			int height = (int) ((100 + extraHeight)  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
 			signRequestParams.setSignWidth(Math.round((float) width / 2 / qualityFactor / globalProperties.getFixFactor()));
 			signRequestParams.setSignHeight(Math.round((float) height / 2 / qualityFactor / globalProperties.getFixFactor()));
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
