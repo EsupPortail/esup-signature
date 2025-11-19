@@ -145,10 +145,15 @@ export class SignRequestParams extends EventFactory {
         $("#extraDate_" + this.id).on("mousedown", e => this.toggleDate());
         $("#extraText_" + this.id).on("mousedown", e => this.toggleText());
         $(window).on('resize', e => {
+            if (window.__isResizingCross) return;
             this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom()) + 'px');
             this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
             this.cross.css('width', Math.round(this.signWidth * this.currentScale * this.getBrowserZoom()) + 'px');
             this.cross.css('height', Math.round(this.signHeight * this.currentScale * this.getBrowserZoom()) + 'px');
+            if(this.addExtra) {
+                this.divExtra.css("width", this.extraWidth * this.currentScale * this.getBrowserZoom() + "px");
+                this.divExtra.css("font-size", Math.round(10 * this.currentScale * this.signScale * this.getBrowserZoom()) + "px");
+            }
         });
     }
 
@@ -385,9 +390,6 @@ export class SignRequestParams extends EventFactory {
 
     resize(ui) {
         let newScale = this.getNewScale(ui);
-
-        // On calcule le ratio de changement pour mettre à jour les éléments "extra"
-        // (On est obligé d'utiliser le ratio pour extraWidth/Height car on n'a pas de "originalExtraWidth")
         let ratio = newScale / this.signScale;
         this.extraWidth = this.extraWidth * ratio;
         this.extraHeight = this.extraHeight * ratio;
@@ -548,7 +550,7 @@ export class SignRequestParams extends EventFactory {
             containment: "#pdf",
             snap: ".pdf-page",
             snapMode: "inner",
-            snapTolerance: 5,
+            snapTolerance: 10 / this.getBrowserZoom(),
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
@@ -739,7 +741,7 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.addExtra) {
             this.divExtra.css("width", this.extraWidth * scale + "px");
-            this.divExtra.css("font-size", Math.round(10 * this.currentScale * this.signScale) + "px");
+            this.divExtra.css("font-size", Math.round(10 * scale * this.signScale) + "px");
         }
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
