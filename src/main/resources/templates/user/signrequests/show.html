@@ -58,12 +58,12 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <button th:if="${isManager && signRequest.data == null}" tabindex="1" id="addSpotButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0px solid #0d6efd;">
-                            <i class="fa-solid fa-signature fa-2xl text-dark" style="margin-top: -8px;"></i>
+                            <i class="fi fi-rr-signature-lock fa-2xl text-dark" style="margin-top: 0px;"></i>
                         </button>
                     </li>
                     <li>
                         <button tabindex="1" id="addCommentButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter une annotation" style="border: 0px solid #0d6efd;">
-                            <i class="fa-solid fa-comment fa-2xl text-dark" style="margin-top: -8px;"></i>
+                            <i class="fi fi-rr-comment-alt fa-2xl text-dark" style="margin-top: 0px;"></i>
                         </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">

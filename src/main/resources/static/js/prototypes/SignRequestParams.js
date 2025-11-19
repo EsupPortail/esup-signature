@@ -8,8 +8,8 @@ export class SignRequestParams extends EventFactory {
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.signWidth = 300;
-        this.signHeight = 150;
+        this.signWidth = 200;
+        this.signHeight = 100;
         this.addWatermark = null;
         this.extraText = "";
         this.addExtra = false;
@@ -107,9 +107,9 @@ export class SignRequestParams extends EventFactory {
         }
         this.stringLength = 1;
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
-            this.xPos = (parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2);
+            this.xPos = ((parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2)) / this.getBrowserZoom();
             let mid = scrollTop + $(window).height() / 2;
-            this.yPos = (mid - this.offset) / scale;
+            this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
         this.initEventListeners();
     }
@@ -158,16 +158,15 @@ export class SignRequestParams extends EventFactory {
         this.cross.css('background-color', 'rgba(189, 255, 189, 0.9)');
         this.cross.css('overflow', 'hidden');
         this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
-        this.cross.css("width", Math.round(150 / .75 * this.currentScale) + "px");
-        this.cross.css("height", Math.round(75 / .75 * this.currentScale) + "px");
-        this.cross.css("font-size", Math.round(10 * this.currentScale)  + "px");
+        this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
+        this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
+        this.cross.css("font-size", Math.round(10 * this.signScale * this.currentScale)  + "px");
         this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
         });
-        let self = this;
         $("#delete-add-spot").on("click", function (){
             const url = new URL(window.location.href);
             url.searchParams.set("annotation", "");
@@ -187,8 +186,7 @@ export class SignRequestParams extends EventFactory {
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
                 "&commentPosX=" + Math.round(this.xPos) +
                 "&commentPosY=" + Math.round(this.yPos) +
-                "&commentWidth=" + Math.round(this.signWidth * .75) +
-                "&commentHeight=" + Math.round(this.signHeight * .75) +
+                "&commentScale=" + this.signScale / this.getBrowserZoom() +
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + this.spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
@@ -203,7 +201,8 @@ export class SignRequestParams extends EventFactory {
                 success: function (result) {
                     const url = new URL(window.location.href);
                     url.searchParams.set("annotation", "");
-                    window.location.href = url.toString();                }
+                    window.location.href = url.toString();
+                }
             });
         }
     }
@@ -213,8 +212,8 @@ export class SignRequestParams extends EventFactory {
         this.border = $("#borders_" + this.id);
         this.tools = $("#crossTools_" + this.id);
         this.canvas = $("#canvas_" + this.id);
-        this.signWidth = 300;
-        this.signHeight = 150;
+        this.originalWidth = 300;
+        this.originalHeight = 150;
         this.restoreFromFavorite();
     }
 
@@ -859,9 +858,8 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
-            // const z = this.getBrowserZoom();
-            let x = Math.round(this.xPos * this.currentScale);
-            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
+            let x = Math.round(this.xPos * this.currentScale * this.getBrowserZoom());
+            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.scrollTop + $(window).height();
@@ -994,7 +992,6 @@ export class SignRequestParams extends EventFactory {
             this.refreshExtraDiv()
             this.updateSize();
         }
-
     }
 
     toggleExtra() {
@@ -1077,9 +1074,9 @@ export class SignRequestParams extends EventFactory {
                     this.cross.css("width", this.signWidth * this.currentScale + "px");
                     this.cross.css("height", this.signHeight * this.currentScale + "px");
                 } else {
-                    this.cross.css("width", 300 * this.currentScale + "px");
-                    this.cross.css("height", (150 + this.extraHeight) * this.currentScale + "px");
-                    this.canvas.css("height", 150 + "px")
+                    this.cross.css("width", this.originalWidth * this.currentScale + "px");
+                    this.cross.css("height", (this.originalHeight + this.extraHeight) * this.currentScale + "px");
+                    this.canvas.css("height", this.originalHeight + "px")
                 }
                 this.divExtra.addClass("div-extra-top");
                 this.divExtra.removeClass("div-extra-right");

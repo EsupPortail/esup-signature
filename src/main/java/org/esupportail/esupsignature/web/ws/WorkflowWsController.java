@@ -106,8 +106,8 @@ public class WorkflowWsController {
                                                     {
                                                       "signPageNumber": 1,
                                                       "signDocumentNumber": 0,
-                                                      "signWidth": 150,
-                                                      "signHeight": 75,
+                                                      "signWidth": 200,
+                                                      "signHeight": 100,
                                                       "xPos": 0,
                                                       "yPos": 0
                                                     }

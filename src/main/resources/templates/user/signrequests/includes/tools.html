@@ -54,7 +54,7 @@
             <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                 <button class="btn btn-warning me-1 d-none d-lg-block"
                         name="changeMode"
-                        id="changeMode1"><i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span> <span class="badge rounded-pill bg-dark" th:text="${comments.size()}"></span></button>
+                        id="changeMode1"><i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span> <span class="badge rounded-pill bg-dark" th:text="${comments.size()}"></span></button>
             </th:block>
             <div id="insert-btn-div" class="d-none d-sm-block">
                 <button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary"
@@ -64,11 +64,11 @@
                 <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1" style="display: none;">
                     <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
                             class="btn btn-warning text-start">
-                        <i class="fa-solid fa-plus"></i> Emplacement de signature
+                        <i class="fi fi-rr-signature-lock"></i> <span class="d-none d-xxl-inline">Emplacement de signature</span>
                     </button>
                     <button id="addCommentButton"
                             class="btn btn-warning text-start">
-                        <i class="fa-solid fa-plus"></i> Annotation
+                        <i class="fi fi-rr-comment-alt"></i> <span class="d-none d-xxl-inline">Annotation</span>
                     </button>
                 </div>
                 <div id="second-tools" class="second-tools position-fixed collapse">

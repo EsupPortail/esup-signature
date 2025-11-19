@@ -42,7 +42,6 @@ export class PdfViewer extends EventFactory {
         this.events = {};
         this.rotation = 0;
         this.renderedPages = 0
-        this.browserZoom = window.devicePixelRatio || 1;
         this.initListeners();
         let self = this;
         $(document).ready(function() {
