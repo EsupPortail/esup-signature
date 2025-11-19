@@ -8,8 +8,8 @@ export class SignRequestParams extends EventFactory {
     constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, isOtp, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.signWidth = 200;
-        this.signHeight = 100;
+        this.signWidth = 300;
+        this.signHeight = 150;
         this.addWatermark = null;
         this.extraText = "";
         this.addExtra = false;
@@ -42,7 +42,7 @@ export class SignRequestParams extends EventFactory {
         this.isSign = isSign;
         this.isVisa = isVisa;
         this.isElec = isElec;
-        this.signScale = 1;
+        this.signScale = 1 * this.getBrowserZoom();
         localStorage.setItem("zoom", this.signScale);
         this.firstLaunch = true;
         this.firstCrossAlert = true;
@@ -87,7 +87,7 @@ export class SignRequestParams extends EventFactory {
             this.red = 0;
             this.green = 0;
             this.blue = 0;
-            this.fontSize = 8;
+            this.fontSize = 10;
             this.restoreExtra = false;
             this.addImage = true;
             if(restore && !isVisa) {
@@ -271,10 +271,10 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.isVisa || this.isSign) {
             this.signHeight = 0;
-            this.cross.css('width', (this.signWidth * this.currentScale * this.signScale));
-            this.cross.css('height', (this.signHeight * this.currentScale * this.signScale));
-            this.canvas.css("width", ((this.signWidth - this.extraWidth - this.padMargin) * this.currentScale * this.signScale));
-            this.canvas.css("height", ((this.signHeight - this.extraHeight - this.padMargin) * this.currentScale * this.signScale));
+            // this.cross.css('width', (this.signWidth * this.currentScale * this.signScale));
+            // this.cross.css('height', (this.signHeight * this.currentScale * this.signScale));
+            // this.canvas.css("width", ((this.signWidth - this.extraWidth - this.padMargin) * this.currentScale * this.signScale));
+            // this.canvas.css("height", ((this.signHeight - this.extraHeight - this.padMargin) * this.currentScale * this.signScale));
             if(this.isVisa) {
                 this.addWatermark = false;
                 this.extraText = "";
@@ -616,10 +616,10 @@ export class SignRequestParams extends EventFactory {
                 window.__isResizingCross = true;
             },
             resize: function(event, ui) {
-                let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale);
-                let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale);
-                let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .5 * self.currentScale);
-                let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .5 * self.currentScale);
+                let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale * self.getBrowserZoom());
+                let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale * self.getBrowserZoom());
+                let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .5 * self.currentScale * self.getBrowserZoom());
+                let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .5 * self.currentScale * self.getBrowserZoom());
                 if (ui.size.width > maxWidth) {
                     ui.size.width = maxWidth;
                 }
@@ -740,7 +740,7 @@ export class SignRequestParams extends EventFactory {
         }
         if(this.addExtra) {
             this.divExtra.css("width", this.extraWidth * scale + "px");
-            this.divExtra.css("font-size", Math.round(8 * this.currentScale * this.signScale) + "px");
+            this.divExtra.css("font-size", Math.round(10 * this.currentScale * this.signScale) + "px");
         }
         this.cross.css('left', xNew + 'px');
         this.cross.css('top', yNew + 'px');
@@ -859,9 +859,9 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
-            const z = this.getBrowserZoom();
-            let x = Math.round(this.xPos * this.currentScale * z);
-            let y = Math.round(this.yPos * this.currentScale * z + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
+            // const z = this.getBrowserZoom();
+            let x = Math.round(this.xPos * this.currentScale);
+            let y = Math.round(this.yPos * this.currentScale + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.scrollTop + $(window).height();

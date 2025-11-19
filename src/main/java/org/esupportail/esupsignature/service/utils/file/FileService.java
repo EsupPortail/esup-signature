@@ -220,7 +220,7 @@ public class FileService {
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (initialFontSize * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
+			int fontSize = (int) (initialFontSize * qualityFactor * signRequestParams.getSignScale());
 			setQualityParams(graphics2D);
 			try {
 				Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);

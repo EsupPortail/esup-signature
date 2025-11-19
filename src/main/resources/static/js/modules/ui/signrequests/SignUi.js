@@ -351,6 +351,7 @@ export class SignUi {
             let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
                 let paramToSend = Object.assign({}, originalParams);
                 paramToSend.signScale = originalParams.signScale / originalParams.getBrowserZoom();
+                // paramToSend.fontSize = originalParams.fontSize / originalParams.getBrowserZoom() / .75;
                 delete paramToSend.signImages;
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
