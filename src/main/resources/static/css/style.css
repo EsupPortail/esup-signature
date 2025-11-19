@@ -722,6 +722,11 @@ textarea:placeholder-shown.required-field {
     color: #1e7e34;
 }
 
+.admin-spot .sign-field {
+    opacity: 1;
+    border-color: #1e7e34 !important;
+}
+
 .spot:hover {
     opacity: 1;
 }

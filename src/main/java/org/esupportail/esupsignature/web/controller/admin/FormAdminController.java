@@ -442,10 +442,10 @@ public class FormAdminController {
 						  @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
 						  @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                           @RequestParam(value = "commentScale", required = false) Float commentScale,
-						  @RequestParam(value = "commentWidth", required = false) Integer commentWidth,
-						  @RequestParam(value = "commentHeight", required = false) Integer commentHeight
+						  @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
+						  @RequestParam(value = "commentPosY", required = false) Integer commentPosY
 						) {
-		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, Math.round(200 * commentScale), Math.round(100 * commentScale), commentWidth, commentHeight);
+		return formService.addSignRequestParamsSteps(id, spotStepNumber, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale));
 	}
 
 }

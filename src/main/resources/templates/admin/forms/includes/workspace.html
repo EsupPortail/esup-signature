@@ -8,7 +8,7 @@
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div id="pdf" class="mx-auto" style="position: relative !important;">
             <th:block th:each="spot, iterator : ${srpMap.entrySet()}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.value}" style="z-index: 999" title="Cliquer pour supprimer l'emplacement de signature">
+                <div class="spot admin-spot" th:id="'inDocSpot_' + ${spot.value}" style="z-index: 999" title="Cliquer pour supprimer l'emplacement de signature">
                     <div th:data-es-width="${spots.get(iterator.index).width}"
                         th:data-es-height="${spots.get(iterator.index).height}"
                         data-es-delete="true"
