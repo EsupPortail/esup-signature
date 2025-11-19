@@ -84,6 +84,7 @@ export class WorkspacePdf {
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
         this.initListeners();
+        this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
     initListeners() {
@@ -218,14 +219,6 @@ export class WorkspacePdf {
                 $(".not-viewed").remove();
             }
         });
-    }
-
-    removeSignFields() {
-        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
-            let toDeleteSignSpace = $("#signSpace_" + i);
-            toDeleteSignSpace.unbind();
-            toDeleteSignSpace.remove();
-        }
     }
 
     initSignFields() {
@@ -743,14 +736,6 @@ export class WorkspacePdf {
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
-                        let xOffset = Math.round((signWidth * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale / signRequestParams.signScale / self.getBrowserZoom()) / 2);
-                        let yOffset = Math.round((signHeight * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale / signRequestParams.signScale / self.getBrowserZoom()) / 2);
-                        let oldLeft = parseInt(cross.css("left"));
-                        let oldTop = parseInt(cross.css("top"));
-                        let newLeft = oldLeft + xOffset;
-                        let newTop = oldTop + yOffset;
-                        cross.css("left", newLeft);
-                        cross.css("top", newTop);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                     }

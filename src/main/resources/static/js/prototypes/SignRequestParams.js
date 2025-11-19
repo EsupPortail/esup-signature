@@ -144,6 +144,12 @@ export class SignRequestParams extends EventFactory {
         $("#extraName_" + this.id).on("mousedown", e => this.toggleName());
         $("#extraDate_" + this.id).on("mousedown", e => this.toggleDate());
         $("#extraText_" + this.id).on("mousedown", e => this.toggleText());
+        $(window).on('resize', e => {
+            this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom()) + 'px');
+            this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
+            this.cross.css('width', Math.round(this.signWidth * this.currentScale * this.getBrowserZoom()) + 'px');
+            this.cross.css('height', Math.round(this.signHeight * this.currentScale * this.getBrowserZoom()) + 'px');
+        });
     }
 
     initSpot() {
@@ -603,10 +609,6 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    disableCrossResizable() {
-        this.cross.resizable("disable");
-    }
-
     madeCrossResizable() {
         let self = this;
         this.cross.resizable({
@@ -659,10 +661,9 @@ export class SignRequestParams extends EventFactory {
     afterDropRefresh(ui) {
         let self = this;
         self.signPageNumber = self.cross.attr("page");
-        const z = this.getBrowserZoom();
-        this.xPos = Math.round(ui.position.left / (this.currentScale * z));
+        this.xPos = Math.round(ui.position.left / (this.currentScale * this.getBrowserZoom()));
         const deltaTop = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
-        this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * z));
+        this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * this.getBrowserZoom()));
         if (self.yPos < 0) self.yPos = 0;
         console.log("x : " + self.xPos + ", y : " + self.yPos);
         if(self.textareaPart != null) {
@@ -671,9 +672,8 @@ export class SignRequestParams extends EventFactory {
     }
 
     applyCurrentSignRequestParams(offset) {
-        const z = this.getBrowserZoom();
-        this.cross.css('top', Math.round(this.yPos * this.currentScale * z + offset) + 'px');
-        this.cross.css('left', Math.round(this.xPos * this.currentScale * z) + 'px');
+        this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + offset) + 'px');
+        this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
     }
 
     deleteSign() {

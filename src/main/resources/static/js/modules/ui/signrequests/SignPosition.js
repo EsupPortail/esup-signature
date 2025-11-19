@@ -9,7 +9,6 @@ export class SignPosition extends EventFactory {
         console.info("Starting sign positioning tools");
         this.userName = userName;
         this.authUserName = authUserName;
-        this.pdf = $("#pdf");
         this.signImages = signImages;
         this.currentStepMultiSign = currentStepMultiSign;
         this.currentStepSingleSignWithAnnotation = currentStepSingleSignWithAnnotation;
@@ -26,7 +25,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.signsList = [];
-        this.currentScale = 1;
+        this.currentScale;
         this.scrollTop = 0;
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
@@ -34,9 +33,9 @@ export class SignPosition extends EventFactory {
         $("#signLaunchButton").focus();
         $("#addSignButton2").focus();
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
-        if(localStorage.getItem("scale") != null) {
-            this.currentScale = localStorage.getItem("scale");
-        }
+        // if(localStorage.getItem("scale") != null) {
+        //     this.currentScale = localStorage.getItem("scale");
+        // }
         this.initListeners();
     }
 
@@ -74,10 +73,10 @@ export class SignPosition extends EventFactory {
 
     updateScales(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
+        this.currentScale = scale;
         this.signRequestParamses.forEach(function (signRequestParams){
             signRequestParams.updateScale(scale);
         });
-        this.currentScale = scale;
     }
 
     lockSigns() {
