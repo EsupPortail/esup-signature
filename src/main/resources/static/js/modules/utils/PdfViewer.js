@@ -310,7 +310,7 @@ export class PdfViewer extends EventFactory {
                 scale: this.scale,
                 rotation: this.rotation,
                 defaultViewport: viewport,
-                useOnlyCssZoom: false,
+                useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
                 textLayerMode: 1,
                 renderer: "canvas",
