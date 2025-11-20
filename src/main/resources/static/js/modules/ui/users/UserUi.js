@@ -18,7 +18,7 @@ export class UserUi {
         }
         this.toggleSaveSignRequest();
         if($("#signRequestParamsFormDiv").length) {
-            this.signRequestParams = new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, true, false, null, true, 0);
+            this.signRequestParams = new SignRequestParams(signRequestParams, 0, 1, 1, userName, userName, false, true, false, false, null, true, 0);
         }
         this.initListeners();
     }
