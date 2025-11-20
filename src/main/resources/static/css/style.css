@@ -450,10 +450,9 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     border: 1px solid transparent !important;
     background-color: rgba(189, 255, 189, 1);
-    opacity: 0.6;
+    opacity: 0.8;
     cursor: pointer !important;
     overflow: hidden;
-    font-weight: bold;
 }
 
 .sign-field:hover {

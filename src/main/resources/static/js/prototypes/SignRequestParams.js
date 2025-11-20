@@ -327,8 +327,8 @@ export class SignRequestParams extends EventFactory {
             alert("Merci de selectionner une étape");
         } else {
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
-                "&commentPosX=" + Math.round(this.xPos) +
-                "&commentPosY=" + Math.round(this.yPos) +
+                "&commentPosX=" + Math.round(this.xPos * this.getBrowserZoom()) +
+                "&commentPosY=" + Math.round(this.yPos * this.getBrowserZoom()) +
                 "&commentScale=" + this.signScale / this.getBrowserZoom() +
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + this.spotStepNumber +

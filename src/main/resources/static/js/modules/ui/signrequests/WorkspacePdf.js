@@ -248,11 +248,11 @@ export class WorkspacePdf {
                 let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
-                signSpaceDiv.css("top", yPos * this.getBrowserZoom());
-                signSpaceDiv.css("left", xPos * this.getBrowserZoom());
+                signSpaceDiv.css("left", xPos);
+                signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
                 signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale * this.getBrowserZoom());
+                signSpaceDiv.css("font-size", 9 *  this.pdfViewer.scale * this.getBrowserZoom());
                 this.makeItDroppable(signSpaceDiv);
             }
         }
@@ -631,8 +631,8 @@ export class WorkspacePdf {
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
-                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale * this.getBrowserZoom()));
-                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale * this.getBrowserZoom()) + offset);
+                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
+                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
                     console.log("spot pos : " + posX + ", " + posY);
                     spotDiv.css('left',  posX + "px");
                     spotDiv.css('top',  posY + "px");
@@ -645,7 +645,7 @@ export class WorkspacePdf {
                         }
                         signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
                         signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                        signDiv.css("font-size", 12 * self.pdfViewer.scale * this.getBrowserZoom());
+                        signDiv.css("font-size", 9 * self.pdfViewer.scale * this.getBrowserZoom());
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {
