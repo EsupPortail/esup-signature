@@ -31,7 +31,7 @@ export class WorkspacePdf {
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
-        this.first = true;
+        // this.first = true;
         this.actionInitialyzed = false;
         this.saveAlert = false;
         this.scrollTop = 0;
@@ -692,7 +692,7 @@ export class WorkspacePdf {
         if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
             this.initSignFields();
         }
-        $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
+        // $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         this.pdfViewer.pdfDiv.css('opacity', 1);
     }
 
@@ -715,8 +715,6 @@ export class WorkspacePdf {
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
-                        let signWidth = signSpaceDiv.attr("data-es-sign-width");
-                        let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
@@ -778,19 +776,19 @@ export class WorkspacePdf {
         return isThereSign;
     }
 
-    toggleSign(e) {
-        let signId = $(e).attr("id").split("_")[1];
-        console.log("toggle sign_" + signId);
-        let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-        if (this.mode === 'sign') {
-            signRequestParams.show();
-        } else {
-            if(signRequestParams.signImages !== 999999) {
-                signRequestParams.hide();
-            }
-        }
-        if (this.first) this.first = false;
-    }
+    // toggleSign(e) {
+    //     let signId = $(e).attr("id").split("_")[1];
+    //     console.log("toggle sign_" + signId);
+    //     let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
+    //     if (this.mode === 'sign') {
+    //         signRequestParams.show();
+    //     } else {
+    //         if(signRequestParams.signImages !== 999999) {
+    //             signRequestParams.hide();
+    //         }
+    //     }
+    //     if (this.first) this.first = false;
+    // }
 
     displayDialogBox() {
         $('#pdf').unbind("mousemove");

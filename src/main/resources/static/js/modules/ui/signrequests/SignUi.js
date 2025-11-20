@@ -332,6 +332,7 @@ export class SignUi {
     }
 
     submitSignRequest() {
+        let self = this;
         let signaturesCheck = true;
         let formData = { };
         if(this.isPdf) {
@@ -350,8 +351,8 @@ export class SignUi {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
                 let paramToSend = Object.assign({}, originalParams);
-                paramToSend.signScale = originalParams.signScale / originalParams.getBrowserZoom() / .75;
-                // paramToSend.fontSize = originalParams.fontSize / originalParams.getBrowserZoom() / .75;
+                paramToSend.signScale = originalParams.signScale / self.getBrowserZoom() / .75;
+                // paramToSend.fontSize = originalParams.fontSize / self.getBrowserZoom() / .75;
                 delete paramToSend.signImages;
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
@@ -520,6 +521,10 @@ export class SignUi {
                 self.launchSign();
             }
         });
+    }
+
+    getBrowserZoom() {
+        return window.devicePixelRatio || 1;
     }
 
 }
