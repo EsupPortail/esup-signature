@@ -31,7 +31,7 @@ export class WorkspacePdf {
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
-        // this.first = true;
+        this.first = true;
         this.actionInitialyzed = false;
         this.saveAlert = false;
         this.scrollTop = 0;
@@ -258,6 +258,18 @@ export class WorkspacePdf {
         }
     }
 
+    refreshSignFields() {
+        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let signSpaceDiv = $("#signSpace_" + i);
+            signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
+            signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
+            signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
+            let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
+            signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
+            signSpaceDiv.css("font-size", Math.round(9 * this.pdfViewer.scale) + "px");
+        }
+    }
+
     addSign(forceSignNumber, signField) {
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
@@ -335,6 +347,7 @@ export class WorkspacePdf {
         this.refreshAfterPageChange();
         this.initForm();
         $("#content").on('mousedown', e => this.clickAction(e));
+        this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
     initForm() {
@@ -476,7 +489,6 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
-        this.signPosition.updateScales(this.pdfViewer.scale);
         // this.refreshAfterPageChange();
     }
 
@@ -690,10 +702,15 @@ export class WorkspacePdf {
             this.initFormAction();
         }
         if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
-            this.initSignFields();
+            if(this.first) {
+                this.initSignFields();
+            } else {
+                this.refreshSignFields();
+            }
         }
         // $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         this.pdfViewer.pdfDiv.css('opacity', 1);
+        this.first = false;
     }
 
     makeItDroppable(signSpaceDiv) {
@@ -703,6 +720,10 @@ export class WorkspacePdf {
             hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
+                if ($(this).data("locked")) {
+                    return;
+                }
+                $(this).data("locked", true);
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");
                 $(this).css("pointer-events", "none");
@@ -741,13 +762,13 @@ export class WorkspacePdf {
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                if (!self.isThereSign($(this))) {
-                    $(this).addClass("sign-field");
-                    $(this).removeClass("sign-field-dropped");
-                    self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                    $(this).text("Vous devez placer une signature ici");
-                    $(this).css("pointer-events", "auto");
-                }
+                $(this).data("locked", false);
+                $(this).droppable("enable");
+                $(this).addClass("sign-field");
+                $(this).removeClass("sign-field-dropped");
+                self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
+                $(this).text("Vous devez placer une signature ici");
+                $(this).css("pointer-events", "auto");
                 for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
@@ -760,21 +781,6 @@ export class WorkspacePdf {
         });
     }
 
-    isThereSign(spot) {
-        let isThereSign = false;
-        for (let i = 0; i < this.signPosition.signRequestParamses.size; i++) {
-            let testX = Array.from(this.signPosition.signRequestParamses.values())[i].xPos;
-            let testY = Array.from(this.signPosition.signRequestParamses.values())[i].yPos;
-            let xx = Math.round(parseInt(spot.css("left")) / this.pdfViewer.scale);
-            let yy = Math.round(parseInt(spot.css("top")) / this.pdfViewer.scale);
-            let test = Array.from(this.signPosition.signRequestParamses.values())[i].cross.attr("remove");
-            if (testX === xx && testY === yy && test !== "true") {
-                isThereSign = true;
-
-            }
-        }
-        return isThereSign;
-    }
 
     // toggleSign(e) {
     //     let signId = $(e).attr("id").split("_")[1];
@@ -1236,7 +1242,7 @@ export class WorkspacePdf {
     }
 
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 }

@@ -752,6 +752,7 @@ textarea:placeholder-shown.required-field {
     z-index: 3;
     background-position: bottom left;
     background-repeat: no-repeat;
+    background-color: rgb(220, 250, 220, 0.8);
     cursor: move;
     -webkit-transition: background-image 0.2s ease-in-out;
     transition: background-image 0.2s ease-in-out;

@@ -23,6 +23,7 @@
                         const commentCount = '[[${comments.size()}]]';
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click()
                     </script>
                     <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
                         <div class="pdf-warning-bar bg-warning"></div>
@@ -34,6 +35,7 @@
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click()
                     </script>
                     <div class="pdf-warning-bar bg-success"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -72,6 +74,7 @@
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click()
                     </script>
                     <div class="pdf-warning-bar bg-danger"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -99,6 +102,8 @@
                         <script>
                             displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-warning" title="Signature électronique présente sur le document"></i>');
                             displayPdfAlertsDropdown.removeClass("d-none");
+                            displayPdfAlertsBtn.click()
+
                         </script>
                         <div class="d-flex gap-2 align-items-center">
                             <i class="fa-solid fa-circle-exclamation text-warning"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
@@ -115,6 +120,8 @@
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-triangle-exclamation text-danger"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click()
+
                     </script>
                     <div class="pdf-warning-bar bg-danger"></div>
                     <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-triangle-exclamation text-danger"></i>Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
@@ -129,9 +136,6 @@
             </div>
         </div>
     </div>
-    <script>
-        displayPdfAlertsBtn.click()
-    </script>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf" class="mx-auto" style="position: relative !important;">

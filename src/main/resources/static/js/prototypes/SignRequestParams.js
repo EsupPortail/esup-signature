@@ -73,7 +73,7 @@ export class SignRequestParams extends EventFactory {
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
             if(signPage != null && signPage.offset() != null) {
-                this.offset = (signPage.offset().top) + (10 * (parseInt(this.signPageNumber) - 1));
+                this.offset = (signPage.offset().top);
             }
         }
         if(signImages === 999999) {
@@ -141,7 +141,7 @@ export class SignRequestParams extends EventFactory {
         $("#extraDate_" + this.id).on("mousedown", e => this.#toggleDate());
         $("#extraText_" + this.id).on("mousedown", e => this.#toggleText());
         $(window).on('resize', e => {
-            if (window.__isResizingCross) return;
+            // if (window.__isResizingCross) return;
             this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom()) + 'px');
             this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
             this.cross.css('width', Math.round(this.signWidth * this.currentScale * this.getBrowserZoom()) + 'px');
@@ -1309,8 +1309,6 @@ export class SignRequestParams extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-
-
     resize(ui) {
         let newScale = this.#getNewScale(ui);
         let ratio = newScale / this.signScale;
@@ -1345,32 +1343,25 @@ export class SignRequestParams extends EventFactory {
     }
 
     updateScale(scale) {
-        let width = parseInt(this.cross.css("width"), 10);
-        let height = parseInt(this.cross.css("height"), 10);
-        let newWidth = Math.round(width / (this.currentScale) * scale);
-        let newHeight = Math.round(height / (this.currentScale) * scale);
-        let x = parseInt(this.cross.css('left'), 10)
-        let y = parseInt(this.cross.css('top'), 10)
-        let xNew = Math.round((x / (this.currentScale) * scale));
-        let yNew = Math.round((y / (this.currentScale) * scale));
-        this.cross.css("width", newWidth + "px");
-        this.cross.css("height", newHeight + "px");
-        this.canvas.css("width", (newWidth - this.extraWidth) + "px");
-        this.canvas.css("height", (newHeight - this.extraHeight) + "px");
+        this.currentScale = scale;
+        this.cross.css("width", this.signWidth * scale + "px");
+        this.cross.css("height", this.signHeight * scale + "px");
+        this.cross.css("left", this.xPos * scale + 'px');
+        let offset = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
+        this.cross.css("top", this.yPos * scale + offset + 'px');
+        this.canvas.css("width", (this.signWidth * scale - this.extraWidth) + "px");
+        this.canvas.css("height", (this.signHeight * scale - this.extraHeight) + "px");
         if(this.addImage) {
             if(this.extraOnTop) {
-                this.cross.css('background-size', newWidth);
+                this.cross.css('background-size', this.signWidth * scale);
             } else {
-                this.cross.css('background-size', newWidth / 2);
+                this.cross.css('background-size', this.signWidth * scale / 2);
             }
         }
         if(this.addExtra) {
             this.divExtra.css("width", this.extraWidth * scale + "px");
             this.divExtra.css("font-size", Math.round(10 * scale * this.signScale) + "px");
         }
-        this.cross.css("left", xNew + 'px');
-        this.cross.css("top", yNew + 'px');
-        this.currentScale = scale;
         if(this.divExtra != null) {
             this.#refreshExtraDiv();
         }
@@ -1410,7 +1401,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 

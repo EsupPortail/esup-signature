@@ -292,6 +292,7 @@ export class PdfViewer extends EventFactory {
             $(container).attr("page-num", i);
             $(container).addClass("drop-shadows");
             $(container).addClass("pdf-page");
+            $(container).css("margin-bottom", 10 * this.scale + "px");
             this.pdfDiv.append(container);
             $(container).droppable({
                 drop: function (event, ui) {
@@ -310,10 +311,9 @@ export class PdfViewer extends EventFactory {
                 scale: this.scale,
                 rotation: this.rotation,
                 defaultViewport: viewport,
-                useOnlyCssZoom: false,
+                useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 1,
-                renderer: "canvas",
+                textLayerMode: 0
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
@@ -325,8 +325,13 @@ export class PdfViewer extends EventFactory {
                     annotationLayer.style.transformOrigin = '0 0';
                 }
             });
-
+            let originalRender = page.render;
+            page.render = function() {
+                // Retourner une fausse promise qui se résout immédiatement
+                return { promise: Promise.resolve() };
+            };
             pdfPageView.draw().then(() => {
+                page.render = originalRender;
                 const canvas = container.querySelector('canvas');
                 if (canvas) {
                     const context = canvas.getContext('2d');
