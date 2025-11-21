@@ -53,6 +53,7 @@ export class SignRequestParams extends EventFactory {
         this.divExtra = null;
         this.textareaExtra = null;
         this.textareaPart = null;
+        this.textPart = null;
         this.signRequestId = null;
         this.spotStepNumber = null;
         this.signColorPicker = null;
@@ -292,8 +293,8 @@ export class SignRequestParams extends EventFactory {
         this.border = $("#borders_" + this.id);
         this.tools = $("#crossTools_" + this.id);
         this.canvas = $("#canvas_" + this.id);
-        this.originalWidth = 300;
-        this.originalHeight = 150;
+        this.originalWidth = 200;
+        this.originalHeight = 100;
         this.#restoreFromFavorite();
     }
 
@@ -396,9 +397,9 @@ export class SignRequestParams extends EventFactory {
                 "</div>";
             $("#pdf").prepend(div);
             this.cross = $("#" + divName);
-            this.cross.css("width", "150");
+            this.cross.css("width", "200");
             this.canvas = $("#canvas_" + this.id);
-            this.canvas.css("width", 150);
+            this.canvas.css("width", 200);
         } else {
             div = "<div id='" + divName + "' class='cross'>" +
                 "</div>"+
@@ -706,6 +707,7 @@ export class SignRequestParams extends EventFactory {
         this.border.removeClass("static-border");
         this.border.addClass("anim-border");
         this.tools.removeClass("d-none");
+        this.cross.css("background-color", "rgb(220, 250, 220, 0.9)");
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
@@ -737,8 +739,8 @@ export class SignRequestParams extends EventFactory {
             this.originalWidth = Math.round((result.w));
             this.originalHeight = Math.round((result.h));
             if(this.isSign) {
-                this.originalWidth = Math.round((150));
-                this.originalHeight = Math.round((75));
+                this.originalWidth = Math.round((200));
+                this.originalHeight = Math.round((100));
             }
             this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
             this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
@@ -1002,8 +1004,8 @@ export class SignRequestParams extends EventFactory {
                     this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale + "px");
                     this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale + "px");
                 } else {
-                    this.cross.css("width", 600 * this.currentScale + "px");
-                    this.cross.css("height", 150 * this.currentScale + "px");
+                    this.cross.css("width", 400 * this.currentScale + "px");
+                    this.cross.css("height", 100 * this.currentScale + "px");
                 }
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
@@ -1274,7 +1276,7 @@ export class SignRequestParams extends EventFactory {
                 };
                 i.src = file
             } else {
-                resolved({w: 300, h: 150})
+                resolved({w: 200, h: 100})
             }
         })
     }
@@ -1390,6 +1392,7 @@ export class SignRequestParams extends EventFactory {
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
         this.border.removeClass("anim-border");
+        this.cross.css("background-color", "rgb(220, 250, 220, 0.5)")
         this.border.addClass("static-border");
         this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
@@ -1443,6 +1446,7 @@ export class SignRequestParams extends EventFactory {
         this.textareaPart.css('width', '100%');
         this.fontSize = 13;
         this.textareaPart.on("input", function () {
+            self.textPart = $(this).val();
             self.#resizeText();
         });
         this.#resizeText();

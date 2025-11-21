@@ -208,14 +208,14 @@ public class PdfService {
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
             if (pdfParameters.isLandScape()) {
                 tx = pdfParameters.getWidth();
             } else {
                 ty = pdfParameters.getHeight();
             }
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
             if (pdfParameters.isLandScape()) {
                 ty = pdfParameters.getHeight();
             } else {
@@ -232,11 +232,11 @@ public class PdfService {
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * fixFactor, signRequestParams.getSignHeight() * fixFactor);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
             if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation);
             }
@@ -271,8 +271,8 @@ public class PdfService {
                         globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
         PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        float width = (float) (signRequestParams.getSignWidth() * fixFactor);
-        float height = (float) (signRequestParams.getSignHeight() * fixFactor);
+        float width = (float) (signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor);
+        float height = (float) (signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
         PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, width, height);
         if(rotation!= null) {
             float x0 = position.getLowerLeftX();
