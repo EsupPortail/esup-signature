@@ -107,6 +107,8 @@ export class SignRequestParams extends EventFactory {
             let mid = scrollTop + $(window).height() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
         this.#initEventListeners();
     }
 
@@ -140,16 +142,22 @@ export class SignRequestParams extends EventFactory {
         $("#extraName_" + this.id).on("mousedown", e => this.#toggleName());
         $("#extraDate_" + this.id).on("mousedown", e => this.#toggleDate());
         $("#extraText_" + this.id).on("mousedown", e => this.#toggleText());
-        $(window).on('resize', e => {
-            // if (window.__isResizingCross) return;
-            this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom()) + 'px');
-            this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
-            this.cross.css('width', Math.round(this.signWidth * this.currentScale * this.getBrowserZoom()) + 'px');
-            this.cross.css('height', Math.round(this.signHeight * this.currentScale * this.getBrowserZoom()) + 'px');
-            if(this.addExtra) {
-                this.divExtra.css("width", this.extraWidth * this.currentScale * this.getBrowserZoom() + "px");
-                this.divExtra.css("font-size", Math.round(10 * this.currentScale * this.signScale * this.getBrowserZoom()) + "px");
+        $(window).on("resize", () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const deltaW = w - self.lastWidth;
+            const deltaH = h - self.lastHeight;
+            if (deltaW === 0 && deltaH === 0) return;
+            self.cross.css('top', Math.round(self.yPos * self.currentScale * self.getBrowserZoom()) + 'px');
+            self.cross.css('left', Math.round(self.xPos * self.currentScale * self.getBrowserZoom()) + 'px');
+            self.cross.css('width', Math.round(self.signWidth * self.currentScale * self.getBrowserZoom()) + 'px');
+            self.cross.css('height', Math.round(self.signHeight * self.currentScale * self.getBrowserZoom()) + 'px');
+            if(self.addExtra) {
+                self.divExtra.css("width", self.extraWidth * self.currentScale * self.getBrowserZoom() + "px");
+                self.divExtra.css("font-size", Math.round(10 * self.currentScale * self.signScale * self.getBrowserZoom()) + "px");
             }
+            self.lastWidth = w;
+            self.lastHeight = h;
         });
     }
 
@@ -639,11 +647,16 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         this.cross.attr("remove", "true");
         self.cross.remove();
-        self.fireEvent("delete", ["ok"]);
+        let signSpaceId = null;
+        if(self.signSpace != null) {
+            signSpaceId = self.signSpace.attr("id").split("_")[1];
+        }
+        self.fireEvent("delete", [signSpaceId]);
         $("#addSpotButton").attr("disabled", false);
         $("#addCommentButton").attr("disabled", false);
         $('#insert-btn').removeAttr('disabled');
         if(self.signSpace != null) {
+            self.signSpace.removeData("locked");
             self.signSpace.addClass("sign-field");
             self.signSpace.removeClass("sign-field-dropped");
             self.ready = false;
