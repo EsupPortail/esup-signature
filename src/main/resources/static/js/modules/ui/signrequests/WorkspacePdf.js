@@ -248,13 +248,25 @@ export class WorkspacePdf {
                 let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
-                signSpaceDiv.css("top", yPos * this.getBrowserZoom());
-                signSpaceDiv.css("left", xPos * this.getBrowserZoom());
+                signSpaceDiv.css("left", xPos);
+                signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
                 signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                signSpaceDiv.css("font-size", 12 *  this.pdfViewer.scale * this.getBrowserZoom());
+                signSpaceDiv.css("font-size", 9 *  this.pdfViewer.scale * this.getBrowserZoom());
                 this.makeItDroppable(signSpaceDiv);
             }
+        }
+    }
+
+    refreshSignFields() {
+        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let signSpaceDiv = $("#signSpace_" + i);
+            signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
+            signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
+            signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
+            let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
+            signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
+            signSpaceDiv.css("font-size", Math.round(9 * this.pdfViewer.scale) + "px");
         }
     }
 
@@ -335,6 +347,7 @@ export class WorkspacePdf {
         this.refreshAfterPageChange();
         this.initForm();
         $("#content").on('mousedown', e => this.clickAction(e));
+        this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
     initForm() {
@@ -476,7 +489,6 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
-        this.signPosition.updateScales(this.pdfViewer.scale);
         // this.refreshAfterPageChange();
     }
 
@@ -631,8 +643,8 @@ export class WorkspacePdf {
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
-                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale * this.getBrowserZoom()));
-                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale * this.getBrowserZoom()) + offset);
+                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
+                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
                     console.log("spot pos : " + posX + ", " + posY);
                     spotDiv.css('left',  posX + "px");
                     spotDiv.css('top',  posY + "px");
@@ -645,7 +657,7 @@ export class WorkspacePdf {
                         }
                         signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
                         signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                        signDiv.css("font-size", 12 * self.pdfViewer.scale * this.getBrowserZoom());
+                        signDiv.css("font-size", 9 * self.pdfViewer.scale * this.getBrowserZoom());
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {
@@ -690,10 +702,15 @@ export class WorkspacePdf {
             this.initFormAction();
         }
         if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
-            this.initSignFields();
+            if(this.first) {
+                this.initSignFields();
+            } else {
+                this.refreshSignFields();
+            }
         }
-        $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
+        // $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         this.pdfViewer.pdfDiv.css('opacity', 1);
+        this.first = false;
     }
 
     makeItDroppable(signSpaceDiv) {
@@ -703,6 +720,10 @@ export class WorkspacePdf {
             hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
+                if ($(this).data("locked")) {
+                    return;
+                }
+                $(this).data("locked", true);
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");
                 $(this).css("pointer-events", "none");
@@ -715,8 +736,6 @@ export class WorkspacePdf {
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
-                        let signWidth = signSpaceDiv.attr("data-es-sign-width");
-                        let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
@@ -743,13 +762,13 @@ export class WorkspacePdf {
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                if (!self.isThereSign($(this))) {
-                    $(this).addClass("sign-field");
-                    $(this).removeClass("sign-field-dropped");
-                    self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                    $(this).text("Vous devez placer une signature ici");
-                    $(this).css("pointer-events", "auto");
-                }
+                $(this).data("locked", false);
+                $(this).droppable("enable");
+                $(this).addClass("sign-field");
+                $(this).removeClass("sign-field-dropped");
+                self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
+                $(this).text("Vous devez placer une signature ici");
+                $(this).css("pointer-events", "auto");
                 for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
@@ -762,35 +781,20 @@ export class WorkspacePdf {
         });
     }
 
-    isThereSign(spot) {
-        let isThereSign = false;
-        for (let i = 0; i < this.signPosition.signRequestParamses.size; i++) {
-            let testX = Array.from(this.signPosition.signRequestParamses.values())[i].xPos;
-            let testY = Array.from(this.signPosition.signRequestParamses.values())[i].yPos;
-            let xx = Math.round(parseInt(spot.css("left")) / this.pdfViewer.scale);
-            let yy = Math.round(parseInt(spot.css("top")) / this.pdfViewer.scale);
-            let test = Array.from(this.signPosition.signRequestParamses.values())[i].cross.attr("remove");
-            if (testX === xx && testY === yy && test !== "true") {
-                isThereSign = true;
 
-            }
-        }
-        return isThereSign;
-    }
-
-    toggleSign(e) {
-        let signId = $(e).attr("id").split("_")[1];
-        console.log("toggle sign_" + signId);
-        let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-        if (this.mode === 'sign') {
-            signRequestParams.show();
-        } else {
-            if(signRequestParams.signImages !== 999999) {
-                signRequestParams.hide();
-            }
-        }
-        if (this.first) this.first = false;
-    }
+    // toggleSign(e) {
+    //     let signId = $(e).attr("id").split("_")[1];
+    //     console.log("toggle sign_" + signId);
+    //     let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
+    //     if (this.mode === 'sign') {
+    //         signRequestParams.show();
+    //     } else {
+    //         if(signRequestParams.signImages !== 999999) {
+    //             signRequestParams.hide();
+    //         }
+    //     }
+    //     if (this.first) this.first = false;
+    // }
 
     displayDialogBox() {
         $('#pdf').unbind("mousemove");
@@ -1238,7 +1242,7 @@ export class WorkspacePdf {
     }
 
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 }

@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -27,8 +28,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @Controller
@@ -180,8 +179,9 @@ public class HomeController {
                 }
             }
             if(types.isEmpty() || types.contains("signBook")) {
-                Set<SignBook> signBooks = new HashSet<>();
-                List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, Pageable.ofSize(20)).getContent();
+                List<SignBook> signBooks = new ArrayList<>();
+                Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "createDate"));
+                List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, pageable).getContent();
                 if(words.isEmpty() && workflows.isEmpty() && forms.isEmpty()) {
                     signBooks.addAll(allSignBooks);
                 } else {
@@ -196,7 +196,7 @@ public class HomeController {
                     }
                 }
                 if(!tags.isEmpty()) {
-                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && new HashSet<>(s.getLiveWorkflow().getWorkflow().getTags()).containsAll(tags)).collect(Collectors.toSet());
+                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && new HashSet<>(s.getLiveWorkflow().getWorkflow().getTags()).containsAll(tags)).toList();
                 }
                 for (SignBook signBook : signBooks) {
                     SearchResult searchResult = new SearchResult();

@@ -231,9 +231,9 @@ textarea:invalid {
 }
 
 .drop-shadows {
-    -moz-box-shadow: 0px 0px 4px 1px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 0px 0px 4px 1px rgba(0, 0, 0, 0.3);
-    box-shadow: 0px 0px 4px 1px rgba(0, 0, 0, 0.3);
+    -moz-box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.3);
 }
 
 .backdrop {
@@ -248,7 +248,6 @@ textarea:invalid {
 }
 
 .pdf-page {
-    margin-bottom: 10px !important; /* Never change margin between pages */
     -webkit-user-select: text !important;
     -moz-user-select: text !important;
     -ms-user-select: text !important;

@@ -287,10 +287,12 @@ export class PdfViewer extends EventFactory {
         return new Promise((resolve, reject) => {
             console.info("launch render task scaled to : " + this.scale);
             let container = document.createElement("div");
+            let browserZoom = this.getBrowserZoom();
             $(container).attr("id", "page_" + i);
             $(container).attr("page-num", i);
             $(container).addClass("drop-shadows");
             $(container).addClass("pdf-page");
+            $(container).css("margin-bottom", 10 * this.scale + "px");
             this.pdfDiv.append(container);
             $(container).droppable({
                 drop: function (event, ui) {
@@ -299,7 +301,6 @@ export class PdfViewer extends EventFactory {
             });
             this.page = page;
             let self = this;
-            localStorage.setItem('scale', this.scale.toPrecision(2) + "");
             let viewport = page.getViewport({scale: this.scale, rotation: this.rotation});
             let dispatchToDOM = false;
             let globalEventBus = new EventBus({dispatchToDOM});
@@ -310,26 +311,48 @@ export class PdfViewer extends EventFactory {
                 scale: this.scale,
                 rotation: this.rotation,
                 defaultViewport: viewport,
-                useOnlyCssZoom: false,
+                useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 1,
-                renderer: "canvas",
+                textLayerMode: 0
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    const viewport = pdfPageView.viewport;
-                    annotationLayer.style.width = Math.floor(viewport.width) + "px";
-                    annotationLayer.style.height = Math.floor(viewport.height) + "px";
+                    annotationLayer.style.width = Math.floor(pdfPageView.viewport.width / browserZoom) + "px";
+                    annotationLayer.style.height = Math.floor(pdfPageView.viewport.height / browserZoom) + "px";
                     annotationLayer.style.transform = `scale(${pdfPageView.outputScale.sx}, ${pdfPageView.outputScale.sy})`;
                     annotationLayer.style.transformOrigin = '0 0';
+                }
+            });
+            let originalRender = page.render;
+            page.render = function() {
+                // Retourner une fausse promise qui se résout immédiatement
+                return { promise: Promise.resolve() };
+            };
+            pdfPageView.draw().then(() => {
+                page.render = originalRender;
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                    const context = canvas.getContext('2d');
+                    canvas.width = Math.floor(pdfPageView.viewport.width * browserZoom);
+                    canvas.height = Math.floor(pdfPageView.viewport.height * browserZoom);
+                    canvas.style.width = Math.floor(pdfPageView.viewport.width) + "px";
+                    canvas.style.height = Math.floor(pdfPageView.viewport.height) + "px";
+                    let transform = browserZoom !== 1
+                        ? [browserZoom, 0, 0, browserZoom, 0, 0]
+                        : null;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        transform: transform,
+                        viewport: pdfPageView.viewport
+                    };
+                    page.render(renderContext);
                 }
                 self.pages.push(page);
                 resolve("ok");
             });
-
-            pdfPageView.draw();
         });
     }
 
