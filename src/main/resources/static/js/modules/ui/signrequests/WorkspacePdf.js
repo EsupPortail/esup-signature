@@ -69,15 +69,24 @@ export class WorkspacePdf {
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
         this.navWidth = this.wsTabs.innerWidth();
-        this.addSignButton = $("#addSignButton")
+        this.addSignButton = $("#addSignButton");
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
         if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
-                $(window).on('resize', function (e) {
+                $(window).on("resize", () => {
+                    const w = window.innerWidth;
+                    const h = window.innerHeight;
+                    const deltaW = w - self.lastWidth;
+                    const deltaH = h - self.lastHeight;
+                    if (deltaW === 0 && deltaH === 0) return;
                     if(e.target.tagName == null) {
                         self.autocollapse();
                     }
+                    self.lastWidth = w;
+                    self.lastHeight = h;
                 });
             }
         }
@@ -233,7 +242,7 @@ export class WorkspacePdf {
                 let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                signSpaceDiv.on("click", e => this.addSign(i, e));
+                signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                     if(this.currentSignType !== "visa") {
                         signSpaceDiv.html("Cliquez ici pour insérer votre signature");
@@ -270,32 +279,33 @@ export class WorkspacePdf {
         }
     }
 
-    addSign(forceSignNumber, signField) {
+    addSign(forceSignNumber) {
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
         this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
-        let signNum = this.signPosition.currentSignRequestParamsNum;
+
+        let signNum = null;
         if(forceSignNumber != null) {
             signNum = forceSignNumber;
+        } else {
+            for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
+                if (!this.currentSignRequestParamses[i].ready) {
+                    this.signPosition.currentSignRequestParamsNum = i;
+                    signNum = i;
+                    break;
+                }
+            }
         }
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
-            this.signPosition.currentSignRequestParamsNum++;
         }
         if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
-        if(!this.notSigned) {
-            // let msg = ;
-            // $("#addSignButton").attr("disabled", true);
-            // $("#addSignButton").attr("title", msg);
-            // $("#addSignButton2").attr("disabled", true);
-            // $("#addSignButton2").attr("title", msg);
-        }
+        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
     }
 
     initWorkspace() {
@@ -489,7 +499,7 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
-        // this.refreshAfterPageChange();
+        localStorage.setItem("scale", this.pdfViewer.scale);
     }
 
     clickAction(e) {
@@ -720,10 +730,10 @@ export class WorkspacePdf {
             hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
-                if ($(this).data("locked")) {
+                if ($(this).data("locked") != null) {
                     return;
                 }
-                $(this).data("locked", true);
+                $(this).data("locked", ui.draggable.attr("id"));
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");
                 $(this).css("pointer-events", "none");
@@ -762,8 +772,10 @@ export class WorkspacePdf {
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                $(this).data("locked", false);
-                $(this).droppable("enable");
+                if ($(this).data("locked") != null && $(this).data("locked") !== ui.draggable.attr("id")) {
+                    return;
+                }
+                $(this).removeData("locked");
                 $(this).addClass("sign-field");
                 $(this).removeClass("sign-field-dropped");
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
@@ -1208,39 +1220,56 @@ export class WorkspacePdf {
     autocollapse() {
         let menu = "#ws-tabs";
         let maxWidth = $("#workspace").innerWidth() - 50;
-        console.info("maxWidth : " + maxWidth);
-        const listItems = document.querySelectorAll('#ws-tabs > li');
-        let totalWidth = 0;
-        listItems.forEach(li => {
-            totalWidth += li.getBoundingClientRect().width;
-        });
-        console.warn(totalWidth + " >= " + maxWidth);
+        const calculateTotalWidth = () => {
+            let total = 0;
+            const listItems = document.querySelectorAll('#ws-tabs > li');
+            listItems.forEach(li => {
+                const rect = li.getBoundingClientRect();
+                total += rect.width;
+                const style = window.getComputedStyle(li);
+                total += parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+            });
+            return total;
+        };
+        let totalWidth = calculateTotalWidth();
         if (totalWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
-            while (this.navWidth > maxWidth) {
-                let children = this.wsTabs.children(menu + ' li:not(:last-child)');
+            totalWidth = calculateTotalWidth();
+            while (totalWidth > maxWidth) {
+                let children = $(menu + ' > li:not(.dropdown)');
                 let count = children.length;
-                this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn("nav width : " + this.navWidth);
+                if (count === 0) break; // Sécurité
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
+                totalWidth = calculateTotalWidth();
+                console.warn("Nouvelle largeur : " + totalWidth);
             }
-        } else if (this.navWidth < maxWidth - 300) {
-            let collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
-            if (collapsed.length===0) {
+        }
+        else {
+            let collapsed = $(menu + ' .dropdown-menu > li');
+
+            if (collapsed.length === 0) {
                 $(menu + ' .dropdown').addClass('d-none');
+                return;
             }
-            collapsed = $(menu + ' .dropdown-menu').children('li');
+            const dropdownWidth = $(menu + ' .dropdown')[0].getBoundingClientRect().width;
+            const safeMaxWidth = maxWidth - dropdownWidth - 50; // marge de sécurité
+
             let i = 0;
-            while (this.navWidth < maxWidth && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > i + 1) {
-                $(collapsed[i]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
-                this.navWidth = this.navWidth + $(collapsed[i]).width();
-                if(this.navWidth >= maxWidth) break;
+            while (i < collapsed.length && totalWidth < safeMaxWidth) {
+                const itemWidth = collapsed[i].getBoundingClientRect().width;
+                const style = window.getComputedStyle(collapsed[i]);
+                const margins = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                const estimatedWidth = totalWidth + itemWidth + margins;
+                if (estimatedWidth >= safeMaxWidth) break;
+                $(collapsed[i]).insertBefore($(menu + ' > li.dropdown'));
+                totalWidth = calculateTotalWidth();
                 i++;
             }
-
+            if ($(menu + ' .dropdown-menu > li').length === 0) {
+                $(menu + ' .dropdown').addClass('d-none');
+            }
         }
     }
-
     getBrowserZoom() {
         return 1 || 1;
     }

@@ -28,10 +28,7 @@ export class PdfViewer extends EventFactory {
             });
         }
         this.disableAllFields = disableAllFields;
-        this.scale;
-        // if(localStorage.getItem('scale')) {
-        //     this.scale = parseFloat(localStorage.getItem('scale'));
-        // }
+        this.scale = 1.2;
         this.zoomStep = 0.1;
         this.pdfDiv = $("#pdf");
         this.pdfDoc = null;
@@ -42,7 +39,8 @@ export class PdfViewer extends EventFactory {
         this.events = {};
         this.rotation = 0;
         this.renderedPages = 0
-        this.initListeners();
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
         let self = this;
         $(document).ready(function() {
             if (!globalThis.pdfjsLib || !Promise.withResolvers) {
@@ -60,6 +58,7 @@ export class PdfViewer extends EventFactory {
                 });
             }
         });
+        this.initListeners();
     }
 
     initListeners() {
@@ -69,15 +68,25 @@ export class PdfViewer extends EventFactory {
         $('#fullheight').on('click', e => this.fullHeight());
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
-        // $(window).on('resize', e => this.adjustZoom(e));
-        $(window).on('resize', e => {
-            if (window.__isResizingCross) return;
-            this.adjustZoom();
+        let self = this;
+        $(window).on("resize", () => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const deltaW = w - self.lastWidth;
+            const deltaH = h - self.lastHeight;
+            if (deltaW === 0 && deltaH === 0) return;
+            self.adjustZoom();
+            self.lastWidth = w;
+            self.lastHeight = h;
         });
-        this.adjustZoom();
         // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
         // this.addEventListener("ready", e => this.restoreScrolling());
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
+        if(localStorage.getItem("scale")) {
+            this.scale = parseFloat(localStorage.getItem("scale"));
+        } else {
+            this.adjustZoom();
+        }
     }
 
     restoreScrolling() {
@@ -178,29 +187,11 @@ export class PdfViewer extends EventFactory {
     adjustZoom() {
         const workspaceDiv = document.getElementById('workspace');
         const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = 1.2;
-        if (workspaceWidth  / this.getBrowserZoom() < 1400) {
-            newScale = 1;
-        }
-        if (workspaceWidth / this.getBrowserZoom() < 992) {
-            newScale = 0.8;
-        }
-        if (workspaceWidth / this.getBrowserZoom() < 768) {
-            newScale = 0.7;
-        }
-        if (workspaceWidth / this.getBrowserZoom() < 576) {
-            newScale = 0.5;
-        }
-        if (workspaceWidth / this.getBrowserZoom() < 300) {
-            newScale = 0.3;
-        }
-
-        // if (newScale !== this.scale) {
-            console.info("adjust zoom to workspace width " + workspaceWidth);
-            this.scale = newScale;
-            console.info('zoom in, scale = ' + this.scale);
-            this.fireEvent('scaleChange', ['in']);
-        // }
+        let newScale = Math.round(workspaceWidth / 1000 * 10) / 10;
+        console.info("adjust zoom to workspace width " + workspaceWidth);
+        this.scale = newScale;
+        console.info('zoom in, scale = ' + this.scale);
+        this.fireEvent('scaleChange', ['in']);
     }
 
     startRender(pdf) {
@@ -313,7 +304,7 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 0
+                textLayerMode: 1
             });
             pdfPageView.setPdfPage(page);
             pdfPageView.eventBus.on("annotationlayerrendered", function () {
@@ -809,7 +800,10 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomIn(e) {
-        if (this.scale >= 1.9) {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        let newScale = Math.round(workspaceWidth / 1000 * 10) / 10;
+        if (this.scale >= newScale) {
             return;
         }
         this.saveScrolling = Math.round(window.scrollY / this.scale);

@@ -295,6 +295,7 @@ public class SignRequestParamsService {
             signRequestParams.setExtraName(requestParams.getExtraName());
             signRequestParams.setExtraDate(requestParams.getExtraDate());
             signRequestParams.setExtraText(requestParams.getExtraText());
+            signRequestParams.setIsExtraText(requestParams.getIsExtraText());
             signRequestParams.setAddExtra(requestParams.getAddExtra());
             signRequestParams.setTextPart(requestParams.getTextPart());
             signRequestParams.setAddWatermark(requestParams.getAddWatermark());

@@ -230,8 +230,6 @@
     }
 
     .workspace-pdf {
-        margin: auto;
-        width: min-content;
         padding: 10px;
         margin-top: 50px;
     }

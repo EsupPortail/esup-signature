@@ -28,6 +28,8 @@ export class GlobalUi {
         this.initSideBar();
         this.checkCurrentPage();
         this.initTooltips();
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
         window.__isResizingCross = false;
     }
 
@@ -146,8 +148,19 @@ export class GlobalUi {
         $("#display-side-btn").on('click', function(e) {
            $("#sidebar").toggleClass("sidebar-mobile");
         });
+        $(window).on("resize", (e) => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const deltaW = w - self.lastWidth;
+            const deltaH = h - self.lastHeight;
+            if (deltaW === 0 && deltaH === 0) return;
+            if(e.target.tagName == null) {
+                self.adjustUi();
+            }
+            self.lastWidth = w;
+            self.lastHeight = h;
+        });
 
-        window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
         let self = this;
         let newSelfSign =$("#new-self-sign");
