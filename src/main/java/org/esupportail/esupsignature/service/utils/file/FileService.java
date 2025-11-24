@@ -230,7 +230,7 @@ public class FileService {
 				graphics2D.setFont(font);
 				graphics2D.setPaint(Color.black);
 				FontMetrics fm = graphics2D.getFontMetrics();
-				int lineHeight = Math.round(fontSize + fontSize * .5f);
+				int lineHeight = Math.round(fontSize);
 				if(signRequestParams.getExtraType()) {
 					String typeSign = "Signature";
 					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";

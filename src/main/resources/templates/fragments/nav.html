@@ -105,7 +105,7 @@
                     </form>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle" id="user-toggle"
+                    <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
                         th:classappend="${activeMenu == 'user'} ? 'bg-secondary fw-bold bg-opacity-75'"
                         type="button" href="#user-infos"
                         aria-expanded="false"
@@ -113,7 +113,7 @@
                         data-bs-toggle="collapse">
                         <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.email}"></b>
-                        <div class="user-toggle align-middle ms-2"><i class="fa-solid fa-user"></i></div>
+                        <div class="user-toggle align-middle ms-2"><i class="fi fi-rr-user"></i></div>
                     </a>
                 </li>
                 <li class="nav-item">
