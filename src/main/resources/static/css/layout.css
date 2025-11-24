@@ -162,7 +162,7 @@ header {
 }
 
 .workspace-margin-top {
-    margin-top: 128px;
+    margin-top: 130px;
 }
 
 .workspace-margin-top-admin {
@@ -184,7 +184,7 @@ header {
 .cross-tools {
     border: 1px solid #ccc;
     left: 0px;
-    top: -45px;
+    top: -48px;
     z-index: 10;
     user-select: none;
     -moz-user-select: none;

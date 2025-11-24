@@ -298,6 +298,7 @@ textarea:invalid {
 }
 
 .badge-status > i {
+    margin-top: 1px;
     height: 100%;
     background-color: black;
     padding: 0 6px 1px 6px;
@@ -379,8 +380,9 @@ textarea:invalid {
     display: none;
 }
 
-.textWidgetAnnotation * {
-    font-size: calc(10px* var(--scale-factor)) !important;
+.annotationLayer .textWidgetAnnotation {
+    font-size: calc(8px * var(--scale-factor)) !important;
+    font-family: "LiberationSans-Regular", sans-serif;
 }
 
 /*.textWidgetAnnotation textarea {*/

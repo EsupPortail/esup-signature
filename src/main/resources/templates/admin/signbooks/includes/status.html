@@ -9,7 +9,7 @@
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill badge-status bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-clock"></i>
+			<i class="fi fi-rr-pending"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">

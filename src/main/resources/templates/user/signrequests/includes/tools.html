@@ -3,8 +3,8 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="tools" th:if="${toSignDocument != null}">
     <div class="d-flex mb-1">
-        <button id="display-side-btn" type="button" class="btn btn-warning me-1 d-block d-xl-none">
-            <i class="fa-solid fa-eye"></i> <span class="d-none d-md-inline">Statut:<span th:text="#{'signbook.status.' + ${signBook.status}}"></span></span>
+        <button id="display-side-btn" type="button" class="btn btn-light btn-outline-dark me-1 d-block d-xl-none" title="Afficher l'état du circuit">
+            <i class="fi fi-rr-sidebar"></i>
         </button>
         <a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="btn btn-light btn-outline-dark d-none d-lg-block" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fa-solid fa-info-circle"></i>
