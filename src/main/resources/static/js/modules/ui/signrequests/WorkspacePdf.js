@@ -267,7 +267,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
                 signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                signSpaceDiv.css("font-size", 9 *  this.pdfViewer.scale * this.getBrowserZoom());
+                signSpaceDiv.css("font-size", 6 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }
@@ -282,7 +282,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
                 let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
                 signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
-                signSpaceDiv.css("font-size", Math.round(9 * this.pdfViewer.scale) + "px");
+                signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
             }
         }
     }
@@ -680,7 +680,7 @@ export class WorkspacePdf {
                         }
                         signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
                         signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                        signDiv.css("font-size", 9 * self.pdfViewer.scale * this.getBrowserZoom());
+                        signDiv.css("font-size", 6 * self.pdfViewer.scale);
                     }
                     spotDiv.unbind('mouseup');
                     if(signDiv.attr("data-es-delete")) {
