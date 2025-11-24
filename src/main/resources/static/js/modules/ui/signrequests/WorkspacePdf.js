@@ -739,7 +739,7 @@ export class WorkspacePdf {
     makeItDroppable(signSpaceDiv) {
         let self = this;
         signSpaceDiv.droppable({
-            tolerance: "intersect",
+            tolerance: "touch",
             hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
