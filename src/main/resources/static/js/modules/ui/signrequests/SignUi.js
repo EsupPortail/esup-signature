@@ -354,6 +354,7 @@ export class SignUi {
                 paramToSend.signScale = originalParams.signScale;
                 paramToSend.xPos = originalParams.xPos * self.getBrowserZoom();
                 paramToSend.yPos = originalParams.yPos * self.getBrowserZoom();
+                paramToSend.fontSize = originalParams.fontSize;
                 paramToSend.signWidth = originalParams.signWidth / originalParams.signScale
                 paramToSend.signHeight = originalParams.signHeight / originalParams.signScale
                 delete paramToSend.signImages;

@@ -69,7 +69,7 @@ export class SignRequestParams extends EventFactory {
         this.userSignaturePad = null;
         this.canvasBtn = null;
         this.canvas = null;
-        this.padMargin = 7;
+        this.padMargin = 0;
         this.inside = true;
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
@@ -806,8 +806,8 @@ export class SignRequestParams extends EventFactory {
             }
             this.#updateSize();
         } else {
-            this.signWidth = Math.round(parseInt(this.cross.css("width"))/ (this.currentScale * this.getBrowserZoom()));
-            this.signHeight = Math.round(parseInt(this.cross.css("height"))/ (this.currentScale * this.getBrowserZoom()));
+            this.signWidth = Math.round(parseInt(this.cross.css("width"))/ (this.currentScale));
+            this.signHeight = Math.round(parseInt(this.cross.css("height"))/ (this.currentScale));
         }
         this.fireEvent("sizeChanged", ['ok']);
     }
@@ -1275,8 +1275,8 @@ export class SignRequestParams extends EventFactory {
 
     #resizeText() {
         const minCols = 10;
-        const extraPx = 6; // marge pour éviter que le dernier caractère soit collé
-        let fontSize = this.fontSize * this.currentScale * this.signScale;
+        const extraPx = 6;
+        let fontSize = this.fontSize * this.currentScale;
         const roundedFontSize = Math.round(fontSize);
         this.textareaPart.css("font-size", roundedFontSize + "px");
 
