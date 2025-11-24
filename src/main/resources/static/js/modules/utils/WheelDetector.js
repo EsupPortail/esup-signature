@@ -26,26 +26,26 @@ export class WheelDetector extends EventFactory {
 
     computeWhellEvent(event) {
         const workspace = document.getElementById("pdf");
-        if (event.ctrlKey) {
-            if(workspace && workspace.contains(event.target))  {
-                event.preventDefault();
-                if (this.detectMouseWheelDirection(event) === 'down'){
-                    console.debug("debug - " + "wheel down zoom out");
-                    this.fireEvent("zoomin", [event]);
-                } else {
-                    console.debug("debug - " + "wheel up zoom in");
-                    this.fireEvent("zoomout", [event]);
-                }
-            } else {
-                if (this.detectMouseWheelDirection(event) === 'down') {
-                    console.debug("debug - " + "wheel down zoom out");
-                    this.fireEvent("zoomout", [event]);
-                } else {
-                    console.debug("debug - " + "wheel up zoom in");
-                    this.fireEvent("zoomin", [event]);
-                }
-            }
-        }
+        // if (event.ctrlKey) {
+        //     if(workspace && workspace.contains(event.target))  {
+        //         event.preventDefault();
+        //         if (this.detectMouseWheelDirection(event) === 'down'){
+        //             console.debug("debug - " + "wheel down zoom out");
+        //             this.fireEvent("zoomin", [event]);
+        //         } else {
+        //             console.debug("debug - " + "wheel up zoom in");
+        //             this.fireEvent("zoomout", [event]);
+        //         }
+        //     } else {
+        //         if (this.detectMouseWheelDirection(event) === 'down') {
+        //             console.debug("debug - " + "wheel down zoom out");
+        //             this.fireEvent("zoomout", [event]);
+        //         } else {
+        //             console.debug("debug - " + "wheel up zoom in");
+        //             this.fireEvent("zoomin", [event]);
+        //         }
+        //     }
+        // }
     }
 
     detectMouseWheelDirection(e) {

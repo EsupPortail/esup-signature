@@ -316,7 +316,7 @@ public class GlobalProperties {
     /**
      *  Facteur d’échelle entre pdfBox et pdfJs
      */
-    private Float fixFactor = .75f;
+    private Float fixFactor = 1f;
 
     /**
      * Activer le watermark pour les utilisateurs externes

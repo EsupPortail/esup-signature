@@ -351,8 +351,12 @@ export class SignUi {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
                 let paramToSend = Object.assign({}, originalParams);
-                paramToSend.signScale = originalParams.signScale / self.getBrowserZoom() / .75;
-                // paramToSend.fontSize = originalParams.fontSize / self.getBrowserZoom() / .75;
+                paramToSend.signScale = originalParams.signScale;
+                paramToSend.xPos = originalParams.xPos * self.getBrowserZoom();
+                paramToSend.yPos = originalParams.yPos * self.getBrowserZoom();
+                paramToSend.fontSize = originalParams.fontSize;
+                paramToSend.signWidth = originalParams.signWidth / originalParams.signScale
+                paramToSend.signHeight = originalParams.signHeight / originalParams.signScale
                 delete paramToSend.signImages;
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
@@ -396,7 +400,6 @@ export class SignUi {
             }
         }
         if(signaturesCheck) {
-            console.log(this.signRequestUrlParams);
             this.sendData(this.signRequestUrlParams);
         } else {
             bootbox.alert("Une signature est vide", null);

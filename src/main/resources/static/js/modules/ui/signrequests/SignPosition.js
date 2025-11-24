@@ -51,7 +51,10 @@ export class SignPosition extends EventFactory {
         });
     }
 
-    removeSign(id) {
+    removeSign(srpId, id) {
+        if(srpId != null) {
+            this.currentSignRequestParamses[srpId].ready = false;
+        }
         this.signRequestParamses.delete(id);
         if(this.signsList.includes(id)) {
             this.signsList.splice(this.signsList.indexOf(id), 1);
@@ -104,7 +107,7 @@ export class SignPosition extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-    addSign(page, restore, signImageNumber, forceSignNumber, signField) {
+    addSign(page, restore, signImageNumber, forceSignNumber) {
         if (this.signImages != null && this.signImages.length === 1) {
             this.popUserUi();
             return;
@@ -177,8 +180,7 @@ export class SignPosition extends EventFactory {
             }
             this.signRequestParamses.set(id, new SignRequestParams(null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop));
         }
-        // this.signRequestParamses.get(id).addEventListener("unlock", e => this.lockSigns());
-        this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(id));
+        this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
         if (signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }

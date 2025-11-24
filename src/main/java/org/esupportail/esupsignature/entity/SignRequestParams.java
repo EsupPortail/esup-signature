@@ -51,7 +51,7 @@ public class SignRequestParams {
 
     private String textPart = null;
 
-	private Float signScale = 1F;
+	private Float signScale = 1f;
 
 	private Integer red = 0;
 
@@ -114,7 +114,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignWidth() {
-        if(signWidth == null) return 100;
+        if(signWidth == null) return 200;
         return signWidth;
     }
 
@@ -123,7 +123,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignHeight() {
-        if(signHeight == null) return 50;
+        if(signHeight == null) return 100;
         return signHeight;
     }
 
@@ -242,6 +242,7 @@ public class SignRequestParams {
     }
 
     public Float getSignScale() {
+        if(signScale == null) return 1f;
         return signScale;
     }
 

@@ -22,7 +22,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDFontDescriptor;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
@@ -208,14 +207,14 @@ public class PdfService {
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
             if (pdfParameters.isLandScape()) {
                 tx = pdfParameters.getWidth();
             } else {
                 ty = pdfParameters.getHeight();
             }
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * fixFactor + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
             if (pdfParameters.isLandScape()) {
                 ty = pdfParameters.getHeight();
             } else {
@@ -232,27 +231,25 @@ public class PdfService {
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * fixFactor, signRequestParams.getSignHeight() * fixFactor);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
             if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
                 addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
+            String[] lines = signRequestParams.getTextPart().split("\n", -1);
+            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() + fontSize);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
-            String[] lines = signRequestParams.getTextPart().split("\n", -1);
-            PDFontDescriptor descriptor = pdFont.getFontDescriptor();
-            float lineHeight = descriptor.getCapHeight() / 1000 * signRequestParams.getFontSize() / fixFactor;
-            yAdjusted = yAdjusted + (lineHeight * (lines.length - 1));
-            contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted + lineHeight * fixFactor / 2);
+            contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);
             for (String line : lines) {
                 contentStream.showText(line);
-                contentStream.newLineAtOffset(0, -lineHeight);
+                contentStream.newLineAtOffset(0, -fontSize * 1.2f);
             }
             contentStream.endText();
         }
@@ -271,8 +268,8 @@ public class PdfService {
                         globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
         PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        float width = (float) (signRequestParams.getSignWidth() * fixFactor);
-        float height = (float) (signRequestParams.getSignHeight() * fixFactor);
+        float width = (float) (signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor);
+        float height = (float) (signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
         PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, width, height);
         if(rotation!= null) {
             float x0 = position.getLowerLeftX();
