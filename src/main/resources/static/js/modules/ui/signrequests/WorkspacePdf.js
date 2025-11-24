@@ -76,17 +76,23 @@ export class WorkspacePdf {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
+                const THRESHOLD = 100;
+                const DEBOUNCE_DELAY = 100;
+                let resizeTimer = null;
                 $(window).on("resize", () => {
-                    const w = window.innerWidth;
-                    const h = window.innerHeight;
-                    const deltaW = w - self.lastWidth;
-                    const deltaH = h - self.lastHeight;
-                    if (deltaW === 0 && deltaH === 0) return;
-                    if(e.target.tagName == null) {
-                        self.autocollapse();
-                    }
-                    self.lastWidth = w;
-                    self.lastHeight = h;
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        const w = window.innerWidth;
+                        const h = window.innerHeight;
+                        const deltaW = Math.abs(w - self.lastWidth);
+                        const deltaH = Math.abs(h - self.lastHeight);
+                        if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
+                        if(e.target.tagName == null) {
+                            self.autocollapse();
+                        }
+                        self.lastWidth = w;
+                        self.lastHeight = h;
+                    }, DEBOUNCE_DELAY);
                 });
             }
         }

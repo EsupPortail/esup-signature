@@ -69,18 +69,22 @@ export class PdfViewer extends EventFactory {
         $('#rotateleft').on('click', e => this.rotateLeft());
         $('#rotateright').on('click', e => this.rotateRight());
         let self = this;
+        const THRESHOLD = 100;
+        const DEBOUNCE_DELAY = 100;
+        let resizeTimer = null;
         $(window).on("resize", () => {
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-            const deltaW = w - self.lastWidth;
-            const deltaH = h - self.lastHeight;
-            if (deltaW === 0 && deltaH === 0) return;
-            self.adjustZoom();
-            self.lastWidth = w;
-            self.lastHeight = h;
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                const deltaW = Math.abs(w - self.lastWidth);
+                const deltaH = Math.abs(h - self.lastHeight);
+                if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
+                self.adjustZoom();
+                self.lastWidth = w;
+                self.lastHeight = h;
+            }, DEBOUNCE_DELAY);
         });
-        // this.addEventListener("renderFinished", e => this.listenToSearchCompletion());
-        // this.addEventListener("ready", e => this.restoreScrolling());
         $('#page_num').on('change', e => this.scrollToPage(e.target.value));
         if(localStorage.getItem("scale")) {
             this.scale = parseFloat(localStorage.getItem("scale"));
@@ -268,7 +272,6 @@ export class PdfViewer extends EventFactory {
             }
             this.disableScrollBtn();
         }
-        // this.pdfDoc.getPage(this.pageNum).then(page => this.renderTask(page));
     }
 
     renderTask(page, i) {

@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -36,26 +35,24 @@ import java.util.Map;
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
-
-	@ModelAttribute("activeMenu")
+    @ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "datas";
 	}
 
-	@Resource
-	private DataService dataService;
+	private final DataService dataService;
+	private final SignBookService signBookService;
+	private final FormService formService;
+	private final PdfService pdfService;
+	private final ObjectMapper objectMapper;
 
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private FormService formService;
-
-	@Resource
-	private PdfService pdfService;
-
-	@Resource
-	private ObjectMapper objectMapper;
+    public DataController(DataService dataService, SignBookService signBookService, FormService formService, PdfService pdfService, ObjectMapper objectMapper) {
+        this.dataService = dataService;
+        this.signBookService = signBookService;
+        this.formService = formService;
+        this.pdfService = pdfService;
+        this.objectMapper = objectMapper;
+    }
 
 	@PostMapping("/send-form/{id}")
 	@ResponseBody
