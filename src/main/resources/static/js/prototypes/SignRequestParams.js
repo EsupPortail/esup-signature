@@ -44,7 +44,6 @@ export class SignRequestParams extends EventFactory {
         localStorage.setItem("zoom", this.signScale);
         this.firstLaunch = true;
         this.firstCrossAlert = true;
-        this.firstCrossAlert = true;
         this.cross = null;
         this.signSpace = null;
         this.submitAddSpotBtn = null;
@@ -71,6 +70,7 @@ export class SignRequestParams extends EventFactory {
         this.canvasBtn = null;
         this.canvas = null;
         this.padMargin = 7;
+        this.inside = true;
         if(!light) {
             let signPage = $("#page_" + this.signPageNumber);
             if(signPage != null && signPage.offset() != null) {
@@ -307,7 +307,6 @@ export class SignRequestParams extends EventFactory {
         this.#createTools();
         this.#updateSize();
         this.#toggleMinimalTools();
-        this.cross.css('background-color', 'rgba(189, 255, 189, 0.9)');
         this.cross.css('overflow', 'hidden');
         this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
@@ -526,6 +525,7 @@ export class SignRequestParams extends EventFactory {
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
+                self.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
@@ -534,15 +534,12 @@ export class SignRequestParams extends EventFactory {
             stop: function(event, ui) {
                 const dragRect = this.getBoundingClientRect();
                 self.#checkInside(dragRect, self);
-
                 self.tools.removeClass("d-none");
                 if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && self.firstCrossAlert) {
                     self.firstCrossAlert = false;
                     bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
                 }
-                // if(!self.dropped) {
-                    self.#afterDropRefresh(ui);
-                // }
+                self.#afterDropRefresh(ui);
                 let signLaunchButton = $("#signLaunchButton");
                 if(signLaunchButton.length) {
                     signLaunchButton.focus();
@@ -553,7 +550,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #checkInside(dragRect, self) {
-        let inside = false;
+        this.inside = false;
         $(".pdf-page").each(function () {
             const pageRect = this.getBoundingClientRect();
             if (
@@ -562,18 +559,29 @@ export class SignRequestParams extends EventFactory {
                 dragRect.right - 10 <= pageRect.right &&
                 dragRect.bottom - 10 <= pageRect.bottom
             ) {
-                inside = true;
-                return false;
+                self.inside = true;
+                return;
             }
         });
 
-        if (!inside) {
+        if (!this.inside) {
             console.log("La signature n'est pas entièrement dans une page !");
             $("#signLaunchButton").attr("disabled", "disabled");
-            self.border.addClass("cross-danger");
         } else {
             $("#signLaunchButton").removeAttr("disabled");
-            self.border.removeClass("cross-danger");
+        }
+        this.#computeBgColor();
+    }
+
+    #computeBgColor() {
+        if (!this.inside) {
+            this.cross.css("background-color", "rgba(255, 151, 151, 0.5)");
+            return;
+        }
+        if(this.signSpace != null && this.signSpace.ready) {
+            this.cross.css("background-color", "rgba(220, 250, 220, 1)");
+        } else {
+            this.cross.css("background-color", "rgba(255, 255, 255, 0.8)");
         }
     }
 
@@ -586,27 +594,70 @@ export class SignRequestParams extends EventFactory {
     #madeCrossResizable() {
         let self = this;
         this.cross.resizable({
+            handles: "n, e, s, w, ne, se, sw, nw",
             aspectRatio: true,
+            containment: "#pdf",
             start: function(event, ui) {
                 window.__isResizingCross = true;
+                // Sauvegarder la position initiale
+                self.initialPosition = {
+                    left: ui.position.left,
+                    top: ui.position.top
+                };
+                // Sauvegarder la taille initiale
+                self.initialSize = {
+                    width: ui.size.width,
+                    height: ui.size.height
+                };
             },
             resize: function(event, ui) {
-                let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 2 * self.currentScale * self.getBrowserZoom());
-                let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 2 * self.currentScale * self.getBrowserZoom());
-                let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .5 * self.currentScale * self.getBrowserZoom());
-                let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .5 * self.currentScale * self.getBrowserZoom());
+                let maxWidth = ((self.originalWidth + self.extraWidth / self.signScale) * 1.5 * self.currentScale);
+                let maxHeight = ((self.originalHeight + self.extraHeight / self.signScale) * 1.5 * self.currentScale);
+                let minWidth = ((self.originalWidth + self.extraWidth / self.signScale) * .3 * self.currentScale);
+                let minHeight = ((self.originalHeight + self.extraHeight / self.signScale) * .3 * self.currentScale);
+
+                // Sauvegarder les valeurs originales avant correction
+                let originalWidth = ui.size.width;
+                let originalHeight = ui.size.height;
+                let originalTop = ui.position.top;
+                let originalLeft = ui.position.left;
+
+                // Corriger la largeur
                 if (ui.size.width > maxWidth) {
                     ui.size.width = maxWidth;
-                }
-                if (ui.size.height > maxHeight) {
-                    ui.size.height = maxHeight;
                 }
                 if (ui.size.width < minWidth) {
                     ui.size.width = minWidth;
                 }
+
+                // Corriger la hauteur
+                if (ui.size.height > maxHeight) {
+                    ui.size.height = maxHeight;
+                }
                 if (ui.size.height < minHeight) {
                     ui.size.height = minHeight;
                 }
+
+                // Corriger la position si la taille a été limitée (pour les handles n, w, nw, ne, sw)
+                // Si on a redimensionné depuis le haut ou la gauche et qu'on a atteint une limite
+                if (originalWidth !== ui.size.width) {
+                    // La largeur a été corrigée
+                    let widthDelta = originalWidth - ui.size.width;
+                    // Réajuster left si on redimensionne depuis la gauche
+                    if (originalLeft !== ui.originalPosition.left) {
+                        ui.position.left = originalLeft + widthDelta;
+                    }
+                }
+
+                if (originalHeight !== ui.size.height) {
+                    // La hauteur a été corrigée
+                    let heightDelta = originalHeight - ui.size.height;
+                    // Réajuster top si on redimensionne depuis le haut
+                    if (originalTop !== ui.originalPosition.top) {
+                        ui.position.top = originalTop + heightDelta;
+                    }
+                }
+
                 if(self.textareaPart != null) {
                     self.signScale = self.#getNewScale(ui);
                     self.#resizeText();
@@ -622,9 +673,12 @@ export class SignRequestParams extends EventFactory {
                 console.log(ui);
                 self.signScale = self.#getNewScale(ui);
                 localStorage.setItem("zoom", self.signScale);
-                // if(self.isSign) {
-                //     localStorage.setItem("zoom", self.signScale);
-                // }
+
+                // Mettre à jour la position si elle a changé (handles du haut ou gauche)
+                if (ui.position.left !== self.initialPosition.left || ui.position.top !== self.initialPosition.top) {
+                    self.#afterDropRefresh(ui);
+                }
+
                 const dragRect = this.getBoundingClientRect();
                 self.#checkInside(dragRect, self);
                 window.__isResizingCross = false;
@@ -704,14 +758,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     #unlock() {
-        this.border.removeClass("static-border");
-        this.border.addClass("anim-border");
+        this.cross.removeClass("hide-handles");
         this.tools.removeClass("d-none");
-        this.cross.css("background-color", "rgb(220, 250, 220, 0.9)");
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
         $(document).on('keydown', e => this.#handleKeydown(e));
+        this.#computeBgColor();
     }
 
     #nextSignImage() {
@@ -1391,9 +1444,7 @@ export class SignRequestParams extends EventFactory {
         }
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
-        this.border.removeClass("anim-border");
-        this.cross.css("background-color", "rgb(220, 250, 220, 0.5)")
-        this.border.addClass("static-border");
+        this.cross.addClass("hide-handles");
         this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
             this.userSignaturePad.signaturePad.off();
@@ -1407,17 +1458,11 @@ export class SignRequestParams extends EventFactory {
         }
         $(document).unbind('keydown');
         this.canvasBtn.removeClass("d-none");
-        // const ui = {
-        //     position: {
-        //         left: parseInt(this.cross.css('left'), 10),
-        //         top: parseInt(this.cross.css('top'), 10)
-        //     }
-        // };
-        // this.#afterDropRefresh(ui);
+        this.#computeBgColor();
     }
 
     getBrowserZoom() {
-        return 1 || 1;
+        return window.devicePixelRatio || 1;
     }
 
 
@@ -1444,7 +1489,8 @@ export class SignRequestParams extends EventFactory {
         this.cross.append(divExtraHtml);
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
-        this.fontSize = 13;
+        this.border.remove();
+        this.fontSize = 10;
         this.textareaPart.on("input", function () {
             self.textPart = $(this).val();
             self.#resizeText();

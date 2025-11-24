@@ -270,12 +270,14 @@ export class WorkspacePdf {
     refreshSignFields() {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
             let signSpaceDiv = $("#signSpace_" + i);
-            signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
-            signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
-            signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
-            let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
-            signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
-            signSpaceDiv.css("font-size", Math.round(9 * this.pdfViewer.scale) + "px");
+            if(signSpaceDiv.length) {
+                signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
+                signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
+                signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
+                let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
+                signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
+                signSpaceDiv.css("font-size", Math.round(9 * this.pdfViewer.scale) + "px");
+            }
         }
     }
 
@@ -370,14 +372,19 @@ export class WorkspacePdf {
         }
     }
 
-    saveData(disableAlert) {
-        let self = this;
-        for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
-            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
-                if(i === self.pdfViewer.pdfDoc.numPages) {
-                    self.pushData(false, disableAlert);
-                }
-            }));
+    async saveData(disableAlert) {
+        try {
+            let promises = [];
+            for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
+                let promise = this.pdfViewer.pdfDoc.getPage(i)
+                    .then(page => page.getAnnotations())
+                    .then(items => this.pdfViewer.saveValues(items));
+                promises.push(promise);
+            }
+            await Promise.all(promises);
+            this.pushData(false, disableAlert);
+        } catch(error) {
+            console.error('Erreur lors de la sauvegarde:', error);
         }
     }
 
@@ -1271,7 +1278,7 @@ export class WorkspacePdf {
         }
     }
     getBrowserZoom() {
-        return 1 || 1;
+        return window.devicePixelRatio || 1;
     }
 
 }

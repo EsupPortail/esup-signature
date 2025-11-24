@@ -13,7 +13,7 @@
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill badge-status bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-clock"></i>
+			<i class="fi fi-rr-pending"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
@@ -43,7 +43,7 @@
 			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-flag-checkered"></i>
+			<i class="fi fi-rr-flag"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="*">
@@ -52,7 +52,7 @@
 	</div>
 	<div th:if="${signBook.deleted}" class="text-center mb-1 mt-1">
 		<div class="badge rounded-pill badge-status bg-danger" th:title="'Avant suppression : ' + #{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-trash"></i> Supprimé
+			<i class="fi fi-rr-trash"></i> Supprimé
 		</div>
 	</div>
 </div>

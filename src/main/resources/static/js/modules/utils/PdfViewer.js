@@ -94,7 +94,7 @@ export class PdfViewer extends EventFactory {
         window.scrollTo({
             top: newScrolling,
             left: 0,
-            behavior: 'instant',
+            behavior: 'auto',
         });
     }
 
@@ -178,7 +178,7 @@ export class PdfViewer extends EventFactory {
                 document.getElementById('page_num').value = this.pageNum;
                 if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
                     this.viewed = true;
-                    this.fireEvent('reachEnd', ['ok'])
+                    this.fireEvent("reachEnd", ['ok'])
                 }
             }
         }
@@ -191,14 +191,11 @@ export class PdfViewer extends EventFactory {
         console.info("adjust zoom to workspace width " + workspaceWidth);
         this.scale = newScale;
         console.info('zoom in, scale = ' + this.scale);
-        this.fireEvent('scaleChange', ['in']);
+        this.fireEvent("scaleChange", ['in']);
     }
 
     startRender(pdf) {
-        this.pdfDiv.css('opacity', 0.5);
-        $(".pdf-page").each(function(e) {
-            $(this).remove();
-        });
+        this.pdfDiv.css('opacity', 0);
         if(this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
@@ -223,7 +220,7 @@ export class PdfViewer extends EventFactory {
                 self.render();
             } else {
                 self.initialOffset = parseInt($("#page_1").offset().top);
-                self.fireEvent('renderFinished', ['ok']);
+                self.fireEvent("renderFinished", ['ok']);
                 $(document).trigger("renderFinished");
                 if(self.pages.length === self.numPages) {
                     self.stopProgress();
@@ -238,13 +235,13 @@ export class PdfViewer extends EventFactory {
     scrollToPage(num) {
         let self = this;
         let page = $("#page_" + num);
-        self.disableScrollBtn();
+        // self.disableScrollBtn();
         if(page.length) {
             let scrollTo = page.offset().top - self.initialOffset;
             $([document.documentElement, document.body]).animate({
                 scrollTop: scrollTo
-            }, 500, function (){
-                self.enableScrollBtn();
+            }, 100, function (){
+                // self.enableScrollBtn();
             });
         }
     }
@@ -267,7 +264,7 @@ export class PdfViewer extends EventFactory {
         if(this.pdfDoc.numPages === 1) {
             if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
                 this.viewed = true;
-                this.fireEvent('reachEnd', ['ok'])
+                this.fireEvent("reachEnd", ['ok']);
             }
             this.disableScrollBtn();
         }
@@ -277,26 +274,30 @@ export class PdfViewer extends EventFactory {
     renderTask(page, i) {
         return new Promise((resolve, reject) => {
             console.info("launch render task scaled to : " + this.scale);
-            let container = document.createElement("div");
-            let browserZoom = this.getBrowserZoom();
-            $(container).attr("id", "page_" + i);
-            $(container).attr("page-num", i);
-            $(container).addClass("drop-shadows");
-            $(container).addClass("pdf-page");
-            $(container).css("margin-bottom", 10 * this.scale + "px");
-            this.pdfDiv.append(container);
+            let container = document.getElementById(`page_${i}`);
+            if (!container) {
+                container = document.createElement("div");
+                container.id = `page_${i}`;
+                container.setAttribute("page-num", i);
+                container.className = "drop-shadows pdf-page";
+                container.style.marginBottom = `${10 * this.scale}px`;
+                this.pdfDiv.append(container);
+            } else {
+                container.innerHTML = ""; // vide le contenu sans supprimer le div
+                container.style.marginBottom = `${10 * this.scale}px`; // mettre à jour le margin si besoin
+            }
             $(container).droppable({
-                drop: function (event, ui) {
-                    ui.helper.attr("page", i)
-                }
+                drop: (event, ui) => ui.helper.attr("page", i)
             });
-            this.page = page;
-            let self = this;
-            let viewport = page.getViewport({scale: this.scale, rotation: this.rotation});
-            let dispatchToDOM = false;
-            let globalEventBus = new EventBus({dispatchToDOM});
-            let pdfPageView = new pdfjsViewer.PDFPageView({
-                eventBus: globalEventBus,
+            const browserZoom = this.getBrowserZoom();
+            const viewport = page.getViewport({
+                scale: this.scale,
+                rotation: this.rotation
+            });
+            const dispatchToDOM = false;
+            const eventBus = new EventBus({dispatchToDOM});
+            const pdfPageView = new pdfjsViewer.PDFPageView({
+                eventBus: eventBus,
                 container: container,
                 id: this.pageNum,
                 scale: this.scale,
@@ -304,46 +305,47 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 1
+                textLayerMode: 0,
+                annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS
             });
             pdfPageView.setPdfPage(page);
-            pdfPageView.eventBus.on("annotationlayerrendered", function () {
-                const annotationLayer = container.querySelector('.annotationLayer');
-                if (annotationLayer) {
-                    annotationLayer.style.width = Math.floor(pdfPageView.viewport.width / browserZoom) + "px";
-                    annotationLayer.style.height = Math.floor(pdfPageView.viewport.height / browserZoom) + "px";
-                    annotationLayer.style.transform = `scale(${pdfPageView.outputScale.sx}, ${pdfPageView.outputScale.sy})`;
-                    annotationLayer.style.transformOrigin = '0 0';
-                }
-            });
-            let originalRender = page.render;
+            const originalRender = page.render.bind(page);
             page.render = function() {
-                // Retourner une fausse promise qui se résout immédiatement
-                return { promise: Promise.resolve() };
+                return { promise: Promise.resolve(), cancel() {} };
             };
             pdfPageView.draw().then(() => {
                 page.render = originalRender;
+
                 const canvas = container.querySelector('canvas');
                 if (canvas) {
                     const context = canvas.getContext('2d');
-                    canvas.width = Math.floor(pdfPageView.viewport.width * browserZoom);
-                    canvas.height = Math.floor(pdfPageView.viewport.height * browserZoom);
-                    canvas.style.width = Math.floor(pdfPageView.viewport.width) + "px";
-                    canvas.style.height = Math.floor(pdfPageView.viewport.height) + "px";
-                    let transform = browserZoom !== 1
+                    canvas.width = Math.floor(viewport.width * browserZoom);
+                    canvas.height = Math.floor(viewport.height * browserZoom);
+                    canvas.style.width = `${Math.floor(viewport.width)}px`;
+                    canvas.style.height = `${Math.floor(viewport.height)}px`;
+                    const transform = browserZoom !== 1
                         ? [browserZoom, 0, 0, browserZoom, 0, 0]
                         : null;
-
                     const renderContext = {
                         canvasContext: context,
                         transform: transform,
-                        viewport: pdfPageView.viewport
+                        viewport: viewport,
+                        annotationMode: pdfjsLib.AnnotationMode.DISABLE
                     };
-                    page.render(renderContext);
+                    return page.render(renderContext).promise;
                 }
-                self.pages.push(page);
-                resolve("ok");
-            });
+            }).then(() => {
+                const annotationLayer = container.querySelector('.annotationLayer');
+                if (annotationLayer) {
+                    annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
+                    annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
+                    annotationLayer.style.transform = 'none';
+                    // annotationLayer.style.transform = `scale(${this.scale})`;
+                    // annotationLayer.style.transformOrigin = '0 0';
+                    this.pages.push(page);
+                    resolve("ok");
+                }
+            }).catch(reject);
         });
     }
 
@@ -467,7 +469,7 @@ export class PdfViewer extends EventFactory {
         for(let i = 1; i < this.pdfDoc.numPages + 1; i++) {
             this.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.restoreValues(items)));
         }
-        this.fireEvent('render', ['end']);
+        this.fireEvent("render", ['end']);
     }
 
     restoreValues(items) {
@@ -554,8 +556,7 @@ export class PdfViewer extends EventFactory {
                 inputField.addClass("field-type-text");
                 inputField.on('input', function(e) {
                     clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent('change', ['checked']), 500);
-
+                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
                 });
                 inputField.removeAttr("hidden");
                 if(dataField == null) continue;
@@ -611,7 +612,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop("checked", true);
                     }
                     inputField.unbind();
-                    inputField.on('click', e => this.fireEvent('change', ['checked']));
+                    inputField.on('click', e => this.fireEvent("change", ['checked']));
                 }
                 if (dataField.type === 'checkbox') {
                     inputField.addClass("field-type-checkbox");
@@ -621,7 +622,7 @@ export class PdfViewer extends EventFactory {
                         inputField.prop("checked", true);
                     }
                     inputField.unbind();
-                    inputField.on('click', e => this.fireEvent('change', ['checked']));
+                    inputField.on('click', e => this.fireEvent("change", ['checked']));
                 }
                 if (dataField.type === "date") {
                     datePickerIndex--;
@@ -651,7 +652,7 @@ export class PdfViewer extends EventFactory {
                         section.css("z-index", 4);
                     });
                     inputField.off('dp.change');
-                    inputField.on('dp.change', e => this.fireEvent('change', ['date']));
+                    inputField.on('dp.change', e => this.fireEvent("change", ['date']));
                 }
                 if (dataField.type === "time") {
                     datePickerIndex--;
@@ -682,7 +683,7 @@ export class PdfViewer extends EventFactory {
                         section.css("z-index", datePickerIndex);
                     });
                     inputField.off('dp.change');
-                    inputField.on('dp.change', e => this.fireEvent('change', ['time']));
+                    inputField.on('dp.change', e => this.fireEvent("change", ['time']));
                 }
             }
 
@@ -691,7 +692,7 @@ export class PdfViewer extends EventFactory {
                 inputField.addClass("field-type-textarea");
                 inputField.on('input', function(e) {
                     clearTimeout(self.timer);
-                    self.timer = setTimeout(e => self.fireEvent('change', ['checked']), 500);
+                    self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
                 });
                 inputField.removeAttr("hidden");
                 if(dataField == null) continue;
@@ -718,7 +719,7 @@ export class PdfViewer extends EventFactory {
             inputField = $('section[data-annotation-id=' + items[i].id + '] > select');
             if (inputField.length) {
                 inputField.addClass("field-type-select");
-                inputField.on('change', e => this.fireEvent('change', ['checked']));
+                inputField.on('change', e => this.fireEvent("change", ['checked']));
                 if(dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
                 inputField.removeAttr("hidden");
@@ -768,7 +769,7 @@ export class PdfViewer extends EventFactory {
     }
 
     prevPage() {
-        this.fireEvent('beforeChange', ['prev']);
+        this.fireEvent("beforeChange", ['prev']);
         if (!this.isFirstPage()) {
             this.pageNum--;
         }
@@ -796,20 +797,20 @@ export class PdfViewer extends EventFactory {
     zoomInit(e) {
         this.scale = 1.2;
         console.info('zoom in, scale = ' + this.scale);
-        this.fireEvent('scaleChange', ['in']);
+        this.fireEvent("scaleChange", ['in']);
     }
 
     zoomIn(e) {
         const workspaceDiv = document.getElementById('workspace');
         const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = Math.round(workspaceWidth / 1000 * 10) / 10;
+        let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
         if (this.scale >= newScale) {
             return;
         }
         this.saveScrolling = Math.round(window.scrollY / this.scale);
         this.scale = Math.round((this.scale + this.zoomStep) * 1000) / 1000;
         console.info('zoom in, scale = ' + this.scale);
-        this.fireEvent('scaleChange', ['in']);
+        this.fireEvent("scaleChange", ['in']);
     }
 
     zoomOut(e) {
@@ -818,17 +819,19 @@ export class PdfViewer extends EventFactory {
         }
         this.scale = Math.round((this.scale - this.zoomStep) * 1000) / 1000;
         console.info('zoom out, scale = ' + this.scale);
-        this.fireEvent('scaleChange', ['out']);
+        this.fireEvent("scaleChange", ['out']);
     }
 
 
     fullWidth() {
-        console.info("full width " + window.innerWidth);
-        let newScale = (Math.round(window.innerWidth / 100) / 10);
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
+        console.info("full width " + newScale);
         if (newScale !== this.scale) {
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
-            this.fireEvent('scaleChange', ['in']);
+            this.fireEvent("scaleChange", ['in']);
         }
     }
 
@@ -838,7 +841,7 @@ export class PdfViewer extends EventFactory {
         if (newScale !== this.scale) {
             this.scale = newScale;
             console.info('zoom in, scale = ' + this.scale);
-            this.fireEvent('scaleChange', ['in']);
+            this.fireEvent("scaleChange", ['in']);
         }
     }
 
@@ -849,7 +852,7 @@ export class PdfViewer extends EventFactory {
         }
         this.rotation = this.rotation - 90;
         this.startRender()
-        this.fireEvent('rotate', ['left']);
+        this.fireEvent("rotate", ['left']);
     }
 
     rotateRight() {
@@ -859,7 +862,7 @@ export class PdfViewer extends EventFactory {
         }
         this.rotation = this.rotation + 90;
         this.startRender()
-        this.fireEvent('rotate', ['right']);
+        this.fireEvent("rotate", ['right']);
     }
 
     autocomplete(response, inputField) {

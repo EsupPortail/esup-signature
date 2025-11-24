@@ -258,13 +258,6 @@ dd {
     margin-left: 5px;
 }
 
-.static-border {
-    position: absolute;
-    top :0;
-    left :0;
-    border: 1px solid rgba(63, 63, 63, 0.9);
-}
-
 .postit-small {
     height: 30px !important;
 }
@@ -448,9 +441,10 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-field {
+    font-weight: bold;
+    color: black;
     border: 1px solid transparent !important;
-    background-color: rgba(189, 255, 189, 1);
-    opacity: 0.8;
+    background-color: rgba(220, 250, 220, 0.8);
     cursor: pointer !important;
     overflow: hidden;
 }
@@ -758,12 +752,16 @@ textarea:placeholder-shown.required-field {
     transition: background-image 0.2s ease-in-out;
 }
 
+.static-border {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .cross-warning {
-    background-color: rgba(255, 223, 151, 0.57) !important;
+    background-color: rgba(255, 223, 151, 0.6) !important;
 }
 
 .cross-danger {
-    background-color: rgba(255, 151, 151, 0.75) !important;
+    background-color: rgba(255, 151, 151, 0.6) !important;
 }
 
 .sign-textarea {
@@ -807,10 +805,6 @@ textarea:placeholder-shown.required-field {
 
 .div-extra {
     border: 1px solid transparent;
-}
-
-.ui-icon-gripsmall-diagonal-se {
-    background-position: -80px -224px;
 }
 
 .sign-textarea-lock {
@@ -992,4 +986,184 @@ tr[aria-expanded="true"] .caret-toggle::before {
     top: 0px;
     left: 0px;
     border-radius: 4px 0px 0px 4px;
+}
+
+/* ========== COINS (Boules) ========== */
+.ui-resizable-se, .ui-resizable-sw, .ui-resizable-ne, .ui-resizable-nw {
+    width: 10px !important;
+    height: 10px !important;
+    background-color: rgba(63, 63, 63, 0.9) !important;
+    /*border: 2px solid white !important;*/
+    border-radius: 50% !important;
+    z-index: 90 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Coin bas-droite */
+.ui-resizable-se {
+    bottom: -7px !important;
+    right: -7px !important;
+    cursor: se-resize !important;
+}
+
+/* Coin bas-gauche */
+.ui-resizable-sw {
+    bottom: -7px !important;
+    left: -7px !important;
+    cursor: sw-resize !important;
+}
+
+/* Coin haut-droite */
+.ui-resizable-ne {
+    top: -7px !important;
+    right: -7px !important;
+    cursor: ne-resize !important;
+}
+
+/* Coin haut-gauche */
+.ui-resizable-nw {
+    top: -7px !important;
+    left: -7px !important;
+    cursor: nw-resize !important;
+}
+
+/* ========== CÔTÉS (Lignes) ========== */
+/* Droite - Ligne verticale */
+.ui-resizable-e {
+    width: 2px !important;
+    background-color: rgba(63, 63, 63, 0.8) !important;
+    right: -3px !important;
+    cursor: e-resize !important;
+}
+
+/* Gauche - Ligne verticale */
+.ui-resizable-w {
+    width: 2px !important;
+    background-color: rgba(63, 63, 63, 0.8) !important;
+    left: -3px !important;
+    cursor: w-resize !important;
+}
+
+/* Bas - Ligne horizontale */
+.ui-resizable-s {
+    height: 2px !important;
+    background-color: rgba(63, 63, 63, 0.8) !important;
+    bottom: -3px !important;
+    cursor: s-resize !important;
+}
+
+/* Haut - Ligne horizontale */
+.ui-resizable-n {
+    height: 2px !important;
+    background-color: rgba(63, 63, 63, 0.8) !important;
+    top: -3px !important;
+    cursor: n-resize !important;
+}
+
+/* ========== EFFETS HOVER ========== */
+/* Hover sur les coins (boules) */
+.ui-resizable-se:hover, .ui-resizable-sw:hover,
+.ui-resizable-ne:hover, .ui-resizable-nw:hover {
+    background-color: rgba(100, 150, 255, 0.9) !important;
+    transform: scale(1.3);
+    transition: all 0.15s ease;
+}
+
+/* Hover sur les côtés (lignes) */
+.ui-resizable-e:hover, .ui-resizable-w:hover {
+    background-color: rgba(100, 150, 255, 0.9) !important;
+    width: 2px !important;
+    transition: all 0.15s ease;
+}
+
+.ui-resizable-n:hover, .ui-resizable-s:hover {
+    background-color: rgba(100, 150, 255, 0.9) !important;
+    height: 2px !important;
+    transition: all 0.15s ease;
+}
+
+/* ========== BOULES CENTRALES sur les côtés ========== */
+/* Droite - Boule centrale */
+.ui-resizable-e::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(63, 63, 63, 0.9);
+    /*border: 2px solid white;*/
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+/* Gauche - Boule centrale */
+.ui-resizable-w::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(63, 63, 63, 0.9);
+    /*border: 2px solid white;*/
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+/* Bas - Boule centrale */
+.ui-resizable-s::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(63, 63, 63, 0.9);
+    /*border: 2px solid white;*/
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+/* Haut - Boule centrale */
+.ui-resizable-n::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(63, 63, 63, 0.9);
+    /*border: 2px solid white;*/
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+/* Hover sur les boules centrales */
+.ui-resizable-e:hover::after, .ui-resizable-w:hover::after,
+.ui-resizable-n:hover::after, .ui-resizable-s:hover::after {
+    background-color: rgba(100, 150, 255, 0.9);
+    transform: translate(-50%, -50%) scale(1.2);
+    transition: all 0.15s ease;
+}
+
+/* Cacher toutes les poignées si la div a la classe "hide-handles" */
+.hide-handles .ui-resizable-handle {
+    display: none !important;
+}
+
+/* Ou cacher seulement certaines poignées */
+.hide-handles .ui-resizable-se,
+.hide-handles .ui-resizable-sw,
+.hide-handles .ui-resizable-ne,
+.hide-handles .ui-resizable-nw {
+    display: none !important;
 }

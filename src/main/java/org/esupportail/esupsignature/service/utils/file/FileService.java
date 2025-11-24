@@ -203,7 +203,7 @@ public class FileService {
 			if (!signRequestParams.getExtraOnTop()) {
 				extraWidth = 400;
 			} else {
-				extraHeight = 18 * nbExtra;
+				extraHeight = 17 * nbExtra;
 			}
 			int widthOffset = (int) (extraWidth * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
 			int heightOffset = (int) (extraHeight  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());

@@ -111,8 +111,8 @@
                         aria-expanded="false"
                         aria-controls="user-infos"
                         data-bs-toggle="collapse">
-                        <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-md-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
-                        <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-md-inline" th:text="${user.email}"></b>
+                        <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
+                        <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.email}"></b>
                         <div class="user-toggle align-middle ms-2"><i class="fa-solid fa-user"></i></div>
                     </a>
                 </li>

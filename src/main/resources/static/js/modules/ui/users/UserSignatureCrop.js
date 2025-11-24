@@ -99,7 +99,7 @@ export class UserSignatureCrop extends EventFactory {
                 reader.readAsDataURL(input.files[0]);
                 this.signPad.style.display = 'none';
                 this.signPadLabel.style.display = 'none';
-                this.fireEvent('started', ['ok']);
+                this.fireEvent("started", ['ok']);
             }
         }
     }
