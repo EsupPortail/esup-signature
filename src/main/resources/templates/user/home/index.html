@@ -326,7 +326,7 @@
                                     th:alt="'Circuit : ' + ${workflow.description}">
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
-                                        <h6 style="height: 50px;" th:text="${workflow.description}"></h6>
+                                        <h6 style="height: 50px;font-size: clamp(0.8rem, 1.2vw, 0.95rem);" th:text="${workflow.description}"></h6>
                                     </div>
                                 </a>
                                 <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
@@ -391,7 +391,7 @@
                                 <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                     <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
                                     <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
-                                    <h6 style="height: 50px;" th:text="${form.title}"></h6>
+                                    <h6 style="height: 50px;font-size: clamp(0.8rem, 1.2vw, 0.95rem);" th:text="${form.title}"></h6>
                                 </div>
                             </a>
                         </th:block>

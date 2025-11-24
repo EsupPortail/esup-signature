@@ -313,13 +313,14 @@ export class SignRequestParams extends EventFactory {
         this.#createTools();
         this.#updateSize();
         this.#toggleMinimalTools();
-        this.cross.css('overflow', 'hidden');
-        this.cross.append("<p class='text-black' style='font-weight: bold;'>Positionner le champ de signature et cliquer sur enregistrer</p>");
+        this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 6 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(10 * this.signScale * this.currentScale)  + "px");
         this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
+        this.border.remove();
+        this.tools.remove();
         this.submitAddSpotBtn = $("#submit-add-spot");
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
@@ -580,6 +581,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #computeBgColor() {
+        if(this.signImages === 999999) {
+            return;
+        }
         if (!this.inside) {
             this.cross.css("background-color", "rgba(255, 151, 151, 0.5)");
             return;
