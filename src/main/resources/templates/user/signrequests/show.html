@@ -57,38 +57,38 @@
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <button th:if="${isManager && signRequest.data == null}" tabindex="1" id="addSpotButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0px solid #0d6efd;">
-                            <i class="fi fi-rr-signature-lock fa-2xl text-dark" style="margin-top: 0px;"></i>
+                        <button th:if="${isManager && signRequest.data == null}" tabindex="1" id="addSpotButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0">
+                            <i class="fi fi-rr-signature-lock fa-2xl text-dark" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li>
-                        <button tabindex="1" id="addCommentButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter une annotation" style="border: 0px solid #0d6efd;">
-                            <i class="fi fi-rr-comment-alt fa-2xl text-dark" style="margin-top: 0px;"></i>
+                        <button tabindex="1" id="addCommentButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter une annotation" style="border: 0">
+                            <i class="fi fi-rr-comment-alt fa-2xl text-dark" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
                         <button tabindex="1" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-primary" title="Insérer une signature" style="border: 1px solid #0d6efd; outline:none;">
-                            <i class="fi fi-rr-file-signature fa-2xl text-primary" style="margin-top: 0px;"></i>
+                            <i class="fi fi-rr-file-signature fa-2xl text-primary" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <button tabindex="1" id="signLaunchButton" role="button" class="btn-floating btn-lg bg-success border-0" title="Enregistrer la signature et passer à l'étape suivante" style="outline:none;">
-                            <i class="fi fi-rr-signature-lock fa-2xl" style="margin-top: 0px; border: 0px"></i>
+                            <i class="fi fi-rr-signature-lock fa-2xl" style="margin-top: 0; border: 0"></i>
                         </button>
                     </li>
                     <li th:unless="${!signable || signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <a tabindex="1" id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
-                    <li tabindex="1" th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
+                    <li th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         <button tabindex="1" id="refuseLaunchButton" class="btn-floating btn-lg bg-danger border-0" title="Refuser"
                             th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
-                            <i class="fi fi-rr-document-circle-wrong fa-2xl" style="margin-top: 0px;"></i>
+                            <i class="fi fi-rr-document-circle-wrong fa-2xl" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li>
-                        <button tabindex="1" id="forward-btn" th:if="${signable}" class="btn btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
-                            <i class="fi fi-rr-refer-arrow fa-2xl text-dark" style="margin-top: 0px;"></i>
+                        <button tabindex="1" id="forward-btn" th:if="${signable}" class="btn-floating btn-lg bg-warning " title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal" style="border: 0;">
+                            <i class="fi fi-rr-refer-arrow fa-2xl text-dark" style="margin-top: 0; border: 0;"></i>
                         </button>
                     </li>
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
@@ -133,11 +133,11 @@
                             <i class="fa-solid fa-print fa-2xl"></i></a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                        <button tabindex="1" id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
+                        <button tabindex="1" id="trashLaunchButton" class="btn-floating btn-lg bg-danger"
                                 th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                                data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fi fi-rr-dumpster-fire fa-xl" style="margin-top: 0px;"></i>
-                            <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash fa-xl" style="margin-top: 0px;"></i>
+                                data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}" style="border: 0; ">
+                            <i th:if="${signRequest.deleted}" class="fi fi-rr-dumpster-fire fa-2xl" style="margin-top: 0;"></i>
+                            <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash fa-2xl" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
@@ -186,7 +186,7 @@
                 </ul>
             </div>
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
-            <div style="position: absolute;top: 200px;">
+            <div style="position: absolute;top: 200;">
                 <div id="potit-comment" class="postit-global d-none overflow-hidden"
                      th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
                      style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 1000;">
@@ -213,10 +213,10 @@
                         <p th:classappend="${postit.createBy.eppn == userEppn} ? 'd-none' : ''" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></p>
                         <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/update/' + ${postit.id}" th:method="put">
                             <textarea th:style="'width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
-                            <button type="submit" class="btn btn-sm btn-dark float-end position-absolute" style="bottom: 10px;right: 25px;" title="Enregistrer"><i class="fa fa-save"></i></button>
+                            <button type="submit" class="btn btn-sm btn-dark float-end position-absolute" style="bottom: 10;right: 25px;" title="Enregistrer"><i class="fa fa-save"></i></button>
                         </form>
                         <form th:if="${postit.createBy.eppn == userEppn}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/delete/' + ${postit.id}" th:method="delete">
-                            <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute" title="Supprimer" style="bottom: 10px;">
+                            <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute" title="Supprimer" style="bottom: 10;">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>
@@ -773,17 +773,17 @@
                 </div>
                 <div class="alert alert-light mb-2" th:unless="${signImages == null || signImages.size() <= 2}">
                     <h4 class="text-start"><strong>Mes Signatures</strong></h4>
-                        <div style="height: 150px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
+                        <div style="height: 150;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary">
                             <div class="carousel-inner">
                                 <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                     <div class="carousel-item text-center" th:classappend="${iterator.index == 0} ? 'active'">
                                         <img height="145" class="bg-white" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
-                                        <a style="position: absolute; top: 110px; left: 30%;" th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '"
+                                        <a style="position: absolute; top: 110; left: 30%;" th:title="${user.defaultSignImageNumber == iterator.index}? 'Ma signature favorite' : 'Choisir comme signature favorite '"
                                             th:href="'/' + ${urlProfil} + '/users/set-default-sign-image/' + ${iterator.index}" role="button"
                                             class="btn-light btn-outline-light" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
                                             <i class="fa-solid fa-star"></i>
                                         </a>
-                                        <form style="position: absolute; top: 110px; left: 60%;" th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+                                        <form style="position: absolute; top: 110; left: 60%;" th:id="'deleteForm-' + ${signImageId}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users/delete-sign/' + ${signImageId}" th:method="'delete'">
                                             <button type="submit" th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" class="btn btn-sm btn-danger text-white">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
@@ -833,7 +833,7 @@
                                 </div>
                             </div>
                         </label>
-                        <div class="mx-auto mb-1" style="width: 600px;">
+                        <div class="mx-auto mb-1" style="width: 600;">
                             <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                         </div>
                         <label id="signPadLabel" class="col-form-label"><strong>Vous pouvez dessiner une signature dans le rectangle ci dessous</strong></label>
