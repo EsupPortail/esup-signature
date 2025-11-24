@@ -1489,7 +1489,8 @@ export class SignRequestParams extends EventFactory {
         this.cross.append(divExtraHtml);
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
-        this.fontSize = 13;
+        this.border.remove();
+        this.fontSize = 10;
         this.textareaPart.on("input", function () {
             self.textPart = $(this).val();
             self.#resizeText();

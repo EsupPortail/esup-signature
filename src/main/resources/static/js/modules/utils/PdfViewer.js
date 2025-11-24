@@ -94,7 +94,7 @@ export class PdfViewer extends EventFactory {
         window.scrollTo({
             top: newScrolling,
             left: 0,
-            behavior: 'instant',
+            behavior: 'auto',
         });
     }
 
@@ -196,9 +196,6 @@ export class PdfViewer extends EventFactory {
 
     startRender(pdf) {
         this.pdfDiv.css('opacity', 0);
-        $(".pdf-page").each(function(e) {
-            $(this).remove();
-        });
         if(this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
@@ -277,12 +274,18 @@ export class PdfViewer extends EventFactory {
     renderTask(page, i) {
         return new Promise((resolve, reject) => {
             console.info("launch render task scaled to : " + this.scale);
-            const container = document.createElement("div");
-            container.id = `page_${i}`;
-            container.setAttribute("page-num", i);
-            container.className = "drop-shadows pdf-page";
-            container.style.marginBottom = `${10 * this.scale}px`;
-            this.pdfDiv.append(container);
+            let container = document.getElementById(`page_${i}`);
+            if (!container) {
+                container = document.createElement("div");
+                container.id = `page_${i}`;
+                container.setAttribute("page-num", i);
+                container.className = "drop-shadows pdf-page";
+                container.style.marginBottom = `${10 * this.scale}px`;
+                this.pdfDiv.append(container);
+            } else {
+                container.innerHTML = ""; // vide le contenu sans supprimer le div
+                container.style.marginBottom = `${10 * this.scale}px`; // mettre à jour le margin si besoin
+            }
             $(container).droppable({
                 drop: (event, ui) => ui.helper.attr("page", i)
             });
