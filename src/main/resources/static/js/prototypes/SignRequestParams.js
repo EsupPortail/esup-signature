@@ -525,6 +525,7 @@ export class SignRequestParams extends EventFactory {
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
+                self.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
                 }
@@ -580,7 +581,7 @@ export class SignRequestParams extends EventFactory {
         if(this.signSpace != null && this.signSpace.ready) {
             this.cross.css("background-color", "rgba(220, 250, 220, 1)");
         } else {
-            this.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
+            this.cross.css("background-color", "rgba(255, 255, 255, 0.8)");
         }
     }
 
@@ -757,14 +758,13 @@ export class SignRequestParams extends EventFactory {
     }
 
     #unlock() {
-        // this.border.removeClass("static-border");
-        // this.border.addClass("anim-border");
         this.cross.removeClass("hide-handles");
         this.tools.removeClass("d-none");
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
         $(document).on('keydown', e => this.#handleKeydown(e));
+        this.#computeBgColor();
     }
 
     #nextSignImage() {
@@ -1444,8 +1444,6 @@ export class SignRequestParams extends EventFactory {
         }
         $("#extraTools_" + this.id).addClass("d-none");
         this.cross.draggable("enable");
-        // this.border.removeClass("anim-border");
-        // this.border.addClass("static-border");
         this.cross.addClass("hide-handles");
         this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
@@ -1460,13 +1458,7 @@ export class SignRequestParams extends EventFactory {
         }
         $(document).unbind('keydown');
         this.canvasBtn.removeClass("d-none");
-        // const ui = {
-        //     position: {
-        //         left: parseInt(this.cross.css('left'), 10),
-        //         top: parseInt(this.cross.css('top'), 10)
-        //     }
-        // };
-        // this.#afterDropRefresh(ui);
+        this.#computeBgColor();
     }
 
     getBrowserZoom() {

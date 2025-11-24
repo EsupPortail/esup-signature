@@ -752,6 +752,10 @@ textarea:placeholder-shown.required-field {
     transition: background-image 0.2s ease-in-out;
 }
 
+.static-border {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 .cross-warning {
     background-color: rgba(255, 223, 151, 0.6) !important;
 }
@@ -989,7 +993,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
     width: 10px !important;
     height: 10px !important;
     background-color: rgba(63, 63, 63, 0.9) !important;
-    border: 2px solid white !important;
+    /*border: 2px solid white !important;*/
     border-radius: 50% !important;
     z-index: 90 !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -1068,13 +1072,13 @@ tr[aria-expanded="true"] .caret-toggle::before {
 /* Hover sur les côtés (lignes) */
 .ui-resizable-e:hover, .ui-resizable-w:hover {
     background-color: rgba(100, 150, 255, 0.9) !important;
-    width: 4px !important;
+    width: 2px !important;
     transition: all 0.15s ease;
 }
 
 .ui-resizable-n:hover, .ui-resizable-s:hover {
     background-color: rgba(100, 150, 255, 0.9) !important;
-    height: 4px !important;
+    height: 2px !important;
     transition: all 0.15s ease;
 }
 
@@ -1083,10 +1087,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .ui-resizable-e::after {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background-color: rgba(63, 63, 63, 0.9);
-    border: 2px solid white;
+    /*border: 2px solid white;*/
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -1099,10 +1103,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .ui-resizable-w::after {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background-color: rgba(63, 63, 63, 0.9);
-    border: 2px solid white;
+    /*border: 2px solid white;*/
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -1115,10 +1119,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .ui-resizable-s::after {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background-color: rgba(63, 63, 63, 0.9);
-    border: 2px solid white;
+    /*border: 2px solid white;*/
     border-radius: 50%;
     top: 50%;
     left: 50%;
@@ -1131,10 +1135,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .ui-resizable-n::after {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     background-color: rgba(63, 63, 63, 0.9);
-    border: 2px solid white;
+    /*border: 2px solid white;*/
     border-radius: 50%;
     top: 50%;
     left: 50%;
