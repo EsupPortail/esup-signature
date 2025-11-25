@@ -221,7 +221,7 @@ header {
     padding-right: 5px;
     padding-bottom: 12px;
     position: fixed;
-    z-index: 1030;
+    z-index: 1029 !important;
     min-width: 260px;
     max-width: 260px;
     height: calc(100vh - 80px);
@@ -238,7 +238,7 @@ header {
     width: 260px !important;
     max-width: 260px !important;
     position: absolute !important;
-    top: 100px !important;
+    top: 105px !important;
     height: calc(100vh - 138px) !important;
     z-index: 1 !important;
 }
@@ -287,7 +287,7 @@ header {
     position: fixed;
     margin-left: 260px;
     width: 100%;
-    z-index: 1029;
+    z-index: 1028;
 }
 
 .breadcrumb-nav-full {

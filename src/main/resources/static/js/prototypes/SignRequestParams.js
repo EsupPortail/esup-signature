@@ -1472,7 +1472,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 
