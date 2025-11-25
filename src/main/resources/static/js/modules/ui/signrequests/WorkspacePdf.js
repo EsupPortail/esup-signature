@@ -364,7 +364,6 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        $("#content").on('mousedown', e => this.clickAction(e));
         this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
@@ -533,18 +532,18 @@ export class WorkspacePdf {
 
     pointIt2(e) {
         let target = e.target;
-        let page = $(target).parent().parent();
-        let pageNumber = page.attr("page-num");
-        $('#commentPageNumber').val(pageNumber);
+        let page = $(target).parent().parent().parent();
         let offset = 0;
         if(page.attr("page-num") !== undefined) {
-            offset = $("#page_" + page.attr("page-num")).offset().top;
+            let pageNumber = page.attr("page-num");
+            offset = $("#page_" + pageNumber).offset().top;
+            $('#commentPageNumber').val(pageNumber);
+            console.warn(pageNumber);
         }
         let xPos = e.offsetX ? (e.offsetX) : e.clientX;
         let yPos = e.pageY - offset;
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
-
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
     }
 
@@ -1070,15 +1069,43 @@ export class WorkspacePdf {
         let hideCommentButton = $('#hideCommentButton');
         saveCommentButton.unbind();
         hideCommentButton.unbind();
-        $('#pdf').mousemove(e => this.moveAction(e));
+        let last = 0;
+        let inside = false;
+        $('#pdf')
+            .on('mouseenter', () => { inside = true; })
+            .on('mouseleave', () => { inside = false; });
+        $('#pdf').on('click', e => {
+            if (!inside) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            this.clickAction(e);
+        });
+        $('#pdf').on('mousemove', e => {
+            const now = performance.now();
+            if (now - last < 50) return; // 50ms = ~20 fps
+            last = now;
+            this.moveAction(e);
+        });
+        $(document).off('keydown');
+        document.addEventListener('keydown', function onEscCapture(e) {
+            if (e.key === 'Escape') {
+                e.stopImmediatePropagation?.();
+                e.stopPropagation();
+                e.preventDefault();
+                location.reload();
+            }
+        }, { capture: true});
         $("#addSpotButton").attr("disabled", true);
-        $("#addCommentButton").attr("disabled", true);
+        $("#addCommentButton").addClass("btn-danger");
+        $("#addCommentButton2").addClass("bg-danger text-white");
         $("#addSpotButton2").attr("disabled", true);
-        $("#addCommentButton2").attr("disabled", true);
-        $("#addCommentButton2").addClass("disable");
+        // $("#addCommentButton2").attr("disabled", true);
+        // $("#addCommentButton2").addClass("disable");
         // this.hideComment(e);
         if (this.addCommentEnabled) {
-            this.disableAddComment();
+            location.reload();
         } else {
             this.enableAddComment();
         }

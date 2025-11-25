@@ -29,19 +29,19 @@
                     class="fi fi-rr-zoom-out"></i></button>
             <button id="zoomin" title="Zoom avant" class="btn btn-light btn-outline-dark me-1"><i
                     class="fi fi-rr-zoom-in"></i></button>
-            <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark me-1"><i
+            <button id="fullwidth" title="Pleine largeur" class="btn btn-light btn-outline-dark me-1 d-none d-sm-block"><i
                     class="fi fi-rr-expand-arrows"></i></button>
-            <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark d-none d-lg-block me-1"><i
+            <button id="fullheight" title="Pleine hauteur" class="btn btn-light btn-outline-dark me-1 d-none d-sm-block"><i
                     class="fi fi-rr-compress-alt"></i></button>
             <div class="zoom bg-light me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
             <div class="border ms-1 me-2 d-none d-lg-block"></div>
-            <button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark me-1" aria-label="Précédent">
+            <button id="prev" title="Page précédente" class="btn btn-light btn-outline-dark me-1 d-none d-sm-block" aria-label="Précédent">
                 <i class="fi fi-rr-up"></i>
             </button>
             <div class="bg-light me-1 p-1 pt-2 d-none d-xxxl-inline-flex fw-bold" style="min-width: 150px;">
                 <span>Page </span><input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1" style="width: 50px;"/><span> / </span> <span id="page_count"></span>
             </div>
-            <button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1" aria-label="Prochain">
+            <button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1 d-none d-sm-block" aria-label="Prochain">
                 <i class="fi fi-rr-down"></i>
             </button>
             <button id="rotateleft" class="btn btn-light btn-outline-dark me-1 d-none">
@@ -52,11 +52,11 @@
             </button>
             <div class="border ms-1 me-2 d-none d-lg-block"></div>
             <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                <button class="btn btn-warning me-1 d-none d-lg-block"
+                <button class="btn btn-warning me-1"
                         name="changeMode"
                         id="changeMode1"><i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span> <span class="badge rounded-pill bg-dark" th:text="${comments.size()}"></span></button>
             </th:block>
-            <div id="insert-btn-div" class="d-none d-sm-block">
+            <div id="insert-btn-div">
                 <button id="insert-btn" th:if="${editable}" class="btn btn-light btn-outline-primary"
                     data-bs-toggle="collapse" href="#second-tools">
                     <i class="fi fi-rr-multiple"></i> <span class="d-none d-xxl-inline">Menu insertion</span>

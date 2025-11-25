@@ -328,7 +328,7 @@ public class UserAndOtpSignRequestController {
                                         @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                                         @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                                         @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                                        @RequestParam(value = "commentScale", required = false) Float commentScale,
+                                        @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale,
                                         @RequestParam(value = "postit", required = false) String postit,
                                         @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend) {
         Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), postit, spotStepNumber, authUserEppn, userEppn, forceSend);
