@@ -1284,7 +1284,7 @@ export class WorkspacePdf {
         }
     }
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 }
