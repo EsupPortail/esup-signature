@@ -479,6 +479,7 @@ public class UpgradeService {
     public void update_1_36_7() {
         logger.info("#### Starting update signRequestParams positions ####");
         entityManager.createNativeQuery("UPDATE sign_request_params SET x_pos = x_pos * 0.75, y_pos = y_pos * 0.75, sign_width = sign_width * 0.75, sign_height = sign_height * 0.75;").executeUpdate();
+        entityManager.createNativeQuery("UPDATE comment SET posx = posx * 0.75, posy = posy * 0.75, sign_width = sign_width * 0.75, sign_height = sign_height * 0.75;").executeUpdate();
         logger.info("#### Update signRequestParams positions completed ####");
     }
 }
