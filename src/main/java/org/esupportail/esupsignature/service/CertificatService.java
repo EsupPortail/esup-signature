@@ -326,7 +326,7 @@ public class CertificatService implements HealthIndicator {
                 sealCertificatProperties.getValue().eIDasValidity = qualificationAtValidationTime.isQc() && qualificationAtValidationTime.isQscd() && qualificationAtValidationTime.isForEseal();
                 sealCertificatPropertieses.add(sealCertificatProperties.getValue());
             } catch (Exception e) {
-                logger.error(e.getMessage());
+                logger.debug(e.getMessage());
             }
         }
         sealCertificatPropertieses = sealCertificatPropertieses.stream().sorted(Comparator.comparing(SealCertificatProperties::getSealCertificatName)).toList();
