@@ -527,7 +527,7 @@ export class SignUi {
     }
 
     getBrowserZoom() {
-        return window.devicePixelRatio || 1;
+        return 1 || 1;
     }
 
 }
