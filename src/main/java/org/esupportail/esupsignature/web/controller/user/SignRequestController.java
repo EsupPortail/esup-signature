@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -50,22 +49,6 @@ public class SignRequestController {
     @GetMapping()
     public String show() {
         return "redirect:/user";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
-    @PostMapping(value = "/refuse/{id}")
-    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
-        signBookService.refuse(id, comment, userEppn, authUserEppn);
-        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
-        if(redirect.equals("end")) {
-            User user = userService.getByEppn(userEppn);
-            if(!user.getReturnToHomeAfterSign()) {
-                return "redirect:/user/signrequests/" + id;
-            }
-            return "redirect:/user";
-        } else {
-            return "redirect:/user/signrequests/" + redirect;
-        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")

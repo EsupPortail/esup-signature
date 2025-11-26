@@ -39,6 +39,8 @@ public class Comment {
 
     private String postitColor = "#FFF740";
 
+    private Boolean refuse = false;
+
     public Long getId() {
         return id;
     }
@@ -135,5 +137,14 @@ public class Comment {
 
     public void setPostitColor(String postitColor) {
         this.postitColor = postitColor;
+    }
+
+    public Boolean getRefuse() {
+        if(refuse == null) return false;
+        return refuse;
+    }
+
+    public void setRefuse(Boolean refuse) {
+        this.refuse = refuse;
     }
 }

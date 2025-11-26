@@ -166,9 +166,6 @@ public class UserAndOtpSignRequestController {
         }
         model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
-            if (reports != null) {
-                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-            }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
             if(auditTrail != null) {
                 model.addAttribute("auditTrail", auditTrail);
@@ -374,6 +371,24 @@ public class UserAndOtpSignRequestController {
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
             return "redirect:/user/signrequests/" + id;
+        }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
+    @PostMapping(value = "/refuse/{id}")
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        signBookService.refuse(id, comment, userEppn, authUserEppn);
+        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
+        String path = httpServletRequest.getRequestURI();
+        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
+        if(redirect.equals("end")) {
+            User user = userService.getByEppn(userEppn);
+            if(!user.getReturnToHomeAfterSign()) {
+                return "redirect:" + basePath + id;
+            }
+            return "redirect:/user";
+        } else {
+            return "redirect:" + basePath + redirect;
         }
     }
 

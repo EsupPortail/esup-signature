@@ -97,8 +97,11 @@ export class SignUi {
                 let modal = "<div class=\"modal fade\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
                     "<div class=\"modal-dialog modal-lg\">" +
                     "<div class=\"modal-content\">" +
-                    "<div class=\"modal-body\">" +
+                    "<div class=\"modal-header\">" +
+                    "<h5 class=\"modal-title\" id=\"exampleModalLabel\">Validation de la signature</h5>\n" +
                     "<button class=\"btn btn-sm btn-close text-dark float-end position-relative\" style='z-index: 2' onclick=\"$('#reportModal').modal('toggle');\"></button>" +
+                    "</div>" +
+                    "<div class=\"modal-body\">" +
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);
@@ -110,7 +113,7 @@ export class SignUi {
                 $("#reportSpinner").hide();
                 let reportModalBtn = $("#reportModalBtn");
                 reportModalBtn.removeClass("d-none");
-                $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
+                // $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
             }
         });
     }

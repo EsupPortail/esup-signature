@@ -265,7 +265,6 @@ public class SignBookController {
             model.addAttribute("signBook", signBook);
             model.addAttribute("logs", signBookService.getLogsFromSignBook(id));
             model.addAttribute("allSteps", signBookService.getAllSteps(id));
-            model.addAttribute("workflows", workflowService.getWorkflowsByUser(authUserEppn, authUserEppn));
             return "user/signbooks/update";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));

@@ -1227,7 +1227,9 @@ public class SignRequestService {
 				}
 				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 				signRequestParams.setSignDocumentNumber(docNumber);
-				signRequestParams.setComment(commentText);
+                if(StringUtils.hasText(commentText)) {
+                    signRequestParams.setComment(commentText);
+                }
 				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
 			}
 			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);

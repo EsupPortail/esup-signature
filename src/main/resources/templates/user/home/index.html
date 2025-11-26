@@ -239,8 +239,8 @@
                    th:classappend="${nbToSign > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-inbox-full text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Documents à signer</span>
-                    <span class="d-none d-xxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">À signer</span>
+                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Documents à signer</span>
+                    <span class="d-none d-xxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">À signer</span>
                     <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
                 <a tabindex="0" id="pendings-btn" role="button"
@@ -248,8 +248,8 @@
                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-paper-plane-top text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Demandes envoyées</span>
-                    <span class="d-none d-xxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Envoyées</span>
+                    <span class="d-none d-xxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Demandes envoyées</span>
+                    <span class="d-none d-xxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Envoyées</span>
                     <span aria-hidden="true" title="Demandes envoyées" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                 </a>
                 <a tabindex="0" id="followed-btn" role="button"
@@ -257,16 +257,16 @@
                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi fi-rr-binoculars text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Demandes suivies</span>
-                    <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Suivies</span>
+                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Demandes suivies</span>
+                    <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Suivies</span>
                     <span title="Demandes suivie" th:if="${nbFollowByMe > 0  && userEppn == authUserEppn}" class="badge rounded-pill bg-primary d-none d-md-inline" th:text="${nbFollowByMe}">
                 </a>
                 <a tabindex="0" id="signeds-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-folder-times text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Historique de mes signatures</span>
-                    <span class="d-none d-xxxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Historique</span>
+                    <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Historique de mes signatures</span>
+                    <span class="d-none d-xxxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Historique</span>
                 </a>
                 <!--                <a tabindex="10" title="Formulaires" type="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#formsModal"-->
                 <!--                    style="font-size: 16px;">-->
@@ -277,15 +277,15 @@
                 <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#controlModal"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-registration-paper text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler un document</span>
-                    <span class="d-none d-lg-none d-lg-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Contrôler</span>
+                    <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Contrôler un document</span>
+                    <span class="d-none d-lg-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Contrôler</span>
                 </a>
                 <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" role="button"
                    class="start-wizard-buttons btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-customization text-dark-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
-                    <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Assistant de création de circuit</span>
-                    <span class="d-none d-xxxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1.2vw, 0.95rem);">Assistant</span>
+                    <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Assistant de création de circuit</span>
+                    <span class="d-none d-xxxxl-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Assistant</span>
                 </a>
             </div>
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-1 gap-xxl-3">
@@ -326,7 +326,7 @@
                                     th:alt="'Circuit : ' + ${workflow.description}">
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                         <i class="fi fi-tr-diagram-project project-diagram-color" style="font-size: 50px;"></i>
-                                        <h6 style="height: 50px;font-size: clamp(0.8rem, 1.2vw, 0.95rem);" th:text="${workflow.description}"></h6>
+                                        <h6 style="height: 50px;font-size: clamp(0.8rem, 1vw, 0.95rem);" th:text="${workflow.description}"></h6>
                                     </div>
                                 </a>
                                 <div style="margin-top: -39px; margin-right: 8px; text-align: end;">
@@ -391,7 +391,7 @@
                                 <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
                                     <i class="fi fi-tr-poll-h file-alt-color" style="font-size: 50px;"></i>
                                     <!--                                <img th:src="'/user/datas/forms/' + ${form.id} + '/get-image/'" height="150px"/>-->
-                                    <h6 style="height: 50px;font-size: clamp(0.8rem, 1.2vw, 0.95rem);" th:text="${form.title}"></h6>
+                                    <h6 style="height: 50px;font-size: clamp(0.8rem, 1vw, 0.95rem);" th:text="${form.title}"></h6>
                                 </div>
                             </a>
                         </th:block>
