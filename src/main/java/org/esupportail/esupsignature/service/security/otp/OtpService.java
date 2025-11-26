@@ -71,7 +71,7 @@ public class OtpService {
             }
             Otp otp = new Otp();
             otp.setCreateDate(new Date());
-            if(StringUtils.hasText(phone)) {
+            if(StringUtils.hasText(phone) && !phone.matches("\\*+\\d{4}$")) {
                 otp.setPhoneNumber(phone);
             } else {
                 otp.setPhoneNumber(extUser.getPhone());

@@ -1086,8 +1086,11 @@ export class SignRequestParams extends EventFactory {
     }
 
     #toggleType() {
+        if(!this.extraName && !this.extraDate && !this.isExtraText && !this.addImage){
+            return;
+        }
         if(this.extraType) {
-            if(!this.extraName && !this.extraDate && !this.isExtraText && this.extraType) {
+            if(!this.extraName && !this.extraDate && !this.isExtraText && this.signImages) {
                 this.addExtra = true;
                 this.#toggleExtra();
             }
@@ -1109,6 +1112,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #toggleName() {
+        if(!this.extraType && !this.extraDate && !this.isExtraText && !this.addImage){
+            return;
+        }
         if(this.extraName) {
             if(this.extraName && !this.extraDate && !this.isExtraText && !this.extraType) {
                 this.addExtra = true;
@@ -1132,6 +1138,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #toggleDate() {
+        if(!this.extraName && !this.extraType && !this.isExtraText && !this.addImage){
+            return;
+        }
         if(this.extraDate) {
             if(!this.extraName && this.extraDate && !this.isExtraText && !this.extraType) {
                 this.addExtra = true;
@@ -1155,6 +1164,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #toggleText() {
+        if(!this.extraName && !this.extraDate && !this.extraType && !this.addImage){
+            return;
+        }
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
             if(!this.extraName && !this.extraDate && this.isExtraText && !this.extraType) {

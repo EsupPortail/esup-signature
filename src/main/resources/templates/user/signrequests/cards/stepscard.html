@@ -89,15 +89,15 @@
                                                 <i class="fa-solid fa-key"></i></button>
                                         </td>
                                     </tr>
-                                    <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal " th:id="'menu-' + ${recipient.id}">
+                                    <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal border-1 border-secondary-subtle" th:id="'menu-' + ${recipient.id}" style="top:220px;--bs-modal-border-color:grey">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
                                                 <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
                                                 <div class="modal-body">
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                     <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
-                                                    <input type="text" name="phone" class="form-control" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.phone}" th:if="${globalProperties.smsRequired}">
-                                                    <br>
+                                                    <input type="text" id="phone" name="phone" class="form-control intl-phone" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.hidedPhone}" th:if="${globalProperties.smsRequired}">
+                                                        <br><br>
                                                     <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
                                                     </form>
                                                     <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
@@ -120,7 +120,7 @@
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
                             <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
-                            Export vers :<br/>
+                            Export vers :<br/>
                             <span th:text="${target.protectedTargetUri}" ></span>
                         </div>
                     </th:block>
