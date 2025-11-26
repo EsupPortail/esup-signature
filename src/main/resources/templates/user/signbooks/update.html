@@ -18,23 +18,23 @@
             <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a th:if="${signBook.isEditable()}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end">
-                            <i class="fa-solid fa-file-medical fa-2xl"></i>
+                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end">
+                            <i class="fi fi-rr-add-document fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                     <li>
                         <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end m-2">
-                            <i class="fa-solid fa-shoe-prints fa-2xl"></i>
+                            <i class="fi-rr-workflow-setting fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                     <li>
                         <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
-                            <i class="fa-solid fa-save fa-2xl"></i>
+                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                     <li>
                         <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary" title="Retour au parapheur">
-                            <i class="fa-solid fa-door-open fa-2xl"></i>
+                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                 </ul>
@@ -84,14 +84,14 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
-                                    <td th:if="${signBook.isEditable()}" class="">
+                                    <td th:if="${signBook.isEditable() && signRequest.createBy.eppn == userEppn}" class="">
                                         <div class="dropdown position-relative">
                                             <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
                                                 <i class="fa-solid fa-ellipsis-v"></i>
                                             </button>
                                             <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
                                                 <li>
-                                                    <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                                                    <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                         <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                     </a>
                                                 </li>
@@ -135,7 +135,7 @@
     </div>
 </main>
 
-<div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true" th:if="${signBook.createBy.eppn == userEppn && signBook.isEditable()}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -179,7 +179,6 @@
                         <div class="form-group mb-3">
                             <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
                                 <option th:value="0" th:text="${'Au début'}"></option>
-                                <!--/*@thymesVar id="allSteps" type="List<WorkflowStep>"*/-->
                                 <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
                                 <option th:value="-1" th:text="${'A la fin'}"></option>
                             </select>

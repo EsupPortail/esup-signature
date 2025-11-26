@@ -40,7 +40,7 @@ export class SignRequestParams extends EventFactory {
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
-        this.signScale = 1 * this.getBrowserZoom();
+        this.signScale = 0.5 * this.getBrowserZoom();
         localStorage.setItem("zoom", this.signScale);
         this.firstLaunch = true;
         this.firstCrossAlert = true;
@@ -341,7 +341,7 @@ export class SignRequestParams extends EventFactory {
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {
-            let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val()) +
+            let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val() ?? "") +
                 "&commentPosX=" + Math.round(this.xPos * this.getBrowserZoom()) +
                 "&commentPosY=" + Math.round(this.yPos * this.getBrowserZoom()) +
                 "&commentScale=" + this.signScale / this.getBrowserZoom() +
@@ -532,9 +532,9 @@ export class SignRequestParams extends EventFactory {
             refreshPositions:true,
             scroll: true,
             drag: function(event, ui) {
-                self.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
+                    self.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
                 }
                 self.tools.addClass("d-none");
             },
@@ -683,15 +683,14 @@ export class SignRequestParams extends EventFactory {
                 console.log(ui);
                 self.signScale = self.#getNewScale(ui);
                 localStorage.setItem("zoom", self.signScale);
-
-                // Mettre à jour la position si elle a changé (handles du haut ou gauche)
                 if (ui.position.left !== self.initialPosition.left || ui.position.top !== self.initialPosition.top) {
                     self.#afterDropRefresh(ui);
                 }
-
                 const dragRect = this.getBoundingClientRect();
                 self.#checkInside(dragRect, self);
                 window.__isResizingCross = false;
+                // self.#simulateDrag(1, 1);
+                // self.#simulateDrag(-1, -1);
             }
         });
     }

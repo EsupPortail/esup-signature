@@ -123,7 +123,7 @@
                     class="badge rounded-pill bg-primary"></div>
             </button>
             <button class="btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
-                    data-bs-target="#addCommentModal">
+                    data-bs-target="#addCommentModal" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                 <i class="fi fi-rr-notes"></i> <span class="d-none d-xxxl-inline">Post-it</span>
             </button>
             <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="btn btn-light btn-outline-dark me-1 d-none d-lg-block" title="Gérer mes images de signature">
