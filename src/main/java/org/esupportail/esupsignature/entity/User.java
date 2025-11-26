@@ -180,7 +180,7 @@ public class User {
                 return stars + p.substring(p.length() - 4);
             }
         }
-        return hidedPhone;
+        return "";
     }
 
     public void setHidedPhone(String hidedPhone) {
