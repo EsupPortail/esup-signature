@@ -10,7 +10,7 @@
                 <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
                 <div class="text-center mb-1">
                     <div class="badge rounded-pill badge-status bg-secondary" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
-                        <i class="fa-solid fa-box-archive"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+                        <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
                     </div>
                 </div>
                 <p class="mb-2" th:if="${signRequest != null}">Créé par <b th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></b></p>

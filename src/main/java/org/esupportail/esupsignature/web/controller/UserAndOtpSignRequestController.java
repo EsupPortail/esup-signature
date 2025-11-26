@@ -166,9 +166,6 @@ public class UserAndOtpSignRequestController {
         }
         model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
-            if (reports != null) {
-                model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
-            }
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
             if(auditTrail != null) {
                 model.addAttribute("auditTrail", auditTrail);
