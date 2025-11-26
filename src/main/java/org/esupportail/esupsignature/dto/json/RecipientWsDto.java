@@ -9,6 +9,7 @@ public class RecipientWsDto {
     @NotNull
     private String email;
     private String phone = "";
+    private String hidedPhone = "";
     private String name = "";
     private String firstName = "";
     private Boolean forceSms = false;
@@ -29,6 +30,7 @@ public class RecipientWsDto {
         this.id = id;
         this.email = email;
         this.phone = phone;
+        this.hidedPhone = getHidedPhone();
     }
 
     public Long getId() {
@@ -60,6 +62,16 @@ public class RecipientWsDto {
 
     public String getPhone() {
         return phone;
+    }
+
+    public String getHidedPhone() {
+        if (phone == null || phone.length() <= 4) {
+            return phone; // trop court pour masquer
+        }
+        int starsCount = phone.length() - 4;
+        String stars = "*".repeat(starsCount);
+        String last4 = phone.substring(phone.length() - 4);
+        return stars + last4;
     }
 
     public void setPhone(String phone) {

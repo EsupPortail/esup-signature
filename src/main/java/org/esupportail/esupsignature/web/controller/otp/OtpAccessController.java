@@ -129,8 +129,13 @@ public class OtpAccessController {
             User user = otp.getUser();
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
+                Phonenumber.PhoneNumber number;
+                try {
+                    number = phoneUtil.parse(phone, null);
+                } catch (Exception e) {
+                    return ResponseEntity.internalServerError().body("Merci de saisir correctement votre numéro de mobile");
+                }
                 if ((!otp.getSmsSended() || otpService.getOtpFromCache(urlId) == null) && smsService != null) {
-                    Phonenumber.PhoneNumber number = phoneUtil.parse(phone, null);
                     if (phoneUtil.isValidNumber(number)) {
                         String password = otpService.generateOtpPassword(urlId, phone);
                         logger.info("sending password by sms : " + password + " to " + phone);
