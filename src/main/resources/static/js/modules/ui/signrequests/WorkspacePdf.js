@@ -364,6 +364,7 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
+        $("#content").on('mousedown', e => this.signPosition.lockSigns());
         this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
