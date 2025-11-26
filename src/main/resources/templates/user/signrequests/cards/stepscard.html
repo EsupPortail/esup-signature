@@ -96,9 +96,22 @@
                                                 <div class="modal-body">
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                     <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
-                                                    <input type="text" id="phone" name="phone" class="form-control intl-phone" placeholder="Numéro de mobile (facultatif)" th:value="${recipient.user.hidedPhone}" th:if="${globalProperties.smsRequired}">
+
+                                                        <div th:if="${globalProperties.smsRequired}">
+                                                            <input type="text"
+                                                                   id="phone"
+                                                                   name="phone"
+                                                                   class="form-control"
+                                                                   th:value="${recipient.user.hidedPhone}">
+                                                        </div>
+
                                                         <br><br>
-                                                    <button type="submit" class="btn btn-success float-end mb-2" title="Envoyer un nouveau lien d'accès">Confirmer</button>
+
+                                                        <button type="submit"
+                                                                class="btn btn-success float-end mb-2"
+                                                                title="Envoyer un nouveau lien d'accès">
+                                                            Confirmer
+                                                        </button>
                                                     </form>
                                                     <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
                                                 </div>
