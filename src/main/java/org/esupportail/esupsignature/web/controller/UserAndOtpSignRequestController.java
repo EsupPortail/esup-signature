@@ -377,4 +377,22 @@ public class UserAndOtpSignRequestController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
+    @PostMapping(value = "/refuse/{id}")
+    public String refuse(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "comment") String comment, @RequestParam(value = "redirect") String redirect, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+        signBookService.refuse(id, comment, userEppn, authUserEppn);
+        redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
+        String path = httpServletRequest.getRequestURI();
+        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
+        if(redirect.equals("end")) {
+            User user = userService.getByEppn(userEppn);
+            if(!user.getReturnToHomeAfterSign()) {
+                return "redirect:" + basePath + id;
+            }
+            return "redirect:/user";
+        } else {
+            return "redirect:" + basePath + redirect;
+        }
+    }
+
 }

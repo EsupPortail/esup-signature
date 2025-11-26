@@ -302,7 +302,7 @@ public class SignBook {
     }
 
     public boolean isEditable() {
-        return getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
+        return this.getLiveWorkflow().getCurrentStepNumber() < 2 && getSignRequests().stream().noneMatch(s -> !s.getStatus().equals(SignRequestStatus.pending) && !s.getDeleted() && !s.getStatus().equals(SignRequestStatus.draft) && !s.getStatus().equals(SignRequestStatus.uploading));
     }
 
 }

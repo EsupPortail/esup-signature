@@ -163,7 +163,7 @@
                 </div>
             </th:block>
             <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text != null && spot.text != ''} ? ${spot.text} : 'Cliquer pour supprimer l\'emplacement de signature'"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
                     <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
