@@ -126,6 +126,7 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowService.getById(id);
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("certificats", certificatService.getAllCertificats());
+        model.addAttribute("allSteps", workflow.getWorkflowSteps());
 		return "admin/workflows/steps";
 	}
 
@@ -214,7 +215,8 @@ public class WorkflowAdminController {
 	@PostMapping(value = "/add-step/{id}")
 	public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 						  @RequestParam("signType") String signType,
-						  @RequestParam(name="description", required = false) String description,
+                          @RequestParam("stepNumber") int stepNumber,
+                          @RequestParam(name="description", required = false) String description,
 						  @RequestParam(name="recipientsEmails", required = false) String[] recipientsEmails,
 						  @RequestParam(name="changeable", required = false) Boolean changeable,
 						  @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
@@ -225,7 +227,7 @@ public class WorkflowAdminController {
 			recipientWsDtos = recipientService.convertRecipientEmailsToRecipientDto(List.of(recipientsEmails));
 		}
 		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.fromString(signType), description, recipientWsDtos, changeable, maxRecipients, allSignToComplete, attachmentRequire);
-		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
+		workflowStepService.addStep(id, workflowStepDto, stepNumber, authUserEppn, false, false, null);
         String path = httpServletRequest.getRequestURI();
 		if (!path.startsWith("/admin")) {
 			return "redirect:/manager/workflows/steps/" + id;
@@ -243,7 +245,7 @@ public class WorkflowAdminController {
 							  @RequestParam(name="description", required = false) String description,
 							  @RequestParam(name="certificatId", required = false) Long certificatId) throws EsupSignatureRuntimeException {
 		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.signature, description, null, false, 1, false, false);
-		workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, true, certificatId);
+		workflowStepService.addStep(id, workflowStepDto, -1, authUserEppn, false, true, certificatId);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
 

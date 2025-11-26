@@ -10,15 +10,14 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side :: side}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="content-fixed-breadcrumb">
             <div id="addButton" class="fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
@@ -43,44 +42,40 @@
                 </ul>
             </div>
 
-            <div class="card col-lg-10 mx-auto mb-1 text-bg-light">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Paramètres généraux</b></h5>
-                    <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
-                        <div class="form-group">
-                            <label for="name"><strong>Nom du circuit</strong></label>
-                            <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="viewersSelect"><strong>Observateurs</strong></label>
-                            <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
-                                <option data-placeholder="true"></option>
-                                <th:block th:each="viewer : ${workflow.viewers}">
-                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                        <strong>Options</strong>
-                        <div class="form-check mb-2">
-                            <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
-                            <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
-                        </div>
-                        <button title="Enregistrer" type="submit" class="btn btn-success mt-2 float-end"><i class="fa-solid fa-save"></i></button>
-                    </form>
-                </div>
+            <div class="alert alert-light rounded-3 col-lg-10 mx-auto mb-1">
+                <h5>Paramètres généraux</h5>
+                <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
+                    <div class="form-group">
+                        <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
+                        <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="viewersSelect">Observateurs</label>
+                        <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
+                            <option data-placeholder="true"></option>
+                            <th:block th:each="viewer : ${workflow.viewers}">
+                                <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <strong>Options</strong>
+                    <div class="form-check mb-2">
+                        <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
+                        <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                    </div>
+                    <button title="Enregistrer" type="submit" class="btn btn-success mt-2"><i class="fa-solid fa-save"></i></button>
+                </form>
             </div>
-            <div class="card col-lg-10 mx-auto mb-1 text-bg-light">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Étapes</b></h5>
-                    <dl class="row border-bottom m-0">
-                        <dd>
-                            <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
-                            <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
-                                Vous pouvez ajouter des étapes
-                            </div>
-                        </dd>
-                    </dl>
-                </div>
+            <div class="alert alert-light col-lg-10 mx-auto mb-1">
+                <h5 class="text-center"><b>Étapes</b></h5>
+                <dl class="row border-bottom m-0">
+                    <dd>
+                        <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
+                        <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
+                            Vous pouvez ajouter des étapes
+                        </div>
+                    </dd>
+                </dl>
             </div>
             <div data-bs-focus="false" class="modal fade" id="addStep"  role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
@@ -91,8 +86,16 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label>Description de l’étape:</label>
+                                    <label class="form-label">Description de l’étape :</label>
                                     <input name="description" type="text" class="form-control" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label" for="stepNumber">Ajouter cette étape :</label>
+                                    <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
+                                        <option th:value="0" th:text="${'Au début'}"></option>
+                                        <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
+                                        <option th:value="-1" th:text="${'A la fin'}"></option>
+                                    </select>
                                 </div>
                                 <div class="form-check form-switch form-switch-md">
                                     <label class="form-check-label" for="changeable">

@@ -160,7 +160,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, WorkflowStepDto step, String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void addStep(Long workflowId, WorkflowStepDto step, Integer stepNumber,  String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
         workflowStep.setDescription(step.getDescription());
@@ -177,7 +177,11 @@ public class WorkflowStepService {
                 workflowStep.setCertificat(null);
             }
         }
-        workflow.getWorkflowSteps().add(workflowStep);
+        if (stepNumber == -1) {
+            workflow.getWorkflowSteps().add(workflowStep);
+        } else {
+            workflow.getWorkflowSteps().add(stepNumber, workflowStep);
+        }
         if(saveFavorite) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
         }

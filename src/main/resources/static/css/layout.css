@@ -86,9 +86,9 @@ header {
 
 .content-fixed-breadcrumb {
     padding: 10px;
-    width: calc(100vw - 75px);
+    width: calc(100vw - 76px);
     margin-left: 0;
-    margin-top: 72px;
+    margin-top: 76px;
 }
 
 .th-fixed{

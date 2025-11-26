@@ -70,8 +70,16 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label><strong>Description de l’étape:</strong></label>
+                                    <label class="form-label">Description de l’étape :</label>
                                     <input name="description" type="text" class="form-control" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label" for="stepNumber">Ajouter cette étape :</label>
+                                    <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
+                                        <option th:value="0" th:text="${'Au début'}"></option>
+                                        <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
+                                        <option th:value="-1" th:text="${'A la fin'}"></option>
+                                    </select>
                                 </div>
                                 <div class="form-check form-switch form-switch-md">
                                     <label class="form-check-label" title="Le créateur pourra changer les noms des participants au moment de valider sa demande de signature">
