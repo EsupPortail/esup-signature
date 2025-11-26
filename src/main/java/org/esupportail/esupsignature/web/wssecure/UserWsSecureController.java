@@ -41,7 +41,21 @@ public class UserWsSecureController {
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
+        return userService.checkTempUsers(
+                recipientService
+                        .convertRecipientEmailsToStep(recipientEmails)
+                        .stream()
+                        .map(WorkflowStepDto::getRecipients)
+                        .flatMap(List::stream)
+                        .toList()
+        ).stream().peek(r -> {
+            String p = r.getPhone();
+            if (p != null && p.length() > 4) {
+                String stars = "*".repeat(p.length() - 4);
+                r.setHidedPhone(stars + p.substring(p.length() - 4));
+            }
+            r.setPhone("");
+        }).toList();
     }
 
     @ResponseBody

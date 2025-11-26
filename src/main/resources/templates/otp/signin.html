@@ -48,14 +48,26 @@
                         <div id="otherMethod" class="accordion-collapse bg-light-subtle" th:classappend="${!securityServices.isEmpty() ? '' : 'show'}" style="min-width: 250px;">
                             <div class="accordion-body">
                                 <th:block th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).sms)}">
-                                    <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
-                                    <p class="text-left" th:if="${!securityServices.isEmpty()}">
+                                    <p class="text-left small" th:if="${!securityServices.isEmpty()}">
                                         Attention ! Merci de privilégier les autres modes de connexion
                                     </p>
+                                    <p class="text-left"><b>Merci de compléter votre numéro de mobile afin de recevoir votre code SMS :</b></p>
                                     <div class="mb-4">
                                         <form id="phoneForm" th:method="'post'" th:action="'#'">
                                             <input type="hidden" name="urlId" th:value="${urlId}">
-                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.phone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.hidedPhone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <script>
+                                                const phoneInput = document.getElementById("phone");
+
+                                                phoneInput.addEventListener("focus", () => {
+                                                    const v = phoneInput.value;
+                                                    const digits = v.replace(/\D/g, "");
+                                                    if (digits.length >= 4) {
+                                                        phoneInput.value = digits.slice(-4);
+                                                    }
+                                                    setTimeout(() => phoneInput.setSelectionRange(0, 0), 0);
+                                                });
+                                            </script>
                                             <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
                                         </form>
                                     </div>

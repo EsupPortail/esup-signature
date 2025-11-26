@@ -371,19 +371,20 @@ public class SignBookController {
         }
         return "redirect:/user/signbooks/update/" + id;
     }
-
-    @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
-    @PostMapping(value = "/add-step/{id}")
-    public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-                                @RequestParam(name = "signType") SignType signType,
-                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
-        WorkflowStepDto step = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
-        step.setSignType(signType);
-        step.setAllSignToComplete(allSignToComplete);
-        signBookService.addLiveStep(id, step, null, authUserEppn);
-        return "redirect:/user/signrequests/" + id + "?form";
-    }
+//
+//    @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
+//    @PostMapping(value = "/add-step/{id}")
+//    public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+//                                @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
+//                                @RequestParam(name = "signType") SignType signType,
+//                                @RequestParam("stepNumber") int stepNumber,
+//                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
+//        WorkflowStepDto step = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
+//        step.setSignType(signType);
+//        step.setAllSignToComplete(allSignToComplete);
+//        signBookService.addLiveStep(id, step, null, authUserEppn);
+//        return "redirect:/user/signrequests/" + id + "?form";
+//    }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/pending/{id}")

@@ -542,6 +542,22 @@ export class GlobalUi {
             self.slimSelectHack($(this))
         })
 
+        $(".intl-phone").each(function() {
+            intlTelInput(this, {
+                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                strictMode: true,
+                separateDialCode: false,
+                nationalMode: true,
+                countryOrder: ["fr"],
+                initialCountry: "auto",
+                geoIpLookup: callback => {
+                    callback(navigator.language.split('-')[0]);
+                },
+                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                searchPlaceholder: "Rechercher",
+            });
+        });
+
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
