@@ -207,23 +207,32 @@ public class PdfService {
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
-            if (pdfParameters.isLandScape()) {
-                tx = pdfParameters.getWidth();
+            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
+                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
+                    + pdPage.getCropBox().getLowerLeftY();
+
+            // Point de pivot pour rotation 0°/180°
+            if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
+                tx = pdfParameters.getWidth();  // Landscape
             } else {
-                ty = pdfParameters.getHeight();
+                ty = pdfParameters.getHeight(); // Portrait
             }
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor + pdPage.getCropBox().getLowerLeftY();
-            if (pdfParameters.isLandScape()) {
-                ty = pdfParameters.getHeight();
+            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
+                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
+                    + pdPage.getCropBox().getLowerLeftY();
+
+            // Point de pivot pour rotation 90°/270°
+            // width et height sont les dimensions ORIGINALES (avant rotation)
+            // donc on teste l'orientation originale, pas l'orientation après rotation
+            if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
+                ty = pdfParameters.getHeight();  // Originalement Landscape
             } else {
-                tx = pdfParameters.getWidth();
+                tx = pdfParameters.getWidth();   // Originalement Portrait
             }
         }
-
-        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
         Matrix rotation = null;
+        PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
         if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360) {
             rotation = Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty);
             contentStream.transform(rotation);
@@ -673,7 +682,7 @@ public class PdfService {
         pdDocument.close();
         originalBytes = repairedOriginalBytes.toByteArray();
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
-        if (!isAcroForm(new ByteArrayInputStream(originalBytes)) && (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
+        if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
             String params = "";
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";

@@ -40,13 +40,15 @@ public class PdfParameters {
 		this.totalNumberOfPages = totalNumberOfPages;
 	}
 
-	public boolean isLandScape() {
-		if((this.rotation == 0 || this.rotation == 180) && this.width > this.height) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public boolean isLandScape() {
+        if (this.rotation == 0 || this.rotation == 180) {
+            return this.width > this.height;
+        }
+        else if (this.rotation == 90 || this.rotation == 270) {
+            return this.height > this.width;
+        }
+        return false;
+    }
 	
 	
 }
