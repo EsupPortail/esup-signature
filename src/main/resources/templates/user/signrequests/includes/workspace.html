@@ -83,7 +83,7 @@
 
                 </div>
                 <div id="alertSign" title="Masquer ce message" class="alert bg-light text-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
-                    <div class="pdf-warning-bar" th:classappend="${signatureIssue ? 'bg-warning' : 'bg-success'}"></div>
+                    <div class="pdf-warning-bar" th:classappend="${signatureIssue ? 'bg-secondary' : 'bg-success'}"></div>
                     <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">
                         Ce document contient des signatures électroniques
                         <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
@@ -100,13 +100,13 @@
                     </span>
                     <span style="line-height: 33px;" th:if="${signatureIssue}">
                         <script>
-                            displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-warning" title="Signature électronique présente sur le document"></i>');
+                            displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-secondary" title="Signature électronique présente sur le document"></i>');
                             displayPdfAlertsDropdown.removeClass("d-none");
                             displayPdfAlertsBtn.click()
 
                         </script>
                         <div>
-                            <i class="fa-solid fa-circle-exclamation text-warning"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
+                            <i class="fa-solid fa-circle-exclamation text-secondary"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
                         <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                             <span class="sr-only">En cours...</span>
                         </div>
@@ -138,7 +138,7 @@
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div tabindex="0" id="pdf" class="mx-auto" style="position: relative !important;">
+        <div tabindex="0" id="pdf" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
@@ -173,7 +173,6 @@
                 </div>
             </th:block>
             <div id="comment-div" class="postit alert alert-warning border-secondary" style="z-index: 100;">
-                <form>
                     <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                     <input id="commentPosX" name="commentPosX" type="hidden"/>
                     <input id="commentPosY" name="commentPosY" type="hidden"/>
@@ -185,7 +184,6 @@
                     <button id="saveCommentButton" type="button" class="btn btn-sm btn-success float-end">
                         <i class="fa-solid fa-save"></i>
                     </button>
-                </form>
             </div>
 
         </div>

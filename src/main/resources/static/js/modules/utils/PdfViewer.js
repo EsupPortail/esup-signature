@@ -48,10 +48,6 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-                    '/webjars/pdfjs-dist/4.6.82/legacy/build/pdf.worker.min.mjs',
-                    import.meta.url
-                ).toString();
                 let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
                 loadingTask.promise.then(function(pdf) {
                     self.startRender(pdf)
@@ -286,8 +282,8 @@ export class PdfViewer extends EventFactory {
                 container.style.marginBottom = `${10 * this.scale}px`;
                 this.pdfDiv.append(container);
             } else {
-                container.innerHTML = ""; // vide le contenu sans supprimer le div
-                container.style.marginBottom = `${10 * this.scale}px`; // mettre à jour le margin si besoin
+                container.innerHTML = "";
+                container.style.marginBottom = `${10 * this.scale}px`;
             }
             $(container).droppable({
                 drop: (event, ui) => ui.helper.attr("page", i)
@@ -326,6 +322,24 @@ export class PdfViewer extends EventFactory {
                     canvas.height = Math.floor(viewport.height * browserZoom);
                     canvas.style.width = `${Math.floor(viewport.width)}px`;
                     canvas.style.height = `${Math.floor(viewport.height)}px`;
+                    const pageDiv = container.querySelector('.page');
+                    const canvasWrapper = container.querySelector('.canvasWrapper');
+                    if (pageDiv) {
+                        pageDiv.style.width = `${Math.floor(viewport.width)}px`;
+                        pageDiv.style.height = `${Math.floor(viewport.height)}px`;
+                        pageDiv.style.padding = '0';
+                        pageDiv.style.margin = '0';
+                    }
+                    if (canvasWrapper) {
+                        canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
+                        canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
+                        canvasWrapper.style.padding = '0';
+                        canvasWrapper.style.margin = '0';
+                        canvasWrapper.style.overflow = 'hidden';
+                    }
+                    container.style.width = `${Math.floor(viewport.width)}px`;
+                    container.style.height = `${Math.floor(viewport.height)}px`;
+                    container.style.overflow = 'hidden';
                     const transform = browserZoom !== 1
                         ? [browserZoom, 0, 0, browserZoom, 0, 0]
                         : null;
@@ -335,7 +349,23 @@ export class PdfViewer extends EventFactory {
                         viewport: viewport,
                         annotationMode: pdfjsLib.AnnotationMode.DISABLE
                     };
-                    return page.render(renderContext).promise;
+                    return page.render(renderContext).promise.then(() => {
+                        return page.getAnnotations().then(annotations => {
+                            const hasSignatures = annotations.some(ann =>
+                                ann.subtype === 'Widget' && ann.fieldType === 'Sig'
+                            );
+                            if (hasSignatures) {
+                                const sigRenderContext = {
+                                    canvasContext: context,
+                                    transform: transform,
+                                    viewport: viewport,
+                                    annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
+                                    annotationCanvasMap: new Map()
+                                };
+                                return page.render(sigRenderContext).promise;
+                            }
+                        });
+                    });
                 }
             }).then(() => {
                 const annotationLayer = container.querySelector('.annotationLayer');
@@ -343,8 +373,6 @@ export class PdfViewer extends EventFactory {
                     annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
                     annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
                     annotationLayer.style.transform = 'none';
-                    // annotationLayer.style.transform = `scale(${this.scale})`;
-                    // annotationLayer.style.transformOrigin = '0 0';
                     this.pages.push(page);
                     resolve("ok");
                 }
