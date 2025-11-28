@@ -152,6 +152,11 @@ public class SignRequestService {
 		return null;
 	}
 
+    @Transactional
+    public List<SignRequest> getSignRequests(long id) {
+        return new ArrayList<>(getById(id).getParentSignBook().getSignRequests());
+    }
+
 	/**
      * Récupère le statut associé à l'identifiant donné.
      *

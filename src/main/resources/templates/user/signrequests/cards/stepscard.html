@@ -95,24 +95,80 @@
                                                 <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
                                                 <div class="modal-body">
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
-                                                    <form th:action="'/user/signrequests/send-otp/' + ${signRequest.parentSignBook.id} + '/' + ${recipient.user.id}" method="post">
-
-                                                        <div th:if="${globalProperties.smsRequired}">
-                                                            <input type="text"
-                                                                   id="phone"
-                                                                   name="phone"
-                                                                   class="form-control"
-                                                                   th:value="${recipient.user.hidedPhone}">
-                                                        </div>
-
+                                                    <div>
+                                                        <input th:if="${globalProperties.smsRequired}"
+                                                            type="tel"
+                                                            id="phone"
+                                                            name="phone"
+                                                            class="form-control"
+                                                            th:value="${recipient.user.hidedPhone}">
                                                         <br><br>
-
-                                                        <button type="submit"
+                                                        <button type="button"
+                                                                id="confirmBtn"
                                                                 class="btn btn-success float-end mb-2"
-                                                                title="Envoyer un nouveau lien d'accès">
+                                                                title="Envoyer un nouveau lien d'accès" style="right: 17px; bottom: 7px !important; position: absolute;">
                                                             Confirmer
                                                         </button>
-                                                    </form>
+                                                    </div>
+                                                    <script th:inline="javascript" >
+                                                        $(document).ready(function() {
+                                                            const phoneInput = document.querySelector("#phone");
+                                                            const iti = intlTelInput(phoneInput, {
+                                                                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                                                strictMode: true,
+                                                                separateDialCode: false,
+                                                                nationalMode: true,
+                                                                countryOrder: ["fr"],
+                                                                initialCountry: "auto",
+                                                                geoIpLookup: callback => {
+                                                                    callback(navigator.language.split('-')[0]);
+                                                                },
+                                                                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                                                searchPlaceholder: "Rechercher",
+                                                            });
+
+                                                            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                                                            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+                                                            $("#confirmBtn").on("click", async function() {
+                                                                // Récupérer le numéro complet
+                                                                const fullNumber = iti.getNumber();
+
+                                                                // Désactiver le bouton pendant l'envoi
+                                                                $(this).prop('disabled', true).text('Envoi en cours...');
+
+                                                                try {
+                                                                    const url = '/user/signrequests/send-otp/' + [[${signRequest.parentSignBook.id}]] + '/' + [[${recipient.user.id}]];
+
+                                                                    const response = await fetch(url, {
+                                                                        method: 'POST',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                                                            [csrfHeader]: csrfToken
+                                                                        },
+                                                                        body: new URLSearchParams({
+                                                                            'phone': fullNumber
+                                                                        })
+                                                                    });
+
+                                                                    if (response.ok) {
+                                                                        // Succès - recharger la page ou rediriger
+                                                                        alert('Nouvelle demande OTP envoyée');
+                                                                        window.location.reload();
+                                                                    } else {
+                                                                        // Erreur serveur
+                                                                        alert('Une erreur est survenue lors de l\'envoi du SMS');
+                                                                        $(this).prop('disabled', false).text('Confirmer');
+                                                                    }
+                                                                } catch (error) {
+                                                                    console.error('Erreur:', error);
+                                                                    alert('Erreur de connexion au serveur');
+                                                                    $(this).prop('disabled', false).text('Confirmer');
+                                                                }
+                                                            });
+                                                        });
+                                                    </script>
+                                                        <br><br>
                                                     <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
                                                 </div>
                                             </div>

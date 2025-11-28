@@ -50,7 +50,7 @@
                     <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}" class="mb-1"></div>
                     <div class="text-center mb-1">
                         <div class="badge rounded-pill badge-status bg-secondary" th:if="${signRequest.parentSignBook.archiveStatus != null && signRequest.parentSignBook.archiveStatus.name != 'none'}">
-                            <i class="fa-solid fa-box-archive"></i> <span th:text="#{'signbook.archivestatus.' + ${signRequest.parentSignBook.archiveStatus}}"></span>
+                            <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signRequest.parentSignBook.archiveStatus}}"></span>
                         </div>
                     </div>
                 </div>

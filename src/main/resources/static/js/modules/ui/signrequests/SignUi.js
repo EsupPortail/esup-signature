@@ -375,6 +375,7 @@ export class SignUi {
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
+                'signAll' : $("#sign-all").prop("checked"),
                 'sealCertificat' : this.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamsesToSend, function replacer(key, value) {
                     if (this &&

@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.wssecure;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -31,6 +30,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @CrossOrigin(origins = "*")
@@ -41,28 +41,22 @@ public class GlobalWsSecureController {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalWsSecureController.class);
 
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private SedaExportService sedaExportService;
-
-    @Resource
-    private CommentService commentService;
-
-    @Resource
-    private WorkflowService workflowService;
-
     private final GlobalProperties globalProperties;
+    private final SignRequestService signRequestService;
+    private final SignBookService signBookService;
+    private final DocumentService documentService;
+    private final SedaExportService sedaExportService;
+    private final CommentService commentService;
+    private final WorkflowService workflowService;
 
-    public GlobalWsSecureController(GlobalProperties globalProperties) {
+    public GlobalWsSecureController(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, DocumentService documentService, SedaExportService sedaExportService, CommentService commentService, WorkflowService workflowService) {
         this.globalProperties = globalProperties;
+        this.signRequestService = signRequestService;
+        this.signBookService = signBookService;
+        this.documentService = documentService;
+        this.sedaExportService = sedaExportService;
+        this.commentService = commentService;
+        this.workflowService = workflowService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#signRequestId, #userEppn, #authUserEppn)")
@@ -74,15 +68,26 @@ public class GlobalWsSecureController {
                                        @RequestParam(value = "formData", required = false) String formData,
                                        @RequestParam(value = "password", required = false) String password,
                                        @RequestParam(value = "certType", required = false) String certType,
+                                       @RequestParam(value = "signAll", required = false) Boolean signAll,
                                        @RequestParam(value = "sealCertificat", required = false) String sealCertificat,
                                        HttpSession httpSession) throws IOException {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
-            if(stepStatus.equals(StepStatus.nexu_redirect)) {
-                return ResponseEntity.ok().body("initNexu");
+            if(signAll == null || !signAll) {
+                StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                if(stepStatus.equals(StepStatus.nexu_redirect)) {
+                    return ResponseEntity.ok().body("initNexu");
+                }
+            } else {
+                List<SignRequest> signRequests = signRequestService.getSignRequests(signRequestId);
+                for(SignRequest signRequest : signRequests) {
+                    StepStatus stepStatus = signBookService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                    if(stepStatus.equals(StepStatus.nexu_redirect)) {
+                        return ResponseEntity.ok().body("initNexu");
+                    }
+                }
             }
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);

@@ -91,7 +91,7 @@ public class SeleniumTest {
         try {
             wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
         } catch (Exception e) {
-            System.out.println("Element non trouvé dans le délai spécifié.");
+            logger.warn("Element non trouvé dans le délai spécifié.", e);
         }
         // Cliquer sur le bouton "addSignButton2"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
@@ -102,15 +102,10 @@ public class SeleniumTest {
         // Cliquer sur le bouton "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Cliquer sur le bouton "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
-        try {
-            // Attendre que la modal "wait" soit visible
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
-            // Attendre que la modal "wait" ne soit plus visible
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
-        } catch (Exception e) {
-            System.out.println("Element non trouvé dans le délai spécifié.");
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
+        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         // Cliquer sur le bouton "link-dashboard"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
         // Attendre la présence de l'élément "signbook-${signBookId}"
@@ -166,16 +161,10 @@ public class SeleniumTest {
         // Click "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Click "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
-        try {
-            // Attendre que la modal "wait" soit visible
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
-            // Attendre que la modal "wait" ne soit plus visible
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
-        } catch (Exception e) {
-            // Click "checkValidateSignButtonEnd"
-            System.out.println("Element non trouvé dans le délai spécifié.");
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
+        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         // Click "link-dashboard" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
         // Wait for element present "signbook-${signBookId}"
@@ -207,8 +196,10 @@ public class SeleniumTest {
         actions.moveToElement(canvas, -1, -1).click().perform();
         actions.moveToElement(canvas, 0, 0).click().perform();
         actions.moveToElement(canvas, 1, 1).click().perform();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("saveButton"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("saveButton")));
+        WebElement btn = driver.findElement(By.id("saveButton"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         try {
             // Attendre que la modal "wait" soit visible
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("toast-backdrop")));
@@ -218,6 +209,7 @@ public class SeleniumTest {
             // Click "checkValidateSignButtonEnd"
             System.out.println("Element non trouvé dans le délai spécifié.");
         }
+
         List<WebElement> elements = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("[id^='deleteSign_']")));
         for(WebElement element : elements) {
             element.click();
