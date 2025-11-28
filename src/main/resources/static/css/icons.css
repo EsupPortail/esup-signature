@@ -1,0 +1,37 @@
+.fi-rr-log-file::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/rr-log-file.svg') no-repeat center;
+    background-size: contain;
+    text-transform: none;
+    line-height: 1;
+}
+
+.fi-tr-log-file::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/tr-log-file.svg') no-repeat center;
+    background-size: contain;
+}
+
+.fi-tr-api-cloud::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/tr-api-cloud.svg') no-repeat center;
+    background-size: contain;
+}
+
+.fi-tr-digital-key::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/tr-digital-key.svg') no-repeat center;
+    background-size: contain;
+}

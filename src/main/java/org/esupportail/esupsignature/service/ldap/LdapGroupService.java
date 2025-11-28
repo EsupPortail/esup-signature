@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.service.ldap;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
+import org.esupportail.esupsignature.entity.Config;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.repository.ConfigRepository;
 import org.esupportail.esupsignature.service.security.GroupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
@@ -33,17 +36,28 @@ public class LdapGroupService implements GroupService {
     Map<String, String> ldapFiltersGroups = new HashMap<>();
 
     private final LdapProperties ldapProperties;
-
     private final GlobalProperties globalProperties;
+    private final ConfigRepository configRepository;
 
     @Resource
     private LdapTemplate ldapTemplate;
 
-    public LdapGroupService(LdapProperties ldapProperties, GlobalProperties globalProperties) {
+    public LdapGroupService(LdapProperties ldapProperties, GlobalProperties globalProperties, ConfigRepository configRepository) {
         this.ldapProperties = ldapProperties;
         this.globalProperties = globalProperties;
+        this.configRepository = configRepository;
+    }
+
+    @Transactional
+    public void loadLdapFiltersGroups() {
         for(Map.Entry<String, String> entry : ldapProperties.getMappingFiltersGroups().entrySet()) {
             ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+        }
+        Iterator<Config> configs = configRepository.findAll().iterator();
+        if(configs.hasNext()) {
+            for(Map.Entry<String, String> entry : configs.next().getMappingFiltersGroups().entrySet()) {
+                ldapFiltersGroups.put(entry.getValue(), entry.getKey());
+            }
         }
     }
 

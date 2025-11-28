@@ -98,7 +98,7 @@
                                                     <div>
                                                         <input th:if="${globalProperties.smsRequired}"
                                                             type="tel"
-                                                            id="phone"
+                                                            th:id="'phone_' + ${liveWorkflowStep.id}"
                                                             name="phone"
                                                             class="form-control"
                                                             th:value="${recipient.user.hidedPhone}">
@@ -112,7 +112,7 @@
                                                     </div>
                                                     <script th:inline="javascript" >
                                                         $(document).ready(function() {
-                                                            const phoneInput = document.querySelector("#phone");
+                                                            const phoneInput = document.querySelector("#phone_[[${liveWorkflowStep.id}]]");
                                                             const iti = intlTelInput(phoneInput, {
                                                                 validationNumberTypes: "FIXED_LINE_OR_MOBILE",
                                                                 strictMode: true,

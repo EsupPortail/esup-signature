@@ -59,6 +59,8 @@ public class WorkflowStepDto {
      */
     private SignLevel minSignLevel = SignLevel.simple;
 
+    private SignLevel maxSignLevel = SignLevel.qualified;
+
     /**
      * Type de signature utilisé pour cette étape.
      */
@@ -226,7 +228,15 @@ public class WorkflowStepDto {
 		return minSignLevel;
 	}
 
-	public void setMinSignLevel(SignLevel minSignLevel) {
+    public SignLevel getMaxSignLevel() {
+        return maxSignLevel;
+    }
+
+    public void setMaxSignLevel(SignLevel maxSignLevel) {
+        this.maxSignLevel = maxSignLevel;
+    }
+
+    public void setMinSignLevel(SignLevel minSignLevel) {
 		this.minSignLevel = minSignLevel;
 	}
 

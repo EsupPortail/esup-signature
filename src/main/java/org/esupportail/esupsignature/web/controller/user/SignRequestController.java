@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -89,18 +90,17 @@ public class SignRequestController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookSendOtp(#id, #authUserEppn)")
-    @PostMapping(value = "/send-otp/{id}/{recipientId}")
-    public String sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
+    @PostMapping(value = "/send-otp/{id}/{userId}")
+    @ResponseBody
+    public ResponseEntity<?> sendOtp(@ModelAttribute("authUserEppn") String authUserEppn,
                           @PathVariable("id") Long id,
-                          @PathVariable("recipientId") Long recipientId,
-                          @RequestParam(value = "phone", required = false) String phone,
-                          RedirectAttributes redirectAttributes) {
-        if(otpService.generateOtpForSignRequest(id, recipientId, phone, true) != null){
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
+                          @PathVariable("userId") Long userId,
+                          @RequestParam(value = "phone", required = false) String phone) {
+        if(otpService.generateOtpForSignRequest(id, userId, phone, true) != null){
+            return ResponseEntity.ok().build();
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));
+            return ResponseEntity.internalServerError().build();
         }
-        return "redirect:/user/signbooks/" + id;
     }
 
 
