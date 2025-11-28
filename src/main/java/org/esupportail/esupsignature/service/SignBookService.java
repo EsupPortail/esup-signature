@@ -479,10 +479,15 @@ public class SignBookService {
         if(steps.get(0).getRecipientsCCEmails() != null) {
             addViewers(signBook.getId(), steps.get(0).getRecipientsCCEmails());
         }
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMultiSign(multiSign);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSingleSignWithAnnotation(singleSignWithAnnotation);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setSignType(steps.get(0).getSignType());
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0).setMinSignLevel(steps.get(0).getMinSignLevel());
+        int stepNumber = 0;
+        if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
+            stepNumber = 1;
+        }
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMultiSign(multiSign);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setSingleSignWithAnnotation(singleSignWithAnnotation);
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setSignType(steps.get(0).getSignType());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMinSignLevel(steps.get(0).getMinSignLevel());
+        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMaxSignLevel(steps.get(0).getMaxSignLevel());
     }
 
     /**

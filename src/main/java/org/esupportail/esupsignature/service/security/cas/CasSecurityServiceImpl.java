@@ -60,6 +60,7 @@ public class CasSecurityServiceImpl implements SecurityService {
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.ldapGroupService = ldapGroupService;
+        this.ldapGroupService.loadLdapFiltersGroups();
         this.casProperties = casProperties;
         this.ldapProperties = ldapProperties;
         this.casAuthenticationSuccessHandler = casAuthenticationSuccessHandler;
