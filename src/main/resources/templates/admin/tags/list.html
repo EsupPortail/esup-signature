@@ -97,6 +97,37 @@
         </div>
     </div>
 
+    <th:block th:each="tag : ${tags}">
+        <div data-bs-focus="false" class="modal fade position-absolute" th:id="'modal-update-' + ${tag.id}" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Modifier le tag <span th:text="${tag.name}"></span></h5>
+                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
+                        </button>
+                    </div>
+                    <form th:action="'/admin/tags/' + ${tag.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'put'" enctype="multipart/form-data">
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label class="col-form-label">Nom du tag</label>
+                                <input class="form-control" type="text" name="name" th:value="${tag.name}">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="tagColor" class="col-form-label">Couleur du tag</label>
+                                <br>
+                                <input id="" class="form-control tag-color" type="text" name="color" th:value="${tag.color}">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="submit" class="btn btn-success" value="Valider">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </th:block>
+
+
     <div data-bs-focus="false" class="modal fade" id="newTag"  role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -115,7 +146,7 @@
                         <div class="form-group mb-3">
                             <label for="tagColor" class="col-form-label">Couleur du tag</label>
                             <br>
-                            <input id="tagColor" class="form-control" type="text" name="color">
+                            <input id="tagColor" class="form-control tag-color" type="text" name="color">
                         </div>
                     </div>
                     <div class="modal-footer">

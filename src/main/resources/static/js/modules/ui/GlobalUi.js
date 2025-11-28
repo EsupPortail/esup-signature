@@ -713,9 +713,8 @@ export class GlobalUi {
     }
 
     enableSpectrum() {
-        let tagColor = $('#tagColor');
-        if(tagColor.length) {
-            tagColor.spectrum({
+        $(".tag-color").each(function () {
+            $(this).spectrum({
                 type: "flat",
                 showPalette: false,
                 showPaletteOnly: true,
@@ -723,7 +722,7 @@ export class GlobalUi {
                 showInput: true,
                 showAlpha: false
             });
-        }
+        });
     }
 
     onDocumentLoad() {
