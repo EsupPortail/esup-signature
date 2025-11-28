@@ -5,7 +5,7 @@
 <div th:fragment="status(signBook)">
 	<div th:if="${!signBook.deleted}" th:switch="${signBook.status}" class="text-center mb-1 mt-1">
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).uploading}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-upload" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
+			<i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
 			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
@@ -17,7 +17,7 @@
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-			<i class="fa-solid fa-file-signature"></i>
+			<i class="fi fi-tr-file-signature"></i>
 				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status bg-danger">

@@ -330,8 +330,8 @@ public class SignService {
 			SignatureFieldParameters signatureFieldParameters = imageParameters.getFieldParameters();
 			imageParameters.getFieldParameters().setRotation(VisualSignatureRotation.AUTOMATIC);
 			PdfParameters pdfParameters = pdfService.getPdfParameters(toSignFile, signRequestParams.getSignPageNumber());
-			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * globalProperties.getFixFactor());
-			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * globalProperties.getFixFactor());
+			int widthAdjusted = Math.round(signRequestParams.getSignWidth() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
+			int heightAdjusted = Math.round(signRequestParams.getSignHeight() * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			PDSignatureField pdSignatureField = pdfService.getSignatureField(signatureDocumentForm.getDocumentToSign(), signRequestParams);
 			if(pdSignatureField != null && StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
 				signImage = fileService.resizeImage(signImage, pdSignatureField.getWidgets().get(0).getRectangle().getWidth() * 3, pdSignatureField.getWidgets().get(0).getRectangle().getHeight() * 3);
