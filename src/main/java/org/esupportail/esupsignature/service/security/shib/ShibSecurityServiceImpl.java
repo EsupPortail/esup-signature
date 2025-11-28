@@ -39,6 +39,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
     public ShibSecurityServiceImpl(@Autowired(required = false) LdapGroupService ldapGroupService, @Autowired(required = false) WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, ShibProperties shibProperties, ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler) {
         this.ldapGroupService = ldapGroupService;
+        if(this.ldapGroupService != null) {
+            this.ldapGroupService.loadLdapFiltersGroups();
+        }
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
