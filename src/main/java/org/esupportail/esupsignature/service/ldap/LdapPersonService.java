@@ -57,7 +57,7 @@ public class LdapPersonService {
         } else {
             logger.debug("no userObjectClasses found");
         }
-        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter);
+        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).base(ldapProperties.getSearchBase()).filter(formattedFilter);
         logQuery(ldapQuery);
         return ldapTemplate.search(ldapQuery, new PersonLdapAttributesMapper());
     }

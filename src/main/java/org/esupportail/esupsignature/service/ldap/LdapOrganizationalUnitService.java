@@ -42,7 +42,7 @@ public class LdapOrganizationalUnitService {
                 logger.debug("no ouSearchFilter found");
             }
             logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
-            LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
+            LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
             return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
         }
         return new ArrayList<>();
