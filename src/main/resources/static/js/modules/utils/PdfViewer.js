@@ -288,11 +288,18 @@ export class PdfViewer extends EventFactory {
             $(container).droppable({
                 drop: (event, ui) => ui.helper.attr("page", i)
             });
+
             const browserZoom = this.getBrowserZoom();
+
+            // Récupérer la rotation native de la page + rotation appliquée
+            const pageRotation = page.rotate || 0;
+            const totalRotation = (pageRotation + this.rotation) % 360;
+
             const viewport = page.getViewport({
                 scale: this.scale,
-                rotation: this.rotation
+                rotation: totalRotation  // Utiliser la rotation totale
             });
+
             const dispatchToDOM = false;
             const eventBus = new EventBus({dispatchToDOM});
             const pdfPageView = new pdfjsViewer.PDFPageView({
@@ -300,28 +307,33 @@ export class PdfViewer extends EventFactory {
                 container: container,
                 id: this.pageNum,
                 scale: this.scale,
-                rotation: this.rotation,
+                rotation: totalRotation,  // Utiliser la rotation totale
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
                 textLayerMode: 0,
                 annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS
             });
+
             pdfPageView.setPdfPage(page);
             const originalRender = page.render.bind(page);
             page.render = function() {
                 return { promise: Promise.resolve(), cancel() {} };
             };
+
             pdfPageView.draw().then(() => {
                 page.render = originalRender;
 
                 const canvas = container.querySelector('canvas');
                 if (canvas) {
                     const context = canvas.getContext('2d');
+
+                    // Utiliser les dimensions du viewport qui gère automatiquement la rotation
                     canvas.width = Math.floor(viewport.width * browserZoom);
                     canvas.height = Math.floor(viewport.height * browserZoom);
                     canvas.style.width = `${Math.floor(viewport.width)}px`;
                     canvas.style.height = `${Math.floor(viewport.height)}px`;
+
                     const pageDiv = container.querySelector('.page');
                     const canvasWrapper = container.querySelector('.canvasWrapper');
                     if (pageDiv) {
@@ -340,15 +352,18 @@ export class PdfViewer extends EventFactory {
                     container.style.width = `${Math.floor(viewport.width)}px`;
                     container.style.height = `${Math.floor(viewport.height)}px`;
                     container.style.overflow = 'hidden';
+
                     const transform = browserZoom !== 1
                         ? [browserZoom, 0, 0, browserZoom, 0, 0]
                         : null;
+
                     const renderContext = {
                         canvasContext: context,
                         transform: transform,
                         viewport: viewport,
                         annotationMode: pdfjsLib.AnnotationMode.DISABLE
                     };
+
                     return page.render(renderContext).promise.then(() => {
                         return page.getAnnotations().then(annotations => {
                             const hasSignatures = annotations.some(ann =>

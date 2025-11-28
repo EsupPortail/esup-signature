@@ -34,8 +34,12 @@
             title="Formulaires" href="/admin/forms?activeVersion=true" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-poll-h file-alt-color"></i> <span class="sidebar-label">Formulaires</span>
         </a>
+        <a th:classappend="${activeMenu == 'configs'} ? 'btn-secondary' : 'btn-light'"
+            title="Configuration" href="/admin/configs" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
+            <i class="fi fi-tr-customization-cogwheel"></i> <span class="sidebar-label">Configuration</span>
+        </a>
         <a th:classappend="${activeMenu == 'tags'} ? 'btn-secondary' : 'btn-light'"
-            title="Formulaires" href="/admin/tags" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
+            title="Tags" href="/admin/tags" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-tags"></i> <span class="sidebar-label">Tags</span>
         </a>
         <a th:classappend="${activeMenu == 'messages'} ? 'btn-secondary' : 'btn-light'"
