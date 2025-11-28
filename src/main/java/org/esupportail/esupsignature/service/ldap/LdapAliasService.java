@@ -31,7 +31,7 @@ public class LdapAliasService {
 
     public List<AliasLdap> searchByMail(String mail, boolean strict) {
         logger.debug("search AliasLdap by mail " + mail);
-		if(!strict) mail += "*";
+		if(!strict) mail = "*" + mail + "*";
         String formattedFilter = MessageFormat.format(ldapProperties.getAllAliasesSearchFilter(), (Object[]) new String[] { mail });
         StringBuilder objectClasses = new StringBuilder();
         for(String objectClass : ldapProperties.getAliasObjectClasses()) {
@@ -41,7 +41,7 @@ public class LdapAliasService {
             formattedFilter = "(&(|" + objectClasses + ")" + formattedFilter + ")";
         }
         logger.debug("search AliasLdap query : " + formattedFilter);
-        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
+        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
         List<AliasLdap> aliasLdaps = ldapTemplate.search(ldapQuery, new AliasLdapAttributesMapper());
         logger.debug("search AliasLdap found " + aliasLdaps.size() + " results");
         return aliasLdaps;
