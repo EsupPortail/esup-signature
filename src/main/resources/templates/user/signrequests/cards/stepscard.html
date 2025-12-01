@@ -97,7 +97,7 @@
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                     <div>
                                                         <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
-                                                        <span th:unless="${globalProperties.smsRequired}">Mobile obligatoire</span>
+                                                        <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
                                                         <br>
                                                         <input
                                                             type="tel"
