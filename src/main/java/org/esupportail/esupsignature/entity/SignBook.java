@@ -15,7 +15,12 @@ import java.util.stream.Collectors;
 @Table(indexes =  {
         @Index(name = "sign_book_create_by", columnList = "create_by_id"),
         @Index(name = "sign_book_status", columnList = "status"),
-        @Index(name = "sign_book_live_workflow", columnList = "live_workflow_id")
+        @Index(name = "sign_book_live_workflow", columnList = "live_workflow_id"),
+        @Index(name = "idx_sb_create_date", columnList = "create_date"),
+        @Index(name = "idx_sb_deleted", columnList = "deleted"),
+        @Index(name = "idx_sb_workflow_name", columnList = "workflow_name"),
+        @Index(name = "idx_sb_status_deleted", columnList = "status, deleted"),
+        @Index(name = "idx_sb_create_date_status", columnList = "create_date, status, deleted")
 })
 public class SignBook {
 
