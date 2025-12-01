@@ -40,32 +40,26 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, Boolean deleted, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
-            select sb from SignBook sb
-            where :user member of sb.team
-              and (sb.status != 'pending'
-                   or exists (
-                       select 1 from SignRequest sr
-                       join sr.recipientHasSigned rhs
-                       where sr.parentSignBook = sb
-                         and key(rhs).user = :user
-                   )
-                   or sb.createBy = :user
-              )
-              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-              and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
-              and (:creatorFilter is null or sb.createBy = :creatorFilter)
-              and (sb.createBy = :user or sb.status <> 'draft')
-              and size(sb.signRequests) > 0
-              and :user not member of sb.hidedBy
-              and sb.status <> 'deleted'
-              and (sb.deleted is null or sb.deleted != true)
-              and (sb.createDate between :startDateFilter and :endDateFilter)
+            select distinct sb from SignBook sb left join sb.team team
+            left join sb.signRequests sr
+            left join sr.recipientHasSigned rhs
+            where :user in (team)
+            and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user)
+            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+            and (:creatorFilter is null or sb.createBy = :creatorFilter)
+            and (sb.createBy = :user or sb.status <> 'draft')
+            and size(sb.signRequests) > 0
+            and :user not member of sb.hidedBy
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+            and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
             select sb from SignBook sb
             where :user member of sb.team
+              and :user not member of sb.hidedBy
               and (
                     sb.status != 'pending'
                     or exists (
@@ -101,7 +95,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
               and (:creatorFilter is null or sb.createBy = :creatorFilter)
               and (sb.createBy = :user or sb.status <> 'draft')
               and size(sb.signRequests) > 0
-              and :user not member of sb.hidedBy
               and sb.status <> 'deleted'
               and (sb.deleted is null or sb.deleted != true)
               and (sb.createDate between :startDateFilter and :endDateFilter)
