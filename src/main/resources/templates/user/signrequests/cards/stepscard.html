@@ -96,6 +96,9 @@
                                                 <div class="modal-body">
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                     <div>
+                                                        <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
+                                                        <span th:unless="${globalProperties.smsRequired}">Mobile obligatoire</span>
+                                                        <br>
                                                         <input
                                                             type="tel"
                                                             th:id="'phone_' + ${liveWorkflowStep.id}"
