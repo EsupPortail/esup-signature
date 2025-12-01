@@ -1942,7 +1942,12 @@ public class SignBookService {
     @Transactional
     public SignBook getNextSignBook(Long signRequestId, String userEppn, String authUserEppn) {
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
-        List<SignBook> signBooksToSign = getSignBooks(userEppn, userEppn, "toSign", null, null, null, null, null, Pageable.unpaged()).toList();
+        User user = userService.getByEppn(userEppn);
+        Date startDateFilter = new Date(0);
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(9999, Calendar.DECEMBER, 31);
+        Date endDateFilter = calendar.getTime();
+        List<SignBook> signBooksToSign = signBookRepository.findToSign(user, null, null, null, startDateFilter, endDateFilter, Pageable.unpaged()).getContent();
         List<SignBook> signBooks = signBooksToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignBook::getId)).collect(Collectors.toList());
         if(!userEppn.equals(authUserEppn)) {
             signBooks = signBooks.stream().filter(signRequest -> userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)).toList();

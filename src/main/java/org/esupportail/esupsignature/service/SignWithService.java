@@ -50,9 +50,11 @@ public class SignWithService {
             int stepNumber = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
             Form form = signRequest.getData().getForm();
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-            List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps().stream().filter(ws -> workflow.getWorkflowSteps().indexOf(ws) > stepNumber - 1).toList();
-            if(!workflowSteps.isEmpty() && form.getFields().stream().anyMatch(f -> new HashSet<>(f.getWorkflowSteps()).containsAll(workflowSteps))) {
-                signWiths.removeIf(signWith -> signWith.getValue() > 2);
+            if(workflow != null) {
+                List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps().stream().filter(ws -> workflow.getWorkflowSteps().indexOf(ws) > stepNumber - 1).toList();
+                if (!workflowSteps.isEmpty() && form.getFields().stream().anyMatch(f -> new HashSet<>(f.getWorkflowSteps()).containsAll(workflowSteps))) {
+                    signWiths.removeIf(signWith -> signWith.getValue() > 2);
+                }
             }
         }
         if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
