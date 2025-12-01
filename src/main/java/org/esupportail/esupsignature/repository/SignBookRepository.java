@@ -44,13 +44,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join sb.signRequests sr
             left join sr.recipientHasSigned rhs
             where :user in (team)
+            and :user not member of sb.hidedBy
             and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user)
             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (sb.createBy = :user or sb.status <> 'draft')
             and size(sb.signRequests) > 0
-            and :user not member of sb.hidedBy
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
         """)
@@ -65,13 +65,16 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             left join lw.liveWorkflowSteps lws
             left join lws.recipients r
             left join r.user u
-            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            where :user in (team)
+            and :user not member of sb.hidedBy
+            and (sb.status != 'pending' or key(rhs).user = :user or :user in (u) or sb.createBy = :user)
+            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
             and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
-            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted is true and sb.status = 'deleted'))
+            and (sb.createBy = :user or sb.status <> 'draft')
             and size(sb.signRequests) > 0
+            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
             """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User recipientUser, User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
