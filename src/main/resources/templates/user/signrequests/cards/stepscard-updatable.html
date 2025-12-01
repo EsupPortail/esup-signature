@@ -32,9 +32,9 @@
                                         </table>
                                     </div>
                                     <div class="bs-stepper-bottom">
-                                        <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1}"
+                                        <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1 && signBook.liveWorkflow.liveWorkflowSteps.size() > signBook.liveWorkflow.currentStepNumber  && (iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber)}"
                                                 th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                            <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
+                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
                                                 <i class="fa-solid fa-trash-alt"></i>
                                             </button>
                                         </form>
