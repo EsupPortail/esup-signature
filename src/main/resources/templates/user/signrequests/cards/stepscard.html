@@ -96,6 +96,9 @@
                                                 <div class="modal-body">
                                                     <p>Confirmer l’envoi un nouveau lien d’accès</p>
                                                     <div>
+                                                        <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
+                                                        <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
+                                                        <br>
                                                         <input
                                                             type="tel"
                                                             th:id="'phone_' + ${liveWorkflowStep.id}"
@@ -104,7 +107,7 @@
                                                             th:value="${recipient.user.hidedPhone}">
                                                         <br><br>
                                                         <button type="button"
-                                                                id="confirmBtn"
+                                                                th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
                                                                 class="btn btn-success float-end mb-2"
                                                                 title="Envoyer un nouveau lien d'accès" style="right: 17px; bottom: 7px !important; position: absolute;">
                                                             Confirmer
@@ -113,8 +116,9 @@
                                                     <script th:inline="javascript" >
                                                         $(document).ready(function() {
                                                             const phoneInput = document.querySelector("#phone_[[${liveWorkflowStep.id}]]");
+                                                            let iti = null;
                                                             if(phoneInput) {
-                                                                const iti = intlTelInput(phoneInput, {
+                                                                iti = intlTelInput(phoneInput, {
                                                                     validationNumberTypes: "FIXED_LINE_OR_MOBILE",
                                                                     strictMode: true,
                                                                     separateDialCode: false,
@@ -127,50 +131,46 @@
                                                                     customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
                                                                     searchPlaceholder: "Rechercher",
                                                                 });
+                                                            }
+                                                            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                                                            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                                                                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                                                                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                                                            $(document.querySelector("#confirmBtn_[[${liveWorkflowStep.id}]]")).on("click", async function () {
+                                                                // Récupérer le numéro complet
+                                                                let fullNumber = "";
+                                                                if(iti != null) fullNumber = iti.getNumber();
 
-                                                                $("#confirmBtn").on("click", async function () {
-                                                                    // Récupérer le numéro complet
-                                                                    const fullNumber = iti.getNumber();
+                                                                // Désactiver le bouton pendant l'envoi
+                                                                $(this).prop('disabled', true).text('Envoi en cours...');
 
-                                                                    // Désactiver le bouton pendant l'envoi
-                                                                    $(this).prop('disabled', true).text('Envoi en cours...');
+                                                                try {
+                                                                    const url = '/user/signrequests/send-otp/' + [[${signRequest.parentSignBook.id}]] + '/' + [[${recipient.user.id}]];
+                                                                    const response = await fetch(url, {
+                                                                        method: 'POST',
+                                                                        headers: {
+                                                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                                                            [csrfHeader]: csrfToken
+                                                                        },
+                                                                        body: new URLSearchParams({
+                                                                            'phone': fullNumber
+                                                                        })
+                                                                    });
 
-                                                                    try {
-                                                                        const url = '/user/signrequests/send-otp/' + [[${
-                                                                            signRequest
-                                                                            .parentSignBook.id
-                                                                        }]] + '/' + [[${recipient.user.id}]];
-
-                                                                        const response = await fetch(url, {
-                                                                            method: 'POST',
-                                                                            headers: {
-                                                                                'Content-Type': 'application/x-www-form-urlencoded',
-                                                                                [csrfHeader]: csrfToken
-                                                                            },
-                                                                            body: new URLSearchParams({
-                                                                                'phone': fullNumber
-                                                                            })
-                                                                        });
-
-                                                                        if (response.ok) {
-                                                                            // Succès - recharger la page ou rediriger
-                                                                            alert('Nouvelle demande OTP envoyée');
-                                                                            window.location.reload();
-                                                                        } else {
-                                                                            // Erreur serveur
-                                                                            alert('Une erreur est survenue lors de l\'envoi du SMS');
-                                                                            $(this).prop('disabled', false).text('Confirmer');
-                                                                        }
-                                                                    } catch (error) {
-                                                                        console.error('Erreur:', error);
-                                                                        alert('Erreur de connexion au serveur');
+                                                                    if (response.ok) {
+                                                                        // Succès - recharger la page ou rediriger
+                                                                        alert('Nouvelle demande OTP envoyée');
+                                                                        window.location.reload();
+                                                                    } else {
+                                                                        // Erreur serveur
+                                                                        alert('Une erreur est survenue lors de l\'envoi du SMS');
                                                                         $(this).prop('disabled', false).text('Confirmer');
                                                                     }
-                                                                });
-                                                            }
+                                                                } catch (error) {
+                                                                    console.error('Erreur:', error);
+                                                                    alert('Erreur de connexion au serveur');
+                                                                    $(this).prop('disabled', false).text('Confirmer');
+                                                                }
+                                                            });
                                                         });
                                                     </script>
                                                     <br><br>

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +41,20 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             select count(distinct s.parentSignBook) from SignRequest s join s.parentSignBook.liveWorkflow.currentStep.recipients r where s.status = :status and (s.parentSignBook.deleted is null or s.parentSignBook.deleted != true) and s.parentSignBook.createBy.eppn = :createByEppn
             """)
     Long countByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
+
+    @Query("""
+        select r.user.id, sr.id
+        from SignRequest sr
+        join sr.parentSignBook sb
+        join sb.liveWorkflow lw
+        join lw.currentStep cs
+        join cs.recipients r
+        where sr.createBy.eppn = :eppn
+          and sr.status = :status
+    """)
+    List<Object[]> findRecipientUserIdsBySignRequest(
+            @Param("eppn") String eppn,
+            @Param("status") SignRequestStatus status);
 
     Page<SignRequest> findById(Long id, Pageable pageable);
 
