@@ -53,7 +53,6 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and :user not member of sb.hidedBy
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (sb.createDate between :startDateFilter and :endDateFilter)
-            ""\")
         """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
