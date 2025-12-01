@@ -71,7 +71,6 @@ import org.verapdf.pdfa.results.ValidationResult;
 import javax.imageio.ImageIO;
 import javax.xml.transform.TransformerException;
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -205,15 +204,16 @@ public class PdfService {
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
-        if (pdfParameters.getRotation() == 0 || pdfParameters.getRotation() == 180) {
+        if (pdfParameters.getRotation() == 0) {
             yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
                     - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
                     + pdPage.getCropBox().getLowerLeftY();
-            if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
-                tx = pdfParameters.getWidth();
-            } else {
-                ty = pdfParameters.getHeight();
-            }
+            tx = 0;
+            ty = 0;
+        } else if (pdfParameters.getRotation() == 180) {
+            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() * fixFactor + signRequestParams.getSignHeight() * signRequestParams.getSignScale());
+            tx = pdfParameters.getWidth();
+            ty = pdfParameters.getHeight();
         } else {
             yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
                     - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
@@ -239,7 +239,7 @@ public class PdfService {
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
             if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-                addLink(signRequest, signRequestParams, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation);
+                addLink(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters);
             }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
@@ -258,7 +258,7 @@ public class PdfService {
         contentStream.close();
     }
 
-    private void addLink(SignRequest signRequest, SignRequestParams signRequestParams, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation) throws IOException {
+    private void addLink(SignRequest signRequest, float signWidth, float signHeight, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation, PdfParameters pdfParameters) throws IOException {
         PDFTextStripper pdfTextStripper = new PDFTextStripper();
 
         String signatureInfos =
@@ -270,23 +270,35 @@ public class PdfService {
                         globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
 
         PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
-        float width = (float) (signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor);
-        float height = (float) (signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
-        PDRectangle position = new PDRectangle(xAdjusted, yAdjusted, width, height);
-        if(rotation!= null) {
-            float x0 = position.getLowerLeftX();
-            float y0 = position.getLowerLeftY();
-            float x1 = position.getUpperRightX();
-            float y1 = position.getUpperRightY();
-            Point2D.Float p0 = rotation.transformPoint(x0, y0);
-            Point2D.Float p1 = rotation.transformPoint(x1, y1);
-            position = new PDRectangle(
-                    Math.min(p0.x, p1.x),
-                    Math.min(p0.y, p1.y),
-                    Math.abs(p1.x - p0.x),
-                    Math.abs(p1.y - p0.y)
-            );
+
+        float linkX, linkY, linkWidth, linkHeight;
+        float pageW = pdfParameters.getWidth();
+        float pageH = pdfParameters.getHeight();
+        float scaleX = 1;
+        float scaleY = 1;
+        if(pdfParameters.getRotation() == 90 || pdfParameters.getRotation() == 270){
+                scaleX = (pageW / pageH);
+                scaleY = (pageH / pageW);
         }
+        if(pdfParameters.getRotation() == 270) {
+            linkWidth  = signWidth * scaleX;
+            linkHeight = signHeight * scaleY;
+            linkX = xAdjusted * scaleX;
+            linkY = yAdjusted * scaleY;
+        } else if(pdfParameters.getRotation() == 90) {
+            linkWidth  = signWidth * scaleX;
+            linkHeight = signHeight * scaleY;
+            linkX = pageW - xAdjusted * scaleX - linkWidth;
+            linkY = pageH - yAdjusted * scaleY - linkHeight;
+        } else {
+            linkWidth = signWidth;
+            linkHeight = signHeight;
+            linkX = xAdjusted;
+            linkY = yAdjusted;
+        }
+
+        PDRectangle position = new PDRectangle(linkX, linkY, linkWidth, linkHeight);
+
         pdAnnotationLink.setRectangle(position);
         pdAnnotationLink.setQuadPoints(new float[0]);
         PDBorderStyleDictionary pdBorderStyleDictionary = new PDBorderStyleDictionary();
@@ -663,31 +675,38 @@ public class PdfService {
     public byte[] normalizePDF(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         ByteArrayOutputStream repairedOriginalBytes = new ByteArrayOutputStream();
         PDDocument pdDocument = Loader.loadPDF(originalBytes);
+
+        // Correction annotations null page
         for (int i = 0; i < pdDocument.getNumberOfPages(); i++) {
             List<PDAnnotation> annotations = pdDocument.getPage(i).getAnnotations();
             for (PDAnnotation annotation : annotations) {
                 if (annotation.getPage() == null) {
-                        annotation.setPage(pdDocument.getPage(i));
+                    annotation.setPage(pdDocument.getPage(i));
                 }
             }
         }
+
         pdDocument.save(repairedOriginalBytes);
         pdDocument.close();
         originalBytes = repairedOriginalBytes.toByteArray();
+
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+
             String params = "";
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
             }
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR  -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
+
             ProcessBuilder processBuilder = new ProcessBuilder();
-            if(SystemUtils.IS_OS_WINDOWS) {
+            if (SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
             } else {
                 processBuilder.command("bash", "-c", cmd);
             }
+
             byte[] result;
             Process process = null;
             try {
@@ -695,27 +714,49 @@ public class PdfService {
                 process.getOutputStream().write(originalBytes);
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
+
                 result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
-                if (exitVal == 0) {
-                    logger.info("Convert success");
-                } else {
-                    logger.warn("PDF/A conversion failure : document will be added without conversion");
-                    logger.warn("Convert command fail : " + cmd);
+                if (exitVal != 0) {
+                    logger.warn("PDF/A conversion failure, returning original PDF");
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
                 logger.error("GhostScript error", e);
                 return originalBytes;
             } finally {
-                if(process != null) {
-                    process.destroy();
-                }
+                if (process != null) process.destroy();
             }
-            if(isPdfEmpty(result)) {
+
+            if (isPdfEmpty(result)) {
                 return originalBytes;
             }
-            return result;
+
+            // Mettre à jour les rotations après Ghostscript
+            PDDocument gsDoc = Loader.loadPDF(new ByteArrayInputStream(result).readAllBytes());
+            PDDocument origDoc = Loader.loadPDF(new ByteArrayInputStream(originalBytes).readAllBytes());
+            PDDocument finalDoc = gsDoc;
+            for (int i = 0; i < gsDoc.getNumberOfPages(); i++) {
+                PDPage gsPage = gsDoc.getPage(i);
+                PDPage origPage = origDoc.getPage(i);
+
+                PDRectangle origMedia = origPage.getMediaBox();
+                PDRectangle gsMedia = gsPage.getMediaBox();
+                if ((origMedia.getWidth() == gsMedia.getHeight()) && (origMedia.getHeight() == gsMedia.getWidth())) {
+                    origPage.setRotation(0);
+                    finalDoc = origDoc;
+                } else {
+                    gsPage.setRotation(0);
+                    finalDoc = gsDoc;
+                }
+            }
+
+            ByteArrayOutputStream finalOut = new ByteArrayOutputStream();
+            finalDoc.save(finalOut);
+            gsDoc.close();
+            origDoc.close();
+
+            return finalOut.toByteArray();
         } else {
             return originalBytes;
         }
