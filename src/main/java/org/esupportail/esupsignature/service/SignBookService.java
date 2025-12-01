@@ -213,7 +213,9 @@ public class SignBookService {
             } catch (ParseException e) {
                 logger.error("unable to parse date : " + dateFilter);
             }
-        } if(hided) {
+        }
+
+        if(hided) {
             return signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         } else {
             return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);

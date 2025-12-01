@@ -81,8 +81,8 @@ public class HomeController {
                 oldSignRequests = signRequestRepository.findByCreateByEppnAndOlderPending(authUser.getId(), globalProperties.getNbDaysBeforeWarning());
             }
             model.addAttribute("oldSignRequests", oldSignRequests);
-            List<SignRequest> recipientNotPresentSignRequests = signRequestService.getRecipientNotPresentSignRequests(userEppn);
-            model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
+//            List<SignRequest> recipientNotPresentSignRequests = signRequestService.getRecipientNotPresentSignRequests(userEppn);
+//            model.addAttribute("recipientNotPresentSignRequests", recipientNotPresentSignRequests);
             List<Message> messages = new ArrayList<>();
             if (!authUserEppn.equals("system") && userEppn.equals(authUserEppn)) {
                 messages.addAll(messageService.getByUserNeverRead(authUser));
