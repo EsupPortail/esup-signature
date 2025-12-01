@@ -162,7 +162,6 @@ public class PdfService {
         return null;
     }
 
-
     private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp, Boolean endingWithCert) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
@@ -210,25 +209,19 @@ public class PdfService {
             yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
                     - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
                     + pdPage.getCropBox().getLowerLeftY();
-
-            // Point de pivot pour rotation 0°/180°
             if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
-                tx = pdfParameters.getWidth();  // Landscape
+                tx = pdfParameters.getWidth();
             } else {
-                ty = pdfParameters.getHeight(); // Portrait
+                ty = pdfParameters.getHeight();
             }
         } else {
             yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
                     - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
                     + pdPage.getCropBox().getLowerLeftY();
-
-            // Point de pivot pour rotation 90°/270°
-            // width et height sont les dimensions ORIGINALES (avant rotation)
-            // donc on teste l'orientation originale, pas l'orientation après rotation
             if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
-                ty = pdfParameters.getHeight();  // Originalement Landscape
+                ty = pdfParameters.getHeight();
             } else {
-                tx = pdfParameters.getWidth();   // Originalement Portrait
+                tx = pdfParameters.getWidth();
             }
         }
         Matrix rotation = null;
