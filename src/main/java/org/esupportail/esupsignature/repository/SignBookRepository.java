@@ -134,13 +134,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                     select 1 from SignRequest sr
                     join sr.recipientHasSigned rhs
                     where sr.parentSignBook = sb
-                      and (key(rhs) = :recipientUser)
+                      and (key(rhs).user = :recipientUser)
                 )
                 or exists (
                     select 1 from LiveWorkflowStep lws
                     join lws.recipients r
                     where lws member of sb.liveWorkflow.liveWorkflowSteps
-                    and r = :recipientUser
+                    and r.user = :recipientUser
                 )
             )
         """)
