@@ -841,7 +841,7 @@ public class PdfService {
                     }
                     if(pageNrByAnnotDict.containsKey(pdField.getPartialName())) {
                         for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
-                            pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+                            pdAnnotationWidget.getCOSObject().setNeedToBeUpdated(true);
                             pdAnnotationWidget.setPage(pdDocument.getPage(pageNrByAnnotDict.get(pdField.getPartialName())));
                         }
                     }
@@ -896,9 +896,6 @@ public class PdfService {
                         } else {
                             String value = datas.get(filedName);
                             pdField.getCOSObject().setNeedToBeUpdated(true);
-                            pdField.getCOSObject().removeItem(COSName.AA);
-                            pdField.getCOSObject().removeItem(COSName.AP);
-                            pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                             try {
                                 pdField.setValue(value);
                             } catch (Exception e) {
