@@ -157,7 +157,7 @@ public class DataService {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
             return pdfService.fill(inputStream, data.getDatas(), false, true);
-        } else  if(form.getDocument() != null) {
+        } else if(form.getDocument() != null) {
             return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow()), data.getDatas(), false, true);
         } else {
             logger.error("no pdf model");
