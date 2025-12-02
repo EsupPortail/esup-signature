@@ -290,6 +290,11 @@ public class PdfService {
             linkHeight = signHeight * scaleY;
             linkX = pageW - xAdjusted * scaleX - linkWidth;
             linkY = pageH - yAdjusted * scaleY - linkHeight;
+        } else if(pdfParameters.getRotation() == 180) {
+            linkWidth = signWidth;
+            linkHeight = signHeight;
+            linkX = pageW - xAdjusted - linkWidth;
+            linkY = pageH - yAdjusted - linkHeight;
         } else {
             linkWidth = signWidth;
             linkHeight = signHeight;
@@ -675,8 +680,6 @@ public class PdfService {
     public byte[] normalizePDF(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
         ByteArrayOutputStream repairedOriginalBytes = new ByteArrayOutputStream();
         PDDocument pdDocument = Loader.loadPDF(originalBytes);
-
-        // Correction annotations null page
         for (int i = 0; i < pdDocument.getNumberOfPages(); i++) {
             List<PDAnnotation> annotations = pdDocument.getPage(i).getAnnotations();
             for (PDAnnotation annotation : annotations) {
@@ -685,21 +688,17 @@ public class PdfService {
                 }
             }
         }
-
         pdDocument.save(repairedOriginalBytes);
         pdDocument.close();
         originalBytes = repairedOriginalBytes.toByteArray();
-
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-
             String params = "";
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
             }
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR  -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
-
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
@@ -731,8 +730,6 @@ public class PdfService {
             if (isPdfEmpty(result)) {
                 return originalBytes;
             }
-
-            // Mettre à jour les rotations après Ghostscript
             PDDocument gsDoc = Loader.loadPDF(new ByteArrayInputStream(result).readAllBytes());
             PDDocument origDoc = Loader.loadPDF(new ByteArrayInputStream(originalBytes).readAllBytes());
             PDDocument finalDoc = gsDoc;
@@ -746,11 +743,10 @@ public class PdfService {
                     origPage.setRotation(0);
                     finalDoc = origDoc;
                 } else {
-                    gsPage.setRotation(0);
+                    gsPage.setRotation(origPage.getRotation());
                     finalDoc = gsDoc;
                 }
             }
-
             ByteArrayOutputStream finalOut = new ByteArrayOutputStream();
             finalDoc.save(finalOut);
             gsDoc.close();
