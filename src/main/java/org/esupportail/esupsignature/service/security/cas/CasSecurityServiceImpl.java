@@ -165,6 +165,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
+        spelGroupService.initGroupMappingSpel();
 		group2UserRoleService.setGroupService(spelGroupService);
 		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getCasUserSearchFilter(), ldapContextSource);

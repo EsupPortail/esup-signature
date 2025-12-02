@@ -48,7 +48,6 @@ public class AuditStep {
 
     private Boolean allScrolled;
 
-    @OrderColumn
     @ElementCollection
     @Column(columnDefinition = "TEXT")
     private Map<String, String> authenticationDetails;
