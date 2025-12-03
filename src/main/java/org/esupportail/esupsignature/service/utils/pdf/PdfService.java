@@ -697,7 +697,7 @@ public class PdfService {
             if(!pdfConfig.getPdfProperties().isAutoRotate()) {
                 params = params + " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR  -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -dShowAcroForm=true -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
@@ -713,11 +713,14 @@ public class PdfService {
                 process.getOutputStream().write(originalBytes);
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
-
+                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
+                process.getErrorStream().transferTo(errorOutputStream);
                 result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
                 if (exitVal != 0) {
-                    logger.warn("PDF/A conversion failure, returning original PDF");
+                    logger.warn("PDF normalization failure");
+                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
+                    logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
             } catch (IOException | InterruptedException e) {
@@ -751,7 +754,6 @@ public class PdfService {
             finalDoc.save(finalOut);
             gsDoc.close();
             origDoc.close();
-
             return finalOut.toByteArray();
         } else {
             return originalBytes;
@@ -841,7 +843,7 @@ public class PdfService {
                     }
                     if(pageNrByAnnotDict.containsKey(pdField.getPartialName())) {
                         for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
-                            pdAnnotationWidget.getCOSObject().setNeedToBeUpdated(true);
+                            pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                             pdAnnotationWidget.setPage(pdDocument.getPage(pageNrByAnnotDict.get(pdField.getPartialName())));
                         }
                     }
@@ -896,6 +898,9 @@ public class PdfService {
                         } else {
                             String value = datas.get(filedName);
                             pdField.getCOSObject().setNeedToBeUpdated(true);
+                            pdField.getCOSObject().removeItem(COSName.AA);
+                            pdField.getCOSObject().removeItem(COSName.AP);
+                            pdField.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                             try {
                                 pdField.setValue(value);
                             } catch (Exception e) {
@@ -924,8 +929,8 @@ public class PdfService {
             pdDocument2.save(finalOut);
             pdDocument2.close();
             return finalOut.toByteArray();
-        } catch (IOException e) {
-            logger.error("file read error", e);
+        } catch (Exception e) {
+            logger.error("fill pdf error", e);
         }
         return null;
     }
