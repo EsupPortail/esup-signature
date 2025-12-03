@@ -1074,6 +1074,7 @@ public class SignBookService {
         }
         SignBook signBook = createSignBook(title, modelWorkflow, null, user.getEppn(), true, comment);
         SignRequest signRequest = signRequestService.createSignRequest(signBook.getSubject(), signBook, user.getEppn(), authUser.getEppn());
+        signRequest.setData(data);
         if(form.getWorkflow().getOwnerSystem() != null && form.getWorkflow().getOwnerSystem()) {
             User systemUser = userService.getSystemUser();
             signBook.setCreateBy(systemUser);
