@@ -79,7 +79,7 @@
                     </div>
                     <div class="alert alert-light">
                         <h5>GroupMappingSpel</h5>
-                        <small>Dans les expressions SpEL seul l’attribut #eppn est géré. Une erreur dans l'expression empêchera les utilisateurs concernés de se connecter !</small>
+                        <small>Dans les expressions SpEL seul l’attribut #eppn est géré. Il est aussi possible d’utiliser 'true' pour donner le rôle à tout le monde. Une erreur dans l'expression empêchera les utilisateurs concernés de se connecter !</small>
                         <br><br>
                         <div th:if="${config == null || config.groupMappingSpel.isEmpty()}" class="alert alert-secondary">
                             Aucun filtre spel en base de données
