@@ -44,11 +44,8 @@
             <button id="next" title="Page suivante" class="btn btn-light btn-outline-dark me-1 d-none d-sm-block" aria-label="Prochain">
                 <i class="fi fi-rr-down"></i>
             </button>
-            <button id="rotateleft" class="btn btn-light btn-outline-dark me-1 d-none">
-                <i class="fa-solid fa-undo"></i>
-            </button>
-            <button id="rotateright" class="btn btn-light btn-outline-dark me-1 d-none">
-                <i class="fa-solid fa-redo"></i>
+            <button id="autototate" th:if="${signable}" class="btn btn-light btn-outline-dark me-1 d-flex justify-content-center align-items-center" title="Redresser le document">
+                <i class="fi fi-rr-navigation" style="font-size: 18px; padding-bottom: 2px;"></i>
             </button>
             <div class="border ms-1 me-2 d-none d-lg-block"></div>
             <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">

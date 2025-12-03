@@ -298,10 +298,10 @@ textarea:invalid {
 }
 
 .badge-status > i {
-    margin-top: 1px;
+    margin-top: -1px;
     height: 100%;
     background-color: black;
-    padding: 0 6px 1px 6px;
+    padding: 4px 6px 4px 6px;
     line-height: 25px;
     color: white;
     border-top-left-radius: var(--bs-border-radius-pill) !important;
@@ -555,10 +555,8 @@ textarea:invalid {
 }
 
 .fi {
-    vertical-align: middle;
-    transform: translateY(-1px);
+    transform: translateY(1px);
     display: inline-flex;
-    align-items: center;
 }
 
 .introjs-tooltip {

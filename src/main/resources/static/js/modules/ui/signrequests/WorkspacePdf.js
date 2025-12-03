@@ -885,10 +885,6 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#workspace').addClass('alert-primary');
-        $('#rotateleft').prop('disabled', false);
-        $('#rotateright').prop('disabled', false);
-        $('#rotateleft').css('opacity', 1);
-        $('#rotateright').css('opacity', 1);
         $('#insert-btn-div').hide();
         $('#insert-btn').hide();
         this.showAllPostits();
@@ -976,7 +972,6 @@ export class WorkspacePdf {
         insertBtn.addClass("btn-outline-primary");
         insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
-        this.pdfViewer.rotation = 0;
         if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
             if (this.forcePageNum) {
                 this.pdfViewer.scrollToPage(this.forcePageNum);
@@ -1022,10 +1017,6 @@ export class WorkspacePdf {
         $('#postit').hide();
         $('#refusetools').hide();
         $('#insert-btn-div').hide();
-        $('#rotateleft').prop('disabled', true);
-        $('#rotateright').prop('disabled', true);
-        $('#rotateleft').css('opacity', 0);
-        $('#rotateright').css('opacity', 0);
         $('#pdf').css('cursor', 'default');
         $('#hideCommentButton').unbind();
         $(".spot").each(function () {

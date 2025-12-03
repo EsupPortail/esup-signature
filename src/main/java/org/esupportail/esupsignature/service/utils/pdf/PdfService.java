@@ -23,6 +23,7 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -277,8 +278,8 @@ public class PdfService {
         float scaleX = 1;
         float scaleY = 1;
         if(pdfParameters.getRotation() == 90 || pdfParameters.getRotation() == 270){
-                scaleX = (pageW / pageH);
-                scaleY = (pageH / pageW);
+            scaleX = (pageW / pageH);
+            scaleY = (pageH / pageW);
         }
         if(pdfParameters.getRotation() == 270) {
             linkWidth  = signWidth * scaleX;
@@ -549,16 +550,16 @@ public class PdfService {
             for(Log log : logs) {
                 i++;
                 String signatureInfos =
-                    pdfTextStripper.getLineSeparator() + log.getAction() + pdfTextStripper.getLineSeparator();
+                        pdfTextStripper.getLineSeparator() + log.getAction() + pdfTextStripper.getLineSeparator();
                 if(log.getUser() != null) {
                     signatureInfos +=
                             "De : " + log.getUser().getFirstname() + " " + log.getUser().getName() + pdfTextStripper.getLineSeparator();
                 }
                 signatureInfos +=
-                    "Le : " + dateFormat.format(log.getLogDate()) + pdfTextStripper.getLineSeparator() +
-                    "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
-                    "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                    globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+                        "Le : " + dateFormat.format(log.getLogDate()) + pdfTextStripper.getLineSeparator() +
+                                "Depuis : " + log.getIp() + pdfTextStripper.getLineSeparator() +
+                                "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
+                                globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
                 info.setKeywords(info.getKeywords() + ", " + signatureInfos);
                 info.setCustomMetadataValue("Signature_1" + i, signatureInfos);
                 pdfaIdentificationSchema.setTextPropertyValue("Signature_" + i, signatureInfos);
@@ -606,10 +607,7 @@ public class PdfService {
     public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
-            if(!pdfConfig.getPdfProperties().isAutoRotate()) {
-                params = params + " -dAutoRotatePages=/None";
-            }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {
@@ -626,15 +624,15 @@ public class PdfService {
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
                 process.getInputStream().transferTo(convertedOutputStream);
-//                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-//                process.getErrorStream().transferTo(errorOutputStream);
+                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
+                process.getErrorStream().transferTo(errorOutputStream);
                 result = convertedOutputStream.toByteArray();
                 int exitVal = process.waitFor();
                 if (exitVal == 0 && result.length > 4 && new String(result, 0, 4, StandardCharsets.US_ASCII).equals("%PDF")) {
                     logger.info("Convert success");
                 } else {
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
-//                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
+                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
@@ -663,28 +661,28 @@ public class PdfService {
      * @throws IOException En cas de problème lié au traitement du fichier
      * @throws EsupSignatureRuntimeException Si la normalisation échoue
      */
-    public byte[] normalizePDF(byte[] originalBytes) throws IOException, EsupSignatureRuntimeException {
-        ByteArrayOutputStream repairedOriginalBytes = new ByteArrayOutputStream();
+    public byte[] normalizePDF(byte[] originalBytes, boolean rotate, boolean force) throws IOException, EsupSignatureRuntimeException {
         PDDocument pdDocument = Loader.loadPDF(originalBytes);
-        for (int i = 0; i < pdDocument.getNumberOfPages(); i++) {
-            List<PDAnnotation> annotations = pdDocument.getPage(i).getAnnotations();
-            for (PDAnnotation annotation : annotations) {
-                if (annotation.getPage() == null) {
-                    annotation.setPage(pdDocument.getPage(i));
-                }
+        boolean hasWidgets = false;
+        for (PDPage page : pdDocument.getPages()) {
+            if (page.getAnnotations().stream().anyMatch(a -> a instanceof PDAnnotationWidget)) {
+                hasWidgets = true;
+                break;
             }
         }
-        pdDocument.save(repairedOriginalBytes);
-        pdDocument.close();
-        originalBytes = repairedOriginalBytes.toByteArray();
+        if(hasWidgets && !force) {
+            return originalBytes;
+        }
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+
             String params = "";
-            if(!pdfConfig.getPdfProperties().isAutoRotate()) {
-                params = params + " -dAutoRotatePages=/None";
+            if(!rotate) {
+                params += " -dAutoRotatePages=/None";
             }
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -dShowAcroForm=true -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
+
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
@@ -704,7 +702,7 @@ public class PdfService {
                 result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
                 if (exitVal != 0) {
-                    logger.warn("PDF normalization failure");
+                    logger.warn("Normalize failure : document will be signed without conversion");
 //                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
@@ -719,23 +717,24 @@ public class PdfService {
             if (isPdfEmpty(result)) {
                 return originalBytes;
             }
+
+            // Mettre à jour les rotations après Ghostscript
             PDDocument gsDoc = Loader.loadPDF(new ByteArrayInputStream(result).readAllBytes());
             PDDocument origDoc = Loader.loadPDF(new ByteArrayInputStream(originalBytes).readAllBytes());
             PDDocument finalDoc = gsDoc;
-            for (int i = 0; i < gsDoc.getNumberOfPages(); i++) {
-                PDPage gsPage = gsDoc.getPage(i);
-                PDPage origPage = origDoc.getPage(i);
+//            for (int i = 0; i < gsDoc.getNumberOfPages(); i++) {
+//                PDPage gsPage = gsDoc.getPage(i);
+//                PDPage origPage = origDoc.getPage(i);
+//
+//                PDRectangle origMedia = origPage.getMediaBox();
+//                PDRectangle gsMedia = gsPage.getMediaBox();
+//                if ((origMedia.getWidth() == gsMedia.getHeight()) && (origMedia.getHeight() == gsMedia.getWidth())) {
+//                    gsPage.setRotation(0);
+//                } else {
+//                    gsPage.setRotation(0);
+//                }
+//            }
 
-                PDRectangle origMedia = origPage.getMediaBox();
-                PDRectangle gsMedia = gsPage.getMediaBox();
-                if ((origMedia.getWidth() == gsMedia.getHeight()) && (origMedia.getHeight() == gsMedia.getWidth())) {
-                    origPage.setRotation(0);
-                    finalDoc = origDoc;
-                } else {
-                    gsPage.setRotation(origPage.getRotation());
-                    finalDoc = gsDoc;
-                }
-            }
             ByteArrayOutputStream finalOut = new ByteArrayOutputStream();
             finalDoc.save(finalOut);
             gsDoc.close();
@@ -751,11 +750,32 @@ public class PdfService {
             if (doc.getNumberOfPages() == 0) {
                 return true;
             }
+
+            // Vérifier le texte extractible
             PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(doc).trim();
-            return text.isEmpty();
+
+            if (!text.isEmpty()) {
+                return false;
+            }
+
+            for (PDPage page : doc.getPages()) {
+                PDResources resources = page.getResources();
+                if (resources != null) {
+                    Iterable<COSName> xObjectNames = resources.getXObjectNames();
+                    for (COSName name : xObjectNames) {
+                        PDXObject xObject = resources.getXObject(name);
+                        if (xObject instanceof PDImageXObject) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+
         } catch (IOException e) {
-            logger.warn("Impossible d’analyser le PDF", e);
+            logger.warn("Impossible d'analyser le PDF", e);
             return true;
         }
     }
@@ -837,13 +857,13 @@ public class PdfService {
                 for(PDField pdField : fields) {
                     if(pdField instanceof PDSignatureField) {
                         for(PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
-                            pdAnnotationWidget.setPage(pdDocument.getPage(0));
+//                            pdAnnotationWidget.setPage(pdDocument.getPage(0));
                         }
                         continue;
                     }
                     if(pageNrByAnnotDict.containsKey(pdField.getPartialName())) {
                         for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
-                            pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
+//                            pdAnnotationWidget.getCOSObject().setString(COSName.DA, "/LiberationSans 10 Tf 0 g");
                             pdAnnotationWidget.setPage(pdDocument.getPage(pageNrByAnnotDict.get(pdField.getPartialName())));
                         }
                     }
@@ -929,8 +949,8 @@ public class PdfService {
             pdDocument2.save(finalOut);
             pdDocument2.close();
             return finalOut.toByteArray();
-        } catch (Exception e) {
-            logger.error("fill pdf error", e);
+        } catch (IOException e) {
+            logger.error("file read error", e);
         }
         return null;
     }
@@ -983,6 +1003,9 @@ public class PdfService {
                         } catch (ClassNotFoundException e) {
                             logger.debug("error on remove sign field", e);
                         }
+                    }
+                    if(pdField instanceof PDSignatureField) {
+                        removeField(pdField, pdDocument, pdAcroForm);
                     }
                 }
             }
@@ -1044,7 +1067,7 @@ public class PdfService {
                     }
                 }
                 if (!removed)
-                    logger.debug("Inconsistent annotation definition: Page annotations do not include the target widget.");
+                    logger.warn("Inconsistent annotation definition: Page annotations do not include the target widget." + pdField.getPartialName());
             }
         }
         pdAcroForm.getFields().remove(pdField);

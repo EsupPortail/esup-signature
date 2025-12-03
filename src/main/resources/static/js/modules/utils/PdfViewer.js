@@ -37,8 +37,9 @@ export class PdfViewer extends EventFactory {
         this.dataFields = jsFields;
         this.savedFields = new Map();
         this.events = {};
-        this.rotation = 0;
-        this.renderedPages = 0
+        this.rotation = null;
+        this.pageRotation = 0;
+        this.renderedPages = 0;
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         let self = this;
@@ -62,8 +63,7 @@ export class PdfViewer extends EventFactory {
         $('#zoomout').on('click', e => this.zoomOut());
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
-        $('#rotateleft').on('click', e => this.rotateLeft());
-        $('#rotateright').on('click', e => this.rotateRight());
+        $('#autototate').on('click', e => this.autoRotate());
         let self = this;
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
@@ -291,13 +291,15 @@ export class PdfViewer extends EventFactory {
 
             const browserZoom = this.getBrowserZoom();
 
-            // Récupérer la rotation native de la page + rotation appliquée
-            const pageRotation = page.rotate || 0;
-            const totalRotation = (pageRotation + this.rotation) % 360;
+            this.pageRotation = page.rotate;
+
+            if(this.rotation == null) {
+                this.rotation = this.pageRotation;
+            }
 
             const viewport = page.getViewport({
                 scale: this.scale,
-                rotation: totalRotation  // Utiliser la rotation totale
+                rotation: this.rotation
             });
 
             const dispatchToDOM = false;
@@ -307,7 +309,6 @@ export class PdfViewer extends EventFactory {
                 container: container,
                 id: this.pageNum,
                 scale: this.scale,
-                rotation: totalRotation,  // Utiliser la rotation totale
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
@@ -385,9 +386,15 @@ export class PdfViewer extends EventFactory {
             }).then(() => {
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
-                    annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
-                    annotationLayer.style.transform = 'none';
+                    annotationLayer.setAttribute("data-main-rotation", this.rotation);
+                    const isPortrait = viewport.width < viewport.height;
+                    if (!isPortrait) {
+                        annotationLayer.style.width = `${Math.floor(viewport.height)}px`;
+                        annotationLayer.style.height = `${Math.floor(viewport.width)}px`;
+                    } else {
+                        annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
+                        annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
+                    }
                     this.pages.push(page);
                     resolve("ok");
                 }
@@ -891,24 +898,19 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    rotateLeft() {
+    autoRotate() {
         console.info('rotate left');
-        if (this.rotation < -90) {
-            return;
+        if (this.rotation === 0) {
+            this.rotation = this.pageRotation;
+        } else {
+            this.rotation = 0;
         }
-        this.rotation = this.rotation - 90;
+        let autorotatebtn = $("#autototate");
+        autorotatebtn.toggleClass("btn-light btn-dark");
+        autorotatebtn.toggleClass("btn-outline-dark border-dark");
+        autorotatebtn.children().toggleClass("fi-rr-navigation fi-rr-compass-north")
         this.startRender()
         this.fireEvent("rotate", ['left']);
-    }
-
-    rotateRight() {
-        console.info('rotate right' + this.rotation);
-        if (this.rotation > 90) {
-            return;
-        }
-        this.rotation = this.rotation + 90;
-        this.startRender()
-        this.fireEvent("rotate", ['right']);
     }
 
     autocomplete(response, inputField) {
