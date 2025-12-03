@@ -626,15 +626,15 @@ public class PdfService {
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
                 process.getInputStream().transferTo(convertedOutputStream);
-                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-                process.getErrorStream().transferTo(errorOutputStream);
+//                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
+//                process.getErrorStream().transferTo(errorOutputStream);
                 result = convertedOutputStream.toByteArray();
                 int exitVal = process.waitFor();
                 if (exitVal == 0 && result.length > 4 && new String(result, 0, 4, StandardCharsets.US_ASCII).equals("%PDF")) {
                     logger.info("Convert success");
                 } else {
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
-                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
+//                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
@@ -652,20 +652,6 @@ public class PdfService {
             return result;
         } else {
             return originalBytes;
-        }
-    }
-
-    private boolean isPdfEmpty(byte[] pdfBytes) {
-        try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
-            if (doc.getNumberOfPages() == 0) {
-                return true;
-            }
-            PDFTextStripper stripper = new PDFTextStripper();
-            String text = stripper.getText(doc).trim();
-            return text.isEmpty();
-        } catch (IOException e) {
-            logger.warn("Impossible d’analyser le PDF", e);
-            return true;
         }
     }
 
@@ -713,13 +699,13 @@ public class PdfService {
                 process.getOutputStream().write(originalBytes);
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
-                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-                process.getErrorStream().transferTo(errorOutputStream);
+//                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
+//                process.getErrorStream().transferTo(errorOutputStream);
                 result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
                 if (exitVal != 0) {
                     logger.warn("PDF normalization failure");
-                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
+//                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
@@ -757,6 +743,20 @@ public class PdfService {
             return finalOut.toByteArray();
         } else {
             return originalBytes;
+        }
+    }
+
+    private boolean isPdfEmpty(byte[] pdfBytes) {
+        try (PDDocument doc = Loader.loadPDF(pdfBytes)) {
+            if (doc.getNumberOfPages() == 0) {
+                return true;
+            }
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(doc).trim();
+            return text.isEmpty();
+        } catch (IOException e) {
+            logger.warn("Impossible d’analyser le PDF", e);
+            return true;
         }
     }
 
