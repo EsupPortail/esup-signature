@@ -44,7 +44,6 @@ public class Data {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
 
-    @OrderColumn
     @ElementCollection(fetch = FetchType.LAZY)
 	@Column(columnDefinition = "TEXT")
 	private Map<String, String> datas = new LinkedHashMap<>();

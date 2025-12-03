@@ -13,13 +13,14 @@ import software.xdev.chartjs.model.data.BarData;
 import software.xdev.chartjs.model.data.DoughnutData;
 import software.xdev.chartjs.model.dataset.BarDataset;
 import software.xdev.chartjs.model.dataset.DoughnutDataset;
-import software.xdev.chartjs.model.options.*;
+import software.xdev.chartjs.model.options.BarOptions;
+import software.xdev.chartjs.model.options.DoughnutOptions;
+import software.xdev.chartjs.model.options.LegendOptions;
+import software.xdev.chartjs.model.options.Plugins;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,7 +63,7 @@ public class ChartsService {
             datasets.add(countCertDataset);
             datasets.add(countSignsDataset);
             datasets.add(countRefusedDataset);
-            BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setPosition(Legend.Position.RIGHT).setDisplay(true)));
+            BarOptions options = new BarOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new LegendOptions().setPosition("right").setDisplay(true)));
             BarData data = new BarData().setLabels(labels.stream().sorted(Comparator.comparingInt(Integer::parseInt)).toList()).setDatasets(datasets);
             return new BarChart(data, options).toJson();
         } else {
@@ -76,13 +77,28 @@ public class ChartsService {
         if(workflowStatusChartDtos.isEmpty()) {
             return null;
         }
-        Set<String> labels = workflowStatusChartDtos.stream().map(WorkflowStatusChartDto::getStatus).collect(Collectors.toSet());
-        DoughnutDataset doughnutDataset = new DoughnutDataset().setLabel("Status des demandes").addBackgroundColor(toHex(new Color(170, 222, 167))).addBackgroundColor(toHex(new Color(255, 206, 86))).addBackgroundColor(toHex(new Color(255, 99, 132)));
-        for(WorkflowStatusChartDto workflowStatusChartDto : workflowStatusChartDtos) {
-            doughnutDataset.addData(workflowStatusChartDto.getCount());
+        Map<String, String> colors = Map.of(
+                "completed", toHex(new Color(170, 222, 167)),
+                "pending", toHex(new Color(255, 206, 86)),
+                "refused", toHex(new Color(255, 99, 132))
+        );
+
+        DoughnutDataset doughnutDataset = new DoughnutDataset()
+                .setLabel("Nombre de demande");
+
+        List<String> sortedLabels = workflowStatusChartDtos.stream()
+                .map(WorkflowStatusChartDto::getStatus)
+                .sorted()
+                .toList();
+
+        for (String label : sortedLabels) {
+            workflowStatusChartDtos.stream()
+                    .filter(w -> w.getStatus().equals(label))
+                    .findFirst().ifPresent(dto -> doughnutDataset.addData(dto.getCount()).addBackgroundColor(colors.getOrDefault(label, "#cccccc")));
+
         }
-        DoughnutOptions options = new DoughnutOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new Legend().setTitle(new LegendTitle().setDisplay(true).setColor("#000000").setText("Circuit " + workflow.getDescription())).setPosition(Legend.Position.RIGHT)));
-        DoughnutData doughnutData = new DoughnutData().setLabels(labels.stream().sorted().toList()).addDataset(doughnutDataset);
+        DoughnutOptions options = new DoughnutOptions().setResponsive(true).setPlugins(new Plugins().setLegend(new LegendOptions().setTitle(new LegendOptions.Title().setDisplay(true).setColor("#000000").setText("Circuit " + workflow.getDescription())).setPosition("bottom")));
+        DoughnutData doughnutData = new DoughnutData().setLabels(sortedLabels.stream().sorted().toList()).addDataset(doughnutDataset);
         return new DoughnutChart(doughnutData, options).toJson();
     }
 
