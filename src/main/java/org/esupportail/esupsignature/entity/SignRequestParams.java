@@ -29,6 +29,8 @@ public class SignRequestParams {
 
 	private Integer yPos = 0;
 
+    private Integer rotate = 0;
+
 	private String extraText;
 
     private Boolean isExtraText = false;
@@ -151,6 +153,14 @@ public class SignRequestParams {
 
     public void setyPos(Integer yPos) {
         this.yPos = yPos;
+    }
+
+    public Integer getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(Integer rotate) {
+        this.rotate = rotate;
     }
 
     public String getExtraText() {

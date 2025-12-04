@@ -11,7 +11,6 @@ public class PdfProperties {
     private boolean convertToPdfA = true;
     private int pdfALevel = 2;
     private String gsCommandParams = "-dPDFSTOPONERROR -dSubsetFonts=true -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1";
-    private boolean autoRotate = true;
 
     public int getPdfToImageDpi() {
         return pdfToImageDpi;
@@ -61,11 +60,4 @@ public class PdfProperties {
         this.gsCommandParams = gsCommandParams;
     }
 
-    public boolean isAutoRotate() {
-        return autoRotate;
-    }
-
-    public void setAutoRotate(boolean autoRotate) {
-        this.autoRotate = autoRotate;
-    }
 }

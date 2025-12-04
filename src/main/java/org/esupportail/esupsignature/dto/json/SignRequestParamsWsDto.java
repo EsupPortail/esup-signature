@@ -16,6 +16,8 @@ public class SignRequestParamsWsDto {
 
     private Integer yPos = 0;
 
+    private Integer rotate = 0;
+
     private String imageBase64;
 
     private Integer signImageNumber = 0;
@@ -70,6 +72,14 @@ public class SignRequestParamsWsDto {
         this.yPos = yPos;
     }
 
+    public Integer getRotate() {
+        return rotate;
+    }
+
+    public void setRotate(Integer rotate) {
+        this.rotate = rotate;
+    }
+
     public String getImageBase64() {
         return imageBase64;
     }
@@ -102,6 +112,7 @@ public class SignRequestParamsWsDto {
         signRequestParams.setSignHeight(this.signHeight);
         signRequestParams.setxPos(this.xPos);
         signRequestParams.setyPos(this.yPos);
+        signRequestParams.setRotate(this.rotate);
         signRequestParams.setImageBase64(this.imageBase64);
         signRequestParams.setSignImageNumber(this.signImageNumber);
         signRequestParams.setPdSignatureFieldName(this.pdSignatureFieldName);
