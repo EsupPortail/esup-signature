@@ -156,6 +156,7 @@ public class SignRequestParams {
     }
 
     public Integer getRotate() {
+        if(rotate == null) return 0;
         return rotate;
     }
 
