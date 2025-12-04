@@ -624,15 +624,12 @@ public class PdfService {
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
                 process.getInputStream().transferTo(convertedOutputStream);
-                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-                process.getErrorStream().transferTo(errorOutputStream);
                 result = convertedOutputStream.toByteArray();
                 int exitVal = process.waitFor();
                 if (exitVal == 0 && result.length > 4 && new String(result, 0, 4, StandardCharsets.US_ASCII).equals("%PDF")) {
                     logger.info("Convert success");
                 } else {
                     logger.warn("PDF/A conversion failure : document will be signed without conversion");
-                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
@@ -675,21 +672,18 @@ public class PdfService {
         }
         Reports reports = validationService.validate(new ByteArrayInputStream(originalBytes), null);
         if (reports == null || reports.getSimpleReport() == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-
             String params = "";
             if(!rotate) {
                 params += " -dAutoRotatePages=/None";
             }
             String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dPDFSTOPONERROR -sstdout=%stderr -dBATCH -dNOPAUSE -dPassThroughJPEGImages=true -dNOSAFER -sDEVICE=pdfwrite" + params + " -d -sOutputFile=- - 2>/dev/null";
             logger.info("GhostScript normalize : " + cmd);
-
             ProcessBuilder processBuilder = new ProcessBuilder();
             if (SystemUtils.IS_OS_WINDOWS) {
                 processBuilder.command("cmd", "/C", cmd);
             } else {
                 processBuilder.command("bash", "-c", cmd);
             }
-
             byte[] result;
             Process process = null;
             try {
@@ -697,13 +691,10 @@ public class PdfService {
                 process.getOutputStream().write(originalBytes);
                 process.getOutputStream().flush();
                 process.getOutputStream().close();
-//                ByteArrayOutputStream errorOutputStream = new ByteArrayOutputStream();
-//                process.getErrorStream().transferTo(errorOutputStream);
                 result = process.getInputStream().readAllBytes();
                 int exitVal = process.waitFor();
                 if (exitVal != 0) {
                     logger.warn("Normalize failure : document will be signed without conversion");
-//                    logger.warn("stderr: " + errorOutputStream.toString(StandardCharsets.UTF_8));
                     logger.warn("Convert command fail : " + cmd);
                     return originalBytes;
                 }
@@ -717,29 +708,7 @@ public class PdfService {
             if (isPdfEmpty(result)) {
                 return originalBytes;
             }
-
-            // Mettre à jour les rotations après Ghostscript
-            PDDocument gsDoc = Loader.loadPDF(new ByteArrayInputStream(result).readAllBytes());
-            PDDocument origDoc = Loader.loadPDF(new ByteArrayInputStream(originalBytes).readAllBytes());
-            PDDocument finalDoc = gsDoc;
-//            for (int i = 0; i < gsDoc.getNumberOfPages(); i++) {
-//                PDPage gsPage = gsDoc.getPage(i);
-//                PDPage origPage = origDoc.getPage(i);
-//
-//                PDRectangle origMedia = origPage.getMediaBox();
-//                PDRectangle gsMedia = gsPage.getMediaBox();
-//                if ((origMedia.getWidth() == gsMedia.getHeight()) && (origMedia.getHeight() == gsMedia.getWidth())) {
-//                    gsPage.setRotation(0);
-//                } else {
-//                    gsPage.setRotation(0);
-//                }
-//            }
-
-            ByteArrayOutputStream finalOut = new ByteArrayOutputStream();
-            finalDoc.save(finalOut);
-            gsDoc.close();
-            origDoc.close();
-            return finalOut.toByteArray();
+            return result;
         } else {
             return originalBytes;
         }

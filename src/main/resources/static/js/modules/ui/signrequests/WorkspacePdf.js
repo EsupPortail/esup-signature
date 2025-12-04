@@ -179,11 +179,11 @@ export class WorkspacePdf {
                     let postitButton = $('#postit' + postit.id);
                     postitButton.on('click', e => this.focusComment(postit));
                     postitButton.on('mouseover', function () {
-                        $('#inDocComment_' + postit.id).addClass('text-danger');
+                        $('#inDocComment_' + postit.id).addClass('circle-background');
                         postitButton.addClass('circle-border');
                     });
                     postitButton.on('mouseout', function () {
-                        $('#inDocComment_' + postit.id).removeClass('text-danger');
+                        $('#inDocComment_' + postit.id).removeClass('circle-background');
                         postitButton.removeClass('circle-border');
                     });
                 });
@@ -894,8 +894,8 @@ export class WorkspacePdf {
     }
 
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         console.info("enable comments mode");
+        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
@@ -917,7 +917,6 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.hide();
-        // $("#signModeBtns").addClass("d-none");
         $("#signImageBtn").removeClass("d-lg-block");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
@@ -936,7 +935,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
+        // $("#changeMode1").removeClass("btn-outline-dark").removeClass("d-none").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -1111,9 +1110,6 @@ export class WorkspacePdf {
         $("#addCommentButton").addClass("btn-danger");
         $("#addCommentButton2").addClass("bg-danger text-white");
         $("#addSpotButton2").attr("disabled", true);
-        // $("#addCommentButton2").attr("disabled", true);
-        // $("#addCommentButton2").addClass("disable");
-        // this.hideComment(e);
         if (this.addCommentEnabled) {
             location.reload();
         } else {
@@ -1157,24 +1153,12 @@ export class WorkspacePdf {
     }
 
     displayCommentPointer() {
-        this.pdfViewer.pdfDiv.css('cursor', 'url(' + this.getCommentPointer("\uf075") + '), auto');
+        const png = '/images/icons/rr-commentaire-alt.png';
+        this.pdfViewer.pdfDiv.css('cursor', `url("${png}"), auto`);
     }
 
     disablePointer() {
         this.pdfViewer.pdfDiv.css('cursor', 'default');
-    }
-
-    getCommentPointer(code) {
-        let pointerCanvas = document.createElement("canvas");
-        pointerCanvas.width = 24;
-        pointerCanvas.height = 24;
-        let pointerCtx = pointerCanvas.getContext("2d");
-        pointerCtx.fillStyle = "#000000";
-        pointerCtx.font = "24px FontAwesome";
-        pointerCtx.textAlign = "center";
-        pointerCtx.textBaseline = "middle";
-        pointerCtx.fillText(code, 12, 12);
-        return pointerCanvas.toDataURL('image/png');
     }
 
     changeSpotStep() {

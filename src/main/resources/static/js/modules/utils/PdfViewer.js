@@ -435,12 +435,8 @@ export class PdfViewer extends EventFactory {
         console.info("toggle fields " + items.length);
         for (let i = 0; i < items.length; i++) {
             if(items[i].fieldName != null) {
-                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
-                if (enable) {
-                    inputField.prop("disabled", false);
-                } else {
-                    inputField.prop("disabled", true);
-                }
+                let inputField = $('input[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\'], textarea[name=\'' + items[i].fieldName.split(/\$|#|!/)[0] + '\']');
+                inputField.prop("disabled", !enable);
             }
         }
     }
