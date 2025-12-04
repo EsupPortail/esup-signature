@@ -360,6 +360,7 @@ export class SignUi {
                 paramToSend.fontSize = originalParams.fontSize;
                 paramToSend.signWidth = originalParams.signWidth / originalParams.signScale
                 paramToSend.signHeight = originalParams.signHeight / originalParams.signScale
+                paramToSend.rotate = self.workspace.pdfViewer.rotation;
                 delete paramToSend.signImages;
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {

@@ -149,7 +149,7 @@
                     th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
                     es-comment-delete=true
                 >
-                    <i class="fa-solid fa-comment fa-3x"></i>
+                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
                 <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
@@ -159,7 +159,7 @@
                     th:es-comment-text="${comment.text}"
                     th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
                 >
-                    <i class="fa-solid fa-comment fa-3x"></i>
+                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
             </th:block>
             <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">

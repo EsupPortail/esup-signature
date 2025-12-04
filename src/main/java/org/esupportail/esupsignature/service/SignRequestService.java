@@ -327,6 +327,7 @@ public class SignRequestService {
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
         }
+        filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
         boolean visual = true;
         if(signWith == null || SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
             byte[] signedInputStream = filledInputStream;
@@ -356,7 +357,6 @@ public class SignRequestService {
                 signedInputStream = pdfService.convertToPDFA(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
             }
             byte[] signedBytes = signedInputStream;
-
             stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
             documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
         } else {
@@ -538,7 +538,7 @@ public class SignRequestService {
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern())))) {
-                        bytes = pdfService.normalizePDF(bytes);
+                        bytes = pdfService.normalizePDF(bytes, true, false);
                         pdfaCheck = smallCheckPDFA(bytes);
                         List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
