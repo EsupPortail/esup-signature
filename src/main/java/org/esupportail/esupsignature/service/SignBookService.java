@@ -430,6 +430,9 @@ public class SignBookService {
     @Transactional
     public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn, boolean geneateName, String comment) {
         User user = userService.getByEppn(userEppn);
+        if(workflow.getFromCode()) {
+            workflow = workflowService.getWorkflowByName(workflow.getName());
+        }
         SignBook signBook = new SignBook();
         if(!StringUtils.hasText(workflowName)) {
             if(workflow != null) {
@@ -1079,7 +1082,7 @@ public class SignBookService {
         Data data = dataService.getById(dataId);
         Form form = data.getForm();
         Workflow modelWorkflow = data.getForm().getWorkflow();
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), steps, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, steps, user.getEppn(), false);
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
@@ -1108,7 +1111,7 @@ public class SignBookService {
         workflowService.importWorkflow(signBook, computedWorkflow, steps);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
-        Workflow workflow = workflowService.getById(form.getWorkflow().getId());
+        Workflow workflow = workflowService.getById(computedWorkflow.getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
@@ -1295,7 +1298,7 @@ public class SignBookService {
             if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
                 workflowService.computeWorkflow(steps, signBook);
             } else {
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), steps, userEppn, false);
+                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), steps, userEppn, false);
                 workflowService.importWorkflow(signBook, workflow, steps);
                 signRequestService.nextWorkFlowStep(signBook);
             }
@@ -2508,7 +2511,7 @@ public class SignBookService {
             }
         }
         int order = 0;
-        if(workflow != null) {
+        if(workflow != null && !workflow.getFromCode()) {
             order = signBookRepository.countByLiveWorkflowWorkflow(workflow);
         }
         if(template.isEmpty()) {

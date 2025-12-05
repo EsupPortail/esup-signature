@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NoWorkflow extends DefaultWorkflow {
+public class NoWorkflowClassWorkflow extends ModelClassWorkflow {
 
 	@Override
 	public String getName() {

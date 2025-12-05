@@ -89,8 +89,8 @@ public class LiveWorkflowStepService {
             }
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
-        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         liveWorkflowStepRepository.save(liveWorkflowStep);
+        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         return liveWorkflowStep;
     }
 

@@ -1,17 +1,24 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class BasicWorkflow extends DefaultWorkflow {
+public class BasicClassWorkflow extends ModelClassWorkflow {
+
+    private final UserService userService;
+
+    public BasicClassWorkflow(UserService userService) {
+        this.userService = userService;
+    }
 
 	@Override
 	public String getName() {
@@ -26,10 +33,10 @@ public class BasicWorkflow extends DefaultWorkflow {
 	private List<WorkflowStep> workflowSteps;
 
 	@Override
-	public List<WorkflowStep> getWorkflowSteps(User user) {
+	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(user, null);
+				this.workflowSteps = generateWorkflowSteps("creator", null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -37,12 +44,8 @@ public class BasicWorkflow extends DefaultWorkflow {
 		return this.workflowSteps;
 	}
 
-	public void initWorkflowSteps() {
-		this.workflowSteps = new ArrayList<>();
-	}
-
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(String userEppn, List<WorkflowStepDto> workflowStepDto) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		WorkflowStep workflowStep = new WorkflowStep();
 		workflowStep.setSignType(SignType.signature);

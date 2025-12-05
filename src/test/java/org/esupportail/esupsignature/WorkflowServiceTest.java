@@ -1,10 +1,9 @@
 package org.esupportail.esupsignature;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -30,7 +29,7 @@ public class WorkflowServiceTest {
         boolean workflowTest = true;
         for(Workflow defaultWorkflow : workflowService.getClassesWorkflows()) {
             try {
-                ((DefaultWorkflow) defaultWorkflow).generateWorkflowSteps(new User(), null);
+                ((ModelClassWorkflow) defaultWorkflow).getWorkflowSteps();
                 logger.info("Test Workflow : " + defaultWorkflow.getName() + " OK");
             } catch (Exception e) {
                 logger.error("Test Workflow : " + defaultWorkflow.getName() + " KO", e);

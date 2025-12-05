@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -26,10 +26,12 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -47,47 +49,51 @@ public class FormService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormService.class);
 
-	@Resource
-	private FormRepository formRepository;
+    private final ApplicationContext applicationContext;
+	private final FormRepository formRepository;
+	private final PdfService pdfService;
+	private final UserShareService userShareService;
+	private final FieldService fieldService;
+	private final WorkflowRepository workflowRepository;
+	private final DocumentService documentService;
+	private final FieldPropertieService fieldPropertieService;
+	private final UserService userService;
+	private final SignRequestParamsService signRequestParamsService;
+	private final DataRepository dataRepository;
+	private final WebUtilsService webUtilsService;
+	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
+	private final ObjectMapper objectMapper;
 
-	@Resource
-	private PdfService pdfService;
+    public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
+        this.applicationContext = applicationContext;
+        this.formRepository = formRepository;
+        this.pdfService = pdfService;
+        this.userShareService = userShareService;
+        this.fieldService = fieldService;
+        this.workflowRepository = workflowRepository;
+        this.documentService = documentService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.userService = userService;
+        this.signRequestParamsService = signRequestParamsService;
+        this.dataRepository = dataRepository;
+        this.webUtilsService = webUtilsService;
+        this.liveWorkflowStepRepository = liveWorkflowStepRepository;
+        this.objectMapper = objectMapper;
+    }
 
-	@Resource
-	private UserShareService userShareService;
-
-	@Resource
-	private FieldService fieldService;
-
-	@Resource
-	private WorkflowRepository workflowRepository;
-
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private FieldPropertieService fieldPropertieService;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private SignRequestParamsService signRequestParamsService;
-
-	@Resource
-	private DataRepository dataRepository;
-
-	@Resource
-	private WebUtilsService webUtilsService;
-
-	@Resource
-	private LiveWorkflowStepRepository liveWorkflowStepRepository;
-
-	@Resource
-	private ObjectMapper objectMapper;
-
-	public Form getById(Long formId) {
-		return formRepository.findById(formId).orElseThrow();
+    public Form getById(Long formId) {
+        Form form = formRepository.findById(formId).orElseThrow();
+        if(form.getWorkflow() != null && BooleanUtils.isTrue(form.getWorkflow().getFromCode())) {
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName("org.esupportail.esupsignature.service.interfaces.workflow.impl." + form.getWorkflow().getName());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            ModelClassWorkflow modelClassWorkflow = (ModelClassWorkflow) applicationContext.getBean(clazz);
+            form.setModelClassWorkflow(modelClassWorkflow);
+        }
+		return form;
 	}
 
 	@Transactional

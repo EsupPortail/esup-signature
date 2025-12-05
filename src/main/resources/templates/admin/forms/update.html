@@ -22,7 +22,7 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
+                <li class="breadcrumb-item"><a href="/admin/forms?activeVersion=true">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Modifier le formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
@@ -88,11 +88,11 @@
                                         </div>
                                         <div class="form-group mb-3">
                                             <label for="workflowType"><strong>Circuit associé au formulaire</strong></label>
-                                            <select class="slim-select-simple" id="workflowType" th:field="*{workflow}">
+                                            <select class="slim-select-simple" id="workflowType" name="workflow">
                                                 <option value="">-- dissocier d'un circuit --</option>
                                                 <th:block th:each="workflowType : ${workflowTypes}">
                                                     <option th:if="${workflowType != null}" th:value="${workflowType.id}"
-                                                            th:text="${workflowType.description}"></option>
+                                                            th:text="${workflowType.description}" th:selected="${workflowType == form.workflow}"></option>
                                                 </th:block>
                                             </select>
                                         </div>
