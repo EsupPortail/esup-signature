@@ -943,14 +943,25 @@ public class SignBookService {
     @Transactional
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
+        List<User> oldViewers = new ArrayList<>(signBook.getViewers());
+        signBook.getViewers().clear();
+        for(User oldViewer : oldViewers) {
+            if(signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                    .noneMatch(step ->
+                            step.getRecipients().stream()
+                                    .anyMatch(r -> r.getUser().equals(oldViewer))
+                    )) {
+                signBook.getTeam().remove(oldViewer);
+            }
+        }
         if(recipientsCCEmails != null && !recipientsCCEmails.isEmpty()) {
             for (String recipientCCEmail : recipientsCCEmails) {
                 if(EmailValidator.getInstance().isValid(recipientCCEmail)) {
                     User user = userService.getUserByEmail(recipientCCEmail);
-                    if (!signBook.getViewers().contains(user) && !signBook.getCreateBy().equals(user)) {
+                    if (!signBook.getCreateBy().equals(user)) {
                         signBook.getViewers().add(user);
                         addToTeam(signBook, user.getEppn());
-                        if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
+                        if (!oldViewers.contains(user) && globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
                             mailService.sendCCAlert(signBook, Collections.singletonList(recipientCCEmail));
                         }
                     }
