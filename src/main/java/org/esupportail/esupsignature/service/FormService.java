@@ -173,6 +173,9 @@ public class FormService {
 				for(Field field : form.getFields()) {
 					field.getWorkflowSteps().clear();
 				}
+                for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+                    workflowStep.getSignRequestParams().clear();
+                }
 			}
 			form.setWorkflow(updateForm.getWorkflow());
 		}
@@ -513,13 +516,11 @@ public class FormService {
 		Form form = getById(formId);
 		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, form.getWorkflow(), true);
 		if(!findedSignRequestParams.isEmpty()) {
-			form.getSignRequestParams().clear();
 			int i = 0;
 			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 				workflowStep.getSignRequestParams().clear();
 				if(findedSignRequestParams.size() > i) {
 					workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
-					form.getSignRequestParams().add(findedSignRequestParams.get(i));
 				} else {
 					break;
 				}
@@ -546,7 +547,6 @@ public class FormService {
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
 		signRequestParams.setSignWidth(commentWidth);
 		signRequestParams.setSignHeight(commentHeight);
-		form.getSignRequestParams().add(signRequestParams);
 		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
 	}
@@ -555,7 +555,6 @@ public class FormService {
 	public void removeSignRequestParamsSteps(Long formId, Long signRequestParamsId) {
 		Form form = getById(formId);
 		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
-		form.getSignRequestParams().remove(signRequestParams);
 		long nbLiveWorkflowStepContainingParams = 0;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
@@ -626,7 +625,11 @@ public class FormService {
 			step++;
 		}
 		if(spots.isEmpty()) {
-			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+			for(SignRequestParams signRequestParams : form.getWorkflow()
+                    .getWorkflowSteps()
+                    .stream()
+                    .flatMap(ws -> ws.getSignRequestParams().stream())
+                    .toList()) {
 				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
 			}
 		}
@@ -643,7 +646,11 @@ public class FormService {
 		}
 		if(srpMap.isEmpty()) {
 			int i = 1;
-			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+			for(SignRequestParams signRequestParams : form.getWorkflow()
+                    .getWorkflowSteps()
+                    .stream()
+                    .flatMap(ws -> ws.getSignRequestParams().stream())
+                    .toList()) {
 				srpMap.put(i, signRequestParams.getId());
 				i++;
 			}

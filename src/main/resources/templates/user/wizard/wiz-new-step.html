@@ -77,6 +77,14 @@
             <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
                 <option data-placeholder="true"></option>
             </select>
+            <script>
+                document.querySelector('#recipientsEmails-1').addEventListener('change', () => {
+                    if (!document.getElementById('end-workflow-sign') || !document.getElementById('end-workflow-sign-start')) return;
+                    let hasSelection = document.querySelector('#recipientsEmails-1').selectedOptions.length > 0;
+                    document.getElementById('end-workflow-sign').disabled = hasSelection;
+                    document.getElementById('end-workflow-sign-start').disabled = hasSelection;
+                });
+            </script>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
             <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">

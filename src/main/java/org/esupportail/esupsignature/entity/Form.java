@@ -79,10 +79,6 @@ public class Form {
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
 
-	@OneToMany(cascade = CascadeType.DETACH)
-	@OrderColumn
-	private List<SignRequestParams> signRequestParams = new ArrayList<>();
-
 	@Column(columnDefinition = "TEXT")
 	private String action;
 
@@ -239,14 +235,6 @@ public class Form {
 		this.fields = fields;
 	}
 
-	public List<SignRequestParams> getSignRequestParams() {
-		return signRequestParams;
-	}
-
-	public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
-		this.signRequestParams = signRequestParams;
-	}
-
 	public String getAction() {
 		return action;
 	}
@@ -284,5 +272,13 @@ public class Form {
 
     public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
         this.modelClassWorkflow = modelClassWorkflow;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return this.workflow
+                .getWorkflowSteps()
+                .stream()
+                .flatMap(ws -> ws.getSignRequestParams().stream())
+                .toList();
     }
 }
