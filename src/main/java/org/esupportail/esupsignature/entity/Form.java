@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -67,6 +68,9 @@ public class Form {
 	@Transient
 	private String messageToDisplay;
 
+    @Transient
+    private ClassWorkflow modelClassWorkflow;
+
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
@@ -74,10 +78,6 @@ public class Form {
 	@ManyToMany
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
-
-	@OneToMany(cascade = CascadeType.DETACH)
-	@OrderColumn
-	private List<SignRequestParams> signRequestParams = new ArrayList<>();
 
 	@Column(columnDefinition = "TEXT")
 	private String action;
@@ -235,14 +235,6 @@ public class Form {
 		this.fields = fields;
 	}
 
-	public List<SignRequestParams> getSignRequestParams() {
-		return signRequestParams;
-	}
-
-	public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
-		this.signRequestParams = signRequestParams;
-	}
-
 	public String getAction() {
 		return action;
 	}
@@ -276,5 +268,17 @@ public class Form {
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
+        this.modelClassWorkflow = modelClassWorkflow;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return this.workflow
+                .getWorkflowSteps()
+                .stream()
+                .flatMap(ws -> ws.getSignRequestParams().stream())
+                .toList();
     }
 }

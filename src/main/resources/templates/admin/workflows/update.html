@@ -35,7 +35,7 @@
                         </a>
                     </li>
                     <li>
-                        <a id="saveButton" th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
+                        <a id="saveButton" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
                             onclick="document.getElementById('updateSignBook').submit();">
                             <i class="fa-solid fa-save fa-2xl"></i>
                         </a>
@@ -55,10 +55,6 @@
             </ul>
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-body">
-                    <div class="d-inline-flex justify-content-between w-100">
-                        <h3>WORKFLOW ID : <input type="text" readonly disabled th:value="${workflow.id}"></h3>
-                        <div class="alert alert-info p-2 mb-2">Nombre de demandes pour ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
-                    </div>
                     <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="accordion" id="accordionExample">
@@ -66,10 +62,13 @@
                                 <h2 class="accordion-header">
                                     <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                         <h5>Généralités</h5>
+                                        <div class="alert alert-secondary ms-2 p-2">Nombre de demandes dans ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
                                     </button>
                                 </h2>
                                 <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
+                                        <p>Identifiant du circuit : <input type="text" readonly disabled th:value="${workflow.id}"></p>
+
                                         <div class="form-group mb-3">
                                             <label for="description"><strong>Titre</strong></label>
                                             <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">

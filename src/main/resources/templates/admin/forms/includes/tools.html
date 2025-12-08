@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
 <div th:fragment="tools" id="tools" class="tools tools-admin" th:if="${document != null}">
-	<div class="d-flex mb-1">
+	<div class="d-flex mb-1" th:if="${workflow != null}">
 		<th:block th:if="${document.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="btn btn-light btn-outline-dark"><i
 					class="fa-solid fa-search-minus"></i></button>
@@ -29,7 +29,7 @@
 
 				<button id="addSpotButton"
 						th:title="${form.workflow.workflowSteps.size() > srpMap.entrySet().size()} ? 'Ajouter un emplacement de signature' : 'Plus d`emplacement disponible'"
-						class="btn btn-outline-primary" th:disabled="${form.workflow.workflowSteps.size() <= srpMap.entrySet().size()}">
+						class="btn btn-warning" th:disabled="${form.workflow.workflowSteps.size() <= srpMap.entrySet().size()}">
 					<i class="fa-solid fa-map-marker-alt"></i> Ajouter un emplacement de signature
 				</button>
 			</th:block>

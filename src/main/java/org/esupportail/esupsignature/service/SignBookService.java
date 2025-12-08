@@ -430,6 +430,9 @@ public class SignBookService {
     @Transactional
     public SignBook createSignBook(String subject, Workflow workflow, String workflowName, String userEppn, boolean geneateName, String comment) {
         User user = userService.getByEppn(userEppn);
+        if(workflow != null && workflow.getFromCode()) {
+            workflow = workflowService.getWorkflowByName(workflow.getName());
+        }
         SignBook signBook = new SignBook();
         if(!StringUtils.hasText(workflowName)) {
             if(workflow != null) {
@@ -557,20 +560,21 @@ public class SignBookService {
         if(!signRequest.getSignRequestParams().isEmpty()) {
             int i = 0;
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-                if (liveWorkflowStep.getWorkflowStep() != null) {
-                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                    WorkflowStep workflowStep = liveWorkflowStep.getWorkflowStep();
+                    if (workflowStep != null) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
-                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                                signRequestParams.setSignDocumentNumber(docNumber);
-                                for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
-                                    if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
-                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
-                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
-                                        signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
-                                        signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
-                                        addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
-                                    }
+                            SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(i);
+                            signRequestParams.setSignDocumentNumber(docNumber);
+                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                    signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
+                                    signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
+                                    addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
+                                } else {
+                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
                                 }
                             }
                         } else {
@@ -943,14 +947,25 @@ public class SignBookService {
     @Transactional
     public void addViewers(Long signBookId, List<String> recipientsCCEmails) {
         SignBook signBook = getById(signBookId);
+        List<User> oldViewers = new ArrayList<>(signBook.getViewers());
+        signBook.getViewers().clear();
+        for(User oldViewer : oldViewers) {
+            if(signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                    .noneMatch(step ->
+                            step.getRecipients().stream()
+                                    .anyMatch(r -> r.getUser().equals(oldViewer))
+                    )) {
+                signBook.getTeam().remove(oldViewer);
+            }
+        }
         if(recipientsCCEmails != null && !recipientsCCEmails.isEmpty()) {
             for (String recipientCCEmail : recipientsCCEmails) {
                 if(EmailValidator.getInstance().isValid(recipientCCEmail)) {
                     User user = userService.getUserByEmail(recipientCCEmail);
-                    if (!signBook.getViewers().contains(user) && !signBook.getCreateBy().equals(user)) {
+                    if (!signBook.getCreateBy().equals(user)) {
                         signBook.getViewers().add(user);
                         addToTeam(signBook, user.getEppn());
-                        if (globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
+                        if (!oldViewers.contains(user) && globalProperties.getSendCreationMailToViewers() && !signBook.getStatus().equals(SignRequestStatus.draft) && !signBook.getStatus().equals(SignRequestStatus.uploading)) {
                             mailService.sendCCAlert(signBook, Collections.singletonList(recipientCCEmail));
                         }
                     }
@@ -1068,7 +1083,7 @@ public class SignBookService {
         Data data = dataService.getById(dataId);
         Form form = data.getForm();
         Workflow modelWorkflow = data.getForm().getWorkflow();
-        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow.getId(), steps, user.getEppn(), false);
+        Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, steps, user.getEppn(), false);
         if(title == null || title.isEmpty()) {
             title = form.getTitle();
         }
@@ -1093,11 +1108,11 @@ public class SignBookService {
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
-        signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getSignRequestParams(), multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getWorkflow().getWorkflowSteps().stream().flatMap(ws -> ws.getSignRequestParams().stream()).toList(), multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, steps);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
-        Workflow workflow = workflowService.getById(form.getWorkflow().getId());
+        Workflow workflow = workflowService.getById(computedWorkflow.getId());
         targetService.copyTargets(workflow.getTargets(), signBook, targetEmails);
         if (targetUrls != null) {
             for (String targetUrl : targetUrls) {
@@ -1284,7 +1299,7 @@ public class SignBookService {
             if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
                 workflowService.computeWorkflow(steps, signBook);
             } else {
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow().getId(), steps, userEppn, false);
+                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), steps, userEppn, false);
                 workflowService.importWorkflow(signBook, workflow, steps);
                 signRequestService.nextWorkFlowStep(signBook);
             }
@@ -2497,7 +2512,7 @@ public class SignBookService {
             }
         }
         int order = 0;
-        if(workflow != null) {
+        if(workflow != null && !workflow.getFromCode()) {
             order = signBookRepository.countByLiveWorkflowWorkflow(workflow);
         }
         if(template.isEmpty()) {

@@ -1,10 +1,13 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -13,7 +16,13 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class VisaAndSignWorkflow extends DefaultWorkflow {
+public class VisaAndSignClassWorkflow extends ClassWorkflow implements ModelClassWorkflow {
+
+    private final UserService userService;
+
+    public VisaAndSignClassWorkflow(UserService userService) {
+        this.userService = userService;
+    }
 
     @Override
     public String getName() {
@@ -31,7 +40,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
     public List<WorkflowStep> getWorkflowSteps() {
         if(this.workflowSteps == null) {
             try {
-                this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null);
+                this.workflowSteps = generateWorkflowSteps("creator", null);
             } catch (EsupSignatureUserException e) {
                 return null;
             }
@@ -39,12 +48,8 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         return this.workflowSteps;
     }
 
-    public void initWorkflowSteps() {
-        this.workflowSteps = new ArrayList<>();
-    }
-
     @Override
-    public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipientEmailsStep) throws EsupSignatureUserException {
+    public List<WorkflowStep> generateWorkflowSteps(String userEppn, List<WorkflowStepDto> workflowStepDto) throws EsupSignatureUserException {
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
@@ -68,6 +73,7 @@ public class VisaAndSignWorkflow extends DefaultWorkflow {
         workflowSteps.add(workflowStep2);
         return workflowSteps;
     }
+
 
 }
 

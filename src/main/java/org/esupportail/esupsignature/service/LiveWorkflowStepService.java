@@ -89,8 +89,8 @@ public class LiveWorkflowStepService {
             }
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
-        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         liveWorkflowStepRepository.save(liveWorkflowStep);
+        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         return liveWorkflowStep;
     }
 
@@ -199,10 +199,17 @@ public class LiveWorkflowStepService {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
-        for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-            otpService.deleteOtp(signBookId, recipient.getUser());
-        }
         liveWorkflowStep.getRecipients().clear();
+        for(Recipient oldRecipient : oldRecipients) {
+            otpService.deleteOtp(signBookId, oldRecipient.getUser());
+            if(!signBook.getViewers().contains(oldRecipient.getUser()) && signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                    .noneMatch(step ->
+                            step.getRecipients().stream()
+                                    .anyMatch(r -> r.getUser().equals(oldRecipient.getUser()))
+                    )) {
+                signBook.getTeam().remove(oldRecipient.getUser());
+            }
+        }
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
             for (SignRequest signRequest : signBook.getSignRequests()) {

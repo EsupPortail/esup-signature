@@ -287,22 +287,23 @@ textarea:invalid {
 }
 
 .badge-status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: start;
+    gap: 5px;
     width: 100%;
     text-align: left;
-    font-size: 100%;
-    font-weight: 500;
+    font-size: 15px;
     /*border-radius: revert !important;*/
     height: 25px;
-    display: inline-block;
     padding: 0 !important;
 }
 
 .badge-status > i {
-    margin-top: -1px;
     height: 100%;
     background-color: black;
     padding: 4px 6px 4px 6px;
-    line-height: 25px;
     color: white;
     border-top-left-radius: var(--bs-border-radius-pill) !important;
     border-bottom-left-radius: var(--bs-border-radius-pill) !important;
@@ -555,7 +556,6 @@ textarea:invalid {
 }
 
 .fi {
-    transform: translateY(1px);
     display: inline-flex;
 }
 

@@ -395,9 +395,9 @@ export class PdfViewer extends EventFactory {
                         annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
                         annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
                     }
-                    this.pages.push(page);
-                    resolve("ok");
                 }
+                this.pages.push(page);
+                resolve("ok");
             }).catch(reject);
         });
     }
