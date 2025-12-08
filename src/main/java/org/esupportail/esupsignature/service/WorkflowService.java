@@ -18,7 +18,7 @@ import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessFactoryService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -122,24 +122,18 @@ public class WorkflowService {
             } else {
                 logger.debug("update " + classWorkflow.getName() + " on database");
                 Workflow toUpdateWorkflow = workflowRepository.findByName(classWorkflow.getName());
-                toUpdateWorkflow.setPublicUsage(classWorkflow.getPublicUsage());
-                toUpdateWorkflow.getRoles().clear();
-                toUpdateWorkflow.getRoles().addAll(classWorkflow.getRoles());
+                toUpdateWorkflow.setToken(generateToken(classWorkflow.getName()));
                 toUpdateWorkflow.setDescription(classWorkflow.getDescription());
-                toUpdateWorkflow.setDocumentsSourceUri(classWorkflow.getDocumentsSourceUri());
-                toUpdateWorkflow.getTargets().addAll(classWorkflow.getTargets());
-                toUpdateWorkflow.setAuthorizedShareTypes(classWorkflow.getAuthorizedShareTypes());
-                toUpdateWorkflow.setScanPdfMetadatas(classWorkflow.getScanPdfMetadatas());
-                toUpdateWorkflow.setManagers(classWorkflow.getManagers());
+                toUpdateWorkflow.setFromCode(true);
                 classWorkflow.setId(toUpdateWorkflow.getId());
             }
         }
         List<Workflow> toRemoveWorkflows = new ArrayList<>();
         for (Workflow workflow : workflowRepository.findByFromCodeIsTrue()) {
             try {
-                ModelClassWorkflow modelClassWorkflow = (ModelClassWorkflow) getWorkflowByClassName(workflow.getName());
-                if (modelClassWorkflow != null) {
-                    List<WorkflowStep> generatedWorkflowSteps = modelClassWorkflow.generateWorkflowSteps("system", null);
+                ClassWorkflow classWorkflow = (ClassWorkflow) getWorkflowByClassName(workflow.getName());
+                if (classWorkflow != null) {
+                    List<WorkflowStep> generatedWorkflowSteps = classWorkflow.generateWorkflowSteps("system", null);
                     int i = 0;
                     for (WorkflowStep generatedWorkflowStep : generatedWorkflowSteps) {
                         if (workflow.getWorkflowSteps().size() > i) {
@@ -301,6 +295,7 @@ public class WorkflowService {
     public Workflow getWorkflowByClassName(String className) {
         for (Workflow workflow : this.workflows) {
             if (className.equals(workflow.getName())) {
+//                workflow.setFromCode(true);
                 return workflow;
             }
         }
@@ -355,7 +350,7 @@ public class WorkflowService {
             if (modelWorkflow.getFromCode()) {
                 modelWorkflow = getWorkflowByClassName(workflow.getName());
                 modelWorkflow.setId(workflow.getId());
-                modelWorkflow.setWorkflowSteps(((ModelClassWorkflow) modelWorkflow).generateWorkflowSteps(userEppn, steps));
+                modelWorkflow.setWorkflowSteps(((ClassWorkflow) modelWorkflow).generateWorkflowSteps(userEppn, steps));
             }
             int stepNumber = 1;
             for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {

@@ -26,7 +26,7 @@ import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
-import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
@@ -90,7 +90,7 @@ public class FormService {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
-            ModelClassWorkflow modelClassWorkflow = (ModelClassWorkflow) applicationContext.getBean(clazz);
+            ClassWorkflow modelClassWorkflow = (ClassWorkflow) applicationContext.getBean(clazz);
             form.setModelClassWorkflow(modelClassWorkflow);
         }
 		return form;

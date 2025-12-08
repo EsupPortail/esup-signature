@@ -5,6 +5,7 @@ import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CreatorAndManagerClassWorkflow extends ModelClassWorkflow {
+public class CreatorAndManagerClassWorkflow extends ClassWorkflow implements ModelClassWorkflow {
 
     transient final UserService userService;
 
@@ -29,7 +30,6 @@ public class CreatorAndManagerClassWorkflow extends ModelClassWorkflow {
     public String getDescription() {
         return "Signature du créateur puis du responsable";
     }
-
 
     @Override
     public List<WorkflowStep> getWorkflowSteps() {

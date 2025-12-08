@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -69,7 +69,7 @@ public class Form {
 	private String messageToDisplay;
 
     @Transient
-    private ModelClassWorkflow modelClassWorkflow;
+    private ClassWorkflow modelClassWorkflow;
 
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
@@ -282,7 +282,7 @@ public class Form {
         this.tags = tags;
     }
 
-    public void setModelClassWorkflow(ModelClassWorkflow modelClassWorkflow) {
+    public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
         this.modelClassWorkflow = modelClassWorkflow;
     }
 }
