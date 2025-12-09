@@ -1089,7 +1089,7 @@ public class SignBookService {
     public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String title, Boolean sendEmailAlert, String comment) {
         User user = userService.createUserWithEppn(userEppn);
         User authUser = userService.createUserWithEppn(authUserEppn);
-        Data data = dataService.getById(dataId);
+        Data data = dataService.getFullById(dataId);
         Form form = data.getForm();
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, steps, user.getEppn(), false);
