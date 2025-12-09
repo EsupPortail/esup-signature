@@ -13,11 +13,11 @@
                             <div class="accordion mb-1" th:id="'accordion_' + ${iterator.index + 1}">
                                 <div class="accordion-item">
                                     <div style="width: 100%;text-align: start;" class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" th:data-bs-target="'#step_' + ${iterator.index + 1}" aria-expanded="false" aria-controls="collapseOne">
+                                        <button class="accordion-button collapsed text-break" style="white-space: normal !important;" type="button" data-bs-toggle="collapse" th:data-bs-target="'#step_' + ${iterator.index + 1}" aria-expanded="false" aria-controls="collapseOne">
                                         <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span><span th:text="${workflowStep.description}"></span></h5>
                                         </button>
                                     </div>
-                                    <div th:id="'step_' + ${iterator.index + 1}" class="accordion-collapse collapse p-2" th:data-bs-parent="'#accordion_' + ${iterator.index + 1}">
+                                    <div th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'step_' + ${iterator.index + 1}" class="accordion-collapse collapse p-2" th:data-bs-parent="'#accordion_' + ${iterator.index + 1}">
                                         <form class="text-start" th:action="${workflowRole} + '/workflows/update-step/' + ${workflow.id} + '/'  + ${iterator.index}" method="post">
                                             <div class="form-group mb-3">
                                                 <label>Description de l’étape:</label>
@@ -154,7 +154,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <table th:id="'table_' + ${workflowStep.id}" class="table table-sm table-bordered" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
+                            <table th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'table_' + ${workflowStep.id}" class="table table-sm table-bordered" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
                                 <thead class="table-secondary">
                                 <tr>
                                     <th>Participants</th>

@@ -1,19 +1,27 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.interfaces.workflow.DefaultWorkflow;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
+import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
+public class CreatorAndTwoStepsClassWorkflow extends ClassWorkflow implements ModelClassWorkflow {
 
-	@Override
+    private final UserService userService;
+
+    public CreatorAndTwoStepsClassWorkflow(UserService userService) {
+        this.userService = userService;
+    }
+
+    @Override
 	public String getName() {
 		return "CreatorAndTwoStepsClassWorkflow";
 	}
@@ -29,7 +37,7 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 	public List<WorkflowStep> getWorkflowSteps() {
 		if(this.workflowSteps == null) {
 			try {
-				this.workflowSteps = generateWorkflowSteps(userService.getCreatorUser(), null);
+				this.workflowSteps = generateWorkflowSteps("creator", null);
 			} catch (EsupSignatureUserException e) {
 				return null;
 			}
@@ -37,12 +45,8 @@ public class CreatorAndTwoStepsWorkflow extends DefaultWorkflow {
 		return this.workflowSteps;
 	}
 
-	public void initWorkflowSteps() {
-		this.workflowSteps = new ArrayList<>();
-	}
-
 	@Override
-	public List<WorkflowStep> generateWorkflowSteps(User user, List<String> recipentEmailsStep) throws EsupSignatureUserException {
+	public List<WorkflowStep> generateWorkflowSteps(String userEppn, List<WorkflowStepDto> workflowStepDto) throws EsupSignatureUserException {
 		List<WorkflowStep> workflowSteps = new ArrayList<>();
 		//STEP 1
 		WorkflowStep workflowStep1 = new WorkflowStep();

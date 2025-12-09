@@ -329,6 +329,7 @@ public class Workflow {
     }
 
     public Boolean getFromCode() {
+        if(fromCode == null) return false;
         return fromCode;
     }
 

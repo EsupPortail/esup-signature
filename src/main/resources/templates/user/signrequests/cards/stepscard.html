@@ -193,8 +193,8 @@
                     <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
-                            <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></div>
-                            Export vers :<br/>
+                            <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle">
+                                <i class="fa-solid fa-file-export"></i></div> Export vers :<br/>
                             <span th:text="${target.protectedTargetUri}" ></span>
                         </div>
                     </th:block>

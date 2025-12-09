@@ -28,7 +28,7 @@
                         <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn-floating btn-lg text-dark bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a></li>
                     <li>
                         <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn-floating btn-lg bg-success">
-                            <i class="fa-solid fa-save fa-2xl"></i>
+                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 15px;"></i>
                         </a>
                     </li>
                 </ul>
@@ -44,7 +44,7 @@
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
-            <div th:if="${form.workflow == null}" class="alert alert-warning">
+            <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
                 Merci de configurer un circuit pour ce formulaire
             </div>
             <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
@@ -125,8 +125,8 @@
                         </td>
                         </form>
                         <td>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-danger">
-                                <i class="fa-solid fa-trash-alt"></i>
+                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-sm btn-danger">
+                                <i class="fi fi-rr-trash"></i>
                             </button>
                             <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
                                 <div class="modal-dialog">

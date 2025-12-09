@@ -68,6 +68,7 @@ public class DataController {
                 return ResponseEntity.ok().body(signBook.getId().toString());
             }
         } catch (Exception e) {
+            logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 		logger.warn("form id " + id + " not autorized");

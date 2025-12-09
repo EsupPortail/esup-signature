@@ -77,6 +77,13 @@
             <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required>
                 <option data-placeholder="true"></option>
             </select>
+            <script>
+                document.querySelector('#recipientsEmails-1').addEventListener('change', () => {
+                    if (!document.getElementById('wiz-end')) return;
+                    let hasSelection = document.querySelector('#recipientsEmails-1').selectedOptions.length > 0;
+                    document.getElementById('wiz-end').disabled = hasSelection;
+                });
+            </script>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
             <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">

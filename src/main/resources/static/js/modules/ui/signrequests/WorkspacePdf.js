@@ -660,7 +660,7 @@ export class WorkspacePdf {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
-                                        spotDiv.show();
+                    spotDiv.show();
                     let page = $("#page_" + spot.pageNumber);
                     let offset = 0;
                     if(page.offset() != null) {
@@ -699,6 +699,8 @@ export class WorkspacePdf {
                             }
                         });
                         if (signDiv.attr("data-es-delete")) {
+                            spotDiv.unbind('mouseup');
+
                             spotDiv.on('mouseup', function (e) {
                                 e.stopPropagation();
                                 bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
@@ -722,7 +724,6 @@ export class WorkspacePdf {
                             });
                         }
                     }
-                    spotDiv.unbind('mouseup');
                 }
                 index++;
             }
