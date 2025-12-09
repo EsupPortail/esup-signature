@@ -375,7 +375,7 @@ public class UpgradeService {
         logger.info("#### Starting update sign types ####");
         entityManager.createNativeQuery("""
         
-                        DO $$
+            DO $$
             BEGIN
                 IF EXISTS (
                     SELECT 1

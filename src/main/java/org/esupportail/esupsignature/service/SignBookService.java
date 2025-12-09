@@ -1117,7 +1117,11 @@ public class SignBookService {
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
-        signRequestService.addDocsToSignRequest(signRequest, true, 0, form.getWorkflow().getWorkflowSteps().stream().flatMap(ws -> ws.getSignRequestParams().stream()).toList(), multipartFile);
+        List<SignRequestParams> allParams = new ArrayList<>();
+        for (WorkflowStep ws : form.getWorkflow().getWorkflowSteps()) {
+            allParams.addAll(ws.getSignRequestParams());
+        }
+        signRequestService.addDocsToSignRequest(signRequest, true, 0, allParams, multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, steps);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
