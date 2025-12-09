@@ -257,6 +257,13 @@ public class SignBookController {
         }
     }
 
+    @DeleteMapping(value = "/empty-trash", produces = "text/html")
+    public String emptyTrash(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
+        signBookService.emptyTrash(authUserEppn);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La corbeille a été vidée"));
+        return "redirect:/user/signbooks?statusFilter=deleted";
+    }
+
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {

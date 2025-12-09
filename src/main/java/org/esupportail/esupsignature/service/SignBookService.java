@@ -734,6 +734,15 @@ public class SignBookService {
         return false;
     }
 
+    @Transactional
+    public void emptyTrash(String userEppn) {
+        User user = userService.getByEppn(userEppn);
+        List<SignBook> signBooks = signBookRepository.findByCreateByIdDeleted(user, Pageable.unpaged()).getContent();
+        for(SignBook signBook : signBooks) {
+            deleteDefinitive(signBook.getId(), userEppn);
+        }
+    }
+
     /**
      * Restaure les demandes de signature supprimées associées à un SignBook spécifique.
      *
