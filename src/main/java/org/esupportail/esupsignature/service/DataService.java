@@ -53,8 +53,8 @@ public class DataService {
      *
      * @param dataId l'identifiant unique de l'objet Data à récupérer
      * @return l'objet Data trouvé correspondant à l'identifiant donné
-     * @throws NoSuchElementException si aucune donnée correspondante n'est trouvée
      */
+    @Transactional
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).orElseThrow();
     }
