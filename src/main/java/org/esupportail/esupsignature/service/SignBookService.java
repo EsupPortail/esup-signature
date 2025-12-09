@@ -1089,8 +1089,9 @@ public class SignBookService {
     public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String title, Boolean sendEmailAlert, String comment) {
         User user = userService.createUserWithEppn(userEppn);
         User authUser = userService.createUserWithEppn(authUserEppn);
-        Data data = dataService.getFullById(dataId);
+        Data data = dataService.getById(dataId);
         Form form = data.getForm();
+        Long workflowId = form.getWorkflow().getId();
         Workflow modelWorkflow = data.getForm().getWorkflow();
         Workflow computedWorkflow = workflowService.computeWorkflow(modelWorkflow, steps, user.getEppn(), false);
         if(title == null || title.isEmpty()) {
@@ -1118,7 +1119,7 @@ public class SignBookService {
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
         MultipartFile multipartFile = new DssMultipartFile(fileName, fileName, "application/pdf", toAddFile);
         List<SignRequestParams> allParams = new ArrayList<>();
-        for (WorkflowStep ws : form.getWorkflow().getWorkflowSteps()) {
+        for (WorkflowStep ws : workflowService.getById(workflowId).getWorkflowSteps()) {
             allParams.addAll(ws.getSignRequestParams());
         }
         signRequestService.addDocsToSignRequest(signRequest, true, 0, allParams, multipartFile);
