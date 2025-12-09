@@ -59,6 +59,11 @@ public class DataService {
         return dataRepository.findById(dataId).orElseThrow();
     }
 
+    @Transactional
+    public Data getFullById(Long dataId) {
+        return dataRepository.findByIdWithWorkflowFull(dataId);
+    }
+
     /**
      * Récupère un objet Data associé à une SignRequest donnée en utilisant
      * son SignBook parent pour effectuer la recherche.
