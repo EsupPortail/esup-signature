@@ -546,14 +546,17 @@ public class SignBookService {
                     WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
-                            for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                                signRequestParams.setSignDocumentNumber(docNumber);
-                                for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
-                                    if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
-                                            && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
-                                            && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
-                                        addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
-                                    }
+                            SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(i);
+                            signRequestParams.setSignDocumentNumber(docNumber);
+                            for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
+                                if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
+                                        && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
+                                        && signRequestParams1.getyPos().equals(signRequestParams.getyPos())) {
+                                    signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
+                                    signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
+                                    addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
+                                } else {
+                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
                                 }
                             }
                         } else {
