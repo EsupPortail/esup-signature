@@ -27,10 +27,20 @@ export class HomeUi {
                 recipientNotPresentSignRequests.modal('show');
             }
             if(startFormId != null) {
-                $('#form-button-' + startFormId)[0].click();
+                let formButton = $('#form-button-' + startFormId);
+                if(formButton.length) {
+                    formButton[0].click();
+                } else {
+                    bootbox.alert("Ce formulaire n'a pas été trouvé. Vérifier si vous avez bien les droits pour accéder à ce formulaire")
+                }
             }
             if(startWorkflowId != null) {
-                $('#workflow-button-' + startWorkflowId)[0].click();
+                let workflowButton = $('#workflow-button-' + startWorkflowId);
+                if(workflowButton.length) {
+                    workflowButton.click();
+                } else {
+                    bootbox.alert("Ce circuit n'a pas été trouvé. Vérifier si vous avez bien les droits pour accéder à ce circuit")
+                }
             }
         });
     }
