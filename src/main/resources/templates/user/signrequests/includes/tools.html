@@ -61,7 +61,7 @@
                 <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1" style="display: none;">
                     <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
                             class="btn btn-warning text-start">
-                        <i class="fi fi-rr-signature-lock"></i> <span class="d-none d-xxl-inline">Emplacement de signature</span>
+                        <i class="fi fi-rr-digital-signature"></i> <span class="d-none d-xxl-inline">Emplacement de signature</span>
                     </button>
                     <button id="addCommentButton"
                             class="btn btn-warning text-start">

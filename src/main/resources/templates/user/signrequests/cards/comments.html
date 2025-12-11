@@ -8,8 +8,8 @@
             <ul class="list-group">
                 <th:block th:each="comment : ${comments}">
                     <li th:id="'postit' + ${comment.id}" class="list-group-item border border-2" style="margin-bottom: 2px; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
-                        <span th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}" class="step-type"></span>
-                        <small th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></small><br>
+                        <div class="d-flex align-items-center gap-1"><i class="fi fi-rr-user"></i><span th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}" class="step-type"></span></div>
+                        <div class="d-flex align-items-center gap-1"><i class="fi fi-rr-clock"></i><small th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></small></div>
                         <p class="postitarea" th:text="${comment.text}"></p>
                     </li>
                 </th:block>
