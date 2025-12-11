@@ -327,7 +327,9 @@ public class SignRequestService {
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
         }
-        filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
+		if(!isMoreWorkflowStep(signRequest.getParentSignBook())) {
+			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
+		}
         boolean visual = true;
         if(signWith == null || SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
             byte[] signedInputStream = filledInputStream;

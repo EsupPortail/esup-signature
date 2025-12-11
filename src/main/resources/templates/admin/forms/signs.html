@@ -23,6 +23,11 @@
         <div id="content" class="content">
             <div class="fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
+                    <li>
+                        <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0">
+                            <i class="fi fi-rr-digital-signature fa-2xl text-dark" style="margin-top: 0;"></i>
+                        </button>
+                    </li>
                     <li th:if="${form.document != null && form.signRequestParams != null}">
                         <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
                             <i class="fi fi-rr-pencil fa-2xl text-dark" style="margin-top: 15px"></i>

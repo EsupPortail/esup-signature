@@ -1,3 +1,14 @@
+.fi-rr-digital-signature::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/rr-digital-signature.svg') no-repeat center;
+    background-size: contain;
+    text-transform: none;
+    line-height: 1;
+}
+
 .fi-rr-log-file::before {
     content: "";
     display: inline-block;
