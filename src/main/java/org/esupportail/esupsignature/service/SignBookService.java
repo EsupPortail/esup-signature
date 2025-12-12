@@ -1149,22 +1149,29 @@ public class SignBookService {
         return signBook;
     }
 
-    private void replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
-        List<SignRequestParams> signRequestParamses = steps.stream().flatMap(s->s.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams)).toList();
-        for(SignRequestParams signRequestParams : signRequestParamses) {
-            if(StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
-                SignRequestParams signRequestParamsWsDto = signRequestParamsService.getSignatureField(signRequest.getOriginalDocuments().get(0).getMultipartFile(), signRequestParams.getPdSignatureFieldName());
-                if(signRequestParamsWsDto != null) {
-                    signRequestParams.setxPos(signRequestParamsWsDto.getxPos());
-                    signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
+    private Map<Integer, List<SignRequestParams>> replaceSignRequestParamsWithDtoParams(List<WorkflowStepDto> steps, SignRequest signRequest) {
+        Map<Integer, List<SignRequestParams>> integerSignRequestParamsMap = new HashMap<>();
+        int stepNumber = 0;
+        for(WorkflowStepDto step : steps) {
+            List<SignRequestParams> signRequestParamses = step.getSignRequestParams().stream().map(SignRequestParamsWsDto::getSignRequestParams).toList();
+            for (SignRequestParams signRequestParams : signRequestParamses) {
+                if (StringUtils.hasText(signRequestParams.getPdSignatureFieldName())) {
+                    SignRequestParams signRequestParamsWsDto = signRequestParamsService.getSignatureField(signRequest.getOriginalDocuments().get(0).getMultipartFile(), signRequestParams.getPdSignatureFieldName());
+                    if (signRequestParamsWsDto != null) {
+                        signRequestParams.setxPos(signRequestParamsWsDto.getxPos());
+                        signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
+                    }
                 }
             }
+            if (!signRequestParamses.isEmpty()) {
+                signRequestParamsRepository.saveAll(signRequestParamses);
+                signRequest.getSignRequestParams().clear();
+                signRequestService.addAllSignRequestParamsToSignRequest(signRequest, signRequestParamses);
+            }
+            integerSignRequestParamsMap.put(stepNumber, signRequestParamses);
+            stepNumber++;
         }
-        if (!signRequestParamses.isEmpty()) {
-            signRequestParamsRepository.saveAll(signRequestParamses);
-            signRequest.getSignRequestParams().clear();
-            signRequestService.addAllSignRequestParamsToSignRequest(signRequest, signRequestParamses);
-        }
+        return integerSignRequestParamsMap;
     }
 
     /**
@@ -1252,10 +1259,20 @@ public class SignBookService {
         if(targetUrl != null && !targetUrl.isEmpty()) {
             signBook.getLiveWorkflow().getTargets().add(targetService.createTarget(targetUrl, true, false, false, false));
         }
+        Map<SignBook, String> signBookStringMap = sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
+        Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
         for(SignRequest signRequest : signBook.getSignRequests()) {
-            replaceSignRequestParamsWithDtoParams(steps, signRequest);
+            integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
         }
-        return sendSignBook(signBook, pending, steps.get(0).getComment(), steps, createByEppn, createByEppn, forceSendEmail);
+        int stepNumber = 0;
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            if(!integerListMap.get(stepNumber).isEmpty()) {
+                liveWorkflowStep.getSignRequestParams().clear();
+                liveWorkflowStep.getSignRequestParams().addAll(integerListMap.get(stepNumber));
+            }
+            stepNumber++;
+        }
+        return signBookStringMap;
     }
 
     /**
