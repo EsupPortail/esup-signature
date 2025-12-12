@@ -23,7 +23,7 @@
                         const commentCount = '[[${comments.size()}]]';
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click()
+                        displayPdfAlertsBtn.click();
                     </script>
                     <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
                         <div class="pdf-warning-bar bg-warning"></div>
@@ -35,7 +35,7 @@
                     <script>
                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
                         displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click()
+                        displayPdfAlertsBtn.click();
                     </script>
                     <div class="pdf-warning-bar bg-success"></div>
                     <div class="d-flex gap-2 align-items-center">
@@ -69,19 +69,18 @@
                         <div><i class="fa-solid fa-triangle-exclamation text-danger"></i></div><div>Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</div>
                     </div>
                 </div>
-                <div id="signBookDesc" title="Masquer ce message" class="d-none alert bg-light text-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
-                    style="width: 100%;">
-                    <script>
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click()
-                    </script>
-                    <div class="pdf-warning-bar bg-danger"></div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <i class="fa-solid fa-circle-info  text-black"></i><span th:text="${signRequest.parentSignBook.description}"></span>
-                    </div>
-
-                </div>
+<!--                <div id="signBookDesc" title="Masquer ce message" class="alert bg-light text-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"-->
+<!--                    style="width: 100%;">-->
+<!--                    <script>-->
+<!--                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');-->
+<!--                        displayPdfAlertsDropdown.removeClass("d-none");-->
+<!--                        displayPdfAlertsBtn.click();-->
+<!--                    </script>-->
+<!--                    <div class="pdf-warning-bar bg-warning"></div>-->
+<!--                    <div class="d-flex gap-2 align-items-center">-->
+<!--                        <i class="fa-solid fa-circle-info text-black"></i><span th:text="${signRequest.parentSignBook.description}"></span>-->
+<!--                    </div>-->
+<!--                </div>-->
                 <div id="alertSign" title="Masquer ce message" class="alert bg-light text-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
                     <div class="pdf-warning-bar" th:classappend="${signatureIssue ? 'bg-secondary' : 'bg-success'}"></div>
                     <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">
@@ -102,7 +101,7 @@
                         <script>
                             displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-secondary" title="Signature électronique présente sur le document"></i>');
                             displayPdfAlertsDropdown.removeClass("d-none");
-                            displayPdfAlertsBtn.click()
+                            displayPdfAlertsBtn.click();
 
                         </script>
                         <div>
