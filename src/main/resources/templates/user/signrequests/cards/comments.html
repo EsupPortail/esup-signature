@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="comments" th:fragment="comments">
-    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="width: 250px; left: 285px;">
-        <div class="hr">Annotations</div>
+    <a id="hideComments" type="button" class="d-flex justify-content-between align-content-center text-decoration-none text-dark"><div class="hr vw-100">Annotations </div><span class="badge rounded-pill bg-dark" th:text="${comments.size()}" style="height: 20px; margin-top: 5px;"></span><button class="btn btn-sm btn-transparent text-dark"><i class="fi fi-rr-caret-down"></i></button></a>
+    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="width: 250px; left: 285px; display: none;">
         <div th:if="${comments.size() > 0}" class="card card-body bg-light mb-1">
             <ul class="list-group">
                 <th:block th:each="comment : ${comments}">
