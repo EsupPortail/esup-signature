@@ -43,9 +43,8 @@
 <!--            <i class="ms-1 fa-solid fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge rounded-pill bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
-
+        <div th:if="${signRequest != null && comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
         <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
-        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
     </div>
 </nav>
 </html>

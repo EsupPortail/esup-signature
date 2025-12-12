@@ -112,7 +112,14 @@ export class WorkspacePdf {
             $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton2').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
-            $("#showComments").on('click', e => this.enableCommentMode());
+            $("#showComments").on('click', e => this.showComments());
+            $("#hideComments").on("click", () => {
+                if (this.mode === "comment") {
+                    this.hideComments();
+                } else {
+                    this.showComments();
+                }
+            });
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
@@ -894,8 +901,49 @@ export class WorkspacePdf {
         });
     }
 
+    showComments() {
+        $("#postit").removeClass("d-none");
+        $("#commentHelp").removeClass("d-none");
+        this.mode = 'comment';
+        this.signPosition.pointItEnable = true;
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.setSelected("comment");
+        }
+        // $('#addCommentButton2').removeClass('d-none');
+        $('#commentsBar').show();
+        this.refreshAfterPageChange();
+        $('div[id^=inDocSpot_]').each(function () {
+            $(this).hide();
+        });
+        $(".circle").each(function () {
+            $(this).show();
+            $(this).css('width', '0px');
+        })
+        this.showAllPostits();
+    }
+
+    hideComments() {
+        $("#postit").addClass("d-none");
+        $("#commentHelp").addClass("d-none");
+        this.mode = 'sign';
+        this.signPosition.pointItEnable = false;
+
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.setSelected(null);
+        }
+
+        // $('#addCommentButton2').addClass('d-none');
+        $('#commentsBar').hide();
+        $(".circle").each(function () {
+            $(this).hide();
+            $(this).css('width', '');
+        });
+        this.hideAllPostits && this.hideAllPostits();
+    }
+
     enableCommentMode() {
         console.info("enable comments mode");
+        $("#hideComments").hide();
         $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
