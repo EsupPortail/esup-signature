@@ -144,10 +144,6 @@ public class WorkflowStepDto {
 	public WorkflowStepDto() {
 	}
 
-	public WorkflowStepDto(RecipientWsDto recipientWsDto) {
-		this.recipients.add(recipientWsDto);
-	}
-
 	public WorkflowStepDto(SignType signType, String description, List<RecipientWsDto> recipients, Boolean changeable, Integer maxRecipients, Boolean allSignToComplete, Boolean attachmentRequire) {
 		this.signType = signType;
 		this.description = description;
@@ -158,6 +154,15 @@ public class WorkflowStepDto {
 		if(recipients != null) {
 			this.recipients.addAll(recipients);
 		}
+	}
+
+	public WorkflowStepDto(WorkflowStepDto other) {
+		this.signType = other.signType;
+		this.description = other.description;
+		this.changeable = other.changeable;
+		this.maxRecipients = other.maxRecipients;
+		this.allSignToComplete = other.allSignToComplete;
+		this.attachmentRequire = other.attachmentRequire;
 	}
 
 	public String getTitle() {

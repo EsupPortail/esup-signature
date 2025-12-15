@@ -474,25 +474,38 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException si une erreur survient durant le démarrage du processus
      */
     @Transactional
-    public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean multiSign, boolean singleSignWithAnnotation) throws EsupSignatureRuntimeException {
+    public void startFastSignBook(Long id, Boolean pending, List<WorkflowStepDto> steps, String userEppn, String authUserEppn, boolean multiSign, boolean singleSignWithAnnotation, boolean singleStep) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(id);
         if(StringUtils.hasText(steps.get(0).getTitle())) {
             signBook.setSubject(steps.get(0).getTitle());
         }
         signBook.setForceAllDocsSign(steps.get(0).getAllSignToComplete());
+        List<RecipientWsDto> toRemoveFormFirstStep = new ArrayList<>();
+        if(!singleStep) {
+            boolean first = true;
+            for(RecipientWsDto recipientWsDto : steps.get(0).getRecipients()) {
+                if(first) {
+                    first = false;
+                    continue;
+                }
+                WorkflowStepDto workflowStepDto = new WorkflowStepDto(steps.get(0));
+                workflowStepDto.getRecipients().add(recipientWsDto);
+                steps.add(workflowStepDto);
+                toRemoveFormFirstStep.add(recipientWsDto);
+            }
+            steps.get(0).getRecipients().removeAll(toRemoveFormFirstStep);
+        }
         sendSignBook(signBook, pending, steps.get(0).getComment(), steps, userEppn, authUserEppn, false);
         if(steps.get(0).getRecipientsCCEmails() != null) {
             addViewers(signBook.getId(), steps.get(0).getRecipientsCCEmails());
         }
-        int stepNumber = 0;
-        if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
-            stepNumber = 1;
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            liveWorkflowStep.setMultiSign(multiSign);
+            liveWorkflowStep.setSingleSignWithAnnotation(singleSignWithAnnotation);
+            liveWorkflowStep.setSignType(steps.get(0).getSignType());
+            liveWorkflowStep.setMinSignLevel(steps.get(0).getMinSignLevel());
+            liveWorkflowStep.setMaxSignLevel(steps.get(0).getMaxSignLevel());
         }
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMultiSign(multiSign);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setSingleSignWithAnnotation(singleSignWithAnnotation);
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setSignType(steps.get(0).getSignType());
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMinSignLevel(steps.get(0).getMinSignLevel());
-        signBook.getLiveWorkflow().getLiveWorkflowSteps().get(stepNumber).setMaxSignLevel(steps.get(0).getMaxSignLevel());
     }
 
     /**

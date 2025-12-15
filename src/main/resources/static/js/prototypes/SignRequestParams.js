@@ -360,6 +360,13 @@ export class SignRequestParams extends EventFactory {
                     const url = new URL(window.location.href);
                     url.searchParams.set("annotation", "");
                     window.location.href = url.toString();
+                },
+                error: function (error) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("annotation", "");
+                    bootbox.alert(error.responseText, function(){
+                        window.location.href = url.toString();
+                    });
                 }
             });
         }

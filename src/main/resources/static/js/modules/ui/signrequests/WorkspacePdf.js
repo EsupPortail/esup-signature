@@ -557,6 +557,7 @@ export class WorkspacePdf {
 
     saveComment() {
         let spotStepNumberVal = $("#spotStepNumber");
+        alert(spotStepNumberVal.val());
         if (this.addSpotEnabled && spotStepNumberVal.val() === "") {
             spotStepNumberVal.attr("required", true);
             $("#submitPostit").click();
@@ -1006,7 +1007,7 @@ export class WorkspacePdf {
         });
         $('#signButtons').removeClass('d-none');
         $('#forward-btn').removeClass('d-none');
-        $('#signModeButton').toggleClass('btn-outline-success');
+        // $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
             $("#addSignButton2").focus();
@@ -1016,8 +1017,8 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
-        insertBtn.addClass("pulse-primary");
-        insertBtn.addClass("btn-outline-primary");
+        // insertBtn.addClass("pulse-success");
+        // insertBtn.addClass("btn-outline-success");
         insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
         if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {

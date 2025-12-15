@@ -1222,11 +1222,14 @@ public class SignRequestService {
      * @return l'identifiant du commentaire créé, ou null si l'opération n'est pas autorisée
      */
     @Transactional
-	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) {
+	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
 		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
 			if (spotStepNumber != null && spotStepNumber > 0) {
+				if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1) {
+					throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
+				}
 				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
 				if(commentWidth != null && commentHeight != null) {
 					signRequestParams.setSignWidth(commentWidth);
