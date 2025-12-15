@@ -65,7 +65,7 @@ export class SignPosition extends EventFactory {
         if(this.signRequestParamses.size === 0) {
             let addSignButton2 = $("#addSignButton2");
             addSignButton2.removeClass("d-none");
-            addSignButton2.addClass("pulse-primary");
+            addSignButton2.addClass("pulse-success");
             $("#signLaunchButton").removeClass("pulse-success");
             addSignButton2.focus();
             $("#addSignButton").removeAttr("disabled");
@@ -118,8 +118,8 @@ export class SignPosition extends EventFactory {
             event.preventDefault();
             event.returnValue = "";
         });
-        this.addSignButton.removeClass("pulse-primary");
-        $("#addSignButton2").removeClass("pulse-primary");
+        this.addSignButton.removeClass("pulse-success");
+        $("#addSignButton2").removeClass("pulse-success");
         let id = this.id;
         let currentSignRequestParams = null;
         if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999) {

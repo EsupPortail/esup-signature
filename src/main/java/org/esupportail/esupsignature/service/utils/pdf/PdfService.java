@@ -1192,14 +1192,16 @@ public class PdfService {
     public Map<String, Integer> getPageNumberByAnnotDict(PDDocument pdDocument) throws IOException {
         PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
         Map<String, Integer> pageNrByAnnotDict = new HashMap<>();
-        for (PDField field : pdAcroForm.getFieldTree()) {
-            for (PDAnnotationWidget widget : field.getWidgets()) {
-                int pageNb = determineFast(pdDocument, widget);
-                if(pageNb == -1) {
-                    pageNb = determineSafe(pdDocument, widget);
-                }
-                if(pageNb > -1) {
-                    pageNrByAnnotDict.put(field.getPartialName(), pageNb);
+        if(pdAcroForm != null) {
+            for (PDField field : pdAcroForm.getFieldTree()) {
+                for (PDAnnotationWidget widget : field.getWidgets()) {
+                    int pageNb = determineFast(pdDocument, widget);
+                    if (pageNb == -1) {
+                        pageNb = determineSafe(pdDocument, widget);
+                    }
+                    if (pageNb > -1) {
+                        pageNrByAnnotDict.put(field.getPartialName(), pageNb);
+                    }
                 }
             }
         }

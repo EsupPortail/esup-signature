@@ -92,7 +92,7 @@ public class SignRequestParamsService {
             PDPageTree pdPages = pdDocument.getDocumentCatalog().getPages();
             if (pdAcroForm != null) {
                 for (PDField pdField : pdAcroForm.getFields()) {
-                    if (pdField instanceof PDSignatureField) {
+                    if (pdField instanceof PDSignatureField && pageNrByAnnotDict.get(pdSignatureFieldName) != null) {
                         if (pdField.getPartialName().equals(pdSignatureFieldName)) {
                             PDRectangle pdRectangle = pdField.getWidgets().get(0).getRectangle();
                             int pageNum = pageNrByAnnotDict.get(pdSignatureFieldName);

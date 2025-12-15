@@ -220,7 +220,12 @@ public class UserAndOtpSignRequestController {
                          @RequestParam(value = "comment", required = false) String comment,
                          @RequestParam(value = "postit", required = false) String postit,
                          @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend, Model model, HttpServletRequest httpServletRequest) {
-        Long commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
+        Long commentId = null;
+        try {
+            commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
+        } catch (EsupSignatureException e) {
+            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+        }
         if(commentId != null) {
             model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
         } else {
@@ -319,7 +324,7 @@ public class UserAndOtpSignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/comment/{id}")
     @ResponseBody
-    public ResponseEntity<Long> comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public ResponseEntity<String> comment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                         @RequestParam(value = "comment", required = false) String comment,
                                         @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
                                         @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
@@ -328,11 +333,16 @@ public class UserAndOtpSignRequestController {
                                         @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale,
                                         @RequestParam(value = "postit", required = false) String postit,
                                         @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend) {
-        Long commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), postit, spotStepNumber, authUserEppn, userEppn, forceSend);
+        Long commentId;
+        try {
+            commentId = signRequestService.addComment(id, comment, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), postit, spotStepNumber, authUserEppn, userEppn, forceSend);
+        } catch (EsupSignatureException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
         if(commentId != null) {
-            return ResponseEntity.ok().body(commentId);
+            return ResponseEntity.ok().body(commentId.toString());
         } else {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body("Problème lors de l'ajout du post-it");
         }
     }
 

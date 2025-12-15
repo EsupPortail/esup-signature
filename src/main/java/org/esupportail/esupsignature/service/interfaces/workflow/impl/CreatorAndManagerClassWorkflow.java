@@ -49,8 +49,11 @@ public class CreatorAndManagerClassWorkflow extends ClassWorkflow implements Mod
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setSignType(SignType.signature);
         workflowStep2.setDescription("Signature de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
-        workflowStep2.getUsers().add(userService.getByEppn("lemaida3@univ-rouen.fr"));
-        workflowStep2.setChangeable(true);
+        workflowStep2.getUsers().add(userService.getGenericUser());
+        //à remplacer par l'utilisateur n+1 par ex
+        //User userManager = calculManager(userEppn)
+        //workflowStep2.getUsers().add(userManager);
+        workflowStep2.setChangeable(false);
         workflowSteps.add(workflowStep2);
         return workflowSteps;
     }
