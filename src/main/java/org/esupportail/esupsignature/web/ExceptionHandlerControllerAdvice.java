@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.web;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -29,6 +31,16 @@ public class ExceptionHandlerControllerAdvice {
         logger.warn(exc.getMessage());
         redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Fichier trop volumineux. Taille supérieure à " + FileUtils.byteCountToDisplaySize(globalProperties.getMaxUploadSize())));
         return "{\"error\" : \"Fichier trop volumineux. Taille supérieure à " + FileUtils.byteCountToDisplaySize(globalProperties.getMaxUploadSize()) + "\"}";
+    }
+
+    @ExceptionHandler(ClientAbortException.class)
+    public void handleClientAbort(ClientAbortException ex) {
+        logger.debug("Client a interrompu la requête : {}", ex.getMessage());
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex) {
+        logger.debug("Requête async interrompue par le client : {}", ex.getMessage());
     }
 
 }

@@ -161,13 +161,21 @@
                     <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text != null && spot.text != ''} ? ${spot.text} : 'Cliquer pour supprimer l\'emplacement de signature'"
+            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text != null && spot.text != ''} ? ${spot.text} : 'Cliquer pour supprimer l’emplacement de signature'"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
                     <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
+                    </div>
+                </div>
+            </th:block>
+            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text != null && spot.text != ''} ? ${spot.text} : 'Cliquer pour supprimer l’emplacement de signature'">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature'"></span>
+                        <span th:unless="${isManager}" th:text="'Emplacement de signature détecté"></span>
                     </div>
                 </div>
             </th:block>

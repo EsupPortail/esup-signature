@@ -591,6 +591,7 @@ public class SignBookService {
                                 }
                             }
                         } else {
+                            if(!liveWorkflowStep.getSignRequestParams().isEmpty()) continue;
                             if(signRequest.getSignRequestParams().size() > i) {
                                 signRequest.getSignRequestParams().get(i).setSignDocumentNumber(docNumber);
                                 addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
@@ -1347,7 +1348,7 @@ public class SignBookService {
                 workflowService.importWorkflow(signBook, workflow, steps);
                 signRequestService.nextWorkFlowStep(signBook);
             }
-            dispatchSignRequestParams(signBook);
+//            dispatchSignRequestParams(signBook);
             targetService.copyTargets(targets, signBook, targetEmails);
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
             if (pending != null && pending) {
