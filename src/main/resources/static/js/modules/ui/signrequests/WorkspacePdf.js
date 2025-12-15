@@ -557,7 +557,6 @@ export class WorkspacePdf {
 
     saveComment() {
         let spotStepNumberVal = $("#spotStepNumber");
-        alert(spotStepNumberVal.val());
         if (this.addSpotEnabled && spotStepNumberVal.val() === "") {
             spotStepNumberVal.attr("required", true);
             $("#submitPostit").click();
@@ -855,6 +854,7 @@ export class WorkspacePdf {
         }
         console.log(comment);
         this.signPosition.pointItEnable = false;
+        $('#pdf').css('cursor', 'default');
         let commentPosX = $("#commentPosX");
         let commentPosY = $('#commentPosY');
         let commentPageNumber = $("#commentPageNumber").val();
@@ -945,7 +945,7 @@ export class WorkspacePdf {
     enableCommentMode() {
         console.info("enable comments mode");
         $("#hideComments").hide();
-        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
+        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline"> Quitter annotation</span>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
@@ -967,6 +967,7 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.hide();
+        insertBtn.toggleClass("d-flex");
         $("#signImageBtn").removeClass("d-lg-block");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
@@ -1019,7 +1020,7 @@ export class WorkspacePdf {
         insertBtn.show();
         // insertBtn.addClass("pulse-success");
         // insertBtn.addClass("btn-outline-success");
-        insertBtn.addClass("btn-light");
+        // insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
         if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
             if (this.forcePageNum) {
@@ -1158,7 +1159,10 @@ export class WorkspacePdf {
         }, { capture: true});
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").addClass("btn-danger");
-        $("#addCommentButton2").addClass("bg-danger text-white");
+        let addCommentButton2 = $("#addCommentButton2");
+        addCommentButton2.addClass("bg-danger");
+        addCommentButton2.children().addClass("text-white");
+        addCommentButton2.attr("title", "Annuler l'ajout d'annotation");
         $("#addSpotButton2").attr("disabled", true);
         if (this.addCommentEnabled) {
             location.reload();

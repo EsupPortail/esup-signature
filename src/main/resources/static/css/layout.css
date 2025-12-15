@@ -287,7 +287,7 @@ header {
     position: fixed;
     margin-left: 260px;
     width: 100%;
-    z-index: 1028;
+    z-index: 1029;
 }
 
 .breadcrumb-nav-full {
@@ -391,4 +391,8 @@ header {
 
 .global-button {
     width: 200px;
+}
+
+#tools > .fi {
+    margin-top:5px;
 }

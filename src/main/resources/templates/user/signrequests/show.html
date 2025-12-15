@@ -131,23 +131,23 @@
                         </button>
                     </li>
                     <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <a tabindex="1" class="btn-lg btn-floating bg-secondary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger le document"><i class="fi fi-rr-download fa-2xl" style="margin-top: 15px;"></i></a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                        <a tabindex="1" class="btn-lg btn-floating bg-secondary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document"><i class="fi fi-rr-download fa-2xl" style="margin-top: 15px;"></i></a>
                     </li>
                     <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <a tabindex="1" class="btn-lg btn-floating bg-secondary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
                             title="Télécharger la dernière version des documents dans une archive ZIP">
                             <i class="fa-solid fa-file-archive fa-2xl"></i></a>
                     </li>
                     <li th:if="${signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-                        <a tabindex="1" class="btn-lg btn-floating bg-secondary"
+                        <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
                             title="Imprimer avec un code datamatrix">
@@ -158,20 +158,20 @@
                         onmouseover="$('#openButtons').toggleClass('active');"
                         onmouseout="$('#openButtons').toggleClass('active');">
                         <li>
-                            <a tabindex="1" class="btn-lg btn-floating bg-secondary"
+                            <a tabindex="1" class="btn-lg btn-floating bg-dark"
                                 th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
                                 title="Enregistrer le document signé et le rapport de signature">
                                 <i class="fi fi-rr-compliance-document fa-2xl" style="margin-top: 16px"></i>
                             </a>
                         </li>
                         <li>
-                            <a tabindex="1" title="Export SEDA" class="btn btn-floating bg-secondary d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
+                            <a tabindex="1" title="Export SEDA" class="btn btn-floating bg-dark d-none" th:href="'/ws-secure/global/get-seda/' + ${id}">
                                 <i class="fa-solid fa-file-export fa-2xl"></i>
                             </a>
                         </li>
                         <li>
                             <a tabindex="1" th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}"
-                                class="btn btn-floating bg-primary d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+                                class="btn btn-floating bg-dark d-none" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
                                 <i class="fa-solid fa-shield-alt fa-2xl"></i>
                             </a>
                         </li>
