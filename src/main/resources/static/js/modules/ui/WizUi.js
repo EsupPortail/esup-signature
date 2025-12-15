@@ -217,9 +217,10 @@ export class WizUi {
                 $("#update-fast-sign-submit").click();
             }
         }
-        let multiSign = $("#multiSign").is(":checked");
-        let singleSignWithAnnotation = $("#singleSignWithAnnotation").is(":checked");
-        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?multiSign=' + multiSign + '&singleSignWithAnnotation=' + singleSignWithAnnotation + '&pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
+        const multiSign = $("#multiSign").is(":checked");
+        const singleSignWithAnnotation = $("#singleSignWithAnnotation").is(":checked");
+        const singleStep= $('input[name="singleStep"]:checked').val() === 'true';
+        this.sendSteps('/user/wizard/update-fast-sign/' + this.newSignBookId + '?multiSign=' + multiSign + '&singleStep=' + singleStep + '&singleSignWithAnnotation=' + singleSignWithAnnotation + '&pending=' + self.pending, $("#update-fast-sign"), successCallback, errorCallback);
 
     }
 

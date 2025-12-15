@@ -15,7 +15,7 @@
             const displayPdfAlertsDropdown = $('#display-pdf-alerts-dropdown');
             const displayPdfAlertsBtn = $('#display-pdf-alerts-btn');
         </script>
-        <div id="pdf-alerts" class="pdf-alerts dropdown-menu">
+        <div id="pdf-alerts" class="pdf-alerts dropdown-menu shadow">
             <h5 class="w-100 text-center"><i class="fa-solid fa-bell"></i> Alertes</h5>
             <div class="d-flex flex-column gap-1">
                 <th:block th:if="${comments.size() > 0}">
@@ -321,7 +321,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option data-placeholder="true">Choisir une étape</option>
+                                <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                     <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>
