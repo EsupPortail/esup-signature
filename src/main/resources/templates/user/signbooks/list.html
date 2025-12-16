@@ -37,35 +37,35 @@
                             data-bs-toggle="modal" data-bs-target="#signModal"
                             title="Signer en masse les demandes sélectionnées"
                             class="btn-floating btn-lg bg-success d-none">
-                            <i class="fi fi-rr-signature-lock fa-2xl" style="margin-top: 15px;"></i>
+                            <i class="fi fi-rr-signature-lock fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="deleteMultipleButton"
                             title="Supprimer en masse les demandes sélectionnées"
                             class="btn-floating btn-lg bg-danger d-none">
-                            <i class="fi fi-rr-trash fa-2xl" style="margin-top: 15px;"></i>
+                            <i class="fi fi-rr-trash fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButton"
                             title="Télécharger la selection"
                             class="btn-floating btn-lg bg-primary d-none">
-                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 15px;"></i>
+                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a type="button" id="downloadMultipleButtonWithReport"
                             title="Télécharger la selection avec les rapports"
                             class="btn-floating btn-lg bg-primary d-none">
-                            <i class="fi fi-rr-folder-download fa-2xl" style="margin-top: 15px;"></i>
+                            <i class="fi fi-rr-folder-download fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a th:unless="${#authorization.expression('hasRole(''ROLE_OTP'')')}" type="button" href="/user"
                             title="Créer une nouvelle demande"
                             class="btn-floating btn-lg bg-secondary">
-                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 15px;"></i>
+                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>

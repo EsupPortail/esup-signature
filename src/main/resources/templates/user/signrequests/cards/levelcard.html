@@ -3,25 +3,25 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <span id="levelcard" th:fragment="levelcard">
     <span th:switch="${liveWorkflowStep.minSignLevel}" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" >
-        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).simple}" class="text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
-            <i class="fa-solid fa-signature"></i>
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).simple}" class="text-secondary-emphasis" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fi fi-rr-attribution-pen"></i>
         </span>
-        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).advanced}" class="text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
-            <i class="fa-solid fa-signature"></i>
-            <i class="fa-solid fa-certificate"></i>
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).advanced}" class="text-secondary-emphasis" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fi fi-rr-attribution-pen"></i>
+            <i class="fi fi-rr-seal"></i>
         </span>
-        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).qualified}" class="text-secondary" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
-            <i class="fa-solid fa-signature"></i>
-            <i class="fa-solid fa-shield-halved"></i>
+        <span th:case="${T(org.esupportail.esupsignature.entity.enums.SignLevel).qualified}" class="text-secondary-emphasis" th:title="#{'signlevel.' + ${liveWorkflowStep.minSignLevel}}">
+            <i class="fi fi-rr-attribution-pen"></i>
+            <i class="fi fi-rr-badge-check"></i>
         </span>
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-        <span class="text-secondary" title="Visa">
+        <span class="text-secondary-emphasis" title="Visa">
             <i class="fa-solid fa-check" title="Visa"></i><i th:if="${liveWorkflowStep.sealVisa}" class="fa-solid fa-certificate"  title="avec cachet établissement"></i>
         </span>
     </span>
     <span th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-        <span class="text-secondary" title="Vérification">
+        <span class="text-secondary-emphasis" title="Vérification">
             <i class="fa-solid fa-eye"></i>
         </span>
     </span>

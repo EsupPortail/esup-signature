@@ -14,7 +14,7 @@
                                 <div class="accordion-item">
                                     <div style="width: 100%;text-align: start;" class="accordion-header">
                                         <button class="accordion-button collapsed text-break" style="white-space: normal !important;" type="button" data-bs-toggle="collapse" th:data-bs-target="'#step_' + ${iterator.index + 1}" aria-expanded="false" aria-controls="collapseOne">
-                                        <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span><span th:text="${workflowStep.description}"></span></h5>
+                                        <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span> Étape <span th:text="${workflowStep.description}"></span></h5>
                                         </button>
                                     </div>
                                     <div th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'step_' + ${iterator.index + 1}" class="accordion-collapse collapse p-2" th:data-bs-parent="'#accordion_' + ${iterator.index + 1}">
@@ -141,7 +141,7 @@
                                                 </div>
                                             </div>
                                             <button type="submit" class="btn btn-success ms-2 mb-2 position-relative" style="bottom: -46px; right: -534px;">
-                                                <i class="fa-solid fa-save"></i></button>
+                                                <i class="fi fi-rr-disk"></i></button>
                                         </form>
                                         <form th:id="'del_' + ${iterator.index}"
                                             th:action="'/' + ${workflowRole} + '/workflows/remove-step/' + ${workflow.id} + '/' + ${iterator.index}"

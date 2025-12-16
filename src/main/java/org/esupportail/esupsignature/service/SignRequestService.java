@@ -1204,6 +1204,23 @@ public class SignRequestService {
 		signRequest.getLinks().remove(toRemove);
 	}
 
+	@Transactional
+	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber) throws EsupSignatureException {
+		SignRequest signRequest = getById(id);
+		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1) {
+			throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
+		}
+		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
+		if(signWidth != null && signHeight != null) {
+			signRequestParams.setSignWidth(signWidth);
+			signRequestParams.setSignHeight(signHeight);
+		}
+		int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		signRequestParams.setSignDocumentNumber(docNumber);
+		signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
+		return signRequestParams.getId();
+	}
+
     /**
      * Ajoute un commentaire ou un emplacement de signature à une demande de signature.
      *
@@ -1225,44 +1242,24 @@ public class SignRequestService {
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
-		if(spotStepNumber == null || signRequest.getCreateBy().equals(user) || signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())) {
-			if (spotStepNumber != null && spotStepNumber > 0) {
-				if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1) {
-					throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
-				}
-				SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(commentPageNumber, commentPosX, commentPosY);
-				if(commentWidth != null && commentHeight != null) {
-					signRequestParams.setSignWidth(commentWidth);
-					signRequestParams.setSignHeight(commentHeight);
-				}
-				int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
-				signRequestParams.setSignDocumentNumber(docNumber);
-                if(StringUtils.hasText(commentText)) {
-                    signRequestParams.setComment(commentText);
-                }
-				signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
-			}
-			Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
-			if(commentWidth != null && commentHeight != null) {
-				comment.setSignWidth(commentWidth);
-				comment.setSignHeight(commentHeight);
-			}
-			if (!(spotStepNumber != null && spotStepNumber > 0)) {
-				updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-				if ((globalProperties.getSendPostitByEmail() || forceSend)) {
-					try {
-						mailService.sendPostit(signRequest.getParentSignBook(), comment, userEppn, forceSend);
-					} catch (EsupSignatureMailException e) {
-						logger.warn("postit not sended", e);
-					}
-				}
-			} else {
-				updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
-			}
-			return comment.getId();
-		} else {
-			return null;
+		Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
+		if(commentWidth != null && commentHeight != null) {
+			comment.setSignWidth(commentWidth);
+			comment.setSignHeight(commentHeight);
 		}
+		if (!(spotStepNumber != null && spotStepNumber > 0)) {
+			updateStatus(signRequest.getId(), null, "Ajout d'un commentaire", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+			if ((globalProperties.getSendPostitByEmail() || forceSend)) {
+				try {
+					mailService.sendPostit(signRequest.getParentSignBook(), comment, userEppn, forceSend);
+				} catch (EsupSignatureMailException e) {
+					logger.warn("postit not sended", e);
+				}
+			}
+		} else {
+			updateStatus(signRequest.getId(), null, "Ajout d'un emplacement de signature", commentText, "SUCCESS", commentPageNumber, commentPosX, commentPosY, null, authUserEppn, authUserEppn);
+		}
+		return comment.getId();
 	}
 
 	/**
@@ -1777,9 +1774,26 @@ public class SignRequestService {
      * @return une liste de commentaires contenant uniquement ceux avec un numéro d'étape défini
      */
     @Transactional
-	public List<Comment> getSpots(Long id) {
+	public List<SignRequestParams> getSpots(Long id) {
 		SignRequest signRequest = getById(id);
-		return signRequest.getComments().stream().filter(comment -> comment.getStepNumber() != null).collect(Collectors.toList());
+		List<SignRequestParams> result = new ArrayList<>();
+		List<LiveWorkflowStep> steps = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps();
+		for (int i = 0; i < steps.size(); i++) {
+			List<SignRequestParams> params = steps.get(i).getSignRequestParams();
+			int finalI = i;
+			params.forEach(param -> param.setStepNumber(finalI + 1));
+			result.addAll(params);
+		}
+		return result;
+	}
+
+	@Transactional
+	public void deleteSpot(Long id, Long spotId) {
+		SignRequest signRequest = getById(id);
+		SignRequestParams signRequestParams = signRequestParamsService.getById(spotId);
+		LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(lws -> lws.getSignRequestParams().contains(signRequestParams)).findFirst().get();
+		liveWorkflowStep.getSignRequestParams().remove(signRequestParams);
+		signRequest.getSignRequestParams().remove(signRequestParams);
 	}
 
 	/**

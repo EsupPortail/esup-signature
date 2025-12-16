@@ -613,27 +613,9 @@ public class FormService {
 		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
 	}
 
-	public List<JsSpot> getSpots(Long id) {
-		List<JsSpot> spots = new ArrayList<>();
+	public List<SignRequestParams> getSpots(Long id) {
 		Form form = getById(id);
-		int step = 1;
-		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-			if(!workflowStep.getSignRequestParams().isEmpty()) {
-				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
-			}
-			step++;
-		}
-		if(spots.isEmpty()) {
-			for(SignRequestParams signRequestParams : form.getWorkflow()
-                    .getWorkflowSteps()
-                    .stream()
-                    .flatMap(ws -> ws.getSignRequestParams().stream())
-                    .toList()) {
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
-			}
-		}
-		return spots;
+		return form.getSignRequestParams();
 	}
 
 

@@ -13,7 +13,7 @@
                         <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <div class="step" th:name="'step_' + ${iterator.index}" th:data-bs-target="'#step_' + ${iterator.index}">
                                 <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="min-height: 100px; border: 1px solid #555555;">
-                                    <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fa-solid fa-hourglass-half"></i></span>
+                                    <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fi fi-rr-duration-alt"></i></span>
                                     <span title="Etape à venir" th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle"><i class="fa-solid fa-pause"></i></span>
                                     <span title="Etape terminée" th:unless="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-success"><i class="fa-solid fa-check"></i></span>
                                     <div class="bs-stepper-label">

@@ -150,23 +150,12 @@ public class CommentService {
                 signRequest = signRequestRepository.findSignRequestByCommentsContains(comment.get());
             }
             if (comment.get().getStepNumber() != null && comment.get().getStepNumber() > 0) {
-                if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().size() > comment.get().getStepNumber() - 1) {
-                    if (signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().size() > comment.get().getStepNumber() - 1) {
-                        LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(comment.get().getStepNumber() - 1);
-                        Optional<SignRequestParams> signRequestParams = liveWorkflowStep.getSignRequestParams().stream().filter(srp -> srp.getxPos().equals(comment.get().getPosX()) && srp.getyPos().equals(comment.get().getPosY()) && srp.getSignPageNumber().equals(comment.get().getPageNumber())).findFirst();
-                        if (signRequestParams.isPresent()) {
-                            liveWorkflowStep.getSignRequestParams().remove(signRequestParams.get());
-                            liveWorkflowStepRepository.save(liveWorkflowStep);
-                            signRequestParamsRepository.delete(signRequestParams.get());
-                        }
-                    }
-                }
-                if(signRequest.getSignRequestParams().size() >= comment.get().getStepNumber()) {
-                    signRequest.getSignRequestParams().remove(comment.get().getStepNumber() -1);
-                }
+
             }
             signRequest.getComments().remove(comment.get());
             commentRepository.delete(comment.get());
+        } else {
+            throw new EsupSignatureRuntimeException("comment " + commentId + " doesn't exist");
         }
     }
 

@@ -4,7 +4,7 @@ export class UserParamsHelp {
         this.doneTour = doneTour;
         this.isOtp = isOtp;
         this.intro = introJs();
-        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: 'x', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
+        this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
         this.initListeners();
         this.initStep();
     }
