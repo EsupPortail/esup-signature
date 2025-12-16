@@ -4,7 +4,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -12,6 +12,7 @@ export class WorkspacePdf {
         this.isOtp = isOtp;
         this.phone = phone;
         this.changeModeSelector = null;
+        this.displayComments = false;
         this.action = action;
         this.dataId = dataId;
         this.formId = formId;
@@ -19,7 +20,8 @@ export class WorkspacePdf {
         this.workflow = workflow;
         this.signImageNumber = signImageNumber;
         this.restore = restore;
-        this.postits = postits;
+        this.comments = comments;
+        this.spots = spots;
         this.notSigned = notSigned;
         this.signable = signable;
         this.editable = editable;
@@ -114,7 +116,7 @@ export class WorkspacePdf {
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
             $("#showComments").on('click', e => this.showComments());
             $("#hideComments").on("click", () => {
-                if (this.mode === "comment") {
+                if (this.displayComments === true) {
                     this.hideComments();
                 } else {
                     this.showComments();
@@ -181,8 +183,8 @@ export class WorkspacePdf {
                 }, 3000);
             });
 
-            if(this.postits != null) {
-                this.postits.forEach((postit, index) => {
+            if(this.comments != null) {
+                this.comments.forEach((postit, index) => {
                     let postitButton = $('#postit' + postit.id);
                     postitButton.on('click', e => this.focusComment(postit));
                     postitButton.on('mouseover', function () {
@@ -604,11 +606,11 @@ export class WorkspacePdf {
         console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
         // this.removeSignFields();
         let self = this;
-        this.postits.forEach((comment, iterator) => {
+        this.comments.forEach((comment, iterator) => {
             if(comment.stepNumber == null) {
                 let postitDiv = $('#inDocComment_' + comment.id);
                 let postitButton = $('#postit' + comment.id);
-                if (this.mode === 'comment') {
+                if (this.mode === 'comment' || this.displayComments) {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
                     let pageOffset = $("#page_" + comment.pageNumber).offset();
@@ -663,7 +665,7 @@ export class WorkspacePdf {
             }
         });
         let index = 0;
-        this.postits.forEach((spot, iterator) => {
+        this.spots.forEach((spot, iterator) => {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
@@ -673,11 +675,11 @@ export class WorkspacePdf {
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
-                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
-                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
-                    console.log("spot pos : " + posX + ", " + posY);
-                    spotDiv.css('left',  posX + "px");
-                    spotDiv.css('top',  posY + "px");
+                    let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale));
+                    let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + offset);
+                    console.log("spot pos : " + xPos + ", " + yPos);
+                    spotDiv.css('left',  xPos + "px");
+                    spotDiv.css('top',  yPos + "px");
                     let signDiv = $('#inDocSign_' + spot.id);
                     if(signDiv != null) {
                         if (signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
@@ -712,7 +714,7 @@ export class WorkspacePdf {
                                 e.stopPropagation();
                                 bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
                                     if (result) {
-                                        let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                        let url = "/ws-secure/global/delete-spot/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                         if (self.currentSignType === "form") {
                                             url = "/" + self.userName + "/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
                                         }
@@ -905,7 +907,7 @@ export class WorkspacePdf {
     showComments() {
         $("#postit").removeClass("d-none");
         $("#commentHelp").removeClass("d-none");
-        this.mode = 'comment';
+        this.displayComments = true;
         this.signPosition.pointItEnable = true;
         if (this.changeModeSelector != null) {
             this.changeModeSelector.setSelected("comment");
@@ -926,7 +928,7 @@ export class WorkspacePdf {
     hideComments() {
         $("#postit").addClass("d-none");
         $("#commentHelp").addClass("d-none");
-        this.mode = 'sign';
+        this.displayComments = false;
         this.signPosition.pointItEnable = false;
 
         if (this.changeModeSelector != null) {
@@ -1006,8 +1008,6 @@ export class WorkspacePdf {
         $(".spot").each(function () {
             $(this).hide();
         });
-        $('#signButtons').removeClass('d-none');
-        $('#forward-btn').removeClass('d-none');
         // $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
@@ -1041,6 +1041,10 @@ export class WorkspacePdf {
         });
         $('#signLaunchButton').removeClass('d-none');
         $('#addSignButton2').removeClass('d-none');
+        $('#addSignButton2').focus();
+        $('#visaLaunchButton').removeClass('d-none');
+        $('#signButtons').removeClass('d-none');
+        $('#forward-btn').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
         $('#commentsTools').addClass('d-none');
@@ -1058,6 +1062,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').addClass('d-none');
         $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
+        $('#visaLaunchButton').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
@@ -1243,7 +1248,7 @@ export class WorkspacePdf {
                 value: 'comment'
             });
         }
-        if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
+        if(this.status !== "draft" && this.status !== "pending" && this.comments.length > 0) {
             data.push({
                 html: '<div style="width: 200px;"><i class="fa-solid fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
                 text: 'Consulter les annotations',

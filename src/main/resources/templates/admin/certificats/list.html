@@ -42,14 +42,14 @@
                                 <td th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
                                 <td>
                                     <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-xmark text-danger fa-2x"></i>
+                                    <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-cross text-danger fa-2x"></i>
                                     <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
 
                                 </td>
 
                                 <td class="text-center">
                                     <i th:if="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-xmark text-danger fa-2x"></i>
+                                    <i th:unless="${sealCertificatProperties.eIDasValidity}" class="fi fi-rr-cross text-danger fa-2x"></i>
                                 </td>
                             </tr>
                         </th:block>

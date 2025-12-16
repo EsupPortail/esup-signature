@@ -556,10 +556,18 @@ textarea:invalid {
 }
 
 .fi {
-    display: inline-flex;
+    line-height: 1;
+}
+
+.fi:before {
+    vertical-align: middle;
 }
 
 .introjs-tooltip {
     min-width: 300px;
     max-width: 500px;
+}
+
+.bs-stepper-circle {
+    padding-top: 6px;
 }

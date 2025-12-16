@@ -22,7 +22,7 @@
         <div id="content" class="content">
             <div class="fixed-action-simple-btn" >
                 <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 15px;"></i>
+                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
                 </a>
             </div>
             <div class="input-group mb-3">
@@ -69,18 +69,18 @@
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.activeVersion}" class="fa-solid fa-times text-danger"></i>
+                            <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
                             <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
                         </td>
                         <td class="clickable-td">
-                            <i th:if="${form.deleted}" class="fa-solid fa-times text-danger"></i>
+                            <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                            <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td" th:text="${form.roles}"></td>
                         <td class="text-center">

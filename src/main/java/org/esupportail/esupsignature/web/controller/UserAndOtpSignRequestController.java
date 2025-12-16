@@ -346,6 +346,28 @@ public class UserAndOtpSignRequestController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PostMapping(value = "/add-spot/{id}")
+    @ResponseBody
+    public ResponseEntity<String> addSpot(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                                          @RequestParam(value = "spotStepNumber", required = false) Integer spotStepNumber,
+                                          @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
+                                          @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
+                                          @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
+                                          @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale) {
+        Long spotId;
+        try {
+            spotId = signRequestService.addSpot(id, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), spotStepNumber);
+        } catch (EsupSignatureException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+        if(spotId != null) {
+            return ResponseEntity.ok().body(spotId.toString());
+        } else {
+            return ResponseEntity.badRequest().body("Problème lors de l'ajout du post-it");
+        }
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
     @PostMapping(value = "/add-repeatable-step/{id}")
     @ResponseBody

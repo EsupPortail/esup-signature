@@ -76,9 +76,10 @@
                         <i class="fi fi-rr-queue-alt"></i> Participants
                     </button>
                     <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
-                        <th:block th:each="liveWorkflowStep : ${signBook.liveWorkflow.liveWorkflowSteps}">
+                        <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                 <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
+                                    <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${iterator.index + 1}" style="font-size: 13px; line-height: 12px;"></span> 
                                     <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
                                     <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
                                     <div th:switch="${recipient.signed}" th:if="${signBook.signRequests.size() == 1}">

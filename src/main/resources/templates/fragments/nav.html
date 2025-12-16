@@ -20,28 +20,28 @@
         <div id="navbar_toggle" class="collapse navbar-collapse justify-content-between">
             <ul id="navbar-buttons" class="navbar-nav gap-1" th:if="${#authorization.expression('isAuthenticated()')}">
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-accueil" type="button"
+                    <a tabindex="0" th:classappend="${activeMenu == 'home'} ? 'bg-secondary bg-opacity-75'" id="link-accueil" type="button"
                         href="/user" class="btn btn-transparent text-left d-flex align-items-center gap-2">
                         <i class="fi fi-rr-home"  style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xxl-inline">Accueil</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
+                    <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left d-flex align-items-center gap-2">
                         <i class="fi fi-rr-paste" style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-report"
+                    <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary bg-opacity-75'" id="link-report"
                         href="/user/reports" class="btn btn-transparent text-left">
                         <i class="fa-solid fa-file-contract"></i> <span
                             class="nav-item-label d-none d-xl-inline">Rapports</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
-                    <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary fw-bold bg-opacity-75'" id="link-manager" href="/user/manage"
+                    <a th:if="${managedWorkflowsSize > 0}" th:classappend="${activeMenu == 'manage'} ? 'bg-secondary bg-opacity-75'" id="link-manager" href="/user/manage"
                         class="btn text-white btn-transparent text-left d-flex align-items-center gap-2">
                         <i class="fi fi-rr-list-check" style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xl-inline">Espace superviseur</span>
@@ -50,7 +50,7 @@
                 <li class="nav-item dropdown" th:if="${userEppn == authUserEppn && globalProperties.shareMode > 0 && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a class="btn btn-transparent text-left text-white dropdown-toggle d-flex align-items-center gap-2"
                         id="link-rigths"
-                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary fw-bold bg-opacity-75'"
+                        th:classappend="${activeMenu == 'shares'} ? 'bg-secondary bg-opacity-75'"
                         href="#"
                         role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fi fi-rr-users-gear"></i>
@@ -83,7 +83,7 @@
                 <li class="nav-item text-white" th:if="${isRoleManager && userEppn == authUserEppn}" title="Menu gestionnaire">
                     <a href="/manager/workflows" class="btn text-white btn-transparent d-flex align-items-center gap-2"
                         id="link-manager-space"
-                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75'">
+                        th:classappend="${managerMenu == 'active'} ? 'bg-secondary bg-opacity-75'">
                         <i class= "fi fi-rr-practice"></i>
                         <span class="nav-item-label d-none d-xxl-inline">Gestionnaire</span>
                     </a>
@@ -91,7 +91,7 @@
                 <li class="nav-item text-white" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')') && userEppn == authUserEppn}" title="Menu admin">
                     <a href="/admin" class="btn text-white btn-transparent d-flex align-items-center gap-2"
                         id="link-admin-space"
-                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary fw-bold bg-opacity-75' : ''">
+                        th:classappend="${adminMenu == 'active'} ? 'bg-secondary bg-opacity-75' : ''">
                         <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
                         <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge rounded-pill bg-danger d-none d-lg-inline ms-1">!</span>
@@ -106,7 +106,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
-                        th:classappend="${activeMenu == 'user'} ? 'bg-secondary fw-bold bg-opacity-75'"
+                        th:classappend="${activeMenu == 'user'} ? 'bg-secondary bg-opacity-75'"
                         type="button" href="#user-infos"
                         aria-expanded="false"
                         aria-controls="user-infos"

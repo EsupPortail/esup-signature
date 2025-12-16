@@ -18,7 +18,7 @@
             <div class="fixed-action-simple-btn" >
                 <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
                     class="btn-lg btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 15px;"></i>
+                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
                 </a>
             </div>
             <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
@@ -64,7 +64,7 @@
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
-                                    <i th:unless="${workflow.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                                    <i th:unless="${workflow.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.roles}"></td>
                                 <td th:class="${workflow.id != null} ? 'clickable-td' : ''" >
@@ -83,7 +83,7 @@
                                             </th:block>
                                             <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fa-solid fa-hand"></i> À saisir à la création</span>
                                             <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fa-solid fa-warning"></i> Non configuré</span>
-                                            <span th:if="${workflowStep.autoSign}"><i class="fa-solid fa-robot"></i> Signature automatique</span>
+                                            <span th:if="${workflowStep.autoSign}"><i class="fi fi-rr-cloud-gear-automation"></i> Signature automatique</span>
                                         </li>
                                     </th:block>
                                     </ul>
