@@ -18,7 +18,7 @@
                                     <i class="fa-solid fa-hourglass-half"></i>
                                 </span>
                                 <span title="Étape annulée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                    <i class="fa-solid fa-times"></i>
+                                    <i class="fi fi-rr-cross-small"></i>
                                 </span>
                                 </th:block>
                                 <span title="Étape à venir" th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle">

@@ -69,18 +69,18 @@
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.activeVersion}" class="fa-solid fa-times text-danger"></i>
+                            <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
                             <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
                         </td>
                         <td class="clickable-td">
-                            <i th:if="${form.deleted}" class="fa-solid fa-times text-danger"></i>
+                            <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                            <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td" th:text="${form.roles}"></td>
                         <td class="text-center">

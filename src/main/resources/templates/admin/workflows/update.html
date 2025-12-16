@@ -26,18 +26,18 @@
                 <ul class="list-unstyled">
                     <li>
                         <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                            <i class="fa-solid fa-file-import fa-2xl"></i>
+                            <i class="fi fi-rr-file-import fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                     <li>
                         <a class="btn-floating btn-lg bg-primary" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
-                            <i class="fa-solid fa-file-export fa-2xl"></i>
+                            <i class="fi fi-rr-file-export fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                     <li>
                         <a id="saveButton" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
                             onclick="document.getElementById('updateSignBook').submit();">
-                            <i class="fa-solid fa-save fa-2xl"></i>
+                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 16px"></i>
                         </a>
                     </li>
                 </ul>

@@ -556,7 +556,11 @@ textarea:invalid {
 }
 
 .fi {
-    display: inline-flex;
+    line-height: 1;
+}
+
+.fi:before {
+    vertical-align: middle;
 }
 
 .introjs-tooltip {

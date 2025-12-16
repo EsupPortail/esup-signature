@@ -64,7 +64,7 @@
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
-                                    <i th:unless="${workflow.publicUsage}" class="fa-solid fa-times text-danger"></i>
+                                    <i th:unless="${workflow.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.roles}"></td>
                                 <td th:class="${workflow.id != null} ? 'clickable-td' : ''" >

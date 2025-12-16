@@ -24,7 +24,7 @@
                                     <i class="fa-solid fa-hourglass-half"></i>
                                 </span>
                                 <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                    <i class="fa-solid fa-times"></i>
+                                    <i class="fi fi-rr-cross-small"></i>
                                 </span>
                                 <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="bs-stepper-circle bg-success">
                                     <th:block title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}">
@@ -50,7 +50,7 @@
                                     </span>
                                 </th:block>
                                 <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                    <i class="fa-solid fa-times"></i>
+                                    <i class="fi fi-rr-cross-small"></i>
                                 </span>
                             </th:block>
                             <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>

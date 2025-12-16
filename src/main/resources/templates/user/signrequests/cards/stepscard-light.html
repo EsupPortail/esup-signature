@@ -23,7 +23,7 @@
                                         <i class="fa-solid fa-hourglass-half"></i>
                                     </span>
                                     <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
-                                        <i class="fa-solid fa-times"></i>
+                                        <i class="fi fi-rr-cross-small"></i>
                                     </span>
                                     <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                                         <span class="bs-stepper-circle bg-success">
@@ -47,7 +47,7 @@
                                     </th:block>
                                     <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" >
                                         <span title="Étape refusée" class="bs-stepper-circle bg-danger">
-                                            <i class="fa-solid fa-times"></i>
+                                            <i class="fi fi-rr-cross-small"></i>
                                         </span>Refusé par
                                     </div>
                                 </th:block>

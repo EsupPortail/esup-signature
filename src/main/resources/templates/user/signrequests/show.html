@@ -872,7 +872,7 @@
                     <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
                     <div class="text-end">
                     <a id="saveButton" class="btn btn-success align-self-end mt-2 mb-2">
-                        <i class="fa-solid fa-save"></i> Enregistrer la signature
+                        <i class="fi fi-rr-disk"></i> Enregistrer la signature
                     </a>
                     </div>
                 </form>
@@ -906,7 +906,8 @@
         currentSignType,
         signable,
         editable,
-        [[${signRequest.comments}]],
+        [[${comments}]],
+        [[${spots}]],
         [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
         [[${currentStepNumber}]],
         [[${currentStepMultiSign}]],
