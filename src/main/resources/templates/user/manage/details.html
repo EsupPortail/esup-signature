@@ -25,17 +25,17 @@
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${hided}">
                         <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
-                            <i class="fa-solid fa-eye fa-2xl"></i>
+                            <i class="fi fi-rr-eye fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li th:unless="${hided}">
                         <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
-                            <i class="fa-solid fa-eye-slash fa-2xl"></i>
+                            <i class="fi fi-rr-eye-crossed fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn-floating btn-lg bg-primary">
-                            <i class="fa-solid fa-file-csv fa-2xl"></i>
+                            <i class="fi fi-rr-file-csv fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>
@@ -103,34 +103,33 @@
                             <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
                             <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                             </td>
-                            <td class="clickable-td d-none d-lg-table-cell">
-                                <table class="table table-sm">
-                                    <tbody th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0 && signBook.liveWorkflow.currentStepNumber > 0}">
-                                    <th:block th:each="recipient : ${signBook.liveWorkflow.currentStep.recipients}">
-                                        <tr>
-                                            <td>
-                                                <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${signBook.liveWorkflow.currentStepNumber}" th:title="${signBook.liveWorkflow.workflow.workflowSteps.size >= signBook.liveWorkflow.currentStepNumber ? signBook.liveWorkflow.workflow.workflowSteps.get(signBook.liveWorkflow.currentStepNumber - 1).description : ''}"></span>
-                                            </td>
-                                            <td class="w-100" th:title="${recipient.user.email}">
-                                                <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
-                                            </td>
-                                            <td class="align-content-center">
-                                                <div th:switch="${recipient.signed}">
-                                                    <th:block th:case="true">
-                                                        <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
-                                                        <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fa-solid fa-times-circle text-danger"></i>
-                                                    </th:block>
-                                                    <th:block th:case="false">
-                                                        <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fa-solid fa-clock text-warning"></i>
-                                                        <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
-                                                    </th:block>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </th:block>
-                                    </tbody>
-                                </table>
+                            <td class="d-none d-lg-table-cell">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                                        <i class="fi fi-rr-queue-alt"></i> Participants
+                                    </button>
+                                    <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
+                                        <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
+                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                                <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
+                                                    <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${iterator.index + 1}" style="font-size: 13px; line-height: 12px;"></span> 
+                                                    <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                    <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
+                                                    <div th:switch="${recipient.signed}" th:if="${signBook.signRequests.size() == 1}">
+                                                        <th:block th:case="true">
+                                                            <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
+                                                            <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fa-solid fa-times-circle text-danger"></i>
+                                                        </th:block>
+                                                        <th:block th:case="false">
+                                                            <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fa-solid fa-clock text-warning"></i>
+                                                            <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
+                                                        </th:block>
+                                                    </div>
+                                                </li>
+                                            </th:block>
+                                        </th:block>
+                                    </ul>
+                                </div>
                             </td>
                             <td class="clickable-td d-none d-xxl-table-cell">
                                 <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>

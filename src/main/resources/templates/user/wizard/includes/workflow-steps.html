@@ -26,7 +26,7 @@
                             <th:block th:unless="${step.autoSign}">
                                 <b>Type de signature :</b>
                                 <span th:text="${#messages.msg('signbook.signtype.' + step.signType)}"></span>
-                                <small>
+                                <small th:if="${step.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
                                 (Niveau mini :
                                 <span th:text="${#messages.msg('signlevelShort.' + step.minSignLevel)}"></span>,
                                 Niveau maxi :
