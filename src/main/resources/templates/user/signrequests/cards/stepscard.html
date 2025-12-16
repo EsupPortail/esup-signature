@@ -15,13 +15,13 @@
                         <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary-subtle border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                             <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                 <span title="Étape à venir" class="bs-stepper-circle">
-                                    <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
-                                    <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
+                                    <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fi fi-rr-pending"></i>
+                                    <i th:if="${liveWorkflowStep.getAutoSign()}" class="fi fi-rr-cloud-gear-automation"></i>
                                 </span>
                             </th:block>
                             <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                 <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
-                                    <i class="fa-solid fa-hourglass-half"></i>
+                                    <i class="fi fi-rr-duration-alt"></i>
                                 </span>
                                 <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
                                     <i class="fi fi-rr-cross-small"></i>
@@ -29,24 +29,24 @@
                                 <th:block th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="bs-stepper-circle bg-success">
                                     <th:block title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}">
                                         <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                            <i class="fa-solid fa-check"></i>
+                                            <i class="fi fi fi-rr-check"></i>
                                         </span>
                                         <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
-                                            <i class="fa-solid fa-signature"></i>
+                                            <i class="fi fi-rr-attribution-pencil"></i>
                                         </span>
                                     </th:block>
                                     <span title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="bs-stepper-circle bg-success">
-                                        <i class="fa-solid fa-robot"></i>
+                                        <i class="fi fi-rr-cloud-gear-automation"></i>
                                     </span>
                                 </th:block>
                             </th:block>
                             <th:block th:if="${iterator.index + 1 < signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                 <th:block th:unless="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                                     <span title="Etape visé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="bs-stepper-circle bg-success">
-                                        <i class="fa-solid fa-check"></i>
+                                        <i class="fi fi-rr-check"></i>
                                     </span>
                                     <span title="Etape signé" th:if="${liveWorkflowStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}" class="bs-stepper-circle bg-success">
-                                        <i class="fa-solid fa-signature"></i>
+                                        <i class="fi fi-rr-attribution-pencil"></i>
                                     </span>
                                 </th:block>
                                 <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
@@ -194,7 +194,7 @@
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
                             <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle">
-                                <i class="fa-solid fa-file-export"></i></div> Export vers :<br/>
+                                <i class="fi fi-rr-file-export"></i></div> Export vers :<br/>
                             <span th:text="${target.protectedTargetUri}" ></span>
                         </div>
                     </th:block>
@@ -202,7 +202,7 @@
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded">
                             <div title="Fin" class="bs-stepper-circle bg-success">
-                                <i class="fa-solid fa-flag-checkered"></i></div>
+                                <i class="fi fi-rr-flag"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                         </div>
                     </th:block>
@@ -210,7 +210,7 @@
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded">
                             <div title="Fin" class="bs-stepper-circle bg-danger">
-                                <i class="fa-solid fa-exclamation-triangle"></i></div>
+                                <i class="fi fi-rr-triangle-warning"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                         </div>
                     </th:block>

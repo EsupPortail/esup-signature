@@ -14,13 +14,13 @@
                             <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                                 <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                         <span title="Étape à venir" class="bs-stepper-circle">
-                                            <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-clock"></i>
-                                            <i th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
+                                            <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fi fi-rr-pending"></i>
+                                            <i th:if="${liveWorkflowStep.getAutoSign()}" class="fi fi-rr-cloud-gear-automation"></i>
                                         </span>
                                 </th:block>
                                 <th:block th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber}">
                                     <span title="Étape en cours" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="bs-stepper-circle bg-warning">
-                                        <i class="fa-solid fa-hourglass-half"></i>
+                                        <i class="fi fi-rr-duration-alt"></i>
                                     </span>
                                     <span title="Étape refusée" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="bs-stepper-circle bg-danger">
                                         <i class="fi fi-rr-cross-small"></i>
@@ -28,7 +28,7 @@
                                     <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                                         <span class="bs-stepper-circle bg-success">
                                             <i title="Étape terminée" th:if="${!liveWorkflowStep.getAutoSign()}" class="fa-solid fa-check"></i>
-                                            <i title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="fa-solid fa-robot"></i>
+                                            <i title="Étape automatique" th:if="${liveWorkflowStep.getAutoSign()}" class="fi fi-rr-cloud-gear-automation"></i>
                                         </span>Signé par
                                     </div>
                                 </th:block>
@@ -88,7 +88,7 @@
                             <div class="bs-stepper-line"></div>
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-success">
-                                    <i class="fa-solid fa-flag-checkered"></i></div>
+                                    <i class="fi fi-rr-flag"></i></div>
                                 <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
@@ -96,7 +96,7 @@
                             <div class="bs-stepper-line"></div>
                             <div class="step border border-dark rounded">
                                 <div title="Fin" class="bs-stepper-circle bg-danger">
-                                    <i class="fa-solid fa-exclamation-triangle"></i></div>
+                                    <i class="fi fi-rr-triangle-warning"></i></div>
                                 <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
                             </div>
                         </th:block>
