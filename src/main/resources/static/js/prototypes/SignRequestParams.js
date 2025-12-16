@@ -317,8 +317,8 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(10 * this.signScale * this.currentScale)  + "px");
-        this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute' style='z-index: 4; bottom:10px; left: 10px;'><i class='fa-solid fa-xmark'></i></button>");
-        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute' style='z-index: 4; bottom:10px; right: 10px;'><i class='fa-solid fa-save'></i></button>");
+        this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute d-flex m-1' style='z-index: 4; bottom:5px; left: 10px;'><i class='fi fi-rr-trash'></i></button>");
+        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute d-flex m-1' style='z-index: 4; bottom:5px; right: 10px;'><i class='fi fi-rr-floppy-disk-pen'></i></button>");
         this.border.remove();
         this.tools.remove();
         this.submitAddSpotBtn = $("#submit-add-spot");
@@ -349,7 +349,7 @@ export class SignRequestParams extends EventFactory {
                 "&spotStepNumber=" + this.spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
             this.signRequestId = $("#save-spot-button").attr("data-es-signrequest-id");
-            let url = "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams;
+            let url = "/user/signrequests/add-spot/" + this.signRequestId + "?" + commentUrlParams;
             if (this.signType === "form") {
                 url = "/" + this.userName + "/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
             }
@@ -541,26 +541,30 @@ export class SignRequestParams extends EventFactory {
             drag: function(event, ui) {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
-                    self.cross.css("background-color", "rgba(220, 220, 220, 0.5)");
+                    self.cross.css("background-color", "rgba(236,236,236,0.9)");
                 }
                 self.tools.addClass("d-none");
             },
             stop: function(event, ui) {
-                const dragRect = this.getBoundingClientRect();
-                self.#checkInside(dragRect, self);
-                self.tools.removeClass("d-none");
-                if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && self.firstCrossAlert) {
-                    self.firstCrossAlert = false;
-                    bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
-                }
-                self.#afterDropRefresh(ui);
-                let signLaunchButton = $("#signLaunchButton");
-                if(signLaunchButton.length) {
-                    signLaunchButton.focus();
-                    signLaunchButton.addClass("pulse-success");
-                }
+                self.#dragStop(event, ui);
             }
         });
+    }
+
+    #dragStop(event, ui) {
+        const dragRect = this.cross[0].getBoundingClientRect();
+        this.#checkInside(dragRect, this);
+        this.tools.removeClass("d-none");
+        if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && this.firstCrossAlert) {
+            this.firstCrossAlert = false;
+            bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
+        }
+        this.#afterDropRefresh(ui);
+        let signLaunchButton = $("#signLaunchButton");
+        if(signLaunchButton.length) {
+            signLaunchButton.focus();
+            signLaunchButton.addClass("pulse-success");
+        }
     }
 
     #checkInside(dragRect, self) {
@@ -708,7 +712,7 @@ export class SignRequestParams extends EventFactory {
         const deltaTop = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
         this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * this.getBrowserZoom()));
         if (this.yPos < 0) this.yPos = 0;
-        console.log("x : " + this.xPos + ", y : " + this.yPos);
+        console.log("x : " + this.xPos + ", y : " + this.yPos + ", page : " + this.signPageNumber);
         if(this.textareaPart != null) {
             this.#resizeText();
         }
@@ -761,15 +765,76 @@ export class SignRequestParams extends EventFactory {
         this.#unlock();
     }
 
-    #handleKeydown(event) {
+    #handleKeydown(e) {
         const activeElement = document.activeElement;
 
         if (
-            (event.key === "Delete" || event.keyCode === 46) &&
+            (e.key === "Delete" || e.keyCode === 46) &&
             activeElement.tagName !== "INPUT" &&
             activeElement.tagName !== "TEXTAREA"
         ) {
             this.#deleteSign();
+        }
+        if(!this.tools.hasClass("d-none")) {
+            let position,
+                draggable = this.cross,
+                container = $('#pdf');
+
+            const distance = e.ctrlKey ? 50 : 2;
+
+            position = draggable.position();
+
+            switch (e.keyCode) {
+                case 37:
+                    position.left -= distance;
+                    break; // Left
+                case 38:
+                    position.top -= distance;
+                    break; // Up
+                case 39:
+                    position.left += distance;
+                    break; // Right
+                case 40:
+                    position.top += distance;
+                    break; // Down
+                default:
+                    return true; // Exit and bubble
+            }
+            if (
+                position.left >= 0 &&
+                position.top >= 0 &&
+                position.left + draggable.width() <= container.width() &&
+                position.top + draggable.height() <= container.height()
+            ) {
+                draggable.css(position);
+
+                const rect = draggable[0].getBoundingClientRect();
+                const margin = 100;
+                const scrollStep = distance;
+                if (rect.bottom > window.innerHeight - margin) {
+                    window.scrollBy(0, scrollStep);
+                }
+                if (rect.top < margin) {
+                    window.scrollBy(0, -scrollStep);
+                }
+                const ui = {
+                    position: position,
+                    helper: draggable
+                };
+                this.#dragStop(
+                    e,
+                    ui,
+                    draggable[0]
+                );
+                $(container).find('.page').each((index, page) => {
+                    const $page = $(page);
+                    const pageRect = $page[0].getBoundingClientRect();
+                    if (rect.top >= pageRect.top && rect.bottom <= pageRect.bottom) {
+                        this.cross.attr("page", index + 1);
+                    }
+                });
+                e.preventDefault();
+            }
         }
     }
 

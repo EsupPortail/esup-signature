@@ -60,7 +60,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#signRequestId, #userEppn, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/sign/{signRequestId}")
     public ResponseEntity<String> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId,
                                        @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
@@ -97,7 +96,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/viewed/{signRequestId}")
     public ResponseEntity<Void> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
         signRequestService.viewedBy(signRequestId, userEppn);
@@ -178,7 +176,6 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-files/{id}", produces = "application/zip")
-    @ResponseBody
     public ResponseEntity<Void> getLastFiles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureFsException {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
@@ -189,7 +186,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.documentCreator(#documentId, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/remove-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) {
         logger.info("remove document " + documentId);
@@ -210,6 +206,15 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/delete-spot/{id}/{spotId}")
+    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    public void deleteSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("spotId") Long spotId,
+                           @PathVariable("id") Long id,
+                           RedirectAttributes redirectAttributes) {
+        signRequestService.deleteSpot(id, spotId);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
@@ -219,7 +224,6 @@ public class GlobalWsSecureController {
     }
 
     @GetMapping(value = "/warning-readed")
-    @ResponseBody
     public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
         signRequestService.warningReaded(authUserEppn);
     }
@@ -237,7 +241,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @ResponseBody
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
@@ -254,14 +257,12 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/silent-delete-signbook/{id}", produces = "text/html")
-    @ResponseBody
     public void silentDeleteSignBook(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         signBookService.deleteDefinitive(id, authUserEppn);
     }
 
     @DeleteMapping(value = "/silent-delete-workflow/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
-    @ResponseBody
     public void silentDeleteWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
         workflowService.delete(id);
     }

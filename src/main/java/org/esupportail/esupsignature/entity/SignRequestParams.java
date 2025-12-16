@@ -15,6 +15,8 @@ public class SignRequestParams {
 
     transient private String imageBase64;
 
+    transient private Integer stepNumber;
+
 	private Integer signImageNumber = 0;
 
 	private Integer signPageNumber = 1;
@@ -63,8 +65,6 @@ public class SignRequestParams {
 
     private Integer fontSize = 16;
 
-    private String comment = "";
-
     private Boolean restoreExtra = false;
 
     public Long getId() {
@@ -89,6 +89,15 @@ public class SignRequestParams {
 
     public void setImageBase64(String imageBase64) {
         this.imageBase64 = imageBase64;
+    }
+
+    public Integer getStepNumber() {
+        if(stepNumber == null) return 1;
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
     }
 
     public Integer getSignImageNumber() {
@@ -293,11 +302,4 @@ public class SignRequestParams {
         this.fontSize = fontSize;
     }
 
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 }
