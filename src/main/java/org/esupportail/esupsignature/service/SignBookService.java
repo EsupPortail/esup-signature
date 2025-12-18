@@ -2439,7 +2439,7 @@ public class SignBookService {
                         String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé", documentUri, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
                             signRequest.setArchiveStatus(ArchiveStatus.archived);
                             logger.info("archive done to " + subPath + name + " in " + archiveUri);
                         } else {
