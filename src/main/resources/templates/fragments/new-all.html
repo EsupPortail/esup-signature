@@ -56,7 +56,7 @@
             </div>
         </th:block>
         <th:block th:if="${workflows != null && workflows.size() == 0}">
-            <div class="alert alert-secondary">
+            <div class="d-flex alert alert-secondary m-1 p-1 justify-content-center align-items-center" style="width: 120px; height: 170px;">
                 <h6>Aucun circuit</h6>
             </div>
         </th:block>
@@ -80,11 +80,11 @@
                 </a>
             </div>
         </th:block>
-        <th:block th:if="${forms != null && forms.size() == 0}">
-            <div class="alert alert-secondary">
-                <h6>Aucun formulaire</h6>
-            </div>
-        </th:block>
+<!--        <th:block th:if="${forms != null && forms.size() == 0}">-->
+<!--            <div class="alert alert-secondary">-->
+<!--                <h6>Aucun formulaire</h6>-->
+<!--            </div>-->
+<!--        </th:block>-->
     </div>
 </div>
 </html>

@@ -46,7 +46,7 @@
                 <small style="font-size: clamp(0.7rem, 1.1vw, 0.875rem);" class="d-none d-xxl-block">Envoyer des documents dans un circuit à plusieurs étapes</small>
             </div>
         </a>
-        <a tabindex="0" id="all-modal-button" th:if="${!isUserOnSu}"
+        <a tabindex="0" id="all-modal-button" th:if="${!isUserOnSu && (workflows.size() > 0 || forms.size() > 0)}"
            class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-2 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal" data-bs-target="#allModal"

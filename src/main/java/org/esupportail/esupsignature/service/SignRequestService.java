@@ -1269,7 +1269,8 @@ public class SignRequestService {
      * @return le nombre de demandes de signature en attente
      */
     public Long getNbPendingSignRequests(String userEppn) {
-		return signRequestRepository.countByCreateByEppnAndStatus(userEppn, SignRequestStatus.pending);
+		User user = userService.getByEppn(userEppn);
+		return signBookRepository.countByCreateByEppnAndStatus(user, SignRequestStatus.pending);
 	}
 
 	/**

@@ -14,11 +14,11 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div class="card col-lg-10 mx-auto">
+            <div class="card mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Statistiques</b></h5>
-                    <div>
-                        <canvas id="signsCount" height="80"></canvas>
+                    <div style="width: 100%; height: 500px;">
+                        <canvas id="signsCount" style="width: 100%; height: 100%;"></canvas>
                         <script th:inline="javascript">
                             let ctx = document.getElementById('signsCount');
                             new Chart(ctx, JSON.parse([[${signsByYears}]]));
