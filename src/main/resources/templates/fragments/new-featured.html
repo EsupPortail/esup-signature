@@ -5,6 +5,7 @@
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflows" type="java.util.List<org.esupportail.esupsignature.entity.Workflow>"*/-->
 <div id="new-featured" th:fragment="new-featured" class="d-flex flex-column">
+    <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-star"></i> Accès rapides</h5>
     <div class="d-flex flex-wrap">
         <th:block th:each="workflow : ${featuredWorkflows}">
             <div th:id="'btn-workflow-' + ${workflow.id}" class="workflow-button" style="height: 184px;">

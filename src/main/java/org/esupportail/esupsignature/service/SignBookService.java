@@ -2431,6 +2431,9 @@ public class SignBookService {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
+                    if(signBook.getStatus().equals(SignRequestStatus.refused)) {
+                        subPath += "refused/";
+                    }
                     if (signRequest.getExportedDocumentURI() == null) {
                         String name = generateName(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, true, null);
                         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {

@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -25,10 +26,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RequestMapping("/user")
 @Controller
@@ -51,8 +49,10 @@ public class HomeController {
     private final DataRepository dataRepository;
     private final MessageService messageService;
     private final UserService userService;
+    private final MessageSource messageSource;
 
-    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, MessageService messageService, UserService userService, TagService tagService) {
+
+    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, MessageService messageService, UserService userService, TagService tagService, MessageSource messageSource) {
         this.globalProperties = globalProperties;
         this.signRequestRepository = signRequestRepository;
         this.formService = formService;
@@ -63,6 +63,7 @@ public class HomeController {
         this.messageService = messageService;
         this.userService = userService;
         this.tagService = tagService;
+        this.messageSource = messageSource;
     }
 
     @GetMapping(value = {"", "/"})
@@ -217,6 +218,11 @@ public class HomeController {
                                     "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
                         }
                     }
+                    String status = messageSource.getMessage("signbook.status." + signBook.getStatus().name(), null, Locale.ROOT);
+                    String color = messageSource.getMessage("signbook.status.color." + signBook.getStatus().name(), null, Locale.ROOT);
+                    String icon = messageSource.getMessage("signbook.status.icon." + signBook.getStatus().name(), null, Locale.ROOT);
+                    String badge = "<div class='badge rounded-pill badge-status text-bg-" + color + "'><i class='fi " + icon + "'></i><span class='d-none d-md-inline-flex'>" + status + "</span></div>";
+                    searchResult.setStatus(badge);
                     searchResults.add(searchResult);
                 }
             }

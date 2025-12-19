@@ -164,7 +164,7 @@
                                                     const pad = n => String(n).padStart(2, "0");
                                                     return `
                                                     <a href="${item.url}" class="list-group-item list-group-item-action d-flex flex-row justify-content-between align-items-center gap-5">
-                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div><div style="width: 300px;">${item.tags}</div>
+                                                        <i class="${item.icon}" style="width: 50px;"></i><div style="width: 100%;">${item.title}</div><div style="width: 300px;">${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}</div><div style="width: 300px;">${item.status}</div><div style="width: 300px;">${item.tags}</div>
                                                     </a>
                                                 `}).join('');
                                                 megaBody.html(`
@@ -319,7 +319,7 @@
                     </div>
                 </div>
                 <div id="myFavorites" th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0)}" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
-                    <div th:insert="~{fragments/new-featured :: new-featured}"></div>
+                    <div th:insert="~{fragments/new-featured :: new-featured}" th:if="${featuredWorkflows.size() > 0}"></div>
                     <div class="w-100"  th:if="${workflows.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Mes circuits favoris</h5>
@@ -328,7 +328,7 @@
                                 data-bs-toggle="modal"
                                 data-bs-target="#workflowsModal"
                                 title="Ajouter un circuit à vos favoris">
-                                <i class="d-flex align-items-center fi fi-rr-apps-add"></i>
+                                <i class="d-flex align-items-center fi fi fi-rr-plus"></i>
                             </a>
                         </div>
                     </div>
@@ -372,14 +372,14 @@
                         </th:block>
                         <th:block th:if="${favoriteWorkflows.size() == 0}">
                             <div id="noFavoritesWorkflows" class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
-                                <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i>
                                 <p>Aucun circuit en favori pour le moment</p>
                                 <a tabindex="0" role="button"
                                     class="btn btn-secondary"
                                     data-bs-toggle="modal"
                                     data-bs-target="#workflowsModal"
                                     title="Ajouter un circuit à vos favoris">
-                                    Ajouter un circuit dans mes favoris <i class="fi fi-rr-apps-add"></i>
+                                    <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i><br>
+                                    Ajouter un circuit dans mes favoris
                                 </a>
                             </div>
                         </th:block>
@@ -392,7 +392,7 @@
                                 data-bs-toggle="modal"
                                 data-bs-target="#formsModal"
                                 title="Ajouter un formulaire à vos favoris">
-                                <i class="d-flex align-items-center fi fi-rr-apps-add"></i>
+                                <i class="d-flex align-items-center fi fi-rr-plus"></i>
                             </a>
                         </div>
                     </div>
@@ -415,14 +415,14 @@
                         </th:block>
                         <th:block th:if="${favoriteForms.size() == 0}">
                             <div id="noFavoritesForms" class="alert alert-light d-flex flex-column text-center align-items-center w-100" style="height: 170px;">
-                                <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i>
                                 <p>Aucun formulaire en favori pour le moment</p>
                                 <a tabindex="0" role="button"
                                     class="btn btn-secondary"
                                     data-bs-toggle="modal"
                                     data-bs-target="#formsModal"
                                     title="Ajouter un circuit à vos favoris">
-                                    Ajouter un formulaire dans mes favoris <i class="fi fi-rr-apps-add"></i>
+                                    <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i><br>
+                                    Ajouter un formulaire dans mes favoris
                                 </a>
                             </div>
                         </th:block>

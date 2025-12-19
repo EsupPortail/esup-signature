@@ -8,46 +8,16 @@
             <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
             <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
         </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-file-exclamation" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill badge-status bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-pending"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-tr-file-signature"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status bg-danger">
+        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status bg-danger"
+            th:title="${signRequest != null && signRequest.comments.size() > 0 ? signRequest.comments.get(signRequest.comments.size() - 1).text : ''}">
             <i class="fi fi-rr-cross-circle"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-            <br>
-            <p th:if="${signRequest != null && signRequest.comments.size() > 0}" th:title="${signRequest.comments.get(signRequest.comments.size() - 1).text}" th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger mx-auto rounded-1"></p>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fa-solid fa-check-circle"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-file-export"></i>
-                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-cross-circle"></i>
-            <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-box"></i>
-            <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-        </div>
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-flag"></i>
                 <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
         </div>
         <div th:case="*">
-            <span class="d-none d-md-inline-flex" th:text="${signBook.status}"></span>
+            <div class="badge rounded-pill badge-status" th:classappend="'text-bg-' + #{'signbook.status.color.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}">
+                <i class="fi" th:classappend="#{'signbook.status.icon.' + ${signBook.status}}"  th:title="#{'signbook.status.' + ${signBook.status}}"></i>
+                <span class="d-none d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+            </div>
         </div>
     </div>
     <div th:if="${signBook.deleted}" class="text-center mb-1 mt-1">

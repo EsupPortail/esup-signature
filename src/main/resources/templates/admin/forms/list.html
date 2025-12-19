@@ -46,6 +46,7 @@
                         <th>Id</th>
                         <th class="w-25">Titre</th>
                         <th>Tags</th>
+                        <th>À la une</th>
                         <th>Circuit associé</th>
                         <th>Actif</th>
                         <th>Tuile masquée</th>
@@ -63,6 +64,10 @@
                             <th:block th:each="tag : ${form.tags}">
                                 <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
                             </th:block>
+                        </td>
+                        <td class="clickable-td">
+                            <i th:if="${form.isFeatured}" class="fa-solid fa-check text-success"></i>
+                            <i th:unless="${form.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td>
                             <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
