@@ -477,7 +477,7 @@
             <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
                 <input th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" type="hidden" name="definitive" value="true">
                 <div class="modal-header">
-                    <h2>Attention</h2>
+                    <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
@@ -485,19 +485,13 @@
                 <div class="modal-body">
                     <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
                     <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
-                        <h4>Confirmez-vous la mise à la corbeille de cette demande ?</h4>
-                        <div class="form-check mt-4 mb-2">
-                            <input class="form-check-input" type="checkbox" value="true" id="definitive" name="definitive" onclick="alert('Attention cette action est irreversible !')">
-                            <label class="form-check-label" for="definitive">
-                                Cocher pour supprimer <b>définitivement</b> la demande sans passer par la corbeille
-                            </label>
-                        </div>
+                        <p>Confirmez-vous la mise à la corbeille de cette demande ?</p>
                     </div>
                     <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                    <button type="submit" class="btn btn-danger">Oui</button>
+                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Mettre à la corbeille</button>
                 </div>
             </form>
         </div>

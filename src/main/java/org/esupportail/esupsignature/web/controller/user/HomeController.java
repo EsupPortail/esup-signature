@@ -28,6 +28,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/user")
 @Controller
@@ -94,8 +95,12 @@ public class HomeController {
             model.addAttribute("pendingSignBooks", pendingSignBooks);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
-            model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
-            model.addAttribute("workflows", workflowService.getWorkflowsByUser(userEppn, authUserEppn));
+            List<Form> forms = formService.getFormsByUser(userEppn, authUserEppn);
+            model.addAttribute("forms", forms);
+            Set<Workflow> workflows = workflowService.getWorkflowsByUser(userEppn, authUserEppn);
+            model.addAttribute("workflows", workflows);
+            model.addAttribute("featuredForms", forms.stream().filter(Form::getIsFeatured).toList());
+            model.addAttribute("featuredWorkflows", workflows.stream().filter(Workflow::getIsFeatured).toList());
             model.addAttribute("startFormId", formId);
             model.addAttribute("startWorkflowId", workflowId);
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());

@@ -319,9 +319,10 @@
                     </div>
                 </div>
                 <div id="myFavorites" th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0)}" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                    <div th:insert="~{fragments/new-featured :: new-featured}"></div>
                     <div class="w-100"  th:if="${workflows.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">
-                            <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-star"></i> Mes circuits favoris</h5>
+                            <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Mes circuits favoris</h5>
                             <a tabindex="1" role="button"
                                 class="btn btn-sm btn-secondary"
                                 data-bs-toggle="modal"
@@ -385,13 +386,11 @@
                     </div>
                     <div class="w-100" th:if="${forms.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">
-                            <i class="fi fi-rr-star" style="margin-bottom: .5rem;"></i>
-                            <h5>Mes formulaires favoris</h5>
+                            <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-poll-h file-alt-color"></i> Mes formulaires favoris</h5>
                             <a tabindex="1" role="button"
                                 class="btn btn-sm btn-secondary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#formsModal"
-                                style="margin-bottom: .5rem;"
                                 title="Ajouter un formulaire à vos favoris">
                                 <i class="d-flex align-items-center fi fi-rr-apps-add"></i>
                             </a>

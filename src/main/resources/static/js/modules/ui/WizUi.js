@@ -101,6 +101,7 @@ export class WizUi {
                 }
             },
             error: function() {
+                $("#fast-form-submit").click();
                 self.enableButtons();
             }
         });
@@ -623,6 +624,10 @@ export class WizUi {
             let minSignLevel = $('#minSignLevel-' + i);
             if(minSignLevel.length) {
                 step.minSignLevel = minSignLevel.val();
+            }
+            let maxSignLevel = $('#maxSignLevel-' + i);
+            if(maxSignLevel.length) {
+                step.maxSignLevel = maxSignLevel.val();
             }
             let sealVisa = $('#sealVisa-' + i);
             if(sealVisa.length) {
