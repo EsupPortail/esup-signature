@@ -165,6 +165,7 @@ public class UserAndOtpSignRequestController {
             if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
         }
         model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
+        model.addAttribute("currentStepMaxSignLevel", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMaxSignLevel());
         if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
             AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
             if(auditTrail != null) {

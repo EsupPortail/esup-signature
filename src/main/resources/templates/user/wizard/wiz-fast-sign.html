@@ -103,7 +103,7 @@
                                 <small>Niveau maximum</small>
                                 <select class="form-select" name="maxSignLevel" id="maxSignLevel-1">
                                     <th:block th:each="signLevel : ${signLevels}">
-                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${signLevel == T(org.esupportail.esupsignature.entity.enums.SignLevel).qualified}"></option>
                                     </th:block>
                                 </select>
                             </div>

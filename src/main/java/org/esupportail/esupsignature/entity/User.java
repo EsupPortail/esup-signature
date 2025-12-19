@@ -173,14 +173,14 @@ public class User {
     }
 
     public String getHidedPhone() {
-        if(hidedPhone == null) {
+        if(this.hidedPhone == null) {
             String p = this.phone;
             if (p != null && p.length() > 4) {
                 String stars = "*".repeat(p.length() - 4);
-                return stars + p.substring(p.length() - 4);
+                this.hidedPhone = stars + p.substring(p.length() - 4);
             }
         }
-        return "";
+        return this.hidedPhone;
     }
 
     public void setHidedPhone(String hidedPhone) {

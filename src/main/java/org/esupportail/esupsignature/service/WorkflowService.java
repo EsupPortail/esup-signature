@@ -564,6 +564,7 @@ public class WorkflowService {
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
         workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
         workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
+        workflowToUpdate.setIsFeatured(workflow.getIsFeatured());
         User manager = userService.getByEppn(authUserEppn);
         if(!manager.getRoles().contains("ROLE_ADMIN") && workflowToUpdate.getManagerRole() != null && manager.getManagersRoles().contains(workflowToUpdate.getManagerRole())) {
             workflowToUpdate.setPublicUsage(false);

@@ -15,7 +15,6 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
-import org.esupportail.esupsignature.dto.js.JsSpot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -185,6 +184,7 @@ public class FormService {
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
+		form.setIsFeatured(updateForm.getIsFeatured());
         form.getTags().clear();
         form.getTags().addAll(updateForm.tags);
 		List<ShareType> shareTypes = new ArrayList<>();

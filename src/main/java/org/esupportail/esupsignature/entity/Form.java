@@ -82,6 +82,8 @@ public class Form {
 	@Column(columnDefinition = "TEXT")
 	private String action;
 
+	private Boolean isFeatured = false;
+
 	@Transient
 	private Integer totalPageCount = 1;
 
@@ -270,7 +272,16 @@ public class Form {
         this.tags = tags;
     }
 
-    public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
+	public Boolean getIsFeatured() {
+		if(isFeatured == null) return false;
+		return isFeatured;
+	}
+
+	public void setIsFeatured(Boolean featured) {
+		isFeatured = featured;
+	}
+
+	public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
         this.modelClassWorkflow = modelClassWorkflow;
     }
 

@@ -303,7 +303,7 @@ textarea:invalid {
 .badge-status > i {
     height: 100%;
     background-color: black;
-    padding: 4px 6px 4px 6px;
+    padding: 3px 6px 3px 6px;
     color: white;
     border-top-left-radius: var(--bs-border-radius-pill) !important;
     border-bottom-left-radius: var(--bs-border-radius-pill) !important;
