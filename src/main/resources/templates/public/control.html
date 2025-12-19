@@ -136,7 +136,6 @@
                             <th title="Utilisateur original au nom duquel l'action est effectuée">Mandant</th>
                             <th>Statut</th>
                             <th>Action</th>
-                            <th>Commentaire</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -154,9 +153,6 @@
                                 </td>
                                 <td class="text-left" th:if="${log.action == 'Apposition de la signature'}">
                                     <span th:text="'Apposition d`un visuel en page ' + ${log.pageNumber} + ' aux coordonnées (' + ${log.posX} + ', ' + ${log.posY} + ')'"></span>
-                                </td>
-                                <td class="text-left" th:unless="${log.action == 'Apposition de la signature'}">
-                                    <span th:text="${log.comment}"></span>
                                 </td>
                             </tr>
                         </th:block>
