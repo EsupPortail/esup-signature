@@ -6,6 +6,7 @@ html {
 body {
     margin-bottom: 40px;
     width: 100%;
+    padding-right: 0 !important;
 }
 
 body.modal-open {
@@ -14,6 +15,7 @@ body.modal-open {
 
 header {
     z-index: 1031 !important;
+    padding-right: 0 !important;
 }
 
 #navbar {
