@@ -8,6 +8,7 @@ public class SearchResult {
     String title;
     String url;
     String tags = "";
+    String status;
     Date date;
 
     public String getIcon() {
@@ -40,6 +41,14 @@ public class SearchResult {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Date getDate() {

@@ -115,6 +115,8 @@ public class Workflow {
     @ManyToMany
     private List<Tag> tags = new ArrayList<>();
 
+    private Boolean isFeatured = false;
+
     public Long getId() {
         return id;
     }
@@ -461,5 +463,14 @@ public class Workflow {
 
     public void setTags(List<Tag> tags) {
         this.tags = tags;
+    }
+
+    public Boolean getIsFeatured() {
+        if(isFeatured == null) return false;
+        return isFeatured;
+    }
+
+    public void setIsFeatured(Boolean featured) {
+        isFeatured = featured;
     }
 }

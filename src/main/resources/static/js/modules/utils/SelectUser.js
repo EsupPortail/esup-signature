@@ -305,7 +305,7 @@ export default class SelectUser {
         console.log("display temp users in " + this.selectField.attr("id"));
         let tempUsersDiv = $('#tempUsers-' + this.selectField.attr("id"));
         tempUsersDiv.empty();
-        datas.forEach(e => this.appendTempUser(e));
+        datas.forEach(data => this.appendTempUser(data));
     }
 
     appendTempUser(data) {
@@ -339,7 +339,7 @@ export default class SelectUser {
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
             if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.phone + "\">" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +

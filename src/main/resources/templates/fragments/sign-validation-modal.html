@@ -4,11 +4,11 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="signModalLabel">
-                    <span th:if="${signRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider le document</span>
-                    <span th:if="${signRequest != null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la signature du document</span>
-                    <span th:if="${signRequest == null}">Confirmer la signature en masse des documents sélectionnés</span>
-                </h3>
+                <h4 class="modal-title" id="signModalLabel">
+                    <span th:if="${signRequest != null && signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"><i class="fi fi-rr-registration-paper"></i> Valider le document</span>
+                    <span th:if="${signRequest != null && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"><i class="fi fi-rr-signature-lock"></i> Confirmer la signature du document</span>
+                    <span th:if="${signRequest == null}"><i class="fi fi-rr-signature-lock"></i> Confirmer la signature en masse des documents sélectionnés</span>
+                </h4>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

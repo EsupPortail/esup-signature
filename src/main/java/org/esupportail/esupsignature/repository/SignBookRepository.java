@@ -205,6 +205,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findToSign(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
+            select count(s) from SignBook s where s.status = :status and (s.deleted is null or s.deleted != true) and :user not member of s.hidedBy and s.createBy = :user
+            """)
+    Long countByCreateByEppnAndStatus(User user, SignRequestStatus status);
+
+    @Query("""
         select count(sb) from SignBook sb
         where sb.status = 'pending'
           and size(sb.signRequests) > 0

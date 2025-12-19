@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,21 +42,14 @@ public class UserWsSecureController {
     @ResponseBody
     @PostMapping(value ="/check-temp-users")
     private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(
+        return new ArrayList<>(userService.checkTempUsers(
                 recipientService
                         .convertRecipientEmailsToStep(recipientEmails)
                         .stream()
                         .map(WorkflowStepDto::getRecipients)
                         .flatMap(List::stream)
                         .toList()
-        ).stream().peek(r -> {
-            String p = r.getPhone();
-            if (p != null && p.length() > 4) {
-                String stars = "*".repeat(p.length() - 4);
-                r.setHidedPhone(stars + p.substring(p.length() - 4));
-            }
-            r.setPhone("");
-        }).toList();
+        ));
     }
 
     @ResponseBody

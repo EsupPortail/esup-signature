@@ -43,6 +43,7 @@
                             <th>Id</th>
                             <th>Nom</th>
                             <th>Tags</th>
+                            <th>À la une</th>
                             <th>Public</th>
                             <th>Roles</th>
                             <th>Créé par</th>
@@ -61,6 +62,10 @@
                                     <th:block th:each="tag : ${workflow.tags}">
                                         <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
                                     </th:block>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${workflow.isFeatured}" class="fa-solid fa-check text-success"></i>
+                                    <i th:unless="${workflow.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>

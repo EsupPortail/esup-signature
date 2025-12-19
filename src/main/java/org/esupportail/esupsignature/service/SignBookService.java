@@ -2431,6 +2431,9 @@ public class SignBookService {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
+                    if(signBook.getStatus().equals(SignRequestStatus.refused)) {
+                        subPath += "refused/";
+                    }
                     if (signRequest.getExportedDocumentURI() == null) {
                         String name = generateName(signRequest.getId(), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), signRequest.getCreateBy(), false, true, null);
                         if(signRequest.getParentSignBook().getSignRequests().size() > 1) {
@@ -2439,7 +2442,7 @@ public class SignBookService {
                         String documentUri = documentService.archiveDocument(signedFile, archiveUri, subPath, signedFile.getId() + "_" + name);
                         if (documentUri != null) {
                             signRequest.setExportedDocumentURI(documentUri);
-                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé vers " + archiveUri, null, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+                            signRequestService.updateStatus(signRequest.getId(), SignRequestStatus.completed, "Archivé", documentUri, "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
                             signRequest.setArchiveStatus(ArchiveStatus.archived);
                             logger.info("archive done to " + subPath + name + " in " + archiveUri);
                         } else {

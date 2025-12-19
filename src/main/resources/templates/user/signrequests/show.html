@@ -147,7 +147,7 @@
                             title="Télécharger la dernière version des documents dans une archive ZIP">
                             <i class="fi fi-rr-box fa-2xl" style="margin-top: 10px;"></i></a>
                     </li>
-                    <li th:if="${signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <li th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                         <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
@@ -230,8 +230,12 @@
             <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                 <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
             </th:block>
-            <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
-                <div class="alert alert-success">Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</div>
+            <th:block th:if="${signRequest.parentSignBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
+                <div class="alert alert-success">
+                    <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</h5>
+                    <label>Emplacement physique du document :</label>
+                    <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" style="width: 100%;" disabled />
+                </div>
             </th:block>
             <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
                 class="workspace alert alert-secondary row" style="margin-top: 128px;">
@@ -261,7 +265,7 @@
             <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
                 Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
             </div>
-            <div th:if="${toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
+            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
                 Le document a bien été signé, vous pouvez le téléchargé
             </div>
             <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
@@ -473,7 +477,7 @@
             <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
                 <input th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" type="hidden" name="definitive" value="true">
                 <div class="modal-header">
-                    <h2>Attention</h2>
+                    <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>
@@ -481,19 +485,13 @@
                 <div class="modal-body">
                     <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
                     <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
-                        <h4>Confirmez-vous la mise à la corbeille de cette demande ?</h4>
-                        <div class="form-check mt-4 mb-2">
-                            <input class="form-check-input" type="checkbox" value="true" id="definitive" name="definitive" onclick="alert('Attention cette action est irreversible !')">
-                            <label class="form-check-label" for="definitive">
-                                Cocher pour supprimer <b>définitivement</b> la demande sans passer par la corbeille
-                            </label>
-                        </div>
+                        <p>Confirmez-vous la mise à la corbeille de cette demande ?</p>
                     </div>
                     <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                    <button type="submit" class="btn btn-danger">Oui</button>
+                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-danger">Mettre à la corbeille</button>
                 </div>
             </form>
         </div>
@@ -882,7 +880,7 @@
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-<script th:inline="javascript" type="module">
+<script th:inline="javascript" type="module" th:if="${signBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).none}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     let signable = [[${signable}]];
     let editable = [[${editable}]];

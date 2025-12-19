@@ -18,11 +18,11 @@ public interface FormRepository extends CrudRepository<Form, Long> {
     @Query("""
         select distinct f
         from Form f
-        where f.publicUsage = true
+        where (f.publicUsage = true
            or exists (
                 select r from f.roles r
                 where r in :roles
-           )
+           )) and f.activeVersion = true
         order by f.id
     """)
     List<Form> findAuthorizedFormsByRoles(Set<String> roles);
