@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature;
 
+import jakarta.annotation.Resource;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.SessionTrackingMode;
@@ -19,15 +20,12 @@ import java.util.Collections;
 @ConfigurationPropertiesScan
 public class EsupSignatureApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
-	private final ApplicationContext applicationContext;
-	private final GlobalProperties globalProperties;
-	private final UpgradeService upgradeService;
-
-    public EsupSignatureApplication(ApplicationContext applicationContext, GlobalProperties globalProperties, UpgradeService upgradeService) {
-        this.applicationContext = applicationContext;
-        this.globalProperties = globalProperties;
-        this.upgradeService = upgradeService;
-    }
+	@Resource
+	private ApplicationContext applicationContext;
+	@Resource
+	private GlobalProperties globalProperties;
+	@Resource
+	private UpgradeService upgradeService;
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
