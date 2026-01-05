@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -332,7 +333,7 @@ public class WorkflowService {
 
 
     @Transactional
-    public void computeWorkflow(List<WorkflowStepDto> steps, SignBook signBook) {
+    public void computeWorkflow(List<WorkflowStepDto> steps, SignBook signBook) throws EsupSignatureException {
         for (WorkflowStepDto step : steps) {
             LiveWorkflowStep newWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newWorkflowStep);
@@ -799,7 +800,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) {
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) throws EsupSignatureException {
         logger.debug("importing workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
         Workflow dataBaseWorkflow;
         if(BooleanUtils.isTrue(workflow.getFromCode())) {

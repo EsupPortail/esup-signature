@@ -207,7 +207,7 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}/mail")
-    public String showMail(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
+    public String showMail(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model) {
         SignBook signBook = signBookService.getById(id);
         model.addAttribute("signBook", signBook);
         return "mail/email-otp-download";
@@ -339,7 +339,8 @@ public class SignBookController {
             workflowStepDto.setSignType(signType);
             signBookService.addLiveStep(id, workflowStepDto , stepNumber, authUserEppn);
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Étape ajoutée"));
-        } catch (EsupSignatureRuntimeException e) {
+        } catch (Exception e) {
+            logger.debug(e.getMessage(), e);
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
         }
 
@@ -361,7 +362,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-workflow/{id}")
     public String addWorkflow(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException {
+                          @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException, EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
         return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "?form";
@@ -415,17 +416,23 @@ public class SignBookController {
 
     @GetMapping(value = "/download-multiple", produces = "application/zip")
     @ResponseBody
-    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+    public ResponseEntity<?> downloadMultiple(
+            @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) {
         try {
             for(Long id : ids) {
-                if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) throw new EsupSignatureException("access denied");
+                if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) {
+                    throw new EsupSignatureException("access denied");
+                }
             }
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
-            httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-            httpServletResponse.flushBuffer();
+            return ResponseEntity.ok().build();
+
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
-            httpServletResponse.sendError(404);
+            logger.debug("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new JsMessage("error", e.getMessage()));
         }
     }
 

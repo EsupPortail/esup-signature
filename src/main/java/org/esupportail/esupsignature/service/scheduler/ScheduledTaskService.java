@@ -6,8 +6,8 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -77,7 +77,7 @@ public class ScheduledTaskService {
 		for(Workflow workflow : workflows) {
 			try {
 				signBookService.importFilesFromSource(workflow.getId(), userScheduler, userScheduler);
-			} catch (EsupSignatureRuntimeException e) {
+			} catch (EsupSignatureException e) {
 				logger.error("unable to import into " + workflow.getName(), e);
 			}
 		}

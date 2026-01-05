@@ -128,12 +128,15 @@ public class LdapGroupService implements GroupService {
         for (String ldapFilter : ldapFiltersGroups.keySet()) {
             try {
                 String hardcodedFilter = MessageFormat.format(ldapProperties.getMemberSearchFilter(), username, ldapFilter);
-                List<String> filterDns = ldapTemplate.search(LdapQueryBuilder.query().attributes("dn").filter(hardcodedFilter),
+                List<String> filterDns = ldapTemplate.search(
+                        LdapQueryBuilder.query()
+                                .base(ldapProperties.getSearchBase())
+                                .attributes("dn")
+                                .filter(hardcodedFilter),
                         (ContextMapper<String>) ctx -> {
                             DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                             return searchResultContext.getNameInNamespace();
                         });
-
                 if (!filterDns.isEmpty()) {
                     groups.add(ldapFiltersGroups.get(ldapFilter));
                 }

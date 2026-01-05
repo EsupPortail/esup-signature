@@ -5,8 +5,8 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
@@ -54,7 +54,7 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @PostMapping(value = "/clone/{id}")
-    public String clone(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+    public String clone(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         Long cloneId = signBookService.clone(id, multipartFiles, comment, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         return "redirect:/user/signrequests/" + cloneId;
