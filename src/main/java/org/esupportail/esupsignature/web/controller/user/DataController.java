@@ -10,7 +10,6 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -58,7 +57,7 @@ public class DataController {
 	@ResponseBody
 	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestBody List<WorkflowStepDto> steps,
-						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
+						   @PathVariable("id") Long id) {
 		logger.info("create form " + id);
         try {
             if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
@@ -68,7 +67,7 @@ public class DataController {
                 return ResponseEntity.ok().body(signBook.getId().toString());
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.debug(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
 		logger.warn("form id " + id + " not autorized");

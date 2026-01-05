@@ -16,7 +16,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
 import org.slf4j.Logger;
@@ -181,13 +181,13 @@ public class WorkflowWsController {
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
             }
-            signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), createByEppn);
+            signRequestService.addAttachement(attachementMultipartFiles, null, signRequestIds.get(0), createByEppn);
             if(json) {
                 return ResponseEntity.ok(signRequestIds);
             } else {
                 return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
             }
-        } catch (EsupSignatureRuntimeException e) {
+        } catch (EsupSignatureException e) {
             logger.warn(e.getMessage() + " for : " + id);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
