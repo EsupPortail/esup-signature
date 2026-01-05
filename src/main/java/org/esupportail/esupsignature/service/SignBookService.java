@@ -2059,6 +2059,7 @@ public class SignBookService {
      */
     @Transactional
     public void getMultipleSignedDocuments(List<Long> ids, HttpServletResponse response) throws IOException, EsupSignatureFsException {
+        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         List<FsFile> fsFiles = new ArrayList<>();
         for(Long id : ids) {
             SignBook signBook = getById(id);
@@ -2067,15 +2068,17 @@ public class SignBookService {
                     FsFile fsFile = signRequestService.getLastSignedFsFile(signRequest);
                     if(fsFile != null) {
                         fsFiles.add(fsFile);
+                        if(ids.size() == 1) {
+                            response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fsFile.getName(), StandardCharsets.UTF_8) + ".zip");
+                        }
                     }
                 }
             }
         }
         if(fsFiles.isEmpty()) {
-            throw new EsupSignatureRuntimeException("Aucun document à exporter : " + StringUtils.collectionToDelimitedString(ids, ","));
+            throw new EsupSignatureRuntimeException("Aucun document à exporter pour les demandes sélectionnées");
         }
         response.setContentType("application/zip; charset=utf-8");
-        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode("alldocs", StandardCharsets.UTF_8) + ".zip");
         ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
         int i = 0;
         for(FsFile fsFile : fsFiles) {

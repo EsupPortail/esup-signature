@@ -415,17 +415,23 @@ public class SignBookController {
 
     @GetMapping(value = "/download-multiple", produces = "application/zip")
     @ResponseBody
-    public void downloadMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) throws IOException {
+    public ResponseEntity<?> downloadMultiple(
+            @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam List<Long> ids, HttpServletResponse httpServletResponse) {
         try {
             for(Long id : ids) {
-                if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) throw new EsupSignatureException("access denied");
+                if(!preAuthorizeService.signBookView(id, authUserEppn, authUserEppn)) {
+                    throw new EsupSignatureException("access denied");
+                }
             }
             signBookService.getMultipleSignedDocuments(ids, httpServletResponse);
-            httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-            httpServletResponse.flushBuffer();
+            return ResponseEntity.ok().build();
+
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
-            httpServletResponse.sendError(404);
+            logger.debug("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new JsMessage("error", e.getMessage()));
         }
     }
 
