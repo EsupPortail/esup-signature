@@ -19,7 +19,7 @@ export class Home2Help {
 
     initStep() {
         this.intro.addStep({
-            element: 'main',
+            element: 'header',
             intro: "<h5>Bienvenue sur le nouvel accueil d'Esup-signature</h5>" +
                 "<p>Pour votre première visite, ce tutoriel va vous présenter la nouvelle page d'accueil. Vous pourrez le relancer à l'aide du bouton d'aide de la barre de navigation</p>" +
                 "<a href='https://www.esup-portail.org/wiki/spaces/SIGN/overview' target='_blank'>Cliquez ici pour plus d'information sur l'outil</a><br><br>",

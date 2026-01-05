@@ -90,7 +90,8 @@ public class LdapGroupService implements GroupService {
         return groups;
     }
 
-    public List<String>  getAllPrefixGroups(String search) {
+    public List<String> getAllPrefixGroups(String search) {
+        if(!StringUtils.hasText(ldapProperties.getGroupSearchBase())) return new ArrayList<>();
         return ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter("cn=" + search.replace("(\\w*)", "") + "*"),
                 (ContextMapper<Map.Entry<String, String>>) ctx -> {
                     DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
