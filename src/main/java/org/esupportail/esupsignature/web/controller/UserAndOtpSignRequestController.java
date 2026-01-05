@@ -378,7 +378,7 @@ public class UserAndOtpSignRequestController {
         try {
             signBookService.addLiveStep(signRequestService.getById(id).getParentSignBook().getId(), step, step.getStepNumber(), authUserEppn);
             return new ResponseEntity<>(HttpStatus.OK);
-        } catch (EsupSignatureRuntimeException e) {
+        } catch (EsupSignatureException e) {
             logger.error(e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -389,7 +389,7 @@ public class UserAndOtpSignRequestController {
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                            @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
                            @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
-                           RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+                           RedirectAttributes redirectAttributes) {
         if(keepFollow == null) keepFollow = false;
         try {
             signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);

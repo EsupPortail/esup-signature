@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.*;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
@@ -336,8 +337,14 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(authUserEppn);
-		int nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
-		if (nbImportedFiles == 0) {
+        int nbImportedFiles = 0;
+        try {
+            nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
+        } catch (EsupSignatureException e) {
+			logger.debug(e.getMessage(), e);
+			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+        }
+        if (nbImportedFiles == 0) {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucun fichier à importer"));
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", nbImportedFiles + " ficher(s) importé(s)"));

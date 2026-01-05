@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
@@ -51,7 +50,7 @@ public class LiveWorkflowStepService {
         return liveWorkflowStepRepository.findById(liveWorkflowStepId).orElse(null);
     }
 
-    public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) {
+    public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) throws EsupSignatureException {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonString = mapper.writeValueAsString(step);
@@ -98,7 +97,7 @@ public class LiveWorkflowStepService {
         return liveWorkflowStep;
     }
 
-    public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) {
+    public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
         if(StringUtils.hasText(step.getDescription())) {
@@ -133,7 +132,7 @@ public class LiveWorkflowStepService {
         return liveWorkflowStep;
     }
 
-    public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) {
+    public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
         List<String> recipientsEmails = recipientService.getAllRecipientsEmails(recipientWsDtos);
         List<Recipient> recipients = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
@@ -172,7 +171,9 @@ public class LiveWorkflowStepService {
                 recipients.add(recipient);
             }
         }
-        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("Les destinataires sont vides ou n'ont pas été trouvés pour le circuit " + signBook.getWorkflowName());
+        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) {
+            throw new EsupSignatureException("Les destinataires sont vides ou n'ont pas été trouvés pour le circuit " + signBook.getWorkflowName());
+        }
         return recipients;
     }
 

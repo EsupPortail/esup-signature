@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
@@ -171,7 +172,13 @@ public class FormWsController {
                 workflowStepDto.setSignRequestParams(signRequestParamsWsDtos);
             }
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, comment);
+        SignBook signBook = null;
+        try {
+            signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, comment);
+        } catch (EsupSignatureException e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
         signBookService.addViewers(signBook.getId(), recipientsCCEmails);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
@@ -225,7 +232,13 @@ public class FormWsController {
         if(formDatas != null) {
             datas.putAll(objectMapper.readValue(formDatas, type));
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, comment);
+        SignBook signBook = null;
+        try {
+            signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, comment);
+        } catch (EsupSignatureException e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
         signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());

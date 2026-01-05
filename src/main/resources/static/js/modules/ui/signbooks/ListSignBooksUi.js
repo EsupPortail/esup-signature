@@ -245,13 +245,44 @@ export class ListSignBooksUi {
             i++;
         });
         if (ids.length > 0) {
-            const a = document.createElement("a");
-            a.href = `/${this.mode}/signbooks/download-multiple?ids=${ids}`;
-            a.download = "";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            fetch(`/${this.mode}/signbooks/download-multiple?ids=${ids}`)
+                .then(response => {
+                    // Vérifier si la réponse est une erreur HTTP
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.text || 'Erreur lors du téléchargement');
+                        });
+                    }
+                    return response.blob().then(blob => ({
+                        blob: blob,
+                        filename: this.extractFilenameFromHeader(response)
+                    }));
+                })
+                .then(({blob, filename}) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    bootbox.alert(error.message);
+                });
         }
+    }
+
+    extractFilenameFromHeader(response) {
+        const contentDisposition = response.headers.get('content-disposition');
+        if (contentDisposition) {
+            const matches = contentDisposition.match(/filename[^;=\n]*=(['"]*)(.*?)\1(?:;|$)/);
+            if (matches && matches[2]) {
+                return matches[2];
+            }
+        }
+        return 'documents.zip'; // fallback
     }
 
     downloadMultipleWithReport() {
