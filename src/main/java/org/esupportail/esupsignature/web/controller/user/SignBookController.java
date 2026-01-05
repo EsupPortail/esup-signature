@@ -304,7 +304,7 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                          @RequestParam("recipientsEmails") List<String> recipientsEmails,
+                          @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
                           @RequestParam(value = "names", required = false) List<String> names,
                           @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                           @RequestParam(value = "phones", required = false) List<String> phones,
@@ -316,24 +316,29 @@ public class SignBookController {
                           RedirectAttributes redirectAttributes) {
         try {
             List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
-            for(String recipientsEmail: recipientsEmails) {
-                RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
-                int index = recipientsEmails.indexOf(recipientsEmail);
-                if (names != null && names.size() > index) {
-                    recipientWsDto.setName(names.get(index));
+            WorkflowStepDto workflowStepDto;
+            if(recipientsEmails != null) {
+                for (String recipientsEmail : recipientsEmails) {
+                    RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
+                    int index = recipientsEmails.indexOf(recipientsEmail);
+                    if (names != null && names.size() > index) {
+                        recipientWsDto.setName(names.get(index));
+                    }
+                    if (firstnames != null && firstnames.size() > index) {
+                        recipientWsDto.setFirstName(firstnames.get(index));
+                    }
+                    if (phones != null && phones.size() > index) {
+                        recipientWsDto.setPhone(phones.get(index));
+                    }
+                    if (forcesmses != null && forcesmses.size() > index) {
+                        recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(index)));
+                    }
+                    recipientWsDtos.add(recipientWsDto);
                 }
-                if(firstnames != null && firstnames.size() > index) {
-                    recipientWsDto.setFirstName(firstnames.get(index));
-                }
-                if(phones != null && phones.size() > index) {
-                    recipientWsDto.setPhone(phones.get(index));
-                }
-                if(forcesmses != null && forcesmses.size() > index) {
-                    recipientWsDto.setForceSms(Boolean.parseBoolean(forcesmses.get(index)));
-                }
-                recipientWsDtos.add(recipientWsDto);
+                workflowStepDto = recipientService.getWorkflowStepDtos(recipientWsDtos).get(0);
+            } else {
+                workflowStepDto = new WorkflowStepDto();
             }
-            WorkflowStepDto workflowStepDto = recipientService.getWorkflowStepDtos(recipientWsDtos).get(0);
             workflowStepDto.setAutoSign(autoSign);
             workflowStepDto.setAllSignToComplete(allSignToComplete);
             workflowStepDto.setSignType(signType);

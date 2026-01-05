@@ -14,7 +14,7 @@
                                 <div class="accordion-item">
                                     <div style="width: 100%;text-align: start;" class="accordion-header">
                                         <button class="accordion-button collapsed text-break" style="white-space: normal !important;" type="button" data-bs-toggle="collapse" th:data-bs-target="'#step_' + ${iterator.index + 1}" aria-expanded="false" aria-controls="collapseOne">
-                                        <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span> Étape <span th:text="${workflowStep.description}"></span></h5>
+                                        <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}" style="padding-top: 9px;"></span> Étape <span th:if="${workflowStep.autoSign}">automatique </span><span th:text="${workflowStep.description}"></span></h5>
                                         </button>
                                     </div>
                                     <div th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'step_' + ${iterator.index + 1}" class="accordion-collapse collapse p-2" th:data-bs-parent="'#accordion_' + ${iterator.index + 1}">
@@ -33,6 +33,7 @@
                                                 </select>
                                                 <input type="hidden" name="signType" value="certSign" th:if="${workflowStep.autoSign}" >
                                             </div>
+                                            <input type="hidden" name="autoSign" th:value="${workflowStep.autoSign}">
                                             <div th:id="'signTypeDiv-' + ${workflowStep.id}" class="form-group mb-3" th:if="${!workflowStep.autoSign}">
                                                 <label th:for="'signType-' + ${workflowStep.id}">Niveaux de signature autorisés :</label>
                                                 <div class="d-flex justify-content-around align-items-center gap-1">
@@ -61,7 +62,7 @@
                                                 </label>
                                                 <input type="checkbox" class="form-check-input" id="sealVisa-1" name="sealVisa" th:checked="${workflowStep.sealVisa}"/>
                                             </div>
-                                            <div class="form-check form-switch form-switch-md">
+                                            <div class="form-check form-switch form-switch-md" th:if="${!workflowStep.autoSign}">
                                                 <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" th:data-es-step-id="${workflowStep.id}"
                                                     th:checked="${workflowStep.autoSign}"
                                                     th:disabled="${workflowStep.autoSign}"

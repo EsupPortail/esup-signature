@@ -18,12 +18,12 @@
             <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end">
+                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg bg-primary float-end">
                             <i class="fi fi-rr-add-document fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end m-2">
+                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end">
                             <i class="fi-rr-workflow-setting fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
@@ -183,10 +183,39 @@
                                 <option th:value="-1" th:text="${'A la fin'}"></option>
                             </select>
                         </div>
-                        <label for="recipientsEmails2">Choisir les participants *</label>
-                        <div class="form-group mb-3">
-                            <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
-                            <div id="tempUsers-recipientsEmails2"></div>
+                        <div class="form-check form-switch form-switch-md mb-3">
+                            <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" />
+                            <label for="autoSign" class="form-check-label">
+                                L'étape est exécutée automatiquement
+                            </label>
+                            <script>
+                                $("#autoSign").on('change', function(){
+                                    if($(this).is(":checked")) {
+                                        bootbox.confirm('Attention tous les paramètres de cette étape seront perdus après la validation', function (result){
+                                            if(result) {
+                                                $("#all-sign-to-complete-div").addClass("d-none");
+                                                $("#sign-type-div").addClass("d-none");
+                                                $("#recipients-div").addClass("d-none");
+                                                $("#recipientsEmails2").removeAttr("required");
+                                            } else {
+                                                $("#autoSign").click();
+                                            }
+                                        });
+                                    } else {
+                                        $("#all-sign-to-complete-div").removeClass("d-none");
+                                        $("#sign-type-div").removeClass("d-none");
+                                        $("#recipients-div").removeClass("d-none");
+                                        $("#recipientsEmails2").attr("required", "required");
+                                    }
+                                });
+                            </script>
+                        </div>
+                        <div class="form-group mb-3" id="recipients-div">
+                            <label for="recipientsEmails2">Choisir les participants *</label>
+                            <div class="form-group mb-3">
+                                <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
+                                <div id="tempUsers-recipientsEmails2"></div>
+                            </div>
                         </div>
                         <div class="form-group mb-3" id="all-sign-to-complete-div">
                             <div class="form-check form-switch form-switch-md">
@@ -194,19 +223,19 @@
                                 <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
                             </div>
                         </div>
-                        <label for="signType_id">Type de signature</label>
-                        <select class="slim-select-simple" id="signType_id" name="signType" size="1">
-                            <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
-                            </th:block>
-                        </select>
+                        <div class="form-group mb-3" id="sign-type-div">
+                            <label for="signType_id">Type de signature</label>
+                            <select class="slim-select-simple" id="signType_id" name="signType" size="1">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">
-                        Enregistrer
-                    </button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
                 </div>
             </form>
             <script th:inline="javascript" type="module">

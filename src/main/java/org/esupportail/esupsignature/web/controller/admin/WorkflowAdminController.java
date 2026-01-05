@@ -255,7 +255,7 @@ public class WorkflowAdminController {
 	public String updateStep(@ModelAttribute("authUserEppn") String authUserEppn,
 							 @PathVariable("id") Long id,
 							 @PathVariable("step") Integer step,
-							 @RequestParam(name="signType") SignType signType,
+							 @RequestParam(name="signType", required = false) SignType signType,
 							 @RequestParam(name="description") String description,
 							 @RequestParam(name="maxRecipients", required = false) Integer maxRecipients,
 							 @RequestParam(name="repeatable", required = false) Boolean repeatable,
