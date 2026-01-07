@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.service.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -263,7 +264,7 @@ public class PreAuthorizeService {
     public boolean checkUserViewRights(SignRequest signRequest, String userEppn, String authUserEppn) {
         if(userEppn != null && authUserEppn != null) {
             User user = userService.getByEppn(userEppn);
-            if (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId())) {
+            if (!user.getUserType().equals(UserType.external) && (userEppn.equals(authUserEppn) || signBookService.checkAllShareTypesForSignRequest(userEppn, authUserEppn, signRequest.getParentSignBook().getId()))) {
                 List<SignRequest> signRequests = signRequestService.getByIdAndRecipient(signRequest.getId(), userEppn);
                 Data data = dataService.getBySignBook(signRequest.getParentSignBook());
                 User authUser = userService.getByEppn(authUserEppn);
