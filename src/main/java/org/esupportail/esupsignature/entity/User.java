@@ -178,6 +178,8 @@ public class User {
             if (p != null && p.length() > 4) {
                 String stars = "*".repeat(p.length() - 4);
                 this.hidedPhone = stars + p.substring(p.length() - 4);
+            } else {
+                return "";
             }
         }
         return this.hidedPhone;
