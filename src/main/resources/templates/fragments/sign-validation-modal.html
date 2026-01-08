@@ -32,9 +32,10 @@
                     </div>
                 </div>
                 <div th:if="${signRequest != null && signRequest.parentSignBook.signRequests.size() > 1}" class="alert alert-secondary mb-1">
-                    <div class="form-check form-switch form-switch-md">
-                        <label  class="form-check-label" for="sign-all">Signer tous les documents de la demande en utilisant ce même emplacement de signature.</label>
+                    <div class="form-check form-switch form-switch-md d-flex flex-row align-items-center">
                         <input type="checkbox" class="form-check-input" name="sign-all" id="sign-all"/>
+                        <label  class="form-check-label" for="sign-all">Signer tous les documents de la demande en utilisant ce même emplacement de signature.</label>
+
                     </div>
                 </div>
                 <div id="selectTypeDiv" class="alert alert-secondary mb-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
