@@ -27,7 +27,9 @@ public class SessionTrackingFilter implements Filter {
                 dto.setSessionId(session.getId());
                 dto.setRemoteIp(req.getRemoteAddr());
                 dto.setCreatedDate(new Date());
-                dto.setOriginRequestUri(req.getRequestURI());
+                if(req.getRequestURI().startsWith("/user/")) {
+                    dto.setOriginRequestUri(req.getRequestURI());
+                }
                 sessions.put(session.getId(), dto);
             }
         }
