@@ -474,13 +474,12 @@ public class MailService {
             if (tosArray != null) {
                 List<InternetAddress> tos = Arrays.stream(tosArray).filter(addr -> !"system".equalsIgnoreCase(addr.getAddress()) && !systemAddress.equalsIgnoreCase(addr.getAddress())).toList();
                 logger.info("send email to : " + String.join(",", tos.stream().map(Address::toString).toList()));
-                mimeMessageHelper.getMimeMessage().setFrom(mailConfig.getMailFrom());
                 InternetAddress replyToAddress = new InternetAddress(mailConfig.getMailFrom());
                 if (workflow != null && org.springframework.util.StringUtils.hasText(workflow.getMailFrom())) {
                     replyToAddress = new InternetAddress(workflow.getMailFrom());
                 }
+                mimeMessageHelper.getMimeMessage().setFrom(replyToAddress);
                 mimeMessageHelper.getMimeMessage().setReplyTo(new Address[]{replyToAddress});
-
                 if (org.springframework.util.StringUtils.hasText(globalProperties.getTestEmail())) {
                     tos = new ArrayList<>();
                     tos.add(new InternetAddress(globalProperties.getTestEmail()));
