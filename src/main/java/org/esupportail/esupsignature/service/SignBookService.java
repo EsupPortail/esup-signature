@@ -546,6 +546,9 @@ public class SignBookService {
                     WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
                     if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
+                            if(i >= signRequest.getSignRequestParams().size()) {
+                                break;
+                            }
                             SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(i);
                             signRequestParams.setSignDocumentNumber(docNumber);
                             for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
@@ -560,6 +563,7 @@ public class SignBookService {
                                 }
                             }
                         } else {
+                            if(liveWorkflowStep.getSignRequestParams().isEmpty()) continue;
                             if(signRequest.getSignRequestParams().size() > i) {
                                 signRequest.getSignRequestParams().get(i).setSignDocumentNumber(docNumber);
                                 addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
