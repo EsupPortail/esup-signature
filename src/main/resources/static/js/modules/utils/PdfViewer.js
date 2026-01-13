@@ -18,6 +18,12 @@ export class PdfViewer extends EventFactory {
         this.currentStepNumber = currentStepNumber;
         this.saveScrolling = 0;
         this.pageNum = 1;
+        this.annotationDisplay = pdfjsLib.AnnotationMode.DISABLE;
+        const testUrl = new URL(window.location.href);
+        const hasAnnotation = testUrl.searchParams.has("annotation");
+        if(hasAnnotation) {
+            this.annotationDisplay = pdfjsLib.AnnotationMode.ENABLE_FORMS;
+        }
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -362,7 +368,7 @@ export class PdfViewer extends EventFactory {
                         canvasContext: context,
                         transform: transform,
                         viewport: viewport,
-                        annotationMode: pdfjsLib.AnnotationMode.DISABLE
+                        annotationMode: this.annotationDisplay
                     };
 
                     return page.render(renderContext).promise.then(() => {
