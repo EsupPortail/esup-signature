@@ -49,18 +49,19 @@
             </button>
             <div class="border ms-1 me-2 d-none d-lg-block"></div>
             <div id="insert-btn-div">
-                <button id="insert-btn" th:if="${editable}" class="d-flex align-items-center btn btn-success"
+                <button id="insert-btn" th:if="${editable}" class="h-100 d-flex align-items-center btn btn-success"
                     data-bs-toggle="collapse" href="#second-tools">
-                    <i class="fi fi-rr-multiple"></i><span class="d-none d-xxl-inline"> Menu insertion<i class="fi fi-rr-caret-down"></i></span>
+                    <i class="fi fi-rr-multiple" style="font-size: 18px; padding-bottom: 2px;"></i><span class="d-none d-xxl-inline"> Menu insertion<i class="fi fi-rr-caret-down"></i></span>
                 </button>
-                <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1" style="display: none;">
+                <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1 h-100"
+                     style="display: none;">
                     <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
                             class="d-flex align-items-center btn btn-warning text-start">
-                        <i class="fi fi-rr-digital-signature"></i> <span class="d-none d-xxl-inline"> Emplacement de signature</span>
+                        <i class="fi fi-rr-digital-signature" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Emplacement de signature</span>
                     </button>
                     <button id="addCommentButton"
                             class="d-flex align-items-center btn btn-warning text-start">
-                        <i class="fi fi-rr-comment-alt"></i> <span class="d-none d-xxl-inline"> Annotation</span>
+                        <i class="fi fi-rr-comment-alt" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Annotation</span>
                     </button>
                 </div>
                 <div id="second-tools" class="second-tools position-fixed collapse">

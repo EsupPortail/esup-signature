@@ -15,17 +15,27 @@
         <div id="content" class="content">
             <div class="p-2">
                 <div class="alert alert-secondary">
-                    <div class="eu-official-journal">
+                    <div class="eu-official-journal d-flex gap-3">
+                        <div>
+                            <a href="admin/dss/refresh" class="btn btn-secondary h-100">
+                                <i class="fi fi-rr-refresh"></i>
+                                <br>
+                                Réactualiser DSS
+                            </a>
+                        </div>
+                        <div>
                         <p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
                         <p th:if="${actualOjUrl == null}" class="text-danger" th:text="#{label.eu.oj.unable.retrieve}"></p>
                         <p th:if="${actualOjUrl != null && actualOjUrl != currentOjUrl}" class="text-danger">
                             <span th:text="#{label.eu.oj.keystore.outdated}"></span>&nbsp;
                             <a th:href="${actualOjUrl}" target="_blank" th:title="#{label.eu.oj.page}">link</a>
                         </p>
+                        <span class="badge rounded-pill bg-secondary pull-right">
+                            <span th:text="${keystoreCertificates}"></span>&nbsp<span th:text="#{label.trusted.certificates.from.OJ}"></span>
+                        </span>
+                        </div>
                     </div>
-                    <span class="badge rounded-pill bg-secondary pull-right">
-                        <span th:text="${keystoreCertificates}"></span>&nbsp<span th:text="#{label.trusted.certificates.from.OJ}"></span>
-                    </span>
+
                 </div>
                 <p th:if="${summary == null}" th:text="#{label.summary.tl.info.empty}"></p>
                 <th:block th:if="${summary != null}">

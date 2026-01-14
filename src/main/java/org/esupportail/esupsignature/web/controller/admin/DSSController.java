@@ -116,7 +116,6 @@ public class DSSController {
 		return "admin/dss/tl-info-country";
 	}
 
-
 	@GetMapping(value = "/pivot-changes/{lotlId}")
 	public String getPivotChangesPage(@PathVariable("lotlId") String lotlId, Model model) throws EsupSignatureRuntimeException {
 		LOTLInfo lotlInfo = dssService.getLOTLInfoById(lotlId);
@@ -132,16 +131,17 @@ public class DSSController {
 
 	@GetMapping(value = "/oj-certificates")
 	public String showCertificates(Model model, HttpServletRequest request) {
-		// From Config
 		model.addAttribute("keystoreCertificates", keystoreService.getCertificatesDTOFromKeyStore(lotlSource.getCertificateSource().getCertificates()));
-
 		OfficialJournalSchemeInformationURI ojUriInfo = (OfficialJournalSchemeInformationURI) lotlSource.getSigningCertificatesAnnouncementPredicate();
 		model.addAttribute("currentOjUrl", ojUriInfo.getUri());
-
-		// From Job
 		model.addAttribute("actualOjUrl", getActualOjUrl());
-
 		return "admin/dss/oj-certificates";
+	}
+
+	@GetMapping(value = "/refresh")
+	public String refresh() {
+		dssService.refreshOj();
+		return "redirect:/admin/dss";
 	}
 
 	private String getActualOjUrl() {
