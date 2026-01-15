@@ -831,6 +831,7 @@ public class WorkflowService {
             step.setAttachmentAlert(workflowStep.getAttachmentAlert());
             step.setAttachmentRequire(workflowStep.getAttachmentRequire());
             step.setMinSignLevel(workflowStep.getMinSignLevel());
+            step.setMaxSignLevel(workflowStep.getMaxSignLevel());
             step.setSealVisa(workflowStep.getSealVisa());
             LiveWorkflowStep newLiveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, dataBaseWorkflow.getWorkflowSteps().get(i), step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newLiveWorkflowStep);
