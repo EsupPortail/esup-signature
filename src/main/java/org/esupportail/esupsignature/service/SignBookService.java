@@ -1101,7 +1101,7 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException Si le formulaire ne peut pas être généré ou si une erreur survient dans le traitement.
      */
     @Transactional
-    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String title, Boolean sendEmailAlert, String comment) throws EsupSignatureException {
+    public SignBook sendForSign(Long dataId, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, String userEppn, String authUserEppn, boolean forceSendEmail, Map<String, String> formDatas, InputStream formReplaceInputStream, String title, Boolean sendEmailAlert, Boolean scanSignatureFields, Boolean orderSignsByName, String comment) throws EsupSignatureException {
         User user = userService.createUserWithEppn(userEppn);
         User authUser = userService.createUserWithEppn(authUserEppn);
         Data data = dataService.getById(dataId);
@@ -1137,7 +1137,7 @@ public class SignBookService {
         for (WorkflowStep ws : workflowService.getById(workflowId).getWorkflowSteps()) {
             allParams.addAll(ws.getSignRequestParams());
         }
-        signRequestService.addDocsToSignRequest(signRequest, true, false,0, allParams, multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName,0, allParams, multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, steps);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
