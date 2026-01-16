@@ -69,10 +69,11 @@ public class WorkflowWsController {
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@PathVariable String id,
                                                                         @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                                                        @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
     ) throws IOException {
         Workflow workflow = workflowService.getByIdOrToken(id);
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, false));
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, false, orderSignsByName));
     }
 
     @CrossOrigin
@@ -81,6 +82,7 @@ public class WorkflowWsController {
     @PreAuthorize("@wsAccessTokenService.createWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<?> start(@PathVariable String id,
                                    @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
+                                   @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
                                    @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
                                            """
@@ -177,7 +179,7 @@ public class WorkflowWsController {
             }
         }
         try {
-            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, scanSignatureFields, sendEmailAlert, comment);
+            List<Long> signRequestIds = signBookService.startWorkflow(id, multipartFiles, createByEppn, title, steps, targetEmails, targetUrls, scanSignatureFields, orderSignsByName, sendEmailAlert, comment);
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
             }
