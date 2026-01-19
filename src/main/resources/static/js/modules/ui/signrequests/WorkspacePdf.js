@@ -89,9 +89,7 @@ export class WorkspacePdf {
                         const deltaW = Math.abs(w - self.lastWidth);
                         const deltaH = Math.abs(h - self.lastHeight);
                         if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
-                        if(e.target.tagName == null) {
-                            self.autocollapse();
-                        }
+                        self.autocollapse();
                         self.lastWidth = w;
                         self.lastHeight = h;
                     }, DEBOUNCE_DELAY);
