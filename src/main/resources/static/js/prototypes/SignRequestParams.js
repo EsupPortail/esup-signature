@@ -5,9 +5,10 @@ import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType) {
+    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        console.log(this.globalProperties);
         this.signWidth = 200;
         this.signHeight = 100;
         this.addWatermark = null;
@@ -20,6 +21,7 @@ export class SignRequestParams extends EventFactory {
         this.isExtraText = null;
         this.signImageNumber = 0;
         this.pdSignatureFieldName = null;
+        this.isOtp = isOtp;
         Object.assign(this, signRequestParamsModel);
         this.isExtraText = !(this.extraText !== "");
         this.originalWidth = this.signWidth;
@@ -256,7 +258,7 @@ export class SignRequestParams extends EventFactory {
             this.textareaExtra.attr("readonly", true);
         }
 
-        if(this.isOtp && this.isSign){
+        if(this.isOtp && this.isSign) {
             this.#toggleExtra();
             this.#toggleText();
             if(this.userName.length < 2) {

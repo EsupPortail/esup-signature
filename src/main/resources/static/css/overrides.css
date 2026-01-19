@@ -427,6 +427,10 @@ textarea:invalid {
     border: 1px solid black;
 }
 
+.annotationLayer {
+    z-index: 2;
+}
+
 /*.annotationLayer .buttonWidgetAnnotation.checkBox input, .annotationLayer .buttonWidgetAnnotation.radioButton input {*/
 /*    appearance: initial;*/
 /*}*/

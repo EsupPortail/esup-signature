@@ -175,18 +175,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-3" id="_signType_div_id">
-                        <label for="stepNumber">Ajouter cette étape :</label>
-                        <div class="form-group mb-3">
-                            <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
-                                <option th:value="0" th:text="${'Au début'}"></option>
-                                <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
-                                <option th:value="-1" th:text="${'A la fin'}"></option>
-                            </select>
-                        </div>
                         <div class="form-check form-switch form-switch-md mb-3">
                             <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" />
                             <label for="autoSign" class="form-check-label">
-                                L'étape est exécutée automatiquement
+                                L'étape est en cachet d’établissement automatique
                             </label>
                             <script>
                                 $("#autoSign").on('change', function(){
@@ -197,6 +189,9 @@
                                                 $("#sign-type-div").addClass("d-none");
                                                 $("#recipients-div").addClass("d-none");
                                                 $("#recipientsEmails2").removeAttr("required");
+                                                // Ajouter ces lignes
+                                                $("#stepNumber-div").addClass("d-none");
+                                                $("#stepNumber").val("-1");
                                             } else {
                                                 $("#autoSign").click();
                                             }
@@ -206,9 +201,19 @@
                                         $("#sign-type-div").removeClass("d-none");
                                         $("#recipients-div").removeClass("d-none");
                                         $("#recipientsEmails2").attr("required", "required");
+                                        // Ajouter ces lignes
+                                        $("#stepNumber-div").removeClass("d-none");
                                     }
                                 });
                             </script>
+                        </div>
+                        <div class="form-group mb-3" id="stepNumber-div">
+                            <label for="stepNumber">Ajouter cette étape :</label>
+                            <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
+                                <option th:value="0" th:text="${'Au début'}"></option>
+                                <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
+                                <option th:value="-1" th:text="${'A la fin'}"></option>
+                            </select>
                         </div>
                         <div class="form-group mb-3" id="recipients-div">
                             <label for="recipientsEmails2">Choisir les participants *</label>
