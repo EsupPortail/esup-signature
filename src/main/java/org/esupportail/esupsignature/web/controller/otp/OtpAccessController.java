@@ -86,7 +86,10 @@ public class OtpAccessController {
             model.addAttribute("globalProperties", globalProperties);
             return "otp/signin";
         }
-        if(signBookService.renewOtp(urlId, true)) {
+        otp = otpService.getOtpFromDatabase(urlId);
+        boolean signature = true;
+        if(otp != null) signature = otp.isSignature();
+        if(signBookService.renewOtp(urlId, signature)) {
             return "redirect:/otp-access/expired";
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", """

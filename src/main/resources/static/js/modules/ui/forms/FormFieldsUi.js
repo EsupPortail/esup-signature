@@ -76,25 +76,31 @@ export class FormFieldsUi {
         message.object = null;
         let self = this;
         let fieldsUpdates = $('form[name^="field-update"]');
-        let i = 1;
-        fieldsUpdates.each(function() {
-            let fd = new FormData($(this)[0]);
-            console.log(fd.get("_csrf"));
+        let forms = fieldsUpdates.toArray();
+        let i = 0;
+
+        function saveNextField() {
+            if (i >= forms.length) {
+                let message = new Message();
+                message.type = "success";
+                message.text = "Modifications enregistrées";
+                message.object = null;
+                self.toast.launch(message);
+                return;
+            }
+
+            let form = forms[i];
+            let fd = new FormData(form);
+
             $.ajax({
                 type: "PUT",
-                url: "/" + self.domain + "/forms/" + self.formId + "/fields/" + $(this).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
+                url: "/" + self.domain + "/forms/" + self.formId + "/fields/" + $(form).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
                 data: fd,
                 processData: false,
                 contentType: false,
-                success: function(data,status) {
-                    if(i === fieldsUpdates.length) {
-                        let message = new Message();
-                        message.type = "success";
-                        message.text = "Modifications enregistrées";
-                        message.object = null;
-                        self.toast.launch(message);
-                    }
+                success: function(data, status) {
                     i++;
+                    saveNextField();
                 },
                 error: function(data, status) {
                     let message = new Message();
@@ -104,6 +110,7 @@ export class FormFieldsUi {
                     self.toast.launch(message);
                 },
             });
-        });
+        }
+        saveNextField();
     }
 }
