@@ -25,7 +25,7 @@
         <div id="content" class="content">
             <div id="floatButtons" class="fixed-action-simple-btn">
                 <a id="saveButton" class="btn-floating btn-lg bg-success">
-                    <i class="fi fi-rr-disk fa-2xl"></i>
+                    <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
                 </a>
             </div>
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">

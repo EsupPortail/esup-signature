@@ -139,10 +139,10 @@ public class SignRequestParamsService {
      * @return Une liste de SignRequestParams détectés
      * @throws EsupSignatureIOException Si une erreur intervient lors de l'ouverture ou l'analyse du PDF
      */
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, boolean persist) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, boolean persist, boolean orderByName) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
-            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow, orderByName);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 if(persist) {
@@ -164,7 +164,7 @@ public class SignRequestParamsService {
      * @return Une liste de SignRequestParams correspondants aux champs de signature
      * @throws EsupSignatureIOException Si des erreurs de lecture ou d'accès surviennent
      */
-    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument, Workflow workflow) throws EsupSignatureIOException {
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument, Workflow workflow, boolean orderByName) throws EsupSignatureIOException {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();
@@ -255,7 +255,18 @@ public class SignRequestParamsService {
             logger.error("error on get sign fields", e);
             throw new EsupSignatureIOException(e.getMessage(), e);
         }
-        return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+        if(orderByName) {
+            return signRequestParamsList.stream()
+                    .sorted(Comparator
+                            .comparing(SignRequestParams::getPdSignatureFieldName,
+                                    Comparator.nullsLast(String::compareTo))
+                            .thenComparingInt(SignRequestParams::getxPos)
+                            .thenComparingInt(SignRequestParams::getyPos)
+                            .thenComparingInt(SignRequestParams::getSignPageNumber))
+                    .collect(Collectors.toList());
+        } else {
+            return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
+        }
     }
 
     private boolean rectanglesOverlap(PDRectangle rect1, PDRectangle rect2) {

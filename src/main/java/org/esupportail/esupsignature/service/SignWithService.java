@@ -64,8 +64,12 @@ public class SignWithService {
             LiveWorkflowStep currentLiveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
             signWiths.removeIf(signWith -> signWith.getValue() > currentLiveWorkflowStep.getMaxSignLevel().getValue() || signWith.getValue() < currentLiveWorkflowStep.getMinSignLevel().getValue());
             if(currentLiveWorkflowStep.getMinSignLevel().equals(SignLevel.qualified)
-                    && certificatService.getCheckedSealCertificates().stream().noneMatch(v -> v.eIDasValidity = true)) {
+                    && certificatService.getCheckedSealCertificates().stream().noneMatch(v -> v.eIDasValidity)) {
                 signWiths.remove(SignWith.sealCert);
+            }
+            if(currentLiveWorkflowStep.getMaxSignLevel().equals(SignLevel.advanced)
+                    && certificatService.getCheckedSealCertificates().stream().anyMatch(v -> !v.eIDasValidity)) {
+                signWiths.add(SignWith.sealCert);
             }
         }
         if(certificatService.getAuthorizedSealCertificatProperties(userEppn).isEmpty()) {

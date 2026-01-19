@@ -707,12 +707,8 @@ public class UserService {
         if (recipients!= null && !recipients.isEmpty()) {
             try {
                 List<User> users = getTempUsersFromRecipientList(recipients);
-                if (smsService != null || !globalProperties.getSmsRequired()) {
+                if (!users.isEmpty()) {
                     return users;
-                } else {
-                    if (!users.isEmpty()) {
-                        return null;
-                    }
                 }
             } catch (EsupSignatureRuntimeException e) {
                 logger.error(e.getMessage(), e);
@@ -729,14 +725,15 @@ public class UserService {
             if(recipient != null) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipient.getEmail());
                 if(optionalUser.isPresent() && (optionalUser.get().getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(optionalUser.get().getEmail()::contains))) {
+                    optionalUser.get().setUserType(UserType.external);
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
                     if (groupUsers.isEmpty() && (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                         User recipientUser = getUserByEmail(recipient.getEmail());
                         if (recipientUser != null && (recipientUser.getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
-                            tempUsers.add(recipientUser);
                             recipientUser.setUserType(UserType.external);
+                            tempUsers.add(recipientUser);
                         }
                     }
                 }
