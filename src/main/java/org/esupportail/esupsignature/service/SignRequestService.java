@@ -1780,7 +1780,7 @@ public class SignRequestService {
 		List<SignRequestParams> result = new ArrayList<>();
 		List<LiveWorkflowStep> steps = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps();
 		for (int i = 0; i < steps.size(); i++) {
-			List<SignRequestParams> params = steps.get(i).getSignRequestParams();
+			List<SignRequestParams> params = steps.get(i).getSignRequestParams().stream().filter(srp -> srp.getSignDocumentNumber().equals(signRequest.getParentSignBook().getSignRequests().indexOf(signRequest))).toList();
 			int finalI = i;
 			params.forEach(param -> param.setStepNumber(finalI + 1));
 			result.addAll(params);

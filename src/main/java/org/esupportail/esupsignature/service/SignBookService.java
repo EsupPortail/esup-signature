@@ -1401,7 +1401,7 @@ public class SignBookService {
                     if(signBook.getLiveWorkflow().getCurrentStep().getAutoSign()) {
                         for(SignRequest signRequest1 : signBook.getSignRequests()) {
                             List<SignRequestParams> signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
-                            if(liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
+                            if(liveWorkflowStep.getWorkflowStep() != null && liveWorkflowStep.getWorkflowStep().getCertificat() != null) {
                                 if (!signRequestParamses.isEmpty()) {
                                     signRequestParamses.get(0).setExtraDate(true);
                                     signRequestParamses.get(0).setAddExtra(true);

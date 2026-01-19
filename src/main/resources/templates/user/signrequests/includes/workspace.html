@@ -160,7 +160,7 @@
                     <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+            <th:block th:each="spot, iterator : ${spots}">
                 <div class="spot" th:id="'inDocSpot_' + ${spot.id}" title="Cliquer pour supprimer l’emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
@@ -170,14 +170,14 @@
                     </div>
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" title="Cliquer pour supprimer l’emplacement de signature">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 200px; height: 100px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
-                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature'"></span>
-                        <span th:unless="${isManager}" th:text="'Emplacement de signature détecté"></span>
-                    </div>
-                </div>
-            </th:block>
+<!--            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">-->
+<!--                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" title="Cliquer pour supprimer l’emplacement de signature">-->
+<!--                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 200px; height: 100px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">-->
+<!--                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature'"></span>-->
+<!--                        <span th:unless="${isManager}" th:text="'Emplacement de signature détecté"></span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </th:block>-->
             <div id="comment-div" class="postit alert alert-warning border-secondary" style="z-index: 100;">
                     <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                     <input id="commentPosX" name="commentPosX" type="hidden"/>
