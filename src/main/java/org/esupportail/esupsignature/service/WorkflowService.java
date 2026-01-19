@@ -326,6 +326,7 @@ public class WorkflowService {
             workflow.setDescription(name);
             workflow.setToken(generateToken(name));
             addViewers(id, recipientsCCEmails);
+            userService.toggleFavorite(userEppn, id, UiParams.favoriteWorkflows);
         } else {
             throw new EsupSignatureRuntimeException("You are not authorized to update this workflow");
         }
