@@ -222,6 +222,8 @@ public class SignRequestService {
 			)
 			||
 			(signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(user.getEppn()))
+			||
+			(signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
 		) {
 			return true;
 		}

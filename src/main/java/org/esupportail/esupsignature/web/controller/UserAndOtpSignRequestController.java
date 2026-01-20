@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -74,7 +75,12 @@ public class UserAndOtpSignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
-    public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(required = false) Boolean frameMode, @RequestParam(required = false) String annotation, Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
+    public String show(@ModelAttribute("userEppn") String userEppn,
+                       @ModelAttribute("authUserEppn") String authUserEppn,
+                       @PathVariable("id") Long id,
+                       @RequestParam(required = false) Boolean frameMode,
+                       @RequestParam(required = false) String annotation,
+                       Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
         String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
         SignRequest signRequest = signRequestService.getById(id);
@@ -87,7 +93,6 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
         }
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        model.addAttribute("annotation", annotation);
         model.addAttribute("signable", signable);
         model.addAttribute("urlProfil", urlProfil);
         model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
@@ -182,7 +187,13 @@ public class UserAndOtpSignRequestController {
         model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
         model.addAttribute("allSignWiths", SignWith.values());
         model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        model.addAttribute("editable", signRequestService.isEditable(id, userEppn));
+        boolean editable = signRequestService.isEditable(id, userEppn);
+        model.addAttribute("editable", editable);
+        if(annotation != null && !editable) {
+            return "redirect:/user/signrequests/" + id;
+        } else {
+            model.addAttribute("annotation", annotation);
+        }
         model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
         model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
@@ -351,7 +362,7 @@ public class UserAndOtpSignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #userEppn)")
     @PostMapping(value = "/add-spot/{id}")
     @ResponseBody
     public ResponseEntity<String> addSpot(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
