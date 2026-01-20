@@ -382,9 +382,20 @@ textarea:invalid {
 }
 
 .annotationLayer .textWidgetAnnotation {
-    font-size: calc(8px * var(--scale-factor)) !important;
-    font-family: "LiberationSans-Regular", sans-serif;
+    font-family: "Helvetica", sans-serif;
 }
+
+.annotationLayer .textWidgetAnnotation * {
+    padding-top: 0px;
+    font-size: calc(7.5px * var(--scale-factor)) !important;
+    line-height: calc(7.5px * var(--scale-factor)) !important;
+    font-family: "Helvetica", sans-serif !important;
+}
+
+.annotationLayer .textWidgetAnnotation input {
+    padding-top: 6px;
+}
+
 
 /*.textWidgetAnnotation textarea {*/
 /*    !*border: 1px solid black !important;*!*/
