@@ -550,7 +550,7 @@ public class SignRequestService {
 								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
 							}
 						}
-						addAllSignRequestParamsToSignRequest(signRequest, toAddSignRequestParams);
+						signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
 						Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
 						if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
 							inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow());
@@ -575,22 +575,6 @@ public class SignRequestService {
 				logger.warn("error on converting files", e);
 				throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
 			}
-		}
-	}
-
-	/**
-     * Ajoute tous les paramètres de demande de signature à une demande de signature existante
-     * et crée des commentaires liés à chaque paramètre ajouté.
-     *
-     * @param signRequest L'objet SignRequest auquel les paramètres doivent être ajoutés.
-     * @param toAddSignRequestParams La liste des objets SignRequestParams qui seront ajoutés au SignRequest.
-     */
-    public void addAllSignRequestParamsToSignRequest(SignRequest signRequest, List<SignRequestParams> toAddSignRequestParams) {
-		signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
-		int step = 1;
-		for(SignRequestParams signRequestParams : toAddSignRequestParams) {
-			commentService.create(signRequest.getId(), "", signRequestParams.getxPos(), signRequestParams.getyPos(), signRequestParams.getSignPageNumber(), step, false, null, "system");
-			step++;
 		}
 	}
 
