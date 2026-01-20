@@ -483,15 +483,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">
-                        <p>Confirmez-vous la mise à la corbeille de cette demande ?</p>
+                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                    <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?
                     </div>
-                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-danger">Mettre à la corbeille</button>
+                    <button type="submit" class="btn btn-danger">
+                        <span th:if="${signRequest.deleted}">Supprimer définitivement</span>
+                        <span th:unless="${signRequest.deleted}">Mettre à la corbeille</span>
+                    </button>
                 </div>
             </form>
         </div>
