@@ -63,11 +63,27 @@
         overflow: revert;
     }
 
+    .fixed-action-btns li {
+        margin-right: revert;
+        margin-top: 7px;
+        margin-bottom: 7px;
+        margin-left: revert;
+    }
+
     .fixed-action-btns ul {
         -webkit-box-orient: revert;
         -webkit-box-direction: revert;
         -ms-flex-direction: revert;
         flex-direction: revert;
+        justify-content: flex-end;
+    }
+
+    .fixed-action-btns ul button {
+        margin-left: 20px;
+    }
+
+    .fixed-action-btns ul a {
+        margin-left: 20px;
     }
 
     .new-max-w {

@@ -160,7 +160,15 @@
     display: -webkit-box;
     display: -ms-flexbox;
     margin-right: auto;
+    margin-left: auto;
+}
+
+.fixed-action-btns li button {
     margin-top: 7px;
     margin-bottom: 7px;
-    margin-left: auto;
+}
+
+.fixed-action-btns li a {
+    margin-top: 7px;
+    margin-bottom: 7px;
 }

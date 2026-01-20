@@ -46,6 +46,9 @@ export class PdfViewer extends EventFactory {
         this.rotation = null;
         this.pageRotation = 0;
         this.renderedPages = 0;
+        this.renderQueue = [];
+        this.activeRenders = 0;
+        this.maxConcurrentRenders = 3;
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         let self = this;
@@ -209,33 +212,57 @@ export class PdfViewer extends EventFactory {
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
         this.pages = [];
+        this.renderQueue = [];
+        this.activeRenders = 0;
         this.disableScrollBtn();
         this.resetProgress();
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
-        this.render();
+
+
+        for (let i = 1; i <= this.numPages; i++) {
+            this.renderQueue.push(i);
+        }
+        this.processRenderQueue();
+
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
     }
 
-    render() {
-        this.renderedPages++;
-        let self = this;
-        this.pdfDoc.getPage(this.renderedPages).then(page => this.renderTask(page, this.renderedPages).then(function (){
-            if(self.renderedPages < self.numPages) {
-                self.render();
-            } else {
-                self.initialOffset = parseInt($("#page_1").offset().top);
-                self.fireEvent("renderFinished", ['ok']);
-                $(document).trigger("renderFinished");
-                if(self.pages.length === self.numPages) {
-                    self.stopProgress();
-                    self.postRenderAll();
-                    $("#pdf-progress-bar").css("opacity", 0);
-                    self.enableScrollBtn();
-                }
-            }
-        }));
+    processRenderQueue() {
+        // OPTIMISATION: Lance les rendus en parallèle (jusqu'à maxConcurrentRenders)
+        while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
+            const pageNum = this.renderQueue.shift();
+            this.activeRenders++;
+
+            let self = this;
+            this.pdfDoc.getPage(pageNum).then(page =>
+                this.renderTask(page, pageNum).then(function() {
+                    self.activeRenders--;
+                    self.renderedPages++;
+
+                    if(self.renderQueue.length === 0 && self.activeRenders === 0) {
+                        // Tous les rendus sont finis
+                        self.initialOffset = parseInt($("#page_1").offset().top);
+                        self.fireEvent("renderFinished", ['ok']);
+                        $(document).trigger("renderFinished");
+                        if(self.pages.length === self.numPages) {
+                            self.stopProgress();
+                            self.postRenderAll();
+                            $("#pdf-progress-bar").css("opacity", 0);
+                            self.enableScrollBtn();
+                        }
+                    } else {
+                        // Lance le prochain rendu dans la queue
+                        self.processRenderQueue();
+                    }
+                })
+            ).catch(err => {
+                console.error(`Erreur rendu page ${pageNum}:`, err);
+                self.activeRenders--;
+                self.processRenderQueue();
+            });
+        }
     }
 
     scrollToPage(num) {
@@ -766,7 +793,9 @@ export class PdfViewer extends EventFactory {
                 inputField.removeAttr("maxlength");
                 inputField.attr('id', inputName);
                 if (this.isFieldEnable(dataField)) {
-                    inputField.val(dataField.defaultValue);
+                    if(dataField.defaultValue != null) {
+                        inputField.val(dataField.defaultValue);
+                    }
                     this.enableInputField(inputField, dataField)
                 }
             }

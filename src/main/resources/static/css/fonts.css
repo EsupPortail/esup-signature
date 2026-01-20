@@ -5,6 +5,11 @@
 }
 
 @font-face {
+    font-family: 'Helvetica';
+    src: url('/fonts/Helvetica.ttf') format('truetype');
+}
+
+@font-face {
     font-family: 'LiberationSans-Regular';
     src: url('/fonts/LiberationSans-Regular.ttf') format('truetype');
 }

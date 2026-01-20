@@ -105,7 +105,7 @@ public class PreAuthorizeService {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if(signRequest != null) {
-            return signRequest.getCreateBy().getEppn().equals(userEppn);
+            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager(userEppn, signRequest.getParentSignBook());
             }
         }
         return false;

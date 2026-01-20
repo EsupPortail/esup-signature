@@ -643,11 +643,11 @@ textarea:placeholder-shown.required-field {
 }
 
 .field-type-text {
-    border: 1px solid black !important;
+    outline: 1px solid black !important;
 }
 
 .field-type-textarea {
-    border: 1px solid black !important;
+    outline: 1px solid black !important;
 }
 
 .field-type-radio {
@@ -659,10 +659,6 @@ textarea:placeholder-shown.required-field {
 }
 
 .field-type-select {
-    border: 1px solid black !important;
-}
-
-.field-type-textarea {
     border: 1px solid black !important;
 }
 
