@@ -36,7 +36,7 @@
         </a>
         <a th:classappend="${activeMenu == 'configs'} ? 'btn-secondary' : 'btn-light'"
             title="Configuration" href="/admin/configs" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
-            <i class="fi fi-tr-customization-cogwheel"></i> <span class="sidebar-label">Configuration</span>
+            <i class="fi fi-rr-api-cloud"></i> <span class="sidebar-label">Configuration</span>
         </a>
         <a th:classappend="${activeMenu == 'tags'} ? 'btn-secondary' : 'btn-light'"
             title="Tags" href="/admin/tags" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
@@ -76,7 +76,7 @@
             <i class="fi fi-rr-shield-trust" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : ''" class="sidebar-label">Statut DSS</span>
         </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2">
-            <i class="fi fi-rr-api"></i> <span class="sidebar-label">APIs Doc</span>
+            <i class="fi fi-rr-api-cloud"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
     </div>
 </nav>

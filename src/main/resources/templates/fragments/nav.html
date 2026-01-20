@@ -36,8 +36,8 @@
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'reports'} ? 'bg-secondary bg-opacity-75'" id="link-report"
                         href="/user/reports" class="btn btn-transparent text-left">
-                        <i class="fa-solid fa-file-contract"></i> <span
-                            class="nav-item-label d-none d-xl-inline">Rapports</span>
+                        <i class="fi fi-rr-file-medical-alt"></i> <span
+                            class="nav-item-label d-none d-xl-inline">Rapports de signature en masse</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">

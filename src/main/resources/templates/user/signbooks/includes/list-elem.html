@@ -51,8 +51,10 @@
                 <ul class="dropdown-menu" th:aria-labelledby="'dropdownFilesButton-' + ${signBook.id}">
                     <th:block th:each="signRequest : ${signBook.signRequests}">
                         <li class="dropdown-item d-flex justify-content-between align-items-center" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signRequest.originalDocuments.get(0).getFileName()}">
-                            <i class="fi fi-rr-file"></i>
-                            <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
+                            <div>
+                                <i class="fi fi-rr-file"></i>
+                                <a th:href="'/user/signrequests/' + ${signRequest.id}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()}"></a>
+                            </div>
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:title="#{signbook.status.pending}" class="fa-solid fa-clock text-warning"></span>
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" th:title="#{signbook.status.completed}" class="fa-solid fa-circle-check text-success"></span>
                             <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" th:title="#{signbook.status.refused}" class="fa-solid fa-circle-check text-danger"></span>

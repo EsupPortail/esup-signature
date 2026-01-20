@@ -157,7 +157,7 @@ header {
 }
 
 .workspace-sign {
-    margin-top: 170px;
+    margin-top: 174px;
     display: flex;
     margin-left: 5px;
     margin-right: 5px;
@@ -246,8 +246,8 @@ header {
 }
 
 .tools {
-    top: 80px;
-    height: 50px;
+    top: 82px;
+    /*height: 50px;*/
     padding-top: 5px;
     background-color: white;
     width: 100%;

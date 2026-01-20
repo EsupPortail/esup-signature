@@ -91,6 +91,10 @@
         margin-top: 55px;
     }
 
+    .workspace-sign {
+        margin-top: 142px;
+    }
+
     .workspace {
         margin-top: 0;
     }
@@ -226,7 +230,6 @@
 
     .tools {
         top: 50px;
-        overflow-x: scroll;
     }
 
     .workspace-pdf {
@@ -238,6 +241,10 @@
         width: min-content;
         margin-top: 0;
         padding: 3px;
+    }
+
+    .workspace-sign {
+        margin-top: 86px;
     }
 
     .content-full-fixed {
