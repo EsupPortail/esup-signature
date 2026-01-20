@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
-<!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.SignRequestParams>"*/-->
 <!--/*@thymesVar id="form" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div th:fragment="workspace" id="workspace" class="alert justify-content-center workspace-pdf workspace-margin-top-admin border-0">
     <form id="signForm" th:action="''" th:if="${workflow != null}">
@@ -11,6 +11,7 @@
                 <div class="spot admin-spot" th:id="'inDocSpot_' + ${spot.value}" style="z-index: 999" title="Cliquer pour supprimer l'emplacement de signature">
                     <div th:data-es-width="${spots.get(iterator.index).signWidth}"
                         th:data-es-height="${spots.get(iterator.index).signHeight}"
+                        th:data-es-sign-page-number="${spots.get(iterator.index).signPageNumber}"
                         data-es-delete="true"
                         th:id="'inDocSign_' + ${spot.value}" th:style="'width: '+ ${spots.get(iterator.index).signWidth} +'px; height: ' + ${spots.get(iterator.index).signHeight} + 'px;color: #000;'" class="sign-field"
                         th:onmouseover="'$(\'#step-' + ${spot.key - 1} + '\').addClass(\'circle-border\');'"

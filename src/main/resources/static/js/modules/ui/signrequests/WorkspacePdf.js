@@ -668,7 +668,7 @@ export class WorkspacePdf {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let page = $("#page_" + spot.pageNumber);
+                    let page = $("#page_" + spot.signPageNumber);
                     let offset = 0;
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
