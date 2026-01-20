@@ -834,7 +834,13 @@ public class WorkflowService {
             step.setMinSignLevel(workflowStep.getMinSignLevel());
             step.setMaxSignLevel(workflowStep.getMaxSignLevel());
             step.setSealVisa(workflowStep.getSealVisa());
-            LiveWorkflowStep newLiveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, dataBaseWorkflow.getWorkflowSteps().get(i), step);
+            WorkflowStep workflowStep1;
+            if(dataBaseWorkflow.getWorkflowSteps().size() > i) {
+                workflowStep1 = dataBaseWorkflow.getWorkflowSteps().get(i);
+            } else {
+                workflowStep1 = workflowStep;
+            }
+            LiveWorkflowStep newLiveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, workflowStep1, step);
             signBook.getLiveWorkflow().getLiveWorkflowSteps().add(newLiveWorkflowStep);
             i++;
         }

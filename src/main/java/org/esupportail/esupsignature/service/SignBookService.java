@@ -1129,6 +1129,11 @@ public class SignBookService {
             throw new EsupSignatureRuntimeException("Ce formulaire ne peut pas être instancié car il ne possède pas de modèle");
         }
         if(computedWorkflow.getWorkflowSteps().isEmpty()) {
+            for(WorkflowStepDto step : steps) {
+                computedWorkflow.getWorkflowSteps().add(workflowStepService.createWorkflowStep(step));
+            }
+        }
+        if(computedWorkflow.getWorkflowSteps().isEmpty()) {
             toAddFile = pdfService.convertToPDFA(toAddFile);
         }
         String fileName = form.getTitle().replaceAll("[\\\\/:*?\"<>|]", "-").replace("\t", "") + ".pdf";
@@ -1177,11 +1182,12 @@ public class SignBookService {
                         signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
                     }
                 }
+                signRequestParams.setStepNumber(stepNumber);
             }
             if (!signRequestParamses.isEmpty()) {
                 signRequestParamsRepository.saveAll(signRequestParamses);
                 signRequest.getSignRequestParams().clear();
-                signRequestService.addAllSignRequestParamsToSignRequest(signRequest, signRequestParamses);
+                signRequest.getSignRequestParams().addAll(signRequestParamses);
             }
             integerSignRequestParamsMap.put(stepNumber, signRequestParamses);
             stepNumber++;
@@ -1813,9 +1819,10 @@ public class SignBookService {
         User user = userService.createUserWithEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, comment);
         signBook.getLiveWorkflow().setWorkflow(workflow);
+        Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
-            replaceSignRequestParamsWithDtoParams(steps, signRequest);
+            integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
             signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName, 0, new ArrayList<>(), multipartFile);
         }
         signBook.setSubject(generateName(null, workflow, user, false, false, signBook.getId()));
@@ -1828,6 +1835,14 @@ public class SignBookService {
             }
         }
         initSignBookWorkflow(signBook.getId(), steps, targetEmails, createByEppn, createByEppn, true, sendEmailAlert);
+        int stepNumber = 0;
+        for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+            if(!integerListMap.get(stepNumber).isEmpty()) {
+                liveWorkflowStep.getSignRequestParams().clear();
+                liveWorkflowStep.getSignRequestParams().addAll(integerListMap.get(stepNumber));
+            }
+            stepNumber++;
+        }
         return signBook.getSignRequests().stream().map(SignRequest::getId).toList();
     }
 

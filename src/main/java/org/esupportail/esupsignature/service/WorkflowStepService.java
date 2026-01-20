@@ -75,6 +75,26 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
+    @Transactional
+    public WorkflowStep createWorkflowStep(WorkflowStepDto dto) throws EsupSignatureRuntimeException {
+        WorkflowStep workflowStep = new WorkflowStep();
+
+        if (dto.getTitle() != null) {
+            workflowStep.setName(dto.getTitle());
+        }
+        workflowStep.setAllSignToComplete(dto.getAllSignToComplete() != null ? dto.getAllSignToComplete() : false);
+        workflowStep.setSignType(dto.getSignType() != null ? dto.getSignType() : SignType.signature);
+        workflowStep.setChangeable(dto.getChangeable() != null ? dto.getChangeable() : false);
+
+        workflowStepRepository.save(workflowStep);
+
+        if (!dto.getRecipients().isEmpty()) {
+            addRecipientsToWorkflowStep(workflowStep, dto.getRecipients().toArray(new RecipientWsDto[0]));
+        }
+
+        return workflowStep;
+    }
+
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, RecipientWsDto[] recipients) throws EsupSignatureRuntimeException {
         for (RecipientWsDto recipient : recipients) {
             List<String> groupList = userListService.getUsersEmailFromList(recipient.getEmail());
