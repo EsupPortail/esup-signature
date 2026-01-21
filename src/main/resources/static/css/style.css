@@ -617,7 +617,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 input:placeholder-shown.required-field {
-    background-color: rgba(255, 0, 0, 0.2) !important;
+    background-color: rgba(255, 0, 0, 0.3) !important;
 }
 
 input[type="checkbox"] {
@@ -625,7 +625,7 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]:not(:checked).required-field {
-    background-color: rgba(255, 0, 0, 0.2) !important;
+    background-color: rgba(255, 0, 0, 0.3) !important;
     /*border: 1px solid black;*/
 }
 
@@ -634,32 +634,18 @@ input[type="radio"] {
 }
 
 input[type="radio"]:not(:checked).required-field {
-    background-color: rgba(255, 0, 0, 0.2) !important;
+    background-color: rgba(255, 0, 0, 0.3) !important;
     /*border: 1px solid black;*/
 }
 
 textarea:placeholder-shown.required-field {
-    background-color: rgba(255, 0, 0, 0.2) !important;
+    background-color: rgba(255, 0, 0, 0.3) !important;
 }
 
-.field-type-text {
-    outline: 1px solid black !important;
-}
-
-.field-type-textarea {
-    outline: 1px solid black !important;
-}
-
-.field-type-radio {
-    border: 1px solid black !important;
-}
-
-.field-type-checkbox {
-    border: 1px solid black !important;
-}
-
-.field-type-select {
-    border: 1px solid black !important;
+.field-type-text, .field-type-textarea, .field-type-radio, .field-type-checkbox, .field-type-select {
+    outline-width: calc(1px * var(--scale-factor)) !important;
+    outline-color: black;
+    outline-style: solid;
 }
 
 .disabled-field {
