@@ -104,6 +104,7 @@ public class SignRequestAdminController {
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
 			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+			model.addAttribute("isManager", true);
 			return "admin/signrequests/show";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "La demande de signature n'existe pas"));
