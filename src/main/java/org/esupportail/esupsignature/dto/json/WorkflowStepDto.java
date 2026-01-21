@@ -20,11 +20,6 @@ public class WorkflowStepDto {
     private String title;
 
     /**
-     * Identifiant du workflow auquel appartient cette étape.
-     */
-    private Long workflowId;
-
-    /**
      * Numéro de l’étape dans le workflow (valeur par défaut : 1).
      */
     private Integer stepNumber = 1;
@@ -171,14 +166,6 @@ public class WorkflowStepDto {
 
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public Long getWorkflowId() {
-		return workflowId;
-	}
-
-	public void setWorkflowId(Long workflowId) {
-		this.workflowId = workflowId;
 	}
 
 	public Integer getStepNumber() {

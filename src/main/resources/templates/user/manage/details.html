@@ -76,6 +76,7 @@
                             <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter" onchange="submit();">
                                 <option value="" data-placeholder="true">Choisir un statut</option>
                                 <option value="all">Tous</option>
+                                <option value="deleted">Supprimé</option>
                                 <th:block th:each="status : ${statuses}">
                                     <option th:if="${status.name == statusFilter}" th:value="${status}"
                                             selected="selected"
