@@ -122,7 +122,7 @@
                             <i class="fi fi-rr-refresh fa-2xl"style="margin-top: 10px;"></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                    <li class="d-sm-block d-none" th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
                         <button tabindex="1" id="trashLaunchButton" class="btn-floating btn-lg bg-danger"
                                 th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                                 data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}" style="border: 0; ">
@@ -177,7 +177,7 @@
                             </a>
                         </li>
                     </th:block>
-                    <li th:if="${nextSignBook != null}" class="">
+                    <li th:if="${nextSignBook != null}" class="d-md-block d-none">
                         <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
                             class="btn-lg btn-floating bg-secondary" title="Aller à la suivante">
                             <i class="fi fi-rr-arrow-right fa-2xl" style="margin-top: 10px;"></i>
