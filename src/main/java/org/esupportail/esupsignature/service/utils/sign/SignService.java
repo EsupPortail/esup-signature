@@ -189,7 +189,7 @@ public class SignService {
 				dssDocument = certSignDocument((SignatureDocumentForm) signatureDocumentForm, parameters, abstractKeyStoreTokenConnection);
 			}
 			abstractKeyStoreTokenConnection.close();
-			Document signedDocument = documentService.addSignedFile(signRequest, dssDocument.openStream(), fileService.getNameOnly(signRequest.getTitle()) + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())), user);
+			Document signedDocument = documentService.addSignedFile(signRequest, dssDocument.openStream(), signRequest.getTitle() + "." + fileService.getExtension(dssDocument.getName()), Files.probeContentType(Path.of(dssDocument.getName())), user);
 			logger.info("certSign ok for signRequest : " + signRequest.getId());
 			return signedDocument;
 		} catch (EsupSignatureKeystoreException e) {
