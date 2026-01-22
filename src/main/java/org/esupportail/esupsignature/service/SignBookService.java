@@ -1284,6 +1284,28 @@ public class SignBookService {
         Map<Integer, List<SignRequestParams>> integerListMap = new HashMap<>();
         for(SignRequest signRequest : signBook.getSignRequests()) {
             if(StringUtils.hasText(signRequestParamsDetectionPattern)) {
+                if(authUser.getFavoriteSignRequestParams() != null) {
+                    for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                        signRequestParams.setAddWatermark(authUser.getFavoriteSignRequestParams().getAddWatermark());
+                        signRequestParams.setAddExtra(authUser.getFavoriteSignRequestParams().getAddExtra());
+                        signRequestParams.setIsExtraText(authUser.getFavoriteSignRequestParams().getIsExtraText());
+                        signRequestParams.setExtraText(authUser.getFavoriteSignRequestParams().getExtraText());
+                        signRequestParams.setExtraDate(authUser.getFavoriteSignRequestParams().getExtraDate());
+                        signRequestParams.setExtraType(authUser.getFavoriteSignRequestParams().getExtraType());
+                        signRequestParams.setExtraDate(authUser.getFavoriteSignRequestParams().getExtraDate());
+                        signRequestParams.setExtraName(authUser.getFavoriteSignRequestParams().getExtraName());
+                        if (signRequestParams.getAddExtra()) {
+                            signRequestParams.setSignScale(.5f);
+                        }
+                    }
+                } else {
+                    for (SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+                        signRequestParams.setAddWatermark(true);
+                        signRequestParams.setAddExtra(true);
+                        signRequestParams.setExtraDate(true);
+                        signRequestParams.setSignScale(.5f);
+                    }
+                }
                 dispatchSignRequestParams(signRequest);
             } else {
                 integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);

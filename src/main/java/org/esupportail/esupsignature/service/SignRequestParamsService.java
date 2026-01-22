@@ -134,15 +134,15 @@ public class SignRequestParamsService {
      *
      * @param inputStream Le flux d'entrée contenant les données du document PDF
      * @param docNumber Le numéro du document
-     * @param workflow Le workflow associé pour les validations
+     * @param signRequestParamsDetectionPattern Pattern de détection des champs de signature
      * @param persist Indique si les paramètres doivent être enregistrés dans la base de données
      * @return Une liste de SignRequestParams détectés
      * @throws EsupSignatureIOException Si une erreur intervient lors de l'ouverture ou l'analyse du PDF
      */
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, Workflow workflow, String signRequestParamsDetectionPattern, boolean persist, boolean orderByName) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, String signRequestParamsDetectionPattern, boolean persist, boolean orderByName) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
-            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, workflow, signRequestParamsDetectionPattern, orderByName);
+            List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, signRequestParamsDetectionPattern, orderByName);
             for(SignRequestParams signRequestParams : signRequestParamses) {
                 signRequestParams.setSignDocumentNumber(docNumber);
                 if(persist) {
@@ -160,14 +160,11 @@ public class SignRequestParamsService {
      * Extrait tous les champs de signature d'un document PDF.
      *
      * @param pdDocument L'objet PDDocument représentant le PDF
-     * @param workflow Le workflow à utiliser pour certaines validations
+     * @param signRequestParamsDetectionPattern Pattern de détéction des champs de signature
      * @return Une liste de SignRequestParams correspondants aux champs de signature
      * @throws EsupSignatureIOException Si des erreurs de lecture ou d'accès surviennent
      */
-    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument, Workflow workflow, String signRequestParamsDetectionPattern, boolean orderByName) throws EsupSignatureIOException {
-        if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern())) {
-            signRequestParamsDetectionPattern = workflow.getSignRequestParamsDetectionPattern();
-        }
+    public List<SignRequestParams> getSignRequestParamsFromPdf(PDDocument pdDocument, String signRequestParamsDetectionPattern, boolean orderByName) throws EsupSignatureIOException {
         List<SignRequestParams> signRequestParamsList = new ArrayList<>();
         try {
             PDDocumentCatalog docCatalog = pdDocument.getDocumentCatalog();

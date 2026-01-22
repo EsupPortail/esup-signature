@@ -71,7 +71,7 @@ public class SignRequestWsController {
                                                                         @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
                                                                         ) throws IOException {
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, null, signRequestParamsDetectionPattern, false, orderSignsByName));
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, signRequestParamsDetectionPattern, false, orderSignsByName));
     }
 
     @CrossOrigin

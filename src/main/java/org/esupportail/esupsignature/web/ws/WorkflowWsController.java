@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,7 +75,10 @@ public class WorkflowWsController {
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
     ) throws IOException {
         Workflow workflow = workflowService.getByIdOrToken(id);
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, signRequestParamsDetectionPattern,false, orderSignsByName));
+        if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
+            signRequestParamsDetectionPattern = workflow.getSignRequestParamsDetectionPattern();
+        }
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, signRequestParamsDetectionPattern,false, orderSignsByName));
     }
 
     @CrossOrigin
