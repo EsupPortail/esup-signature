@@ -7,7 +7,12 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <div id="content" class="content-full flex align-content-center">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active">Rapports de signature en masse</li>
+            </ol>
+        </nav>
+        <div id="content" class="content-fixed-breadcrumb">
             <div class="fixed-action-btn" >
                 <a title="Supprimer tous les rapports" data-bs-toggle="modal" data-bs-target="#deleteAllModal" type="button"
                     class="btn-floating btn-lg bg-danger">
@@ -16,7 +21,6 @@
             </div>
             <li class="card card text-bg-light" style="width: calc(100% - 100px);">
                 <ul class="card-body">
-                    <h5 class="card-title">Rapport de signature en masse</h5>
                     <ul class="list-group list-group-flush">
                         <th:block th:each="report, iterator : ${reports}">
                             <li class="list-group-item" th:id="'heading' + ${iterator.index}">

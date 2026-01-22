@@ -183,6 +183,16 @@
         /*text-overflow: ellipsis;*/
     }
 
+    .btn-floating.btn-lg {
+        width: 47px;
+        height: 47px;
+    }
+
+    .extra-tools {
+        right: 0px;
+        top: 40px;
+        position: absolute;
+    }
 }
 
 @media (max-width: 575px) {
