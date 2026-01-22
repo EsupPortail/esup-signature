@@ -66,7 +66,7 @@
                             <i class="fi fi-rr-comment-alt fa-2xl text-black" style="margin-top: 0;"></i>
                         </button>
                     </li>
-                    <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
+                    <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                         <li>
                             <a tabindex="1" id="start-button" role="button" class="btn-floating btn-lg bg-success" title="Démarrer le circuit"
                                 data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fi fi-rr-play-alt fa-2xl" style="margin-top: 10px;"></i>
