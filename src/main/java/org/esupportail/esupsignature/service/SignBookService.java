@@ -542,15 +542,16 @@ public class SignBookService {
         if(!signRequest.getSignRequestParams().isEmpty()) {
             int i = 0;
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-                if (liveWorkflowStep.getWorkflowStep() != null) {
-                    WorkflowStep workflowStep = workflowStepService.getById(liveWorkflowStep.getWorkflowStep().getId());
-                    if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                if (!liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) {
+                    WorkflowStep workflowStep = liveWorkflowStep.getWorkflowStep();
+                    if (workflowStep != null) {
                         if(!workflowStep.getSignRequestParams().isEmpty()) {
-                            if(i >= signRequest.getSignRequestParams().size()) {
+                            if(signRequest.getSignRequestParams().size() < i + 1) {
                                 break;
                             }
                             SignRequestParams signRequestParams = signRequest.getSignRequestParams().get(i);
                             signRequestParams.setSignDocumentNumber(docNumber);
+                            boolean found = false;
                             for(SignRequestParams signRequestParams1 : workflowStep.getSignRequestParams()) {
                                 if(signRequestParams1.getSignPageNumber().equals(signRequestParams.getSignPageNumber())
                                         && signRequestParams1.getxPos().equals(signRequestParams.getxPos())
@@ -558,24 +559,21 @@ public class SignBookService {
                                     signRequestParams.setSignWidth(signRequestParams1.getSignWidth());
                                     signRequestParams.setSignHeight(signRequestParams1.getSignHeight());
                                     addSignRequestParamToStep(signRequestParams, liveWorkflowStep);
-                                } else {
-                                    liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                                    found = true;
                                 }
                             }
+                            if(!found) {
+                                liveWorkflowStep.getSignRequestParams().add(signRequestParams);
+                            }
                         } else {
-                            if(liveWorkflowStep.getSignRequestParams().isEmpty()) continue;
                             if(signRequest.getSignRequestParams().size() > i) {
                                 signRequest.getSignRequestParams().get(i).setSignDocumentNumber(docNumber);
                                 addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
                             }
                         }
                     }
-                } else if(signRequest.getSignRequestParams().size() > i) {
-                    if(liveWorkflowStep.getSignType().equals(SignType.hiddenVisa)) continue;
-                    addSignRequestParamToStep(signRequest.getSignRequestParams().get(i), liveWorkflowStep);
-                    logger.info("add signRequestParams to liveWorkflowStep " + liveWorkflowStep.getId());
+                    i++;
                 }
-                i++;
             }
         } else {
             for (LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
