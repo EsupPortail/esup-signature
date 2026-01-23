@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -115,6 +116,8 @@ public class SignRequestJwtController {
                                                   }]
                                                   """) String stepsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
+                                    @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
+                                    @RequestParam(required = false) @Parameter(description = "Paramètres de signature", example = "[{\"xPos\":100, \"yPos\":100, \"signPageNumber\":1}, {\"xPos\":200, \"yPos\":200, \"signPageNumber\":1}]") String signRequestParamsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") List<String> recipientsCCEmails,
                                     @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
@@ -147,25 +150,33 @@ public class SignRequestJwtController {
                 workflowStepDto.setRecipientsCCEmails(recipientsCCEmails);
             });
         } else {
-            workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+            workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
-        if(workflowStepDtos != null) {
-            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, user.getEppn(), false, forceAllSign, targetUrl);
-            List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
-            if(signRequestIds.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+        Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, user.getEppn(), false, forceAllSign, targetUrl, signRequestParamsDetectionPattern);
+        List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
+        if(signRequestIds.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
+        }
+        signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
+        boolean allSignCompleted = true;
+        for(String signRequestId : signRequestIds) {
+            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn());
+            if(stepStatus.equals(StepStatus.not_completed)) {
+                allSignCompleted = false;
+                break;
             }
-            signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
+        }
+        if(!allSignCompleted) {
             for(String signRequestId : signRequestIds) {
-                signBookService.initSign(Long.valueOf(signRequestId), null, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn());
+                signRequestService.deleteDefinitive(Long.valueOf(signRequestId), user.getEppn());
             }
-            if(json) {
-                return ResponseEntity.ok(signRequestIds);
-            } else {
-                return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
-            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Toutes les demandes n’ont pas pu être signées. La procédure est annulée.");
         }
-        return ResponseEntity.internalServerError().body("-1");
+        if(json) {
+            return ResponseEntity.ok(signRequestIds);
+        } else {
+            return ResponseEntity.ok(org.apache.commons.lang.StringUtils.join(signRequestIds, ","));
+        }
     }
 
     @CrossOrigin
@@ -186,8 +197,7 @@ public class SignRequestJwtController {
     @CrossOrigin
     @DeleteMapping("/{id}")
     @Operation(security = @SecurityRequirement(name = "bearer-token"), description = "Supprimer une demande de signature définitivement")
-    public ResponseEntity<String> delete(@PathVariable Long id,
-                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
+    public ResponseEntity<String> delete(@PathVariable Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
         SignRequest signRequest = signRequestService.getById(id);

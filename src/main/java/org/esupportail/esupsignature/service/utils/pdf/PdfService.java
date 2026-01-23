@@ -130,6 +130,14 @@ public class PdfService {
      * @return Le fichier PDF modifié en tant que tableau de bytes
      */
     public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp, Boolean endingWithCert) {
+        LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+        if(liveWorkflowStep.getRecipients().size() == 1 && !liveWorkflowStep.getRecipients().get(0).getUser().equals(user)) {
+            signRequestParams.setSignScale(.5f);
+            signRequestParams.setAddWatermark(true);
+            signRequestParams.setAddExtra(true);
+            signRequestParams.setIsExtraText(true);
+            signRequestParams.setExtraText(liveWorkflowStep.getRecipients().get(0).getUser().getFirstname() + " " + liveWorkflowStep.getRecipients().get(0).getUser().getName() + " P.O. " + user.getFirstname() + " " + user.getName());
+        }
         SignType signType = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType();
         PdfParameters pdfParameters;
         try {

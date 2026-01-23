@@ -248,7 +248,7 @@ public class GlobalWsSecureController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
         try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null);
         } catch(Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }

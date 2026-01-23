@@ -22,7 +22,7 @@ public class Workflow {
     @Column(unique=true)
     private String token;
 
-	private String name;
+    private String name;
 
     private String description;
 

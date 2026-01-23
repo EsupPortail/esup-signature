@@ -25,6 +25,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -70,10 +71,14 @@ public class WorkflowWsController {
     public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@PathVariable String id,
                                                                         @Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
                                                                         @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
+                                                                        @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
     ) throws IOException {
         Workflow workflow = workflowService.getByIdOrToken(id);
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, workflow, false, orderSignsByName));
+        if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
+            signRequestParamsDetectionPattern = workflow.getSignRequestParamsDetectionPattern();
+        }
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, signRequestParamsDetectionPattern,false, orderSignsByName));
     }
 
     @CrossOrigin
@@ -162,7 +167,7 @@ public class WorkflowWsController {
         if(stepsJsonString == null && recipientEmails != null) {
             steps = recipientService.convertRecipientEmailsToStep(recipientEmails);
         } else if(stepsJsonString != null) {
-            steps = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+            steps = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if (signRequestParamsJsonString != null) {
             List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsWsDtosFromJson(signRequestParamsJsonString, "system");

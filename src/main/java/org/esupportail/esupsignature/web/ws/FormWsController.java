@@ -166,7 +166,7 @@ public class FormWsController {
         }
         List<WorkflowStepDto> workflowStepDtos = new ArrayList<>();
         if(stepsJsonString != null) {
-            workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+            workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if (signRequestParamsJsonString != null) {
             List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsWsDtosFromJson(signRequestParamsJsonString, "system");
@@ -175,7 +175,7 @@ public class FormWsController {
             }
         }
         try {
-            SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, scanSignatureFields, orderSignsByName, comment);
+            SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, scanSignatureFields, null, orderSignsByName, comment);
             signBookService.addViewers(signBook.getId(), recipientsCCEmails);
             if(json) {
                 return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
@@ -237,7 +237,7 @@ public class FormWsController {
         }
         SignBook signBook = null;
         try {
-            signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, scanSignatureFields, orderSignsByName, comment);
+            signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, scanSignatureFields, null, orderSignsByName, comment);
         } catch (EsupSignatureException e) {
             logger.debug(e.getMessage(), e);
             return ResponseEntity.internalServerError().body(e.getMessage());
