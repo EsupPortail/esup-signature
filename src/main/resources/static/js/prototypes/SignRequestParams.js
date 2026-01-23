@@ -301,9 +301,13 @@ export class SignRequestParams extends EventFactory {
         this.border = $("#borders_" + this.id);
         this.tools = $("#crossTools_" + this.id);
         this.canvas = $("#canvas_" + this.id);
-        this.originalWidth = 200;
-        this.originalHeight = 100;
+        this.originalWidth = 300;
+        this.originalHeight = 150;
         this.#restoreFromFavorite();
+        this.cross.css("width", "300px");
+        this.cross.css("height", "100%");
+        this.addImage = true;
+        this.#refreshExtraDiv();
     }
 
     #initSpot() {
@@ -1161,7 +1165,7 @@ export class SignRequestParams extends EventFactory {
 
     #toggleType() {
         if(!this.extraName && !this.extraDate && !this.isExtraText && !this.addImage){
-            return;
+           return;
         }
         if(this.extraType) {
             if(!this.extraName && !this.extraDate && !this.isExtraText && this.signImages) {
