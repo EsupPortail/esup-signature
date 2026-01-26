@@ -221,7 +221,7 @@ public class HomeController {
                     String status = messageSource.getMessage("signbook.status." + signBook.getStatus().name(), null, Locale.ROOT);
                     String color = messageSource.getMessage("signbook.status.color." + signBook.getStatus().name(), null, Locale.ROOT);
                     String icon = messageSource.getMessage("signbook.status.icon." + signBook.getStatus().name(), null, Locale.ROOT);
-                    String badge = "<div class='badge rounded-pill badge-status text-bg-" + color + "'><i class='fi " + icon + "'></i><span class='d-none d-md-inline-flex'>" + status + "</span></div>";
+                    String badge = "<div class='badge rounded-pill badge-status text-bg-" + color + "'><i class='fi " + icon + "'></i><span class='d-md-inline-flex'>" + status + "</span></div>";
                     searchResult.setStatus(badge);
                     searchResults.add(searchResult);
                 }

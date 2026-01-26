@@ -75,9 +75,9 @@
                     </div>
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn != authUserEppn  && globalProperties.shareMode > 0}">
-                    <a th:if="${userEppn != authUserEppn}" id="link-undelegate" th:href="'/user/users/shares/change'" class="btn text-white btn-transparent d-flex align-items-center gap-2">
+                    <a th:if="${userEppn != authUserEppn}" id="link-undelegate" th:href="'/user/users/shares/change'" class="btn text-white btn-transparent btn-outline-light d-flex align-items-center gap-2">
                         <i class="fi fi-rr-user-slash"></i>
-                        <span class="nav-item-label d-none d-xl-inline"> Désactiver la délégation en cours</span>
+                        <span class="nav-item-label d-none d-xl-inline"> Sortir de la délégation en cours</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${isRoleManager && userEppn == authUserEppn}" title="Menu gestionnaire">

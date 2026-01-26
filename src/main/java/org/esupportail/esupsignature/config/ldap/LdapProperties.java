@@ -65,6 +65,10 @@ public class LdapProperties {
      */
     private String eppnLeftPartSearchFilter;
     /**
+     * Base de recherche des OU
+     */
+    private String ouSearchBase;
+    /**
      * Requete pour trouver les OU des utilisateurs (utile seulement pour le pré-remplissage de l'affectation dans les formulaires)
      */
     private String ouSearchFilter;
@@ -206,6 +210,14 @@ public class LdapProperties {
 
     public void setEppnLeftPartSearchFilter(String eppnLeftPartSearchFilter) {
         this.eppnLeftPartSearchFilter = eppnLeftPartSearchFilter;
+    }
+
+    public String getOuSearchBase() {
+        return ouSearchBase;
+    }
+
+    public void setOuSearchBase(String ouSearchBase) {
+        this.ouSearchBase = ouSearchBase;
     }
 
     public String getOuSearchFilter() {

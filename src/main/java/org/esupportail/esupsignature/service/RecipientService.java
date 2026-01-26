@@ -1,14 +1,12 @@
 package org.esupportail.esupsignature.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.entity.Recipient;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.RecipientRepository;
@@ -16,6 +14,7 @@ import org.esupportail.esupsignature.service.interfaces.listsearch.UserListServi
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +40,8 @@ public class RecipientService {
 
     @Resource
     private ObjectMapper objectMapper;
+    @Autowired
+    private UserShareService userShareService;
 
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
@@ -57,13 +58,35 @@ public class RecipientService {
         return false;
     }
 
-    @Transactional
-    public void validateRecipient(SignRequest signRequest, String userEppn) {
-        Recipient validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst().get();
-        signRequest.getRecipientHasSigned().get(validateRecipient).setActionType(ActionType.signed);
-        signRequest.getRecipientHasSigned().get(validateRecipient).setUserIp(webUtilsService.getClientIp());
-        signRequest.getRecipientHasSigned().get(validateRecipient).setDate(new Date());
-        allSigned(signRequest, validateRecipient);
+    public boolean validateRecipient(SignRequest signRequest, String userEppn) {
+        User user = userService.getByEppn(userEppn);
+        Recipient recipient;
+        Optional<Recipient> validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
+        if(validateRecipient.isEmpty()) {
+            if (!signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().isEmpty()) {
+                List<UserShare> userShares = userShareService.getByUserAndToUsersInAndShareTypesContains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().get(0).getUser().getEppn(), user, ShareType.sign);
+                if(!userShares.isEmpty() && userShares.get(0).getToUsers().contains(user)) {
+                    recipient = createRecipient(userShares.get(0).getToUsers().get(0));
+                    Recipient recipient1 =  signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().get(0);
+                    signRequest.getRecipientHasSigned().get(recipient1).setActionType(ActionType.signed);
+                    signRequest.getRecipientHasSigned().get(recipient1).setUserIp(webUtilsService.getClientIp());
+                    signRequest.getRecipientHasSigned().get(recipient1).setDate(new Date());
+                } else {
+                    logger.error("validateRecipient : recipient not found for user " + userEppn + " in signRequest " + signRequest.getId());
+                    return false;
+                }
+            } else {
+                logger.error("validateRecipient : recipient not found for user " + userEppn + " in signRequest " + signRequest.getId());
+                return false;
+            }
+        } else {
+            recipient = validateRecipient.get();
+            signRequest.getRecipientHasSigned().get(recipient).setActionType(ActionType.signed);
+            signRequest.getRecipientHasSigned().get(recipient).setUserIp(webUtilsService.getClientIp());
+            signRequest.getRecipientHasSigned().get(recipient).setDate(new Date());
+        }
+        allSigned(signRequest, recipient);
+        return true;
     }
 
     public void allSigned(SignRequest signRequest, Recipient recipient) {
@@ -139,12 +162,12 @@ public class RecipientService {
         return workflowStepDtos;
     }
 
-    public List<WorkflowStepDto> convertRecipientJsonStringToWorkflowStepDtos(String recipientsJsonString) {
-        logger.debug("received json : " + recipientsJsonString);
+    public List<WorkflowStepDto> convertStepsJsonStringToWorkflowStepDtos(String stepsJsonString) {
+        logger.debug("received json : " + stepsJsonString);
         try {
-            return Arrays.asList(objectMapper.readValue(recipientsJsonString, WorkflowStepDto[].class));
-        } catch (JsonProcessingException e) {
-            throw new EsupSignatureRuntimeException("error parsing recipientsJsonString caused by " + e.getMessage() + " : " + recipientsJsonString);
+            return Arrays.asList(objectMapper.readValue(stepsJsonString, WorkflowStepDto[].class));
+        } catch (Exception e) {
+            throw new EsupSignatureRuntimeException("error parsing stepsJsonString caused by " + e.getMessage() + " : " + stepsJsonString);
         }
     }
 
