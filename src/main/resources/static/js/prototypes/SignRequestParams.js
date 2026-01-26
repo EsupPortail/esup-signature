@@ -307,6 +307,7 @@ export class SignRequestParams extends EventFactory {
         this.signScale=1;
         this.originalWidth = 300;
         this.originalHeight = 75;
+        this.signWidth = 300;
         this.signHeight = 150;
         this.cross.css("width", this.originalWidth + "px");
         this.cross.css("height", this.originalHeight + "px");
@@ -314,10 +315,12 @@ export class SignRequestParams extends EventFactory {
         let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
         this.canvas.css("background-image", "url('" + img + "')");
         this.canvas.css('background-size', 300);
+        this.canvas.css('background-repeat', "no-repeat");
         if(this.text != null) {
             this.textareaExtra.attr("readonly", true);
             this.textareaExtra.attr("disabled", true);
         }
+        this.#refreshExtraDiv();
     }
 
     #initSpot() {
@@ -1131,7 +1134,11 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.removeClass("div-extra-right");
                 $("#signExtraOnTop_" + this.id).addClass("btn-outline-dark");
                 $("#signExtraOnTop_" + this.id).children().next().text("Au dessus");
+                if(this.isLight) {
+                    this.#initLight();
+                    this.canvas.css("top", "");
 
+                }
             } else {
                 if(this.addWatermark) {
                     this.cross.addClass("watermark-height")
@@ -1146,7 +1153,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.removeClass("d-none");
                 this.extraOnTop = false;
                 this.#refreshExtraDiv();
-                this.signWidth = parseInt(this.cross.css("width"))/ (this.currentScale * this.getBrowserZoom()) * 2;
+                this.signWidth = parseInt(this.cross.css("width")) / (this.currentScale * this.getBrowserZoom()) * 2;
                 this.extraWidth = this.signWidth / 2;
                 if(this.light == null || !this.light) {
                     this.cross.css("width", this.signWidth * this.currentScale + "px");
@@ -1159,6 +1166,13 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
+                if(this.isLight) {
+                    this.cross.css("width", 600 + "px");
+                    this.cross.css("height", 150 + "px");
+                    this.canvas.css("background-size", 300 + "px");
+                    // this.canvas.css("width", 200 + "px");
+                    this.canvas.css("top", 0);
+                }
             }
             if(!this.firstLaunch && !this.isShare) {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
