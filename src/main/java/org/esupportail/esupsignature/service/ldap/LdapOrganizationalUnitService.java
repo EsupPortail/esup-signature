@@ -33,7 +33,7 @@ public class LdapOrganizationalUnitService {
     private LdapTemplate ldapTemplate;
 
     public List<OrganizationalUnitLdap> getOrganizationalUnitLdaps(String supannCodeEntite) {
-        if(StringUtils.hasText(ldapProperties.getOuSearchFilter())) {
+        if(StringUtils.hasText(supannCodeEntite) && StringUtils.hasText(ldapProperties.getOuSearchFilter())) {
             String formattedFilter = MessageFormat.format(ldapProperties.getOuSearchFilter(), (Object[]) new String[]{supannCodeEntite});
             StringBuilder objectClasses = new StringBuilder();
             for (String objectClass : ldapProperties.getOuObjectClasses()) {
@@ -45,7 +45,12 @@ public class LdapOrganizationalUnitService {
                 logger.debug("no ouSearchFilter found");
             }
             logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
-            LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).filter(formattedFilter);
+            LdapQuery ldapQuery;
+            if(StringUtils.hasText(ldapProperties.getOuSearchBase())) {
+                ldapQuery = LdapQueryBuilder.query().base(ldapProperties.getOuSearchBase()).countLimit(20).filter(formattedFilter);
+            } else {
+                ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
+            }
             return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
         }
         return new ArrayList<>();
