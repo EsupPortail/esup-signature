@@ -995,8 +995,24 @@ public class UserService {
     }
 
     @Transactional
+    public InputStream getFavoriteImage(String eppn) throws IOException {
+        User user = getByEppn(eppn);
+        if(user.getDefaultSignImageNumber() == 999998) {
+            return getDefaultImage(eppn);
+        } else if (user.getDefaultSignImageNumber() == 999997) {
+            return getDefaultParaphe(eppn);
+        }
+        return user.getSignImages().get(user.getDefaultSignImageNumber()).getInputStream();
+    }
+
+    @Transactional
     public String getDefaultImage64(String eppn) throws IOException {
         return fileService.getBase64Image(getDefaultImage(eppn), "default");
+    }
+
+    @Transactional
+    public String getFavoriteImage64(String eppn) throws IOException {
+        return fileService.getBase64Image(getFavoriteImage(eppn), "default");
     }
 
     @Transactional
