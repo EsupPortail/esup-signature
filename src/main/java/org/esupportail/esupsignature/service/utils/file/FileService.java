@@ -201,7 +201,7 @@ public class FileService {
                 nbExtra++;
             }
 			if (!signRequestParams.getExtraOnTop()) {
-				extraWidth = 400;
+				extraWidth = 200;
 			} else {
 				extraHeight = 17 * nbExtra;
 			}
@@ -217,7 +217,7 @@ public class FileService {
 			if(signRequestParams.getExtraOnTop()) {
 				graphics2D.drawImage(signImage, 0, heightOffset, width, height - heightOffset, null);
 			} else {
-				graphics2D.drawImage(signImage, 0, 0, widthOffset, height, null);
+				graphics2D.drawImage(signImage, 0, 0, width - widthOffset, height, null);
 			}
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
