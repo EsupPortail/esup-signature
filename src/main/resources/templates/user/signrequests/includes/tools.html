@@ -79,7 +79,7 @@
                                     class="d-flex align-items-center btn btn-light btn-outline-success text-start">
                                 <i class="fi fi-rr-file-signature"></i> <span class="d-inline"> Insérer un visa</span>
                             </button>
-                            <button
+                            <button th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
                                     id="addParaphButton2"
                                     role="button"
                                     class="d-flex align-items-center btn btn-light btn-outline-success text-start">
