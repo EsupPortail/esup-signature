@@ -32,6 +32,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -294,14 +296,22 @@ public class UserAndOtpSignRequestController {
                                  @RequestParam(value = "link", required = false) String link,
                                  RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
         logger.info("start add attachment");
-        if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
-        } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+        try {
+            if(StringUtils.hasText(link)) {
+                new URI(link).toURL();
+            }
+            if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
+                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
+            } else {
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Le lien fourni n'est pas valide"));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id;    }
+        return "redirect:" + basePath + id + "?attachment=true";
+    }
 
     @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-attachment/{id}/{attachementId}")
@@ -311,7 +321,8 @@ public class UserAndOtpSignRequestController {
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La pieces jointe a été supprimée"));
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id;    }
+        return "redirect:" + basePath + id + "?attachment=true";
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-link/{id}/{linkId}")
@@ -321,7 +332,7 @@ public class UserAndOtpSignRequestController {
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le lien a été supprimé"));
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id;
+        return "redirect:" + basePath + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -329,6 +340,19 @@ public class UserAndOtpSignRequestController {
     public void getAttachment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
+                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+            }
+        } catch (Exception e) {
+            logger.error("get file error", e);
+        }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/get-attachment-inline/{id}/{attachementId}")
+    public void getAttachmentInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+        try {
+            if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
                 redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
                 httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
             }

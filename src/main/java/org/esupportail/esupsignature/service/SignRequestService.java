@@ -1306,6 +1306,26 @@ public class SignRequestService {
 	}
 
 	/**
+	 * Récupère une pièce jointe associée à une requête de signature et écrit son contenu dans la réponse HTTP.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature
+	 * @param attachementId l'identifiant de la pièce jointe à récupérer
+	 * @param httpServletResponse la réponse HTTP dans laquelle le contenu de la pièce jointe sera écrit
+	 * @return true si la pièce jointe est trouvée et correctement copiée dans la réponse, false sinon
+	 * @throws IOException si une erreur d'entrée/sortie survient lors de l'écriture du fichier dans la réponse HTTP
+	 */
+	@Transactional
+	public boolean getAttachmentInlineResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		Document attachement = documentService.getById(attachementId);
+		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
+			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), "inline", attachement.getInputStream(), httpServletResponse);
+			return true;
+		}
+		return false;
+	}
+
+	/**
      * Fournit un fichier à signer, en fonction de l'état de la requête de signature et des paramètres fournis.
      *
      * @param signRequestId L'identifiant unique de la requête de signature.
