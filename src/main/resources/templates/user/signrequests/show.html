@@ -66,7 +66,7 @@
                             <i class="fi fi-rr-comment-alt fa-2xl text-black" style="margin-top: 0;"></i>
                         </button>
                     </li>
-                    <th:block id="signButtons" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
+                    <th:block th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" th:unless="${signable}" class="fixed-action-btns active">
                         <li>
                             <a tabindex="1" id="start-button" role="button" class="btn-floating btn-lg bg-success" title="Démarrer le circuit"
                                 data-bs-toggle="modal" data-bs-target="#sendModal"><i class="fi fi-rr-play-alt fa-2xl" style="margin-top: 10px;"></i>
@@ -122,7 +122,7 @@
                             <i class="fi fi-rr-refresh fa-2xl"style="margin-top: 10px;"></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                    <li class="d-sm-block d-none" th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
                         <button tabindex="1" id="trashLaunchButton" class="btn-floating btn-lg bg-danger"
                                 th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                                 data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}" style="border: 0; ">
@@ -177,7 +177,7 @@
                             </a>
                         </li>
                     </th:block>
-                    <li th:if="${nextSignBook != null}" class="">
+                    <li th:if="${nextSignBook != null}" class="d-md-block d-none">
                         <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
                             class="btn-lg btn-floating bg-secondary" title="Aller à la suivante">
                             <i class="fi fi-rr-arrow-right fa-2xl" style="margin-top: 10px;"></i>
@@ -763,6 +763,19 @@
     </div>
 </div>
 <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
+<script>
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('attachment') === 'true') {
+            const attachmentModal = document.getElementById('attachment');
+            const bsModal = new bootstrap.Modal(attachmentModal, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            bsModal.show();
+        }
+    });
+</script>
 <div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
         <div class="modal-content">

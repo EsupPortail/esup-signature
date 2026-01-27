@@ -68,7 +68,7 @@
                             <br>
                             <span>Sessions courantes</span> <span th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
                         </a>
-                        <a title="Switch user" href="/admin/su" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
+                        <a th:if="${globalProperties.enableSu}" title="Switch user" href="/admin/su" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
                             <i class="fi fi-tr-spy" style="font-size: 40px;"></i><br><span>Switch user</span>
                         </a>
                         <a title="Sessions courantes" href="/admin/tasks" class="btn btn-light border-secondary-subtle py-4 text-center col-2">

@@ -533,7 +533,10 @@ public class SignRequestService {
      * @throws EsupSignatureIOException Si une erreur survient lors de l'ajout ou de la conversion des fichiers.
      */
     @Transactional
-	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+	public void addDocsToSignRequest(SignRequest signRequest, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, MultipartFile... multipartFiles) throws EsupSignatureIOException {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
+			signRequestParamsDetectionPattern = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern();
+		}
 		for(MultipartFile multipartFile : multipartFiles) {
 			try {
 				byte[] bytes = multipartFile.getInputStream().readAllBytes();
@@ -541,12 +544,12 @@ public class SignRequestService {
                 String pdfaCheck = null;
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
-					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern())))) {
+					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || StringUtils.hasText(signRequestParamsDetectionPattern))) {
                         bytes = pdfService.normalizePDF(bytes, true, false);
                         pdfaCheck = smallCheckPDFA(bytes);
                         List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
-							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), true, orderSignsByName);
+							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
 								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
@@ -1297,6 +1300,26 @@ public class SignRequestService {
 		Document attachement = documentService.getById(attachementId);
 		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
 			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), "attachment", attachement.getInputStream(), httpServletResponse);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Récupère une pièce jointe associée à une requête de signature et écrit son contenu dans la réponse HTTP.
+	 *
+	 * @param signRequestId l'identifiant de la requête de signature
+	 * @param attachementId l'identifiant de la pièce jointe à récupérer
+	 * @param httpServletResponse la réponse HTTP dans laquelle le contenu de la pièce jointe sera écrit
+	 * @return true si la pièce jointe est trouvée et correctement copiée dans la réponse, false sinon
+	 * @throws IOException si une erreur d'entrée/sortie survient lors de l'écriture du fichier dans la réponse HTTP
+	 */
+	@Transactional
+	public boolean getAttachmentInlineResponse(Long signRequestId, Long attachementId, HttpServletResponse httpServletResponse) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		Document attachement = documentService.getById(attachementId);
+		if (attachement != null && attachement.getParentId().equals(signRequest.getId())) {
+			webUtilsService.copyFileStreamToHttpResponse(attachement.getFileName(), attachement.getContentType(), "inline", attachement.getInputStream(), httpServletResponse);
 			return true;
 		}
 		return false;

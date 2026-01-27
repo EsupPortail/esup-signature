@@ -1171,3 +1171,16 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .hide-handles .cross .ui-resizable-nw {
     display: none !important;
 }
+
+.modal-pdf .modal-dialog {
+    width: 80% !important;
+    max-width: 80vw !important;
+}
+
+.modal-pdf .modal-body {
+    min-height: 80vh;
+}
+
+.modal-pdf iframe {
+    min-height: 80vh;
+}

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<div th:fragment="footer">
+<div th:fragment="footer" class="d-none d-sm-block">
 	<th:block th:if="${error == null && print != true}">
 		<div th:replace="~{fragments/message :: message}"></div>
 	</th:block>

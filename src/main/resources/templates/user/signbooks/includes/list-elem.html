@@ -156,7 +156,7 @@
                         </a>
                     </li>
                     <li>
-                        <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived)}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                        <a target="_blank" th:if="${signBook.signRequests.size() == 1 && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || ((signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending))}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                             th:href="'/ws-secure/global/get-last-file/' + ${signRequest.id}">
                             <i class="fa-solid fa-download pr-2"></i> Télécharger
                         </a>

@@ -4,8 +4,10 @@ import {SignRequestParams} from '../../../prototypes/SignRequestParams.js?versio
 
 export class UserUi {
 
-    constructor(userName, signRequestParams) {
+    constructor(userName, signRequestParams, signImages) {
         console.log('Starting user UI');
+        this.userName = userName;
+        this.signImages = signImages;
         this.emailAlertFrequencySelect = $("#emailAlertFrequency_id");
         this.emailAlertDay = $("#emailAlertDayDiv");
         this.emailAlertHour = $("#emailAlertHourDiv");
@@ -13,13 +15,23 @@ export class UserUi {
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = false;
         this.checkAlertFrequency();
+        this.signRequestParamsDefault = signRequestParams;
         if(signRequestParams != null) {
             this.saveSignRequestParams = true;
+        } else {
+            this.signRequestParamsDefault = {
+                "addWatermark": null,
+                "extraText": "",
+                "addExtra": true,
+                "extraOnTop": true,
+                "extraType": null,
+                "extraName": null,
+                "extraDate": null,
+                "isExtraText": null,
+                "signImageNumber": 0
+            };
         }
         this.toggleSaveSignRequest();
-        if($("#signRequestParamsFormDiv").length) {
-            this.signRequestParams = new SignRequestParams(false, signRequestParams, 0, 1, 1, userName, userName, false, true, false, false, null, true, 0);
-        }
         this.initListeners();
     }
 
@@ -41,8 +53,12 @@ export class UserUi {
                 });
             });
         });
-        $("#saveSignRequestParams").on("click", e => this.toggleSaveSignRequest(e));
+        $("input[name='saveSignRequestParams']").on("change", e => this.toggleSaveSignRequest(e));
         $("#signRequestParamsClean").on("click", e => this.clearLocalStorage())
+    }
+
+    enableSignRequestParams() {
+        this.signRequestParams = new SignRequestParams(false, this.signRequestParamsDefault, 0, 1, 1, this.userName, this.userName, false, true, false, false, null, true, this.signImages);
     }
 
     clearLocalStorage() {
@@ -61,6 +77,7 @@ export class UserUi {
             this.saveSignRequestParams = false;
             $("#signRequestParamsFormDiv").removeClass("d-none");
             $("#signRequestParamsCleanDiv").addClass("d-none");
+            this.enableSignRequestParams();
         } else {
             this.saveSignRequestParams = true;
             $("#signRequestParamsFormDiv").addClass("d-none");

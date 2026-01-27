@@ -50,7 +50,7 @@ public class UserListService {
                     if (!emails.isEmpty()) {
                         return emails.stream().toList();
                     } else if (listName.contains(globalProperties.getDomain())) {
-                        throw new EsupSignatureRuntimeException("no users found");
+                        throw new EsupSignatureRuntimeException("no users found : " + listName);
                     }
                 } else {
                     logger.debug("user founded as local user : " + optionalUser.get().getEppn() + " as " + optionalUser.get().getUserType().name());

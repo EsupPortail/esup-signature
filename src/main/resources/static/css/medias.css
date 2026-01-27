@@ -57,35 +57,6 @@
 
 @media (max-width: 1200px) {
 
-    .fixed-action-btns {
-        height: 100px;
-        width: 100%;
-        overflow: revert;
-    }
-
-    .fixed-action-btns li {
-        margin-right: revert;
-        margin-top: 7px;
-        margin-bottom: 7px;
-        margin-left: revert;
-    }
-
-    .fixed-action-btns ul {
-        -webkit-box-orient: revert;
-        -webkit-box-direction: revert;
-        -ms-flex-direction: revert;
-        flex-direction: revert;
-        justify-content: flex-end;
-    }
-
-    .fixed-action-btns ul button {
-        margin-left: 20px;
-    }
-
-    .fixed-action-btns ul a {
-        margin-left: 20px;
-    }
-
     .new-max-w {
         width: 100%;
     }
@@ -212,22 +183,19 @@
         /*text-overflow: ellipsis;*/
     }
 
+    .btn-floating.btn-lg {
+        width: 47px;
+        height: 47px;
+    }
+
+    .extra-tools {
+        right: 0px;
+        top: 40px;
+        position: absolute;
+    }
 }
 
 @media (max-width: 575px) {
-
-    .fixed-action-btns {
-        height: 100px;
-        width: 100%;
-        overflow: revert;
-    }
-
-    .fixed-action-btns ul {
-        -webkit-box-orient: revert;
-        -webkit-box-direction: revert;
-        -ms-flex-direction: revert;
-        flex-direction: revert;
-    }
 
     .nav-item-label {
         display: inline !important;
