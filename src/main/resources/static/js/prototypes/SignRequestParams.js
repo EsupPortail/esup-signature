@@ -988,6 +988,9 @@ export class SignRequestParams extends EventFactory {
             this.allPages = true;
             $(".cross-ghost_" + this.id).remove();
             let self = this;
+            const currentPageTop = $("#page_" + self.signPageNumber).offset().top;
+            const signTopOnPage = parseInt(self.cross.css('top')) - (currentPageTop - $("#page_1").offset().top);
+
             $("[id^='page_'].pdf-page").each(function() {
                 const pageNum = parseInt($(this).attr('id').split('_')[1]);
                 if(pageNum === parseInt(self.signPageNumber)) {
@@ -1001,7 +1004,7 @@ export class SignRequestParams extends EventFactory {
                     'background-repeat': 'no-repeat',
                     'pointer-events': 'none',
                     'position': 'absolute',
-                    'top': (parseInt(self.cross.css('top')) + pageOffset) + 'px',
+                    'top': (signTopOnPage + pageOffset) + 'px',
                     'z-index': '1000',
                     'border': '1px dashed rgba(0,0,0,0.2)',
                     'filter': 'grayscale(100%)'
