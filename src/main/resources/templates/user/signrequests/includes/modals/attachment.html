@@ -13,8 +13,8 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
-                <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover rounded-3">
+                <div th:if="${attachments != null && attachments.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
+                <table class="table table-borderless table-striped table-hover rounded-3">
                     <thead class="table-secondary">
                     <tr>
                         <td>Fichier</td>
@@ -62,8 +62,8 @@
                     </th:block>
                 </table>
                 </div>
-                <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
-                <table th:if="${signRequest.links.size() > 0}" class="table table-borderless table-striped table-hover">
+                <div th:if="${signRequest.links.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
+                <table class="table table-borderless table-striped table-hover">
                     <thead class="table-secondary">
                     <tr>
                         <td>Liens</td>

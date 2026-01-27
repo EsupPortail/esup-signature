@@ -80,8 +80,13 @@
                         <!--                        </li>-->
                     </th:block>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
-                        <button tabindex="1" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white pulse-success d-none" title="Insérer une signature" style="border: 1px solid #198754; outline:none;">
+                        <button tabindex="3" id="addSignButton2" role="button" class="btn-floating btn-lg bg-white floating-btn-sub pulse-success floating-btn-sub-2" title="Insérer une signature" style="border: 1px solid #198754; outline:none;">
                             <i class="fi fi-rr-file-signature fa-2xl text-success" style="margin-top: 0;"></i>
+                        </button>
+                    </li>
+                    <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
+                        <button tabindex="2" id="addParaphButton" role="button" class="btn-floating btn-lg bg-white floating-btn-sub floating-btn-sub-1" title="Insérer un paraphe sur toutes les pages" style="border: 1px solid #198754; outline:none;">
+                            <i class="fi fi-rr-multiple-alt fa-2xl text-success" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
@@ -133,13 +138,16 @@
                     <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
-                            title="Télécharger le document"><i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i></a>
+                            title="Télécharger le document">
+                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i>
+                        </a>
                     </li>
                     <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                         <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
                             title="Télécharger la dernière version du document">
-                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i></a>
+                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i>
+                        </a>
                     </li>
                     <li th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                         <a tabindex="1" class="btn-lg btn-floating bg-dark"
@@ -764,17 +772,33 @@
 </div>
 <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
 <script>
-    $(document).ready(function() {
+    function openAttachmentModalIfRequested() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('attachment') === 'true') {
             const attachmentModal = document.getElementById('attachment');
-            const bsModal = new bootstrap.Modal(attachmentModal, {
-                backdrop: 'static',
-                keyboard: false
-            });
-            bsModal.show();
+            if (attachmentModal) {
+                const bsModal = new bootstrap.Modal(attachmentModal, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                bsModal.show();
+                cleanUrlParameter();
+                attachmentModal.addEventListener('hidden.bs.modal', function() {
+                    cleanUrlParameter();
+                });
+            }
         }
-    });
+    }
+    function cleanUrlParameter() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('attachment')) {
+            urlParams.delete('attachment');
+            const newUrl = window.location.pathname +
+                (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', openAttachmentModalIfRequested);
 </script>
 <div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
