@@ -168,6 +168,7 @@ export class SignRequestParams extends EventFactory {
                     }
                     self.lastWidth = w;
                     self.lastHeight = h;
+                    self.#refreshAllPagesSigns();
                 }, DEBOUNCE_DELAY);
             });
         }
@@ -721,6 +722,7 @@ export class SignRequestParams extends EventFactory {
                 window.__isResizingCross = false;
                 // self.#simulateDrag(1, 1);
                 // self.#simulateDrag(-1, -1);
+                self.#refreshAllPagesSigns();
             }
         });
     }
@@ -735,10 +737,19 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaPart != null) {
             this.#resizeText();
         }
+        this.#refreshAllPagesSigns();
+    }
+
+    #refreshAllPagesSigns() {
+        if(this.allPages) {
+            this.#toggleAllPages();
+            this.#toggleAllPages();
+        }
     }
 
     #deleteSign() {
         let self = this;
+        this.#deleteAllPagesSigns();
         this.cross.attr("remove", "true");
         self.cross.remove();
         let signSpaceId = null;
@@ -887,6 +898,17 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
+    initParaph() {
+        this.ready = false;
+        this.isSign = false;
+        this.addWatermark = true;
+        this.#toggleWatermark();
+        this.addExtra = true;
+        this.#toggleExtra();
+        this.#toggleMinimalTools();
+        this.#toggleAllPages();
+    }
+
     changeSignSize(result) {
         if(result != null) {
             this.originalWidth = Math.round((result.w));
@@ -952,13 +974,46 @@ export class SignRequestParams extends EventFactory {
     //     });
     // }
 
+    #deleteAllPagesSigns() {
+        $("#allPages_" + this.id).removeClass("btn-outline-dark");
+        this.allPages = false;
+        $(".cross-ghost_" + this.id).remove();
+    }
+
     #toggleAllPages() {
         if(this.allPages) {
-            $("#allPages_" + this.id).removeClass("btn-outline-dark");
-            this.allPages = false;
+            this.#deleteAllPagesSigns();
         } else {
             $("#allPages_" + this.id).addClass("btn-outline-dark");
             this.allPages = true;
+            $(".cross-ghost_" + this.id).remove();
+            let self = this;
+            $("[id^='page_'].pdf-page").each(function() {
+                const pageNum = parseInt($(this).attr('id').split('_')[1]);
+                if(pageNum === parseInt(self.signPageNumber)) {
+                    return;
+                }
+                const pageOffset = $(this).offset().top - $("#page_1").offset().top;
+                const ghostClone = self.cross.clone();
+                ghostClone.attr('class', 'cross-ghost_' + self.id);
+                ghostClone.css({
+                    'opacity': '0.8',
+                    'background-repeat': 'no-repeat',
+                    'pointer-events': 'none',
+                    'position': 'absolute',
+                    'top': (parseInt(self.cross.css('top')) + pageOffset) + 'px',
+                    'z-index': '1000',
+                    'border': '1px dashed rgba(0,0,0,0.2)',
+                    'filter': 'grayscale(100%)'
+                });
+                ghostClone.removeAttr('id');
+                ghostClone.addClass(self.cross.attr('class'));
+                ghostClone.find('[id]').removeAttr('id');
+                ghostClone.find('.cross-tools').remove();
+                ghostClone.find('.ui-resizable-handle').remove();
+                ghostClone.find('textarea').attr("disabled", true);
+                $(this).append(ghostClone);
+            });
         }
     }
 
@@ -983,6 +1038,7 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addWatermark', this.addWatermark);
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleImage() {
@@ -1044,6 +1100,7 @@ export class SignRequestParams extends EventFactory {
             this.#refreshExtraDiv()
             this.#updateSize();
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleExtra() {
@@ -1102,7 +1159,7 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);
         }
-
+        this.#refreshAllPagesSigns();
     }
 
     #toggleExtraOnTop() {
@@ -1178,9 +1235,7 @@ export class SignRequestParams extends EventFactory {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
-        // if(!this.firstLaunch) {
-        //     this.#simulateDrag(this.xPos/ (this.currentScale * this.getBrowserZoom()), this.yPos/ (this.currentScale * this.getBrowserZoom()) / 2);
-        // }
+        this.#refreshAllPagesSigns();
     }
 
     #refreshDate() {
@@ -1211,6 +1266,7 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraType', this.extraType);
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleName() {
@@ -1237,6 +1293,7 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraName', this.extraName);
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleDate() {
@@ -1263,12 +1320,14 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraDate', this.extraDate);
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleText() {
         if(!this.extraName && !this.extraDate && !this.extraType && !this.addImage){
             return;
         }
+        this.#refreshAllPagesSigns();
         let textExtra = $("#textExtra_" + this.id);
         if(this.isExtraText) {
             if(!this.extraName && !this.extraDate && this.isExtraText && !this.extraType) {
@@ -1295,6 +1354,7 @@ export class SignRequestParams extends EventFactory {
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('extraText', this.isExtraText);
         }
+        this.#refreshAllPagesSigns();
     }
 
     #updateSize() {
@@ -1374,6 +1434,7 @@ export class SignRequestParams extends EventFactory {
                 this.divExtra.css("font-size", "unset");
             }
         }
+        this.#refreshAllPagesSigns();
     }
 
     #toggleMinimalTools() {
@@ -1441,6 +1502,7 @@ export class SignRequestParams extends EventFactory {
 
         this.cross.css("width", this.textareaPart.css("width"));
         this.cross.css("height", this.textareaPart.css("height"));
+        this.#refreshAllPagesSigns();
     }
 
     #getImageDimensions(file) {
@@ -1647,54 +1709,62 @@ export class SignRequestParams extends EventFactory {
 
     changeSignImage(imageNum) {
         this.#disableCanvas();
-        if(imageNum != null && imageNum >= 0) {
-            if(this.signImages != null) {
-                if(imageNum > this.signImages.length - 1 && imageNum !== 999998 && imageNum !== 999997) {
-                    imageNum = 0;
-                }
-                this.signImageNumber = imageNum;
-                console.debug("debug - " + "change sign image to " + imageNum);
-                let img = null;
-                if(this.signImages[imageNum] != null) {
-                    img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
-                    this.cross.css("background-image", "url('" + img + "')");
-                    let sizes = this.#getImageDimensions(img);
-                    sizes.then(result => this.changeSignSize(result));
-                    if(imageNum !== 999999) {
-                        localStorage.setItem('signNumber', imageNum);
+        return new Promise((resolve, reject) => {
+            if(imageNum != null && imageNum >= 0) {
+                if(this.signImages != null) {
+                    if(imageNum > this.signImages.length - 1 && imageNum !== 999998 && imageNum !== 999997) {
+                        imageNum = 0;
                     }
-                } else {
-                    let self = this;
-                    let url = "/ws-secure/users/get-default-image-base64";
-                    if(imageNum === 999997) {
-                        url = "/ws-secure/users/get-default-paraphe-base64";
-                    }
-                    $.get({
-                        url: url,
-                        success: function(data) {
-                            img = "data:image/PNG;charset=utf-8;base64, " + data;
-                            self.cross.css("background-image", "url('" + img + "')");
-                            let sizes = self.#getImageDimensions(img);
-                            sizes.then(result => self.changeSignSize(result));
-                            if(imageNum !== 999999) {
-                                localStorage.setItem('signNumber', imageNum);
-                            }
+                    this.signImageNumber = imageNum;
+                    console.debug("debug - " + "change sign image to " + imageNum);
+                    let img = null;
+                    if(this.signImages[imageNum] != null) {
+                        img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                        this.cross.css("background-image", "url('" + img + "')");
+                        let sizes = this.#getImageDimensions(img);
+                        sizes.then(result => this.changeSignSize(result));
+                        if(imageNum !== 999999) {
+                            localStorage.setItem('signNumber', imageNum);
                         }
-                    });
+                        resolve(img);
+                    } else {
+                        let self = this;
+                        let url = "/ws-secure/users/get-default-image-base64";
+                        if(imageNum === 999997) {
+                            url = "/ws-secure/users/get-default-paraphe-base64";
+                        }
+                        $.get({
+                            url: url,
+                            success: function(data) {
+                                img = "data:image/PNG;charset=utf-8;base64, " + data;
+                                self.cross.css("background-image", "url('" + img + "')");
+                                let sizes = self.#getImageDimensions(img);
+                                sizes.then(result => self.changeSignSize(result));
+                                if(imageNum !== 999999) {
+                                    localStorage.setItem('signNumber', imageNum);
+                                }
+                                resolve(img);
+                            },
+                            error: function(err) {
+                                reject(err);
+                            }
+                        });
+                    }
                 }
+            } else if(imageNum < 0) {
+                this.signImageNumber = imageNum;
+                let self = this;
+                this.#convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
+                    self.cross.css("background-image", "url('" + img + "')");
+                    let sizes = self.#getImageDimensions(img);
+                    sizes.then(result => self.changeSignSize(result));
+                    resolve(img);
+                });
+                this.addExtra = true;
+                this.extraOnTop = true;
+                this.#toggleExtra();
             }
-        } else if(imageNum < 0) {
-            this.signImageNumber = imageNum;
-            let self = this;
-            this.#convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
-                self.cross.css("background-image", "url('" + img + "')");
-                let sizes = self.#getImageDimensions(img);
-                sizes.then(result => self.changeSignSize(result));
-            });
-            this.addExtra = true;
-            this.extraOnTop = true;
-            this.#toggleExtra();
-        }
+        });
     }
 
 }
