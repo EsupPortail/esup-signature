@@ -2,35 +2,58 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="attachments" type="java.util.List<Document>"*/-->
-<div th:fragment="attachment" data-bs-focus="false" class="modal fade" id="attachment"  role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+<div th:fragment="attachment">
+<div data-bs-focus="false" class="modal fade" id="attachment"  role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="attachmentLabel">Pièces Jointes</h3>
+                <h4 class="modal-title" id="attachmentLabel"><i class="fi fi-rr-clip"></i> Pièces jointes</h4>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                 </button>
             </div>
             <div class="modal-body">
-                <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover">
-                    <thead class="table-dark">
-                        <tr>
-                            <td>Fichier</td>
-                            <td>Créateur</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
+                <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
+                <table th:if="${attachments != null && attachments.size() > 0}" class="table table-borderless table-striped table-hover rounded-3">
+                    <thead class="table-secondary">
+                    <tr>
+                        <td>Fichier</td>
+                        <td>Créateur</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                     </thead>
                     <th:block th:each="attachment : ${attachments}">
                         <tr>
                             <td th:text="${attachment.fileName}"></td>
                             <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
                             <td>
-                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" target="_blank" class="btn btn-primary"><i class="fa-solid fa-download"></i></a>
+                                <button type="button" class="btn btn-info float-end" title="Voir"
+                                        th:onclick="'openPdfModal(' + ${attachment.id} + ')'">
+                                    <i class="fi fi-rr-eye"></i>
+                                </button>
+
+                                <script>
+                                    function openPdfModal(attachmentId) {
+                                        const modal = document.getElementById('pdfModal' + attachmentId);
+                                        const bsModal = new bootstrap.Modal(modal, {
+                                            backdrop: 'static',
+                                            keyboard: false
+                                        });
+                                        bsModal.show();
+                                    }
+                                </script>
+                            </td>
+                            <td>
+                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"
+                                   target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                                    <i class="fi fi-rr-download"></i>
+                                </a>
                             </td>
                             <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
                                 <form th:action="'/' + ${urlProfil} + '/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
+                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
                                 </form>
                             </td>
                             <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
@@ -38,51 +61,74 @@
                         </tr>
                     </th:block>
                 </table>
+                </div>
+                <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
                 <table th:if="${signRequest.links.size() > 0}" class="table table-borderless table-striped table-hover">
+                    <thead class="table-secondary">
+                    <tr>
+                        <td>Liens</td>
+                        <td></td>
+                    </tr>
+                    </thead>
                     <th:block th:each="link, iterator : ${signRequest.links}">
                         <tr>
                             <td>
                                 <a th:href="${link}" target="_blank" th:text="${link}"></a>
                             </td>
-                            <td> </td>
-                            <td> </td>
                             <td th:if="${signRequest.createBy.eppn == userEppn}">
                                 <form th:action="'/' + ${urlProfil} + '/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fa fa-trash-alt"></i></button>
+                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
                                 </form>
                             </td>
                             <td th:unless="${signRequest.createBy.eppn == userEppn}">
-                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fa fa-trash-alt"></i></button>
+                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>
                             </td>
                         </tr>
                     </th:block>
                 </table>
-                <div th:if="${attachments.size() == 0 && signRequest.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe</div>
+                </div>
+                <div th:if="${attachments.size() == 0 && signRequest.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe pour le moment</div>
                 <hr/>
                 <form th:action="'/' + ${urlProfil} + '/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                     <div th:if="${editable}" class="form-group mb-3">
-                        <label>Ajouter une pièce jointe</label>
-                        <div class="custom-file">
+                        <h5>Ajouter une pièce jointe</h5>
+                        <div class="custom-file mb-3">
                             <input aria-describedby="inputGroupLabel03" class="form-control"
                                 data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
                                 type="file">
-                            <label class="custom-file-label" for="inputGroupFile03" id="inputGroupLabel03"
-                                aria-label="Choisir un document">
-                                Choisir un document
-                            </label>
                         </div>
+                        <div class="hr mb-3">OU</div>
                         <div class="form-group mt-2">
                             <label>Ajouter un lien</label>
                             <input class="form-control" type="text" name="link">
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button th:if="${editable}" type="submit" class="btn btn-success">Ajouter</button>
-                </div>
-            </form>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button th:if="${editable}" type="submit" class="btn btn-success">Ajouter</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+</div>
+<!-- Modals pour chaque attachment -->
+<th:block th:each="attachment : ${attachments}">
+    <div class="modal fade modal-pdf" th:id="'pdfModal' + ${attachment.id}" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl modal-pdf" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:text="${attachment.fileName}"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-pdf">
+                    <iframe style="width: 100%; height: 100%; border: none;"
+                            th:src="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
 </div>
 </html>

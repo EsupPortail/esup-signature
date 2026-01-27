@@ -763,6 +763,19 @@
     </div>
 </div>
 <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
+<script>
+    $(document).ready(function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('attachment') === 'true') {
+            const attachmentModal = document.getElementById('attachment');
+            const bsModal = new bootstrap.Modal(attachmentModal, {
+                backdrop: 'static',
+                keyboard: false
+            });
+            bsModal.show();
+        }
+    });
+</script>
 <div id="add-sign-image" class="modal" >
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
