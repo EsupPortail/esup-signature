@@ -76,8 +76,14 @@
                             <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
                                     id="addSignButton"
                                     role="button"
-                                    class="d-flex align-items-center btn btn-light btn-outline-dark text-start">
+                                    class="d-flex align-items-center btn btn-light btn-outline-success text-start">
                                 <i class="fi fi-rr-file-signature"></i> <span class="d-inline"> Insérer un visa</span>
+                            </button>
+                            <button
+                                    id="addParaphButton2"
+                                    role="button"
+                                    class="d-flex align-items-center btn btn-light btn-outline-success text-start">
+                                <i class="fi fi-rr-multiple-alt"></i> <span class="d-inline"> Insérer un paraphe</span>
                             </button>
                             <button th:if="${signatureIds.size() == 0 && isNotSigned && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCheck" class="d-flex align-items-center btn btn-light btn-outline-dark text-start"
                                 th:classappend="${signBook.liveWorkflow.currentStep.multiSign || signBook.liveWorkflow.currentStep.singleSignWithAnnotation} ? '' : 'disabled'">

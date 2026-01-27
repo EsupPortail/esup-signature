@@ -186,6 +186,7 @@
     .btn-floating.btn-lg {
         width: 47px;
         height: 47px;
+        font-size: 12px;
     }
 
     .extra-tools {

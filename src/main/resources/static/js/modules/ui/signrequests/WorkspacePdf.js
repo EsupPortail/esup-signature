@@ -199,6 +199,8 @@ export class WorkspacePdf {
         this.addSignButton.on('click', e => this.addSign());
         $("#addSignButton2").on('click', e => this.addSign());
         $("#addSignButton3").on('click', e => this.addSign());
+        $("#addParaphButton").on('click', e => this.addParaph());
+        $("#addParaphButton2").on('click', e => this.addParaph());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
@@ -321,6 +323,16 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+    }
+
+
+    addParaph() {
+        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+            bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
+            return;
+        }
+        let srp = this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
+        srp.initParaph();
     }
 
     initWorkspace() {
