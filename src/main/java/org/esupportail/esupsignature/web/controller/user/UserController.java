@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping
-	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException {
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
@@ -69,6 +70,7 @@ public class UserController {
 		}
         model.addAttribute("activeMenu", "user");
 		model.addAttribute("paramMenu", "settings");
+		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
 		return "user/users/update";
     }
 

@@ -42,7 +42,12 @@ public class LdapOrganizationalUnitService {
                 logger.debug("no ouSearchFilter found");
             }
             logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
-            LdapQuery ldapQuery = LdapQueryBuilder.query().base(ldapProperties.getOuSearchBase()).countLimit(20).filter(formattedFilter);
+            LdapQuery ldapQuery;
+            if(StringUtils.hasText(ldapProperties.getOuSearchBase())) {
+                ldapQuery = LdapQueryBuilder.query().base(ldapProperties.getOuSearchBase()).countLimit(20).filter(formattedFilter);
+            } else {
+                ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
+            }
             return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
         }
         return new ArrayList<>();
