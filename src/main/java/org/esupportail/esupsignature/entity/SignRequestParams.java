@@ -67,6 +67,9 @@ public class SignRequestParams {
 
     private Boolean restoreExtra = false;
 
+    @ManyToOne
+    private Recipient recipient;
+
     public Long getId() {
         return id;
     }
@@ -302,4 +305,11 @@ public class SignRequestParams {
         this.fontSize = fontSize;
     }
 
+    public Recipient getRecipient() {
+        return recipient;
+    }
+
+    public void setRecipient(Recipient recipient) {
+        this.recipient = recipient;
+    }
 }

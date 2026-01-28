@@ -36,18 +36,38 @@
                 </div>
                 <div id="all-sign-to-complete-div-1" style="display: none">
                     <div class="form-check form-switch form-switch-md">
-                        <label  class="form-check-label" for="single-steps-false-1">Les participants signent en série (une étape par participant)</label>
                         <input type="radio" class="form-check-input" name="singleStep" value="false" id="single-steps-false-1" checked/>
+                        <label  class="form-check-label" for="single-steps-false-1">Les participants signent en série (une étape par participant)</label>
                     </div>
                     <div class="form-check form-switch form-switch-md">
-                        <label  class="form-check-label" for="single-steps-true-1">Les participants peuvent signer en parallèle (une seule étape)</label>
                         <input type="radio" class="form-check-input" name="singleStep" value="true" id="single-steps-true-1"/>
+                        <label  class="form-check-label" for="single-steps-true-1">Les participants peuvent signer en parallèle (une seule étape)</label>
                     </div>
                     <div class="form-check form-switch form-switch-md">
-                        <label  class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent-ils signer ?</label>
                         <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete-1"/>
+                        <label class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent signer pour valider l'étape</label>
                     </div>
                 </div>
+                <script>
+                    const singleStepRadios = document.querySelectorAll('input[name="singleStep"]');
+                    const allSignToCompleteCheckbox = document.getElementById('all-sign-to-complete-1');
+                    function updateAllSignToComplete() {
+                        const isSingleStepTrue = document.getElementById('single-steps-true-1').checked;
+
+                        if (!isSingleStepTrue) {
+                            allSignToCompleteCheckbox.disabled = true;
+                            allSignToCompleteCheckbox.setAttribute('disabled', 'disabled');
+                            allSignToCompleteCheckbox.checked = false;
+                        } else {
+                            allSignToCompleteCheckbox.disabled = false;
+                            allSignToCompleteCheckbox.removeAttribute('disabled');
+                        }
+                    }
+                    singleStepRadios.forEach(radio => {
+                        radio.addEventListener('change', updateAllSignToComplete);
+                    });
+                    updateAllSignToComplete();
+                </script>
             </div>
             <div class="align-self-start">
                 <div class="d-flex flex-column gap-2 mb-2">
