@@ -75,7 +75,7 @@
                             <div class="form-group mb-3" th:id="'all-sign-to-complete-div-' + ${iterator.index + 1}" th:style="${step.users.size() == 1} ? 'display: none'">
                                 <div class="form-check form-switch form-switch-md">
                                     <label class="form-check-label" th:for="'all-sign-to-complete-' + ${iterator.index + 1}">
-                                        Tous les participants doivent-ils signer ?
+                                        Tous les participants doivent signer pour valider l'étape
                                     </label>
                                     <input type="checkbox" class="form-check-input" th:checked="${step.allSignToComplete}" name="allSignToCompletes" th:value="${iterator.index + 1}" th:id="'all-sign-to-complete-' + ${iterator.index + 1}"/>
                                 </div>
