@@ -232,10 +232,16 @@
                                 <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                                     <div class="accordion-body">
                                         <div class="form-group mb-2">
+                                            <h5>Options de fin de circuit</h5>
                                             <div class="form-check mb-2" th:if="${globalProperties.sealCertificatDriver != null}">
                                                 <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
                                                 <label for="sealAtEnd" class="form-check-label">Signature avec cachet en fin de circuit</label>
                                             </div>
+                                            <div class="form-check mb-2">
+                                                <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
+                                                <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                                            </div>
+                                            <h5>Restrictions</h5>
                                             <div class="form-check mb-2">
                                                 <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
                                                 <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
@@ -249,24 +255,67 @@
                                                 <label for="disableEmailAlerts" class="form-check-label">Désactiver toutes les alertes mail pour ce circuit</label>
                                             </div>
                                             <div class="form-check mb-2">
-                                                <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
-                                                <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
-                                            </div>
-                                            <div class="form-check mb-2">
                                                 <input id="forbidDownloadsBeforeEnd" type="checkbox" class="form-check-input" th:field="*{forbidDownloadsBeforeEnd}"/>
                                                 <label for="forbidDownloadsBeforeEnd" class="form-check-label">Bloquer les téléchargements jusqu’à la fin du circuit</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="externalCanEdit" type="checkbox" class="form-check-input" th:field="*{externalCanEdit}"/>
-                                                <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
                                             </div>
                                             <div class="form-check mb-2">
                                                 <input id="authorizeClone" type="checkbox" class="form-check-input" th:field="*{authorizeClone}"/>
                                                 <label for="authorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
                                             </div>
+                                            <h5>Droits des extérieurs</h5>
+                                            <div class="form-check mb-2">
+                                                <input id="externalCanReaderAnnotations" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAnnotations}"/>
+                                                <label for="externalCanReaderAnnotations" class="form-check-label">Les extérieurs peuvent consulter les annotations</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input type="hidden" name="externalCanEdit" value="false" th:if="${workflow.externalCanReaderAnnotations == false}">
+                                                <input id="externalCanEdit" type="checkbox" class="form-check-input" th:field="*{externalCanEdit}" th:disabled="${workflow.externalCanReaderAnnotations == false}"/>
+                                                <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input id="externalCanReaderAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAttachments}"/>
+                                                <label for="externalCanReaderAttachments" class="form-check-label">Les extérieurs peuvent consulter les pièces jointes</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input type="hidden" name="externalCanEditAttachments" value="false" th:if="${workflow.externalCanReaderAttachments == false}">
+                                                <input id="externalCanEditAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanEditAttachments}" th:disabled="${workflow.externalCanReaderAttachments == false}"/>
+                                                <label for="externalCanEditAttachments" class="form-check-label">Les extérieurs peuvent modifier les pièces jointes</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input id="disableSidebarForExternal" type="checkbox" class="form-check-input" th:field="*{disableSidebarForExternal}"/>
+                                                <label for="disableSidebarForExternal" class="form-check-label">Désactiver la barre latérale pour les extérieurs</label>
+                                            </div>
+                                            <h5>Paramètres d'importation</h5>
+                                            <div class="form-group mb-3" id="signRequestParamsDetectionPatternDiv">
+                                                <label for="signRequestParamsDetectionPattern"> <strong>Pattern de détection des champs signature</strong>
+                                                    <button class="btn btn-sm btn-transparent" data-bs-target="#help-detection-pattern" data-bs-toggle="collapse"
+                                                            type="button">
+                                                        <span class="fa-solid fa-info-circle text-info"></span>
+                                                    </button>
+                                                </label>
+                                                <div class="collapse" id="help-detection-pattern">
+                                                    <div class="alert alert-info mb-1">
+                                                        Le modèle est construit à l’aide du type d’élément entre crochets suivi d’une regex pour le nom de l’attribut.
+                                                        Voici la liste des éléments pris en charge :
+                                                        <ul>
+                                                            <li>[TextField]</li>
+                                                            <li>[PushButton]</li>
+                                                            <li>[AnnotationLink]</li>
+                                                        </ul>
+                                                        Exemples :
+                                                        <ul>
+                                                            <li>[TextField]^(SIG_SIGNATURE|SIG_CACHET)$ : pour détecter les champs de type TextField avec les attributs SIG_SIGNATURE ou SIG_CACHET</li>
+                                                            <li>[AnnotationLink]^signature : pour détecter les champs de type AnnotationLink commençant par "signature"</li>
+                                                        </ul>
+
+                                                    </div>
+                                                </div>
+                                                <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
+                                                       class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
+                                            </div>
                                             <div class="form-check mb-2">
                                                 <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
-                                                <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés</label>
+                                                <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés (obsolète)</label>
                                                 <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
                                                         type="button">
                                                     <span class="fa-solid fa-info-circle text-info"></span>
@@ -278,33 +327,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="form-group mb-3" id="signRequestParamsDetectionPatternDiv">
-                                            <label for="signRequestParamsDetectionPattern"> <strong>Pattern de détection des champs signature</strong>
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-detection-pattern" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                            </label>
-                                            <div class="collapse" id="help-detection-pattern">
-                                                <div class="alert alert-info mb-1">
-                                                    Le modèle est construit à l’aide du type d’élément entre crochets suivi d’une regex pour le nom de l’attribut.
-                                                    Voici la liste des éléments pris en charge :
-                                                    <ul>
-                                                        <li>[TextField]</li>
-                                                        <li>[PushButton]</li>
-                                                        <li>[AnnotationLink]</li>
-                                                    </ul>
-                                                    Exemples :
-                                                    <ul>
-                                                        <li>[TextField]^(SIG_SIGNATURE|SIG_CACHET)$ : pour détecter les champs de type TextField avec les attributs SIG_SIGNATURE ou SIG_CACHET</li>
-                                                        <li>[AnnotationLink]^signature : pour détecter les champs de type AnnotationLink commençant par "signature"</li>
-                                                    </ul>
-
-                                                </div>
-                                            </div>
-                                            <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
-                                                class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
                                         </div>
                                     </div>
                                 </div>

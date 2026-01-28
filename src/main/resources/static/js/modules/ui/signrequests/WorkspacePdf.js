@@ -199,6 +199,8 @@ export class WorkspacePdf {
         this.addSignButton.on('click', e => this.addSign());
         $("#addSignButton2").on('click', e => this.addSign());
         $("#addSignButton3").on('click', e => this.addSign());
+        $("#addParaphButton").on('click', e => this.addParaph());
+        $("#addParaphButton2").on('click', e => this.addParaph());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
@@ -321,6 +323,16 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+    }
+
+
+    addParaph() {
+        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+            bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
+            return;
+        }
+        let srp = this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
+        srp.initParaph();
     }
 
     initWorkspace() {
@@ -586,9 +598,13 @@ export class WorkspacePdf {
                 "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
                 "</div>");
         }
+        let mode = "user";
+        if(this.isOtp) {
+            mode = "otp";
+        }
         $.ajax({
             method: 'POST',
-            url: "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
+            url: "/" + mode + "/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
             success: function () {
                 document.location.reload();
             }
@@ -620,22 +636,32 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
+                    if((self.status === "draft" || self.status === "pending")) {
+                        let deletable = postitDiv.attr('es-comment-delete') === "true";
+                        let buttons = {
+                            cancel: {
+                                label: 'Fermer',
+                                className: 'btn-secondary'
+                            }
+                        };
+                        if(deletable) {
+                            buttons = {
+                                confirm: {
+                                    label: 'Supprimer',
+                                    className: 'btn-danger'
+                                },
+                                cancel: {
+                                    label: 'Fermer',
+                                    className: 'btn-secondary'
+                                }
+                            };
+                        }
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
-                            bootbox.confirm({
+                            bootbox.dialog({
                                 title: postitDiv.attr("es-comment-title"),
                                 message: postitDiv.attr("es-comment-text"),
-                                buttons: {
-                                    confirm: {
-                                        label: 'Supprimer',
-                                        className: 'btn-danger'
-                                    },
-                                    cancel: {
-                                        label: 'Fermer',
-                                        className: 'btn-secondary'
-                                    }
-                                },
+                                buttons: buttons,
                                 callback: function (result) {
                                     if (result) {
                                         bootbox.confirm('Confirmer la suppression', function (result2){
