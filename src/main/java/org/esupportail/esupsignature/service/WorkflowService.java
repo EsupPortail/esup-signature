@@ -564,7 +564,19 @@ public class WorkflowService {
         workflowToUpdate.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
-        workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
+        workflowToUpdate.setExternalCanReaderAnnotations(workflow.getExternalCanReaderAnnotations());
+        if(!BooleanUtils.isTrue(workflow.getExternalCanReaderAnnotations())) {
+            workflowToUpdate.setExternalCanEdit(false);
+        } else {
+            workflowToUpdate.setExternalCanEdit(workflow.getExternalCanEdit());
+        }
+        workflowToUpdate.setExternalCanReaderAttachments(workflow.getExternalCanReaderAttachments());
+        if(!BooleanUtils.isTrue(workflow.getExternalCanReaderAttachments())) {
+            workflowToUpdate.setExternalCanEditAttachments(false);
+        } else {
+            workflowToUpdate.setExternalCanEditAttachments(workflow.getExternalCanEditAttachments());
+        }
+        workflowToUpdate.setDisableSidebarForExternal(workflow.getDisableSidebarForExternal());
         workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
         workflowToUpdate.setIsFeatured(workflow.getIsFeatured());
         User manager = userService.getByEppn(authUserEppn);

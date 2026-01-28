@@ -38,9 +38,9 @@
 
 <main role="main">
     <div class="wrapper">
-        <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-otp :: side}"></nav>
+        <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
         <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" th:class="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal && user.userType.name() == 'external'} ? 'breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full' : 'breadcrumb-nav'">
             <ol class="breadcrumb">
                 <li th:if="${editable && userEppn == authUserEppn && user.userType.name() != 'external'}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
                     de bord</a></li>
@@ -53,7 +53,9 @@
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}">
+        <div id="content"
+            th:data-es-signbook-id="${signRequest.parentSignBook.id}"
+            th:classappend="${signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.disableSidebarForExternal && user.userType.name() == 'external'} ? 'content-full' : 'content'">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${isManager && signRequest.data == null}">
@@ -188,17 +190,17 @@
                     <li th:if="${nextSignBook != null}" class="d-md-block d-none">
                         <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
                             class="btn-lg btn-floating bg-secondary" title="Aller à la suivante">
-                            <i class="fi fi-rr-arrow-right fa-2xl" style="margin-top: 10px;"></i>
+                            <i class="fi fi-rr-arrow-alt-to-right fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                         <a tabindex="1" th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}"
                             class="btn-lg btn-floating bg-secondary" title="Aller à la suivante">
-                            <i class="fa-solid fa-arrow-right fa-2xl"></i>
+                            <i class="fi fi-rr-arrow-alt-to-right fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>
             </div>
             <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
-            <div style="position: absolute;top: 200px;">
+            <div style="position: absolute;top: 200px;" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
                 <div id="potit-comment" class="postit-global d-none overflow-hidden"
                     th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
                     style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 1000;">

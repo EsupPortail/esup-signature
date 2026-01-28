@@ -598,9 +598,13 @@ export class WorkspacePdf {
                 "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
                 "</div>");
         }
+        let mode = "user";
+        if(this.isOtp) {
+            mode = "otp";
+        }
         $.ajax({
             method: 'POST',
-            url: "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
+            url: "/" + mode + "/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
             success: function () {
                 document.location.reload();
             }
@@ -632,22 +636,32 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
+                    if((self.status === "draft" || self.status === "pending")) {
+                        let deletable = postitDiv.attr('es-comment-delete') === "true";
+                        let buttons = {
+                            cancel: {
+                                label: 'Fermer',
+                                className: 'btn-secondary'
+                            }
+                        };
+                        if(deletable) {
+                            buttons = {
+                                confirm: {
+                                    label: 'Supprimer',
+                                    className: 'btn-danger'
+                                },
+                                cancel: {
+                                    label: 'Fermer',
+                                    className: 'btn-secondary'
+                                }
+                            };
+                        }
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
-                            bootbox.confirm({
+                            bootbox.dialog({
                                 title: postitDiv.attr("es-comment-title"),
                                 message: postitDiv.attr("es-comment-text"),
-                                buttons: {
-                                    confirm: {
-                                        label: 'Supprimer',
-                                        className: 'btn-danger'
-                                    },
-                                    cancel: {
-                                        label: 'Fermer',
-                                        className: 'btn-secondary'
-                                    }
-                                },
+                                buttons: buttons,
                                 callback: function (result) {
                                     if (result) {
                                         bootbox.confirm('Confirmer la suppression', function (result2){
