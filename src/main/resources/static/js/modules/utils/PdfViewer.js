@@ -18,12 +18,9 @@ export class PdfViewer extends EventFactory {
         this.currentStepNumber = currentStepNumber;
         this.saveScrolling = 0;
         this.pageNum = 1;
-        this.annotationDisplay = pdfjsLib.AnnotationMode.DISABLE;
+        this.annotationDisplay = null;
         const testUrl = new URL(window.location.href);
         const hasAnnotation = testUrl.searchParams.has("annotation");
-        if(hasAnnotation) {
-            this.annotationDisplay = pdfjsLib.AnnotationMode.ENABLE_FORMS;
-        }
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -58,6 +55,10 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
+                self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.DISABLE;
+                if(hasAnnotation) {
+                    self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.ENABLE_FORMS;
+                }
                 let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
                 loadingTask.promise.then(function(pdf) {
                     self.startRender(pdf)
