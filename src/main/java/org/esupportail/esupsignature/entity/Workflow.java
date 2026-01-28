@@ -104,6 +104,14 @@ public class Workflow {
 
     private Boolean externalCanEdit = false;
 
+    private Boolean externalCanEditAttachments = true;
+
+    private Boolean externalCanReaderAttachments = true;
+
+    private Boolean externalCanReaderAnnotations = true;
+
+    private Boolean disableSidebarForExternal = false;
+
     private Boolean authorizeClone = false;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -420,6 +428,42 @@ public class Workflow {
 
     public void setExternalCanEdit(Boolean extrenalCanEdit) {
         this.externalCanEdit = extrenalCanEdit;
+    }
+
+    public Boolean getExternalCanEditAttachments() {
+        if(externalCanEditAttachments == null) { return false;}
+        return externalCanEditAttachments;
+    }
+
+    public void setExternalCanEditAttachments(Boolean externalCanEditAttachments) {
+        this.externalCanEditAttachments = externalCanEditAttachments;
+    }
+
+    public Boolean getExternalCanReaderAttachments() {
+        if(externalCanReaderAttachments == null) { return true;}
+        return externalCanReaderAttachments;
+    }
+
+    public void setExternalCanReaderAttachments(Boolean externalCanReaderAttachments) {
+        this.externalCanReaderAttachments = externalCanReaderAttachments;
+    }
+
+    public Boolean getExternalCanReaderAnnotations() {
+        if(externalCanReaderAnnotations == null) { return true;}
+        return externalCanReaderAnnotations;
+    }
+
+    public void setExternalCanReaderAnnotations(Boolean externalCanReaderAnnotations) {
+        this.externalCanReaderAnnotations = externalCanReaderAnnotations;
+    }
+
+    public Boolean getDisableSidebarForExternal() {
+        if(disableSidebarForExternal == null) { return false;}
+        return disableSidebarForExternal;
+    }
+
+    public void setDisableSidebarForExternal(Boolean disableSidebarForExternal) {
+        this.disableSidebarForExternal = disableSidebarForExternal;
     }
 
     public Boolean getAuthorizeClone() {
