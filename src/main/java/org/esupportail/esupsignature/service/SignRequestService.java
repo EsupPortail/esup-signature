@@ -1130,21 +1130,25 @@ public class SignRequestService {
     @Transactional
 	public boolean addAttachement(MultipartFile[] multipartFiles, String link, Long signRequestId, String authUserEppn) throws EsupSignatureIOException {
 		SignRequest signRequest = getById(signRequestId);
-		int nbAttachmentAdded = 0;
-		if(multipartFiles != null) {
-			for (MultipartFile multipartFile : multipartFiles) {
-				if(multipartFile.getSize() > 0) {
-					addAttachmentToSignRequest(signRequest, authUserEppn, multipartFile);
-					nbAttachmentAdded++;
-					logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Ajout d'une pièce jointe", multipartFile.getOriginalFilename(), "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+		if(isEditable(signRequestId, authUserEppn) || (isUserInRecipients(signRequest, authUserEppn) && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getExternalCanEditAttachments())) {
+			int nbAttachmentAdded = 0;
+			if (multipartFiles != null) {
+				for (MultipartFile multipartFile : multipartFiles) {
+					if (multipartFile.getSize() > 0) {
+						addAttachmentToSignRequest(signRequest, authUserEppn, multipartFile);
+						nbAttachmentAdded++;
+						logService.create(signRequestId, signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Ajout d'une pièce jointe", multipartFile.getOriginalFilename(), "SUCCESS", null, null, null, null, authUserEppn, authUserEppn);
+					}
 				}
 			}
+			if (link != null && !link.isEmpty()) {
+				signRequest.getLinks().add(link);
+				nbAttachmentAdded++;
+			}
+			return nbAttachmentAdded > 0;
+		} else {
+			return false;
 		}
-		if(link != null && !link.isEmpty()) {
-			signRequest.getLinks().add(link);
-			nbAttachmentAdded++;
-		}
-		return nbAttachmentAdded > 0;
 	}
 
     private void addAttachmentToSignRequest(SignRequest signRequest, String authUserEppn, MultipartFile... multipartFiles) throws EsupSignatureIOException {
@@ -1231,6 +1235,9 @@ public class SignRequestService {
 	public Long addComment(Long id, String commentText, Integer commentPageNumber, Integer commentPosX, Integer commentPosY, Integer commentWidth, Integer commentHeight, String postit, Integer spotStepNumber, String authUserEppn, String userEppn, boolean forceSend) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
 		User user = userService.getByEppn(userEppn);
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getExternalCanEdit() == false && user.getUserType().equals(UserType.external)) {
+			return null;
+		}
 		Comment comment = commentService.create(id, commentText, commentPosX, commentPosY, commentPageNumber, spotStepNumber, "on".equals(postit), null, authUserEppn);
 		if(commentWidth != null && commentHeight != null) {
 			comment.setSignWidth(commentWidth);
