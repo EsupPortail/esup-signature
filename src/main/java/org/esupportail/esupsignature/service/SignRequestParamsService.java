@@ -123,8 +123,10 @@ public class SignRequestParamsService {
         signRequestParams.setPdSignatureFieldName(name);
         signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
         signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
-        signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth()));
-        signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight()));
+        float scaleWidth = pdRectangle.getWidth() / 200f;
+        float scaleHeight = pdRectangle.getHeight() / 100f;
+        float scale = Math.min(scaleWidth, scaleHeight);
+        signRequestParams.setSignScale(scale);
         signRequestParams.setSignPageNumber(signPageNumber);
         return signRequestParams;
     }

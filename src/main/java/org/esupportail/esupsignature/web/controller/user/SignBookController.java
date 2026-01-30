@@ -378,7 +378,7 @@ public class SignBookController {
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
         try {
-            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null);
+            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false);
             redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Ajout effectuée"));
         } catch(Exception e) {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));

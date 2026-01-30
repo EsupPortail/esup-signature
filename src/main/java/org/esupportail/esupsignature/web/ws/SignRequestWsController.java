@@ -102,6 +102,7 @@ public class SignRequestWsController {
                                                   ],
                                                   "signRequestParams": [
                                                     {
+                                                      "pdSignatureFieldName": "string",
                                                       "signPageNumber": 1,
                                                       "signDocumentNumber": 0,
                                                       "signWidth": 200,
@@ -110,6 +111,7 @@ public class SignRequestWsController {
                                                       "yPos": 0
                                                     }
                                                   ],
+                                                  "convertToPDFA": true,
                                                   "changeable": false,
                                                   "signLevel": 0,
                                                   "signType": "visa",
@@ -133,6 +135,7 @@ public class SignRequestWsController {
                                     @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
                                     @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
                                     @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
+                                    @RequestParam(required = false) @Parameter(description = "Conserve les champs de signature") Boolean keepSignFields,
                                     @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") List<String> recipientsCCEmails,
                                     @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
@@ -159,6 +162,9 @@ public class SignRequestWsController {
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
+        if(keepSignFields == null) {
+            keepSignFields = false;
+        }
         List<WorkflowStepDto> workflowStepDtos;
         if(stepsJsonString == null && recipientEmails != null) {
             workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
@@ -173,7 +179,7 @@ public class SignRequestWsController {
             workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if(workflowStepDtos != null) {
-            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl, signRequestParamsDetectionPattern);
+            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl, signRequestParamsDetectionPattern, keepSignFields);
             List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");
