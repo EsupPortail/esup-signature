@@ -545,7 +545,9 @@ public class SignRequestService {
 				InputStream inputStream = new ByteArrayInputStream(bytes);
 				if (multipartFiles.length == 1 && bytes.length > 0) {
 					if("application/pdf".equals(multipartFiles[0].getContentType()) && (scanSignatureFields || StringUtils.hasText(signRequestParamsDetectionPattern))) {
-                        bytes = pdfService.normalizePDF(bytes, true, false);
+						if(!keepSignFields) {
+							bytes = pdfService.normalizePDF(bytes, true, false);
+						}
                         pdfaCheck = smallCheckPDFA(bytes);
                         List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
