@@ -442,6 +442,7 @@ public class UpgradeService {
         
         update live_workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
         update workflow_step set repeatable_sign_type = 'signature' where repeatable_sign_type = 'pdfImageStamp' or repeatable_sign_type = 'certSign' or repeatable_sign_type = 'nexuSign';
+
         
         alter table public.workflow_step
             add constraint workflow_step_repeatable_sign_type_check
