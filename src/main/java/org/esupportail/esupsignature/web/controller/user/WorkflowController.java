@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -26,17 +25,17 @@ import java.util.List;
 @RequestMapping("/user/workflows")
 public class WorkflowController {
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
+    private final WorkflowStepService workflowStepService;
+    private final CertificatService certificatService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private WorkflowStepService workflowStepService;
-
-    @Resource
-    private CertificatService certificatService;
-
-    @Resource
-    private RecipientService recipientService;
+    public WorkflowController(WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, RecipientService recipientService) {
+        this.workflowService = workflowService;
+        this.workflowStepService = workflowStepService;
+        this.certificatService = certificatService;
+        this.recipientService = recipientService;
+    }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
@@ -46,6 +45,7 @@ public class WorkflowController {
         model.addAttribute("workflow", workflow);
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("workflowRole", "user");
+        model.addAttribute("allSteps", workflow.getWorkflowSteps());
         return "user/workflows/show";
     }
 
@@ -54,6 +54,7 @@ public class WorkflowController {
     @PostMapping(value = "/add-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam("signType") String signType,
+                          @RequestParam("stepNumber") int stepNumber,
                           @RequestParam(name="description", required = false) String description,
                           @RequestParam(name="recipientsEmails", required = false) String[] recipientsEmails,
                           @RequestParam(name="changeable", required = false) Boolean changeable,
@@ -65,7 +66,7 @@ public class WorkflowController {
             recipients = List.of(recipientsEmails);
         }
         WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.fromString(signType), description, recipientService.convertRecipientEmailsToRecipientDto(recipients), changeable, maxRecipients, allSignToComplete, attachmentRequire);
-        workflowStepService.addStep(id, workflowStepDto, authUserEppn, false, false, null);
+        workflowStepService.addStep(id, workflowStepDto, stepNumber, authUserEppn, false, false, null);
         return "redirect:/user/workflows/" + id;
     }
 

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head}"></head>
+<link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
+<script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
@@ -21,6 +23,9 @@
             <div class="card col-lg-10 mx-auto">
                 <div class="card-body">
                     <h5 class="text-center"><b>Messages</b></h5>
+                    <div class="alert alert-secondary mb-2">
+                        Ici, vous pouvez ajouter un message qui sera affiché aux utilisateurs.
+                    </div>
                     <table class="table table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr>

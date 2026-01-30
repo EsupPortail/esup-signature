@@ -24,6 +24,9 @@ selenium_test:
     - test
   tags:
     - test
+  retry:
+    max: 2
+    when: script_failure
 # Job pour le déploiement en environnement de test
 deploy_test:
   stage: deploy

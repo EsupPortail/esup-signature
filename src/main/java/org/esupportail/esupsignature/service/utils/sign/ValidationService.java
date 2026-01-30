@@ -65,7 +65,12 @@ public class ValidationService {
             } else {
                 DSSDocument dssDocument = dssUtilsService.toDSSDocument(new DssMultipartFile("doc", "doc", null, docInputStream));
                 if(dssDocument != null) {
-                    documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
+                    try {
+                        documentValidator = SignedDocumentValidator.fromDocument(dssDocument);
+                    } catch (Exception e) {
+                        logger.debug(e.getMessage());
+                        return null;
+                    }
                 } else {
                     return null;
                 }

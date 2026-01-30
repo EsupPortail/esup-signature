@@ -4,7 +4,7 @@ import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
+    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone) {
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
@@ -12,6 +12,7 @@ export class WorkspacePdf {
         this.isOtp = isOtp;
         this.phone = phone;
         this.changeModeSelector = null;
+        this.displayComments = false;
         this.action = action;
         this.dataId = dataId;
         this.formId = formId;
@@ -19,7 +20,8 @@ export class WorkspacePdf {
         this.workflow = workflow;
         this.signImageNumber = signImageNumber;
         this.restore = restore;
-        this.postits = postits;
+        this.comments = comments;
+        this.spots = spots;
         this.notSigned = notSigned;
         this.signable = signable;
         this.editable = editable;
@@ -69,21 +71,35 @@ export class WorkspacePdf {
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
         this.navWidth = this.wsTabs.innerWidth();
-        this.addSignButton = $("#addSignButton")
+        this.addSignButton = $("#addSignButton");
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
         if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;
-                $(window).on('resize', function (e) {
-                    if(e.target.tagName == null) {
+                const THRESHOLD = 100;
+                const DEBOUNCE_DELAY = 100;
+                let resizeTimer = null;
+                $(window).on("resize", () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        const w = window.innerWidth;
+                        const h = window.innerHeight;
+                        const deltaW = Math.abs(w - self.lastWidth);
+                        const deltaH = Math.abs(h - self.lastHeight);
+                        if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
                         self.autocollapse();
-                    }
+                        self.lastWidth = w;
+                        self.lastHeight = h;
+                    }, DEBOUNCE_DELAY);
                 });
             }
         }
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
         this.initListeners();
+        this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
     initListeners() {
@@ -96,7 +112,14 @@ export class WorkspacePdf {
             $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton2').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
-            $("#showComments").on('click', e => this.enableCommentMode());
+            $("#showComments").on('click', e => this.showComments());
+            $("#hideComments").on("click", () => {
+                if (this.displayComments === true) {
+                    this.hideComments();
+                } else {
+                    this.showComments();
+                }
+            });
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
@@ -158,16 +181,16 @@ export class WorkspacePdf {
                 }, 3000);
             });
 
-            if(this.postits != null) {
-                this.postits.forEach((postit, index) => {
+            if(this.comments != null) {
+                this.comments.forEach((postit, index) => {
                     let postitButton = $('#postit' + postit.id);
                     postitButton.on('click', e => this.focusComment(postit));
                     postitButton.on('mouseover', function () {
-                        $('#inDocComment_' + postit.id).addClass('text-danger');
+                        $('#inDocComment_' + postit.id).addClass('circle-background');
                         postitButton.addClass('circle-border');
                     });
                     postitButton.on('mouseout', function () {
-                        $('#inDocComment_' + postit.id).removeClass('text-danger');
+                        $('#inDocComment_' + postit.id).removeClass('circle-background');
                         postitButton.removeClass('circle-border');
                     });
                 });
@@ -176,6 +199,8 @@ export class WorkspacePdf {
         this.addSignButton.on('click', e => this.addSign());
         $("#addSignButton2").on('click', e => this.addSign());
         $("#addSignButton3").on('click', e => this.addSign());
+        $("#addParaphButton").on('click', e => this.addParaph());
+        $("#addParaphButton2").on('click', e => this.addParaph());
         $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
         $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
         $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
@@ -220,14 +245,6 @@ export class WorkspacePdf {
         });
     }
 
-    removeSignFields() {
-        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
-            let toDeleteSignSpace = $("#signSpace_" + i);
-            toDeleteSignSpace.unbind();
-            toDeleteSignSpace.remove();
-        }
-    }
-
     initSignFields() {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
             let currentSignRequestParams = this.currentSignRequestParamses[i];
@@ -240,7 +257,7 @@ export class WorkspacePdf {
                 let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'></div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                signSpaceDiv.on("click", e => this.addSign(i, e));
+                signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                     if(this.currentSignType !== "visa") {
                         signSpaceDiv.html("Cliquez ici pour insérer votre signature");
@@ -255,42 +272,67 @@ export class WorkspacePdf {
                 let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
-                signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth / .75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight /.75 * this.pdfViewer.scale) + "px");
-                signSpaceDiv.css("font-size", 10 *  this.pdfViewer.scale);
+                signSpaceDiv.css("top", yPos);
+                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                signSpaceDiv.css("font-size", 6 *  this.pdfViewer.scale);
                 this.makeItDroppable(signSpaceDiv);
             }
         }
     }
 
-    addSign(forceSignNumber, signField) {
+    refreshSignFields() {
+        for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
+            let signSpaceDiv = $("#signSpace_" + i);
+            if(signSpaceDiv.length) {
+                signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
+                signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
+                signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
+                let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
+                signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
+                signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
+            }
+        }
+    }
+
+    addSign(forceSignNumber) {
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
         this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
-        let signNum = this.signPosition.currentSignRequestParamsNum;
+
+        let signNum = null;
         if(forceSignNumber != null) {
             signNum = forceSignNumber;
+        } else {
+            for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
+                if (!this.currentSignRequestParamses[i].ready) {
+                    this.signPosition.currentSignRequestParamsNum = i;
+                    signNum = i;
+                    break;
+                }
+            }
         }
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
-            this.signPosition.currentSignRequestParamsNum++;
         }
         if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, forceSignNumber, signField);
-        if(!this.notSigned) {
-            // let msg = ;
-            // $("#addSignButton").attr("disabled", true);
-            // $("#addSignButton").attr("title", msg);
-            // $("#addSignButton2").attr("disabled", true);
-            // $("#addSignButton2").attr("title", msg);
+        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+    }
+
+
+    addParaph() {
+        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+            bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
+            return;
         }
+        let srp = this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
+        srp.initParaph();
     }
 
     initWorkspace() {
@@ -341,7 +383,8 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        $("#content").on('mousedown', e => this.clickAction(e));
+        $("#content").on('mousedown', e => this.signPosition.lockSigns());
+        this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
     initForm() {
@@ -354,14 +397,19 @@ export class WorkspacePdf {
         }
     }
 
-    saveData(disableAlert) {
-        let self = this;
-        for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
-            this.pdfViewer.pdfDoc.getPage(i).then(page => page.getAnnotations().then(items => this.pdfViewer.saveValues(items)).then(function(){
-                if(i === self.pdfViewer.pdfDoc.numPages) {
-                    self.pushData(false, disableAlert);
-                }
-            }));
+    async saveData(disableAlert) {
+        try {
+            let promises = [];
+            for(let i = 1; i < this.pdfViewer.pdfDoc.numPages + 1; i++) {
+                let promise = this.pdfViewer.pdfDoc.getPage(i)
+                    .then(page => page.getAnnotations())
+                    .then(items => this.pdfViewer.saveValues(items));
+                promises.push(promise);
+            }
+            await Promise.all(promises);
+            this.pushData(false, disableAlert);
+        } catch(error) {
+            console.error('Erreur lors de la sauvegarde:', error);
         }
     }
 
@@ -483,8 +531,7 @@ export class WorkspacePdf {
     refreshWorkspace() {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
-        this.signPosition.updateScales(this.pdfViewer.scale);
-        // this.refreshAfterPageChange();
+        localStorage.setItem("scale", this.pdfViewer.scale);
     }
 
     clickAction(e) {
@@ -505,18 +552,18 @@ export class WorkspacePdf {
 
     pointIt2(e) {
         let target = e.target;
-        let page = $(target).parent().parent();
-        let pageNumber = page.attr("page-num");
-        $('#commentPageNumber').val(pageNumber);
+        let page = $(target).parent().parent().parent();
         let offset = 0;
         if(page.attr("page-num") !== undefined) {
-            offset = $("#page_" + page.attr("page-num")).offset().top;
+            let pageNumber = page.attr("page-num");
+            offset = $("#page_" + pageNumber).offset().top;
+            $('#commentPageNumber').val(pageNumber);
+            console.warn(pageNumber);
         }
         let xPos = e.offsetX ? (e.offsetX) : e.clientX;
         let yPos = e.pageY - offset;
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
-
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
     }
 
@@ -538,7 +585,8 @@ export class WorkspacePdf {
         if(this.addSpotEnabled) {
             spotStepNumber = spotStepNumberVal.val();
         }
-        let commentUrlParams = "comment=" + encodeURIComponent(postitComment.val()) +
+        let commentUrlParams =
+            "comment=" + encodeURIComponent(postitComment.val()) +
             "&commentPosX=" + Math.round(xPos) +
             "&commentPosY=" + Math.round(yPos) +
             "&commentPageNumber=" + $("#commentPageNumber").val() +
@@ -550,9 +598,13 @@ export class WorkspacePdf {
                 "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
                 "</div>");
         }
+        let mode = "user";
+        if(this.isOtp) {
+            mode = "otp";
+        }
         $.ajax({
             method: 'POST',
-            url: "/user/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
+            url: "/" + mode + "/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
             success: function () {
                 document.location.reload();
             }
@@ -568,11 +620,11 @@ export class WorkspacePdf {
         console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
         // this.removeSignFields();
         let self = this;
-        this.postits.forEach((comment, iterator) => {
+        this.comments.forEach((comment, iterator) => {
             if(comment.stepNumber == null) {
                 let postitDiv = $('#inDocComment_' + comment.id);
                 let postitButton = $('#postit' + comment.id);
-                if (this.mode === 'comment') {
+                if (this.mode === 'comment' || this.displayComments) {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
                     let pageOffset = $("#page_" + comment.pageNumber).offset();
@@ -584,22 +636,32 @@ export class WorkspacePdf {
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending") && postitDiv.attr('es-comment-delete') === "true") {
+                    if((self.status === "draft" || self.status === "pending")) {
+                        let deletable = postitDiv.attr('es-comment-delete') === "true";
+                        let buttons = {
+                            cancel: {
+                                label: 'Fermer',
+                                className: 'btn-secondary'
+                            }
+                        };
+                        if(deletable) {
+                            buttons = {
+                                confirm: {
+                                    label: 'Supprimer',
+                                    className: 'btn-danger'
+                                },
+                                cancel: {
+                                    label: 'Fermer',
+                                    className: 'btn-secondary'
+                                }
+                            };
+                        }
                         postitDiv.on('mouseup', function (e) {
                             e.stopPropagation();
-                            bootbox.confirm({
+                            bootbox.dialog({
                                 title: postitDiv.attr("es-comment-title"),
                                 message: postitDiv.attr("es-comment-text"),
-                                buttons: {
-                                    confirm: {
-                                        label: 'Supprimer',
-                                        className: 'btn-danger'
-                                    },
-                                    cancel: {
-                                        label: 'Fermer',
-                                        className: 'btn-secondary'
-                                    }
-                                },
+                                buttons: buttons,
                                 callback: function (result) {
                                     if (result) {
                                         bootbox.confirm('Confirmer la suppression', function (result2){
@@ -627,56 +689,73 @@ export class WorkspacePdf {
             }
         });
         let index = 0;
-        this.postits.forEach((spot, iterator) => {
+        this.spots.forEach((spot, iterator) => {
             if(spot.stepNumber != null) {
                 let spotDiv = $('#inDocSpot_' + spot.id);
-                let signDiv = $('#inDocSign_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let page = $("#page_" + spot.pageNumber);
+                    let page = $("#page_" + spot.signPageNumber);
                     let offset = 0;
                     if(page.offset() != null) {
                         offset = page.offset().top - this.pdfViewer.initialOffset ;
                     }
-                    let posX = Math.round((parseInt(spot.posX) * this.pdfViewer.scale));
-                    let posY = Math.round((parseInt(spot.posY) * this.pdfViewer.scale) + offset);
-                    console.log("spot pos : " + posX + ", " + posY);
-                    spotDiv.css('left',  posX + "px");
-                    spotDiv.css('top',  posY + "px");
+                    let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale));
+                    let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + offset);
+                    console.log("spot pos : " + xPos + ", " + yPos);
+                    spotDiv.css('left',  xPos + "px");
+                    spotDiv.css('top',  yPos + "px");
+                    let signDiv = $('#inDocSign_' + spot.id);
                     if(signDiv != null) {
-                        if(signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
+                        if (signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
                             spot.signWidth = signDiv.attr('data-es-width');
                             spot.signHeight = signDiv.attr('data-es-height');
-                            spotDiv.css("width", signDiv.attr('data-es-width') / .75 * this.pdfViewer.scale);
-                            spotDiv.css("height", signDiv.attr('data-es-height') / .75 * this.pdfViewer.scale);
+                            spotDiv.css("width", signDiv.attr('data-es-width') * this.pdfViewer.scale * this.getBrowserZoom());
+                            spotDiv.css("height", signDiv.attr('data-es-height') * this.pdfViewer.scale * this.getBrowserZoom());
                         }
-                        signDiv.css("width", Math.round(spot.signWidth / .75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("height", Math.round(spot.signHeight / .75 * self.pdfViewer.scale) + "px");
-                        signDiv.css("font-size", 10 * self.pdfViewer.scale);
-                    }
-                    spotDiv.unbind('mouseup');
-                    if(signDiv.attr("data-es-delete")) {
-                        spotDiv.on('mouseup', function (e) {
-                            e.stopPropagation();
-                            bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
-                                if (result) {
-                                    let url = "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                    if (self.currentSignType === "form") {
-                                        url = "/" + self.userName + "/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                    }
-                                    $.ajax({
-                                        method: 'DELETE',
-                                        url: url,
-                                        success: function () {
-                                            spotDiv.remove();
-                                            if (self.currentSignType === "form") {
-                                                location.reload();
-                                            }
-                                        }
-                                    });
-                                }
-                            });
+                        signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                        signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
+                        signDiv.css("font-size", 6 * self.pdfViewer.scale);
+                        signDiv.droppable({
+                            accept: ".cross",
+                            tolerance: "touch",
+                            drop: function (event, ui) {
+                                $('#cross_999999').addClass("cross-warning");
+                                $('#submit-add-spot').attr("disabled", true);
+                            },
+                            over: function (event, ui) {
+                                $('#cross_999999').addClass("cross-warning");
+                                $('#submit-add-spot').attr("disabled", true);
+                            },
+                            out: function (event, ui) {
+                                $('#cross_999999').removeClass("cross-warning");
+                                $('#submit-add-spot').removeAttr("disabled");
+                            }
                         });
+                        if (signDiv.attr("data-es-delete")) {
+                            spotDiv.unbind('mouseup');
+
+                            spotDiv.on('mouseup', function (e) {
+                                e.stopPropagation();
+                                bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
+                                    if (result) {
+                                        let url = "/ws-secure/global/delete-spot/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                        if (self.currentSignType === "form") {
+                                            url = "/" + self.userName + "/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
+                                        }
+                                        $.ajax({
+                                            method: 'DELETE',
+                                            url: url,
+                                            success: function () {
+                                                spotDiv.remove();
+                                                if (self.currentSignType === "form") {
+                                                    location.reload();
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            });
+                        }
                     }
                 }
                 index++;
@@ -697,18 +776,28 @@ export class WorkspacePdf {
             this.initFormAction();
         }
         if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
-            this.initSignFields();
+            if(this.first) {
+                this.initSignFields();
+            } else {
+                this.refreshSignFields();
+            }
         }
-        $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
+        // $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         this.pdfViewer.pdfDiv.css('opacity', 1);
+        this.first = false;
     }
 
     makeItDroppable(signSpaceDiv) {
         let self = this;
         signSpaceDiv.droppable({
-            tolerance: 'touch',
+            tolerance: "touch",
+            hoverClass: "drop-hover",
             accept: ".drop-sign",
             drop: function (event, ui) {
+                if ($(this).data("locked") != null) {
+                    return;
+                }
+                $(this).data("locked", ui.draggable.attr("id"));
                 $(this).removeClass("sign-field");
                 $(this).addClass("sign-field-dropped");
                 $(this).css("pointer-events", "none");
@@ -721,8 +810,6 @@ export class WorkspacePdf {
                         let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
-                        let signWidth = signSpaceDiv.attr("data-es-sign-width");
-                        let signHeight = signSpaceDiv.attr("data-es-sign-height");
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
@@ -742,29 +829,22 @@ export class WorkspacePdf {
                         cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
-                        let xOffset = Math.round((signWidth / .75 * self.pdfViewer.scale - signRequestParams.signWidth * self.pdfViewer.scale) / 2);
-                        let yOffset = Math.round((signHeight / .75 * self.pdfViewer.scale - signRequestParams.signHeight * self.pdfViewer.scale) / 2);
-                        let oldLeft = parseInt(cross.css("left"));
-                        let oldTop = parseInt(cross.css("top"));
-                        let newLeft = oldLeft + xOffset;
-                        let newTop = oldTop + yOffset;
-                        cross.css("left", newLeft);
-                        cross.css("top", newTop);
                         signRequestParams.dropped = true;
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
-                        cross.resizable("disable");
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
             },
             out: function (event, ui) {
-                if (!self.isThereSign($(this))) {
-                    $(this).addClass("sign-field");
-                    $(this).removeClass("sign-field-dropped");
-                    self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                    $(this).text("Vous devez placer une signature ici");
-                    $(this).css("pointer-events", "auto");
+                if ($(this).data("locked") != null && $(this).data("locked") !== ui.draggable.attr("id")) {
+                    return;
                 }
+                $(this).removeData("locked");
+                $(this).addClass("sign-field");
+                $(this).removeClass("sign-field-dropped");
+                self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
+                $(this).text("Vous devez placer une signature ici");
+                $(this).css("pointer-events", "auto");
                 for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
                     let cross = signRequestParams.cross;
@@ -777,35 +857,20 @@ export class WorkspacePdf {
         });
     }
 
-    isThereSign(spot) {
-        let isThereSign = false;
-        for (let i = 0; i < this.signPosition.signRequestParamses.size; i++) {
-            let testX = Array.from(this.signPosition.signRequestParamses.values())[i].xPos;
-            let testY = Array.from(this.signPosition.signRequestParamses.values())[i].yPos;
-            let xx = Math.round(parseInt(spot.css("left")) / this.pdfViewer.scale);
-            let yy = Math.round(parseInt(spot.css("top")) / this.pdfViewer.scale);
-            let test = Array.from(this.signPosition.signRequestParamses.values())[i].cross.attr("remove");
-            if (testX === xx && testY === yy && test !== "true") {
-                isThereSign = true;
 
-            }
-        }
-        return isThereSign;
-    }
-
-    toggleSign(e) {
-        let signId = $(e).attr("id").split("_")[1];
-        console.log("toggle sign_" + signId);
-        let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-        if (this.mode === 'sign') {
-            signRequestParams.show();
-        } else {
-            if(signRequestParams.signImages !== 999999) {
-                signRequestParams.hide();
-            }
-        }
-        if (this.first) this.first = false;
-    }
+    // toggleSign(e) {
+    //     let signId = $(e).attr("id").split("_")[1];
+    //     console.log("toggle sign_" + signId);
+    //     let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
+    //     if (this.mode === 'sign') {
+    //         signRequestParams.show();
+    //     } else {
+    //         if(signRequestParams.signImages !== 999999) {
+    //             signRequestParams.hide();
+    //         }
+    //     }
+    //     if (this.first) this.first = false;
+    // }
 
     displayDialogBox() {
         $('#pdf').unbind("mousemove");
@@ -815,6 +880,7 @@ export class WorkspacePdf {
         }
         console.log(comment);
         this.signPosition.pointItEnable = false;
+        $('#pdf').css('cursor', 'default');
         let commentPosX = $("#commentPosX");
         let commentPosY = $('#commentPosY');
         let commentPageNumber = $("#commentPageNumber").val();
@@ -846,7 +912,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';
@@ -854,10 +920,6 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         $('#readModeButton').toggleClass('btn-outline-secondary');
         $('#workspace').addClass('alert-primary');
-        $('#rotateleft').prop('disabled', false);
-        $('#rotateright').prop('disabled', false);
-        $('#rotateleft').css('opacity', 1);
-        $('#rotateright').css('opacity', 1);
         $('#insert-btn-div').hide();
         $('#insert-btn').hide();
         this.showAllPostits();
@@ -866,9 +928,50 @@ export class WorkspacePdf {
         });
     }
 
+    showComments() {
+        $("#postit").removeClass("d-none");
+        $("#commentHelp").removeClass("d-none");
+        this.displayComments = true;
+        this.signPosition.pointItEnable = true;
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.setSelected("comment");
+        }
+        // $('#addCommentButton2').removeClass('d-none');
+        $('#commentsBar').show();
+        this.refreshAfterPageChange();
+        $('div[id^=inDocSpot_]').each(function () {
+            $(this).hide();
+        });
+        $(".circle").each(function () {
+            $(this).show();
+            $(this).css('width', '0px');
+        })
+        this.showAllPostits();
+    }
+
+    hideComments() {
+        $("#postit").addClass("d-none");
+        $("#commentHelp").addClass("d-none");
+        this.displayComments = false;
+        this.signPosition.pointItEnable = false;
+
+        if (this.changeModeSelector != null) {
+            this.changeModeSelector.setSelected(null);
+        }
+
+        // $('#addCommentButton2').addClass('d-none');
+        $('#commentsBar').hide();
+        $(".circle").each(function () {
+            $(this).hide();
+            $(this).css('width', '');
+        });
+        this.hideAllPostits && this.hideAllPostits();
+    }
+
     enableCommentMode() {
-        $("#changeMode1").removeClass('btn-warning').addClass('btn-secondary').html('<i class="fa-solid fa-door-open"></i> <span class="d-none d-xl-inline">Quitter annotation</span>')
         console.info("enable comments mode");
+        $("#hideComments").hide();
+        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline"> Quitter annotation</span>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
@@ -890,7 +993,7 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.hide();
-        // $("#signModeBtns").addClass("d-none");
+        insertBtn.toggleClass("d-flex");
         $("#signImageBtn").removeClass("d-lg-block");
         this.pdfViewer.promiseToggleFields(false);
         this.refreshAfterPageChange();
@@ -909,7 +1012,7 @@ export class WorkspacePdf {
     }
 
     enableSignMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fa-solid fa-comments"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
+        // $("#changeMode1").removeClass("btn-outline-dark").removeClass("d-none").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>')
         console.info("enable sign mode");
         localStorage.setItem('mode', 'sign');
         this.disableAllModes();
@@ -929,9 +1032,7 @@ export class WorkspacePdf {
         $(".spot").each(function () {
             $(this).hide();
         });
-        $('#signButtons').removeClass('d-none');
-        $('#forward-btn').removeClass('d-none');
-        $('#signModeButton').toggleClass('btn-outline-success');
+        // $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
             $("#addSignButton2").focus();
@@ -941,11 +1042,10 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
-        insertBtn.addClass("pulse-primary");
-        insertBtn.addClass("btn-outline-primary");
-        insertBtn.addClass("btn-light");
+        // insertBtn.addClass("pulse-success");
+        // insertBtn.addClass("btn-outline-success");
+        // insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
-        this.pdfViewer.rotation = 0;
         if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
             if (this.forcePageNum) {
                 this.pdfViewer.scrollToPage(this.forcePageNum);
@@ -965,6 +1065,10 @@ export class WorkspacePdf {
         });
         $('#signLaunchButton').removeClass('d-none');
         $('#addSignButton2').removeClass('d-none');
+        $('#addSignButton2').focus();
+        $('#visaLaunchButton').removeClass('d-none');
+        $('#signButtons').removeClass('d-none');
+        $('#forward-btn').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
         $('#commentsTools').addClass('d-none');
@@ -982,6 +1086,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').addClass('d-none');
         $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
+        $('#visaLaunchButton').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
@@ -991,10 +1096,6 @@ export class WorkspacePdf {
         $('#postit').hide();
         $('#refusetools').hide();
         $('#insert-btn-div').hide();
-        $('#rotateleft').prop('disabled', true);
-        $('#rotateright').prop('disabled', true);
-        $('#rotateleft').css('opacity', 0);
-        $('#rotateright').css('opacity', 0);
         $('#pdf').css('cursor', 'default');
         $('#hideCommentButton').unbind();
         $(".spot").each(function () {
@@ -1030,12 +1131,13 @@ export class WorkspacePdf {
             $(this).find("p").first().on('mousedown', function (e) {
                 $(this).parent().toggleClass("postitarea-auto");
             });
-            //on scroll remove webkitLineClamp
             $(this).find("p").first().on('scroll', function (e) {
                 $(this).addClass("postitarea-basic");
             });
             $(this).resizable({
                 aspectRatio: false,
+                minWidth: 215,
+                minHeight: 215,
                 resize: function( event, ui ) {
                     let postit = document.querySelector(".postitarea");
                     let parent = postit.closest("#potit-comment");
@@ -1056,15 +1158,43 @@ export class WorkspacePdf {
         let hideCommentButton = $('#hideCommentButton');
         saveCommentButton.unbind();
         hideCommentButton.unbind();
-        $('#pdf').mousemove(e => this.moveAction(e));
+        let last = 0;
+        let inside = false;
+        $('#pdf')
+            .on('mouseenter', () => { inside = true; })
+            .on('mouseleave', () => { inside = false; });
+        $('#pdf').on('click', e => {
+            if (!inside) {
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+            this.clickAction(e);
+        });
+        $('#pdf').on('mousemove', e => {
+            const now = performance.now();
+            if (now - last < 50) return; // 50ms = ~20 fps
+            last = now;
+            this.moveAction(e);
+        });
+        $(document).off('keydown');
+        document.addEventListener('keydown', function onEscCapture(e) {
+            if (e.key === 'Escape') {
+                e.stopImmediatePropagation?.();
+                e.stopPropagation();
+                e.preventDefault();
+                location.reload();
+            }
+        }, { capture: true});
         $("#addSpotButton").attr("disabled", true);
-        $("#addCommentButton").attr("disabled", true);
+        $("#addCommentButton").addClass("btn-danger");
+        let addCommentButton2 = $("#addCommentButton2");
+        addCommentButton2.addClass("bg-danger");
+        addCommentButton2.children().addClass("text-white");
+        addCommentButton2.attr("title", "Annuler l'ajout d'annotation");
         $("#addSpotButton2").attr("disabled", true);
-        $("#addCommentButton2").attr("disabled", true);
-        $("#addCommentButton2").addClass("disable");
-        // this.hideComment(e);
         if (this.addCommentEnabled) {
-            this.disableAddComment();
+            location.reload();
         } else {
             this.enableAddComment();
         }
@@ -1106,24 +1236,12 @@ export class WorkspacePdf {
     }
 
     displayCommentPointer() {
-        this.pdfViewer.pdfDiv.css('cursor', 'url(' + this.getCommentPointer("\uf075") + '), auto');
+        const png = '/images/icons/rr-commentaire-alt.png';
+        this.pdfViewer.pdfDiv.css('cursor', `url("${png}"), auto`);
     }
 
     disablePointer() {
         this.pdfViewer.pdfDiv.css('cursor', 'default');
-    }
-
-    getCommentPointer(code) {
-        let pointerCanvas = document.createElement("canvas");
-        pointerCanvas.width = 24;
-        pointerCanvas.height = 24;
-        let pointerCtx = pointerCanvas.getContext("2d");
-        pointerCtx.fillStyle = "#000000";
-        pointerCtx.font = "24px FontAwesome";
-        pointerCtx.textAlign = "center";
-        pointerCtx.textBaseline = "middle";
-        pointerCtx.fillText(code, 12, 12);
-        return pointerCanvas.toDataURL('image/png');
     }
 
     changeSpotStep() {
@@ -1154,7 +1272,7 @@ export class WorkspacePdf {
                 value: 'comment'
             });
         }
-        if(this.status !== "draft" && this.status !== "pending" && this.postits.length > 0) {
+        if(this.status !== "draft" && this.status !== "pending" && this.comments.length > 0) {
             data.push({
                 html: '<div style="width: 200px;"><i class="fa-solid fa-comment text-warning pr-2 m-1"></i><b>Voir les annotations</b></div>',
                 text: 'Consulter les annotations',
@@ -1219,36 +1337,58 @@ export class WorkspacePdf {
     autocollapse() {
         let menu = "#ws-tabs";
         let maxWidth = $("#workspace").innerWidth() - 50;
-        console.info("maxWidth : " + maxWidth);
-        const listItems = document.querySelectorAll('#ws-tabs > li');
-        let totalWidth = 0;
-        listItems.forEach(li => {
-            totalWidth += li.getBoundingClientRect().width;
-        });
-        console.warn(totalWidth + " >= " + maxWidth);
+        const calculateTotalWidth = () => {
+            let total = 0;
+            const listItems = document.querySelectorAll('#ws-tabs > li');
+            listItems.forEach(li => {
+                const rect = li.getBoundingClientRect();
+                total += rect.width;
+                const style = window.getComputedStyle(li);
+                total += parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+            });
+            return total;
+        };
+        let totalWidth = calculateTotalWidth();
         if (totalWidth >= maxWidth) {
             $(menu + ' .dropdown').removeClass('d-none');
-            while (this.navWidth > maxWidth) {
-                let children = this.wsTabs.children(menu + ' li:not(:last-child)');
+            totalWidth = calculateTotalWidth();
+            while (totalWidth > maxWidth) {
+                let children = $(menu + ' > li:not(.dropdown)');
                 let count = children.length;
-                this.navWidth = this.navWidth - $(children[count - 1]).width();
-                console.warn("nav width : " + this.navWidth);
+                if (count === 0) break; // Sécurité
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');
+                totalWidth = calculateTotalWidth();
+                console.warn("Nouvelle largeur : " + totalWidth);
             }
-        } else if (this.navWidth < maxWidth - 300) {
-            let collapsed = $(menu + ' .dropdown-menu').children(menu + ' li');
-            if (collapsed.length===0) {
+        }
+        else {
+            let collapsed = $(menu + ' .dropdown-menu > li');
+
+            if (collapsed.length === 0) {
                 $(menu + ' .dropdown').addClass('d-none');
+                return;
             }
-            collapsed = $(menu + ' .dropdown-menu').children('li');
+            const dropdownWidth = $(menu + ' .dropdown')[0].getBoundingClientRect().width;
+            const safeMaxWidth = maxWidth - dropdownWidth - 50; // marge de sécurité
+
             let i = 0;
-            while (this.navWidth < maxWidth && (this.wsTabs.children(menu + ' li').length > 0) && collapsed.length > i + 1) {
-                $(collapsed[i]).insertBefore(this.wsTabs.children(menu + ' li:last-child'));
-                this.navWidth = this.navWidth + $(collapsed[i]).width();
-                if(this.navWidth >= maxWidth) break;
+            while (i < collapsed.length && totalWidth < safeMaxWidth) {
+                const itemWidth = collapsed[i].getBoundingClientRect().width;
+                const style = window.getComputedStyle(collapsed[i]);
+                const margins = parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+                const estimatedWidth = totalWidth + itemWidth + margins;
+                if (estimatedWidth >= safeMaxWidth) break;
+                $(collapsed[i]).insertBefore($(menu + ' > li.dropdown'));
+                totalWidth = calculateTotalWidth();
                 i++;
             }
-
+            if ($(menu + ' .dropdown-menu > li').length === 0) {
+                $(menu + ' .dropdown').addClass('d-none');
+            }
         }
     }
+    getBrowserZoom() {
+        return 1 || 1;
+    }
+
 }

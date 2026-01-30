@@ -4,7 +4,7 @@
     <h5>Bienvenue sur l’application Esup-Signature.</h5>
     <br>
     <div th:if="${currentUri != null && (currentUri == '/user' || currentUri == '/user/users' || (signRequest != null && currentUri == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
-        <button th:if="${splashMessage == null || splashMessage == 'null'}" class="btn btn-primary mx-auto" id="helpStartButton">Lancer le didacticiel</button>
+        <button class="btn btn-primary mx-auto" id="helpStartButton">Lancer le didacticiel</button>
     </div>
     <br>
     <ul>

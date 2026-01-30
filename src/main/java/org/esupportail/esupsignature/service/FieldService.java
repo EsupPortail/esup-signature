@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -11,7 +12,6 @@ import org.esupportail.esupsignature.repository.WorkflowStepRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

@@ -17,9 +17,8 @@
  */
 package org.esupportail.esupsignature.entity;
 
-import org.springframework.beans.factory.annotation.Configurable;
-
 import jakarta.persistence.*;
+import org.springframework.beans.factory.annotation.Configurable;
 
 @Configurable
 @Entity

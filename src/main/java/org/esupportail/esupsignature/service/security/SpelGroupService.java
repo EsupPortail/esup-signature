@@ -2,12 +2,17 @@ package org.esupportail.esupsignature.service.security;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
+import org.esupportail.esupsignature.entity.Config;
+import org.esupportail.esupsignature.repository.ConfigRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,27 +20,34 @@ import java.util.stream.Collectors;
 @Service
 public class SpelGroupService implements GroupService {
 
-	private final GlobalProperties globalProperties;
+    private static final Logger logger = LoggerFactory.getLogger(SpelGroupService.class);
 
-	private Map<String, String> groups4eppnSpel = new HashMap<>();
+    private final Map<String, String> groups4eppnSpel = new HashMap<>();
 
-	public void setGroups4eppnSpel(Map<String, String> groups4eppnSpel) {
-		this.groups4eppnSpel = groups4eppnSpel;
-	}
+    private final GlobalProperties globalProperties;
+    private final WebSecurityProperties webSecurityProperties;
+    private final ConfigRepository configRepository;
 
-	public SpelGroupService(GlobalProperties globalProperties, WebSecurityProperties webSecurityProperties) {
+	public SpelGroupService(GlobalProperties globalProperties, WebSecurityProperties webSecurityProperties, ConfigRepository configRepository) {
 		this.globalProperties = globalProperties;
-        Map<String, String> groups4eppnSpel = new HashMap<>();
-		if (webSecurityProperties.getGroupMappingSpel() != null) {
-			for (String groupName : webSecurityProperties.getGroupMappingSpel().keySet()) {
-				String spelRule = webSecurityProperties.getGroupMappingSpel().get(groupName);
-				groups4eppnSpel.put(groupName, spelRule);
-			}
-		}
-		this.setGroups4eppnSpel(groups4eppnSpel);
-	}
+        this.webSecurityProperties = webSecurityProperties;
+        this.configRepository = configRepository;
+    }
 
-	@Override
+    @Transactional
+    public void initGroupMappingSpel() {
+        groups4eppnSpel.clear();
+        Optional.ofNullable(webSecurityProperties.getGroupMappingSpel())
+                .ifPresent(groups4eppnSpel::putAll);
+        Iterator<Config> config = configRepository.findAll().iterator();
+        if(config.hasNext()) {
+            Optional.ofNullable(config.next())
+                    .map(Config::getGroupMappingSpel)
+                    .ifPresent(groups4eppnSpel::putAll);
+        }
+    }
+
+    @Override
 	public List<Map.Entry<String, String>> getAllGroupsStartWith(String search) {
 		return null;
 	}
@@ -61,7 +73,6 @@ public class SpelGroupService implements GroupService {
 			}
 		}		
 		return groups.stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-		
 	}
 
 	@Override

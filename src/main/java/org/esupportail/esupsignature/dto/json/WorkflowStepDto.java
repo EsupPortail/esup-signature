@@ -20,11 +20,6 @@ public class WorkflowStepDto {
     private String title;
 
     /**
-     * Identifiant du workflow auquel appartient cette étape.
-     */
-    private Long workflowId;
-
-    /**
      * Numéro de l’étape dans le workflow (valeur par défaut : 1).
      */
     private Integer stepNumber = 1;
@@ -58,6 +53,8 @@ public class WorkflowStepDto {
      * Niveau de signature requis pour cette étape (valeur par défaut : simple).
      */
     private SignLevel minSignLevel = SignLevel.simple;
+
+    private SignLevel maxSignLevel = SignLevel.qualified;
 
     /**
      * Type de signature utilisé pour cette étape.
@@ -142,10 +139,6 @@ public class WorkflowStepDto {
 	public WorkflowStepDto() {
 	}
 
-	public WorkflowStepDto(RecipientWsDto recipientWsDto) {
-		this.recipients.add(recipientWsDto);
-	}
-
 	public WorkflowStepDto(SignType signType, String description, List<RecipientWsDto> recipients, Boolean changeable, Integer maxRecipients, Boolean allSignToComplete, Boolean attachmentRequire) {
 		this.signType = signType;
 		this.description = description;
@@ -158,20 +151,21 @@ public class WorkflowStepDto {
 		}
 	}
 
+	public WorkflowStepDto(WorkflowStepDto other) {
+		this.signType = other.signType;
+		this.description = other.description;
+		this.changeable = other.changeable;
+		this.maxRecipients = other.maxRecipients;
+		this.allSignToComplete = other.allSignToComplete;
+		this.attachmentRequire = other.attachmentRequire;
+	}
+
 	public String getTitle() {
 		return title;
 	}
 
 	public void setTitle(String title) {
 		this.title = title;
-	}
-
-	public Long getWorkflowId() {
-		return workflowId;
-	}
-
-	public void setWorkflowId(Long workflowId) {
-		this.workflowId = workflowId;
 	}
 
 	public Integer getStepNumber() {
@@ -226,7 +220,15 @@ public class WorkflowStepDto {
 		return minSignLevel;
 	}
 
-	public void setMinSignLevel(SignLevel minSignLevel) {
+    public SignLevel getMaxSignLevel() {
+        return maxSignLevel;
+    }
+
+    public void setMaxSignLevel(SignLevel maxSignLevel) {
+        this.maxSignLevel = maxSignLevel;
+    }
+
+    public void setMinSignLevel(SignLevel minSignLevel) {
 		this.minSignLevel = minSignLevel;
 	}
 

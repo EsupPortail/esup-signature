@@ -6,7 +6,6 @@ import org.esupportail.esupsignature.service.ldap.mapper.PersonLightLdapAttribut
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
@@ -19,7 +18,6 @@ import java.util.List;
 
 @Service
 @ConditionalOnProperty({"spring.ldap.base"})
-@EnableConfigurationProperties(LdapProperties.class)
 public class LdapPersonLightService {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapPersonLightService.class);
@@ -60,7 +58,7 @@ public class LdapPersonLightService {
         } else {
             logger.debug("no userObjectClasses found");
         }
-        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(10).base(ldapProperties.getSearchBase()).filter(formattedFilter);
+        LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).base(ldapProperties.getSearchBase()).filter(formattedFilter);
         logQuery(ldapQuery);
         return ldapTemplate.search(ldapQuery, new PersonLightLdapAttributesMapper()).stream().filter(personLightLdap -> StringUtils.hasText(personLightLdap.getMail())).toList();
     }

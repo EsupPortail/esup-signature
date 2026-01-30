@@ -1,11 +1,11 @@
 package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import jakarta.persistence.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +22,7 @@ public class Workflow {
     @Column(unique=true)
     private String token;
 
-	private String name;
+    private String name;
 
     private String description;
 
@@ -104,6 +104,14 @@ public class Workflow {
 
     private Boolean externalCanEdit = false;
 
+    private Boolean externalCanEditAttachments = true;
+
+    private Boolean externalCanReaderAttachments = true;
+
+    private Boolean externalCanReaderAnnotations = true;
+
+    private Boolean disableSidebarForExternal = false;
+
     private Boolean authorizeClone = false;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -111,6 +119,11 @@ public class Workflow {
     private Date startArchiveDate;
 
     private String archiveTarget;
+
+    @ManyToMany
+    private List<Tag> tags = new ArrayList<>();
+
+    private Boolean isFeatured = false;
 
     public Long getId() {
         return id;
@@ -326,6 +339,7 @@ public class Workflow {
     }
 
     public Boolean getFromCode() {
+        if(fromCode == null) return false;
         return fromCode;
     }
 
@@ -416,6 +430,42 @@ public class Workflow {
         this.externalCanEdit = extrenalCanEdit;
     }
 
+    public Boolean getExternalCanEditAttachments() {
+        if(externalCanEditAttachments == null) { return false;}
+        return externalCanEditAttachments;
+    }
+
+    public void setExternalCanEditAttachments(Boolean externalCanEditAttachments) {
+        this.externalCanEditAttachments = externalCanEditAttachments;
+    }
+
+    public Boolean getExternalCanReaderAttachments() {
+        if(externalCanReaderAttachments == null) { return true;}
+        return externalCanReaderAttachments;
+    }
+
+    public void setExternalCanReaderAttachments(Boolean externalCanReaderAttachments) {
+        this.externalCanReaderAttachments = externalCanReaderAttachments;
+    }
+
+    public Boolean getExternalCanReaderAnnotations() {
+        if(externalCanReaderAnnotations == null) { return true;}
+        return externalCanReaderAnnotations;
+    }
+
+    public void setExternalCanReaderAnnotations(Boolean externalCanReaderAnnotations) {
+        this.externalCanReaderAnnotations = externalCanReaderAnnotations;
+    }
+
+    public Boolean getDisableSidebarForExternal() {
+        if(disableSidebarForExternal == null) { return false;}
+        return disableSidebarForExternal;
+    }
+
+    public void setDisableSidebarForExternal(Boolean disableSidebarForExternal) {
+        this.disableSidebarForExternal = disableSidebarForExternal;
+    }
+
     public Boolean getAuthorizeClone() {
         if(authorizeClone == null) {
             return false;
@@ -449,5 +499,22 @@ public class Workflow {
 
     public void setExternalAuths(Set<ExternalAuth> externalAuths) {
         this.externalAuths = externalAuths;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public Boolean getIsFeatured() {
+        if(isFeatured == null) return false;
+        return isFeatured;
+    }
+
+    public void setIsFeatured(Boolean featured) {
+        isFeatured = featured;
     }
 }

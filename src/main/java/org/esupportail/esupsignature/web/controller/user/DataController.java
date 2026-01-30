@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.web.controller.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -11,7 +10,6 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
@@ -36,39 +34,42 @@ import java.util.Map;
 public class DataController {
 
 	private static final Logger logger = LoggerFactory.getLogger(DataController.class);
-
-	@ModelAttribute("activeMenu")
+    @ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "datas";
 	}
 
-	@Resource
-	private DataService dataService;
+	private final DataService dataService;
+	private final SignBookService signBookService;
+	private final FormService formService;
+	private final PdfService pdfService;
+	private final ObjectMapper objectMapper;
 
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private FormService formService;
-
-	@Resource
-	private PdfService pdfService;
-
-	@Resource
-	private ObjectMapper objectMapper;
+    public DataController(DataService dataService, SignBookService signBookService, FormService formService, PdfService pdfService, ObjectMapper objectMapper) {
+        this.dataService = dataService;
+        this.signBookService = signBookService;
+        this.formService = formService;
+        this.pdfService = pdfService;
+        this.objectMapper = objectMapper;
+    }
 
 	@PostMapping("/send-form/{id}")
 	@ResponseBody
 	public ResponseEntity<String> sendForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 						   @RequestBody List<WorkflowStepDto> steps,
-						   @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
+						   @PathVariable("id") Long id) {
 		logger.info("create form " + id);
-		if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
-			Data data = dataService.addData(id, userEppn);
-			List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
-			SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, null);
-			return ResponseEntity.ok().body(signBook.getId().toString());
-		}
+        try {
+            if(formService.isFormAuthorized(userEppn, authUserEppn, id)) {
+                Data data = dataService.addData(id, userEppn);
+                List<String> targetEmails = steps.stream().flatMap(step -> step.getTargetEmails().stream()).distinct().toList();
+                SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, null, userEppn, authUserEppn, false, null, null, null, true, true, null, false, null);
+                return ResponseEntity.ok().body(signBook.getId().toString());
+            }
+        } catch (Exception e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
 		logger.warn("form id " + id + " not autorized");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Formulaire non autorisé");
 	}

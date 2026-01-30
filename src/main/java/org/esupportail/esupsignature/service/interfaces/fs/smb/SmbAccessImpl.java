@@ -91,7 +91,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				if (e.getNtStatus() == NtStatus.NT_STATUS_WRONG_PASSWORD) {
 					logger.error("connect"+" : bad password ");
 				} else if (e.getNtStatus() == NtStatus.NT_STATUS_LOGON_FAILURE) {
-					logger.error("connect"+" : bad login ");
+					logger.error("connect"+" : bad login " + login + " on domain " + domain);
 				} else {
 					logger.error("connect"+" : "+e);
 				}

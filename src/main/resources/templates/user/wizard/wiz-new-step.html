@@ -8,22 +8,22 @@
     <div id="stepper1" class="bs-stepper linear">
         <div class="bs-stepper-header" role="tablist">
             <div class="step" data-bs-target="#test-l-2">
-                <span class="bs-stepper-circle bg-success"><i class="fa-solid fa-copy"></i></span>
+                <span class="bs-stepper-circle bg-success"><i class="fi fi-rr-cloud-upload-alt"></i></span>
                 <span class="bs-stepper-label">Dépôt des fichiers</span>
             </div>
             <div class="bs-stepper-line"></div>
             <div class="step active" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-diagram-project"></i></span>
                 <span class="bs-stepper-label">Création du circuit</span>
             </div>
             <div class="bs-stepper-line"></div>
             <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-disk"></i></span>
                 <span class="bs-stepper-label">Sauvegarde</span>
             </div>
             <div class="bs-stepper-line"></div>
             <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-flag"></i></span>
                 <span class="bs-stepper-label">Fin</span>
             </div>
         </div>
@@ -77,39 +77,58 @@
             <select class="select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required="required">
                 <option data-placeholder="true"></option>
             </select>
+            <script>
+                document.querySelector('#recipientsEmails-1').addEventListener('change', () => {
+                    if (!document.getElementById('end-workflow-sign') || !document.getElementById('end-workflow-sign-start')) return;
+                    let hasSelection = document.querySelector('#recipientsEmails-1').selectedOptions.length > 0;
+                    document.getElementById('end-workflow-sign').disabled = hasSelection;
+                    document.getElementById('end-workflow-sign-start').disabled = hasSelection;
+                });
+            </script>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
             <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">
                 <label class="form-check-label" for="all-sign-to-complete-1">
-                    Tous les participants doivent-ils signer ?
+                    Tous les participants doivent signer pour valider l'étape
                 </label>
                 <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete"/>
             </div>
-            <div class="align-self-start">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="form-group w-50">
-                        <label class="form-label" for="signType-1">Choisir un type de signature *</label>
-                        <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
-                            <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}"
-                                        th:text="#{'signbook.signtype.' + ${signType}}"></option>
-                            </th:block>
-                        </select>
+            <div class="d-flex flex-column gap-2 mb-2">
+                <div class="form-group w-100">
+                    <label class="form-label" for="signType-1">Choisir un type de signature *</label>
+                    <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
+                        <th:block th:each="signType : ${signTypes}">
+                            <option th:value="${signType}"
+                                    th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                        </th:block>
+                    </select>
+                </div>
+                <div class="form-group w-10" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                    <label class="form-label">Niveaux de signature autorisés :</label>
+                    <div class="d-flex gap-5">
+                        <div>
+                            <small>Niveau minimum</small>
+                            <select class="form-select" name="minSignLevel" id="minSignLevel-1">
+                                <th:block th:each="signLevel : ${signLevels}">
+                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div>
+                            <small>Niveau maximum</small>
+                            <select class="form-select" name="maxSignLevel" id="maxSignLevel-1">
+                                <th:block th:each="signLevel : ${signLevels}">
+                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
-                    <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
-                        <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
-                        <select class="form-select" name="minSignLevel" id="minSignLevel-1">
-                            <th:block th:each="signLevel : ${signLevels}">
-                                <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
-                            </th:block>
-                        </select>
-                    </div>
-                    <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
-                        <label class="form-check-label">
-                            Utiliser le cachet de l’établissement pour verrouiller le visa
-                        </label>
-                        <input type="checkbox" class="form-check-input" id="sealVisa-1"/>
-                    </div>
+                </div>
+                <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
+                    <label class="form-check-label">
+                        Utiliser le cachet de l’établissement pour verrouiller le visa
+                    </label>
+                    <input type="checkbox" class="form-check-input" id="sealVisa-1"/>
                 </div>
             </div>
             <div class="form-check form-switch form-switch-md ">
@@ -133,10 +152,10 @@
         <i class="fa-solid fa-plus"></i> Enregistrer cette étape
     </button>
     <button formnovalidate id="end-workflow-sign" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-save"></i> Terminer et annoter
+        <i class="fi fi-rr-disk"></i> Terminer et annoter
     </button>
     <button formnovalidate id="end-workflow-sign-start" name="end-workflow-sign" value="true" th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" type="button" class="btn btn-success float-end m-1">
-        <i class="fa-solid fa-paper-plane"></i> Terminer et envoyer
+        <i class="fi fi-rr-paper-plane"></i> Terminer et envoyer
     </button>
 </div>
 </html>

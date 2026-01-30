@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.entity;
 
 import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 

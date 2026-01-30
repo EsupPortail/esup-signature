@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.dss.model;
 
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.*;
 import eu.europa.esig.dss.ws.dto.TimestampDTO;
 import jakarta.validation.constraints.NotNull;
 
@@ -20,6 +17,9 @@ public abstract class AbstractSignatureForm implements Serializable {
 
 	@NotNull
 	private SignatureLevel signatureLevel;
+
+    @NotNull
+    private ASiCContainerType containerType;
 
 	@NotNull
 	private DigestAlgorithm digestAlgorithm;
@@ -58,7 +58,15 @@ public abstract class AbstractSignatureForm implements Serializable {
 		this.signatureLevel = signatureLevel;
 	}
 
-	public DigestAlgorithm getDigestAlgorithm() {
+    public ASiCContainerType getContainerType() {
+        return containerType;
+    }
+
+    public void setContainerType(ASiCContainerType containerType) {
+        this.containerType = containerType;
+    }
+
+    public DigestAlgorithm getDigestAlgorithm() {
 		return digestAlgorithm;
 	}
 

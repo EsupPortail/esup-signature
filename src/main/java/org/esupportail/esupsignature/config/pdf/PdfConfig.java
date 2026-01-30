@@ -1,13 +1,12 @@
 package org.esupportail.esupsignature.config.pdf;
 
+import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
-import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties(PdfProperties.class)
 public class PdfConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfConfig.class);

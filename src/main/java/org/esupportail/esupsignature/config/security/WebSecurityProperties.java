@@ -12,7 +12,7 @@ public class WebSecurityProperties {
     private String[] wsAccessAuthorizeIps;
     private String[] actuatorsAccessAuthorizeIps;
     private String csvAccessAuthorizeMask = "127.0.0.1";
-    private String groupToRoleFilterPattern;
+    private String groupToRoleFilterPattern = "";
     private Map<String, String> mappingGroupsRoles;
     private Map<String, String> groupMappingSpel;
     private List<String> excludedEmails = new ArrayList<>();

@@ -5,91 +5,138 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div th:fragment="workspace" id="workspace" class="alert justify-content-center border-0" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-    <div class="pdf-alerts" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''">
-        <div id="warningSelectDiv" title="Masquer ce message" class="alert alert-danger border-dark warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}"
-            onclick="$(this).remove();">
-            En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div class="alert alert-success warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}"
-            onclick="$(this).remove();">
-            Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div class="alert alert-success warning border-dark" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}"
-            onclick="$(this).remove();">
-            Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div id="no-options-alert" class="alert border-dark alert-warning warning" title="Masquer ce message" th:if="${signable}" style="display: none;"
-            onclick="$(this).remove();">
-            Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div id="signBookDesc" title="Masquer ce message" class="d-none alert alert-warning border-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
-            onclick="$(this).remove();" style="width: 100%;">
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-            <span th:text="${signRequest.parentSignBook.description}"></span>
-        </div>
-        <div id="alertSign" title="Masquer ce message" class="alert border-dark warning" th:classappend="${signatureIssue ? 'alert-warning' : 'alert-success'}" th:if="${signatureIds.size() > 0}"
-            onclick="$(this).remove();" style="width: 100%;">
-            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">
-                Ce document contient des signatures électroniques
-                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                    <span class="sr-only">En cours...</span>
+<div th:fragment="workspace" id="workspace" class="alert justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-light' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+    <div id="display-pdf-alerts-dropdown" class="dropdown d-none" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
+        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
+        title="Afficher les alertes">
+            <i class="fa-solid fa-bell"></i> 
+        </button>
+        <script>
+            const displayPdfAlertsDropdown = $('#display-pdf-alerts-dropdown');
+            const displayPdfAlertsBtn = $('#display-pdf-alerts-btn');
+        </script>
+        <div id="pdf-alerts" class="pdf-alerts dropdown-menu shadow">
+            <h5 class="w-100 text-center"><i class="fa-solid fa-bell"></i> Alertes</h5>
+            <div class="d-flex flex-column gap-1">
+                <th:block th:if="${comments.size() > 0 && (signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external')}">
+                    <script>
+                        const commentCount = '[[${comments.size()}]]';
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click();
+                    </script>
+                    <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
+                        <div class="pdf-warning-bar bg-warning"></div>
+                        <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-circle-info text-warning"></i>Cette demande comporte des annotations</div>
+                        <div><button id="showComments" class="btn btn-sm btn-warning" >Voir les annotations</button></div>
+                    </div>
+                </th:block>
+                <div id="warningSelectDiv" title="Masquer ce message" class="alert bg-light text-dark border-secondary warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">
+                    <script>
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click();
+                    </script>
+                    <div class="pdf-warning-bar bg-success"></div>
+                    <div class="d-flex gap-2 align-items-center">
+                    En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
+                    </div>
                 </div>
-                <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button>
-            </span>
-            <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}">
-                <i class="fa-solid fa-circle-check"></i> Ce document contient une signature électronique qualifiée (eIDas)
-                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                    <span class="sr-only">En cours...</span>
+                <div class="alert bg-light text-dark warning border-secondary" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signable}">
+                    <script>
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-success" title="Document déjà signé"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                    </script>
+                    <div class="pdf-warning-bar bg-success"></div>
+                    <div class="d-flex gap-2 align-items-center">
+                    <i class="fa-solid fa-circle-info  text-success"></i> Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
+                    </div>
                 </div>
-                <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
-            </span>
-            <span style="line-height: 33px;" th:if="${signatureIssue}">
-                <i class="fa-solid fa-circle-exclamation"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
-                <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                    <span class="sr-only">En cours...</span>
+                <div class="alert bg-light text-dark warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <script>
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info  text-success" title="Document déjà signé"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                    </script>
+                    <div class="pdf-warning-bar bg-success"></div>
+                    <div class="d-flex gap-2 align-items-center">
+                    <i class="fa-solid fa-circle-info  text-success"></i> Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
+                    </div>
+
                 </div>
-                <button es-modal-style="bg-warning" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
-            </span>
-            <button class="btn btn-sm btn-close text-dark warning-close" onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div id="warningPdfA" title="Masquer ce message"
-            class="alert alert-warning border-dark warning d-flex align-items-center justify-content-between"
-            th:if="${pdfaCheck != null && pdfaCheck.contains('6.3.5')}"
-            onclick="$(this).remove();">
-            <div style="flex: 1;">Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
-            <button class="btn btn-sm btn-close text-dark warning-close"
-                    onclick="$(this).parent('div').remove();"></button>
-        </div>
-        <div id="alertNexu" class="alert alert-danger border-dark text-center" style="display: none;">
-            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.
-            <br>
-            Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>
-            <br>
-            <button id="refresh-certType2" class="mt-2 mx-auto btn btn-secondary align-self-center">
-                <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
-            </button>
-        </div>
-        <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-            <div id="commentHelp" th:unless="${signRequest.comments.size() > 0 || signRequest.parentSignBook.description != null}" class="alert alert-warning border-dark d-none" style="width: 100%">
-                Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
-                <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
+                <div id="no-options-alert" class="alert bg-light text-dark warning" title="Masquer ce message" th:if="${signable}" style="display: none;">
+                    <div class="pdf-warning-bar bg-danger"></div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <div><i class="fa-solid fa-triangle-exclamation text-danger"></i></div><div>Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</div>
+                    </div>
+                </div>
+<!--                <div id="signBookDesc" title="Masquer ce message" class="alert bg-light text-dark warning" th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"-->
+<!--                    style="width: 100%;">-->
+<!--                    <script>-->
+<!--                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');-->
+<!--                        displayPdfAlertsDropdown.removeClass("d-none");-->
+<!--                        displayPdfAlertsBtn.click();-->
+<!--                    </script>-->
+<!--                    <div class="pdf-warning-bar bg-warning"></div>-->
+<!--                    <div class="d-flex gap-2 align-items-center">-->
+<!--                        <i class="fa-solid fa-circle-info text-black"></i><span th:text="${signRequest.parentSignBook.description}"></span>-->
+<!--                    </div>-->
+<!--                </div>-->
+                <div id="alertSign" title="Masquer ce message" class="alert bg-light text-dark" th:if="${signatureIds.size() > 0}" style="width: 100%;">
+                    <div class="pdf-warning-bar" th:classappend="${signatureIssue ? 'bg-secondary' : 'bg-success'}"></div>
+                    <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() > 1}">
+                        Ce document contient des signatures électroniques
+                        <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                            <span class="sr-only">En cours...</span>
+                        </div>
+                        <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir les signatures</button>
+                    </span>
+                    <span style="line-height: 33px;" th:if="${!signatureIssue && signatureIds.size() == 1}">
+                        <i class="fa-solid fa-circle-check"></i> Ce document contient une signature électronique qualifiée (eIDas)
+                        <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                            <span class="sr-only">En cours...</span>
+                        </div>
+                        <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la signature</button>
+                    </span>
+                    <span style="line-height: 33px;" th:if="${signatureIssue}">
+                        <div>
+                            <i class="fa-solid fa-circle-exclamation text-secondary"></i> Ce document contient une signature qui, bien que techniquement conforme, n’a pas pu être qualifiée par le système de signature.
+                            <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                            <span class="sr-only">En cours...</span>
+                            </div>
+                            <button es-modal-style="bg-warning" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="modal" data-bs-target="#reportModal">Voir la/les signature(s)</button>
+                        </div>
+                    </span>
+                    <script th:if="${signatureIds.size() >= 1}">
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-secondary" title="Signature électronique présente sur le document"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click();
+                    </script>
+                </div>
+                <div id="warningPdfA" title="Masquer ce message"
+                    class="alert bg-light warning d-flex align-items-center justify-content-between"
+                    th:if="${pdfaCheck != null && pdfaCheck.contains('6.3.5') && !globalProperties.disablePdfFontAlert}">
+                    <script>
+                        displayPdfAlertsBtn.append('<i class="fa-solid fa-triangle-exclamation text-danger"></i>');
+                        displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsBtn.click()
+
+                    </script>
+                    <div class="pdf-warning-bar bg-danger"></div>
+                    <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-triangle-exclamation text-danger"></i>Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</div>
+
+                </div>
+                <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                    <div id="commentHelp" th:unless="${signRequest.comments.size() > 0 || signRequest.parentSignBook.description != null}" class="alert alert-warning border-secondary d-none" style="width: 100%">
+                        Pour ajouter des annotations ou des emplacements de signature, cliquez sur le bouton correspondant puis sur le document
+
+                    </div>
+                </th:block>
             </div>
-        </th:block>
-        <th:block th:if="${comments.size() > 0}">
-            <div id="postitHelp" class="alert alert-warning border-dark" style="width: 100%">
-                Cette demande comporte des annotations <button id="showComments" class="btn btn-sm btn-secondary" >Voir les annotations</button>
-                <button class="btn btn-sm btn-close text-dark float-end" onclick="$(this).parent('div').remove();"></button>
-            </div>
-        </th:block>
+        </div>
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div tabindex="0" id="pdf" class="mx-auto" style="position: relative !important;">
+        <div tabindex="0" id="pdf" style="position: relative !important;">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
@@ -100,7 +147,7 @@
                     th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
                     es-comment-delete=true
                 >
-                    <i class="fa-solid fa-comment fa-3x"></i>
+                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
                 <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"
@@ -109,34 +156,41 @@
                     th:title="${comment.text}"
                     th:es-comment-text="${comment.text}"
                     th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                    es-comment-delete=false
                 >
-                    <i class="fa-solid fa-comment fa-3x"></i>
+                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
                 </div>
             </th:block>
-            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" th:title="${spot.text}" title="Cliquer pour supprimer l'emplacement de signature"
+            <th:block th:each="spot, iterator : ${spots}">
+                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" title="Cliquer pour supprimer l’emplacement de signature"
                     th:onmouseover="'$(\'#liveStep-' + ${spot.stepNumber} + '\').addClass(\'circle-border\');'"
                     th:onmouseout="'$(\'#liveStep-' + ${spot.stepNumber} + '\').removeClass(\'circle-border\');'">
-                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 300px; height: 150px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
+                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 200px; height: 100px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">
                         <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature étape ' + ${spot.stepNumber}"></span>
                         <span th:unless="${isManager}" th:text="'Emplacement de signature pour l\'étape ' + ${spot.stepNumber}"></span>
                     </div>
                 </div>
             </th:block>
-            <div id="comment-div" class="postit alert alert-warning border-dark">
-                <form>
+<!--            <th:block th:each="spot, iterator : ${spots}" th:if="${isManager && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">-->
+<!--                <div class="spot" th:id="'inDocSpot_' + ${spot.id}" title="Cliquer pour supprimer l’emplacement de signature">-->
+<!--                    <div th:id="'inDocSign_' + ${spot.id}" style="color: #000; width: 200px; height: 100px;" class="sign-field" th:data-es-delete="${isManager} ? 'true' :''">-->
+<!--                        <span th:if="${isManager}" th:text="'Cliquer pour supprimer l’emplacement de signature'"></span>-->
+<!--                        <span th:unless="${isManager}" th:text="'Emplacement de signature détecté"></span>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </th:block>-->
+            <div id="comment-div" class="postit alert alert-warning border-secondary" style="z-index: 100;">
                     <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                     <input id="commentPosX" name="commentPosX" type="hidden"/>
                     <input id="commentPosY" name="commentPosY" type="hidden"/>
                     <input id="commentPageNumber" name="commentPageNumber" type="hidden"/>
                     <textarea id="postitComment" name="comment" class="form-control postitarea float-start mb-2" placeholder="Saisir un commentaire" required></textarea>
-                    <button id="hideCommentButton" type="button" class="btn btn-sm btn-danger float-start">
-                        <i class="fa-solid fa-times"></i>
+                    <button id="hideCommentButton" type="button" class="btn btn-sm btn-danger float-start d-flex">
+                        <i class="fi fi-rr-cross-small"></i>
                     </button>
-                    <button id="saveCommentButton" type="button" class="btn btn-sm btn-success float-end">
-                        <i class="fa-solid fa-save"></i>
+                    <button id="saveCommentButton" type="button" class="btn btn-sm btn-success float-end d-flex">
+                        <i class="fi fi-rr-disk"></i>
                     </button>
-                </form>
             </div>
 
         </div>
@@ -148,10 +202,10 @@
                     title="Supprimer la signature"
                     class="btn btn-sm btn-light"
                     style="z-index: 3;">
-                <i class="fa-regular fa-trash-alt"></i>
+                <i class="fi fi-rr-trash"></i>
             </button>
-            <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Modifier ma signature'>
-                <i class='fa-solid fa-eraser'></i>
+            <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Dessiner ma signature'>
+                <i class="fi fi-rr-drawer-alt"></i>
             </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"
@@ -163,7 +217,7 @@
                     title="Reduire le text"
                     class="btn btn-sm btn-light"
                     style="z-index: 3; display: none">
-                <b style="font-size: 14px;">A</b>
+                <b style="font-size: 15px;">A</b>
             </button>
             <button type="button" id="signUndo_x"
                     class="btn btn-sm btn-light d-none"
@@ -180,19 +234,19 @@
                     title="Signature précédente"
                     class="btn btn-sm btn-light"
                     style="z-index: 3;">
-                <i class="fa-solid fa-chevron-up"></i>
+                <i class="fi fi-rr-left"></i>
             </button>
             <button type="button" id="signNextImage_x"
                     title="Signature suivante"
                     class="btn btn-sm btn-light"
                     style="z-index: 3;">
-                <i class="fa-solid fa-chevron-down"></i>
+                <i class="fi fi-rr-right"></i>
             </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
                     class="btn btn-sm btn-light"
                     style="z-index: 3;">
-                <i class="fa-solid fa-ellipsis-v"></i>
+                <i class="fi fi-rr-menu-dots-vertical"></i>
             </button>
         </div>
         <div id="extraTools_x" class="alert p-2 opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
@@ -201,38 +255,38 @@
                     title="Filigrane"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fab fa-markdown"></i> Filigrane
+                <i class="fi fi-rr-background"></i> Filigrane
             </button>
-            <hr style="margin: 1px;">
+            <hr th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" style="margin: 1px;">
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signExtra_x"
                     title="Ajouter les informations complémentaires (nom, date et heure...)"
                     class="btn btn-sm btn-light text-start d-none"
                     style="z-index: 3;">
-                <i class="fa-solid fa-receipt"></i> Textes complémentaires
+                <i class="fi fi-rr-receipt"></i> Textes complémentaires
             </button>
             <button type="button" id="extraType_x"
                     title="Afficher/Masquer le type de signature"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-solid fa-shield-halved"></i> Type de signature
+                <i class="fi fi-rr-shield-plus"></i> Type de signature
             </button>
             <button type="button" id="extraName_x"
                     title="Afficher/Masquer le nom"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-regular fa-user"></i> Prénom et nom
+                <i class="fi fi-rr-user"></i> Prénom et nom
             </button>
             <button type="button" id="extraDate_x"
                     title="Afficher/Masquer la date"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-regular fa-clock"></i> Date de signature
+                <i class="fi fi-rr-clock"></i> Date de signature
             </button>
             <button type="button" id="extraText_x"
                     title="Ajouter/Masquer un texte libre"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-solid fa-font"></i> Texte libre
+                <i class="fi fi-rr-text"></i> Texte libre
             </button>
             <hr style="margin: 1px;">
             <button type="button" id="signExtraOnTop_x"
@@ -240,19 +294,19 @@
                     class="btn btn-sm btn-light text-start"
                     disabled
                     style="z-index: 3;">
-                <i class="fa-solid fa-retweet"></i> <span>Au dessus</span>
+                <i class="fi fi-rr-arrows-retweet"></i> <span>Au dessus</span>
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-regular fa-copy"></i> Répéter
+                <i class="fi fi-rr-bring-forward"></i> Répéter
             </button>
             <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')')}" type="button" id="signImage_x"
                     title="Masquer l'image de votre signature"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
-                <i class="fa-solid fa-eye-slash"></i> Masquer l'image
+                <i class="fi fi-rr-eye-crossed"></i> Masquer l'image
             </button>
         </div>
     </div>
@@ -275,7 +329,7 @@
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
-                                <option data-placeholder="true">Choisir une étape</option>
+                                <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
                                     <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
                                 </th:block>
@@ -286,7 +340,7 @@
                             Annuler
                         </button>
                         <button id="save-spot-button" th:data-es-signrequest-id="${signRequest.id}" type="button" class="btn btn-sm btn-success float-end">
-                            <i class="fa-solid fa-save"></i> Enregistrer
+                            <i class="fi fi-rr-disk"></i> Enregistrer
                         </button>
                     </form>
                 </div>

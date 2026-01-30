@@ -2,7 +2,7 @@ import {UiParams} from "../utils/UiParams.js?version=@version@";
 
 export class HomeUi {
 
-    constructor(startFormId) {
+    constructor(startFormId, startWorkflowId) {
         console.info("Starting home UI");
         this.noFilterButton = $("#noFilterButton");
         this.workflowFilterButton = $("#workflowFilterButton");
@@ -11,12 +11,8 @@ export class HomeUi {
         this.workflowFilterStatus = true;
         this.formFilterStatus = true;
         this.globalFilterStatus = true;
-        this.menuToggled = false;
         this.uiParams = new UiParams();
         this.initListeners();
-        if(localStorage.getItem('menuToggled') === "true") {
-            this.toggleNewMenu();
-        }
         $(document).ready(function () {
             let oldSignRequests = $("#oldSignRequests");
             if(oldSignRequests.length) {
@@ -31,14 +27,25 @@ export class HomeUi {
                 recipientNotPresentSignRequests.modal('show');
             }
             if(startFormId != null) {
-                $('#form-button-' + startFormId)[0].click();
+                let formButton = $('#form-button-' + startFormId);
+                if(formButton.length) {
+                    formButton[0].click();
+                } else {
+                    bootbox.alert("Ce formulaire n'a pas été trouvé. Vérifier si vous avez bien les droits pour accéder à ce formulaire")
+                }
+            }
+            if(startWorkflowId != null) {
+                let workflowButton = $('#workflow-button-' + startWorkflowId);
+                if(workflowButton.length) {
+                    workflowButton.click();
+                } else {
+                    bootbox.alert("Ce circuit n'a pas été trouvé. Vérifier si vous avez bien les droits pour accéder à ce circuit")
+                }
             }
         });
     }
 
     initListeners() {
-        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
-        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
         this.noFilterButton.on('click', e => this.showAll(e));
         this.workflowFilterButton.on('click', e => this.filterWorkflows(e));
         this.globalFilterButton.on('click', e => this.filterGlobal(e));
@@ -56,28 +63,8 @@ export class HomeUi {
         });
     }
 
-    toggleNewMenu() {
-        console.info("toggle new menu");
-        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        // $('#to-sign-list').toggleClass('d-flex d-none');
-        let newDiv = $('#new-div');
-        newDiv.toggleClass('position-fixed');
-        newDiv.toggleClass('new-width');
-        newDiv.toggleClass('new-height');
-        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
-        $('#listSignRequestTable').toggleClass('d-none');
-        $('.newHr').toggleClass('d-none');
-        $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
-        $('.newToggled').toggleClass('d-none');
-        $('.noForm').toggleClass('d-none');
-        $('.noWorkflow').toggleClass('d-none');
-        this.menuToggled = !this.menuToggled;
-        localStorage.setItem('menuToggled', this.menuToggled);
-        $('#toggle-new-grid').toggleClass("btn-grid-display2")
-    }
-
     hideAll() {
-        $('.globalButton').addClass('d-none');
+        $('.global-button').addClass('d-none');
         $('.workflow-button').addClass('d-none');
         $('.form-button').addClass('d-none');
         this.noFilterButton.removeClass('btn-secondary');
@@ -91,7 +78,7 @@ export class HomeUi {
     }
 
     showAll() {
-        $('.globalButton').removeClass('d-none');
+        $('.global-button').removeClass('d-none');
         $('.workflow-button').removeClass('d-none');
         $('.form-button').removeClass('d-none');
         this.noFilterButton.addClass('btn-secondary');
@@ -110,7 +97,7 @@ export class HomeUi {
         this.hideAll();
         this.globalFilterButton.removeClass('btn-light');
         this.globalFilterButton.addClass('btn-secondary');
-        $('.globalButton').removeClass('d-none');
+        $('.global-button').removeClass('d-none');
         this.globalFilterStatus = !this.globalFilterStatus;
         return this.uiParams.set("globalFilterStatus", this.globalFilterStatus);
     }
@@ -133,11 +120,4 @@ export class HomeUi {
         return this.uiParams.set("formFilterStatus", this.formFilterStatus);
     }
 
-    activeHorizontalScrolling(e){
-        if(!this.menuToggled) {
-            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
-            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
-            e.preventDefault();
-        }
-    }
 }

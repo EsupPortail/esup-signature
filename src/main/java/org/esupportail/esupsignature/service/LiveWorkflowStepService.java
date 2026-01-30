@@ -9,7 +9,6 @@ import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
@@ -51,7 +50,7 @@ public class LiveWorkflowStepService {
         return liveWorkflowStepRepository.findById(liveWorkflowStepId).orElse(null);
     }
 
-    public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) {
+    public LiveWorkflowStep createLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, WorkflowStepDto step) throws EsupSignatureException {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonString = mapper.writeValueAsString(step);
@@ -73,8 +72,13 @@ public class LiveWorkflowStepService {
         liveWorkflowStep.setAttachmentRequire(Objects.requireNonNullElse(step.getAttachmentRequire(), false));
         liveWorkflowStep.setSignType(step.getSignType());
         liveWorkflowStep.setMinSignLevel(step.getMinSignLevel());
+        liveWorkflowStep.setMaxSignLevel(step.getMaxSignLevel());
         liveWorkflowStep.setSealVisa(step.getSealVisa());
         liveWorkflowStep.setConvertToPDFA(step.getConvertToPDFA());
+//        if(!step.getSignRequestParams().isEmpty()) {
+//            liveWorkflowStep.getSignRequestParams().clear();
+//            liveWorkflowStep.getSignRequestParams().addAll()
+//        }
         if(step.getSignType() == null) {
             SignLevel minLevel = SignLevel.simple;
             if(signRequestService.isSigned(signBook, null)) {
@@ -89,12 +93,12 @@ public class LiveWorkflowStepService {
             }
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
-        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         liveWorkflowStepRepository.save(liveWorkflowStep);
+        addRecipientsToWorkflowStep(signBook, liveWorkflowStep, step.getRecipients());
         return liveWorkflowStep;
     }
 
-    public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) {
+    public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
         liveWorkflowStep.setWorkflowStep(workflowStep);
         if(StringUtils.hasText(step.getDescription())) {
@@ -129,7 +133,7 @@ public class LiveWorkflowStepService {
         return liveWorkflowStep;
     }
 
-    public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) {
+    public List<Recipient> addRecipientsToWorkflowStep(SignBook signBook, LiveWorkflowStep liveWorkflowStep, List<RecipientWsDto> recipientWsDtos) throws EsupSignatureException {
         List<String> recipientsEmails = recipientService.getAllRecipientsEmails(recipientWsDtos);
         List<Recipient> recipients = new ArrayList<>();
         for (String recipientEmail : recipientsEmails) {
@@ -168,7 +172,9 @@ public class LiveWorkflowStepService {
                 recipients.add(recipient);
             }
         }
-        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) throw new EsupSignatureRuntimeException("Les destinataires sont vides ou n'ont pas été trouvés pour le circuit " + signBook.getWorkflowName());
+        if(liveWorkflowStep.getRecipients().isEmpty() && !liveWorkflowStep.getAutoSign()) {
+            throw new EsupSignatureException("Les destinataires sont vides ou n'ont pas été trouvés pour le circuit " + signBook.getWorkflowName());
+        }
         return recipients;
     }
 
@@ -199,6 +205,7 @@ public class LiveWorkflowStepService {
             throw new EsupSignatureException("Impossible de modifier les destinataires d'une étape déjà passée");
         }
         List<Recipient> oldRecipients = new ArrayList<>(liveWorkflowStep.getRecipients());
+        liveWorkflowStep.getRecipients().clear();
         for(Recipient oldRecipient : oldRecipients) {
             otpService.deleteOtp(signBookId, oldRecipient.getUser());
             if(!signBook.getViewers().contains(oldRecipient.getUser()) && signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
@@ -209,7 +216,6 @@ public class LiveWorkflowStepService {
                 signBook.getTeam().remove(oldRecipient.getUser());
             }
         }
-        liveWorkflowStep.getRecipients().clear();
         List<Recipient> recipients = addRecipientsToWorkflowStep(signBook, liveWorkflowStep, recipientWsDtos);
         if (signBook.getLiveWorkflow().getCurrentStep().equals(liveWorkflowStep)) {
             for (SignRequest signRequest : signBook.getSignRequests()) {
@@ -218,6 +224,9 @@ public class LiveWorkflowStepService {
                 }
                 for (Recipient recipient : recipients) {
                     signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+                    if(recipient.getUser().getUserType().equals(UserType.external)) {
+                        otpService.generateOtpForSignRequest(signBookId, recipient.getUser().getId(), recipient.getUser().getPhone(), true);
+                    }
                 }
             }
         }

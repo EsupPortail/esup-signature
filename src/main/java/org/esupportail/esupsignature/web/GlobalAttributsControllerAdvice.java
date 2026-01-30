@@ -30,9 +30,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
-@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller", "org.esupportail.esupsignature.web.otp"})
+@ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
 public class GlobalAttributsControllerAdvice {
 
@@ -95,12 +94,12 @@ public class GlobalAttributsControllerAdvice {
         if(userEppn != null) {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+            myGlobalProperties.newVersion = globalProperties.newVersion;
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
                 return;
             }
-            List<String> roles = userService.getRoles(userEppn);
             userService.parseRoles(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
@@ -111,7 +110,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("isOneSignShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign));
             model.addAttribute("isOneReadShare", userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read));
             model.addAttribute("managedWorkflowsSize",  workflowService.getWorkflowByManagersContains(authUserEppn).size());
-            model.addAttribute("isManager", preAuthorizeService.isManager(authUserEppn));
+            model.addAttribute("isRoleManager", preAuthorizeService.isManager(authUserEppn));
             model.addAttribute("infiniteScrolling", globalProperties.getInfiniteScrolling());
             model.addAttribute("validationToolsEnabled", validationService != null);
             model.addAttribute("globalProperties", myGlobalProperties);
@@ -133,7 +132,7 @@ public class GlobalAttributsControllerAdvice {
 
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
-            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(roles));
+            model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(userService.getRoles(userEppn)));
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());

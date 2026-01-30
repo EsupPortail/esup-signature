@@ -28,6 +28,9 @@ export class GlobalUi {
         this.initSideBar();
         this.checkCurrentPage();
         this.initTooltips();
+        this.lastWidth = window.innerWidth;
+        this.lastHeight = window.innerHeight;
+        window.__isResizingCross = false;
     }
 
     initListeners() {
@@ -90,6 +93,18 @@ export class GlobalUi {
             document.addEventListener('keydown', escHandler);
         });
 
+        document.querySelector('#shortcuts')
+            ?.querySelectorAll('a[role="button"]')
+            .forEach(el => {
+                el.addEventListener('keydown', e => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        el.click();
+                    }
+                });
+            });
+
         document.addEventListener('hidden.bs.modal', function (e) {
             const modal = e.target;
             if (modal._escHandler) {
@@ -133,8 +148,19 @@ export class GlobalUi {
         $("#display-side-btn").on('click', function(e) {
            $("#sidebar").toggleClass("sidebar-mobile");
         });
+        $(window).on("resize", (e) => {
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+            const deltaW = w - self.lastWidth;
+            const deltaH = h - self.lastHeight;
+            if (deltaW === 0 && deltaH === 0) return;
+            if(e.target.tagName == null) {
+                self.adjustUi();
+            }
+            self.lastWidth = w;
+            self.lastHeight = h;
+        });
 
-        window.addEventListener('resize', e => this.adjustUi());
         $(document).ready(e => this.onDocumentLoad());
         let self = this;
         let newSelfSign =$("#new-self-sign");
@@ -170,37 +196,16 @@ export class GlobalUi {
             wizUi.workflowSignStart();
         });
 
-        let startWizardButton = $("#start-wizard-button");
-        startWizardButton.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
-        });
-        startWizardButton.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
-        });
-
-        let startWizardButton2 = $("#start-wizard-button-2");
-        startWizardButton2.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
-        });
-        startWizardButton2.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
-        });
-
-        let startWizardButton3 = $("#start-wizard-button-3");
-        startWizardButton3.on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.target.click();
-            }
-        });
-        startWizardButton3.on('click', function(e) {
-            let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
-            wizUi.wizardWorkflowStart();
+        $(".start-wizard-buttons").each(function(){
+            $(this).on('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.target.click();
+                }
+            });
+            $(this).on('click', function(e) {
+                let wizUi = new WizUi("", $("#wiz-div"), self.csrf, self.maxSize);
+                wizUi.wizardWorkflowStart();
+            });
         });
 
         let startFormButton = $(".start-form-button");
@@ -272,18 +277,6 @@ export class GlobalUi {
             show: { effect: "fade", duration: 500 },
             hide: { effect: "fade", duration: 500 }
         });
-        // $("#tools").tooltip({
-        //     disabled: false,
-        //     show: { effect: "fade", duration: 500 },
-        //     hide: { effect: "fade", duration: 500 },
-        //     position: { my: "left top+5" }
-        // });
-        // $("#signButtons").tooltip({
-        //     disabled: false,
-        //     show: { effect: "fade", duration: 500 },
-        //     hide: { effect: "fade", duration: 500 },
-        //     position: { my: "left+15 center", at: "right center", collision: "flip" }
-        // });
     }
 
     initBootBox() {
@@ -373,6 +366,7 @@ export class GlobalUi {
     }
 
     hideMenus(event) {
+        $("#mega-result").modal('hide');
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
@@ -398,7 +392,6 @@ export class GlobalUi {
     }
 
     adjustUi() {
-
         if (window.innerWidth < 992) {
             console.info("auto adjust : hide");
             this.hideSideBar();
@@ -549,6 +542,22 @@ export class GlobalUi {
             self.slimSelectHack($(this))
         })
 
+        $(".intl-phone").each(function() {
+            intlTelInput(this, {
+                validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                strictMode: true,
+                separateDialCode: false,
+                nationalMode: true,
+                countryOrder: ["fr"],
+                initialCountry: "auto",
+                geoIpLookup: callback => {
+                    callback(navigator.language.split('-')[0]);
+                },
+                customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                searchPlaceholder: "Rechercher",
+            });
+        });
+
         $(".slim-select-filter").each(function () {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-filter for : " + selectName);
@@ -574,6 +583,12 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             let url = $(this).attr('es-search-url');
             let placeholderText = $(this).attr('es-search-text');
+            let addable = null;
+            if($(this).attr('es-search-addable') === "true") {
+                addable = function (value) {
+                    return value
+                };
+            }
             console.info("auto enable slim-select-filter-search for : " + selectName);
             let select = $("#" + selectName);
             new SlimSelect({
@@ -589,6 +604,7 @@ export class GlobalUi {
                     maxValuesShown: 40,
                 },
                 events: {
+                    addable: addable,
                     searchFilter: (option, search) => {
                         return true;
                     },
@@ -630,7 +646,7 @@ export class GlobalUi {
                 e.stopPropagation();
             });
             select.removeClass("spinner-border");
-            self.slimSelectHack($(this))
+            self.slimSelectHack($(this));
         })
 
         $(".slim-select-simple").each(function () {
@@ -696,12 +712,26 @@ export class GlobalUi {
         });
     }
 
+    enableSpectrum() {
+        $(".tag-color").each(function () {
+            $(this).spectrum({
+                type: "flat",
+                showPalette: false,
+                showPaletteOnly: true,
+                togglePaletteOnly: true,
+                showInput: true,
+                showAlpha: false
+            });
+        });
+    }
+
     onDocumentLoad() {
         console.info("global on load");
         // $.fn.modal.Constructor.prototype.enforceFocus = function () {};
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
+        this.enableSpectrum();
         this.adjustUi();
         this.sessionTimeout();
     }

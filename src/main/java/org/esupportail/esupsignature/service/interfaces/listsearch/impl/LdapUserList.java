@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.listsearch.impl;
 
+import jakarta.annotation.Resource;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -13,7 +14,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import jakarta.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

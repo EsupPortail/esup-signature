@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <div class="modal-header">
-    <h3 class="modal-title" id="sendSignRequestLabel">Créer une demande de signature</h3>
+    <h4 class="modal-title" id="sendSignRequestLabel"><i class="fi fi-rr-paper-plane-launch"></i> Envoyer une demande de signature</h4>
     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
@@ -34,55 +34,100 @@
                     </select>
                     <div id="tempUsers-recipientsEmails-1"></div>
                 </div>
-                <div class="form-check form-switch form-switch-md" id="all-sign-to-complete-div-1" style="display: none">
-                    <label  class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent-ils signer ?</label>
-                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete-1"/>
-                </div>
-            </div>
-            <div class="align-self-start">
-                <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
-                        type="button" class="btn btn-sm btn-transparent">
-                    <span class="fa-solid fa-info-circle text-info"></span>
-                </button>
-                <div class="collapse" id="collapseHelpSignType">
-                    <div class="alert alert-info">
-                        <small>
-                            <ul>
-                                <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
-                                <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
-                                <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
-                            </ul>
-                            <ul>
-                                <li>
-                                    <b>Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
-                                </li>
-                                <li>
-                                    <b>Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
-                                </li>
-                                <li>
-                                    <b>Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
-                                </li>
-                            </ul>
-                        </small>
+                <div id="all-sign-to-complete-div-1" style="display: none">
+                    <div class="form-check form-switch form-switch-md">
+                        <input type="radio" class="form-check-input" name="singleStep" value="false" id="single-steps-false-1" checked/>
+                        <label  class="form-check-label" for="single-steps-false-1">Les participants signent en série (une étape par participant)</label>
+                    </div>
+                    <div class="form-check form-switch form-switch-md">
+                        <input type="radio" class="form-check-input" name="singleStep" value="true" id="single-steps-true-1"/>
+                        <label  class="form-check-label" for="single-steps-true-1">Les participants peuvent signer en parallèle (une seule étape)</label>
+                    </div>
+                    <div class="form-check form-switch form-switch-md">
+                        <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete-1"/>
+                        <label class="form-check-label" for="all-sign-to-complete-1">Tous les participants doivent signer pour valider l'étape</label>
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2 mb-2">
-                    <div class="form-group w-50">
+                <script>
+                    const singleStepRadios = document.querySelectorAll('input[name="singleStep"]');
+                    const allSignToCompleteCheckbox = document.getElementById('all-sign-to-complete-1');
+                    function updateAllSignToComplete() {
+                        const isSingleStepTrue = document.getElementById('single-steps-true-1').checked;
+
+                        if (!isSingleStepTrue) {
+                            allSignToCompleteCheckbox.disabled = true;
+                            allSignToCompleteCheckbox.setAttribute('disabled', 'disabled');
+                            allSignToCompleteCheckbox.checked = false;
+                        } else {
+                            allSignToCompleteCheckbox.disabled = false;
+                            allSignToCompleteCheckbox.removeAttribute('disabled');
+                        }
+                    }
+                    singleStepRadios.forEach(radio => {
+                        radio.addEventListener('change', updateAllSignToComplete);
+                    });
+                    updateAllSignToComplete();
+                </script>
+            </div>
+            <div class="align-self-start">
+                <div class="d-flex flex-column gap-2 mb-2">
+                    <div class="form-group w-100">
                         <label class="form-label" for="signType-1">Choisir un type de signature *</label>
+                        <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
+                                type="button" class="btn btn-sm btn-transparent">
+                            <span class="fa-solid fa-info-circle text-info"></span>
+                        </button>
+                        <div class="collapse" id="collapseHelpSignType">
+                            <div class="alert alert-info mb-1">
+                                <small>
+                                    <ul>
+                                        <li><b>Signature :</b> La signature modifie le document en ajoutant une image et/ou en verrouillant le document, en fonction du niveau choisi.</li>
+                                        <li><b>Visa :</b> Le visa est une version simplifiée de la signature simple, l’utilisateur ne peut pas modifier le visuel de son visa. Le visa ne permet pas la signature avancée, mais il est possible de vérrouiller le document via le certificat cachet si votre plateforme en possède un.</li>
+                                        <li><b>Vérification :</b> La vérification permet juste de valider un document sans l’altérer</li>
+                                    </ul>
+                                    <ul>
+                                        <li>
+                                            <b><i class="fi fi-rr-attribution-pen"></i> Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
+                                        </li>
+                                        <li>
+                                            <b><i class="fi fi-rr-attribution-pen"></i>
+                                                <i class="fi fi-rr-seal"></i> Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
+                                        </li>
+                                        <li>
+                                            <b><i class="fi fi-rr-attribution-pen"></i>
+                                                <i class="fi fi-rr-badge-check"></i> Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
+                                        </li>
+                                    </ul>
+                                </small>
+                            </div>
+                        </div>
                         <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
                             <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || globalProperties.hideHiddenVisa == false}"
+                                <option th:value="${signType}"
                                         th:text="#{'signbook.signtype.' + ${signType}}"></option>
                             </th:block>
                         </select>
                     </div>
-                    <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
-                        <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
-                        <select class="form-select" name="minSignLevel" id="minSignLevel-1">
-                            <th:block th:each="signLevel : ${signLevels}">
-                                <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
-                            </th:block>
-                        </select>
+                    <div class="form-group w-10" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                        <label class="form-label">Niveaux de signature autorisés :</label>
+                        <div class="d-flex gap-5">
+                            <div>
+                                <small>Niveau minimum</small>
+                                <select class="form-select" name="minSignLevel" id="minSignLevel-1">
+                                    <th:block th:each="signLevel : ${signLevels}">
+                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <div>
+                                <small>Niveau maximum</small>
+                                <select class="form-select" name="maxSignLevel" id="maxSignLevel-1">
+                                    <th:block th:each="signLevel : ${signLevels}">
+                                        <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}" th:selected="${signLevel == T(org.esupportail.esupsignature.entity.enums.SignLevel).qualified}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
                         <label class="form-check-label">
@@ -123,12 +168,12 @@
     <button type="button" id="send-draft-button" class="btn btn-success">
         <div class="send-form-spinner spinner-border d-none" style="width: 1rem; height: 1rem;">
         </div>
-        <i class="fa-solid fa-save"></i> Placer des champs signature ou annoter
+        <i class="fi fi-rr-disk"></i> Placer des champs signature ou annoter
     </button>
     <button type="button" id="send-pending-button" class="btn btn-success">
         <div class="send-form-spinner spinner-border d-none" style="width: 1rem; height: 1rem;">
         </div>
-        <i class="fa-solid fa-paper-plane"></i> Envoyer immédiatement la demande
+        <i class="fi fi-rr-paper-plane"></i> Envoyer immédiatement la demande
     </button>
 </div>
 </html>

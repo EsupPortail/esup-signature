@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head-lite :: head-lite}"></head>
+<head th:replace="~{fragments/head-lite :: head}"></head>
 <body>
-<header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
+<header th:replace="~{fragments/nav-otp :: nav-otp}"></header>
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content-full ms-0">
@@ -48,14 +48,26 @@
                         <div id="otherMethod" class="accordion-collapse bg-light-subtle" th:classappend="${!securityServices.isEmpty() ? '' : 'show'}" style="min-width: 250px;">
                             <div class="accordion-body">
                                 <th:block th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).sms)}">
-                                    <p class="text-left"><b>Me transmettre un code OTP par SMS</b></p>
-                                    <p class="text-left" th:if="${!securityServices.isEmpty()}">
+                                    <p class="text-left small" th:if="${!securityServices.isEmpty()}">
                                         Attention ! Merci de privilégier les autres modes de connexion
                                     </p>
+                                    <p class="text-left"><b>Merci de compléter votre numéro de mobile afin de recevoir votre code SMS :</b></p>
                                     <div class="mb-4">
                                         <form id="phoneForm" th:method="'post'" th:action="'#'">
                                             <input type="hidden" name="urlId" th:value="${urlId}">
-                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.phone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.hidedPhone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
+                                            <script>
+                                                const phoneInput = document.getElementById("phone");
+
+                                                phoneInput.addEventListener("focus", () => {
+                                                    const v = phoneInput.value;
+                                                    const digits = v.replace(/\D/g, "");
+                                                    if (digits.length >= 4) {
+                                                        phoneInput.value = digits.slice(-4);
+                                                    }
+                                                    setTimeout(() => phoneInput.setSelectionRange(0, 0), 0);
+                                                });
+                                            </script>
                                             <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
                                         </form>
                                     </div>
@@ -119,8 +131,8 @@
                         },
                         body: formData
                     })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Erreur lors de l’envoi du numéro de mobile');
+                        .then(async response => {
+                            if (!response.ok) throw new Error(await response.text());
                             return response.text();
                         })
                         .then(data => {
@@ -141,7 +153,7 @@
         </div>
     </div>
 </main>
-<footer th:replace="~{fragments/footer-light :: footer}"></footer>
+<footer th:replace="~{fragments/footer-otp :: footer}"></footer>
 <div th:replace="~{fragments/message :: message}"></div>
 </body>
 </html>

@@ -17,30 +17,30 @@
  */
 package org.esupportail.esupsignature.service.security.shib;
 
-import org.esupportail.esupsignature.entity.MappingFiltersGroups;
-import org.esupportail.esupsignature.entity.MappingGroupsRoles;
-import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
-import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
-import org.esupportail.esupsignature.service.ldap.LdapGroupService;
-import org.esupportail.esupsignature.service.security.Group2UserRoleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+ import org.esupportail.esupsignature.entity.MappingFiltersGroups;
+ import org.esupportail.esupsignature.entity.MappingGroupsRoles;
+ import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
+ import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
+ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
+ import org.esupportail.esupsignature.service.security.Group2UserRoleService;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ import org.springframework.security.core.AuthenticationException;
+ import org.springframework.security.core.GrantedAuthority;
+ import org.springframework.security.core.authority.SimpleGrantedAuthority;
+ import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
+ import org.springframework.security.core.userdetails.User;
+ import org.springframework.security.core.userdetails.UserDetails;
+ import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+ import javax.naming.ldap.LdapName;
+ import javax.naming.ldap.Rdn;
+ import java.util.ArrayList;
+ import java.util.HashSet;
+ import java.util.Map;
+ import java.util.Set;
+ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
 
 public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
 
@@ -102,12 +102,14 @@ public class ShibAuthenticatedUserDetailsService implements AuthenticationUserDe
 				} catch (Exception e) {
 					logger.debug("unable to find credentials", e);
 				}
-				for(MappingFiltersGroups mappingFiltersGroups : mappingFiltersGroupsRepository.findAll()) {
-					ldapGroupService.getLdapFiltersGroups().put(mappingFiltersGroups.getGroupe(), mappingFiltersGroups.getQuery());
-				}
-				for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
-					ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
-				}
+                if (ldapGroupService != null) {
+                    for(MappingFiltersGroups mappingFiltersGroups : mappingFiltersGroupsRepository.findAll()) {
+                        ldapGroupService.getLdapFiltersGroups().put(mappingFiltersGroups.getGroupe(), mappingFiltersGroups.getQuery());
+                    }
+                    for(MappingGroupsRoles mappingGroupsRoles : mappingGroupsRolesRepository.findAll()) {
+                        ldapGroupService.getLdapFiltersGroups().put(mappingGroupsRoles.getGroupe(), mappingGroupsRoles.getRole());
+                    }
+                }
 				for(String mappingGroupesRole : mappingGroupesRoles.keySet()) {
 					if (credential.contains(mappingGroupesRole)) {
 						grantedAuthorities.add(new SimpleGrantedAuthority(mappingGroupesRoles.get(mappingGroupesRole)));

@@ -1,5 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -8,16 +12,12 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.annotation.Resource;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @CrossOrigin(origins = "*")
@@ -25,11 +25,6 @@ import java.util.List;
 @Controller
 @ConditionalOnExpression("${global.share-mode} > 0")
 public class UserShareController {
-
-    @ModelAttribute("paramMenu")
-    public String getActiveMenu() {
-        return "bg-secondary";
-    }
 
     @Resource
     private UserShareService userShareService;
@@ -51,6 +46,7 @@ public class UserShareController {
         model.addAttribute("forms", formService.getAuthorizedToShareForms());
         model.addAttribute("workflows", workflowService.getAuthorizedToShareWorkflows());
         model.addAttribute("activeMenu", "shares");
+        model.addAttribute("paramMenu", "shares");
         return "user/users/shares/list";
     }
 

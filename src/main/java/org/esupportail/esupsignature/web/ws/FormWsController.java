@@ -16,6 +16,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
@@ -28,10 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/ws/forms")
@@ -73,6 +71,8 @@ public class FormWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Création d'une nouvelle instance d'un formulaire")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<?> start(@PathVariable Long id,
+                                   @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
+                                   @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
                                    @RequestParam(required = false) @Parameter(description = "Paramètres des étapes (objet json)", array = @ArraySchema(schema = @Schema( implementation = WorkflowStepDto.class)), example =
                                            """
                                                   [{
@@ -97,8 +97,8 @@ public class FormWsController {
                                                     {
                                                       "signPageNumber": 1,
                                                       "signDocumentNumber": 0,
-                                                      "signWidth": 150,
-                                                      "signHeight": 75,
+                                                      "signWidth": 200,
+                                                      "signHeight": 100,
                                                       "xPos": 0,
                                                       "yPos": 0
                                                     }
@@ -164,19 +164,27 @@ public class FormWsController {
         if(formDatas != null) {
             datas = objectMapper.readValue(formDatas, type);
         }
-        List<WorkflowStepDto> workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+        List<WorkflowStepDto> workflowStepDtos = new ArrayList<>();
+        if(stepsJsonString != null) {
+            workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
+        }
         if (signRequestParamsJsonString != null) {
             List<SignRequestParamsWsDto> signRequestParamsWsDtos = userService.getSignRequestParamsWsDtosFromJson(signRequestParamsJsonString, "system");
             for(WorkflowStepDto workflowStepDto : workflowStepDtos) {
                 workflowStepDto.setSignRequestParams(signRequestParamsWsDtos);
             }
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, comment);
-        signBookService.addViewers(signBook.getId(), recipientsCCEmails);
-        if(json) {
-            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
-        } else {
-            return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
+        try {
+            SignBook signBook = signBookService.sendForSign(data.getId(), workflowStepDtos, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, null, title, sendEmailAlert, scanSignatureFields, null, orderSignsByName, comment);
+            signBookService.addViewers(signBook.getId(), recipientsCCEmails);
+            if(json) {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());
+            } else {
+                return ResponseEntity.ok(signBook.getSignRequests().get(0).getId().toString());
+            }
+        } catch (EsupSignatureException e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
 
@@ -195,6 +203,8 @@ public class FormWsController {
     public ResponseEntity<?> startWithDoc(@PathVariable Long id,
                                           @RequestParam @Parameter(description = "Multipart stream du fichier à signer") MultipartFile[] multipartFiles,
                                           @RequestParam @Parameter(description = "Eppn du propriétaire du futur document") String createByEppn,
+                                          @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
+                                          @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Scanner les champs signature (false par défaut)") Boolean scanSignatureFields,
                                           @RequestParam(required = false) @Parameter(description = "Multipart stream des pièces jointes") MultipartFile[] attachementMultipartFiles,
                                           @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (objet json)", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RecipientWsDto.class)))) List<WorkflowStepDto> steps,
                                           @RequestParam(required = false) @Parameter(description = "Liste des participants pour chaque étape (ancien nom)", example = "[stepNumber*email]") List<String> recipientEmails,
@@ -225,7 +235,13 @@ public class FormWsController {
         if(formDatas != null) {
             datas.putAll(objectMapper.readValue(formDatas, type));
         }
-        SignBook signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, comment);
+        SignBook signBook = null;
+        try {
+            signBook = signBookService.sendForSign(data.getId(), steps, targetEmails, targetUrls, createByEppn, createByEppn, true, datas, multipartFiles[0].getInputStream(), title, sendEmailAlert, scanSignatureFields, null, orderSignsByName, comment);
+        } catch (EsupSignatureException e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
         signRequestService.addAttachement(attachementMultipartFiles, null, signBook.getSignRequests().get(0).getId(), createByEppn);
         if(json) {
             return ResponseEntity.ok(signBook.getSignRequests().get(0).getId());

@@ -5,7 +5,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.export.WorkflowExportService;
@@ -37,24 +37,21 @@ public class ManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ManageController.class);
 
+    @ModelAttribute("activeMenu")
+    public String getActiveMenu() {
+        return "manage";
+    }
+
     private static final byte[] EXCEL_UTF8_HACK = new byte[] { (byte)0xEF, (byte)0xBB, (byte)0xBF};
 
     private final DataExportService dataExportService;
-
     private final DataService dataService;
-
     private final SignBookService signBookService;
-
     private final FormService formService;
-
     private final UserService userService;
-
     private final WorkflowService workflowService;
-
     private final WorkflowExportService workflowExportService;
-
     private final SignRequestService signRequestService;
-
     private final ChartsService chartsService;
 
     public ManageController(DataExportService dataExportService, DataService dataService, SignBookService signBookService, FormService formService, UserService userService, WorkflowService workflowService, WorkflowExportService workflowExportService, SignRequestService signRequestService, ChartsService chartsService) {
@@ -92,6 +89,7 @@ public class ManageController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
+                       @RequestParam(value = "hided", required = false, defaultValue = "false") Boolean hided,
                        @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
         SignRequestStatus signRequestStatus = null;
         if(StringUtils.hasText(statusFilter) && !statusFilter.equals("all")) {
@@ -114,9 +112,9 @@ public class ManageController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("hided", hided);
+        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
         model.addAttribute("signBooks", signBooks);
-//        model.addAttribute("creators", signBookService.getSignBooksForManagersCreators(workflow.getId()));
         return "user/manage/details";
     }
 
@@ -169,8 +167,8 @@ public class ManageController {
         Data data = dataService.addData(id, creator.getEppn());
         try {
             Map<String, String> datas = new HashMap<>();
-            signBookService.sendForSign(data.getId(), null, null, null,  creator.getEppn(), creator.getEppn(), true, datas, null, null, true, null);
-        } catch (EsupSignatureRuntimeException e) {
+            signBookService.sendForSign(data.getId(), null, null, null,  creator.getEppn(), creator.getEppn(), true, datas, null, null, true, true, null, false, null);
+        } catch (EsupSignatureException e) {
             logger.error("error on create form instance", e);
         }
         redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nouveau formulaire envoyé"));

@@ -1,18 +1,16 @@
 package org.esupportail.esupsignature.service.ldap;
 
+import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.mapper.OrganizationalUnitLdapAttributesMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.query.LdapQuery;
 import org.springframework.ldap.query.LdapQueryBuilder;
 import org.springframework.stereotype.Service;
-
-import jakarta.annotation.Resource;
 import org.springframework.util.StringUtils;
 
 import java.text.MessageFormat;
@@ -21,7 +19,6 @@ import java.util.List;
 
 @Service
 @ConditionalOnProperty(prefix = "spring.ldap", name = "base")
-@EnableConfigurationProperties(LdapProperties.class)
 public class LdapOrganizationalUnitService {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapOrganizationalUnitService.class);
@@ -33,7 +30,7 @@ public class LdapOrganizationalUnitService {
     private LdapTemplate ldapTemplate;
 
     public List<OrganizationalUnitLdap> getOrganizationalUnitLdaps(String supannCodeEntite) {
-        if(StringUtils.hasText(ldapProperties.getOuSearchFilter())) {
+        if(StringUtils.hasText(supannCodeEntite) && StringUtils.hasText(ldapProperties.getOuSearchFilter())) {
             String formattedFilter = MessageFormat.format(ldapProperties.getOuSearchFilter(), (Object[]) new String[]{supannCodeEntite});
             StringBuilder objectClasses = new StringBuilder();
             for (String objectClass : ldapProperties.getOuObjectClasses()) {
@@ -45,7 +42,12 @@ public class LdapOrganizationalUnitService {
                 logger.debug("no ouSearchFilter found");
             }
             logger.debug("search OrganizationalUnit by mail : " + formattedFilter);
-            LdapQuery ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
+            LdapQuery ldapQuery;
+            if(StringUtils.hasText(ldapProperties.getOuSearchBase())) {
+                ldapQuery = LdapQueryBuilder.query().base(ldapProperties.getOuSearchBase()).countLimit(20).filter(formattedFilter);
+            } else {
+                ldapQuery = LdapQueryBuilder.query().countLimit(20).filter(formattedFilter);
+            }
             return ldapTemplate.search(ldapQuery, new OrganizationalUnitLdapAttributesMapper());
         }
         return new ArrayList<>();

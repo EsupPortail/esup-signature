@@ -1,9 +1,6 @@
 package org.esupportail.esupsignature.entity;
 
-import eu.europa.esig.dss.enumerations.DigestAlgorithm;
-import eu.europa.esig.dss.enumerations.EncryptionAlgorithm;
-import eu.europa.esig.dss.enumerations.SignatureForm;
-import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.enumerations.*;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -29,6 +26,9 @@ public class NexuSignature {
 
 	@Enumerated(EnumType.STRING)
 	private SignatureLevel signatureLevel;
+
+    @Enumerated(EnumType.STRING)
+    private ASiCContainerType containerType;
 
 	@Enumerated(EnumType.STRING)
 	private DigestAlgorithm digestAlgorithm;
@@ -86,7 +86,15 @@ public class NexuSignature {
 		this.signatureLevel = signatureLevel;
 	}
 
-	public DigestAlgorithm getDigestAlgorithm() {
+    public ASiCContainerType getContainerType() {
+        return containerType;
+    }
+
+    public void setContainerType(ASiCContainerType containerType) {
+        this.containerType = containerType;
+    }
+
+    public DigestAlgorithm getDigestAlgorithm() {
 		return digestAlgorithm;
 	}
 

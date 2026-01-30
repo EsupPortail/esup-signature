@@ -67,9 +67,11 @@ public class SignRequestWsController {
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Recupération des paramètres de signature du documents")
     @PreAuthorize("@wsAccessTokenService.isAllAccess(#xApiKey)")
     public ResponseEntity<List<SignRequestParams>> getSignRequestParams(@Parameter(description = "Multipart stream du fichier à signer") @RequestParam MultipartFile[] multipartFiles,
+                                                                        @RequestParam(required = false, defaultValue = "false") @Parameter(description = "Trier les champs signature par leurs noms") Boolean orderSignsByName,
+                                                                        @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
                                                                         @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey
                                                                         ) throws IOException {
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, null, false));
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, signRequestParamsDetectionPattern, false, orderSignsByName));
     }
 
     @CrossOrigin
@@ -100,14 +102,16 @@ public class SignRequestWsController {
                                                   ],
                                                   "signRequestParams": [
                                                     {
+                                                      "pdSignatureFieldName": "string",
                                                       "signPageNumber": 1,
                                                       "signDocumentNumber": 0,
-                                                      "signWidth": 150,
-                                                      "signHeight": 75,
+                                                      "signWidth": 200,
+                                                      "signHeight": 100,
                                                       "xPos": 0,
                                                       "yPos": 0
                                                     }
                                                   ],
+                                                  "convertToPDFA": true,
                                                   "changeable": false,
                                                   "signLevel": 0,
                                                   "signType": "visa",
@@ -130,6 +134,8 @@ public class SignRequestWsController {
                                                   """) String stepsJsonString,
                                     @RequestParam(required = false) @Parameter(description = "EPPN du créateur/propriétaire de la demande") String createByEppn,
                                     @RequestParam(required = false) @Parameter(description = "Titre (facultatif)") String title,
+                                    @RequestParam(required = false) @Parameter(description = "Pattern de détéction d'emplacement") String signRequestParamsDetectionPattern,
+                                    @RequestParam(required = false) @Parameter(description = "Conserve les champs de signature") Boolean keepSignFields,
                                     @RequestParam(required = false) @Parameter(description = "Liste des personnes en copie (emails). Ne prend pas en charge les groupes") List<String> recipientsCCEmails,
                                     @RequestParam(required = false) @Parameter(description = "Commentaire") String comment,
                                     @RequestParam(required = false) @Parameter(description = "Envoyer la demande automatiquement") Boolean pending,
@@ -156,6 +162,9 @@ public class SignRequestWsController {
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;
         }
+        if(keepSignFields == null) {
+            keepSignFields = false;
+        }
         List<WorkflowStepDto> workflowStepDtos;
         if(stepsJsonString == null && recipientEmails != null) {
             workflowStepDtos = recipientService.convertRecipientEmailsToStep(recipientEmails);
@@ -167,10 +176,10 @@ public class SignRequestWsController {
                 workflowStepDto.setRecipientsCCEmails(recipientsCCEmails);
             });
         } else {
-            workflowStepDtos = recipientService.convertRecipientJsonStringToWorkflowStepDtos(stepsJsonString);
+            workflowStepDtos = recipientService.convertStepsJsonStringToWorkflowStepDtos(stepsJsonString);
         }
         if(workflowStepDtos != null) {
-            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl);
+            Map<SignBook, String> signBookStringMap = signBookService.createAndSendSignBook(title, multipartFiles, pending, workflowStepDtos, createByEppn, true, forceAllSign, targetUrl, signRequestParamsDetectionPattern, keepSignFields);
             List<String> signRequestIds = signBookStringMap.keySet().stream().flatMap(sb -> sb.getSignRequests().stream().map(signRequest -> signRequest.getId().toString())).toList();
             if(signRequestIds.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("-1");

@@ -18,23 +18,23 @@
             <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a th:if="${signBook.isEditable()}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg text-dark bg-primary float-end">
-                            <i class="fa-solid fa-file-medical fa-2xl"></i>
+                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg bg-primary float-end">
+                            <i class="fi fi-rr-add-document fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end m-2">
-                            <i class="fa-solid fa-shoe-prints fa-2xl"></i>
+                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end">
+                            <i class="fi fi-rr-workflow-setting fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
-                            <i class="fa-solid fa-save fa-2xl"></i>
+                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
                         <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary" title="Retour au parapheur">
-                            <i class="fa-solid fa-door-open fa-2xl"></i>
+                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>
@@ -84,14 +84,14 @@
                                     <td class="text-break" th:text="${signRequest.title}"></td>
                                     <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
                                     <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
-                                    <td th:if="${signBook.isEditable()}" class="">
+                                    <td th:if="${signBook.isEditable() && signRequest.createBy.eppn == userEppn}" class="">
                                         <div class="dropdown position-relative">
                                             <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
                                                 <i class="fa-solid fa-ellipsis-v"></i>
                                             </button>
                                             <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
                                                 <li>
-                                                    <a th:if="${signRequest.createBy.eppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                                                    <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                                                         <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                     </a>
                                                 </li>
@@ -135,7 +135,7 @@
     </div>
 </main>
 
-<div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true">
+<div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true" th:if="${signBook.createBy.eppn == userEppn && signBook.isEditable()}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${signBook.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
@@ -175,39 +175,72 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-3" id="_signType_div_id">
-                        <label for="stepNumber">Ajouter cette étape :</label>
-                        <div class="form-group mb-3">
+                        <div class="form-check form-switch form-switch-md mb-3">
+                            <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" />
+                            <label for="autoSign" class="form-check-label">
+                                L'étape est en cachet d’établissement automatique
+                            </label>
+                            <script>
+                                $("#autoSign").on('change', function(){
+                                    if($(this).is(":checked")) {
+                                        bootbox.confirm('Attention tous les paramètres de cette étape seront perdus après la validation', function (result){
+                                            if(result) {
+                                                $("#all-sign-to-complete-div").addClass("d-none");
+                                                $("#sign-type-div").addClass("d-none");
+                                                $("#recipients-div").addClass("d-none");
+                                                $("#recipientsEmails2").removeAttr("required");
+                                                // Ajouter ces lignes
+                                                $("#stepNumber-div").addClass("d-none");
+                                                $("#stepNumber").val("-1");
+                                            } else {
+                                                $("#autoSign").click();
+                                            }
+                                        });
+                                    } else {
+                                        $("#all-sign-to-complete-div").removeClass("d-none");
+                                        $("#sign-type-div").removeClass("d-none");
+                                        $("#recipients-div").removeClass("d-none");
+                                        $("#recipientsEmails2").attr("required", "required");
+                                        // Ajouter ces lignes
+                                        $("#stepNumber-div").removeClass("d-none");
+                                    }
+                                });
+                            </script>
+                        </div>
+                        <div class="form-group mb-3" id="stepNumber-div">
+                            <label for="stepNumber">Ajouter cette étape :</label>
                             <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
                                 <option th:value="0" th:text="${'Au début'}"></option>
-                                <!--/*@thymesVar id="allSteps" type="List<WorkflowStep>"*/-->
                                 <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
                                 <option th:value="-1" th:text="${'A la fin'}"></option>
                             </select>
                         </div>
-                        <label for="recipientsEmails2">Choisir les participants *</label>
-                        <div class="form-group mb-3">
-                            <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
-                            <div id="tempUsers-recipientsEmails2"></div>
+                        <div class="form-group mb-3" id="recipients-div">
+                            <label for="recipientsEmails2">Choisir les participants *</label>
+                            <div class="form-group mb-3">
+                                <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
+                                <div id="tempUsers-recipientsEmails2"></div>
+                            </div>
                         </div>
                         <div class="form-group mb-3" id="all-sign-to-complete-div">
                             <div class="form-check form-switch form-switch-md">
-                                <label class="form-check-label" for="all-sign-to-complete">Tous les participants doivent-ils signer ?</label>
+                                <label class="form-check-label" for="all-sign-to-complete">Tous les participants doivent signer pour valider l'étape</label>
                                 <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
                             </div>
                         </div>
-                        <label for="signType_id">Type de signature</label>
-                        <select class="slim-select-simple" id="signType_id" name="signType" size="1">
-                            <th:block th:each="signType : ${signTypes}">
-                                <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
-                            </th:block>
-                        </select>
+                        <div class="form-group mb-3" id="sign-type-div">
+                            <label for="signType_id">Type de signature</label>
+                            <select class="slim-select-simple" id="signType_id" name="signType" size="1">
+                                <th:block th:each="signType : ${signTypes}">
+                                    <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-success">
-                        Enregistrer
-                    </button>
+                    <button type="submit" class="btn btn-success">Enregistrer</button>
                 </div>
             </form>
             <script th:inline="javascript" type="module">

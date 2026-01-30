@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="new-modals" class="w-100" th:with="isUserOnSu = ${userEppn != authUserEppn}">
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-self-sign-modal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-self-sign-modal" th:unless="${globalProperties.hideAutoSign}"  role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-self-sign-div" class="wiz-transition">
                 </div>
@@ -10,8 +10,8 @@
         </div>
     </div>
 
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-fast-sign-modal" th:unless="${globalProperties.hideSendSignRequest}" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-fast-sign-modal" th:unless="${globalProperties.hideSendSignRequest}" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-fast-sign-div" class="wiz-transition">
                 </div>
@@ -19,32 +19,32 @@
         </div>
     </div>
 
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-custom-sign-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-custom-sign-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-custom-sign-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-workflow-sign-modal" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-workflow-sign-modal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-workflow-sign-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-modal" th:unless="${globalProperties.hideWizard}" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-div" class="wiz-transition"></div>
             </div>
         </div>
     </div>
 
-    <div data-bs-backdrop="static" data-bs-focus="false" class="modal fade" id="wiz-start-form-modal"  role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <div data-bs-backdrop="static" data-bs-focus="false" class="modal modal-xl fade" id="wiz-start-form-modal"  role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div id="wiz-start-form-div" class="wiz-transition"></div>
             </div>

@@ -91,26 +91,21 @@ public class SeleniumTest {
         try {
             wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
         } catch (Exception e) {
-            System.out.println("Element non trouvé dans le délai spécifié.");
+            logger.warn("Element non trouvé dans le délai spécifié.", e);
         }
         // Cliquer sur le bouton "addSignButton2"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
         // Exécuter du JavaScript pour récupérer "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Récupérer l'attribut "signBookId"
-        String signBookId = driver.findElement(By.id("content")).getAttribute("data-es-signbook-id");
+        String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Cliquer sur le bouton "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Cliquer sur le bouton "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
-        try {
-            // Attendre que la modal "wait" soit visible
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
-            // Attendre que la modal "wait" ne soit plus visible
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
-        } catch (Exception e) {
-            System.out.println("Element non trouvé dans le délai spécifié.");
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
+        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         // Cliquer sur le bouton "link-dashboard"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
         // Attendre la présence de l'élément "signbook-${signBookId}"
@@ -137,13 +132,22 @@ public class SeleniumTest {
         // Type file path
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
-        // Click the recipient field
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#recipientsEmails-1 + div"))).click();
-        // Type "justin"
-        WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".ss-search > input")));
+        String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
+        WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
+        selectContainer.click();
+        WebElement searchInput = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
+                )
+        );
+        searchInput.click();
         searchInput.sendKeys("justin");
-        // Select the recipient from the list
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".ss-list > .ss-option"))).click();
+        WebElement option = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-list .ss-option")
+                )
+        );
+        option.click();
         // Click "send-pending-button"
         WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
         sendPendingButton.click();
@@ -153,20 +157,14 @@ public class SeleniumTest {
         // Execute JavaScript to store "signRequestId"
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
         // Store attribute "signBookId"
-        String signBookId = driver.findElement(By.id("content")).getAttribute("data-es-signbook-id");
+        String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Click "signLaunchButton"
         wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
         // Click "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd"))).click();
-        try {
-            // Attendre que la modal "wait" soit visible
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("wait")));
-            // Attendre que la modal "wait" ne soit plus visible
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("wait")));
-        } catch (Exception e) {
-            // Click "checkValidateSignButtonEnd"
-            System.out.println("Element non trouvé dans le délai spécifié.");
-        }
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
+        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         // Click "link-dashboard" button
         wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
         // Wait for element present "signbook-${signBookId}"
@@ -198,8 +196,10 @@ public class SeleniumTest {
         actions.moveToElement(canvas, -1, -1).click().perform();
         actions.moveToElement(canvas, 0, 0).click().perform();
         actions.moveToElement(canvas, 1, 1).click().perform();
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("saveButton"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("saveButton")));
+        WebElement btn = driver.findElement(By.id("saveButton"));
+        btn.click();
+        wait.until(ExpectedConditions.stalenessOf(btn));
         try {
             // Attendre que la modal "wait" soit visible
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("toast-backdrop")));
@@ -209,6 +209,7 @@ public class SeleniumTest {
             // Click "checkValidateSignButtonEnd"
             System.out.println("Element non trouvé dans le délai spécifié.");
         }
+
         List<WebElement> elements = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("[id^='deleteSign_']")));
         for(WebElement element : elements) {
             element.click();

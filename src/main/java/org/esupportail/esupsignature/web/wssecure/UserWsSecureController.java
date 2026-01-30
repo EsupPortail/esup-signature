@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.wssecure;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
@@ -10,8 +9,6 @@ import org.esupportail.esupsignature.service.FieldPropertieService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
-import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,38 +17,39 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/users")
 public class UserWsSecureController {
 
-    @Resource
-    private UserPropertieService userPropertieService;
+    private final UserPropertieService userPropertieService;
+    private final FieldPropertieService fieldPropertieService;
+    private final UserService userService;
+    private final RecipientService recipientService;
 
-    @Resource
-    private FieldPropertieService fieldPropertieService;
+    public UserWsSecureController(UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, UserService userService, RecipientService recipientService) {
+        this.userPropertieService = userPropertieService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.userService = userService;
+        this.recipientService = recipientService;
+    }
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private ExtValueService extValueService;
-
-    @Resource
-    private RecipientService recipientService;
-
-    @GetMapping(value="/search-extvalue")
     @ResponseBody
-    public List<Map<String, Object>> searchValue(@RequestParam(value="searchType") String searchType, @RequestParam(value="searchString") String searchString, @RequestParam(value = "serviceName") String serviceName, @RequestParam(value = "searchReturn") String searchReturn) {
-        ExtValue extValue = extValueService.getExtValueServiceByName(serviceName);
-        List<Map<String, Object>> values = extValue.search(searchType, searchString, searchReturn);
-        return values.stream().sorted(Comparator.comparing(v -> v.values().iterator().next().toString())).collect(Collectors.toList());
+    @PostMapping(value ="/check-temp-users")
+    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+        return new ArrayList<>(userService.checkTempUsers(
+                recipientService
+                        .convertRecipientEmailsToStep(recipientEmails)
+                        .stream()
+                        .map(WorkflowStepDto::getRecipients)
+                        .flatMap(List::stream)
+                        .toList()
+        ));
     }
 
     @ResponseBody
@@ -76,12 +74,6 @@ public class UserWsSecureController {
     @ResponseBody
     public void setUiParams(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String key, @PathVariable String value) {
         userService.setUiParams(authUserEppn, UiParams.valueOf(key), value);
-    }
-
-    @ResponseBody
-    @PostMapping(value ="/check-temp-users")
-    private List<User> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
-        return userService.checkTempUsers(recipientService.convertRecipientEmailsToStep(recipientEmails).stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList());
     }
 
     @GetMapping(value = "/get-sign-image/{id}")
@@ -130,6 +122,7 @@ public class UserWsSecureController {
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
         response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
+        response.setHeader("Cache-Control", "public, max-age=86400");
         response.setContentType(contentType);
         IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);

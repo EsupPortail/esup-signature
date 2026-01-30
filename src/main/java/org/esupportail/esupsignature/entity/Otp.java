@@ -37,6 +37,9 @@ public class Otp {
 
     private Boolean forceSms = false;
 
+    @Transient
+    transient private String mailFrom;
+
     public Long getId() {
         return id;
     }
@@ -128,4 +131,11 @@ public class Otp {
         this.forceSms = forceSms;
     }
 
+    public String getMailFrom() {
+        return mailFrom;
+    }
+
+    public void setMailFrom(String mailFrom) {
+        this.mailFrom = mailFrom;
+    }
 }

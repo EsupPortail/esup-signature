@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.wssecure;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -31,6 +30,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @CrossOrigin(origins = "*")
@@ -41,32 +41,25 @@ public class GlobalWsSecureController {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalWsSecureController.class);
 
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private DocumentService documentService;
-
-    @Resource
-    private SedaExportService sedaExportService;
-
-    @Resource
-    private CommentService commentService;
-
-    @Resource
-    private WorkflowService workflowService;
-
     private final GlobalProperties globalProperties;
+    private final SignRequestService signRequestService;
+    private final SignBookService signBookService;
+    private final DocumentService documentService;
+    private final SedaExportService sedaExportService;
+    private final CommentService commentService;
+    private final WorkflowService workflowService;
 
-    public GlobalWsSecureController(GlobalProperties globalProperties) {
+    public GlobalWsSecureController(GlobalProperties globalProperties, SignRequestService signRequestService, SignBookService signBookService, DocumentService documentService, SedaExportService sedaExportService, CommentService commentService, WorkflowService workflowService) {
         this.globalProperties = globalProperties;
+        this.signRequestService = signRequestService;
+        this.signBookService = signBookService;
+        this.documentService = documentService;
+        this.sedaExportService = sedaExportService;
+        this.commentService = commentService;
+        this.workflowService = workflowService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestSign(#signRequestId, #userEppn, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/sign/{signRequestId}")
     public ResponseEntity<String> sign(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId,
                                        @RequestParam(value = "signRequestParams") String signRequestParamsJsonString,
@@ -74,14 +67,26 @@ public class GlobalWsSecureController {
                                        @RequestParam(value = "formData", required = false) String formData,
                                        @RequestParam(value = "password", required = false) String password,
                                        @RequestParam(value = "certType", required = false) String certType,
+                                       @RequestParam(value = "signAll", required = false) Boolean signAll,
+                                       @RequestParam(value = "sealCertificat", required = false) String sealCertificat,
                                        HttpSession httpSession) throws IOException {
         Object userShareString = httpSession.getAttribute("userShareId");
         Long userShareId = null;
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
-            StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, userShareId, userEppn, authUserEppn);
-            if(stepStatus.equals(StepStatus.nexu_redirect)) {
-                return ResponseEntity.ok().body("initNexu");
+            if(signAll == null || !signAll) {
+                StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                if(stepStatus.equals(StepStatus.nexu_redirect)) {
+                    return ResponseEntity.ok().body("initNexu");
+                }
+            } else {
+                List<SignRequest> signRequests = signRequestService.getSignRequests(signRequestId);
+                for(SignRequest signRequest : signRequests) {
+                    StepStatus stepStatus = signBookService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                    if(stepStatus.equals(StepStatus.nexu_redirect)) {
+                        return ResponseEntity.ok().body("initNexu");
+                    }
+                }
             }
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
@@ -91,7 +96,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#signRequestId, #userEppn, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/viewed/{signRequestId}")
     public ResponseEntity<Void> viewedBy(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId) {
         signRequestService.viewedBy(signRequestId, userEppn);
@@ -172,7 +176,6 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-files/{id}", produces = "application/zip")
-    @ResponseBody
     public ResponseEntity<Void> getLastFiles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureFsException {
         httpServletResponse.setContentType("application/zip");
         httpServletResponse.setStatus(HttpServletResponse.SC_OK);
@@ -183,7 +186,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.documentCreator(#documentId, #authUserEppn)")
-    @ResponseBody
     @PostMapping(value = "/remove-doc/{documentId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public String removeDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("documentId") Long documentId) {
         logger.info("remove document " + documentId);
@@ -204,6 +206,15 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/delete-spot/{id}/{spotId}")
+    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    public void deleteSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("spotId") Long spotId,
+                           @PathVariable("id") Long id,
+                           RedirectAttributes redirectAttributes) {
+        signRequestService.deleteSpot(id, spotId);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
@@ -213,7 +224,6 @@ public class GlobalWsSecureController {
     }
 
     @GetMapping(value = "/warning-readed")
-    @ResponseBody
     public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
         signRequestService.warningReaded(authUserEppn);
     }
@@ -231,7 +241,6 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
-    @ResponseBody
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
         logger.info("start add documents");
@@ -239,7 +248,7 @@ public class GlobalWsSecureController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
         try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn);
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false);
         } catch(Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
@@ -248,14 +257,12 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/silent-delete-signbook/{id}", produces = "text/html")
-    @ResponseBody
     public void silentDeleteSignBook(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id) {
         signBookService.deleteDefinitive(id, authUserEppn);
     }
 
     @DeleteMapping(value = "/silent-delete-workflow/{id}", produces = "text/html")
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
-    @ResponseBody
     public void silentDeleteWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id) throws EsupSignatureRuntimeException {
         workflowService.delete(id);
     }

@@ -33,11 +33,12 @@ import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,7 +55,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@EnableConfigurationProperties(GlobalProperties.class)
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -149,7 +149,11 @@ public class UserService {
         return list;
     }
 
-    @Transactional
+    public List<User> getAllLdapUsers() {
+        return userRepository.findAllByUserType(UserType.ldap);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
     public User getUserByEmail(String email) {
         if(EmailValidator.getInstance().isValid(email) || email.equals("system") || email.equals("creator") || email.equals("scheduler") || email.equals("generic")) {
             Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(email);
@@ -507,6 +511,7 @@ public class UserService {
                 }
             }
             personLightLdaps.removeAll(personLightLdapsToRemove);
+            personLightLdaps.removeAll(personLightLdaps.stream().filter(personLightLdap -> globalProperties.getForcedExternalsDomainList().stream().anyMatch(personLightLdap.getMail()::contains)).toList());
             for (User user : users) {
                 if(user.getEppn().equals("creator")) {
                     personLightLdaps.add(getPersonLdapLightFromUser(user));
@@ -581,6 +586,7 @@ public class UserService {
         return personLdap;
     }
 
+    @Cacheable(value = "ldapLightCache", key = "#user.id")
     public PersonLightLdap findPersonLdapLightByUser(User user) {
         PersonLightLdap personLdap = null;
         if (ldapPersonLightService != null) {
@@ -620,6 +626,52 @@ public class UserService {
         authUser.getUiParams().put(UiParams.valueOf(name), "true");
     }
 
+    @Transactional
+    public List<Long> getFavoriteIds(String authUserEppn, UiParams uiParams) {
+        User authUser = getByEppn(authUserEppn);
+        if(authUser.getUiParams().containsKey(uiParams)) {
+            return Arrays.stream(authUser.getUiParams().get(uiParams).split(",")).map(s -> {
+                try {
+                    return Long.valueOf(s);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }).filter(Objects::nonNull).toList();
+        }
+        return new ArrayList<>();
+    }
+
+    @Transactional
+    public boolean toggleFavorite(String authUserEppn, Long id, UiParams uiParams) {
+        boolean result;
+        User authUser = getByEppn(authUserEppn);
+        String favorites = authUser.getUiParams().get(uiParams);
+        if(favorites == null || favorites.equals("null")) {
+            favorites = "";
+        }
+        List<Long> favoritesIds = new ArrayList<>(Arrays.stream(favorites.split(","))
+                .map(s -> {
+                    try {
+                        return Long.valueOf(s);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList());
+        if(favoritesIds.contains(id)) {
+            favoritesIds.remove(id);
+            result = false;
+        } else {
+            favoritesIds.add(id);
+            result = true;
+        }
+        favorites = favoritesIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        authUser.getUiParams().put(uiParams, favorites);
+        return result;
+
+    }
+
     public UserType checkMailDomain(String email) {
         String[] emailSplit = email.split("@");
         if (emailSplit.length > 1) {
@@ -655,12 +707,8 @@ public class UserService {
         if (recipients!= null && !recipients.isEmpty()) {
             try {
                 List<User> users = getTempUsersFromRecipientList(recipients);
-                if (smsService != null || !globalProperties.getSmsRequired()) {
+                if (!users.isEmpty()) {
                     return users;
-                } else {
-                    if (!users.isEmpty()) {
-                        return null;
-                    }
                 }
             } catch (EsupSignatureRuntimeException e) {
                 logger.error(e.getMessage(), e);
@@ -676,13 +724,15 @@ public class UserService {
         for (RecipientWsDto recipient : recipients) {
             if(recipient != null) {
                 Optional<User> optionalUser = userRepository.findByEmailIgnoreCase(recipient.getEmail());
-                if(optionalUser.isPresent() && optionalUser.get().getUserType().equals(UserType.external)) {
+                if(optionalUser.isPresent() && (optionalUser.get().getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(optionalUser.get().getEmail()::contains))) {
+                    optionalUser.get().setUserType(UserType.external);
                     tempUsers.add(optionalUser.get());
                 } else {
                     List<String> groupUsers = new ArrayList<>(userListService.getUsersEmailFromList(recipient.getEmail()));
-                    if (groupUsers.isEmpty() && !recipient.getEmail().contains(globalProperties.getDomain())) {
+                    if (groupUsers.isEmpty() && (!recipient.getEmail().contains(globalProperties.getDomain()) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
                         User recipientUser = getUserByEmail(recipient.getEmail());
-                        if (recipientUser != null && recipientUser.getUserType().equals(UserType.external)) {
+                        if (recipientUser != null && (recipientUser.getUserType().equals(UserType.external) || globalProperties.getForcedExternalsDomainList().stream().anyMatch(recipient.getEmail()::contains))) {
+                            recipientUser.setUserType(UserType.external);
                             tempUsers.add(recipientUser);
                         }
                     }
@@ -726,7 +776,7 @@ public class UserService {
         return new ArrayList<>(users);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getKeystoreByUser(String authUserEppn) throws IOException {
         User authUser = getByEppn(authUserEppn);
         Map<String, Object> keystore = new HashMap<>();
@@ -736,7 +786,7 @@ public class UserService {
         return keystore;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<String, Object> getSignatureByUserAndId(String authUserEppn, Long id) throws IOException {
         Map<String, Object> signature = new HashMap<>();
         User authUser = getByEppn(authUserEppn);
@@ -945,8 +995,24 @@ public class UserService {
     }
 
     @Transactional
+    public InputStream getFavoriteImage(String eppn) throws IOException {
+        User user = getByEppn(eppn);
+        if(user.getDefaultSignImageNumber() == 999998) {
+            return getDefaultImage(eppn);
+        } else if (user.getDefaultSignImageNumber() == 999997) {
+            return getDefaultParaphe(eppn);
+        }
+        return user.getSignImages().get(user.getDefaultSignImageNumber()).getInputStream();
+    }
+
+    @Transactional
     public String getDefaultImage64(String eppn) throws IOException {
         return fileService.getBase64Image(getDefaultImage(eppn), "default");
+    }
+
+    @Transactional
+    public String getFavoriteImage64(String eppn) throws IOException {
+        return fileService.getBase64Image(getFavoriteImage(eppn), "default");
     }
 
     @Transactional
@@ -1030,9 +1096,9 @@ public class UserService {
     }
 
     @Transactional
-    public List<String> getRoles(String userEppn) {
+    public Set<String> getRoles(String userEppn) {
         User user = getByEppn(userEppn);
-        return new ArrayList<>(user.getRoles());
+        return user.getRoles();
     }
 
     @Transactional

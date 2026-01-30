@@ -9,6 +9,8 @@ import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
@@ -29,7 +31,9 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "security.shib", name = "principal-request-header")
 public class ShibSecurityServiceImpl implements SecurityService {
 
-	private final LdapGroupService ldapGroupService;
+    private static final Logger logger = LoggerFactory.getLogger(ShibSecurityServiceImpl.class);
+
+    private final LdapGroupService ldapGroupService;
 	private final WebSecurityProperties webSecurityProperties;
 	private final SpelGroupService spelGroupService;
 	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
@@ -39,6 +43,9 @@ public class ShibSecurityServiceImpl implements SecurityService {
 
     public ShibSecurityServiceImpl(@Autowired(required = false) LdapGroupService ldapGroupService, @Autowired(required = false) WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, ShibProperties shibProperties, ShibAuthenticationSuccessHandler shibAuthenticationSuccessHandler) {
         this.ldapGroupService = ldapGroupService;
+        if(this.ldapGroupService != null) {
+            this.ldapGroupService.loadLdapFiltersGroups();
+        }
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
@@ -116,6 +123,7 @@ public class ShibSecurityServiceImpl implements SecurityService {
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
+        spelGroupService.initGroupMappingSpel();
 		group2UserRoleService.setGroupService(spelGroupService);
 		shibAuthenticatedUserDetailsService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		shibAuthenticatedUserDetailsService.setGroup2UserRoleService(group2UserRoleService);

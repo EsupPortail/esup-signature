@@ -7,7 +7,7 @@
                 <div id="stepper" class="bs-stepper vertical" >
                     <div class="bs-stepper-header" role="tablist">
                         <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                            <div class="step border border-dark bg-white rounded p-1" th:id="'step-' + ${iterator.index}">
+                            <div class="step border border-secondary bg-white rounded p-1 border-2" th:id="'step-' + ${iterator.index}">
                                 <div class="step-trigger">
                                     <span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}"></span>
                                     <div class="bs-stepper-label" style="overflow: clip;">

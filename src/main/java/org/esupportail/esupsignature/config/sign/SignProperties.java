@@ -13,8 +13,28 @@ public class SignProperties {
     private SignatureLevel xadesSignatureLevel;
     private DigestAlgorithm cadesDigestAlgorithm;
     private SignatureLevel cadesSignatureLevel;
-    private ASiCContainerType containerType;
-    private SignaturePackaging signaturePackaging;
+
+    /**
+     * Représente le type de conteneur ASiC utilisé pour les signatures numériques.
+     *
+     * La variable containerType définit le type de conteneur (ASiC-E ou ASiC-S) utilisé
+     * dans les processus de signature numérique. Le choix du type de conteneur peut
+     * influencer la structure et la gestion des fichiers signés.
+     */
+    private ASiCContainerType containerType = ASiCContainerType.ASiC_E;
+
+    /**
+     * Définit la méthode d'emballage de la signature à utiliser pour les documents non PDF
+     *
+     * SignaturePackaging représente une norme décrivant comment la signature est intégrée
+     * par rapport aux données. Les options possibles incluent notamment :
+     * - ENVELOPED : la signature est incluse dans les données signées.
+     * - ENVELOPING : la signature contient les données signées.
+     * - DETACHED : la signature est séparée des données signées (à utiliser obligatoirement avec ASiC).
+     *
+     * Cette variable est utilisée pour configurer le mode d'intégration de la signature par défaut.
+     */
+    private SignaturePackaging signaturePackaging = SignaturePackaging.DETACHED;
     private Boolean signWithExpiredCertificate = false;
     private Long passwordTimeout;
     private String aesKey;

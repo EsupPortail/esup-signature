@@ -6,7 +6,6 @@ import eu.europa.esig.dss.diagnostic.jaxb.XmlDiagnosticData;
 import eu.europa.esig.dss.simplereport.SimpleReportFacade;
 import eu.europa.esig.dss.xml.utils.DSSXmlErrorListener;
 import eu.europa.esig.dss.xml.utils.DomUtils;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -25,18 +24,17 @@ public class XSLTService {
 
 	private Templates templateShortReport;
 
-	@PostConstruct
-	public void init() throws TransformerConfigurationException, IOException {
+	public Templates init() throws TransformerConfigurationException, IOException {
 		TransformerFactory transformerFactory = DomUtils.getSecureTransformerFactory();
 		try (InputStream is = new ClassPathResource("/xslt/html/short-report-bootstrap4.xslt").getInputStream()) {
-			templateShortReport = transformerFactory.newTemplates(new StreamSource(is));
+			return transformerFactory.newTemplates(new StreamSource(is));
 		}
 	}
 
 	public String generateShortReport(String simpleReport) {
 		Writer writer = new StringWriter();
 		try {
-			Transformer transformer = templateShortReport.newTransformer();
+			Transformer transformer = init().newTransformer();
 			transformer.setErrorListener(new DSSXmlErrorListener());
 			transformer.transform(new StreamSource(new StringReader(simpleReport)), new StreamResult(writer));
 		} catch (Exception e) {

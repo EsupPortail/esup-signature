@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<head th:replace="~{fragments/head :: head}"></head>
+<script th:inline="javascript" type="module">
+    import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
+    new WorkflowUi();
+</script>
+<body>
+<header th:replace="~{fragments/nav :: nav}"></header>
+<main role="main">
+    <div class="wrapper">
+        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
+                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
+            </ol>
+        </nav>
+        <div id="content" class="content">
+            <div class="fixed-action-btn" >
+                <a role="button" title="Ajouter une destination" type="button" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#addTarget">
+                    <i class="fa-solid fa-plus fa-2xl"></i>
+                </a>
+            </div>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
+                </li>
+            </ul>
+            <div class="card text-bg-light col-lg-11 m-2">
+                <div class="card-body">
+                    <div class="form-group mb-3">
+                        <label for="documentsSourceUri"> <strong>Destination et format d'envoi des documents en fin de circuit</strong></label>
+                        <table id="targets" class="table table-borderless table-striped">
+                            <thead class="table-secondary">
+                            <tr>
+                                <th class="text-left">URI</th>
+                                <th class="text-left">Document</th>
+                                <th class="text-left">Rapports</th>
+                                <th class="text-left">Pièces jointes</th>
+                                <th class="text-left">Envoyer zippé</th>
+                                <th>Supprimer</th>
+                                <th>
+
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="target : ${workflow.targetsOrdered}">
+                                <tr>
+                                    <td class="text-left w-100">
+                                        <input type="text" th:value="${target.protectedTargetUri}" class="w-100" disabled />
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-document-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-document/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:checked="${target.sendDocument}" th:onclick="'$(\'#toggle-send-document-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-report-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-report/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:checked="${target.sendReport}" th:onclick="'$(\'#toggle-send-report-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-attachment-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-attachment/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:checked="${target.sendAttachment}" th:onclick="'$(\'#toggle-send-attachment-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td class="text-left w-100">
+                                        <form th:id="'toggle-send-zip-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-zip/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
+                                            <input type="checkbox" th:disabled="${!target.sendDocument and !target.sendReport and !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form th:action="'/' + ${workflowRole} + '/workflows/delete-target/' + ${workflow.id} + '/' + ${target.id}"
+                                              method="post" class="d-inline-flex align-items-center"
+                                              onsubmit="return confirm('Confirmer la suppression ?');">
+                                            <button type="submit" class="btn btn-sm btn-danger text-white">
+                                                <i class="fa-solid fa-trash-alt"></i>
+                                            </button>
+                                            <div class="form-check d-inline" >
+                                                <input type="checkbox" class="form-check-input" name="cascade" th:id="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">
+                                                <label class="form-check-label" th:for="'cascade_' + ${target.id}" title="Supprime aussi de toutes les demandes non encore archivées">En cascade</label>
+                                            </div>
+
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form th:action="'/' + ${workflowRole} + '/workflows/restart-targets/' + ${workflow.id}" method="post"
+                                              class="d-inline-flex align-items-center"
+                                              onsubmit="return confirm('Confirmer le redémarrage des exports pour les demandes de ce circuit ?');">
+                                            <button type="submit" class="btn btn-sm btn-secondary">
+                                                <i class="fa-solid fa-refresh"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div data-bs-focus="false" class="modal fade" id="addTarget"  role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form class="form-group mb-3" th:action="'/' + ${workflowRole} + '/workflows/add-target/' + ${workflow.id}" method="post">
+                <div class="modal-header">
+                    <h3 class="modal-title">Ajout d'une destination</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3" id="documentsTargetUriDiv">
+                        <label for="documentsTargetUri"><strong>Lien pour la destination des documents</strong></label>
+                        <input id="documentsTargetUri" name="documentsTargetUri" class="form-control" type="text" autocomplete="on">
+                    </div>
+                    <p class="alert alert-info"><small>
+                        Utiliser le format uri pour saisir les destinations.
+                        <br>
+                        Pour les emails saisir comme suit : mailto:adresse1,adresse2,... sans espace
+                        <br>
+                        Pour plus de détails voir : <a href="https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI" target="_blank">https://fr.wikipedia.org/wiki/Sch%C3%A9ma_d%27URI</a>
+                    </small></p>
+                    <label>
+                        <input type="checkbox" name="sendDocument" class="form-check-input" checked>
+                        Document
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendReport" class="form-check-input">
+                        Rapports
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendAttachment" class="form-check-input">
+                        Pièces jointes
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" name="sendZip" class="form-check-input">
+                        Envoyer zippé
+                    </label>
+                    <br><br>
+                    <p>
+                        <label>
+                            <input type="checkbox" name="cascade" class="form-check-input">
+                            Appliquer à toutes les demandes en cours non encore exportées
+                        </label>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary float-end"
+                            data-bs-dismiss="modal">Annuler
+                    </button>
+                    <button type="submit" class="btn btn-success float-end">
+                        Ajouter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

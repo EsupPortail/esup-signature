@@ -4,13 +4,13 @@
 <!-- Indication -->
 <span class="indication" th:fragment="indication(indicationName)">
 	<span th:with="status=${(indicationName == 'TOTAL_PASSED')?'success':((indicationName == 'TOTAL_FAILED')?'danger':'warning')}"
-		  th:class="${'badge bg-' + status}" th:text="${indicationName}"></span>
+		  th:class="${'badge rounded-pill bg-' + status}" th:text="${indicationName}"></span>
 </span>
 
 <!-- SubIndication -->
 <span class="sub-indication" th:fragment="subIndication(indicationName, subIndicationName)">
 	<span th:with="status=${(indicationName == 'TOTAL_FAILED')?'danger':'warning'}"
-		  th:class="${'badge bg-' + status}" th:text="${subIndicationName}"></span>
+		  th:class="${'badge rounded-pill bg-' + status}" th:text="${subIndicationName}"></span>
 </span>
 
 <!-- Cached Result -->

@@ -27,16 +27,16 @@
                     <li>
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
                             <span class="fa-stack fa-1x">
-                                <i class="fa-solid fa-shoe-prints fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
-                                <i class="fa-solid fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
+                                <i class="fi fi fi-rr-shoe-prints fa-stack-2x" style="margin-top: 18px; margin-left: -6px"></i>
+                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-top: 0px; margin-left: 10px"></i>
                             </span>
                         </a>
                     </li>
                     <li>
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#addAutoStep">
                             <span class="fa-stack fa-1x">
-                                <i class="fa-solid fa-robot fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
-                                <i class="fa-solid fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
+                                <i class="fi fi-rr-cloud-gear-automation fa-stack-2x" style="margin-top: 18px; margin-left: -6px"></i>
+                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-top: 0px; margin-left: 10px"></i>
                             </span>
                         </a>
                     </li>
@@ -45,6 +45,9 @@
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
@@ -67,8 +70,16 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label><strong>Description de l’étape:</strong></label>
+                                    <label class="form-label">Description de l’étape :</label>
                                     <input name="description" type="text" class="form-control" />
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="form-label" for="stepNumber">Ajouter cette étape :</label>
+                                    <select class="slim-select-simple" name="stepNumber" id="stepNumber" required="required">
+                                        <option th:value="0" th:text="${'Au début'}"></option>
+                                        <option th:each="step, status : ${allSteps}" th:value="${status.index + 1}" th:text="${'avant l''étape ' + #conversions.convert(status.index + 2, 'java.lang.Integer')}"></option>
+                                        <option th:value="-1" th:text="${'A la fin'}"></option>
+                                    </select>
                                 </div>
                                 <div class="form-check form-switch form-switch-md">
                                     <label class="form-check-label" title="Le créateur pourra changer les noms des participants au moment de valider sa demande de signature">
@@ -81,12 +92,13 @@
                                         <strong>Choix des participants</strong>
                                     </label>
                                     <select data-es-check-list="false" class="auto-select-users" name="recipientsEmails" id="stepRecipientsEmails" multiple="multiple"></select>
+                                    <div id="tempUsers-recipientsEmails"></div>
                                 </div>
                                 <div class="form-group mb-3 d-flex">
                                     <div class="form-check form-switch form-switch-md" id="all-sign-to-complete-div-1">
                                         <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
                                         <label class="form-check-label" for="all-sign-to-complete">
-                                            <strong> Tous les participants doivent-ils signer ? </strong>
+                                            <strong> Tous les participants doivent signer pour valider l'étape </strong>
                                         </label>
                                     </div>
                                     <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">

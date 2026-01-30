@@ -3,17 +3,17 @@ import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, infiniteScrolling, csrf, mode) {
+    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode) {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.mode = mode;
         this.infiniteScrolling = infiniteScrolling;
-        this.totalElementsToDisplay = this.signRequests.totalElements - this.signRequests.numberOfElements;
         this.statusFilter = "";
         this.recipientsFilter = "";
         this.workflowFilter = "";
         this.docTitleFilter = "";
-        this.creatorFilter = null;
+        this.creatorFilter = "";
+        this.dateFilter = "";
         if(statusFilter != null) {
             this.statusFilter = statusFilter;
         }
@@ -23,11 +23,14 @@ export class ListSignBooksUi {
         if(workflowFilter != null) {
             this.workflowFilter = workflowFilter;
         }
+        if(docTitleFilter != null) {
+            this.docTitleFilter = docTitleFilter;
+        }
         if(creatorFilter != null) {
             this.creatorFilter = creatorFilter;
         }
-        if(docTitleFilter != null) {
-            this.docTitleFilter = docTitleFilter;
+        if(dateFilter != null) {
+            this.dateFilter = dateFilter;
         }
         this.csrf = new CsrfToken(csrf);
         this.signRequestTable = $("#signRequestTable");
@@ -39,13 +42,14 @@ export class ListSignBooksUi {
         $("#password").hide();
         new Nexu(null, null, null, null, null);
         $(document).ready(e => this.initListeners());
+        $("#sealChoose").addClass('d-none');
+        this.detectEndDiv();
     }
 
     initListeners() {
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#certType").on("change", e => this.checkAfterChangeSignType());
-        $('#toggle-new-grid').on('click', e => this.toggleNewMenu());
-        $('#launchMassSignButton').on('click', e => this.launchMassSign());
+        $('#checkValidateSignButtonEnd').on('click', e => this.launchMassSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
         let self = this;
         let creatorFilter = document.querySelector('#creatorFilter');
@@ -82,7 +86,6 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        $("#toggle-new-grid").css("top", "-55px");
         $(document).on('wheel', function(e){
             let delta = e.originalEvent.deltaY;
             let scrollAmount = delta > 0 ? 50 : -50;
@@ -94,7 +97,6 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
-        $('#new-scroll').on('wheel', e => this.activeHorizontalScrolling(e));
     }
 
     checkSignOptions() {
@@ -119,6 +121,11 @@ export class ListSignBooksUi {
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
         }
+        if(value === "sealCert") {
+            $("#sealChoose").removeClass('d-none');
+        } else {
+            $("#sealChoose").addClass('d-none');
+        }
     }
 
     refreshListeners() {
@@ -142,21 +149,6 @@ export class ListSignBooksUi {
                 }
             });
         });
-    }
-
-    toggleNewMenu() {
-        console.info("toggle new menu");
-        $('#new-scroll').toggleClass('text-nowrap').toggleClass('new-min-h');
-        // $('#to-sign-list').toggleClass('d-flex d-none');
-        // $('#new-fragment').toggleClass('position-fixed');
-        $('#toggle-new-grid').children().toggleClass('fa-th fa-chevron-up');
-        $('.newHr').toggleClass('d-none');
-        $('#newContainer').toggleClass('d-inline').toggleClass("text-left");
-        $('.newToggled').toggleClass('d-none');
-        $('.noForm').toggleClass('d-none');
-        $('.noWorkflow').toggleClass('d-none');
-        // this.menuToggled = !this.menuToggled;
-        // localStorage.setItem('menuToggled', this.menuToggled);
     }
 
     checkNbCheckboxes() {
@@ -199,12 +191,8 @@ export class ListSignBooksUi {
     }
 
     detectEndDiv(e) {
-        if ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling)) {
-            if(this.totalElementsToDisplay > 0 ) {
-                this.addToPage();
-            } else {
-                this.signRequestTable.parent().children('tfoot').remove();
-            }
+        if ( e== null || ($(e.target).scrollTop() + $(e.target).innerHeight() + 1 >= $(e.target)[0].scrollHeight && (this.infiniteScrolling != null && this.infiniteScrolling))) {
+            this.addToPage();
         }
     }
 
@@ -257,13 +245,44 @@ export class ListSignBooksUi {
             i++;
         });
         if (ids.length > 0) {
-            const a = document.createElement("a");
-            a.href = `/${this.mode}/signbooks/download-multiple?ids=${ids}`;
-            a.download = "";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            fetch(`/${this.mode}/signbooks/download-multiple?ids=${ids}`)
+                .then(response => {
+                    // Vérifier si la réponse est une erreur HTTP
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.text || 'Erreur lors du téléchargement');
+                        });
+                    }
+                    return response.blob().then(blob => ({
+                        blob: blob,
+                        filename: this.extractFilenameFromHeader(response)
+                    }));
+                })
+                .then(({blob, filename}) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                    bootbox.alert(error.message);
+                });
         }
+    }
+
+    extractFilenameFromHeader(response) {
+        const contentDisposition = response.headers.get('content-disposition');
+        if (contentDisposition) {
+            const matches = contentDisposition.match(/filename[^;=\n]*=(['"]*)(.*?)\1(?:;|$)/);
+            if (matches && matches[2]) {
+                return matches[2];
+            }
+        }
+        return 'documents.zip'; // fallback
     }
 
     downloadMultipleWithReport() {
@@ -286,34 +305,39 @@ export class ListSignBooksUi {
 
     addToPage() {
         console.info("Add to page");
-        this.listSignRequestTable.unbind('scroll');
-        this.listSignRequestTable.addClass("wait");
-        $("#loader").show();
-        this.page++;
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);
-        let sort = "";
-        if(urlParams.get("sort") != null) {
-            sort = urlParams.get("sort");
+        let sortParam = "";
+        const sort = urlParams.get("sort");
+
+        if (sort) {
+            sortParam = `&sort=${sort}`;
         }
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + "&sort=" + sort + "&creatorFilter=" + this.creatorFilter + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
-            self.signRequestTable.append(data);
-            let clickableRows = $(".clickable-row");
-            clickableRows.off('click').on('click', function(e) {
-                let url = $(this).closest('tr').attr('data-href');
-                if (e.ctrlKey || e.metaKey) {
-                    window.open(url, '_blank');
-                } else {
-                    window.location = url;
-                }
-            });
-            $(document).trigger("refreshClickableTd");
-            self.listSignRequestTable.removeClass("wait");
+        $("#loader").show();
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             $("#loader").hide();
-            self.refreshListeners();
-            self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
-            let displayedElements = $("#signRequestTable tr").length;
-            self.totalElementsToDisplay = self.signRequests.totalElements - displayedElements;
+            if(typeof data === 'string' && data.trim().length > 0) {
+                self.listSignRequestTable.unbind('scroll');
+                self.listSignRequestTable.addClass("wait");
+                self.page++;
+                self.signRequestTable.append(data);
+                let clickableRows = $(".clickable-row");
+                clickableRows.off('click').on('click', function (e) {
+                    let url = $(this).closest('tr').attr('data-href');
+                    if (e.ctrlKey || e.metaKey) {
+                        window.open(url, '_blank');
+                    } else {
+                        window.location = url;
+                    }
+                });
+                $(document).trigger("refreshClickableTd");
+                self.listSignRequestTable.removeClass("wait");
+                self.refreshListeners();
+                self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
+                let displayedElements = $("#signRequestTable tr").length;
+            } else {
+                self.signRequestTable.parent().children('tfoot').remove();
+            }
         });
     }
 
@@ -380,7 +404,8 @@ export class ListSignBooksUi {
         signRequestUrlParams = {
             "ids" : JSON.stringify(ids),
             "signWith" : $("#certType").val(),
-            "password" : $("#password").val()
+            "password" : $("#password").val(),
+            "sealCertificat" : $("#sealCertificat").val()
         };
         this.reset();
         let self = this;
@@ -474,11 +499,4 @@ export class ListSignBooksUi {
         bar.addClass("progress-bar-animated");
     }
 
-    activeHorizontalScrolling(e){
-        if(!this.menuToggled) {
-            let delta = Math.max(-1, Math.min(1, (e.originalEvent.wheelDelta || -e.originalEvent.detail)));
-            $(e.currentTarget).scrollLeft($(e.currentTarget).scrollLeft() - ( delta * 40 ) );
-            e.preventDefault();
-        }
-    }
 }

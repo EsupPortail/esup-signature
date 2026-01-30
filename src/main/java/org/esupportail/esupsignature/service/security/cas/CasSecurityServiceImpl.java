@@ -60,6 +60,7 @@ public class CasSecurityServiceImpl implements SecurityService {
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.ldapGroupService = ldapGroupService;
+        this.ldapGroupService.loadLdapFiltersGroups();
         this.casProperties = casProperties;
         this.ldapProperties = ldapProperties;
         this.casAuthenticationSuccessHandler = casAuthenticationSuccessHandler;
@@ -164,6 +165,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 		Group2UserRoleService group2UserRoleService = new Group2UserRoleService();
 		group2UserRoleService.setGroupPrefixRoleName(webSecurityProperties.getGroupToRoleFilterPattern());
 		group2UserRoleService.setMappingGroupesRoles(webSecurityProperties.getMappingGroupsRoles());
+        spelGroupService.initGroupMappingSpel();
 		group2UserRoleService.setGroupService(spelGroupService);
 		casLdapAuthoritiesPopulator.setGroup2UserRoleService(group2UserRoleService);
 		LdapUserSearch ldapUserSearch = new FilterBasedLdapUserSearch(ldapProperties.getSearchBase(), ldapProperties.getCasUserSearchFilter(), ldapContextSource);

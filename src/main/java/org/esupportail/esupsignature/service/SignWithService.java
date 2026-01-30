@@ -4,13 +4,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.config.sign.SignProperties;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignWith;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@EnableConfigurationProperties({GlobalProperties.class, SignProperties.class})
 public class SignWithService {
 
     private final UserService userService;
@@ -52,9 +50,11 @@ public class SignWithService {
             int stepNumber = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber();
             Form form = signRequest.getData().getForm();
             Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-            List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps().stream().filter(ws -> workflow.getWorkflowSteps().indexOf(ws) > stepNumber - 1).toList();
-            if(!workflowSteps.isEmpty() && form.getFields().stream().anyMatch(f -> new HashSet<>(f.getWorkflowSteps()).containsAll(workflowSteps))) {
-                signWiths.removeIf(signWith -> signWith.getValue() > 2);
+            if(workflow != null) {
+                List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps().stream().filter(ws -> workflow.getWorkflowSteps().indexOf(ws) > stepNumber - 1).toList();
+                if (!workflowSteps.isEmpty() && form.getFields().stream().anyMatch(f -> new HashSet<>(f.getWorkflowSteps()).containsAll(workflowSteps))) {
+                    signWiths.removeIf(signWith -> signWith.getValue() > 2);
+                }
             }
         }
         if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
@@ -63,9 +63,17 @@ public class SignWithService {
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
             LiveWorkflowStep currentLiveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
             signWiths.removeIf(signWith -> signWith.getValue() > currentLiveWorkflowStep.getMaxSignLevel().getValue() || signWith.getValue() < currentLiveWorkflowStep.getMinSignLevel().getValue());
-            if(currentLiveWorkflowStep.getMinSignLevel().equals(SignLevel.qualified) && certificatService.getCheckedCertificate().values().stream().noneMatch(v -> v.equals(true))) {
+            if(currentLiveWorkflowStep.getMinSignLevel().equals(SignLevel.qualified)
+                    && certificatService.getCheckedSealCertificates().stream().noneMatch(v -> v.eIDasValidity)) {
                 signWiths.remove(SignWith.sealCert);
             }
+            if(currentLiveWorkflowStep.getMaxSignLevel().equals(SignLevel.advanced)
+                    && certificatService.getCheckedSealCertificates().stream().anyMatch(v -> !v.eIDasValidity)) {
+                signWiths.add(SignWith.sealCert);
+            }
+        }
+        if(certificatService.getAuthorizedSealCertificatProperties(userEppn).isEmpty()) {
+            signWiths.remove(SignWith.sealCert);
         }
         return signWiths;
     }
@@ -105,13 +113,14 @@ public class SignWithService {
                     || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
                     || (globalProperties.getSealForExternals() && user.getUserType().equals(UserType.external))
                 )
-                && StringUtils.hasText(globalProperties.getSealCertificatPin())
+                && globalProperties.getSealCertificatProperties().containsKey("default")
+                && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin())
                 && (
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatDriver()))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS11) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver()))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.OPENSC))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.OPENSC))
                     ||
-                    (globalProperties.getSealCertificatType() != null && globalProperties.getSealCertificatType().equals(GlobalProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatFile()))
+                    (globalProperties.getSealCertificatProperties().get("default").getSealCertificatType() != null && globalProperties.getSealCertificatProperties().get("default").getSealCertificatType().equals(SealCertificatProperties.TokenType.PKCS12) && StringUtils.hasText(globalProperties.getSealCertificatProperties().get("default").getSealCertificatFile()))
                 )
         ) {
             if(Boolean.TRUE.equals(sealCertOKCache.getIfPresent("sealOK"))) {

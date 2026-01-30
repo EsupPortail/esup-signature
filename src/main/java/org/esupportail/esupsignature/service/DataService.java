@@ -53,10 +53,15 @@ public class DataService {
      *
      * @param dataId l'identifiant unique de l'objet Data à récupérer
      * @return l'objet Data trouvé correspondant à l'identifiant donné
-     * @throws NoSuchElementException si aucune donnée correspondante n'est trouvée
      */
+    @Transactional
     public Data getById(Long dataId) {
         return dataRepository.findById(dataId).orElseThrow();
+    }
+
+    @Transactional
+    public Data getFullById(Long dataId) {
+        return dataRepository.findByIdWithWorkflowFull(dataId);
     }
 
     /**
@@ -157,8 +162,8 @@ public class DataService {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
             return pdfService.fill(inputStream, data.getDatas(), false, true);
-        } else  if(form.getDocument() != null) {
-            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow()), data.getDatas(), false, true);
+        } else if(form.getDocument() != null) {
+            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow(), false), data.getDatas(), false, true);
         } else {
             logger.error("no pdf model");
         }

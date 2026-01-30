@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.config.ldap;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import jakarta.annotation.PostConstruct;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -65,6 +64,10 @@ public class LdapProperties {
      * Le champ dans lequel on trouve la partie gauche de l’EPPN (par défaut idem userIdSearchFilter)
      */
     private String eppnLeftPartSearchFilter;
+    /**
+     * Base de recherche des OU
+     */
+    private String ouSearchBase;
     /**
      * Requete pour trouver les OU des utilisateurs (utile seulement pour le pré-remplissage de l'affectation dans les formulaires)
      */
@@ -207,6 +210,14 @@ public class LdapProperties {
 
     public void setEppnLeftPartSearchFilter(String eppnLeftPartSearchFilter) {
         this.eppnLeftPartSearchFilter = eppnLeftPartSearchFilter;
+    }
+
+    public String getOuSearchBase() {
+        return ouSearchBase;
+    }
+
+    public void setOuSearchBase(String ouSearchBase) {
+        this.ouSearchBase = ouSearchBase;
     }
 
     public String getOuSearchFilter() {

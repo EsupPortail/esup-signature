@@ -2,10 +2,11 @@ package org.esupportail.esupsignature.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +68,9 @@ public class Form {
 	@Transient
 	private String messageToDisplay;
 
+    @Transient
+    private ClassWorkflow modelClassWorkflow;
+
     @JsonIgnore
 	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Document document = new Document();
@@ -75,15 +79,16 @@ public class Form {
 	@OrderColumn
 	private List<Field> fields = new ArrayList<>();
 
-	@OneToMany(cascade = CascadeType.DETACH)
-	@OrderColumn
-	private List<SignRequestParams> signRequestParams = new ArrayList<>();
-
 	@Column(columnDefinition = "TEXT")
 	private String action;
 
+	private Boolean isFeatured = false;
+
 	@Transient
 	private Integer totalPageCount = 1;
+
+    @Transient
+    public List<Tag> tags = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -232,14 +237,6 @@ public class Form {
 		this.fields = fields;
 	}
 
-	public List<SignRequestParams> getSignRequestParams() {
-		return signRequestParams;
-	}
-
-	public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
-		this.signRequestParams = signRequestParams;
-	}
-
 	public String getAction() {
 		return action;
 	}
@@ -263,4 +260,36 @@ public class Form {
 	public void setTotalPageCount(Integer totalPageCount) {
 		this.totalPageCount = totalPageCount;
 	}
+
+    public List<Tag> getTags() {
+        if(this.workflow != null) {
+            return workflow.getTags();
+        }
+        return new ArrayList<>();
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+	public Boolean getIsFeatured() {
+		if(isFeatured == null) return false;
+		return isFeatured;
+	}
+
+	public void setIsFeatured(Boolean featured) {
+		isFeatured = featured;
+	}
+
+	public void setModelClassWorkflow(ClassWorkflow modelClassWorkflow) {
+        this.modelClassWorkflow = modelClassWorkflow;
+    }
+
+    public List<SignRequestParams> getSignRequestParams() {
+        return this.workflow
+                .getWorkflowSteps()
+                .stream()
+                .flatMap(ws -> ws.getSignRequestParams().stream())
+                .toList();
+    }
 }

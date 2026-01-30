@@ -75,6 +75,26 @@ public class WorkflowStepService {
         return workflowStep;
     }
 
+    @Transactional
+    public WorkflowStep createWorkflowStep(WorkflowStepDto dto) throws EsupSignatureRuntimeException {
+        WorkflowStep workflowStep = new WorkflowStep();
+
+        if (dto.getTitle() != null) {
+            workflowStep.setName(dto.getTitle());
+        }
+        workflowStep.setAllSignToComplete(dto.getAllSignToComplete() != null ? dto.getAllSignToComplete() : false);
+        workflowStep.setSignType(dto.getSignType() != null ? dto.getSignType() : SignType.signature);
+        workflowStep.setChangeable(dto.getChangeable() != null ? dto.getChangeable() : false);
+
+        workflowStepRepository.save(workflowStep);
+
+        if (!dto.getRecipients().isEmpty()) {
+            addRecipientsToWorkflowStep(workflowStep, dto.getRecipients().toArray(new RecipientWsDto[0]));
+        }
+
+        return workflowStep;
+    }
+
     public void addRecipientsToWorkflowStep(WorkflowStep workflowStep, RecipientWsDto[] recipients) throws EsupSignatureRuntimeException {
         for (RecipientWsDto recipient : recipients) {
             List<String> groupList = userListService.getUsersEmailFromList(recipient.getEmail());
@@ -111,12 +131,12 @@ public class WorkflowStepService {
 
     @Transactional
     public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
-        if(repeatable != null && repeatable && signType.getValue() > 2) {
-            throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
-        }
         if(autoSign == null) autoSign = false;
         if(autoSign) {
             signType = SignType.signature;
+        }
+        if(repeatable != null && repeatable && signType.getValue() > 2) {
+            throw new EsupSignatureRuntimeException(signType.name() + ", type de signature impossible pour une étape infinie");
         }
         WorkflowStep workflowStep = getById(workflowStepId);
         workflowStep.setSignType(signType);
@@ -160,7 +180,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, WorkflowStepDto step, String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void addStep(Long workflowId, WorkflowStepDto step, Integer stepNumber,  String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
         workflowStep.setDescription(step.getDescription());
@@ -177,7 +197,11 @@ public class WorkflowStepService {
                 workflowStep.setCertificat(null);
             }
         }
-        workflow.getWorkflowSteps().add(workflowStep);
+        if (stepNumber == -1) {
+            workflow.getWorkflowSteps().add(workflowStep);
+        } else {
+            workflow.getWorkflowSteps().add(stepNumber, workflowStep);
+        }
         if(saveFavorite) {
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), Collections.singletonList(step));
         }

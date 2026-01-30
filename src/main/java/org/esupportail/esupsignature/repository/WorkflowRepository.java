@@ -24,19 +24,25 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     @Query(value = "select count(*) from workflow as w where w.name = :name", nativeQuery = true)
     Long countByName(String name);
     Long countByNameAndCreateByEppn(String name, String userEppn);
-    @Query("select distinct w from Workflow w where w.publicUsage = true or :role member of w.roles order by w.name")
-    List<Workflow> findAuthorizedForms(String role);
+    @Query("""
+        select distinct w
+        from Workflow w
+        where w.publicUsage = true
+           or exists (
+                select r from w.roles r
+                where r in :roles
+           )
+        order by w.id
+    """)
+    List<Workflow> findAuthorizedFormsByRoles(Set<String> roles);
     @Query("select distinct w from Workflow w where w.id not in (select distinct f.workflow.id from Form f where f.workflow is not null) and w.createBy.eppn = 'system'")
     List<Workflow> findNotInForm();
     @Query("select distinct w from Workflow w " +
             "where :email member of w.managers " +
             "or exists (select r from Workflow w2 join w2.dashboardRoles r where w = w2 and r in :roles)")
     List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
-    List<Workflow> findByViewersEppn(String userEppn);
-
     @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
     WorkflowDto getByIdJson(Long idLong, String idStr);
-
     @Query(value = """
         select distinct
             sb.id as signBookId,
@@ -64,14 +70,10 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
         group by sb.id, sb.status, cb.eppn, sb.create_date, sb.update_date, sb.update_by, lw.current_step_id, ws.description
     """, nativeQuery = true)
     List<WorkflowDatasCsvDto> findWorkflowDatas(Long id);
-
     @Query("""
             select sb.status as status, count(sb.status) as count from SignBook sb
             where sb.liveWorkflow.workflow.id = :id and sb.deleted is not true group by sb.status order by sb.status
             """)
     List<WorkflowStatusChartDto> findWorkflowStatusCount(Long id);
-
-    boolean existsByToken(String token);
-
     List<Workflow> findByTokenStartingWith(String token);
 }

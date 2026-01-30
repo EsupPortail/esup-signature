@@ -40,7 +40,7 @@
 		</div>
 		<div th:case="T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed" class="alert alert-warning text-center" th:id="'status_' + ${signRequest.id}" th:title="${signRequest.status}">
 			<small>	
-			<i class="fa-solid fa-flag-checkered"></i>
+			<i class="fi fi-rr-flag"></i>
 				<span th:text="#{'signbook.status.' + ${signRequest.status}}"></span>
 			</small>
 		</div>

@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.dss.model;
 import eu.europa.esig.dss.enumerations.ASiCContainerType;
 import eu.europa.esig.dss.enumerations.SignatureForm;
 import eu.europa.esig.dss.enumerations.SignatureLevel;
+import eu.europa.esig.dss.model.DSSDocument;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 
@@ -10,9 +11,9 @@ import java.util.List;
 
 public class ExtensionForm {
 
-	private DssMultipartFile signedFile;
+	private DSSDocument signedFile;
 
-	private List<DssMultipartFile> originalFiles;
+	private List<DSSDocument> originalFiles;
 
 	private ASiCContainerType containerType;
 
@@ -22,23 +23,23 @@ public class ExtensionForm {
 	@NotNull(message = "{error.signature.level.mandatory}")
 	private SignatureLevel signatureLevel;
 
-	public DssMultipartFile getSignedFile() {
-		return signedFile;
-	}
+    public DSSDocument getSignedFile() {
+        return signedFile;
+    }
 
-	public void setSignedFile(DssMultipartFile signedFile) {
-		this.signedFile = signedFile;
-	}
+    public void setSignedFile(DSSDocument signedFile) {
+        this.signedFile = signedFile;
+    }
 
-	public List<DssMultipartFile> getOriginalFiles() {
-		return originalFiles;
-	}
+    public List<DSSDocument> getOriginalFiles() {
+        return originalFiles;
+    }
 
-	public void setOriginalFiles(List<DssMultipartFile> originalFiles) {
-		this.originalFiles = originalFiles;
-	}
+    public void setOriginalFiles(List<DSSDocument> originalFiles) {
+        this.originalFiles = originalFiles;
+    }
 
-	public ASiCContainerType getContainerType() {
+    public ASiCContainerType getContainerType() {
 		return containerType;
 	}
 
@@ -64,7 +65,7 @@ public class ExtensionForm {
 
 	@AssertTrue(message = "{error.signed.file.mandatory}")
 	public boolean isSignedFile() {
-		return (signedFile != null) && (!signedFile.isEmpty());
+		return signedFile != null;
 	}
 
 }

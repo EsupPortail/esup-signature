@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -15,20 +15,22 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
-import org.esupportail.esupsignature.dto.js.JsSpot;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.FormRepository;
 import org.esupportail.esupsignature.repository.LiveWorkflowStepRepository;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
+import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,56 +48,58 @@ public class FormService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FormService.class);
 
-	@Resource
-	private FormRepository formRepository;
+    private final ApplicationContext applicationContext;
+	private final FormRepository formRepository;
+	private final PdfService pdfService;
+	private final UserShareService userShareService;
+	private final FieldService fieldService;
+	private final WorkflowRepository workflowRepository;
+	private final DocumentService documentService;
+	private final FieldPropertieService fieldPropertieService;
+	private final UserService userService;
+	private final SignRequestParamsService signRequestParamsService;
+	private final DataRepository dataRepository;
+	private final WebUtilsService webUtilsService;
+	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
+	private final ObjectMapper objectMapper;
 
-	@Resource
-	private PdfService pdfService;
+    public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
+        this.applicationContext = applicationContext;
+        this.formRepository = formRepository;
+        this.pdfService = pdfService;
+        this.userShareService = userShareService;
+        this.fieldService = fieldService;
+        this.workflowRepository = workflowRepository;
+        this.documentService = documentService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.userService = userService;
+        this.signRequestParamsService = signRequestParamsService;
+        this.dataRepository = dataRepository;
+        this.webUtilsService = webUtilsService;
+        this.liveWorkflowStepRepository = liveWorkflowStepRepository;
+        this.objectMapper = objectMapper;
+    }
 
-	@Resource
-	private UserShareService userShareService;
-
-	@Resource
-	private FieldService fieldService;
-
-	@Resource
-	private WorkflowRepository workflowRepository;
-
-	@Resource
-	private DocumentService documentService;
-
-	@Resource
-	private FieldPropertieService fieldPropertieService;
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private SignRequestParamsService signRequestParamsService;
-
-	@Resource
-	private DataRepository dataRepository;
-
-	@Resource
-	private WebUtilsService webUtilsService;
-
-	@Resource
-	private LiveWorkflowStepRepository liveWorkflowStepRepository;
-
-	@Resource
-	private ObjectMapper objectMapper;
-
-	public Form getById(Long formId) {
-		return formRepository.findById(formId).orElseThrow();
+    public Form getById(Long formId) {
+        Form form = formRepository.findById(formId).orElseThrow();
+        if(form.getWorkflow() != null && BooleanUtils.isTrue(form.getWorkflow().getFromCode())) {
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName("org.esupportail.esupsignature.service.interfaces.workflow.impl." + form.getWorkflow().getName());
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            ClassWorkflow modelClassWorkflow = (ClassWorkflow) applicationContext.getBean(clazz);
+            form.setModelClassWorkflow(modelClassWorkflow);
+        }
+		return form;
 	}
 
 	@Transactional
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
 		Set<Form> forms = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-			for(String role : userService.getRoles(userEppn)) {
-				forms.addAll(formRepository.findAuthorizedForms(role));
-			}
+            forms.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)));
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
@@ -125,9 +129,15 @@ public class FormService {
 		return getFormsByUser(userEppn, authUserEppn).contains(form) && userShareService.checkFormShare(userEppn, authUserEppn, ShareType.create, form);
 	}
 
-	public List<Form> getAllForms(){
+	public List<Form> getAllForms(List<Tag> selectedTags, Boolean activeVersion){
 		List<Form> list = new ArrayList<>();
 		formRepository.findAll().forEach(list::add);
+        if(activeVersion != null) {
+            list = list.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
+        }
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            list = list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        }
 		return list;
 	}
 
@@ -162,6 +172,9 @@ public class FormService {
 				for(Field field : form.getFields()) {
 					field.getWorkflowSteps().clear();
 				}
+                for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+                    workflowStep.getSignRequestParams().clear();
+                }
 			}
 			form.setWorkflow(updateForm.getWorkflow());
 		}
@@ -171,6 +184,9 @@ public class FormService {
 		form.setAction(updateForm.getAction());
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
+		form.setIsFeatured(updateForm.getIsFeatured());
+        form.getTags().clear();
+        form.getTags().addAll(updateForm.tags);
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
@@ -479,27 +495,36 @@ public class FormService {
 		return false;
 	}
 
-	public Set<Form> getManagerForms(String userEppn) {
+	public List<Form> getManagerForms(List<Tag> selectedTags, Boolean activeVersion, String userEppn) {
 		User manager = userService.getByEppn(userEppn);
 		Set<Form> formsManaged = new HashSet<>();
 		for (String role : manager.getManagersRoles()) {
 			formsManaged.addAll(formRepository.findByManagerRole(role));
 		}
-		return formsManaged;
+        List<Form> resultForms = new ArrayList<>(formsManaged);
+        if(activeVersion != null) {
+            resultForms = formsManaged.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
+        }
+        if(selectedTags != null && !selectedTags.isEmpty()) {
+            resultForms = formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+        }
+		return resultForms;
 	}
 
 	@Transactional
 	public void updateSignRequestParams(Long formId, InputStream inputStream) {
 		Form form = getById(formId);
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, form.getWorkflow(), true);
+		String signRequestParamsDetectionPattern = null;
+		if(form.getWorkflow() != null && StringUtils.hasText(form.getWorkflow().getSignRequestParamsDetectionPattern())) {
+			signRequestParamsDetectionPattern = form.getWorkflow().getSignRequestParamsDetectionPattern();
+		}
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, signRequestParamsDetectionPattern, true, false);
 		if(!findedSignRequestParams.isEmpty()) {
-			form.getSignRequestParams().clear();
 			int i = 0;
 			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 				workflowStep.getSignRequestParams().clear();
 				if(findedSignRequestParams.size() > i) {
 					workflowStep.getSignRequestParams().add(findedSignRequestParams.get(i));
-					form.getSignRequestParams().add(findedSignRequestParams.get(i));
 				} else {
 					break;
 				}
@@ -526,7 +551,6 @@ public class FormService {
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(signPageNumber, xPos, yPos);
 		signRequestParams.setSignWidth(commentWidth);
 		signRequestParams.setSignHeight(commentHeight);
-		form.getSignRequestParams().add(signRequestParams);
 		form.getWorkflow().getWorkflowSteps().get(step - 1).getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
 	}
@@ -535,7 +559,6 @@ public class FormService {
 	public void removeSignRequestParamsSteps(Long formId, Long signRequestParamsId) {
 		Form form = getById(formId);
 		SignRequestParams signRequestParams = signRequestParamsService.getById(signRequestParamsId);
-		form.getSignRequestParams().remove(signRequestParams);
 		long nbLiveWorkflowStepContainingParams = 0;
 		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
 			workflowStep.getSignRequestParams().remove(signRequestParams);
@@ -594,23 +617,9 @@ public class FormService {
 		return objectMapper.writeValueAsString(formRepository.getByIdJson(id));
 	}
 
-	public List<JsSpot> getSpots(Long id) {
-		List<JsSpot> spots = new ArrayList<>();
+	public List<SignRequestParams> getSpots(Long id) {
 		Form form = getById(id);
-		int step = 1;
-		for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-			if(!workflowStep.getSignRequestParams().isEmpty()) {
-				SignRequestParams signRequestParams = workflowStep.getSignRequestParams().get(0);
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
-			}
-			step++;
-		}
-		if(spots.isEmpty()) {
-			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
-				spots.add(new JsSpot(signRequestParams.getId(), step, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(),  signRequestParams.getyPos(), signRequestParams.getSignWidth(), signRequestParams.getSignHeight()));
-			}
-		}
-		return spots;
+		return form.getSignRequestParams();
 	}
 
 
@@ -623,7 +632,11 @@ public class FormService {
 		}
 		if(srpMap.isEmpty()) {
 			int i = 1;
-			for(SignRequestParams signRequestParams : form.getSignRequestParams()) {
+			for(SignRequestParams signRequestParams : form.getWorkflow()
+                    .getWorkflowSteps()
+                    .stream()
+                    .flatMap(ws -> ws.getSignRequestParams().stream())
+                    .toList()) {
 				srpMap.put(i, signRequestParams.getId());
 				i++;
 			}
@@ -635,4 +648,11 @@ public class FormService {
     public String getAllFormsJson() throws JsonProcessingException {
 		return objectMapper.writeValueAsString(formRepository.findAllJson());
 	}
+
+    @Transactional
+    public List<Form> getByIds(String userEppn, String authUserEppn) {
+        List<Long> favoriteFormsIds =  userService.getFavoriteIds(userEppn, UiParams.favoriteForms);
+        List<Form> forms = getFormsByUser(userEppn, authUserEppn);
+        return forms.stream().filter(f -> favoriteFormsIds.contains(f.getId())).toList();
+    }
 }

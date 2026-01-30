@@ -1,6 +1,5 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.js.JsMessage;
@@ -17,6 +16,7 @@ import org.esupportail.esupsignature.service.WorkflowService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @RequestMapping("/admin/signbooks")
 @Controller
@@ -55,23 +56,21 @@ public class SignBookAdminController {
 		return "adminsignrequests";
 	}
 
-	@Resource
-	private FormService formService;
+	private final FormService formService;
+	private final UserService userService;
+	private final WorkflowService workflowService;
+	private final SignBookService signBookService;
+	private final SignBookRepository signBookRepository;
+	private final TemplateEngine templateEngine;
 
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private WorkflowService workflowService;
-
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
-	private TemplateEngine templateEngine;
+    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine) {
+        this.formService = formService;
+        this.userService = userService;
+        this.workflowService = workflowService;
+        this.signBookService = signBookService;
+        this.signBookRepository = signBookRepository;
+        this.templateEngine = templateEngine;
+    }
 
 	@GetMapping
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -93,14 +92,15 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
 			docTitleFilter = "";
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-		model.addAttribute("statusFilter", statusFilter);
-		model.addAttribute("signBooks", signBooks);
+//		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+        model.addAttribute("statusFilter", statusFilter);
+//		model.addAttribute("signBooks", signBooks);
 //		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.activeValues());
-		model.addAttribute("forms", formService.getAllForms());
-		model.addAttribute("workflows", workflowService.getAllWorkflows());
+		model.addAttribute("forms", formService.getAllForms(null, null));
+		model.addAttribute("workflows", workflowService.getAllWorkflows(null));
 		model.addAttribute("workflowFilter", workflowFilter);
 		model.addAttribute("creatorFilter", creatorFilter);
 		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
@@ -208,7 +208,7 @@ public class SignBookAdminController {
             httpServletResponse.setStatus(HttpServletResponse.SC_OK);
             httpServletResponse.flushBuffer();
         } catch (Exception e) {
-            logger.error("error while downloading multiple documents", e);
+            logger.error("error while downloading multiple documents " + ids.stream().map(String::valueOf).collect(Collectors.joining(",")) , e);
             httpServletResponse.sendError(404);
         }
     }

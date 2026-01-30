@@ -28,9 +28,9 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<SignBook> findByTeamContaining(User user);
 
     @Query("""
-            select distinct sb from SignBook sb
+            select sb from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject like concat('%', :docTitleFilter, '%'))
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
@@ -40,41 +40,135 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findSignBooksAllPaged(SignRequestStatus statusFilter, Boolean deleted, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
-            select distinct sb from SignBook sb left join sb.team team
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            where :user in (team)
-            and (sb.status != 'pending' or key(rhs).user = :user or sb.createBy = :user)
-            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (sb.createBy = :user or sb.status <> 'draft')
-            and size(sb.signRequests) > 0
-            and :user not member of sb.hidedBy
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            and (sb.createDate between :startDateFilter and :endDateFilter)
-            """)
+            select sb from SignBook sb
+            where sb.status <> 'deleted'
+              and (sb.deleted is null or sb.deleted != true)
+              and (sb.createDate between :startDateFilter and :endDateFilter)
+              and :user member of sb.team
+              and :user not member of sb.hidedBy
+              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and (sb.createBy = :user or sb.status <> 'draft')
+              and (:docTitleFilter is null
+                   or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+              and exists (
+                  select 1 from SignRequest sr
+                  where sr.parentSignBook = sb
+              )
+              and (
+                  sb.status != 'pending'
+                  or sb.createBy = :user
+                  or exists (
+                      select 1 from SignRequest sr
+                      join sr.recipientHasSigned rhs
+                      where sr.parentSignBook = sb
+                        and key(rhs).user = :user
+                  )
+              )
+        """)
     Page<SignBook> findByRecipientAndCreateByEppnIndexed(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
-            select distinct sb from SignBook sb
-            left join sb.team team
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            left join sb.liveWorkflow lw
-            left join lw.liveWorkflowSteps lws
-            left join lws.recipients r
-            left join r.user u
-            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
+           select sb from SignBook sb
+           where sb.status <> 'deleted'
+             and (sb.deleted is null or sb.deleted != true)
+             and (sb.createDate between :startDateFilter and :endDateFilter)
+             and :user member of sb.team
+             and :user not member of sb.hidedBy
+             and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+             and (:creatorFilter is null or sb.createBy = :creatorFilter)
+             and (sb.createBy = :user or sb.status <> 'draft')
+             and (:docTitleFilter is null\s
+                  or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+             and exists (
+                 select 1 from SignRequest sr
+                 where sr.parentSignBook = sb
+             )
+             and (
+                 sb.status != 'pending'
+                 or sb.createBy = :user
+                 or exists (
+                     select 1 from SignRequest sr
+                     join sr.recipientHasSigned rhs
+                     where sr.parentSignBook = sb
+                       and key(rhs).user = :user
+                 )
+                 or exists (
+                     select 1 from LiveWorkflowStep lws
+                     join lws.recipients r
+                     where lws = sb.liveWorkflow.currentStep
+                       and r.user = :user
+                 )
+             )
+             and (
+                 :recipientUser is null
+                 or exists (
+                     select 1 from SignRequest sr
+                     join sr.recipientHasSigned rhs
+                     where sr.parentSignBook = sb
+                       and key(rhs).user = :recipientUser
+                 )
+                 or exists (
+                     select 1 from LiveWorkflowStep lws
+                     join lws.recipients r
+                     where lws = sb.liveWorkflow.currentStep
+                       and r.user = :recipientUser
+                 )
+             )
+           """)
+    Page<SignBook> findByRecipientAndCreateByEppnIndexed(User recipientUser, User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+
+    @Query("""
+           select sb from SignBook sb
+           where :user not member of sb.hidedBy
+            and size(sb.signRequests) > 0
+            and (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
-            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted is true and sb.status = 'deleted'))
-            and size(sb.signRequests) > 0
+            and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
             and (sb.createDate between :startDateFilter and :endDateFilter)
+            and (
+                :recipientUser is null
+                or exists (
+                    select 1 from SignRequest sr
+                    join sr.recipientHasSigned rhs
+                    where sr.parentSignBook = sb
+                      and (key(rhs).user = :recipientUser)
+                )
+                or exists (
+                    select 1 from LiveWorkflowStep lws
+                    join lws.recipients r
+                    where lws member of sb.liveWorkflow.liveWorkflowSteps
+                    and r.user = :recipientUser
+                )
+            )
+        """)
+    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
+
+    @Query("""
+            select sb from SignBook sb
+            where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
+              and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
+              and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
+              and size(sb.signRequests) > 0
+              and :user member of sb.hidedBy
+              and (sb.createDate between :startDateFilter and :endDateFilter)
+              and (:recipientUser is null or exists (
+                    select 1 from SignRequest sr
+                    join sr.recipientHasSigned rhs
+                    where sr.parentSignBook = sb
+                      and key(rhs).user = :recipientUser
+                  ) or exists (
+                    select 1 from LiveWorkflowStep lws
+                    join lws.recipients r
+                    where lws in elements(sb.liveWorkflow.liveWorkflowSteps)
+                      and r.user = :recipientUser
+                  ))
             """)
-    Page<SignBook> findByWorkflowName(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
+    Page<SignBook> findByWorkflowNameHided(User recipientUser, SignRequestStatus statusFilter, Boolean deleted, Long workflowId, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable, User user);
 
     @Query("""
             select distinct sb.subject from SignBook sb
@@ -85,54 +179,56 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<String> findByWorkflowNameSubjects(Long workflowId, String searchString);
 
     @Query("""
-            select distinct sb from SignBook sb
-            left join sb.team team
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            left join sb.liveWorkflow lw
-            left join lw.liveWorkflowSteps lws
-            left join lws.recipients r
-            left join r.user u
-            where :user in (team)
-            and (sb.status != 'pending' or key(rhs).user = :user or :user in (u) or sb.createBy = :user)
-            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
-            and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (sb.createBy = :user or sb.status <> 'draft')
-            and size(sb.signRequests) > 0
-            and :user not member of sb.hidedBy
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            and (sb.createDate between :startDateFilter and :endDateFilter)
-            """)
-    Page<SignBook> findByRecipientAndCreateByEppnIndexed(User recipientUser, User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
-
-    @Query("""
-            select distinct sb from SignBook sb
-            left join sb.liveWorkflow.currentStep.recipients r
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
-            and rhs.actionType = 'none' and key(rhs).user = :user
-            and (sb.deleted is null or sb.deleted != true)
-            and :user not member of sb.hidedBy
-            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            and (sb.createDate between :startDateFilter and :endDateFilter)
-            """)
+        select sb from SignBook sb
+        where sb.status = 'pending'
+          and size(sb.signRequests) > 0
+          and (sb.deleted is null or sb.deleted != true)
+          and :user not member of sb.hidedBy
+          and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+          and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+          and (:creatorFilter is null or sb.createBy = :creatorFilter)
+          and (sb.createDate between :startDateFilter and :endDateFilter)
+          and exists (
+              select 1 from SignRequest sr
+              join sr.recipientHasSigned rhs
+              where sr.parentSignBook = sb
+                and key(rhs).user = :user
+                and rhs.actionType = 'none'
+          )
+          and exists (
+              select 1 from LiveWorkflowStep lws
+              join lws.recipients r
+              where lws = sb.liveWorkflow.currentStep
+                and r.user = :user
+          )
+        """)
     Page<SignBook> findToSign(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     @Query("""
-            select distinct count(sb) from SignBook sb
-            left join sb.liveWorkflow.currentStep.recipients r
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            where sb.status = 'pending' and size(sb.signRequests) > 0 and r.user = :user
-            and rhs.actionType = 'none' and key(rhs).user = :user
-            and (sb.deleted is null or sb.deleted != true)
-            and :user not member of sb.hidedBy
+            select count(s) from SignBook s where s.status = :status and (s.deleted is null or s.deleted != true) and :user not member of s.hidedBy and s.createBy = :user
             """)
+    Long countByCreateByEppnAndStatus(User user, SignRequestStatus status);
+
+    @Query("""
+        select count(sb) from SignBook sb
+        where sb.status = 'pending'
+          and size(sb.signRequests) > 0
+          and (sb.deleted is null or sb.deleted != true)
+          and :user not member of sb.hidedBy
+          and exists (
+              select 1 from SignRequest sr
+              join sr.recipientHasSigned rhs
+              where sr.parentSignBook = sb
+                and key(rhs).user = :user
+                and rhs.actionType = 'none'
+          )
+          and exists (
+              select 1 from LiveWorkflowStep lws
+              join lws.recipients r
+              where lws = sb.liveWorkflow.currentStep
+                and r.user = :user
+          )
+        """)
     Long countToSign(User user);
 
     @Query("select distinct sb from SignBook sb join sb.liveWorkflow.currentStep.recipients r where size(sb.signRequests) = 0 and (r.user = :user or sb.createBy = :user)")
@@ -142,15 +238,19 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Long countEmpty(User user);
 
     @Query("""
-            select distinct sb from SignBook sb
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            where key(rhs).user = :user and rhs.actionType = :actionType
-            and (sb.workflowName = :workflowFilter or :workflowFilter is null)
-            and (sb.subject = :docTitleFilter or :docTitleFilter is null)
-            and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            and :user not member of sb.hidedBy
-            and (sb.createBy = :creatorFilter or :creatorFilter is null)
+            select sb from SignBook sb
+            where :user not member of sb.hidedBy
+              and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+              and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and exists (
+                  select 1 from SignRequest sr
+                  join sr.recipientHasSigned rhs
+                  where sr.parentSignBook = sb
+                    and key(rhs).user = :user
+                    and rhs.actionType = :actionType
+              )
             """)
     Page<SignBook> findByRecipientAndActionTypeNotDeleted(User user, ActionType actionType, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
 
@@ -158,7 +258,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findByHidedById(User hidedBy, Pageable pageable);
 
     @Query("""
-            select distinct sb from SignBook sb
+            select sb from SignBook sb
             where sb.createBy = :user
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
@@ -168,7 +268,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findByCreateByIdAndStatusAndSignRequestsNotNull(User user, SignRequestStatus status, Pageable pageable);
 
     @Query("""
-            select distinct sb from SignBook sb
+            select sb from SignBook sb
             where sb.createBy = :user
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
@@ -180,7 +280,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findCompleted(User user, Pageable pageable);
 
     @Query("""
-            select distinct sb from SignBook sb
+            select sb from SignBook sb
             where sb.createBy = :user
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
@@ -219,7 +319,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select sb from SignBook sb join sb.viewers u where u = :user")
     Page<SignBook> findByViewersContaining(User user, Pageable pageable);
 
-    @Query("select count(distinct sb) from SignBook sb join sb.viewers u where u.eppn = :userEppn and sb.status = 'pending'")
+    @Query("select count(sb) from SignBook sb join sb.viewers u where u.eppn = :userEppn and sb.status = 'pending'")
     Long countByViewersContaining(String userEppn);
 
     @Query("""
@@ -261,13 +361,13 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
             left join sb.team team
-            where (sb.workflowName = :workflowFilter or :workflowFilter is null)
-            and (sb.subject = :docTitleFilter or :docTitleFilter is null)
+            where (:workflowFilter is null or sb.workflowName = :workflowFilter)
+            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
             and (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
-            and (sb.createBy = :creatorFilter or :creatorFilter is null)
+            and (:creatorFilter is null or sb.createBy = :creatorFilter)
             """)
     List<UserDto> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
 
@@ -287,20 +387,31 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     List<UserDto> findRecipientNames(User user);
 
     @Query("""
-            select distinct sb from SignBook as sb
-            left join sb.signRequests sr
-            left join sr.recipientHasSigned rhs
-            left join sb.liveWorkflow lw
-            left join lw.liveWorkflowSteps lws
-            left join lws.recipients r
-            left join r.user u
-            where sr.id in (select l.signRequestId from Log as l where l.eppn = :eppn and l.eppn != l.eppnFor)
-            and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or sb.subject = :docTitleFilter)
-            and (:recipientUser is null or key(rhs).user = :recipientUser or :recipientUser in (u))
-            and (sb.createDate between :startDateFilter and :endDateFilter)
-            and (:creatorFilter is null or sb.createBy = :creatorFilter)
-            """)
+        select sb from SignBook sb
+        where exists (
+            select 1 from SignRequest sr
+            where sr.parentSignBook = sb
+              and sr.id in (
+                  select l.signRequestId from Log l
+                  where l.eppn = :eppn and l.eppn != l.eppnFor
+              )
+        )
+        and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+        and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+        and (:recipientUser is null or exists (
+              select 1 from SignRequest sr2
+              join sr2.recipientHasSigned rhs2
+              where sr2.parentSignBook = sb
+                and key(rhs2).user = :recipientUser
+        ) or exists (
+              select 1 from LiveWorkflowStep lws
+              join lws.recipients r
+              where lws in elements(sb.liveWorkflow.liveWorkflowSteps)
+                and r.user = :recipientUser
+        ))
+        and (sb.createDate between :startDateFilter and :endDateFilter)
+        and (:creatorFilter is null or sb.createBy = :creatorFilter)
+        """)
     Page<SignBook> findOnShareByEppn(String eppn, User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     List<SignBook> findByCreateByEppn(String userEppn);

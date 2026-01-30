@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FormService;
@@ -72,7 +73,7 @@ public class WizardController {
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-workflow", produces = "text/html")
-    public String wizStartWorkflow( @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
+    public String wizStartWorkflow(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
         return "user/wizard/wiz-new-workflow-step";
     }
 
@@ -104,7 +105,7 @@ public class WizardController {
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @ResponseBody
     @PostMapping(value = "/start-self-sign/{signBookId}")
-    public void startSelfSign(@PathVariable("signBookId") Long signBookId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) {
+    public void startSelfSign(@PathVariable("signBookId") Long signBookId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn) throws EsupSignatureException {
         signBookService.createSelfSignBook(signBookId, userEppn);
     }
 
@@ -116,10 +117,12 @@ public class WizardController {
                                          @RequestBody List<WorkflowStepDto> steps,
                                          @RequestParam(value = "multiSign", required = false) Boolean multiSign,
                                          @RequestParam(value = "singleSignWithAnnotation", required = false) Boolean singleSignWithAnnotation,
+                                         @RequestParam(value = "singleStep", required = false) Boolean singleStep,
                                          @RequestParam(value = "pending", required = false) Boolean pending) throws EsupSignatureRuntimeException {
         if(pending == null) pending = false;
+        if(singleStep == null) singleStep = false;
         try {
-            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, multiSign, singleSignWithAnnotation);
+            signBookService.startFastSignBook(signBookId, pending, steps, userEppn, authUserEppn, multiSign, singleSignWithAnnotation, singleStep);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -190,7 +193,7 @@ public class WizardController {
                                                          @RequestParam(name="close", required = false) Boolean close,
                                                          @RequestParam(name="start", required = false) Boolean start,
                                                          @RequestBody List<WorkflowStepDto> steps,
-                                                         Model model, HttpServletRequest request, HttpServletResponse response) throws EsupSignatureRuntimeException {
+                                                         Model model, HttpServletRequest request, HttpServletResponse response) throws EsupSignatureException {
         JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
         IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
         final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
@@ -298,6 +301,9 @@ public class WizardController {
                 logger.warn(e.getMessage());
             }
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (EsupSignatureException e) {
+            logger.debug(e.getMessage(), e);
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
         return ResponseEntity.ok().body(signBookId);
     }

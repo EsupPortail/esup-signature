@@ -6,6 +6,9 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
+<script>
+    const workflowRole = '[[${workflowRole}]]';
+</script>
 <main role="main">
     <div class="wrapper">
         <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
@@ -17,21 +20,38 @@
             </ol>
         </nav>
         <div id="content" class="content">
-            <div id="addButton" class="fixed-action-btns" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <ul id="collapseExample" class="list-unstyled">
-                    <li><a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a></li>
-                </ul>
+            <div class="fixed-action-simple-btn" >
+                <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary">
+                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
+                </a>
+            </div>
+            <div class="input-group mb-3">
+                <span class="input-group-text">Filtrer</span>
+                <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
+                    <th:block th:each="tag : ${allTags}">
+                        <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                    </th:block>
+                </select>
+                <span class="input-group-text">Actifs</span>
+                <select id="activeVersion" name="activeVersion" class="form-select" data-placeholder="Tous" onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?activeVersion=' + this.value">
+                    <option data-placeholder="true" readonly="" value="">Tous</option>
+                    <option value="true" th:selected="${activeVersion != null && activeVersion}">Oui</option>
+                    <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
+                </select>
             </div>
             <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
                 <table class="table table-light table-striped table-hover table-borderless">
                     <thead class="table-secondary">
                     <tr>
                         <th>Id</th>
-                        <th class="w-50">Titre</th>
+                        <th class="w-25">Titre</th>
+                        <th>Tags</th>
+                        <th>À la une</th>
                         <th>Circuit associé</th>
                         <th>Actif</th>
                         <th>Tuile masquée</th>
                         <th>Supprimé</th>
+                        <th>Public</th>
                         <th>Rôle</th>
                         <th class="text-center">Action</th>
                     </tr>
@@ -40,19 +60,32 @@
                     <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
                         <td><input type="text" th:value="${form.id}" disabled></td>
                         <td class="clickable-td" th:text="${form.title}"></td>
+                        <td th:class="${form.id != null}? 'clickable-td' : ''">
+                            <th:block th:each="tag : ${form.tags}">
+                                <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
+                            </th:block>
+                        </td>
+                        <td class="clickable-td">
+                            <i th:if="${form.isFeatured}" class="fa-solid fa-check text-success"></i>
+                            <i th:unless="${form.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
+                        </td>
                         <td>
                             <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.activeVersion}" class="fa-solid fa-times text-danger"></i>
+                            <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td">
                             <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
                             <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
                         </td>
                         <td class="clickable-td">
-                            <i th:if="${form.deleted}" class="fa-solid fa-times text-danger"></i>
+                            <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
+                        </td>
+                        <td class="clickable-td">
+                            <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
+                            <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td class="clickable-td" th:text="${form.roles}"></td>
                         <td class="text-center">
@@ -135,7 +168,7 @@
                     </tbody>
                 </table>
                 <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
-                    Aucun formulaire pour le moment
+                    Aucun formulaire actif pour le moment
                 </div>
             </div>
         </div>

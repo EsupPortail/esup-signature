@@ -1,13 +1,17 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.FieldPropertie;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
+import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.slf4j.Logger;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.time.DayOfWeek;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,46 +37,40 @@ public class UserController {
 
 	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-	@ModelAttribute("paramMenu")
-	public String getActiveMenu() {
-		return "bg-secondary";
-	}
+    private final UserKeystoreService userKeystoreService;
+	private final FormService formService;
+    private final UserService userService;
+    private final SignBookService signBookService;
+    private final UserPropertieService userPropertieService;
+    private final FieldPropertieService fieldPropertieService;
+    private final MessageService messageService;
+    private final UserListService userListService;
+    private final ExtValueService extValueService;
+    private final RecipientService recipientService;
 
-	@Resource
-	private FormService formService;
-
-	private final UserKeystoreService userKeystoreService;
-
-	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService) {
+    public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService) {
 		this.userKeystoreService = userKeystoreService;
-	}
-
-	@Resource
-	private UserService userService;
-
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private UserPropertieService userPropertieService;
-
-	@Resource
-	private FieldPropertieService fieldPropertieService;
-
-	@Resource
-	private MessageService messageService;
-
-	@Resource
-	UserListService userListService;
+        this.formService = formService;
+        this.userService = userService;
+        this.signBookService = signBookService;
+        this.userPropertieService = userPropertieService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.messageService = messageService;
+        this.userListService = userListService;
+        this.extValueService = extValueService;
+        this.recipientService = recipientService;
+    }
 
     @GetMapping
-	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) {
+	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, Model model, @RequestParam(value = "referer", required=false) String referer, HttpServletRequest request) throws IOException {
 		model.addAttribute("emailAlertFrequencies", Arrays.asList(EmailAlertFrequency.values()));
 		model.addAttribute("daysOfWeek", Arrays.asList(DayOfWeek.values()));
 		if(referer != null && !"".equals(referer) && !"null".equals(referer)) {
 			model.addAttribute("referer", request.getHeader(HttpHeaders.REFERER));
 		}
-		model.addAttribute("activeMenu", "settings");
+        model.addAttribute("activeMenu", "user");
+		model.addAttribute("paramMenu", "settings");
+		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
 		return "user/users/update";
     }
 
@@ -154,7 +153,7 @@ public class UserController {
 	@GetMapping("/properties")
 	public String properties(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		List<UserPropertie> userProperties = userPropertieService.getUserProperties(authUserEppn);
-		if (userProperties != null && userProperties.size() > 0) {
+		if (userProperties != null && !userProperties.isEmpty()) {
 			Map<User, Date> sortedMap = new LinkedHashMap<>();
 			for (UserPropertie userPropertie : userProperties) {
 				List<Map.Entry<User, Date>> entrySet = new ArrayList<>(userPropertie.getFavorites().entrySet());
@@ -166,7 +165,8 @@ public class UserController {
 		List<FieldPropertie> fieldProperties = fieldPropertieService.getFieldProperties(authUserEppn);
 		model.addAttribute("fieldProperties", fieldProperties);
 		model.addAttribute("forms", formService.getFormsByUser(authUserEppn, authUserEppn));
-		model.addAttribute("activeMenu", "properties");
+		model.addAttribute("paramMenu", "properties");
+        model.addAttribute("activeMenu", "user");
 		return "user/users/properties";
 	}
 
@@ -228,7 +228,8 @@ public class UserController {
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
 		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
 		model.addAttribute("signRequests", signRequests);
-		model.addAttribute("activeMenu", "replace");
+		model.addAttribute("activeMenu", "shares");
+        model.addAttribute("paramMenu", "replace");
 		return "user/users/replace";
 	}
 
@@ -260,5 +261,13 @@ public class UserController {
 		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Votre token a bien été renouvelé"));
 		return "redirect:/user/users";
 	}
+
+    @GetMapping(value="/search-extvalue")
+    @ResponseBody
+    public List<Map<String, Object>> searchValue(@RequestParam(value="searchType") String searchType, @RequestParam(value="searchString") String searchString, @RequestParam(value = "serviceName") String serviceName, @RequestParam(value = "searchReturn") String searchReturn) {
+        ExtValue extValue = extValueService.getExtValueServiceByName(serviceName);
+        List<Map<String, Object>> values = extValue.search(searchType, searchString, searchReturn);
+        return values.stream().sorted(Comparator.comparing(v -> v.values().iterator().next().toString())).collect(Collectors.toList());
+    }
 
 }

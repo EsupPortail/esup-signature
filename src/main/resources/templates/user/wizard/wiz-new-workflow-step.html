@@ -8,17 +8,17 @@
     <div id="stepper1" class="bs-stepper linear">
         <div class="bs-stepper-header" role="tablist">
             <div class="step active" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-project-diagram"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-diagram-project"></i></span>
                 <span class="bs-stepper-label">Création du circuit</span>
             </div>
             <div class="bs-stepper-line"></div>
             <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-save"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-disk"></i></span>
                 <span class="bs-stepper-label">Sauvegarde</span>
             </div>
             <div class="bs-stepper-line"></div>
             <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fa-solid fa-flag-checkered"></i></span>
+                <span class="bs-stepper-circle"><i class="fi fi-rr-flag"></i></span>
                 <span class="bs-stepper-label">Fin</span>
             </div>
         </div>
@@ -56,6 +56,9 @@
                     <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                 </th:block>
             </th:block>
+            <th:block th:unless="${workflow != null}">
+                <div class="alert alert-light">Pas d’étape pour le moment</div>
+            </th:block>
         </div>
     </div>
     <hr>
@@ -74,11 +77,18 @@
             <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails-1" multiple="multiple" required>
                 <option data-placeholder="true"></option>
             </select>
+            <script>
+                document.querySelector('#recipientsEmails-1').addEventListener('change', () => {
+                    if (!document.getElementById('wiz-end')) return;
+                    let hasSelection = document.querySelector('#recipientsEmails-1').selectedOptions.length > 0;
+                    document.getElementById('wiz-end').disabled = hasSelection;
+                });
+            </script>
             <div id="tempUsers-recipientsEmails-1"></div>
             <br/>
             <div class="form-check form-switch form-switch-md mb-2" id="all-sign-to-complete-div-1" style="display: none">
                 <label class="form-check-label" for="all-sign-to-complete-1">
-                    Tous les participants doivent-ils signer ?
+                    Tous les participants doivent signer pour valider l'étape
                 </label>
                 <input type="checkbox" class="form-check-input" id="all-sign-to-complete-1" name="allSignToComplete">
             </div>
@@ -98,20 +108,22 @@
                         </ul>
                         <ul>
                             <li>
-                                <b>Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
+                                <b><i class="fi fi-rr-attribution-pen"></i> Signature simple :</b> adaptée aux documents internes ou aux échanges ne présentant pas de risque particulier, lorsqu’il n’existe pas d’obligation légale imposant un niveau supérieur. (apposition d’une image + traces)
                             </li>
                             <li>
-                                <b>Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
+                                <b><i class="fi fi-rr-attribution-pen"></i>
+                                    <i class="fi fi-rr-seal"></i> Signature avancée :</b> recommandée pour les documents nécessitant de pouvoir identifier le signataire et disposer d’un élément de preuve supplémentaire, par exemple pour des contrats ou des engagements comportant un risque juridique modéré. (nécessite un certificat électronique)
                             </li>
                             <li>
-                                <b>Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
+                                <b><i class="fi fi-rr-attribution-pen"></i>
+                                    <i class="fi fi-rr-badge-check"></i> Signature qualifiée :</b> à privilégier pour les actes à portée européenne ou pour les situations à fort enjeu (importance juridique ou financière), car elle bénéficie d’une reconnaissance mutuelle dans l’Union européenne et d’une présomption de fiabilité équivalente à une signature manuscrite. (nécessite un certificat eIDas)
                             </li>
                         </ul>
                     </small>
                 </div>
             </div>
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="form-group w-50">
+            <div class="d-flex flex-column gap-2 mb-2">
+                <div class="form-group w-100">
                     <label class="form-label" for="signType-1">Choisir un type de signature *</label>
                     <select class="form-select" name="signType" id="signType-1" onchange="toggleSignLevel()">
                         <th:block th:each="signType : ${signTypes}">
@@ -120,13 +132,26 @@
                         </th:block>
                     </select>
                 </div>
-                <div class="form-group w-50" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
-                    <label class="form-label" for="minSignLevel-1">Niveau minimum</label>
-                    <select class="form-select" name="minSignLevel" id="minSignLevel-1">
-                        <th:block th:each="signLevel : ${signLevels}">
-                            <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
-                        </th:block>
-                    </select>
+                <div class="form-group w-10" id="minSignLevel" title="Avancée et qualifiée nécessitent un certificat">
+                    <label class="form-label">Niveaux de signature autorisés :</label>
+                    <div class="d-flex gap-5">
+                        <div>
+                            <small>Niveau minimum</small>
+                            <select class="form-select" name="minSignLevel" id="minSignLevel-1">
+                                <th:block th:each="signLevel : ${signLevels}">
+                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                        <div>
+                            <small>Niveau maximum</small>
+                            <select class="form-select" name="maxSignLevel" id="maxSignLevel-1">
+                                <th:block th:each="signLevel : ${signLevels}">
+                                    <option th:value="${signLevel}" th:text="#{'signlevel.' + ${signLevel}}"></option>
+                                </th:block>
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div th:if="${#authorization.expression('hasRole(''ROLE_SEAL'')')}" class="form-check form-switch form-switch-md mt-5" id="seal-options" style="display: none;">
                     <label class="form-check-label">
@@ -157,7 +182,7 @@
         <i class="fa-solid fa-plus"></i> Enregistrer cette étape
     </button>
     <button id="wiz-end" name="wiz-exit" value="true" th:if="${workflow != null && workflow.workflowSteps.size() > 0}" type="button" class="btn btn-success">
-        <i class="fa-solid fa-flag-checkered"></i> Terminer
+        <i class="fi fi-rr-flag"></i> Terminer
     </button>
 </div>
 </html>

@@ -8,10 +8,12 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import jakarta.servlet.MultipartConfigElement;
+import org.esupportail.esupsignature.entity.Config;
+import org.esupportail.esupsignature.service.ConfigService;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -26,14 +28,20 @@ import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 @Configuration
 @ComponentScan
 @EnableAsync
+@EnableCaching
 @EnableAutoConfiguration
-@EnableConfigurationProperties(GlobalProperties.class)
 public class WebAppConfig implements WebMvcConfigurer {
 
 	private final GlobalProperties globalProperties;
+    private final ConfigService configService;
 
-	public WebAppConfig(GlobalProperties globalProperties) {
+	public WebAppConfig(GlobalProperties globalProperties, ConfigService configService) {
 		this.globalProperties = globalProperties;
+        this.configService = configService;
+        Config config = configService.getConfig();
+        if(config.getHideAutoSign() != null) {
+            globalProperties.setHideAutoSign(config.getHideAutoSign());
+        }
     }
 
 	@Bean

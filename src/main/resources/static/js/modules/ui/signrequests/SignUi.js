@@ -6,7 +6,7 @@ import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, isPdf, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, currentStepMinSignLevel, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
+    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, isPdf, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, currentStepMinSignLevel, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome) {
         console.info("Starting sign UI for " + id);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.returnToHome = returnToHome;
@@ -22,7 +22,7 @@ export class SignUi {
         this.dataId = dataId;
         this.currentSignType = currentSignType;
         this.notSigned = notSigned;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, postits, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
+        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
@@ -31,6 +31,7 @@ export class SignUi {
         this.currentStepMinSignLevel = currentStepMinSignLevel;
         this.gotoNext = false;
         this.certTypeSelect = $("#certType");
+        this.sealCertificatSelect = $("#sealCertificat");
         this.nbSignRequests = nbSignRequests;
         this.attachmentRequire = attachmentRequire;
         this.attachmentAlert = attachmentAlert;
@@ -96,8 +97,11 @@ export class SignUi {
                 let modal = "<div class=\"modal fade\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
                     "<div class=\"modal-dialog modal-lg\">" +
                     "<div class=\"modal-content\">" +
-                    "<div class=\"modal-body\">" +
+                    "<div class=\"modal-header\">" +
+                    "<h5 class=\"modal-title\" id=\"exampleModalLabel\">Validation de la signature</h5>\n" +
                     "<button class=\"btn btn-sm btn-close text-dark float-end position-relative\" style='z-index: 2' onclick=\"$('#reportModal').modal('toggle');\"></button>" +
+                    "</div>" +
+                    "<div class=\"modal-body\">" +
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);
@@ -109,7 +113,7 @@ export class SignUi {
                 $("#reportSpinner").hide();
                 let reportModalBtn = $("#reportModalBtn");
                 reportModalBtn.removeClass("d-none");
-                $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
+                // $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
             }
         });
     }
@@ -117,6 +121,7 @@ export class SignUi {
     launchSignModal() {
         console.info("launch sign modal");
         window.onbeforeunload = null;
+        this.workspace.signPosition.lockSigns();
         let self = this;
         if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
             this.workspace.saveData(true);
@@ -191,14 +196,7 @@ export class SignUi {
                 }
             });
         } else {
-            let signModal;
-            if (self.stepRepeatable) {
-                signModal = $('#stepRepeatableModal');
-            } else {
-                signModal = $("#signModal");
-            }
-            signModal.modal('show');
-            this.confirmLaunchSignModal();
+            self.checkAttachement();
         }
     }
 
@@ -254,12 +252,7 @@ export class SignUi {
             $("#launchNoInfiniteSignButtonNext").toggle();
             $("#signCommentNoInfinite").toggle();
         });
-        let signModal;
-        if (this.stepRepeatable) {
-            signModal = $('#stepRepeatableModal');
-        } else {
-            signModal = $("#signModal");
-        }
+        let signModal = $("#signModal");
         signModal.on('shown.bs.modal', function () {
             $("#checkValidateSignButtonEnd").focus();
             let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
@@ -286,18 +279,15 @@ export class SignUi {
         if(value === "imageStamp") {
             $("#alert-sign-present").show();
         }
-        if(value === "userCert" || value === "sealCert" || value === "nexuCert") {
-            if(this.workspace.signPosition.signRequestParamses.size > 1) {
-                $("#alert-multi-sign-present").show();
-            }
+        if(value === "sealCert") {
+            $("#sealChoose").removeClass('d-none');
         } else {
-            $("#alert-multi-sign-present").hide();
+            $("#sealChoose").addClass('d-none');
         }
     }
 
     launchNoInfiniteSign(next) {
-        this.signComment = $("#signCommentNoInfinite");
-        $("#password").val($("#passwordInfinite").val());
+        this.signComment = $("#signComment");
         this.launchSign(next);
     }
 
@@ -346,6 +336,7 @@ export class SignUi {
     }
 
     submitSignRequest() {
+        let self = this;
         let signaturesCheck = true;
         let formData = { };
         if(this.isPdf) {
@@ -362,22 +353,33 @@ export class SignUi {
         }
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
-            signRequestParamses.forEach(function (signRequestParams){
-                delete signRequestParams.signImages;
-                if(signRequestParams.userSignaturePad != null) {
-                    if(signRequestParams.userSignaturePad.signaturePad.isEmpty()) {
+            let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
+                let paramToSend = Object.assign({}, originalParams);
+                paramToSend.signScale = originalParams.signScale;
+                paramToSend.xPos = originalParams.xPos * self.getBrowserZoom();
+                paramToSend.yPos = originalParams.yPos * self.getBrowserZoom();
+                paramToSend.fontSize = originalParams.fontSize;
+                paramToSend.signWidth = originalParams.signWidth / originalParams.signScale
+                paramToSend.signHeight = originalParams.signHeight / originalParams.signScale
+                paramToSend.rotate = self.workspace.pdfViewer.rotation;
+                delete paramToSend.signImages;
+                if(originalParams.userSignaturePad != null) {
+                    if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
                         signaturesCheck = false;
                     } else {
-                        signRequestParams.userSignaturePad.save();
-                        signRequestParams.imageBase64 = signRequestParams.userSignaturePad.signImageBase64Val;
-                        delete signRequestParams.userSignaturePad;
+                        originalParams.userSignaturePad.save();
+                        paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
+                        delete paramToSend.userSignaturePad;
                     }
                 }
+                return paramToSend;
             });
             this.signRequestUrlParams = {
                 'password' : $("#password").val(),
                 'certType' : this.certTypeSelect.val(),
-                'signRequestParams' : JSON.stringify(signRequestParamses, function replacer(key, value) {
+                'signAll' : $("#sign-all").prop("checked"),
+                'sealCertificat' : this.sealCertificatSelect.val(),
+                'signRequestParams' : JSON.stringify(signRequestParamsesToSend, function replacer(key, value) {
                     if (this &&
                         (key === "events"
                             || key === "globalProperties"
@@ -404,7 +406,6 @@ export class SignUi {
             }
         }
         if(signaturesCheck) {
-            console.log(this.signRequestUrlParams);
             this.sendData(this.signRequestUrlParams);
         } else {
             bootbox.alert("Une signature est vide", null);
@@ -496,17 +497,15 @@ export class SignUi {
         recipientsEmails.forEach(function(email) {
             let recipient = new Recipient();
             recipient.email = email;
+            let id = email.replaceAll("@", "_").replaceAll(".", "_");
+            let extInfos = $("div[id='recipient_" + id + "']");
+            recipient.name = extInfos.find("#name_" + id).val();
+            recipient.firstName = extInfos.find("#firstname_" + id).val();
+            recipient.phone = extInfos.find("#phone_" + id).val();
+            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked");
             step.recipients.push(recipient);
         });
-        $("div[id^='recipient_']").each(function() {
-            let recipient = new Recipient();
-            recipient.email = $(this).find("#emails").val();
-            recipient.name = $(this).find("#names").val();
-            recipient.firstName = $(this).find("#firstnames").val();
-            recipient.phone = $(this).find("#phones").val();
-            recipient.forceSms = $(this).find("#forcesmses").val();
-            step.recipients.push(recipient);
-        });
+
         let self = this;
         this.signComment = $("#signComment");
         step.stepNumber = this.currentStepNumber;
@@ -515,8 +514,14 @@ export class SignUi {
         step.autoSign = $('#autoSign').is(':checked');
         step.signType = $('#signType').val();
         step.repeatable = true;
+        let url;
+        if(self.isOtp== null || !self.isOtp) {
+            url = "/user/signrequests/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token
+        } else {
+            url = "/otp/signrequests/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token
+        }
         $.ajax({
-            url: "/user/signbooks/add-repeatable-step/" + signRequestId + "?" + csrf.parameterName + "=" + csrf.token,
+            url: url,
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify(step),
@@ -525,6 +530,10 @@ export class SignUi {
                 self.launchSign();
             }
         });
+    }
+
+    getBrowserZoom() {
+        return 1 || 1;
     }
 
 }

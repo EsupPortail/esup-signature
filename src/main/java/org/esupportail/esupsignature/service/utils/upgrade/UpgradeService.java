@@ -19,6 +19,8 @@ import org.springframework.boot.info.BuildProperties;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -43,7 +45,7 @@ public class UpgradeService {
     private final FileService fileService;
     private final FormService formService;
 
-    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4"};
+    private final String[] updates = new String[] {"1.19", "1.22", "1.23", "1.29.10", "1.30.5", "1.33.7", "1.34.0", "1.34.4", "1.36.1", "1.36.7"};
 
     public UpgradeService(EntityManager entityManager, GlobalProperties globalProperties, SignBookRepository signBookRepository, AppliVersionRepository appliVersionRepository, @Autowired(required = false) BuildProperties buildProperties, FileService fileService, FormService formService) {
         this.entityManager = entityManager;
@@ -58,30 +60,6 @@ public class UpgradeService {
     @Transactional
     public void launch() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         logger.info("##### Esup-signature Upgrade #####");
-        Thread checkVersion = new Thread(() -> {
-            try {
-                RestTemplate restTemplate = new RestTemplate();
-                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-                HttpHeaders headers = new HttpHeaders();
-                headers.add("Referer", globalProperties.getDomain());
-                String currentVersion = "0.0.0";
-                if(buildProperties != null) {
-                    currentVersion = buildProperties.getVersion();
-                }
-                headers.add("X-API-Version", currentVersion);
-                HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
-                String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
-                logger.debug("##### Esup-signature  last version : " + version + " #####");
-                if (version != null && currentVersion.contains(version.trim())) {
-                    logger.debug("##### Esup-signature version is up-to-date #####");
-                } else {
-                    logger.debug("##### Esup-signature version is not up-to-date #####");
-                }
-            } catch (Exception e) {
-                logger.info("##### Unable to get last version #####", e);
-            }
-        });
-        checkVersion.start();
         for(String update : updates) {
             if(checkVersionUpToDate(update) < 0) {
                 logger.info("#### Starting update : " + update + " ####");
@@ -96,10 +74,41 @@ public class UpgradeService {
                     appliVersionRepository.save(appliVersion);
                 }
             } else {
-                logger.debug("##### Esup-signature is higher than " + update + ", skip update #####");
+                logger.info("##### Esup-signature is higher than " + update + ", skip update #####");
             }
         }
         logger.info("##### Esup-signature is up-to-date #####");
+        checkVersion();
+    }
+
+    public void checkVersion() {
+        Thread checkVersion = new Thread(() -> {
+            try {
+                RestTemplate restTemplate = new RestTemplate();
+                LinkedMultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Referer", globalProperties.getDomain());
+                String currentVersion = "0.0.0";
+                if(buildProperties != null) {
+                    currentVersion = buildProperties.getVersion();
+                }
+                headers.add("X-API-Version", currentVersion);
+                HttpEntity<LinkedMultiValueMap<String, Object>> requestEntity = new HttpEntity<>(map, headers);
+                String version = restTemplate.postForObject("https://esup-signature-demo.univ-rouen.fr/webhook", requestEntity, String.class);
+                if (version != null) {
+                    logger.info("##### Esup-signature last version : " + version.trim() + " #####");
+                    if (compareVersions(version.trim(), currentVersion) >= 0) {
+                        logger.info("##### Esup-signature version is up-to-date #####");
+                    } else {
+                        logger.info("##### Esup-signature version is not up-to-date #####");
+                        globalProperties.newVersion = version;
+                    }
+                }
+            } catch (Exception e) {
+                logger.info("##### Unable to get last version #####", e);
+            }
+        });
+        checkVersion.start();
     }
 
     private int checkVersionUpToDate(String updateVersion) {
@@ -107,8 +116,12 @@ public class UpgradeService {
         appliVersionRepository.findAll().forEach(appliVersions::add);
         if(appliVersions.isEmpty()) return -1;
         String databaseVersion = appliVersions.get(0).getEsupSignatureVersion().split("-")[0];
-        String[] codeVersionStrings = updateVersion.split("\\.");
-        String[] databaseVersionStrings = databaseVersion.split("\\.");
+        return compareVersions(updateVersion, databaseVersion);
+    }
+
+    private static int compareVersions(String targetVersion, String currentVersion) {
+        String[] codeVersionStrings = targetVersion.split("\\.");
+        String[] databaseVersionStrings = currentVersion.split("-")[0].split("\\.");
         int length = Math.max(codeVersionStrings.length, databaseVersionStrings.length);
 
         for(int i = 0; i < length; i++) {
@@ -171,7 +184,7 @@ public class UpgradeService {
         }
         logger.info("#### Update end dates of signBooks completed ####");
         logger.info("#### Starting update manager of workflows ####");
-        List<Form> forms = formService.getAllForms();
+        List<Form> forms = formService.getAllForms(null, null);
         for(Form form : forms) {
             for(String manager : form.getManagers()) {
                 if(form.getWorkflow() != null && !form.getWorkflow().getManagers().contains(manager)) {
@@ -362,7 +375,7 @@ public class UpgradeService {
         logger.info("#### Starting update sign types ####");
         entityManager.createNativeQuery("""
         
-                        DO $$
+            DO $$
             BEGIN
                 IF EXISTS (
                     SELECT 1
@@ -456,4 +469,19 @@ public class UpgradeService {
         logger.info("#### Update sign types done ####");
     }
 
+    @SuppressWarnings("unused")
+    public void update_1_36_1() {
+        logger.info("#### Starting update signRequestParams ####");
+        entityManager.createNativeQuery("ALTER TABLE user_ui_params DROP CONSTRAINT IF EXISTS user_ui_params_ui_params_key_check;").executeUpdate();
+        logger.info("#### Update signRequestParams completed ####");
+    }
+
+    @SuppressWarnings("unused")
+    public void update_1_36_7() {
+        logger.info("#### Starting update signRequestParams positions ####");
+        entityManager.createNativeQuery("UPDATE sign_request_params SET x_pos = x_pos * 0.75, y_pos = y_pos * 0.75, sign_width = sign_width * 0.75, sign_height = sign_height * 0.75;").executeUpdate();
+        entityManager.createNativeQuery("UPDATE comment SET posx = posx * 0.75, posy = posy * 0.75, sign_width = sign_width * 0.75, sign_height = sign_height * 0.75;").executeUpdate();
+        entityManager.createNativeQuery("UPDATE comment SET refuse = true WHERE postit_color = '#FF7EB9';").executeUpdate();
+        logger.info("#### Update signRequestParams positions completed ####");
+    }
 }

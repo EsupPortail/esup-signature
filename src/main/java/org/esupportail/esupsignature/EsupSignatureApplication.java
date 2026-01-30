@@ -10,20 +10,20 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Collections;
 
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class EsupSignatureApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
 	@Resource
 	private ApplicationContext applicationContext;
-
 	@Resource
 	private GlobalProperties globalProperties;
-
 	@Resource
 	private UpgradeService upgradeService;
 

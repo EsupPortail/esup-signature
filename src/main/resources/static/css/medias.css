@@ -1,22 +1,31 @@
-@media (max-height: 600px) {
-    #listSignRequestTable {
-        height: 100%;
-    }
-}
-
-@media (min-width: 1600px) {
-    .d-xxxl-table-cell {
-        display: table-cell !important;
-    }
-}
-
-@media (min-width: 1800px) {
+@media (min-width: 1900px) {
     .d-xxxxl-table-cell {
         display: table-cell !important;
     }
+
+    .d-xxxxl-block { display: block !important; }
+
+    .d-xxxxl-none { display: none !important; }
+
+    .d-xxxxl-inline {
+        display: inline !important;
+    }
+    .d-xxxxl-inline-flex {
+        display: inline-flex !important;
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1620px) {
+    .d-xxxl-table-cell {
+        display: table-cell !important;
+    }
+
+    .d-xxxl-block { display: block !important; }
+
+    .d-xxxl-none { display: none !important; }
+
     .d-xxxl-inline {
         display: inline !important;
     }
@@ -28,6 +37,10 @@
 }
 
 @media (min-width: 1800px) {
+    .d-xxxxl-table-cell {
+        display: table-cell !important;
+    }
+
     .d-xxxxl-inline {
         display: inline !important;
     }
@@ -38,20 +51,11 @@
     }
 }
 
+@media (max-width: 1400px) {
+    th.col-nom { min-width: 130px; }
+}
+
 @media (max-width: 1200px) {
-
-    .fixed-action-btns {
-        height: 100px;
-        width: 100%;
-        overflow: revert;
-    }
-
-    .fixed-action-btns ul {
-        -webkit-box-orient: revert;
-        -webkit-box-direction: revert;
-        -ms-flex-direction: revert;
-        flex-direction: revert;
-    }
 
     .new-max-w {
         width: 100%;
@@ -62,16 +66,20 @@
     }
 
     #breadcrumb {
-        display: none;
+        /*display: none;*/
+        margin-left: 0;
     }
 
     .tools {
         top: 50px;
-        overflow-x: scroll;
     }
 
     .workspace-pdf {
         margin-top: 55px;
+    }
+
+    .workspace-sign {
+        margin-top: 142px;
     }
 
     .workspace {
@@ -115,11 +123,17 @@
         left: 50px;
     }
 
-    .pdf-alerts {
-        top:104px;
+    .pdf-alerts-btn {
+        left: 16px;
+        top:105px;
         position: fixed;
-        width: calc(100% - 26px);
+        z-index: 9999;
     }
+
+}
+
+@media (max-width: 992px) {
+    th.col-nom { min-width: 110px; }
 }
 
 @media (max-width: 768px) {
@@ -132,9 +146,9 @@
         margin-left: 5px;
     }
 
-    .new-width-full {
-        width: calc(100vw);
-    }
+    /*.new-width-full {*/
+    /*    width: calc(100vw);*/
+    /*}*/
 
     #breadcrumb {
         display: none;
@@ -159,22 +173,30 @@
         margin-left: initial;
     }
 
+    .pdf-alerts {
+        max-width: 350px !important;
+    }
+
+    th.col-nom {
+        width: 90px;
+        /*overflow: hidden;*/
+        /*text-overflow: ellipsis;*/
+    }
+
+    .btn-floating.btn-lg {
+        width: 47px;
+        height: 47px;
+        font-size: 12px;
+    }
+
+    .extra-tools {
+        right: 0px;
+        top: 40px;
+        position: absolute;
+    }
 }
 
 @media (max-width: 575px) {
-
-    .fixed-action-btns {
-        height: 100px;
-        width: 100%;
-        overflow: revert;
-    }
-
-    .fixed-action-btns ul {
-        -webkit-box-orient: revert;
-        -webkit-box-direction: revert;
-        -ms-flex-direction: revert;
-        flex-direction: revert;
-    }
 
     .nav-item-label {
         display: inline !important;
@@ -193,12 +215,9 @@
 
     .tools {
         top: 50px;
-        overflow-x: scroll;
     }
 
     .workspace-pdf {
-        margin: auto;
-        width: min-content;
         padding: 10px;
         margin-top: 50px;
     }
@@ -207,6 +226,14 @@
         width: min-content;
         margin-top: 0;
         padding: 3px;
+    }
+
+    .workspace-sign {
+        margin-top: 86px;
+    }
+
+    .content-full-fixed {
+        width: 100% ;
     }
 
     .content {
@@ -233,7 +260,6 @@
         top:101px;
         left:0px;
         position: fixed;
-        width: calc(100%);
     }
 
     .pdf-alerts .btn {

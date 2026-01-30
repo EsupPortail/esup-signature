@@ -19,7 +19,12 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
     public void onAuthenticationFailure(HttpServletRequest request,
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
-        logger.error(exception.getMessage(), exception);
-        response.sendRedirect("/error/oauth2");
+        if (!exception.getMessage().contains("access_denied")) {
+            logger.info(exception.getMessage());
+        } else {
+            logger.warn(exception.getMessage(), exception);
+        }
+        request.getSession().setAttribute("errorMsg", exception.getMessage());
+        response.sendRedirect("/otp-access/oauth2");
     }
 }

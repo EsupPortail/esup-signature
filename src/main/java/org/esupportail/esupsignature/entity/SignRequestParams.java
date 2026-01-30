@@ -15,19 +15,23 @@ public class SignRequestParams {
 
     transient private String imageBase64;
 
+    transient private Integer stepNumber;
+
 	private Integer signImageNumber = 0;
 
 	private Integer signPageNumber = 1;
 
     private Integer signDocumentNumber = 0;
 
-    private Integer signWidth = 100;
+    private Integer signWidth = 200;
 
-    private Integer signHeight = 50;
+    private Integer signHeight = 100;
 
 	private Integer xPos = 0;
 
 	private Integer yPos = 0;
+
+    private Integer rotate = 0;
 
 	private String extraText;
 
@@ -51,7 +55,7 @@ public class SignRequestParams {
 
     private String textPart = null;
 
-	private Float signScale = 1F;
+	private Float signScale = 1f;
 
 	private Integer red = 0;
 
@@ -61,9 +65,10 @@ public class SignRequestParams {
 
     private Integer fontSize = 16;
 
-    private String comment = "";
-
     private Boolean restoreExtra = false;
+
+    @ManyToOne
+    private Recipient recipient;
 
     public Long getId() {
         return id;
@@ -87,6 +92,15 @@ public class SignRequestParams {
 
     public void setImageBase64(String imageBase64) {
         this.imageBase64 = imageBase64;
+    }
+
+    public Integer getStepNumber() {
+        if(stepNumber == null) return 1;
+        return stepNumber;
+    }
+
+    public void setStepNumber(Integer stepNumber) {
+        this.stepNumber = stepNumber;
     }
 
     public Integer getSignImageNumber() {
@@ -114,7 +128,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignWidth() {
-        if(signWidth == null) return 100;
+        if(signWidth == null) return 200;
         return signWidth;
     }
 
@@ -123,7 +137,7 @@ public class SignRequestParams {
     }
 
     public Integer getSignHeight() {
-        if(signHeight == null) return 50;
+        if(signHeight == null) return 100;
         return signHeight;
     }
 
@@ -151,6 +165,15 @@ public class SignRequestParams {
 
     public void setyPos(Integer yPos) {
         this.yPos = yPos;
+    }
+
+    public Integer getRotate() {
+        if(rotate == null) return 0;
+        return rotate;
+    }
+
+    public void setRotate(Integer rotate) {
+        this.rotate = rotate;
     }
 
     public String getExtraText() {
@@ -242,6 +265,7 @@ public class SignRequestParams {
     }
 
     public Float getSignScale() {
+        if(signScale == null) return 1f;
         return signScale;
     }
 
@@ -281,11 +305,11 @@ public class SignRequestParams {
         this.fontSize = fontSize;
     }
 
-    public String getComment() {
-        return comment;
+    public Recipient getRecipient() {
+        return recipient;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setRecipient(Recipient recipient) {
+        this.recipient = recipient;
     }
 }
