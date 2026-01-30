@@ -1446,7 +1446,7 @@ public class SignBookService {
                                 }
                                 try {
                                     signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "autoCert", "default", null, null,"system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "autoCert", "default", null, null,"system", "system", null, "", false);
                                                                     } catch (IOException | EsupSignatureMailException e) {
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
                                     logger.error("auto sign fail", e);
@@ -1455,7 +1455,7 @@ public class SignBookService {
                             } else {
                                 try {
                                     signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "sealCert", "default", null, null,"system", "system", null, "");
+                                    signRequestService.sign(signRequest1, "", "sealCert", "default", null, null,"system", "system", null, "", false);
                                 } catch (IOException | EsupSignatureRuntimeException e) {
                                     logger.error("auto sign fail", e);
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");
@@ -1564,7 +1564,7 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException Si une exception liée au processus de signature se produit.
      */
     @Transactional
-    public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, String sealCertificat, Long userShareId, String userEppn, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+    public StepStatus initSign(Long signRequestId, String signRequestParamsJsonString, String comment, String formData, String password, String signWith, String sealCertificat, Long userShareId, String userEppn, String authUserEppn, boolean keepSignFields) throws IOException, EsupSignatureRuntimeException {
         SignRequest signRequest = signRequestService.getById(signRequestId);
         if(signRequest.getAuditTrail() == null) {
             signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -1645,7 +1645,7 @@ public class SignBookService {
             }
             return StepStatus.nexu_redirect;
         } else {
-            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, sealCertificat, data, formDataMap, userEppn, authUserEppn, userShareId, comment);
+            StepStatus stepStatus = signRequestService.sign(signRequest, password, signWith, sealCertificat, data, formDataMap, userEppn, authUserEppn, userShareId, comment, keepSignFields);
             if(stepStatus.equals(StepStatus.last_end)) {
                 try {
                     if(globalProperties.getSealAllDocs() ||
@@ -1718,7 +1718,7 @@ public class SignBookService {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.noSignField);
                     error = messageSource.getMessage("report.reportstatus." + ReportStatus.noSignField, null, Locale.FRENCH);
                 } else if (signRequest.getStatus().equals(SignRequestStatus.pending)) {
-                    stepStatus = initSign(signRequest.getId(), null, null, null, password, signWith, sealCertificat, userShareId, userEppn, authUserEppn);
+                    stepStatus = initSign(signRequest.getId(), null, null, null, password, signWith, sealCertificat, userShareId, userEppn, authUserEppn, false);
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.signed);
                 } else {
                     reportService.addSignRequestToReport(report.getId(), signRequest.getId(), ReportStatus.error);
