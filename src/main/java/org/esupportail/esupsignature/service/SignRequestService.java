@@ -287,7 +287,7 @@ public class SignRequestService {
      * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
      */
     @Transactional
-    public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment) throws EsupSignatureRuntimeException, IOException {
+    public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment, boolean keepSignFields) throws EsupSignatureRuntimeException, IOException {
         User user = userService.getByEppn(userEppn);
         if(signRequest.getAuditTrail() == null) {
             signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
@@ -329,7 +329,7 @@ public class SignRequestService {
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
         }
-		if(!isMoreWorkflowStep(signRequest.getParentSignBook())) {
+		if(!isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
 			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
 		}
         boolean visual = true;
