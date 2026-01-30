@@ -1142,7 +1142,7 @@ public class SignBookService {
         for (WorkflowStep ws : workflowService.getById(workflowId).getWorkflowSteps()) {
             allParams.addAll(ws.getSignRequestParams());
         }
-        signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName,0, allParams, signRequestParamsDetectionPattern, multipartFile);
+        signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName,0, allParams, signRequestParamsDetectionPattern, false, multipartFile);
         workflowService.importWorkflow(signBook, computedWorkflow, steps);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
@@ -1180,6 +1180,7 @@ public class SignBookService {
                     if (signRequestParamsWsDto != null) {
                         signRequestParams.setxPos(signRequestParamsWsDto.getxPos());
                         signRequestParams.setyPos(signRequestParamsWsDto.getyPos());
+                        signRequestParams.setSignScale(signRequestParamsWsDto.getSignScale());
                     }
                 }
                 signRequestParams.setStepNumber(stepNumber);
@@ -1225,7 +1226,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du carnet de signatures dans lequel ajouter les documents
      * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern) {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields) {
         SignBook signBook = getById(signBookId);
         int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
@@ -1235,7 +1236,7 @@ public class SignBookService {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
-                signRequestService.addDocsToSignRequest(signRequest, true, false, i, new ArrayList<>(), signRequestParamsDetectionPattern, multipartFile);
+                signRequestService.addDocsToSignRequest(signRequest, true, false, i, new ArrayList<>(), signRequestParamsDetectionPattern, keepSignFields, multipartFile);
                 if (signBook.getStatus().equals(SignRequestStatus.pending)) {
                     signRequestService.pendingSignRequest(signRequest, authUserEppn);
                     addToTeam(signBook, authUserEppn);
@@ -1256,7 +1257,7 @@ public class SignBookService {
      * Crée un parapheur (SignBook) à partir des informations fournies, ajoute les documents à signer,
      **/
     @Transactional
-    public Map<SignBook, String> createAndSendSignBook(String title, MultipartFile[] multipartFiles, Boolean pending, List<WorkflowStepDto> steps, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl, String signRequestParamsDetectionPattern) throws EsupSignatureException {
+    public Map<SignBook, String> createAndSendSignBook(String title, MultipartFile[] multipartFiles, Boolean pending, List<WorkflowStepDto> steps, String createByEppn, boolean forceSendEmail, Boolean forceAllSign, String targetUrl, String signRequestParamsDetectionPattern, boolean keepSignFields) throws EsupSignatureException {
         User authUser = userService.createUserWithEppn(createByEppn);
         if(authUser == null) {
             throw new EsupSignatureException("user not found");
@@ -1274,7 +1275,7 @@ public class SignBookService {
             }
         }
         SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true, null);
-        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern);
+        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
         if(targetUrl != null && !targetUrl.isEmpty()) {
@@ -1851,7 +1852,7 @@ public class SignBookService {
         for(MultipartFile multipartFile : multipartFiles) {
             SignRequest signRequest = signRequestService.createSignRequest(multipartFile.getOriginalFilename(), signBook, createByEppn, createByEppn);
             integerListMap = replaceSignRequestParamsWithDtoParams(steps, signRequest);
-            signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName, 0, new ArrayList<>(), null, multipartFile);
+            signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName, 0, new ArrayList<>(), null, false, multipartFile);
         }
         signBook.setSubject(generateName(null, workflow, user, false, false, signBook.getId()));
         if (targetUrls != null) {
@@ -1969,7 +1970,7 @@ public class SignBookService {
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
+                        signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, false, new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
                         if (workflow.getScanPdfMetadatas()) {
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
@@ -3002,7 +3003,7 @@ public class SignBookService {
         }
         newSignBook.getLiveWorkflow().setCurrentStep(newSignBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         SignRequest newSignRequest = signRequestService.createSignRequest(signRequest.getTitle(), newSignBook, authUserEppn, authUserEppn);
-        signRequestService.addDocsToSignRequest(newSignRequest, true, false, 0, new ArrayList<>(), null, multipartFiles);
+        signRequestService.addDocsToSignRequest(newSignRequest, true, false, 0, new ArrayList<>(), null, false, multipartFiles);
         pendingSignBook(newSignBook, null, authUserEppn, authUserEppn, false, true);
         signRequestService.addAttachement(null, globalProperties.getRootUrl() + "/user/signrequests/" + id, newSignRequest.getId(), authUserEppn);
         return newSignRequest.getId();

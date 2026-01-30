@@ -292,16 +292,21 @@
                 <div id="toSignDiv" class="alert rounded-3 border-secondary-subtle gap-2 border-end border-secondary-subtle pe-xxl-3 position-relative"
                      style="max-width: 100%;"
                      th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
-                    <button id="toggleSizeBtn"
-                            class="btn btn-sm btn-transparent text-dark position-absolute"
-                            style="top: 10px; right: 10px; z-index: 1;"
-                            title="Agrandir/Réduire"
-                            aria-label="Agrandir/Réduire la section">
-                        <i class="fi fi-rr-expand" id="toggleIcon"></i>
-                    </button>
-                    <div class="w-100">
-                        <h5><i class="fi fi-rr-inbox-full text-secondary-emphasis"></i> Documents à signer <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span></h5>
+                    <div class="d-flex justify-content-between">
+                        <h5>Documents</h5>
+                        <button id="toggleSizeBtn"
+                                class="btn btn-sm btn-transparent text-dark position-absolute"
+                                style="top: 10px; right: 10px; z-index: 1;"
+                                title="Agrandir/Réduire"
+                                aria-label="Agrandir/Réduire la section">
+                            <i class="fi fi-rr-expand" id="toggleIcon"></i>
+                        </button>
                     </div>
+                    <h5 class="ms-2 d-flex justify-content-start align-items-center gap-3">
+                        <i class="fi fi-rr-inbox-full text-secondary-emphasis"></i>
+                        <span>À signer</span>
+                        <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                    </h5>
                     <div>
                         <div th:replace="~{fragments/toSignList :: to-sign-list}"></div>
                     </div>
@@ -310,7 +315,11 @@
                                 class="btn btn-sm border-secondary-subtle btn-transparent w-100 text-dark d-flex justify-content-between align-items-center"
                                 title="Agrandir/Réduire"
                                 aria-label="Agrandir/Réduire la section">
-                            <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-paper-plane-top text-secondary-emphasis"></i> Documents envoyés <span aria-hidden="true" title="Demandes envoyées" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span></h5>
+                            <h5 class="d-flex justify-content-start align-items-center gap-3">
+                                <i class="fi fi-rr-paper-plane-top text-secondary-emphasis"></i>
+                                <span>Envoyés</span>
+                                <span aria-hidden="true" title="Demandes envoyées" class="badge rounded-pill bg-warning text-dark d-none d-md-inline" th:text="${nbSignRequests}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                            </h5>
                             <i class="fi fi-rr-caret-down" id="pending-toggle-icon"></i>
                         </button>
                     </div>
