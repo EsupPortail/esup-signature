@@ -954,7 +954,7 @@ public class PdfService {
      * @param workflow Le workflow associé
      * @return Un flux modifié du fichier PDF sans le champ de signature
      */
-    public InputStream removeSignField(InputStream pdfFile, Workflow workflow) {
+    public InputStream removeSignField(InputStream pdfFile, Workflow workflow, boolean keepSignFields) {
         try {
             PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
             PDAcroForm pdAcroForm = pdDocument.getDocumentCatalog().getAcroForm();
@@ -981,7 +981,7 @@ public class PdfService {
                             logger.debug("error on remove sign field", e);
                         }
                     }
-                    if(pdField instanceof PDSignatureField) {
+                    if(!keepSignFields && pdField instanceof PDSignatureField) {
                         removeField(pdField, pdDocument, pdAcroForm);
                     }
                 }
