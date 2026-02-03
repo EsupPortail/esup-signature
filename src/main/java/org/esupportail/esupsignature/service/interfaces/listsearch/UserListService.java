@@ -35,7 +35,7 @@ public class UserListService {
     }
 
     public List<String> getUsersEmailFromList(String listName) throws DataAccessException, EsupSignatureRuntimeException {
-        if(userLists != null && !userLists.isEmpty()) {
+        if(userLists != null && !userLists.isEmpty() && globalProperties.getForcedExternalsDomainList().stream().noneMatch(listName::contains)) {
             if(listName.contains("*")) {
                 listName = listName.split("\\*")[1];
             }

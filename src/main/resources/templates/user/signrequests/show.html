@@ -921,7 +921,7 @@
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-<script th:inline="javascript" type="module" th:if="${signBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).none}">
+<script th:inline="javascript" type="module" th:if="${signBook.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     let signable = [[${signable}]];
     let editable = [[${editable}]];
