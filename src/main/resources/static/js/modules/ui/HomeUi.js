@@ -37,7 +37,7 @@ export class HomeUi {
             if(startWorkflowId != null) {
                 let workflowButton = $('#workflow-button-' + startWorkflowId);
                 if(workflowButton.length) {
-                    workflowButton.click();
+                    workflowButton[0].click();
                 } else {
                     bootbox.alert("Ce circuit n'a pas été trouvé. Vérifier si vous avez bien les droits pour accéder à ce circuit")
                 }
