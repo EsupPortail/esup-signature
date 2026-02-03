@@ -164,7 +164,7 @@ public class SignRequestJwtController {
         signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
         boolean allSignCompleted = true;
         for(String signRequestId : signRequestIds) {
-            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn());
+            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn(), keepSignFields);
             if(stepStatus.equals(StepStatus.not_completed)) {
                 allSignCompleted = false;
                 break;
