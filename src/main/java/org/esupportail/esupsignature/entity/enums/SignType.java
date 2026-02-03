@@ -17,10 +17,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public enum SignType {
     hiddenVisa(0), visa(1), signature(2);
 
-    public static final @Deprecated SignType pdfImageStamp = signature;
-    public static final @Deprecated SignType certSign = signature;
-    public static final @Deprecated SignType nexuSign = signature;
-
     private final int value;
 
     SignType(final int newValue) {
