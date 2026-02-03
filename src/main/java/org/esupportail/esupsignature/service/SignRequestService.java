@@ -776,15 +776,15 @@ public class SignRequestService {
      */
     @Transactional
     public FsFile getLastSignedFsFile(SignRequest signRequest) throws EsupSignatureFsException {
-        if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
-			if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
-				FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
-				return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
-			}
-		}
-		Document lastSignedDocument = getToSignDocuments(signRequest.getId()).get(0);
-		return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
-	}
+      if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
+        if (signRequest.getExportedDocumentURI() != null && !signRequest.getExportedDocumentURI().startsWith("mail")) {
+          FsAccessService fsAccessService = fsAccessFactoryService.getFsAccessService(signRequest.getExportedDocumentURI());
+          return fsAccessService.getFileFromURI(signRequest.getExportedDocumentURI());
+        }
+      }
+      Document lastSignedDocument = getToSignDocuments(signRequest.getId()).get(0);
+      return new FsFile(lastSignedDocument.getInputStream(), lastSignedDocument.getFileName(), lastSignedDocument.getContentType());
+    }
 
     /**
      * Met à jour le statut d'une demande de signature et crée un log associé.
@@ -817,7 +817,7 @@ public class SignRequestService {
      * @return L'identifiant de la demande parent (SignBook) si la suppression s'est effectuée correctement.
      * @throws EsupSignatureRuntimeException Si la demande de signature ne peut pas être supprimée.
      */
-    @Transactional
+  @Transactional
 	public Long delete(Long signRequestId, String userEppn) {
 		logger.info("start delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
@@ -863,7 +863,7 @@ public class SignRequestService {
      * @return L'identifiant du livre de signatures parent si celui-ci n'est pas supprimé ou 0 si le livre de signatures
      *         a été supprimé.
      */
-    @Transactional
+  @Transactional
 	public Long deleteDefinitive(Long signRequestId, String userEppn) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
@@ -1386,7 +1386,7 @@ public class SignRequestService {
     @Transactional(readOnly = true)
 	public void getToSignFileResponseWithCode(Long signRequestId, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureRuntimeException, WriterException {
 		SignRequest signRequest = getById(signRequestId);
-        if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
+    if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			Document document;
 			if(!documents.isEmpty()) {
