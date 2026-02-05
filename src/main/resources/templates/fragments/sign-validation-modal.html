@@ -109,20 +109,21 @@
                     La signature par certificat cachet d’établissement est temporairement indisponible pour des raisons de maintenance. Si possible, utiliser un autre type de signature sinon merci de refaire un essai ultérieurement.
                 </div>
                 <div id="signCommentDiv" class="mb-1">
-                    <label for="signComment">Commentaire (facultatif)</label>
+                    <label class="form-label" for="signComment">Commentaire (facultatif)</label>
                     <textarea id="signComment" placeholder="Votre commentaire sera visible de tous les participants."  onfocus="this.placeholder = ''" class="form-control" name="comment"></textarea>
                 </div>
+                <hr>
                 <div th:if="${signRequest != null && signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">
-                    <h5 class="modal-title" id="stepRepeatableModalLabel" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">Étape supplémentaire ?</h5>
+                    <h5 class="" id="stepRepeatableModalLabel" th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable != null && signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}">Ajout d'une étape ?</h5>
                     <p>
-                        Vous avez la possibilité de demander une validation intermédiaire avant l’étape suivante.
+                        Vous avez la possibilité de demander la signature d’une personne supplémentaire avant l'étape suivante. Pour cela, cliquez sur le bouton "Ajouter une étape" ci-dessous.
                     </p>
-                    <button id="enableInfinite" class="mb-1 w-100 btn btn-primary" title="Signer" th:value="${signRequest.parentSignBook.id}">
+                    <button id="enableInfinite" class="mb-2 w-100 btn btn-primary" title="Signer" th:value="${signRequest.parentSignBook.id}">
                         <i class="fa-solid fa-caret-down"></i> Ajouter une étape <i class="fa-solid fa-caret-down"></i>
                     </button>
                     <form id="infiniteForm" class="d-none">
                         <input type="submit" id="infiniteFormSubmit" class="d-none">
-                        <label for="recipientsEmails">Choisir les participants *</label>
+                        <label class="form-label" for="recipientsEmails">Choisir les participants *</label>
                         <div class="form-group mb-3">
                             <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" id="recipientsEmails" multiple="multiple" required="required">
                                 <option data-placeholder="true"></option>
@@ -179,20 +180,21 @@
                         <input th:if="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType != null}" type="hidden" id="signType" name="signType" th:value="${signRequest.parentSignBook.liveWorkflow.currentStep.repeatableSignType}">
                         <button type="button" id="launch-infinite-sign-button" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signRequest.parentSignBook.id}">
                         <span th:if="${signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-signature"></i> Confirmer la signature et l'ajout de l'étape
+                            <i class="fa-solid fa-signature"></i> Confirmer la signature et l’ajout de l’étape
                         </span>
                             <span th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-check"></i> Confirmer le visa et l'ajout de l'étape
+                            <i class="fa-solid fa-check"></i> Confirmer le visa et l’ajout de l’étape
                         </span>
                         </button>
                     </form>
+                    <hr>
                     <p id="signCommentNoInfinite">
-                        Sans modification de votre part,
+                        Sans ajout d'étape supplémentaire,
                         <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
-                            vous resterez le dernier destinataire de ce document
+                            vous resterez le dernier destinataire de ce document et le circuit se terminera
                         </span>
                         <span th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()}">
-                            le document sera envoyé pour l’étape suivante  :
+                            le document partir pour l’étape suivante 
                             <span th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() >= (signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber() + 1) && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep != null}"
                                   th:text="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.get(signRequest.parentSignBook.liveWorkflow.getCurrentStepNumber()).workflowStep.description}">
                             </span>

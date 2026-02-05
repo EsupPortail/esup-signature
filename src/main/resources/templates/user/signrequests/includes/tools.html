@@ -121,7 +121,7 @@
             <div id="signModeBtns" class="d-inline-flex">
             <button class="d-flex align-items-center btn btn-light btn-outline-dark ms-1 me-1" data-bs-toggle="modal" title="Pièces jointes"
                     data-bs-target="#attachment"
-                    th:if="${signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
+                    th:if="${user.userType.name() != 'external' || signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
                 <i class="fi fi-rr-clip"></i> <span class="d-none d-xxxxl-inline"> Pièces jointes </span>
                 <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
                     th:text="${attachments.size() + signRequest.links.size()}"
