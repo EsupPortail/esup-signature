@@ -29,7 +29,7 @@ export class SignUi {
         this.stepRepeatable = stepRepeatable;
         this.currentStepNumber = currentStepNumber;
         this.currentStepMinSignLevel = currentStepMinSignLevel;
-        this.gotoNext = false;
+        this.gotoNext = null;
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
         this.nbSignRequests = nbSignRequests;
@@ -47,11 +47,11 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign(false));
-        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(true));
+        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign());
+        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(e));
         $("#launch-infinite-sign-button").on('click', e => this.insertStep());
-        $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign(false));
-        $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(true));
+        $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign());
+        $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(e));
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#refresh-certType2").on('click', e => this.checkSignOptions());
         let self = this;
@@ -291,7 +291,7 @@ export class SignUi {
         this.launchSign(next);
     }
 
-    launchSign(gotoNext) {
+    launchSign(e) {
         $("#checkValidateSignButtonNext").attr("disabled", "disabled");
         $("#checkValidateSignButtonEnd").attr("disabled", "disabled");
         let signModal = $('#signModal');
@@ -305,7 +305,9 @@ export class SignUi {
             return;
         }
         $(window).unbind("beforeunload");
-        this.gotoNext = gotoNext;
+        if(e != null) {
+            this.gotoNext = $(e.currentTarget).attr("data-es-next-url");
+        }
         signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.percent = 0;
@@ -425,8 +427,8 @@ export class SignUi {
                 if(data === "initNexu") {
                     document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
                 } else {
-                    if (self.gotoNext) {
-                        document.location.href = $("#checkValidateSignButtonNext").attr('data-es-next-url');
+                    if (self.gotoNext != null) {
+                        document.location.href = self.gotoNext;
                     } else {
                         if(self.isOtp== null || !self.isOtp) {
                             if(self.returnToHome == null) {
