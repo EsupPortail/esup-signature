@@ -53,31 +53,30 @@ import java.util.Arrays;
 public class ValidationController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ValidationController.class);
-    @Autowired
-    private AuditTrailService auditTrailService;
-    @Autowired
-    private FileService fileService;
 
-	@ModelAttribute("activeMenu")
+    private final AuditTrailService auditTrailService;
+    private final FileService fileService;
+	private final XSLTService xsltService;
+	private final FOPService fopService;
+	private final ValidationService validationService;
+	private final PdfService pdfService;
+	private final SignRequestService signRequestService;
+
+    public ValidationController(AuditTrailService auditTrailService, FileService fileService, XSLTService xsltService, FOPService fopService, ValidationService validationService, PdfService pdfService, SignRequestService signRequestService) {
+        this.auditTrailService = auditTrailService;
+        this.fileService = fileService;
+        this.xsltService = xsltService;
+        this.fopService = fopService;
+        this.validationService = validationService;
+        this.pdfService = pdfService;
+        this.signRequestService = signRequestService;
+    }
+
+    @ModelAttribute("activeMenu")
 	public String getActiveMenu() {
 		return "validation";
 	}
 
-	@Resource
-	private XSLTService xsltService;
-
-	@Resource
-	private FOPService fopService;
-		
-	@Resource
-	private ValidationService validationService;
-
-	@Resource
-	private PdfService pdfService;
-
-	@Resource
-	private SignRequestService signRequestService;
-	
 	@GetMapping
 	public String showValidationForm() {
 		return "user/validation/form";

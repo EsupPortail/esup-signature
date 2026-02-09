@@ -149,28 +149,33 @@
                                     <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                                         <li>
                                             <a th:unless="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
-                                                <i class="fa-solid fa-eye pr-2"></i> Consulter
+                                                <i class="fi fi-rr-eye pr-2"></i> Consulter
                                             </a>
                                         </li>
                                         <li>
                                             <a target="_blank" th:if="${signBook.signRequests.size() == 1}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                                                 th:href="'/user/manage/workflow/' + ${workflow.id} + '/get-last-file/' + ${signBook.signRequests.get(0).id}">
-                                                <i class="fa-solid fa-download pr-2"></i> Télécharger
+                                                <i class="fi fi-rr-download pr-2"></i> Télécharger
                                             </a>
                                         </li>
                                         <li>
                                             <a th:if="${signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
-                                                <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
+                                                <i class="fi fi-rr-trash-restore-alt pr-2"></i> Restaurer
                                             </a>
                                         </li>
                                         <li>
                                             <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
-                                                <i class="fa-solid fa-eye-slash pr-2"></i> Masquer
+                                                <i class="fi fi-rr-eye-crossed pr-2"></i> Masquer
                                             </a>
                                         </li>
                                         <li>
                                             <a th:if="${!signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                                                <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                <i class="fi fi-rr-trash pr-2"></i> Supprimer
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a th:if="${!signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                                                <i class="fi fi-rr-trash-xmark pr-2"></i> Vider
                                             </a>
                                         </li>
                                     </ul>
