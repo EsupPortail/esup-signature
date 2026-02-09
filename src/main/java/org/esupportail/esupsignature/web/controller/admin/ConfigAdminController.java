@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import org.esupportail.esupsignature.service.ConfigService;
+import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -9,8 +10,11 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 public class ConfigAdminController {
 
-    public ConfigAdminController(ConfigService configService) {
+    private final PdfService pdfService;
+
+    public ConfigAdminController(ConfigService configService, PdfService pdfService) {
         this.configService = configService;
+        this.pdfService = pdfService;
     }
 
     @ModelAttribute("adminMenu")
@@ -28,6 +32,7 @@ public class ConfigAdminController {
     @GetMapping
     public String list(Model model) {
         model.addAttribute("config", configService.getConfig());
+        model.addAttribute("gsVersion", pdfService.getGhostscriptVersion());
         return "admin/configs/list";
     }
 
