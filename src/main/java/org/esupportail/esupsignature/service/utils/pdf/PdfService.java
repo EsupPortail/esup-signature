@@ -658,6 +658,30 @@ public class PdfService {
         }
     }
 
+    public String getGhostscriptVersion() {
+        String gsPath = pdfConfig.getPdfProperties().getPathToGS(); // chemin vers gs
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        if (SystemUtils.IS_OS_WINDOWS) {
+            processBuilder.command("cmd", "/C", gsPath + " -version");
+        } else {
+            processBuilder.command("bash", "-c", gsPath + " -version");
+        }
+
+        try {
+            Process process = processBuilder.start();
+            String version = new String(process.getInputStream().readAllBytes()).trim();
+            int exitVal = process.waitFor();
+            if (exitVal != 0) {
+                logger.warn("GhostScript command failed");
+                return null;
+            }
+            return version;
+        } catch (IOException | InterruptedException e) {
+            logger.error("GhostScript error", e);
+            return null;
+        }
+    }
+
     /**
      * Normalise un fichier PDF pour réduire les problèmes de compatibilité.
      *

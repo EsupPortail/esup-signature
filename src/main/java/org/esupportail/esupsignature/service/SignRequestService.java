@@ -1358,7 +1358,7 @@ public class SignRequestService {
 				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
-		if (signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.none)) {
+		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			Document document;
 			if(!documents.isEmpty()) {

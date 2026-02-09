@@ -145,7 +145,7 @@ public class GlobalWsSecureController {
             signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -157,7 +157,7 @@ public class GlobalWsSecureController {
             signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -169,7 +169,7 @@ public class GlobalWsSecureController {
             signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.warn("get file error :" + e.getMessage());
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
