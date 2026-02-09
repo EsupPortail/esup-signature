@@ -145,7 +145,7 @@ public class GlobalWsSecureController {
             signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -154,10 +154,10 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-pdf/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestPdf(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
+            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -169,7 +169,7 @@ public class GlobalWsSecureController {
             signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.warn("get file error :" + e.getMessage());
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
