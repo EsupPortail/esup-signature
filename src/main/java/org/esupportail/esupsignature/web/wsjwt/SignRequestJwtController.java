@@ -191,7 +191,7 @@ public class SignRequestJwtController {
         User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest.getCreateBy().getEppn().equals(user.getEppn())) {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

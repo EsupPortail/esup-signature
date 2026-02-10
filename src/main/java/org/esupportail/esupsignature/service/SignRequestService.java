@@ -1348,7 +1348,7 @@ public class SignRequestService {
     @Transactional(readOnly = true)
 	public void getToSignFileResponse(Long signRequestId, String disposition, HttpServletResponse httpServletResponse, boolean force) throws IOException, EsupSignatureRuntimeException, EsupSignatureException {
 		SignRequest signRequest = getById(signRequestId);
-		if(!force && !disposition.equals("form-data")
+		if(!force && !disposition.equals("inline")
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
 				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
