@@ -154,7 +154,7 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-pdf/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestPdf(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             logger.error("get file error :" + e.getMessage());
