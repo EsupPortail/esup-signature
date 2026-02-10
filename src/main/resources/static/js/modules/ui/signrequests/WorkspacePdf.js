@@ -1066,6 +1066,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').removeClass('d-none');
         $('#addSignButton2').removeClass('d-none');
         $('#addSignButton2').focus();
+        $('#addParaphButton').removeClass('d-none');
         $('#visaLaunchButton').removeClass('d-none');
         $('#signButtons').removeClass('d-none');
         $('#forward-btn').removeClass('d-none');
@@ -1086,6 +1087,7 @@ export class WorkspacePdf {
         $('#signLaunchButton').addClass('d-none');
         $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
+        $('#addParaphButton').addClass('d-none');
         $('#visaLaunchButton').addClass('d-none');
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");

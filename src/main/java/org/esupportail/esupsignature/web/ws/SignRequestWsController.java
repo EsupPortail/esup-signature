@@ -292,7 +292,7 @@ public class SignRequestWsController {
     @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
     public ResponseEntity<Void> getLastFileFromSignRequest(@PathVariable("id") Long id,
                                                            @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey, HttpServletResponse httpServletResponse) throws IOException, EsupSignatureException {
-        signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+        signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
         return ResponseEntity.ok().build();
     }
 

@@ -45,7 +45,7 @@
                 <li th:if="${editable && userEppn == authUserEppn && user.userType.name() != 'external'}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
                     de bord</a></li>
                 <li th:if="${userEppn == authUserEppn  && user.userType.name() != 'external'}" th:unless="${editable}" class="breadcrumb-item">
-                    <a href="/user/signbooks?statusFilter=toSign">Documents à signer</a></li>
+                    <a href="/user/signbooks?statusFilter=toSign">Tableau de bord</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande : <span
                         th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
                         th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
@@ -111,7 +111,7 @@
                             <i class="fi fi-rr-document-circle-wrong fa-2xl" style="margin-top: 0;"></i>
                         </button>
                     </li>
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
+                    <li th:if="${(signRequest.createBy.eppn == userEppn || (signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.managers.contains(user.email))) && signRequest.deleted}">
                         <a tabindex="1" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
                             <i class="fi fi-rr-trash-restore-alt fa-2xl" style="margin-top: 10px;"></i>
                         </a>
@@ -921,7 +921,7 @@
     </div>
 </div>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
-<script th:inline="javascript" type="module" th:if="${signBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).none}">
+<script th:inline="javascript" type="module" th:if="${signBook.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     let signable = [[${signable}]];
     let editable = [[${editable}]];

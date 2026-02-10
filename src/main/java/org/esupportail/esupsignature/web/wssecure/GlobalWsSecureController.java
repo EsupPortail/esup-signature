@@ -75,14 +75,14 @@ public class GlobalWsSecureController {
         if(userShareString != null) userShareId = Long.valueOf(userShareString.toString());
         try {
             if(signAll == null || !signAll) {
-                StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                StepStatus stepStatus = signBookService.initSign(signRequestId, signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
                 if(stepStatus.equals(StepStatus.nexu_redirect)) {
                     return ResponseEntity.ok().body("initNexu");
                 }
             } else {
                 List<SignRequest> signRequests = signRequestService.getSignRequests(signRequestId);
                 for(SignRequest signRequest : signRequests) {
-                    StepStatus stepStatus = signBookService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn);
+                    StepStatus stepStatus = signBookService.initSign(signRequest.getId(), signRequestParamsJsonString, comment, formData, password, certType, sealCertificat, userShareId, userEppn, authUserEppn, false);
                     if(stepStatus.equals(StepStatus.nexu_redirect)) {
                         return ResponseEntity.ok().body("initNexu");
                     }
@@ -145,7 +145,7 @@ public class GlobalWsSecureController {
             signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -154,10 +154,10 @@ public class GlobalWsSecureController {
     @GetMapping(value = "/get-last-file-pdf/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestPdf(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }
@@ -169,7 +169,7 @@ public class GlobalWsSecureController {
             signRequestService.getSignedFileAndReportResponse(id, httpServletRequest, httpServletResponse, false);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            logger.warn("get file error :" + e.getMessage());
+            logger.error("get file error :" + e.getMessage());
         }
         return ResponseEntity.notFound().build();
     }

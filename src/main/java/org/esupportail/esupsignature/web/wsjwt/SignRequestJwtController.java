@@ -164,7 +164,7 @@ public class SignRequestJwtController {
         signRequestService.addAttachement(attachementMultipartFiles, null, Long.valueOf(signRequestIds.get(0)), user.getEppn());
         boolean allSignCompleted = true;
         for(String signRequestId : signRequestIds) {
-            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn());
+            StepStatus stepStatus = signBookService.initSign(Long.valueOf(signRequestId), signRequestParamsJsonString, null, null, "", SignWith.imageStamp.name(), null, null, user.getEppn(), user.getEppn(), keepSignFields);
             if(stepStatus.equals(StepStatus.not_completed)) {
                 allSignCompleted = false;
                 break;
@@ -191,7 +191,7 @@ public class SignRequestJwtController {
         User user = userService.getByEppn(userService.buildEppn(authentication.getName()));
         SignRequest signRequest = signRequestService.getById(id);
         if(signRequest.getCreateBy().getEppn().equals(user.getEppn())) {
-            signRequestService.getToSignFileResponse(id, "form-data", httpServletResponse, false);
+            signRequestService.getToSignFileResponse(id, "inline", httpServletResponse, false);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

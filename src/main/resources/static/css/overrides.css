@@ -115,10 +115,14 @@ textarea:invalid {
     min-height: 38px;
 }
 
+.ss-content .ss-search input {
+    color: var(--bs-body-color) !important;
+}
+
 .slim-select-filter {
     width: initial !important;
 }
-
+    
 
 .svg-container {
     display: inline-block;

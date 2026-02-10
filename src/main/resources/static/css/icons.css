@@ -55,3 +55,11 @@
     background: url('/images/icons/tr-digital-key.svg') no-repeat center;
     background-size: contain;
 }
+
+.fi-rr-infinite-cycle::before {
+    content: "";
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    background: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
+}
