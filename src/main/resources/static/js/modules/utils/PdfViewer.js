@@ -45,7 +45,7 @@ export class PdfViewer extends EventFactory {
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
-        this.maxConcurrentRenders = 3;
+        this.maxConcurrentRenders = 1;
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         let self = this;
