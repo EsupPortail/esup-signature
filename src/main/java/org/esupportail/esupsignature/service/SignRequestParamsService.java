@@ -1,12 +1,14 @@
 package org.esupportail.esupsignature.service;
 
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.cos.*;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
@@ -32,10 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -252,6 +251,51 @@ public class SignRequestParamsService {
                     i++;
                 }
             }
+
+            if(StringUtils.hasText(signRequestParamsDetectionPattern) && signRequestParamsDetectionPattern.contains("Image")) {
+                Set<String> allAltTexts = new HashSet<>();
+                PDStructureTreeRoot structureTreeRoot = docCatalog.getStructureTreeRoot();
+                if(structureTreeRoot != null) {
+                    List<?> rootKids = structureTreeRoot.getKids();
+                    if(rootKids != null) {
+                        for(Object kid : rootKids) {
+                            if(kid instanceof PDStructureElement) {
+                                collectAllAltTexts((PDStructureElement) kid, allAltTexts);
+                            }
+                        }
+                    }
+                }
+                Pattern pattern = Pattern.compile(signRequestParamsDetectionPattern.split("]")[1], Pattern.CASE_INSENSITIVE);
+                int i = 1;
+                for(PDPage pdPage : pdPages) {
+                    try {
+                        PDResources resources = pdPage.getResources();
+                        if(resources != null) {
+                            for(COSName xObjectName : resources.getXObjectNames()) {
+                                PDXObject xObject = resources.getXObject(xObjectName);
+                                if(xObject instanceof PDImageXObject) {
+                                    String imageName = xObjectName.getName();
+                                    for(String altText : allAltTexts) {
+                                        if(pattern.matcher(altText).find()) {
+                                            PDRectangle pdRectangle = getImagePositionOnPage(pdPage, imageName);
+                                            if(pdRectangle != null) {
+                                                SignRequestParams signRequestParams = createFromPdf(imageName, pdRectangle, i, pdPage);
+                                                signRequestParamsList.add(signRequestParams);
+                                                //TODO : remove image
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        logger.warn("Error processing images on page " + i, e);
+                    }
+                    i++;
+                }
+            }
+
             pdDocument.close();
         } catch (Exception e) {
             logger.error("error on get sign fields", e);
@@ -269,6 +313,83 @@ public class SignRequestParamsService {
         } else {
             return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
         }
+    }
+
+    private void collectAllAltTexts(PDStructureElement elem, Set<String> altTexts) {
+        String altText = elem.getAlternateDescription();
+        if(altText != null) {
+            altTexts.add(altText);
+        }
+        List<?> kids = elem.getKids();
+        if(kids != null) {
+            for(Object kid : kids) {
+                if(kid instanceof PDStructureElement) {
+                    collectAllAltTexts((PDStructureElement) kid, altTexts);
+                }
+            }
+        }
+    }
+
+    private void extractAltTextFromStructure(COSBase kBase, Map<Integer, String> mcidToAltText) {
+        if(kBase instanceof COSArray array) {
+            for(int i = 0; i < array.size(); i++) {
+                COSBase item = array.get(i);
+                if(item instanceof COSDictionary) {
+                    procesStructElement((COSDictionary) item, mcidToAltText);
+                }
+            }
+        } else if(kBase instanceof COSDictionary) {
+            procesStructElement((COSDictionary) kBase, mcidToAltText);
+        }
+    }
+
+    private void procesStructElement(COSDictionary elemDict, Map<Integer, String> mcidToAltText) {
+        COSBase altBase = elemDict.getDictionaryObject(COSName.ALT);
+        String altText = null;
+        if(altBase instanceof COSString) {
+            altText = ((COSString) altBase).getString();
+        }
+        COSBase kBase = elemDict.getDictionaryObject(COSName.K);
+        if(kBase instanceof COSArray && altText != null) {
+            COSArray kArray = (COSArray) kBase;
+            for(int i = 0; i < kArray.size(); i++) {
+                COSBase item = kArray.get(i);
+                if(item instanceof COSInteger) {
+                    mcidToAltText.put(((COSInteger) item).intValue(), altText);
+                }
+            }
+        }
+        COSBase childrenBase = elemDict.getDictionaryObject(COSName.K);
+        if(childrenBase instanceof COSArray) {
+            extractAltTextFromStructure(childrenBase, mcidToAltText);
+        }
+    }
+
+    private PDRectangle getImagePositionOnPage(PDPage pdPage, String imageName) throws IOException {
+        Iterator<PDStream> contentStreams = pdPage.getContentStreams();
+        while(contentStreams.hasNext()) {
+            PDStream contentStream = contentStreams.next();
+            byte[] content = contentStream.toByteArray();
+            String contentStr = new String(content);
+            Pattern doPattern = Pattern.compile("/" + Pattern.quote(imageName) + "\\s+Do");
+            Matcher doMatcher = doPattern.matcher(contentStr);
+            if(!doMatcher.find()) {
+                continue;
+            }
+            int doPosition = doMatcher.start();
+            String beforeDo = contentStr.substring(Math.max(0, doPosition - 1000), doPosition);
+            Pattern matrixPattern = Pattern.compile("([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+cm");
+            Matcher matrixMatcher = matrixPattern.matcher(beforeDo);
+            if(matrixMatcher.find()) {
+                float a = Float.parseFloat(matrixMatcher.group(1));
+                float d = Float.parseFloat(matrixMatcher.group(4));
+                float e = Float.parseFloat(matrixMatcher.group(5));
+                float f = Float.parseFloat(matrixMatcher.group(6));
+                return new PDRectangle(e, f, a, d);
+            }
+        }
+
+        return null;
     }
 
     private boolean rectanglesOverlap(PDRectangle rect1, PDRectangle rect2) {
