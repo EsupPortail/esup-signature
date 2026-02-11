@@ -48,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1228,6 +1229,10 @@ public class SignBookService {
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields) {
         SignBook signBook = getById(signBookId);
+        Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+        if(workflow != null) {
+            keepSignFields = StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern());
+        }
         int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");

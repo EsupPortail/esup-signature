@@ -518,7 +518,7 @@ public class FormService {
 		if(form.getWorkflow() != null && StringUtils.hasText(form.getWorkflow().getSignRequestParamsDetectionPattern())) {
 			signRequestParamsDetectionPattern = form.getWorkflow().getSignRequestParamsDetectionPattern();
 		}
-		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, 0, signRequestParamsDetectionPattern, true, false);
+		List<SignRequestParams> findedSignRequestParams = signRequestParamsService.scanSignatureFields(inputStream, null,0, signRequestParamsDetectionPattern, true, false);
 		if(!findedSignRequestParams.isEmpty()) {
 			int i = 0;
 			for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
