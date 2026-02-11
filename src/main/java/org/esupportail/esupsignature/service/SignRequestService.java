@@ -46,10 +46,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -551,7 +548,9 @@ public class SignRequestService {
                         pdfaCheck = smallCheckPDFA(bytes);
                         List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
 						if(signRequestParamses.isEmpty()) {
-							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
+							ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+							toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), outputStream, docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
+							bytes = outputStream.toByteArray();
 						} else {
 							for (SignRequestParams signRequestParams : signRequestParamses) {
 								toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
