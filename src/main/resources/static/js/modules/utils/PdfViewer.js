@@ -45,7 +45,9 @@ export class PdfViewer extends EventFactory {
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
-        this.maxConcurrentRenders = 1;
+        this.maxConcurrentRenders = 5;
+        this.renderedPagesMap = new Map();
+        this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         let self = this;
@@ -231,7 +233,6 @@ export class PdfViewer extends EventFactory {
     }
 
     processRenderQueue() {
-        // OPTIMISATION: Lance les rendus en parallèle (jusqu'à maxConcurrentRenders)
         while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
             const pageNum = this.renderQueue.shift();
             this.activeRenders++;
@@ -243,7 +244,6 @@ export class PdfViewer extends EventFactory {
                     self.renderedPages++;
 
                     if(self.renderQueue.length === 0 && self.activeRenders === 0) {
-                        // Tous les rendus sont finis
                         self.initialOffset = parseInt($("#page_1").offset().top);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
@@ -254,7 +254,6 @@ export class PdfViewer extends EventFactory {
                             self.enableScrollBtn();
                         }
                     } else {
-                        // Lance le prochain rendu dans la queue
                         self.processRenderQueue();
                     }
                 })
@@ -314,7 +313,7 @@ export class PdfViewer extends EventFactory {
                 container.setAttribute("page-num", i);
                 container.className = "drop-shadows pdf-page";
                 container.style.marginBottom = `${10 * this.scale}px`;
-                this.pdfDiv.append(container);
+                this.insertPageAtCorrectPosition(container, i);
             } else {
                 container.innerHTML = "";
                 container.style.marginBottom = `${10 * this.scale}px`;
@@ -363,7 +362,6 @@ export class PdfViewer extends EventFactory {
                 if (canvas) {
                     const context = canvas.getContext('2d');
 
-                    // Utiliser les dimensions du viewport qui gère automatiquement la rotation
                     canvas.width = Math.floor(viewport.width * browserZoom);
                     canvas.height = Math.floor(viewport.height * browserZoom);
                     canvas.style.width = `${Math.floor(viewport.width)}px`;
@@ -434,6 +432,25 @@ export class PdfViewer extends EventFactory {
                 resolve("ok");
             }).catch(reject);
         });
+    }
+
+    insertPageAtCorrectPosition(container, pageNum) {
+        const pdfDivElement = this.pdfDiv[0];
+        const allPages = pdfDivElement.querySelectorAll('.pdf-page');
+
+        let inserted = false;
+        for (let page of allPages) {
+            const currentPageNum = parseInt(page.getAttribute('page-num'));
+            if (currentPageNum > pageNum) {
+                pdfDivElement.insertBefore(container, page);
+                inserted = true;
+                break;
+            }
+        }
+
+        if (!inserted) {
+            pdfDivElement.appendChild(container);
+        }
     }
 
     postRenderAll() {
