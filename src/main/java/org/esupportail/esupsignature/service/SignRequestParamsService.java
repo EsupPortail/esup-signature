@@ -1,12 +1,17 @@
 package org.esupportail.esupsignature.service;
 
 import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
+import org.apache.pdfbox.cos.*;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
+import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
+import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
@@ -14,6 +19,8 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
+import org.apache.pdfbox.contentstream.operator.Operator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -31,11 +38,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -97,7 +102,7 @@ public class SignRequestParamsService {
                             PDRectangle pdRectangle = pdField.getWidgets().get(0).getRectangle();
                             int pageNum = pageNrByAnnotDict.get(pdSignatureFieldName);
                             PDPage pdPage = pdPages.get(pageNum);
-                            return createFromPdf(pdSignatureFieldName, pdRectangle, pageNum, pdPage);
+                            return createFromPdf(pdSignatureFieldName, pdRectangle, pageNum, pdPage, false);
                         }
                     }
                 }
@@ -117,7 +122,7 @@ public class SignRequestParamsService {
      * @param pdPage La page PDF associée
      * @return Une instance de SignRequestParams configurée
      */
-    public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage) {
+    public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage, boolean scaleDimensions) {
         SignRequestParams signRequestParams = new SignRequestParams();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(name);
@@ -127,6 +132,10 @@ public class SignRequestParamsService {
         float scaleHeight = pdRectangle.getHeight() / 100f;
         float scale = Math.min(scaleWidth, scaleHeight);
         signRequestParams.setSignScale(scale);
+        if(scaleDimensions) {
+            signRequestParams.setSignWidth(Math.round(pdRectangle.getWidth()));
+            signRequestParams.setSignHeight(Math.round(pdRectangle.getHeight()));
+        }
         signRequestParams.setSignPageNumber(signPageNumber);
         return signRequestParams;
     }
@@ -141,7 +150,7 @@ public class SignRequestParamsService {
      * @return Une liste de SignRequestParams détectés
      * @throws EsupSignatureIOException Si une erreur intervient lors de l'ouverture ou l'analyse du PDF
      */
-    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, int docNumber, String signRequestParamsDetectionPattern, boolean persist, boolean orderByName) throws EsupSignatureIOException {
+    public List<SignRequestParams> scanSignatureFields(InputStream inputStream, OutputStream outputStream, int docNumber, String signRequestParamsDetectionPattern, boolean persist, boolean orderByName) throws EsupSignatureIOException {
         try {
             PDDocument pdDocument = Loader.loadPDF(inputStream.readAllBytes());
             List<SignRequestParams> signRequestParamses = getSignRequestParamsFromPdf(pdDocument, signRequestParamsDetectionPattern, orderByName);
@@ -150,6 +159,9 @@ public class SignRequestParamsService {
                 if(persist) {
                     signRequestParamsRepository.save(signRequestParams);
                 }
+            }
+            if(outputStream != null) {
+                pdDocument.save(outputStream);
             }
             pdDocument.close();
             return signRequestParamses;
@@ -197,9 +209,7 @@ public class SignRequestParamsService {
                                 }
                             }
                             if (!isOverlapping) {
-                                SignRequestParams signRequestParams = createFromPdf(
-                                        signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage
-                                );
+                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, false);
                                 signRequestParamsList.add(signRequestParams);
                             } else {
                                 logger.warn("Signature field " + signFieldName + " is overlapping with another annotation");
@@ -221,7 +231,7 @@ public class SignRequestParamsService {
                                     List<?> widgets = (List<?>) getWidgetsMethod.invoke(pdField);
                                     Method getRectangleMethod = widgets.get(0).getClass().getMethod("getRectangle");
                                     Object rectangle = getRectangleMethod.invoke(widgets.get(0));
-                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, (PDRectangle) rectangle, pageNrByAnnotDict.get(signFieldName) + 1, pdPage);
+                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, (PDRectangle) rectangle, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, false);
                                     signRequestParamsList.add(signRequestParams);
                                 }
                             }
@@ -242,8 +252,8 @@ public class SignRequestParamsService {
                                 Pattern pattern = Pattern.compile(signRequestParamsDetectionPattern.split("]")[1], Pattern.CASE_INSENSITIVE);
                                 if (pattern.matcher(signFieldName).find()) {
                                     PDRectangle originalPdRectangle = pdAnnotationLink.getRectangle();
-                                    PDRectangle pdRectangle = new PDRectangle(originalPdRectangle.getUpperRightX() - originalPdRectangle.getWidth(), originalPdRectangle.getUpperRightY() - 50, 100, 50);
-                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, pdRectangle, i, pdPage);
+                                    PDRectangle pdRectangle = new PDRectangle(originalPdRectangle.getUpperRightX() - originalPdRectangle.getWidth(), originalPdRectangle.getUpperRightY() - 75, 150, 75);
+                                    SignRequestParams signRequestParams = createFromPdf(signFieldName, pdRectangle, i, pdPage, true);
                                     signRequestParamsList.add(signRequestParams);
                                 }
                             }
@@ -252,7 +262,109 @@ public class SignRequestParamsService {
                     i++;
                 }
             }
-            pdDocument.close();
+
+            if(StringUtils.hasText(signRequestParamsDetectionPattern) && signRequestParamsDetectionPattern.contains("Image")) {
+                Map<Integer, String> mcidToAltText = new HashMap<>();
+                PDStructureTreeRoot structureTreeRoot = docCatalog.getStructureTreeRoot();
+                if(structureTreeRoot != null) {
+                    List<?> rootKids = structureTreeRoot.getKids();
+                    if(rootKids != null) {
+                        for(Object kid : rootKids) {
+                            if(kid instanceof PDStructureElement) {
+                                buildMcidToAltTextMap((PDStructureElement) kid, mcidToAltText);
+                            }
+                        }
+                    }
+                }
+
+                logger.info("MCID to AltText map: " + mcidToAltText);
+
+                Pattern pattern = Pattern.compile(signRequestParamsDetectionPattern.split("]")[1], Pattern.CASE_INSENSITIVE);
+                int i = 1;
+
+                for(PDPage pdPage : pdPages) {
+                    try {
+                        PDResources resources = pdPage.getResources();
+                        if(resources != null) {
+                            List<COSName> xObjectNames = new ArrayList<>((Collection) resources.getXObjectNames());
+                            List<String> imagesToRemove = new ArrayList<>();
+
+                            for(COSName xObjectName : xObjectNames) {
+                                PDXObject xObject = resources.getXObject(xObjectName);
+                                if(xObject instanceof PDImageXObject) {
+                                    String imageName = xObjectName.getName();
+
+                                    // Trouver le MCID associé à cette image
+                                    Integer mcid = findMcidForImage(pdPage, imageName);
+
+                                    if(mcid != null) {
+                                        String altText = mcidToAltText.get(mcid);
+
+                                        if(altText != null && pattern.matcher(altText).find()) {
+                                            PDRectangle pdRectangle = getImagePositionOnPage(pdPage, imageName);
+                                            if(pdRectangle != null) {
+                                                SignRequestParams signRequestParams = createFromPdf(imageName, pdRectangle, i, pdPage, true);
+                                                signRequestParamsList.add(signRequestParams);
+                                                imagesToRemove.add(imageName);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            if(!imagesToRemove.isEmpty()) {
+                                try {
+                                    PDFStreamParser parser = new PDFStreamParser(pdPage);
+                                    List<?> tokens = parser.parse();
+                                    List<Object> newTokens = new ArrayList<>();
+
+                                    for(int t = 0; t < tokens.size(); t++) {
+                                        Object token = tokens.get(t);
+                                        boolean skip = false;
+
+                                        if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && t > 0) {
+                                            Object previous = tokens.get(t - 1);
+                                            if(previous instanceof COSName && imagesToRemove.contains(((COSName) previous).getName())) {
+                                                newTokens.remove(newTokens.size() - 1);
+                                                skip = true;
+                                            }
+                                        }
+
+                                        if(!skip) {
+                                            newTokens.add(token);
+                                        }
+                                    }
+
+                                    PDStream newStream = new PDStream(pdDocument);
+                                    try(OutputStream os = newStream.createOutputStream()) {
+                                        ContentStreamWriter writer = new ContentStreamWriter(os);
+                                        writer.writeTokens(newTokens);
+                                    }
+                                    pdPage.setContents(newStream);
+
+                                    // Supprimer les ressources
+                                    COSDictionary resDictionary = resources.getCOSObject();
+                                    COSDictionary xObjects = (COSDictionary) resDictionary.getDictionaryObject(COSName.XOBJECT);
+                                    if(xObjects != null) {
+                                        for(String imageName : imagesToRemove) {
+                                            xObjects.removeItem(COSName.getPDFName(imageName));
+                                        }
+                                    }
+                                } catch(IOException e) {
+                                    logger.warn("Error removing images from stream", e);
+                                }
+                            }
+
+                        }
+                    } catch (IOException e) {
+                        logger.warn("Error processing images on page " + i, e);
+                    }
+                    i++;
+                }
+            }
+
+//            pdDocument.close();
         } catch (Exception e) {
             logger.error("error on get sign fields", e);
             throw new EsupSignatureIOException(e.getMessage(), e);
@@ -269,6 +381,117 @@ public class SignRequestParamsService {
         } else {
             return signRequestParamsList.stream().sorted(Comparator.comparingInt(SignRequestParams::getxPos)).sorted(Comparator.comparingInt(SignRequestParams::getyPos)).sorted(Comparator.comparingInt(SignRequestParams::getSignPageNumber)).collect(Collectors.toList());
         }
+    }
+
+    private Integer findMcidForImage(PDPage pdPage, String imageName) throws IOException {
+        PDFStreamParser parser = new PDFStreamParser(pdPage);
+        List<?> tokens = parser.parse();
+        for(int t = 0; t < tokens.size(); t++) {
+            Object token = tokens.get(t);
+            if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && t > 0) {
+                Object previous = tokens.get(t - 1);
+                if(previous instanceof COSName && ((COSName) previous).getName().equals(imageName)) {
+                    for(int j = t - 1; j >= Math.max(0, t - 50); j--) {
+                        if(tokens.get(j) instanceof Operator && "BDC".equals(((Operator) tokens.get(j)).getName())) {
+                            if(j > 0 && tokens.get(j - 1) instanceof COSDictionary) {
+                                COSDictionary dict = (COSDictionary) tokens.get(j - 1);
+                                COSBase mcidValue = dict.getDictionaryObject(COSName.MCID);
+                                if(mcidValue instanceof COSInteger) {
+                                    int mcid = ((COSInteger) mcidValue).intValue();
+                                    logger.info("Found MCID " + mcid + " for image " + imageName);
+                                    return mcid;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private void buildMcidToAltTextMap(PDStructureElement elem, Map<Integer, String> map) {
+        String altText = elem.getAlternateDescription();
+        List<?> kids = elem.getKids();
+        if(kids != null && altText != null) {
+            for(Object kid : kids) {
+                if(kid instanceof Integer) {
+                    int mcid = (Integer) kid;
+                    map.put(mcid, altText);
+                    logger.info("Mapped MCID " + mcid + " -> " + altText);
+                }
+            }
+        }
+        if(kids != null) {
+            for(Object kid : kids) {
+                if(kid instanceof PDStructureElement) {
+                    buildMcidToAltTextMap((PDStructureElement) kid, map);
+                }
+            }
+        }
+    }
+
+    private void extractAltTextFromStructure(COSBase kBase, Map<Integer, String> mcidToAltText) {
+        if(kBase instanceof COSArray) {
+            COSArray array = (COSArray) kBase;
+            for(int i = 0; i < array.size(); i++) {
+                COSBase item = array.get(i);
+                if(item instanceof COSDictionary) {
+                    procesStructElement((COSDictionary) item, mcidToAltText);
+                }
+            }
+        } else if(kBase instanceof COSDictionary) {
+            procesStructElement((COSDictionary) kBase, mcidToAltText);
+        }
+    }
+
+    private void procesStructElement(COSDictionary elemDict, Map<Integer, String> mcidToAltText) {
+        COSBase altBase = elemDict.getDictionaryObject(COSName.ALT);
+        String altText = null;
+        if(altBase instanceof COSString) {
+            altText = ((COSString) altBase).getString();
+        }
+        COSBase kBase = elemDict.getDictionaryObject(COSName.K);
+        if(kBase instanceof COSArray && altText != null) {
+            COSArray kArray = (COSArray) kBase;
+            for(int i = 0; i < kArray.size(); i++) {
+                COSBase item = kArray.get(i);
+                if(item instanceof COSInteger) {
+                    mcidToAltText.put(((COSInteger) item).intValue(), altText);
+                }
+            }
+        }
+        COSBase childrenBase = elemDict.getDictionaryObject(COSName.K);
+        if(childrenBase instanceof COSArray) {
+            extractAltTextFromStructure(childrenBase, mcidToAltText);
+        }
+    }
+
+    private PDRectangle getImagePositionOnPage(PDPage pdPage, String imageName) throws IOException {
+        Iterator<PDStream> contentStreams = pdPage.getContentStreams();
+        while(contentStreams.hasNext()) {
+            PDStream contentStream = contentStreams.next();
+            byte[] content = contentStream.toByteArray();
+            String contentStr = new String(content);
+            Pattern doPattern = Pattern.compile("/" + Pattern.quote(imageName) + "\\s+Do");
+            Matcher doMatcher = doPattern.matcher(contentStr);
+            if(!doMatcher.find()) {
+                continue;
+            }
+            int doPosition = doMatcher.start();
+            String beforeDo = contentStr.substring(Math.max(0, doPosition - 1000), doPosition);
+            Pattern matrixPattern = Pattern.compile("([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+cm");
+            Matcher matrixMatcher = matrixPattern.matcher(beforeDo);
+            if(matrixMatcher.find()) {
+                float a = Float.parseFloat(matrixMatcher.group(1));
+                float d = Float.parseFloat(matrixMatcher.group(4));
+                float e = Float.parseFloat(matrixMatcher.group(5));
+                float f = Float.parseFloat(matrixMatcher.group(6));
+                return new PDRectangle(e, f, a, d);
+            }
+        }
+
+        return null;
     }
 
     private boolean rectanglesOverlap(PDRectangle rect1, PDRectangle rect2) {

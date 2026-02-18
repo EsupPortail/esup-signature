@@ -1228,6 +1228,10 @@ public class SignBookService {
     @Transactional
     public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields) {
         SignBook signBook = getById(signBookId);
+        Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+        if(workflow != null) {
+            keepSignFields = StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern());
+        }
         int i = signBook.getSignRequests().size();
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
@@ -2190,6 +2194,7 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), false, recipients.toArray(RecipientWsDto[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
+            userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
         }
     }
 
@@ -2744,9 +2749,9 @@ public class SignBookService {
         User user = userService.getByEppn(authUserEppn);
         User replacedByUser = user.getCurrentReplaceByUser();
         if(replacedByUser != null) {
-            List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
-            for(SignRequest signRequest : signRequests) {
-                transfertSignRequest(signRequest.getId(), true, user, replacedByUser, false);
+            List<SignBook> signBooks = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+            for(SignBook signBook : signBooks) {
+                transfertSignRequest(signBook.getId(), true, user, replacedByUser, false);
                 i++;
             }
         }
@@ -2763,24 +2768,26 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException si le transfert est impossible
      */
     @Transactional
-    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, boolean keepFollow) {
-        if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
-            User user = userService.getByEppn(userEppn);
-            User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
-            if (user.equals(replacedByUser)) {
-                throw new EsupSignatureRuntimeException("Transfer impossible");
-            }
-            transfertSignRequest(signRequestId, false, user, replacedByUser, keepFollow);
-        } else {
-            throw new EsupSignatureRuntimeException("Transfer impossible");
+    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, String phone, String name, String firstname, boolean keepFollow) {
+        User user = userService.getByEppn(userEppn);
+        User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
+        if (user.equals(replacedByUser)) {
+            throw new EsupSignatureRuntimeException("Transfert impossible vers le même utilisateur");
         }
+        if(replacedByUser.getUserType().equals(UserType.external)) {
+            replacedByUser.setPhone(phone);
+            replacedByUser.setName(name);
+            replacedByUser.setFirstname(firstname);
+        }
+        SignRequest signRequest = signRequestService.getById(signRequestId);
+        transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);
     }
 
     /**
      * Transfère une demande de signature d'un utilisateur à un autre. Permet de remplacer les tâches de signature et/ou de
      * conserver les droits de suivi pour l'utilisateur initial.
      *
-     * @param signRequestId l'identifiant unique de la demande de signature à transférer
+     * @param signBookId l'identifiant unique de la demande de signature à transférer
      * @param transfertAll détermine si toutes les étapes de workflow associées doivent être transférées
      *                     (true pour toutes les étapes, false pour seulement l'étape actuelle)
      * @param user l'utilisateur source de transfert, c'est-à-dire l'utilisateur actuellement associé à la demande
@@ -2788,26 +2795,44 @@ public class SignBookService {
      * @param keepFollow détermine si l'utilisateur source doit garder les droits de suivi sur la demande de signature
      */
     @Transactional
-    public void transfertSignRequest(Long signRequestId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        signRequest.getParentSignBook().getTeam().remove(user);
-        addToTeam(signRequest.getParentSignBook(), user.getEppn());
+    public void transfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
+        SignBook signBook = getById(signBookId);
+        signBook.getTeam().remove(user);
+        addToTeam(signBook, user.getEppn());
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
-        if(transfertAll) {
-            liveWorkflowSteps.addAll(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
+        if(transfertAll || signBook.getSignRequests().size() > 1) {
+            liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
         } else {
-            liveWorkflowSteps.add(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep());
+            liveWorkflowSteps.add(signBook.getLiveWorkflow().getCurrentStep());
         }
+        int nbTransfert = 0;
         for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                if(recipient.getUser().equals(user) && signRequest.getRecipientHasSigned().get(recipient) != null && signRequest.getRecipientHasSigned().get(recipient).getActionType() != null && signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
+                if(recipient.getUser().equals(user) &&
+                        (
+                            (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) == signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep())
+                            && signBook.getSignRequests().stream().noneMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.completed)))
+                        ||
+                        (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) > signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep()) && transfertAll))
+                    ) {
                     recipient.setUser(replacedByUser);
+                    if(liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) {
+                        if (replacedByUser.getUserType().equals(UserType.external)) {
+                            otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+                        } else {
+                            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signBook);
+                        }
+                        nbTransfert++;
+                    }
                 }
             }
         }
-        mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signRequest.getParentSignBook());
-        if(keepFollow) {
-            addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
+        if(nbTransfert > 0) {
+            if (keepFollow) {
+                addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
+            }
+        } else {
+            throw new EsupSignatureRuntimeException("Les conditions de transfert ne sont pas remplies.");
         }
     }
 
@@ -2893,12 +2918,10 @@ public class SignBookService {
     /**
      * Renouvelle le code OTP (One-Time Password) pour une demande de signature en fonction de l'identifiant d'URL fourni.
      *
-     * @param urlId l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
-     * @param signature indique si la signature liée à la demande doit être prise en compte
-     * @return true si le renouvellement de l'OTP a réussi, false sinon
+     * @param urlId     l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
      */
     @Transactional
-    public boolean renewOtp(String urlId, boolean signature) {
+    public Otp renewOtp(String urlId) {
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
@@ -2908,8 +2931,7 @@ public class SignBookService {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
                         try {
-                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), signature);
-                            return true;
+                            return otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), otp.isSignature());
                         } catch (EsupSignatureMailException e) {
                             logger.error(e.getMessage());
                         }
@@ -2917,7 +2939,7 @@ public class SignBookService {
                 }
             }
         }
-        return false;
+        return otp;
     }
 
     /**
@@ -3046,5 +3068,10 @@ public class SignBookService {
     public boolean isTempUsers(Long signBookId) {
         SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
         return !userService.getTempUsers(signBook).isEmpty();
+    }
+
+    public Long nbDeleted(String userEppn) {
+        User user = userService.getByEppn(userEppn);
+        return signBookRepository.countByCreateByEppnAndDeleted(user);
     }
 }

@@ -78,7 +78,7 @@ public class WorkflowWsController {
         if(workflow != null && StringUtils.hasText(workflow.getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
             signRequestParamsDetectionPattern = workflow.getSignRequestParamsDetectionPattern();
         }
-        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), 1, signRequestParamsDetectionPattern,false, orderSignsByName));
+        return ResponseEntity.ok().body(signRequestParamsService.scanSignatureFields(multipartFiles[0].getInputStream(), null,1, signRequestParamsDetectionPattern,false, orderSignsByName));
     }
 
     @CrossOrigin

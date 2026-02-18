@@ -69,7 +69,7 @@ public class OtpAccessController {
         model.addAttribute("urlId", urlId);
         List<OidcOtpSecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).map(s -> (OidcOtpSecurityService) s).toList();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
-        if(otp != null) {
+        if(otp != null && ((otp.isSignature() && otp.getTries() < globalProperties.getNbSignOtpTries()) || (!otp.isSignature() && otp.getTries() < globalProperties.getNbViewOtpTries()))) {
             if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
                 authOtp(model, httpServletRequest, otp.getUser());
                 return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
@@ -87,13 +87,12 @@ public class OtpAccessController {
             return "otp/signin";
         }
         otp = otpService.getOtpFromDatabase(urlId);
-        boolean signature = true;
-        if(otp != null) signature = otp.isSignature();
-        if(signBookService.renewOtp(urlId, signature)) {
-            return "redirect:/otp-access/expired";
+        if(otp != null) {
+            model.addAttribute("otp", otp);
+            return "otp/expired";
         } else {
             redirectAttributes.addFlashAttribute("errorMsg", """
-                    <h2>Lien de signature erroné</h2>
+                    <h5>Lien de signature erroné</h5>
                     <p>Le lien que vous utilisez n’existe plus, merci de contacter le créateur de la demande (son nom est présent dans le premier mail que vous avez reçu).</p>
                     <p>Si cette demande a déjà été signée, vous devriez avoir reçu un email de téléchargement.</p>
                     """);
@@ -106,14 +105,16 @@ public class OtpAccessController {
         return "otp/completed";
     }
 
-    @GetMapping(value = "/transfered")
-    public String transfered() {
-        return "otp/transfered";
+    @GetMapping(value = "/transferred")
+    public String transferred() {
+        return "otp/transferred";
     }
 
-    @GetMapping(value = "/expired")
-    public String expired() {
-        return "otp/expired";
+    @PostMapping(value = "/resend")
+    public String resend(@RequestParam String urlId, Model model) {
+        Otp otp = signBookService.renewOtp(urlId);
+        model.addAttribute("otp", otp);
+        return "otp/resend";
     }
 
     @GetMapping(value = "/error")
@@ -166,6 +167,7 @@ public class OtpAccessController {
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if (!globalProperties.getSmsRequired() && !otp.isForceSms()) {
             authOtp(model, httpServletRequest, otp.getUser());
+            otpService.addOtpTry(urlId);
             return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
         }
         Boolean testOtp = otpService.checkOtp(urlId, password);

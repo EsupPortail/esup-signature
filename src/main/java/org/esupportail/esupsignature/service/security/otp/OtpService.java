@@ -107,6 +107,14 @@ public class OtpService {
     }
 
     @Transactional
+    public void addOtpTry(String urlId) {
+        Otp otp = getOtpFromDatabase(urlId);
+        if(otp != null) {
+            otp.setTries(otp.getTries() + 1);
+        }
+    }
+
+    @Transactional
     public String generateOtpPassword(String urlId, String phone) {
         Otp otp = getOtpFromDatabase(urlId);
         String password = randomOtpPassword();
@@ -165,16 +173,16 @@ public class OtpService {
     public Boolean checkOtp(String urlId, String password) {
         Otp otp = getOtpFromCache(urlId);
         if(otp != null) {
-            if (otp.getPassword().equals(hashPassword(password))) {
+            if (StringUtils.hasText(password) && otp.getPassword().equals(hashPassword(password))) {
                 return true;
             } else {
                 otp.setTries(otp.getTries() + 1);
-                if(otp.getTries() > 2) {
-                    clearOTP(urlId);
-                    return null;
-                } else {
+                if(otp.getTries() < globalProperties.getNbSignOtpTries()) {
                     otp.setSmsSended(false);
                     return false;
+                } else {
+                    clearOTP(urlId);
+                    return null;
                 }
             }
         }
@@ -220,7 +228,7 @@ public class OtpService {
      */
     @Transactional
     public void cleanEndedOtp(){
-        List<Otp> toCleanOtps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);
+        List<Otp> toCleanOtps = otpRepository.findBySignBookDeleted(true);
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
         List<Otp> completedOtps = otpRepository.findBySignBookStatus(SignRequestStatus.completed);
