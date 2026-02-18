@@ -220,7 +220,7 @@ public class OtpService {
      */
     @Transactional
     public void cleanEndedOtp(){
-        List<Otp> toCleanOtps = otpRepository.findBySignBookStatus(SignRequestStatus.deleted);
+        List<Otp> toCleanOtps = otpRepository.findBySignBookDeleted(true);
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.refused));
         toCleanOtps.addAll(otpRepository.findBySignBookStatus(SignRequestStatus.exported));
         List<Otp> completedOtps = otpRepository.findBySignBookStatus(SignRequestStatus.completed);

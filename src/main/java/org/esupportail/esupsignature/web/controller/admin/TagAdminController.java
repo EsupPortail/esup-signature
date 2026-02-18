@@ -46,6 +46,14 @@ public class TagAdminController {
         return "redirect:/admin/tags";
     }
 
+    @PutMapping("{id}")
+    public String update(@PathVariable Long id, Tag tag, RedirectAttributes redirectAttributes) {
+        tagService.updateTag(id, tag);
+        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Tag enregistré"));
+        return "redirect:/admin/tags";
+    }
+
+
     @DeleteMapping("{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         tagService.deleteTag(id);
