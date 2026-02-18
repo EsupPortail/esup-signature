@@ -298,7 +298,7 @@ public class UserAndOtpSignRequestController {
         logger.info("start add attachment");
         try {
             if(StringUtils.hasText(link)) {
-                new URI(link).toURL();
+                new URI(link);
             }
             if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
                 redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
