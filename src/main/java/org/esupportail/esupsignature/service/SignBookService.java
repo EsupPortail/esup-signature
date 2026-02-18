@@ -2194,6 +2194,7 @@ public class SignBookService {
             }
             WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), false, recipients.toArray(RecipientWsDto[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
+            userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
         }
     }
 
@@ -2918,7 +2919,6 @@ public class SignBookService {
      * Renouvelle le code OTP (One-Time Password) pour une demande de signature en fonction de l'identifiant d'URL fourni.
      *
      * @param urlId     l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
-     * @param signature indique si la signature liée à la demande doit être prise en compte
      */
     @Transactional
     public Otp renewOtp(String urlId) {
