@@ -2749,10 +2749,12 @@ public class SignBookService {
         User user = userService.getByEppn(authUserEppn);
         User replacedByUser = user.getCurrentReplaceByUser();
         if(replacedByUser != null) {
-            List<SignRequest> signRequests = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
-            for(SignRequest signRequest : signRequests) {
-                transfertSignRequest(signRequest.getId(), true, user, replacedByUser, false);
-                i++;
+            List<SignBook> signBooks = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
+            for(SignBook signBook : signBooks) {
+                for(SignRequest signRequest : signBook.getSignRequests()) {
+                    transfertSignRequest(signRequest.getId(), true, user, replacedByUser, false);
+                    i++;
+                }
             }
         }
         return i;
@@ -2800,13 +2802,14 @@ public class SignBookService {
     @Transactional
     public void transfertSignRequest(Long signRequestId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
         SignRequest signRequest = signRequestService.getById(signRequestId);
-        signRequest.getParentSignBook().getTeam().remove(user);
-        addToTeam(signRequest.getParentSignBook(), user.getEppn());
+        SignBook signBook = signRequest.getParentSignBook();
+        signBook.getTeam().remove(user);
+        addToTeam(signBook, user.getEppn());
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
         if(transfertAll) {
-            liveWorkflowSteps.addAll(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
+            liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
         } else {
-            liveWorkflowSteps.add(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep());
+            liveWorkflowSteps.add(signBook.getLiveWorkflow().getCurrentStep());
         }
         for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
@@ -2816,12 +2819,12 @@ public class SignBookService {
             }
         }
         if(replacedByUser.getUserType().equals(UserType.external)) {
-            otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+            otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
         } else {
-            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signRequest.getParentSignBook());
+            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signBook);
         }
         if(keepFollow) {
-            addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
+            addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
         }
     }
 
