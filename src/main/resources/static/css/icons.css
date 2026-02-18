@@ -63,3 +63,11 @@
     height: 1.2em;
     background: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
 }
+
+.fi-rr-session-timeout::before {
+    content: "";
+    display: inline-block;
+    width: 1.2em;
+    height: 1.2em;
+    background: url('/images/icons/rr-session-timeout.svg') no-repeat center;
+}

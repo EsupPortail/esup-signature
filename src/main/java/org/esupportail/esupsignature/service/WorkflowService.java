@@ -201,6 +201,7 @@ public class WorkflowService {
             }
             workflowStep.setSealVisa(step.getSealVisa());
             workflowStep.setMinSignLevel(step.getMinSignLevel());
+            workflowStep.setMaxSignLevel(step.getMaxSignLevel());
             workflowStep.setSignType(step.getSignType());
             workflow.getWorkflowSteps().add(workflowStep);
             userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));

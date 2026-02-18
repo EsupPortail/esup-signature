@@ -6,29 +6,30 @@
 <main role="main">
     <div class="wrapper">
         <div id="content" class="content-full">
-            <div class="error-container">
+            <div class="success-container">
                 <div class="alert alert-light">
-                    <div class="error-icon text-danger">
-                        <i class="fi fi-rr-octagon-xmark" style="font-size: 6em;"></i>
+                    <div class="success-icon text-success">
+                        <i class="fi fi-rr-check-circle" style="font-size: 6em;"></i>
                     </div>
 
-                    <h4>Une erreur s'est produite</h4>
+                    <h4>Lien envoyé avec succès</h4>
+                    <p class="success-description">
+                        Un nouveau lien de signature vous a été envoyé par email.
+                    </p>
 
-                    <div class="error-message" th:utext="${errorMsg}">
-                    </div>
-
-                    <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
-                          th:action="@{/logout}"
-                          method="post"
-                          class="error-form">
+                    <form th:action="@{/otp-access/resend}" method="post" th:object="${otp}" class="expired-form">
+                        <input type="hidden" th:field="*{urlId}" />
                         <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fa-solid fa-power-off"></i> Déconnexion
+                            Renvoyer un nouveau lien
                         </button>
                     </form>
 
-                    <div class="error-info">
-                        <p>Si le problème persiste, veuillez contacter le créateur de la demande (mentionné dans votre premier email).</p>
+                    <div class="success-info">
+                        <p>Vous devriez le recevoir dans les prochaines minutes.</p>
+                        <p>Si vous ne le recevez pas, vérifiez votre dossier spam ou réessayez.</p>
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -37,7 +38,7 @@
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
 
 <style>
-    .error-container {
+    .success-container {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -46,13 +47,29 @@
         margin-top: 30px;
     }
 
-    .error-icon {
+    .success-icon {
         display: flex;
         justify-content: center;
         margin-bottom: 1.5rem;
     }
 
-    .error-form {
+    .success-description {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.5;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .success-info {
+        background: #f8f9fa;
+        border-left: 4px solid #198754;
+        padding: 1.25rem;
+        border-radius: 6px;
+        text-align: left;
+    }
+
+    .expired-form {
         margin-bottom: 2rem;
     }
 
@@ -62,40 +79,25 @@
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 6px;
-        font-size: 1rem;
-        font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
         width: 100%;
     }
 
-    .btn-primary:hover {
-        background: #0b5ed7;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
-    }
 
-    .btn-primary:active {
-        background: #0a58ca;
-        transform: translateY(1px);
-    }
-
-    .error-info {
-        background: #f8f9fa;
-        border-left: 4px solid #dc3545;
-        padding: 1.25rem;
-        border-radius: 6px;
-        text-align: left;
-    }
-
-    .error-info p {
+    .success-info p {
         font-size: 0.95rem;
         color: #495057;
         margin: 0.5rem 0;
         line-height: 1.5;
     }
 
+    .success-info p:first-child {
+        font-weight: 500;
+    }
+
     @media (max-width: 640px) {
-        .error-message {
+        .success-description {
             font-size: 0.95rem;
         }
     }

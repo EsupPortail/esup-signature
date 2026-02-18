@@ -415,5 +415,14 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     Page<SignBook> findOnShareByEppn(String eppn, User recipientUser, String workflowFilter, String docTitleFilter, User creatorFilter, Date startDateFilter, Date endDateFilter, Pageable pageable);
 
     List<SignBook> findByCreateByEppn(String userEppn);
+
+    @Query("""
+            select count(sb) from SignBook sb
+            where sb.createBy = :user
+            and :user not member of sb.hidedBy
+            and size(sb.signRequests) > 0
+            and (sb.deleted = true or sb.status = 'deleted')
+            """)
+    Long countByCreateByEppnAndDeleted(User user);
 }
 

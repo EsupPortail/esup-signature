@@ -132,6 +132,7 @@ public class GlobalAttributsControllerAdvice {
 
             model.addAttribute("nbSignRequests", signRequestService.getNbPendingSignRequests(userEppn));
             model.addAttribute("nbToSign", signBookService.nbToSignSignBooks(userEppn));
+            model.addAttribute("nbDeleted", signBookService.nbDeleted(userEppn));
             model.addAttribute("certificatProblem", certificatService.checkCertificatProblem(userService.getRoles(userEppn)));
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());

@@ -223,7 +223,7 @@ header {
     padding-right: 5px;
     padding-bottom: 12px;
     position: fixed;
-    z-index: 1029 !important;
+    z-index: 1030 !important;
     min-width: 260px;
     max-width: 260px;
     height: calc(100vh - 80px);
