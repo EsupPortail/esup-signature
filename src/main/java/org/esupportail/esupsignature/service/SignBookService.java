@@ -2768,12 +2768,17 @@ public class SignBookService {
      * @throws EsupSignatureRuntimeException si le transfert est impossible
      */
     @Transactional
-    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, boolean keepFollow) {
+    public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, String phone, String name, String firstname, boolean keepFollow) {
         if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
             User user = userService.getByEppn(userEppn);
             User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
             if (user.equals(replacedByUser)) {
                 throw new EsupSignatureRuntimeException("Transfer impossible");
+            }
+            if(replacedByUser.getUserType().equals(UserType.external)) {
+                replacedByUser.setPhone(phone);
+                replacedByUser.setName(name);
+                replacedByUser.setFirstname(firstname);
             }
             transfertSignRequest(signRequestId, false, user, replacedByUser, keepFollow);
         } else {
@@ -2810,7 +2815,11 @@ public class SignBookService {
                 }
             }
         }
-        mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signRequest.getParentSignBook());
+        if(replacedByUser.getUserType().equals(UserType.external)) {
+            otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+        } else {
+            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signRequest.getParentSignBook());
+        }
         if(keepFollow) {
             addViewers(signRequest.getParentSignBook().getId(), Collections.singletonList(user.getEmail()));
         }

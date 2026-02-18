@@ -426,12 +426,15 @@ public class UserAndOtpSignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/transfert/{id}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                           @RequestParam(value = "transfertRecipientsEmails") List<String> transfertRecipientsEmails,
+                           @RequestParam(value = "transfertRecipientsEmails") String transfertRecipientsEmails,
+                           @RequestParam(value = "phones", required = false) String phones,
+                           @RequestParam(value = "names", required = false) String names,
+                           @RequestParam(value = "firstnames", required = false) String firstnames,
                            @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
                            RedirectAttributes redirectAttributes) {
         if(keepFollow == null) keepFollow = false;
         try {
-            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails.get(0), keepFollow);
+            signBookService.transfertSignRequest(id, authUserEppn, transfertRecipientsEmails, phones, names, firstnames, keepFollow);
             redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
             if(keepFollow) {
                 return "redirect:/user/signrequests/" + id;

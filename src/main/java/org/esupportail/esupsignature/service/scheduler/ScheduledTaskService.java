@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @EnableScheduling
-@Profile("!dev")
+//@Profile("!dev")
 @Component
 public class ScheduledTaskService {
 
