@@ -2751,10 +2751,8 @@ public class SignBookService {
         if(replacedByUser != null) {
             List<SignBook> signBooks = getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).collect(Collectors.toList());
             for(SignBook signBook : signBooks) {
-                for(SignRequest signRequest : signBook.getSignRequests()) {
-                    transfertSignRequest(signRequest.getId(), true, user, replacedByUser, false);
-                    i++;
-                }
+                transfertSignRequest(signBook.getId(), true, user, replacedByUser, false);
+                i++;
             }
         }
         return i;
@@ -2771,28 +2769,25 @@ public class SignBookService {
      */
     @Transactional
     public void transfertSignRequest(Long signRequestId, String userEppn, String replacedByUserEmail, String phone, String name, String firstname, boolean keepFollow) {
-        if(checkSignRequestSignable(signRequestId, userEppn, userEppn)) {
-            User user = userService.getByEppn(userEppn);
-            User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
-            if (user.equals(replacedByUser)) {
-                throw new EsupSignatureRuntimeException("Transfer impossible");
-            }
-            if(replacedByUser.getUserType().equals(UserType.external)) {
-                replacedByUser.setPhone(phone);
-                replacedByUser.setName(name);
-                replacedByUser.setFirstname(firstname);
-            }
-            transfertSignRequest(signRequestId, false, user, replacedByUser, keepFollow);
-        } else {
-            throw new EsupSignatureRuntimeException("Transfer impossible");
+        User user = userService.getByEppn(userEppn);
+        User replacedByUser = userService.getUserByEmail(replacedByUserEmail);
+        if (user.equals(replacedByUser)) {
+            throw new EsupSignatureRuntimeException("Transfert impossible vers le même utilisateur");
         }
+        if(replacedByUser.getUserType().equals(UserType.external)) {
+            replacedByUser.setPhone(phone);
+            replacedByUser.setName(name);
+            replacedByUser.setFirstname(firstname);
+        }
+        SignRequest signRequest = signRequestService.getById(signRequestId);
+        transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);
     }
 
     /**
      * Transfère une demande de signature d'un utilisateur à un autre. Permet de remplacer les tâches de signature et/ou de
      * conserver les droits de suivi pour l'utilisateur initial.
      *
-     * @param signRequestId l'identifiant unique de la demande de signature à transférer
+     * @param signBookId l'identifiant unique de la demande de signature à transférer
      * @param transfertAll détermine si toutes les étapes de workflow associées doivent être transférées
      *                     (true pour toutes les étapes, false pour seulement l'étape actuelle)
      * @param user l'utilisateur source de transfert, c'est-à-dire l'utilisateur actuellement associé à la demande
@@ -2800,31 +2795,44 @@ public class SignBookService {
      * @param keepFollow détermine si l'utilisateur source doit garder les droits de suivi sur la demande de signature
      */
     @Transactional
-    public void transfertSignRequest(Long signRequestId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
-        SignRequest signRequest = signRequestService.getById(signRequestId);
-        SignBook signBook = signRequest.getParentSignBook();
+    public void transfertSignRequest(Long signBookId, boolean transfertAll, User user, User replacedByUser, boolean keepFollow) {
+        SignBook signBook = getById(signBookId);
         signBook.getTeam().remove(user);
         addToTeam(signBook, user.getEppn());
         List<LiveWorkflowStep> liveWorkflowSteps = new ArrayList<>();
-        if(transfertAll) {
+        if(transfertAll || signBook.getSignRequests().size() > 1) {
             liveWorkflowSteps.addAll(signBook.getLiveWorkflow().getLiveWorkflowSteps());
         } else {
             liveWorkflowSteps.add(signBook.getLiveWorkflow().getCurrentStep());
         }
+        int nbTransfert = 0;
         for(LiveWorkflowStep liveWorkflowStep : liveWorkflowSteps) {
             for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-                if(recipient.getUser().equals(user) && signRequest.getRecipientHasSigned().get(recipient) != null && signRequest.getRecipientHasSigned().get(recipient).getActionType() != null && signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
+                if(recipient.getUser().equals(user) &&
+                        (
+                            (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) == signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep())
+                            && signBook.getSignRequests().stream().noneMatch(signRequest -> signRequest.getStatus().equals(SignRequestStatus.completed)))
+                        ||
+                        (signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(liveWorkflowStep) > signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep()) && transfertAll))
+                    ) {
                     recipient.setUser(replacedByUser);
+                    if(liveWorkflowStep.equals(signBook.getLiveWorkflow().getCurrentStep())) {
+                        if (replacedByUser.getUserType().equals(UserType.external)) {
+                            otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+                        } else {
+                            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signBook);
+                        }
+                        nbTransfert++;
+                    }
                 }
             }
         }
-        if(replacedByUser.getUserType().equals(UserType.external)) {
-            otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
+        if(nbTransfert > 0) {
+            if (keepFollow) {
+                addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
+            }
         } else {
-            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signBook);
-        }
-        if(keepFollow) {
-            addViewers(signBook.getId(), Collections.singletonList(user.getEmail()));
+            throw new EsupSignatureRuntimeException("Les conditions de transfert ne sont pas remplies.");
         }
     }
 

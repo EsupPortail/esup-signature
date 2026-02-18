@@ -423,7 +423,7 @@ public class UserAndOtpSignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestRecipient(#signRequestId, #authUserEppn)")
     @PostMapping(value = "/transfert/{signRequestId}")
     public String transfer(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("signRequestId") Long signRequestId,
                            @RequestParam(value = "transfertRecipientsEmails") String transfertRecipientsEmails,
@@ -444,7 +444,7 @@ public class UserAndOtpSignRequestController {
                 return "redirect:" + basePath;
             }
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée"));
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée : " + e.getMessage()));
             return "redirect:/user/signrequests/" + signRequestId;
         }
     }
