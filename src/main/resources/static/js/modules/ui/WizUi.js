@@ -59,7 +59,7 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, null);
-        this.input.on("filebatchuploadsuccess", function() {
+        this.input.on("filebatchuploadsuccess", function(e) {
             $.ajax({
                 url: "/user/wizard/start-self-sign/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
                 type: 'POST',
@@ -67,6 +67,9 @@ export class WizUi {
                     location.href = "/user/signbooks/" + self.newSignBookId;
                 }
             });
+        });
+        this.input.on("fileuploaderror", function(e) {
+            self.enableButtons();
         });
         $("#fast-sign-button").on('click', e => self.wizCreateSign("self"));
     }
@@ -156,6 +159,9 @@ export class WizUi {
             self.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
         this.input.on("filebatchuploadsuccess", e => this.fastSignSubmitDatas());
+        this.input.on("fileuploaderror", function(e) {
+            self.enableButtons();
+        });
         $("#send-draft-button").on('click', function() {
             self.disableButtons();
             let fileCount = self.input.fileinput('getFilesCount');
@@ -166,9 +172,6 @@ export class WizUi {
                 $("#update-fast-sign-submit").click();
                 self.enableButtons();
             }
-        });
-        this.input.on("fileuploaderror", e => function (e) {
-            alert(e);
         });
         $("#send-pending-button").on('click', function() {
             self.disableButtons();
@@ -250,8 +253,11 @@ export class WizUi {
         if($("#recipientsCCEmails").length) {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
-        this.input.on("filebatchuploadsuccess", function() {
+        this.input.on("filebatchuploadsuccess", function(e) {
             self.workflowSignNextStep();
+        });
+        this.input.on("fileuploaderror", function(e) {
+            self.enableButtons();
         });
         $("#wiz-start-button").on('click', function (){
             self.disableButtons();
