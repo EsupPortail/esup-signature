@@ -3052,4 +3052,9 @@ public class SignBookService {
         SignBook signBook = signBookRepository.findById(signBookId).orElseThrow();
         return !userService.getTempUsers(signBook).isEmpty();
     }
+
+    public Long nbDeleted(String userEppn) {
+        User user = userService.getByEppn(userEppn);
+        return signBookRepository.countByCreateByEppnAndDeleted(user);
+    }
 }
