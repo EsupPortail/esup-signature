@@ -440,7 +440,7 @@ public class UserAndOtpSignRequestController {
                 return "redirect:/user/signrequests/" + signRequestId;
             } else {
                 String path = httpServletRequest.getRequestURI();
-                String basePath = path.startsWith("/otp") ? "/otp-access/transfered" : "/user/signrequests/" + signRequestId;
+                String basePath = path.startsWith("/otp") ? "/otp-access/transferred" : "/user/signrequests/" + signRequestId;
                 return "redirect:" + basePath;
             }
         } catch (EsupSignatureRuntimeException e) {

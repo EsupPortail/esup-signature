@@ -48,7 +48,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -2918,12 +2917,11 @@ public class SignBookService {
     /**
      * Renouvelle le code OTP (One-Time Password) pour une demande de signature en fonction de l'identifiant d'URL fourni.
      *
-     * @param urlId l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
+     * @param urlId     l'identifiant unique de l'URL associée à l'OTP et à la demande de signature
      * @param signature indique si la signature liée à la demande doit être prise en compte
-     * @return true si le renouvellement de l'OTP a réussi, false sinon
      */
     @Transactional
-    public boolean renewOtp(String urlId, boolean signature) {
+    public Otp renewOtp(String urlId) {
         Otp otp = otpService.getOtpFromDatabase(urlId);
         if(otp != null) {
             SignBook signBook = otp.getSignBook();
@@ -2933,8 +2931,7 @@ public class SignBookService {
                     List<Recipient> recipients = signRequest.getRecipientHasSigned().keySet().stream().filter(r -> r.getUser().getUserType().equals(UserType.external)).toList();
                     for (Recipient recipient : recipients) {
                         try {
-                            otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), signature);
-                            return true;
+                            return otpService.generateOtpForSignRequest(signBook.getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), otp.isSignature());
                         } catch (EsupSignatureMailException e) {
                             logger.error(e.getMessage());
                         }
@@ -2942,7 +2939,7 @@ public class SignBookService {
                 }
             }
         }
-        return false;
+        return otp;
     }
 
     /**

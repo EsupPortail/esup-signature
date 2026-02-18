@@ -350,6 +350,10 @@ public class GlobalProperties {
      */
     private SignRequestParams externalSignatureParams = new SignRequestParams();
 
+    private int nbSignOtpTries = 3;
+
+    private int nbViewOtpTries = 1;
+
     /**
      * Activation de l’intro d’aide
      */
@@ -933,5 +937,21 @@ public class GlobalProperties {
 
     public void setDisablePdfFontAlert(Boolean disablePdfFontAlert) {
         this.disablePdfFontAlert = disablePdfFontAlert;
+    }
+
+    public int getNbViewOtpTries() {
+        return nbViewOtpTries;
+    }
+
+    public void setNbViewOtpTries(int nbViewOtpTries) {
+        this.nbViewOtpTries = nbViewOtpTries;
+    }
+
+    public int getNbSignOtpTries() {
+        return nbSignOtpTries;
+    }
+
+    public void setNbSignOtpTries(int nbSignOtpTries) {
+        this.nbSignOtpTries = nbSignOtpTries;
     }
 }

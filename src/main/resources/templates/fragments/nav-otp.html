@@ -6,10 +6,7 @@
         <h1 aria-label="Esup-Signature" title="Esup-Signature" style="width: 204px; margin-left: 5px;">
             <a href="/user"><img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/></a>
         </h1>
-        <li class="nav-item">
-            <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
-               data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white float-end align-middle d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur"><i class="fa-solid fa-question"></i></a>
-        </li>
+        <ul class="navbar-nav">
         <li class="nav-item">
             <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
                   th:action="@{/logout}"
@@ -23,6 +20,13 @@
                 </button>
             </form>
         </li>
+        <li class="nav-item">
+            <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
+               data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur">
+                <i class="fi fi-rr-interrogation" style="font-size: 24px; line-height: 33px;"></i>
+            </a>
+        </li>
+        </ul>
     </nav>
 </header>
 
