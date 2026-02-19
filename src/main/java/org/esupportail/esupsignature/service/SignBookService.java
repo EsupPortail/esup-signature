@@ -1373,9 +1373,7 @@ public class SignBookService {
     @Transactional
     public void initSignBookWorkflow(Long signBookId, List<WorkflowStepDto> steps, List<String> targetEmails, String userEppn, String authUserEppn, Boolean pending, Boolean sendEmailAlert) throws EsupSignatureRuntimeException, EsupSignatureException {
         List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
-        if(signRequestService.checkTempUsers(signBookId, recipients)) {
-            throw new EsupSignatureRuntimeException("Merci de compléter tous les utilisateurs externes");
-        }
+        signRequestService.checkTempUsers(signBookId, recipients);
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
             List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
