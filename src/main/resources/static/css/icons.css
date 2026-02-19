@@ -59,15 +59,23 @@
 .fi-rr-infinite-cycle::before {
     content: "";
     display: inline-block;
-    width: 1.2em;
-    height: 1.2em;
+    width: 1.0005em;
+    height: 1em;
     background: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
 }
 
 .fi-rr-session-timeout::before {
     content: "";
     display: inline-block;
-    width: 1.2em;
-    height: 1.2em;
+    width: 1.0005em;
+    height: 1em;
     background: url('/images/icons/rr-session-timeout.svg') no-repeat center;
+}
+
+.fi-rr-task-checklist::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/rr-task-checklist.svg') no-repeat center;
 }

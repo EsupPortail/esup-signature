@@ -29,8 +29,8 @@
                         </button>
                     </li>
                     <li th:if="${form.document != null && form.signRequestParams != null}">
-                        <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning">
-                            <i class="fi fi-rr-pencil fa-2xl text-dark" style="margin-top: 15px"></i>
+                        <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn-floating btn-lg bg-warning" style="border: 0">
+                            <i class="fi fi-rr-task-checklist fa-2xl text-dark" style="margin-top: 15px"></i>
                         </a>
                     </li>
                 </ul>
@@ -117,7 +117,6 @@
                                 <td><span th:if="${signRequestParams.pdSignatureFieldName != null}" th:text="${signRequestParams.pdSignatureFieldName} + ' :'" ></span> page <span th:text="${signRequestParams.signPageNumber + ' (' + signRequestParams.xPos + ', ' + signRequestParams.yPos + ')'}"></span></td>
                                 <td>
                                     <select th:id="'srp_' + ${signRequestParams.id}"  name="test[]" class="form-select" data-placeholder="Choisir des étapes">
-                                        <option data-placeholder="true"></option>
                                         <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
                                             <option th:value="${iterator.index + 1}" th:text="${iterator.index + 1}" th:selected="${srpMap.get(iterator.index + 1) == signRequestParams.id}"></option>
                                         </th:block>

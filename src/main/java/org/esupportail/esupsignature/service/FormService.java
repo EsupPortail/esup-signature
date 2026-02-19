@@ -62,8 +62,9 @@ public class FormService {
 	private final WebUtilsService webUtilsService;
 	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 	private final ObjectMapper objectMapper;
+	private final TagService tagService;
 
-    public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
+	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper, TagService tagService) {
         this.applicationContext = applicationContext;
         this.formRepository = formRepository;
         this.pdfService = pdfService;
@@ -78,7 +79,8 @@ public class FormService {
         this.webUtilsService = webUtilsService;
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.objectMapper = objectMapper;
-    }
+		this.tagService = tagService;
+	}
 
     public Form getById(Long formId) {
         Form form = formRepository.findById(formId).orElseThrow();
@@ -186,7 +188,15 @@ public class FormService {
 		form.setActiveVersion(updateForm.getActiveVersion());
 		form.setIsFeatured(updateForm.getIsFeatured());
         form.getTags().clear();
-        form.getTags().addAll(updateForm.tags);
+		for(Tag tag : updateForm.getTags()) {
+			Tag checkTag;
+			try {
+				checkTag = tagService.getById(tag.getId());
+			} catch (Exception e) {
+				checkTag = tagService.createTag(tag.getName(), tag.getColor());
+			}
+			form.getTags().add(checkTag);
+		}
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
