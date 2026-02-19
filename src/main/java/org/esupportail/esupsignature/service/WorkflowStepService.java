@@ -76,6 +76,20 @@ public class WorkflowStepService {
     }
 
     @Transactional
+    public WorkflowStep createWorkflowStep(LiveWorkflowStep liveWorkflowStep, RecipientWsDto ...recipients) throws EsupSignatureRuntimeException {
+        WorkflowStep workflowStep = new WorkflowStep();
+        workflowStep.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
+        workflowStep.setSignType(liveWorkflowStep.getSignType());
+        workflowStep.setMinSignLevel(liveWorkflowStep.getMinSignLevel());
+        workflowStep.setMaxSignLevel(liveWorkflowStep.getMaxSignLevel());
+        workflowStepRepository.save(workflowStep);
+        if (recipients != null && recipients.length > 0) {
+            addRecipientsToWorkflowStep(workflowStep, recipients);
+        }
+        return workflowStep;
+    }
+
+    @Transactional
     public WorkflowStep createWorkflowStep(WorkflowStepDto dto) throws EsupSignatureRuntimeException {
         WorkflowStep workflowStep = new WorkflowStep();
 
@@ -85,7 +99,8 @@ public class WorkflowStepService {
         workflowStep.setAllSignToComplete(dto.getAllSignToComplete() != null ? dto.getAllSignToComplete() : false);
         workflowStep.setSignType(dto.getSignType() != null ? dto.getSignType() : SignType.signature);
         workflowStep.setChangeable(dto.getChangeable() != null ? dto.getChangeable() : false);
-
+        workflowStep.setMinSignLevel(dto.getMinSignLevel());
+        workflowStep.setMaxSignLevel(dto.getMaxSignLevel());
         workflowStepRepository.save(workflowStep);
 
         if (!dto.getRecipients().isEmpty()) {
