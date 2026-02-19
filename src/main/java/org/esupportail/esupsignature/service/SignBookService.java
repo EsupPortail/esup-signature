@@ -1373,9 +1373,7 @@ public class SignBookService {
     @Transactional
     public void initSignBookWorkflow(Long signBookId, List<WorkflowStepDto> steps, List<String> targetEmails, String userEppn, String authUserEppn, Boolean pending, Boolean sendEmailAlert) throws EsupSignatureRuntimeException, EsupSignatureException {
         List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
-        if(signRequestService.checkTempUsers(signBookId, recipients)) {
-            throw new EsupSignatureRuntimeException("Merci de compléter tous les utilisateurs externes");
-        }
+        signRequestService.checkTempUsers(signBookId, recipients);
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
             List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
@@ -1870,7 +1868,7 @@ public class SignBookService {
         initSignBookWorkflow(signBook.getId(), steps, targetEmails, createByEppn, createByEppn, true, sendEmailAlert);
         int stepNumber = 0;
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            if(!integerListMap.get(stepNumber).isEmpty()) {
+            if(integerListMap.size() > stepNumber && !integerListMap.get(stepNumber).isEmpty()) {
                 liveWorkflowStep.getSignRequestParams().clear();
                 liveWorkflowStep.getSignRequestParams().addAll(integerListMap.get(stepNumber));
             }
