@@ -285,6 +285,7 @@ public class Form {
         this.modelClassWorkflow = modelClassWorkflow;
     }
 
+	@JsonIgnore
     public List<SignRequestParams> getSignRequestParams() {
         return this.workflow
                 .getWorkflowSteps()

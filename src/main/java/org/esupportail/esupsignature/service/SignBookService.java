@@ -2190,7 +2190,7 @@ public class SignBookService {
             for (Recipient recipient : liveWorkflowStep.getRecipients()) {
                 recipients.add(new RecipientWsDto(recipient.getUser().getEmail()));
             }
-            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep("" , liveWorkflowStep.getAllSignToComplete(), liveWorkflowStep.getSignType(), false, recipients.toArray(RecipientWsDto[]::new));
+            WorkflowStep toSaveWorkflowStep = workflowStepService.createWorkflowStep(liveWorkflowStep, recipients.toArray(RecipientWsDto[]::new));
             workflow.getWorkflowSteps().add(toSaveWorkflowStep);
             userService.toggleFavorite(userEppn, workflow.getId(), UiParams.favoriteWorkflows);
         }

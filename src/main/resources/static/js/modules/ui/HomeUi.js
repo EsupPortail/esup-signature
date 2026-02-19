@@ -54,7 +54,7 @@ export class HomeUi {
             $(this).on('submit', function (e){
                 e.preventDefault();
                 let target = e.currentTarget;
-                bootbox.confirm("Voulez-vous vraiment supprimer ce circuit ?", function (result) {
+                bootbox.confirm("Pour enlever le favori, utiliser le bouton + <br>Sinon, confirmez-vous la suppression définitive de ce circuit ?", function (result) {
                     if(result) {
                         target.submit();
                     }

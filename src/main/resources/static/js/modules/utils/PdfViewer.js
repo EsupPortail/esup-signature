@@ -999,7 +999,7 @@ export class PdfViewer extends EventFactory {
             });
             if (warningFields.length > 0) {
                 warningFields.sort((a, b) => a.compareByPage(b))
-                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
+                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire<ul>";
                 if (warningFields.length < 2 && warningFields[0].name != null) {
                     if (warningFields[0].description != null && warningFields[0].description !== "") {
                         text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
@@ -1023,6 +1023,7 @@ export class PdfViewer extends EventFactory {
                         }
                     });
                 }
+                text += "</ul>"
                 bootbox.alert(text, function () {
                     let field = $('#' + warningFields[0].name);
                     setTimeout(function () {
