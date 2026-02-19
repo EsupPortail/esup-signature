@@ -1870,7 +1870,7 @@ public class SignBookService {
         initSignBookWorkflow(signBook.getId(), steps, targetEmails, createByEppn, createByEppn, true, sendEmailAlert);
         int stepNumber = 0;
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
-            if(!integerListMap.get(stepNumber).isEmpty()) {
+            if(integerListMap.size() > stepNumber && !integerListMap.get(stepNumber).isEmpty()) {
                 liveWorkflowStep.getSignRequestParams().clear();
                 liveWorkflowStep.getSignRequestParams().addAll(integerListMap.get(stepNumber));
             }
