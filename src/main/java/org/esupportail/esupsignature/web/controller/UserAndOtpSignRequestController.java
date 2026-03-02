@@ -199,7 +199,7 @@ public class UserAndOtpSignRequestController {
         model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
         model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
+            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
         }
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
