@@ -57,7 +57,7 @@ public class SignWithService {
                 }
             }
         }
-        if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).getContentType().equals("application/pdf"))) {
+        if(signRequest.getOriginalDocuments().size() > 1 || (!signRequest.getOriginalDocuments().isEmpty() && !signRequest.getOriginalDocuments().get(0).isPdf())) {
             signWiths.remove(SignWith.imageStamp);
         }
         if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {

@@ -319,7 +319,7 @@ export default class SelectUser {
         let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
         if(this.globalProperties.smsRequired) {
             html +=
-                "<p>Destinataire externe : <span><b>" + data.email + "</b></span></p>" +
+                "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
@@ -331,7 +331,7 @@ export default class SelectUser {
                 "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
             html +=
-                "<p>Destinataire externe : <span><b>" + data.email + "</b></span></p>" +
+                "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
                 "<div class=\"d-flex col-12\"><label for=\"name\" class='col-3'>Nom</label>" +
                 "<input id=\"name_" + id + "\" class=\"form-control \" type=\"text\" name=\"names\" value=\"" + data.name + "\" required></div>" +
