@@ -127,7 +127,7 @@ public class UserAndOtpSignRequestController {
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
-        if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
+        if(toSignDocuments.stream().anyMatch(d -> !d.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
@@ -199,7 +199,7 @@ public class UserAndOtpSignRequestController {
         model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
         model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
         if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            model.addAttribute("steps", workflowService.getWorkflowStepsFromSignRequest(signRequest, userEppn));
+            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
         }
         model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
         model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));

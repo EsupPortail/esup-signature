@@ -99,7 +99,11 @@ export class WorkspacePdf {
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
         this.initListeners();
-        this.signPosition.updateScales(this.pdfViewer.scale);
+        if (this.isPdf) {
+            this.signPosition.updateScales(this.pdfViewer.scale);
+        } else {
+            this.initWorkspace();
+        }
     }
 
     initListeners() {
@@ -122,7 +126,7 @@ export class WorkspacePdf {
             });
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
-            this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspace());
+            this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspacePdf());
             if(this.currentSignType != "form") {
                 this.pdfViewer.addEventListener('reachEnd', e => this.markAsViewed());
             }
@@ -339,6 +343,46 @@ export class WorkspacePdf {
 
     initWorkspace() {
         console.info("init workspace");
+        if(!this.ready) {
+            this.ready = true;
+            if (localStorage.getItem('mode') === null) {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            }
+            if (this.status === 'draft') {
+                this.mode = "comment";
+                localStorage.setItem('mode', this.mode);
+            } else {
+                this.mode = "sign";
+                localStorage.setItem('mode', this.mode);
+            }
+            console.info("init to " + this.mode + " mode");
+            const url = new URL(window.location.href);
+            const hasAnnotation = url.searchParams.has("annotation");
+            if(hasAnnotation) {
+                this.enableCommentMode();
+            } else {
+                if (this.signable) {
+                    if (localStorage.getItem('mode') === 'comment') {
+                        this.enableCommentMode();
+                    } else if (this.currentSignType !== 'form') {
+                        this.enableSignMode();
+                    }
+                } else if (!this.editable) {
+                    this.enableSignMode();
+                } else {
+                    if (this.status === 'draft') {
+                        this.enableCommentMode();
+                    } else {
+                        this.enableReadMode();
+                    }
+                }
+            }
+        }
+    }
+
+    initWorkspacePdf() {
+        console.info("init workspace pdf");
         if(!this.ready) {
             this.ready = true;
             if (localStorage.getItem('mode') === null) {
@@ -1034,7 +1078,6 @@ export class WorkspacePdf {
         $(".spot").each(function () {
             $(this).hide();
         });
-        // $('#signModeButton').toggleClass('btn-outline-success');
         $('#sign-tools').removeClass("d-none");
         if(this.currentSignType !== 'hiddenVisa') {
             $("#addSignButton2").focus();
@@ -1044,26 +1087,22 @@ export class WorkspacePdf {
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
-        // insertBtn.addClass("pulse-success");
-        // insertBtn.addClass("btn-outline-success");
-        // insertBtn.addClass("btn-light");
         insertBtn.removeClass("btn-warning");
-        if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
-            if (this.forcePageNum) {
-                this.pdfViewer.scrollToPage(this.forcePageNum);
+        if(this.isPdf) {
+            if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
+                if (this.forcePageNum) {
+                    this.pdfViewer.scrollToPage(this.forcePageNum);
+                }
+            } else {
+                this.pdfViewer.scrollToPage(1);
             }
-        } else {
-            this.pdfViewer.scrollToPage(1);
         }
-        // this.signPosition.updateScale(this.pdfViewer.scale);
-        //this.pdfViewer.promiseToggleFields(false);
-        // this.refreshAfterPageChange();
         $("#cross_999999").remove();
         $("#addCommentButton").attr("disabled", false);
         $("#addSpotButton").attr("disabled", false);
         this.showAllPostits();
         $(".sign-space").each(function () {
-            $(this).show();
+            $(this).show()
         });
         $('#signLaunchButton').removeClass('d-none');
         $('#addSignButton2').removeClass('d-none');
@@ -1076,7 +1115,9 @@ export class WorkspacePdf {
         $('#trashLaunchButton').removeClass('d-none');
         $('#commentsTools').addClass('d-none');
         $('#signTools').removeClass("d-none");
-        this.refreshAfterPageChange();
+        if(this.isPdf) {
+            this.refreshAfterPageChange();
+        }
     }
 
     disableAllModes() {
