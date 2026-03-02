@@ -602,7 +602,7 @@
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
                     <form id="send-sign-form" method="post" th:action="'/' + ${urlProfil} + '/signrequests/transfert/' + ${signRequest.id}">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
-                    <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
+                    <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" required="required">
                         <option data-placeholder="true"></option>
                     </select>
                     <div class="mt-2 mb-2" id="tempUsers-transfertRecipientsEmails"></div>

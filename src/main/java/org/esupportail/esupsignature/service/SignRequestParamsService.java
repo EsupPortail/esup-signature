@@ -386,19 +386,13 @@ public class SignRequestParamsService {
     private Integer findMcidForImage(PDPage pdPage, String imageName) throws IOException {
         PDFStreamParser parser = new PDFStreamParser(pdPage);
         List<?> tokens = parser.parse();
-
         for(int t = 0; t < tokens.size(); t++) {
             Object token = tokens.get(t);
-
-            // Chercher le Do avec le nom de l'image
             if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && t > 0) {
                 Object previous = tokens.get(t - 1);
                 if(previous instanceof COSName && ((COSName) previous).getName().equals(imageName)) {
-
-                    // Chercher le BDC et la COSDictionary avec MCID avant
                     for(int j = t - 1; j >= Math.max(0, t - 50); j--) {
                         if(tokens.get(j) instanceof Operator && "BDC".equals(((Operator) tokens.get(j)).getName())) {
-                            // La COSDictionary avec MCID est juste avant le BDC
                             if(j > 0 && tokens.get(j - 1) instanceof COSDictionary) {
                                 COSDictionary dict = (COSDictionary) tokens.get(j - 1);
                                 COSBase mcidValue = dict.getDictionaryObject(COSName.MCID);
@@ -413,14 +407,11 @@ public class SignRequestParamsService {
                 }
             }
         }
-
-        logger.info("No MCID found for image " + imageName);
         return null;
     }
 
     private void buildMcidToAltTextMap(PDStructureElement elem, Map<Integer, String> map) {
         String altText = elem.getAlternateDescription();
-
         List<?> kids = elem.getKids();
         if(kids != null && altText != null) {
             for(Object kid : kids) {
@@ -431,43 +422,10 @@ public class SignRequestParamsService {
                 }
             }
         }
-
-        // Parcourir les enfants
         if(kids != null) {
             for(Object kid : kids) {
                 if(kid instanceof PDStructureElement) {
                     buildMcidToAltTextMap((PDStructureElement) kid, map);
-                }
-            }
-        }
-    }
-
-    private String findImageByMcid(PDPage pdPage, int mcid) {
-        // Pour l'instant, retourne juste le premier image trouvée
-        // Un vrai matching par MCID est plus complexe
-        PDResources resources = pdPage.getResources();
-        if(resources != null) {
-            for(COSName xObjectName : resources.getXObjectNames()) {
-                return xObjectName.getName();
-            }
-        }
-        return null;
-    }
-
-    private void collectAllAltTexts(PDStructureElement elem, Set<String> altTexts) {
-        // Récupérer Alt text de cet élément
-        String altText = elem.getAlternateDescription();
-        logger.info("Element type: " + elem.getStructureType() + " Alt: " + altText);
-        if(altText != null) {
-            altTexts.add(altText);
-        }
-
-        // Parcourir les enfants
-        List<?> kids = elem.getKids();
-        if(kids != null) {
-            for(Object kid : kids) {
-                if(kid instanceof PDStructureElement) {
-                    collectAllAltTexts((PDStructureElement) kid, altTexts);
                 }
             }
         }

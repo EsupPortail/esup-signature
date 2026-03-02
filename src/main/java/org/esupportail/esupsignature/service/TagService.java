@@ -39,6 +39,14 @@ public class TagService {
     }
 
     @Transactional
+    public void updateTag(Long id, Tag tag) {
+        tagRepository.findById(id).ifPresent(t -> {
+            t.setName(tag.getName());
+            t.setColor(tag.getColor());
+        });
+    }
+
+    @Transactional
     public void deleteTag(Long id) {
         Tag tag = tagRepository.findById(id).orElseThrow();
         tagRepository.delete(tag);

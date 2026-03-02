@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
 public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
+    private final TagService tagService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -62,7 +64,7 @@ public class WorkflowService {
     private final  ObjectMapper objectMapper;
     private final  RecipientService recipientService;
 
-    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService) {
+    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService) {
         this.workflows = workflows;
         this.workflowRepository = workflowRepository;
         this.workflowStepService = workflowStepService;
@@ -79,6 +81,7 @@ public class WorkflowService {
         this.formRepository = formRepository;
         this.objectMapper = objectMapper;
         this.recipientService = recipientService;
+        this.tagService = tagService;
     }
 
     @PostConstruct
@@ -201,6 +204,7 @@ public class WorkflowService {
             }
             workflowStep.setSealVisa(step.getSealVisa());
             workflowStep.setMinSignLevel(step.getMinSignLevel());
+            workflowStep.setMaxSignLevel(step.getMaxSignLevel());
             workflowStep.setSignType(step.getSignType());
             workflow.getWorkflowSteps().add(workflowStep);
             userPropertieService.createUserPropertieFromMails(user, Collections.singletonList(step));
@@ -604,7 +608,15 @@ public class WorkflowService {
         workflowToUpdate.getExternalAuths().clear();
         workflowToUpdate.setExternalAuths(workflow.getExternalAuths());
         workflowToUpdate.getTags().clear();
-        workflowToUpdate.getTags().addAll(workflow.getTags());
+        for(Tag tag : workflow.getTags()) {
+            Tag checkTag;
+            try {
+                checkTag = tagService.getById(tag.getId());
+            } catch (Exception e) {
+                checkTag = tagService.createTag(tag.getName(), tag.getColor());
+            }
+            workflowToUpdate.getTags().add(checkTag);
+        }
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
     }

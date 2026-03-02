@@ -962,11 +962,10 @@ public class SignRequestService {
      *
      * @param id l'identifiant du SignBook à vérifier
      * @param recipients la liste des destinataires (RecipientWsDto) à comparer avec les utilisateurs temporaires
-     * @return true si des utilisateurs temporaires ne correspondent pas aux destinataires fournis ou en nombre insuffisant, false si tout est conforme
      * @throws EsupSignatureRuntimeException en cas d'erreur lors de l'opération
      */
     @Transactional
-	public boolean checkTempUsers(Long id, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
+	public void checkTempUsers(Long id, List<RecipientWsDto> recipients) throws EsupSignatureRuntimeException {
 		SignBook signBook = signBookRepository.findById(id).get();
 		List<User> tempUsers = userService.getTempUsers(signBook, recipients);
 		if(!tempUsers.isEmpty()) {
@@ -988,11 +987,8 @@ public class SignRequestService {
 						}
 					}
 				}
-			} else {
-				return true;
 			}
 		}
-		return false;
 	}
 
 	/**

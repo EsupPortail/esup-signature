@@ -127,6 +127,7 @@
                             <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
+                                <option value="deleted">Supprimé</option>
                                 <th:block th:each="status : ${statuses}">
                                     <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
                                 </th:block>
