@@ -43,7 +43,9 @@ export class ListSignBooksUi {
         new Nexu(null, null, null, null, null);
         $(document).ready(e => this.initListeners());
         $("#sealChoose").addClass('d-none');
-        this.detectEndDiv();
+        if(infiniteScrolling) {
+            this.detectEndDiv();
+        }
     }
 
     initListeners() {
