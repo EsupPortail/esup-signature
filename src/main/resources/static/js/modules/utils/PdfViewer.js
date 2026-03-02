@@ -1011,13 +1011,13 @@ export class PdfViewer extends EventFactory {
                         if (field.description != null && field.description !== "") {
                             text += "<li>" + field.description;
                             if(field.page != null) {
-                                text += " (en page " + field.page + ")";
+                                text += " (en page " + (field.page + 1) + ")";
                             }
                             text +="</li>";
                         } else {
                             text += "<li>" + field.name;
                             if(field.page != null) {
-                                text += " (en page " + field.page + ")";
+                                text += " (en page " + (field.page + 1) + ")";
                             }
                             text +="</li>";
                         }
