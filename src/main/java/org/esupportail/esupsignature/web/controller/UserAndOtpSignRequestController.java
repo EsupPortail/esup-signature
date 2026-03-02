@@ -127,7 +127,7 @@ public class UserAndOtpSignRequestController {
         if(toSignDocuments.size() == 1) {
             model.addAttribute("toSignDocument", toSignDocuments.get(0));
         }
-        if(toSignDocuments.stream().anyMatch(d -> !d.getContentType().equals("application/pdf")) && currentStepMinSignLevel.getValue() < 3) {
+        if(toSignDocuments.stream().anyMatch(d -> !d.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
         model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());

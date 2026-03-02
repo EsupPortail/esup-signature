@@ -279,7 +279,7 @@ public class SignService {
     private DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
         logger.debug("Start signDocument with single documents");
         DocumentSignatureService service = getDocumentSignatureService(signatureDocumentForm.getSignatureForm());
-        DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()), "detached-file");
+        DSSDocument toSignDocument = new InMemoryDocument(new ByteArrayInputStream(signatureDocumentForm.getDocumentToSign().getBytes()), signatureDocumentForm.getDocumentToSign().getOriginalFilename());
         ToBeSigned dataToSign = service.getDataToSign(toSignDocument, parameters);
         SignatureValue signatureValue = signingToken.sign(dataToSign, parameters.getDigestAlgorithm(), signingToken.getKeys().get(0));
         logger.debug("End signDocument with single documents");
@@ -570,7 +570,7 @@ public class SignService {
             InputStream inputStream;
             byte[] bytes;
             Document toSignFile = documents.get(0);
-            if(toSignFile.getContentType().equals("application/pdf")) {
+            if(toSignFile.isPdf()) {
                 signatureForm = SignatureForm.PAdES;
                 inputStream = toSignFile.getTransientInputStream();
                 bytes = inputStream.readAllBytes();

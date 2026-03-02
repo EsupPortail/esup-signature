@@ -275,8 +275,13 @@
             <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
                 Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
             </div>
-            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
-                Le document a bien été signé, vous pouvez le téléchargé
+            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace">
+                <div class=" alert alert-success w-100">
+                    <p>Le document a bien été signé, vous pouvez le télécharger</p>
+                    <a tabindex="1" class="btn btn-lg btn-dark" th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank" title="Télécharger la dernière version du document">
+                        Télécharger la dernière version du document
+                    </a>
+                </div>
             </div>
             <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
                 <h4>La demande de signature a été supprimée</h4>
