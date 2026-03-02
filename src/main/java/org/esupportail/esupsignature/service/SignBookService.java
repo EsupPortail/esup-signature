@@ -2244,7 +2244,7 @@ public class SignBookService {
         LinkedList<String> signImages = new LinkedList<>();
         if (!signRequest.getSignedDocuments().isEmpty() || !signRequest.getOriginalDocuments().isEmpty()) {
             List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
-            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf")) {
+            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf()) {
                 if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.visa) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
                     if(userShareId != null) {
                         try {

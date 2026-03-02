@@ -142,7 +142,7 @@ public class UpgradeService {
 //        List<Document> documents = documentService.getAll().stream().filter(document -> document.getNbPages() == null).collect(Collectors.toList());
 //        logger.info("#### Starting update documents nbPages for " + documents.size() + " documents ####");
 //        for(Document document : documents) {
-//            if(document.getContentType() != null && document.getContentType().equals("application/pdf") && document.getNbPages() == null) {
+//            if(document.getContentType() != null && document.isPdf() && document.getNbPages() == null) {
 //                try {
 //                    documentService.updateNbPages(document);
 //                } catch (IOException e) {

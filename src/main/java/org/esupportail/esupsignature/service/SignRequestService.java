@@ -320,13 +320,13 @@ public class SignRequestService {
         }
         byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
         Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-        if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).getContentType().equals("application/pdf")
+        if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
                 && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
             filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
         } else {
             filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
         }
-		if(!isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
+		if(toSignDocuments.get(0).isPdf() && !isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
 			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
 		}
         boolean visual = true;
@@ -338,7 +338,7 @@ public class SignRequestService {
                 throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
             }
             int nbSign = 0;
-            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && visual) {
+            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
                 for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
                     if((signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
                         signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
@@ -368,7 +368,7 @@ public class SignRequestService {
             } else {
                 logger.warn("skip add visuals because document already signed");
             }
-            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).getContentType().equals("application/pdf") && lastSignRequestParams != null) {
+            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && lastSignRequestParams != null) {
                 signRequestParamsService.copySignRequestParams(signRequest.getId(), Collections.singletonList(lastSignRequestParams));
                 toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
             }
