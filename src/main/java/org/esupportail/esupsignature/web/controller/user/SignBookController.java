@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
@@ -51,6 +52,7 @@ import java.util.stream.Collectors;
 public class SignBookController {
 
     private static final Logger logger = LoggerFactory.getLogger(SignBookController.class);
+    private final GlobalProperties globalProperties;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -68,7 +70,7 @@ public class SignBookController {
     private final FormService formService;
     private final TemplateEngine templateEngine;
 
-    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService) {
+    public SignBookController(RecipientService recipientService, SignWithService signWithService, LiveWorkflowStepService liveWorkflowStepService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, SignRequestService signRequestService, FormService formService, TemplateEngine templateEngine, CertificatService certificatService, GlobalProperties globalProperties) {
         this.recipientService = recipientService;
         this.signWithService = signWithService;
         this.liveWorkflowStepService = liveWorkflowStepService;
@@ -79,6 +81,7 @@ public class SignBookController {
         this.formService = formService;
         this.templateEngine = templateEngine;
         this.certificatService = certificatService;
+        this.globalProperties = globalProperties;
     }
 
     @GetMapping
@@ -109,9 +112,12 @@ public class SignBookController {
             recipientsFilter = null;
         }
         model.addAttribute("statusFilter", statusFilter);
-//        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-//        model.addAttribute("signBooks", signBooks);
-        model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+        if(globalProperties.getInfiniteScrolling()) {
+            model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+        } else {
+            Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+            model.addAttribute("signBooks", signBooks);
+        }
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
         model.addAttribute("statuses", SignRequestStatus.activeValues());
         model.addAttribute("forms", formService.getFormsByUser(userEppn, authUserEppn));
