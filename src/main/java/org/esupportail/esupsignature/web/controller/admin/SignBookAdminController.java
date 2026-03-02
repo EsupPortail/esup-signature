@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.js.JsSlimSelect;
 import org.esupportail.esupsignature.dto.view.UserDto;
@@ -45,8 +46,9 @@ import java.util.stream.Collectors;
 public class SignBookAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignBookAdminController.class);
+	private final GlobalProperties globalProperties;
 
-    @ModelAttribute("adminMenu")
+	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
 		return "active";
 	}
@@ -63,14 +65,15 @@ public class SignBookAdminController {
 	private final SignBookRepository signBookRepository;
 	private final TemplateEngine templateEngine;
 
-    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine) {
+    public SignBookAdminController(FormService formService, UserService userService, WorkflowService workflowService, SignBookService signBookService, SignBookRepository signBookRepository, TemplateEngine templateEngine, GlobalProperties globalProperties) {
         this.formService = formService;
         this.userService = userService;
         this.workflowService = workflowService;
         this.signBookService = signBookService;
         this.signBookRepository = signBookRepository;
         this.templateEngine = templateEngine;
-    }
+		this.globalProperties = globalProperties;
+	}
 
 	@GetMapping
 	public String list(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -79,7 +82,7 @@ public class SignBookAdminController {
 					   @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
 					   @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 					   @RequestParam(value = "dateFilter", required = false) String dateFilter,
-					   @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, Model model) {
+					   @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 15) Pageable pageable, Model model) {
 		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
 			statusFilter = null;
 		}
@@ -92,11 +95,13 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || (docTitleFilter.isEmpty() || docTitleFilter.equals("all"))) {
 			docTitleFilter = "";
 		}
-//		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
-        model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+		if(globalProperties.getInfiniteScrolling()) {
+			model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+		} else {
+			Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+			model.addAttribute("signBooks", signBooks);
+		}
         model.addAttribute("statusFilter", statusFilter);
-//		model.addAttribute("signBooks", signBooks);
-//		model.addAttribute("creators", userService.getAllUsersDto());
 		model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
 		model.addAttribute("statuses", SignRequestStatus.activeValues());
 		model.addAttribute("forms", formService.getAllForms(null, null));
@@ -105,7 +110,6 @@ public class SignBookAdminController {
 		model.addAttribute("creatorFilter", creatorFilter);
 		if(!"%".equals(docTitleFilter)) model.addAttribute("docTitleFilter", docTitleFilter);
 		model.addAttribute("dateFilter", dateFilter);
-//		model.addAttribute("workflowNames", signBookRepository.findAllWorkflowNames());
 		return "admin/signbooks/list";
 	}
 
@@ -134,7 +138,7 @@ public class SignBookAdminController {
 						 @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
 						 @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
 						 @RequestParam(value = "dateFilter", required = false) String dateFilter,
-						 @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
+						 @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 15) Pageable pageable, HttpServletRequest httpServletRequest, Model model) {
 		if(statusFilter != null && (statusFilter.isEmpty() || statusFilter.equals("all"))) {
 			statusFilter = null;
 		}

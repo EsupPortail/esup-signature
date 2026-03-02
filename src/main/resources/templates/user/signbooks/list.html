@@ -186,18 +186,20 @@
                 </tr>
                 </thead>
                 <tbody id="signRequestTable">
-<!--                <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>-->
+                    <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>
                 </tbody>
                 <tfoot>
-                <tr>
+                <tr th:if="${infiniteScrolling}">
                     <td colspan="100%">
-                        <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
+                        <a id="more-sign-request" href="javascript:void(0);">Afficher plus d’éléments</a>
                     </td>
+                </tr>
+                <tr th:unless="${infiniteScrolling}">
+                    <td th:replace="~{fragments/pagination :: pagination}"></td>
                 </tr>
                 </tfoot>
             </table>
             </div>
-            <nav  th:unless="${infiniteScrolling}" th:insert="~{fragments/pagination :: pagination}"></nav>
         </div>
     </div>
 </main>
