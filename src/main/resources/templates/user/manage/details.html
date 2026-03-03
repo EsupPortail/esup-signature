@@ -153,6 +153,13 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <form th:if="${displayNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                                                <button type="submit" class="btn btn-transparent text-dark text-left col-12">
+                                                    <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
                                             <a target="_blank" th:if="${signBook.signRequests.size() == 1}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                                                 th:href="'/user/manage/workflow/' + ${workflow.id} + '/get-last-file/' + ${signBook.signRequests.get(0).id}">
                                                 <i class="fi fi-rr-download pr-2"></i> Télécharger

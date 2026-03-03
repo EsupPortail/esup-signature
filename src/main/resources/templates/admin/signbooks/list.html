@@ -45,7 +45,7 @@
             <div id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2" style="outline: none;">
                 <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                     <table class="table table-light table-borderless table-hover">
-                    <thead class="table-secondary">
+                        <thead class="table-secondary">
                     <tr style="z-index: 2;">
                         <th class="w-20 d-none d-lg-table-cell">
                             <div class="dropdown position-relative">
@@ -127,6 +127,7 @@
                             <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
                                 <option data-placeholder="true"></option>
                                 <option value="all">Tout</option>
+                                <option value="deleted">Supprimé</option>
                                 <th:block th:each="status : ${statuses}">
                                     <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
                                 </th:block>
@@ -136,19 +137,21 @@
                         <th >Actions</th>
                     </tr>
                     </thead>
-                    <tbody id="signRequestTable">
-                    <tr th:replace="~{admin/signbooks/includes/list-elem}"></tr>
-                    </tbody>
+                        <tbody id="signRequestTable">
+                            <tr th:replace="~{admin/signbooks/includes/list-elem}"></tr>
+                        </tbody>
                     <tfoot>
-                    <tr>
-                        <td colspan="100%">
-                            <a id="more-sign-request" href="javascript:void(0);" th:if="${infiniteScrolling}">Afficher plus d’éléments</a>
-                        </td>
-                    </tr>
+                        <tr th:if="${infiniteScrolling}">
+                            <td colspan="100%">
+                                <a id="more-sign-request" href="javascript:void(0);" >Afficher plus d’éléments</a>
+                            </td>
+                        </tr>
+                        <tr th:unless="${infiniteScrolling}">
+                            <td th:replace="~{fragments/pagination :: pagination}"></td>
+                        </tr>
                     </tfoot>
                 </table>
             </div>
-            <nav th:unless="${infiniteScrolling}" th:insert="~{fragments/pagination :: pagination}"></nav>
         </div>
     </div>
 </main>

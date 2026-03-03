@@ -511,12 +511,6 @@ textarea:invalid {
     line-height: inherit !important;
 }
 
-.bootstrap-datetimepicker-widget {
-    background-color: #fff !important;
-    opacity: 1 !important;
-    z-index: 99999999 !important;
-}
-
 .form-label {
     font-weight: bold;
 }

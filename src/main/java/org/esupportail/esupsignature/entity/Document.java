@@ -165,4 +165,8 @@ public class Document {
     public void setTransientInputStream(InputStream transientInputStream) {
         this.transientInputStream = transientInputStream;
     }
+
+    public boolean isPdf() {
+        return contentType.equals("application/pdf");
+    }
 }

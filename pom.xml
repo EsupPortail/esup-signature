@@ -7,12 +7,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.10</version>
+		<version>3.5.11</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.36.24</version>
+	<version>1.36.25-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -242,19 +242,14 @@
 			<version>1.35.3</version>
 		</dependency>
 		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>Eonasdan-bootstrap-datetimepicker</artifactId>
-			<version>4.17.49</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.webjars</groupId>
-					<artifactId>bootstrap</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>momentjs</artifactId>
-					<groupId>org.webjars</groupId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>eonasdan__tempus-dominus</artifactId>
+			<version>6.10.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.webjars.npm</groupId>
+			<artifactId>popperjs__core</artifactId>
+			<version>2.11.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>

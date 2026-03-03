@@ -11,7 +11,10 @@ import java.util.List;
 public interface OtpRepository extends CrudRepository<Otp, Long>  {
 
     Otp findByUrlId(String url);
+
     List<Otp> findBySignBookStatus(SignRequestStatus status);
+
+    List<Otp> findBySignBookDeleted(Boolean deleted);
 
     List<Otp> findByUser(User user);
 

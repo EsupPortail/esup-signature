@@ -122,6 +122,7 @@ public class LiveWorkflowStepService {
         } else {
             liveWorkflowStep.setSignType(step.getSignType());
             liveWorkflowStep.setMinSignLevel(step.getMinSignLevel());
+            liveWorkflowStep.setMaxSignLevel(step.getMaxSignLevel());
         }
         liveWorkflowStep.setRepeatableSignType(step.getRepeatableSignType());
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();

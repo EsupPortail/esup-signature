@@ -45,7 +45,9 @@ export class PdfViewer extends EventFactory {
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
-        this.maxConcurrentRenders = 1;
+        this.maxConcurrentRenders = 5;
+        this.renderedPagesMap = new Map();
+        this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         let self = this;
@@ -231,7 +233,6 @@ export class PdfViewer extends EventFactory {
     }
 
     processRenderQueue() {
-        // OPTIMISATION: Lance les rendus en parallèle (jusqu'à maxConcurrentRenders)
         while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
             const pageNum = this.renderQueue.shift();
             this.activeRenders++;
@@ -243,7 +244,6 @@ export class PdfViewer extends EventFactory {
                     self.renderedPages++;
 
                     if(self.renderQueue.length === 0 && self.activeRenders === 0) {
-                        // Tous les rendus sont finis
                         self.initialOffset = parseInt($("#page_1").offset().top);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
@@ -254,7 +254,6 @@ export class PdfViewer extends EventFactory {
                             self.enableScrollBtn();
                         }
                     } else {
-                        // Lance le prochain rendu dans la queue
                         self.processRenderQueue();
                     }
                 })
@@ -314,7 +313,7 @@ export class PdfViewer extends EventFactory {
                 container.setAttribute("page-num", i);
                 container.className = "drop-shadows pdf-page";
                 container.style.marginBottom = `${10 * this.scale}px`;
-                this.pdfDiv.append(container);
+                this.insertPageAtCorrectPosition(container, i);
             } else {
                 container.innerHTML = "";
                 container.style.marginBottom = `${10 * this.scale}px`;
@@ -363,7 +362,6 @@ export class PdfViewer extends EventFactory {
                 if (canvas) {
                     const context = canvas.getContext('2d');
 
-                    // Utiliser les dimensions du viewport qui gère automatiquement la rotation
                     canvas.width = Math.floor(viewport.width * browserZoom);
                     canvas.height = Math.floor(viewport.height * browserZoom);
                     canvas.style.width = `${Math.floor(viewport.width)}px`;
@@ -434,6 +432,25 @@ export class PdfViewer extends EventFactory {
                 resolve("ok");
             }).catch(reject);
         });
+    }
+
+    insertPageAtCorrectPosition(container, pageNum) {
+        const pdfDivElement = this.pdfDiv[0];
+        const allPages = pdfDivElement.querySelectorAll('.pdf-page');
+
+        let inserted = false;
+        for (let page of allPages) {
+            const currentPageNum = parseInt(page.getAttribute('page-num'));
+            if (currentPageNum > pageNum) {
+                pdfDivElement.insertBefore(container, page);
+                inserted = true;
+                break;
+            }
+        }
+
+        if (!inserted) {
+            pdfDivElement.appendChild(container);
+        }
     }
 
     postRenderAll() {
@@ -637,14 +654,14 @@ export class PdfViewer extends EventFactory {
             let inputField = $('section[data-annotation-id=' + items[i].id + '] > input');
             if (inputField.length) {
                 inputField.addClass("field-type-text");
-                inputField.on('input', function(e) {
+                inputField.on('input', function (e) {
                     clearTimeout(self.timer);
                     self.timer = setTimeout(e => self.fireEvent("change", ['checked']), 500);
                 });
                 inputField.removeAttr("hidden");
-                if(dataField == null) continue;
+                if (dataField == null) continue;
                 this.disableInput(inputField, dataField, items[i].readOnly);
-                if(this.disableAllFields) continue;
+                if (this.disableAllFields) continue;
                 let section = $('section[data-annotation-id=' + items[i].id + ']');
                 inputField.attr('name', inputName);
                 inputField.attr('placeholder', " ");
@@ -707,66 +724,141 @@ export class PdfViewer extends EventFactory {
                     inputField.unbind();
                     inputField.on('click', e => this.fireEvent("change", ['checked']));
                 }
+
                 if (dataField.type === "date") {
                     datePickerIndex--;
-                    inputField.datetimepicker({
-                        format: 'DD/MM/YYYY',
-                        locale: 'fr',
-                        icons: {
-                            time: 'fa fa-time',
-                            date: 'fa fa-calendar',
-                            up: 'fa fa-chevron-up',
-                            down: 'fa fa-chevron-down',
-                            previous: 'fa fa-chevron-left',
-                            next: 'fa fa-chevron-right',
-                            today: 'fa fa-screenshot',
-                            clear: 'fa-solid fa-trash-alt',
-                            close: 'fa fa-check'
+                    const inputElement = inputField[0];
+
+                    const picker = new tempusDominus.TempusDominus(inputElement, {
+                        localization: {
+                            today: 'Aller à aujourd\'hui',
+                            clear: 'Effacer la sélection',
+                            close: 'Fermer le sélecteur',
+                            selectMonth: 'Sélectionner le mois',
+                            previousMonth: 'Mois précédent',
+                            nextMonth: 'Mois suivant',
+                            selectYear: 'Sélectionner l\'année',
+                            previousYear: 'Année précédente',
+                            nextYear: 'Année suivante',
+                            selectDecade: 'Sélectionner la décennie',
+                            previousDecade: 'Décennie précédente',
+                            nextDecade: 'Décennie suivante',
+                            previousCentury: 'Siècle précédent',
+                            nextCentury: 'Siècle suivant',
+                            pickHour: 'Choisir l\'heure',
+                            incrementHour: 'Augmenter l\'heure',
+                            decrementHour: 'Diminuer l\'heure',
+                            pickMinute: 'Choisir les minutes',
+                            incrementMinute: 'Augmenter les minutes',
+                            decrementMinute: 'Diminuer les minutes',
+                            pickSecond: 'Choisir les secondes',
+                            incrementSecond: 'Augmenter les secondes',
+                            decrementSecond: 'Diminuer les secondes',
+                            toggleMeridiem: 'Basculer AM/PM',
+                            selectTime: 'Sélectionner l\'heure',
+                            selectDate: 'Sélectionner la date',
+                            locale: 'fr',
+                            startOfTheWeek: 1,
+                            format: 'dd/MM/yyyy',
+                            toggleAriaLabel: 'Modifier la date',
                         },
-                        toolbarPlacement: 'bottom',
-                        showClear: true,
-                        showClose: true,
-                        keepOpen: true
+                        display: {
+                            icons: {
+                                time: 'fi fi-rr-clock',
+                                date: 'fi fi-rr-calendar-day',
+                                up: 'fi fi-rr-angle-small-up',
+                                down: 'fi fi-rr-angle-small-down',
+                                previous: 'fi fi-rr-angle-small-left',
+                                next: 'fi fi-rr-angle-small-right',
+                                today: 'fi fi-rr-calendar-check',
+                                clear: 'fi fi-rr-empty-set',
+                                close: 'fi fi-rr-check'
+                            },
+                            components: {
+                                calendar: true,
+                                date: true,
+                                month: true,
+                                year: true,
+                                decades: false,
+                                clock: false,
+                                hours: false,
+                                minutes: false,
+                                seconds: false
+                            },
+                            toolbarPlacement: 'bottom',
+                            buttons: {
+                                today: true,
+                                clear: true,
+                                close: true
+                            }
+                        }
                     });
+
                     inputField.on("focus", function () {
                         section.css("z-index", datePickerIndex + 2000);
                     });
                     inputField.on("focusout", function () {
                         section.css("z-index", 4);
                     });
-                    inputField.off('dp.change');
-                    inputField.on('dp.change', e => this.fireEvent("change", ['date']));
+
+                    inputElement.addEventListener('change', (e) => {
+                        this.fireEvent("change", ['date']);
+                    });
                 }
+
                 if (dataField.type === "time") {
                     datePickerIndex--;
-                    inputField.datetimepicker({
-                        format: 'LT',
-                        locale: 'fr',
-                        stepping: 5,
-                        icons: {
-                            time: 'fa fa-time',
-                            date: 'fa fa-calendar',
-                            up: 'fa fa-chevron-up',
-                            down: 'fa fa-chevron-down',
-                            previous: 'fa fa-chevron-left',
-                            next: 'fa fa-chevron-right',
-                            today: 'fa fa-screenshot',
-                            clear: 'fa-solid fa-trash-alt',
-                            close: 'fa fa-check'
+                    const inputElement = inputField[0];
+
+                    const picker = new tempusDominus.TempusDominus(inputElement, {
+                        localization: {
+                            locale: 'fr',
+                            format: 'HH:mm',
                         },
-                        toolbarPlacement: 'bottom',
-                        showClear: true,
-                        showClose: true,
-                        keepOpen: true,
+                        stepping: 5,
+                        display: {
+                            viewMode: 'clock',
+                            icons: {
+                                time: 'fa fa-clock',
+                                date: 'fi fi-rr-calendar-day',
+                                up: 'fa fa-chevron-up',
+                                down: 'fa fa-chevron-down',
+                                previous: 'fa fa-chevron-left',
+                                next: 'fa fa-chevron-right',
+                                today: 'fi fi-rr-calendar-check',
+                                clear: 'fa fa-trash-alt',
+                                close: 'fa fa-check'
+                            },
+                            components: {
+                                calendar: false,
+                                date: false,
+                                month: false,
+                                year: false,
+                                decades: false,
+                                clock: true,
+                                hours: true,
+                                minutes: true,
+                                seconds: false
+                            },
+                            toolbarPlacement: 'bottom',
+                            buttons: {
+                                today: true,
+                                clear: true,
+                                close: true
+                            }
+                        }
                     });
+
                     inputField.on("focus", function () {
                         section.css("z-index", datePickerIndex + 2000);
                     });
                     inputField.on("focusout", function () {
                         section.css("z-index", datePickerIndex);
                     });
-                    inputField.off('dp.change');
-                    inputField.on('dp.change', e => this.fireEvent("change", ['time']));
+
+                    inputElement.addEventListener('change', (e) => {
+                        this.fireEvent("change", ['time']);
+                    });
                 }
             }
 
@@ -982,7 +1074,7 @@ export class PdfViewer extends EventFactory {
             });
             if (warningFields.length > 0) {
                 warningFields.sort((a, b) => a.compareByPage(b))
-                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire";
+                let text = "Certain champs requis n'ont pas été remplis dans ce formulaire<ul>";
                 if (warningFields.length < 2 && warningFields[0].name != null) {
                     if (warningFields[0].description != null && warningFields[0].description !== "") {
                         text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
@@ -994,18 +1086,19 @@ export class PdfViewer extends EventFactory {
                         if (field.description != null && field.description !== "") {
                             text += "<li>" + field.description;
                             if(field.page != null) {
-                                text += " (en page " + field.page + ")";
+                                text += " (en page " + (field.page + 1) + ")";
                             }
                             text +="</li>";
                         } else {
                             text += "<li>" + field.name;
                             if(field.page != null) {
-                                text += " (en page " + field.page + ")";
+                                text += " (en page " + (field.page + 1) + ")";
                             }
                             text +="</li>";
                         }
                     });
                 }
+                text += "</ul>"
                 bootbox.alert(text, function () {
                     let field = $('#' + warningFields[0].name);
                     setTimeout(function () {

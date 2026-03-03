@@ -5,11 +5,11 @@
         Après la validation, vous pourrez télécharger le document
     </p>
     <div th:if="${workflow != null && workflow.workflowSteps.size() > 0}">
-        <p>
+        <h5>
             Le circuit "<span th:text="${workflow.description}"></span>" comporte
             <span th:text="${workflow.workflowSteps.size()}"></span>
             étape<span th:if="${workflow.workflowSteps.size() > 1}">s</span>
-        </p>
+        </h5>
         <ul class="list-group striped-list">
             <th:block th:each="step, iterator : ${workflow.workflowSteps}">
                 <li th:id="${formIdPrefix} + '-' + ${iterator.index}"

@@ -275,8 +275,13 @@
             <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
                 Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
             </div>
-            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace alert alert-success">
-                Le document a bien été signé, vous pouvez le téléchargé
+            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace">
+                <div class=" alert alert-success w-100">
+                    <p>Le document a bien été signé, vous pouvez le télécharger</p>
+                    <a tabindex="1" class="btn btn-lg btn-dark" th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank" title="Télécharger la dernière version du document">
+                        Télécharger la dernière version du document
+                    </a>
+                </div>
             </div>
             <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
                 <h4>La demande de signature a été supprimée</h4>
@@ -339,10 +344,9 @@
                                 étape<span
                                     th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
                             </h5>
-                            <br>
-                            <ul class="list-group">
+                            <ul class="list-group striped-list">
                                 <th:block th:each="step, iterator : ${steps}">
-                                    <li class="list-group-item">
+                                    <li class="list-group-item border-secondary">
                                         <div class="form-group d-inline mb-1">
                                             <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
                                                 th:text="${step.description != null ?  step.description + ' (' : ''}"></span>
@@ -423,41 +427,96 @@
                                 </p>
                             </th:block>
                         </th:block>
+                        <hr>
                         <th:block th:if="${isTempUsers}">
-                            <hr>
-                            <p>Certains destinataires sont externes à l'établissement, merci de saisir/vérifier les informations complémentaires si besoin</p>
+                            <div class="alert alert-primary">
                             <th:block th:each="liveWorkflowStep : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                <th:block th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
                                     <div th:if="${recipient.user.userType.name() == 'external'}">
-                                        <b>Destinataire : <span th:text="${recipient.user.email}"></span></b>
+                                        Destinataire externe: <b th:text="${recipient.user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
                                         <div class="form-inline">
-                                            <input id="emails" type="hidden" name="emails" th:value="${recipient.user.email}">
-                                            <label for="names">Nom</label>
+                                            <div class="d-flex col-12">
+                                            <label for="names" class="col-3">Nom</label>
+                                            <input type="hidden" name="emails" th:value="${recipient.user.email}">
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.name} : ''" required>
-                                            <label for="firstnames">Prénom</label>
+                                            </div>
+                                            <div class="d-flex col-12">
+                                            <label for="firstnames" class="col-3">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${recipient.user.firstname != 'Nouvel utilisateur'} ? ${recipient.user.firstname} : ''" required>
-                                            <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" value="">
+                                            </div>
+                                            <div class="d-flex col-12">
+                                            <label th:for="'phone_' + ${iterator.index}" class="col-3">Mobile</label>
+                                            <input th:id="'phone_' + ${iterator.index}" class="form-control me-2" th:value="${recipient.user.phone}" type="text" name="phones" value="">
+                                            <script th:inline="javascript" >
+                                                $(document).ready(function() {
+                                                    const phoneInput = document.querySelector("#phone_[[${iterator.index}]]");
+                                                    let iti = null;
+                                                    if (phoneInput) {
+                                                        iti = intlTelInput(phoneInput, {
+                                                            validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                                            strictMode: true,
+                                                            separateDialCode: false,
+                                                            nationalMode: true,
+                                                            countryOrder: ["fr"],
+                                                            initialCountry: "auto",
+                                                            geoIpLookup: callback => {
+                                                                callback(navigator.language.split('-')[0]);
+                                                            },
+                                                            customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                                            searchPlaceholder: "Rechercher",
+                                                        });
+                                                    }
+                                                });
+                                            </script>
+                                            </div>
                                         </div>
                                     </div>
                                 </th:block>
                             </th:block>
                             <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}" th:each="workflowStep : ${steps}">
-                                <th:block th:each="user : ${workflowStep.users}">
+                                <th:block th:each="user, iterator : ${workflowStep.users}">
                                     <div th:if="${user.userType.name() == 'external'}">
-                                        <b>Destinataire : <span th:text="${user.email}"></span></b>
+                                        Destinataire externe : <b th:text="${user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
                                         <div class="form-inline">
+                                            <div class="d-flex col-12">
                                             <input id="emails" type="hidden" name="emails" th:value="${user.email}">
                                             <label for="names">Nom</label>
                                             <input id="names" class="form-control me-2" type="text" name="names" th:value="${user.name}" required>
+                                            </div>
+                                            <div class="d-flex col-12">
                                             <label for="firstnames">Prénom</label>
                                             <input id="firstnames" class="form-control me-2" type="text" name="firstnames" th:value="${user.firstname}" required>
-                                            <label for="phones">Mobile</label>
-                                            <input id="phones" class="form-control  me-2" type="text" name="phones" th:value="${user.eppn}" th:required="${globalProperties.smsRequired}">
+                                            </div>
+                                            <div class="d-flex col-12">
+                                            <label th:for="'phone_' + ${iterator.index + 999}">Mobile</label>
+                                            <input th:id="'phone_' + ${iterator.index + 999}" class="form-control me-2" type="text" name="phones" th:value="${user.phone}">
+                                            <script th:inline="javascript" >
+                                                $(document).ready(function() {
+                                                    const phoneInput = document.querySelector("#phone_[[${iterator.index + 999}]]");
+                                                    let iti = null;
+                                                    if (phoneInput) {
+                                                        iti = intlTelInput(phoneInput, {
+                                                            validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                                            strictMode: true,
+                                                            separateDialCode: false,
+                                                            nationalMode: true,
+                                                            countryOrder: ["fr"],
+                                                            initialCountry: "auto",
+                                                            geoIpLookup: callback => {
+                                                                callback(navigator.language.split('-')[0]);
+                                                            },
+                                                            customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                                            searchPlaceholder: "Rechercher",
+                                                        });
+                                                    }
+                                                });
+                                            </script>
+                                            </div>
                                         </div>
                                     </div>
                                 </th:block>
                             </th:block>
+                            </div>
                         </th:block>
                         <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
                         <div th:if="${target != null && target.targetUri != null && target.targetUri.contains('mailto:')}" class="form-group mb-3">
@@ -602,7 +661,7 @@
                     <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
                     <form id="send-sign-form" method="post" th:action="'/' + ${urlProfil} + '/signrequests/transfert/' + ${signRequest.id}">
                     <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
-                    <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" multiple="multiple" required="required">
+                    <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" required="required">
                         <option data-placeholder="true"></option>
                     </select>
                     <div class="mt-2 mb-2" id="tempUsers-transfertRecipientsEmails"></div>

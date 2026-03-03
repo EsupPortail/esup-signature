@@ -308,7 +308,7 @@ sign:
     pades-digest-algorithm: SHA256
     pades-signature-level: PAdES_BASELINE_LTA
     password-timeout: 60000
-#    signature-packaging: ENVELOPED
+    signature-packaging: DETACHED
     xades-digest-algorithm: SHA256
     xades-signature-level: XAdES_BASELINE_LTA
     sign-with-expired-certificate: false

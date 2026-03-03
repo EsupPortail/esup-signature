@@ -119,35 +119,35 @@
                         id="changeMode1"><i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline"> Mode annotation</span> <span class="badge rounded-pill bg-dark" th:if="${comments.size() > 0}" th:text="${comments.size()}"></span></button>
             </th:block>
             <div id="signModeBtns" class="d-inline-flex">
-            <button class="d-flex align-items-center btn btn-light btn-outline-dark ms-1 me-1" data-bs-toggle="modal" title="Pièces jointes"
-                    data-bs-target="#attachment"
-                    th:if="${user.userType.name() != 'external' || signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
-                <i class="fi fi-rr-clip"></i> <span class="d-none d-xxxxl-inline"> Pièces jointes </span>
-                <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
-                    th:text="${attachments.size() + signRequest.links.size()}"
-                    class="badge rounded-pill bg-primary"></div>
-            </button>
-            <button class="d-flex align-items-center btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
-                    data-bs-target="#addCommentModal"
-                    th:if="${(signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanEdit == true || user.userType.name() != 'external') && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
-                    >
-                <i class="fi fi-rr-notes"></i> <span class="d-none d-xxxl-inline"> Post-it</span>
-            </button>
-            <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-light btn-outline-dark me-1 d-none d-lg-flex" title="Gérer mes images de signature">
-                <i class="fi fi-rr-drawer-alt"></i> <span class="d-none d-xxxxl-inline"> Mes signatures</span>
-            </button>
-            <form th:if="${displayNotif}"
-                th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
-                <button type="submit" class="d-flex align-items-center btn btn-light btn-outline-dark me-1">
-                    <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxxl-inline"> Relancer</span>
+                <button class="d-flex align-items-center btn btn-light btn-outline-dark ms-1 me-1" data-bs-toggle="modal" title="Pièces jointes"
+                        data-bs-target="#attachment"
+                        th:if="${user.userType.name() != 'external' || signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
+                    <i class="fi fi-rr-clip"></i> <span class="d-none d-xxxxl-inline"> Pièces jointes </span>
+                    <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
+                        th:text="${attachments.size() + signRequest.links.size()}"
+                        class="badge rounded-pill bg-primary"></div>
                 </button>
-            </form>
-            <button th:if="${externalsRecipients != null && externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-light btn-outline-dark me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
-                <i class="fi fi-rr-share"></i>
-            </button>
+                <button class="d-flex align-items-center btn btn-light btn-outline-dark me-1" data-bs-toggle="modal" title="Ajouter un post-it"
+                        data-bs-target="#addCommentModal"
+                        th:if="${(signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanEdit == true || user.userType.name() != 'external') && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+                        >
+                    <i class="fi fi-rr-notes"></i> <span class="d-none d-xxxl-inline"> Post-it</span>
+                </button>
+                <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-light btn-outline-dark me-1 d-none d-lg-flex" title="Gérer mes images de signature">
+                    <i class="fi fi-rr-drawer-alt"></i> <span class="d-none d-xxxxl-inline"> Mes signatures</span>
+                </button>
+                <form th:if="${displayNotif}"
+                    th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                    <button type="submit" class="d-flex align-items-center btn btn-light btn-outline-dark me-1">
+                        <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxxl-inline"> Relancer</span>
+                    </button>
+                </form>
             </div>
         </th:block>
         <div class="border 1 me-2 d-none d-lg-block ms-1" th:if="${user.userType.name() != 'external'}"></div>
+        <button th:if="${user.userType.name() != 'external' && externalsRecipients != null && externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-light btn-outline-dark me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
+            <i class="fi fi-rr-share"></i>
+        </button>
         <a th:if="${isManager}" class="d-flex align-items-center btn btn-light btn-outline-dark d-none d-lg-flex ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
             <i class="fi fi-rr-overview"></i>
         </a>

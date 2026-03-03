@@ -90,7 +90,7 @@ public class ManageController {
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @RequestParam(value = "hided", required = false, defaultValue = "false") Boolean hided,
-                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 10) Pageable pageable, @PathVariable Long id, Model model) {
+                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC) @PageableDefault(size = 15) Pageable pageable, @PathVariable Long id, Model model) {
         SignRequestStatus signRequestStatus = null;
         if(StringUtils.hasText(statusFilter) && !statusFilter.equals("all")) {
             signRequestStatus = SignRequestStatus.valueOf(statusFilter);
