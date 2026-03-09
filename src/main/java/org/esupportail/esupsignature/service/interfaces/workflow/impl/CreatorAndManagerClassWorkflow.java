@@ -31,9 +31,23 @@ public class CreatorAndManagerClassWorkflow extends ClassWorkflow implements Mod
         return "Signature du créateur puis du responsable";
     }
 
+    private List<WorkflowStep> workflowSteps;
+
     @Override
     public List<WorkflowStep> getWorkflowSteps() {
-        return generateWorkflowSteps("creator", null);
+        if(this.workflowSteps == null) {
+            try {
+                return generateWorkflowSteps("creator", null);
+            } catch (EsupSignatureUserException e) {
+                return null;
+            }
+        }
+        return this.workflowSteps;
+    }
+
+    @Override
+    public void setWorkflowSteps(List<WorkflowStep> workflowSteps) {
+        this.workflowSteps = workflowSteps;
     }
 
     @Override
@@ -41,7 +55,7 @@ public class CreatorAndManagerClassWorkflow extends ClassWorkflow implements Mod
         List<WorkflowStep> workflowSteps = new ArrayList<>();
         //STEP 1
         WorkflowStep workflowStep1 = new WorkflowStep();
-        workflowStep1.getUsers().add(userService.getCreatorUser());
+        workflowStep1.getUsers().add(userService.getByEppn(userEppn));
         workflowStep1.setDescription("Votre signature");
         workflowStep1.setSignType(SignType.signature);
         workflowSteps.add(workflowStep1);
@@ -49,7 +63,7 @@ public class CreatorAndManagerClassWorkflow extends ClassWorkflow implements Mod
         WorkflowStep workflowStep2 = new WorkflowStep();
         workflowStep2.setSignType(SignType.signature);
         workflowStep2.setDescription("Signature de votre supérieur hiérarchique (présélectionné en fonction de vos précédentes saisies)");
-        workflowStep2.getUsers().add(userService.getGenericUser());
+        workflowStep2.getUsers().add(userService.getByEppn("esupdem@univ-rouen.fr"));
         //à remplacer par l'utilisateur n+1 par ex
         //User userManager = calculManager(userEppn)
         //workflowStep2.getUsers().add(userManager);
