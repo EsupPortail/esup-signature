@@ -154,9 +154,10 @@ public class PreAuthorizeService {
 
     public boolean signRequestRecipient(Long id, String userEppn) {
         if(userEppn != null) {
+            User manager = userService.getByEppn(userEppn);
             SignRequest signRequest = signRequestService.getById(id);
             return (signRequest.getStatus().equals(SignRequestStatus.pending) &&
-                    (signRequestService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
+                    ((signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(manager.getEmail())) || signRequestService.isUserInRecipients(signRequest, userEppn) || signRequest.getCreateBy().getEppn().equals(userEppn)))
                     || (signRequest.getStatus().equals(SignRequestStatus.draft) && signRequest.getCreateBy().getEppn().equals(userEppn));
         }
         return false;

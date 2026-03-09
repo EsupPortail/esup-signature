@@ -332,7 +332,7 @@ public class MailService {
             String htmlContent = templateEngine.process("mail/email-cc.html", ctx);
             mimeMessage.setText(htmlContent, true);
             User creator = signBook.getCreateBy();
-            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature crée par " + creator.getFirstname() + " " + creator.getName());
+            mimeMessage.setSubject("Vous êtes en copie d'une demande de signature créée par " + creator.getFirstname() + " " + creator.getName());
             mimeMessage.setTo(recipientsCCEmails.toArray(String[]::new));
             logger.info("send email cc for " + String.join(";", recipientsCCEmails));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());

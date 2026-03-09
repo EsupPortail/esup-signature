@@ -20,12 +20,13 @@
  */
 package org.esupportail.esupsignature.service.interfaces.fs.smb;
 
-import jcifs.CIFSContext;
-import jcifs.CIFSException;
-import jcifs.config.PropertyConfiguration;
-import jcifs.context.BaseContext;
-import jcifs.smb.*;
+
 import org.apache.chemistry.opencmis.commons.impl.IOUtils;
+import org.codelibs.jcifs.smb.CIFSContext;
+import org.codelibs.jcifs.smb.CIFSException;
+import org.codelibs.jcifs.smb.config.PropertyConfiguration;
+import org.codelibs.jcifs.smb.context.BaseContext;
+import org.codelibs.jcifs.smb.impl.*;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.interfaces.fs.FsAccessService;
 import org.esupportail.esupsignature.service.interfaces.fs.FsFile;
@@ -98,7 +99,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			} catch (SmbException se) {
 				logger.error("connect"+" : "+se);
 			}
-		}
+        }
 	}
 
 	@Override
@@ -179,12 +180,12 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			URI uri = new URI(parentPath);
 			SmbFile newFile;
 			if(uri.getScheme().equals("smb")) {
-				newFile = new SmbFile(parentPath + "/" + title, this.cifsContext);
+				newFile = new SmbFile(parentPath + "/" + title, cifsContext);
 			} else {
 				if (!ppath.isEmpty() && !ppath.endsWith("/")) {
 					ppath = ppath + "/";
 				}
-				newFile = new SmbFile(root.getPath() + ppath + title, this.cifsContext);
+				newFile = new SmbFile(root.getPath() + ppath + title, cifsContext);
 			}
 			open();
 			logger.info("newFile : " + newFile);
@@ -196,7 +197,6 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 				logger.info("file " + title + " created");
 			}
 			String path = newFile.getPath();
-			newFile.close();
 			return path;
 		} catch (SmbException e) {
 			logger.info("can't create file because of SmbException : " + e.getMessage());
@@ -213,9 +213,8 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 		try {
 			SmbFile file = cd(path);
 			if (file.exists()) {
-				SmbFile newFile = new SmbFile(file.getParent() + title, this.cifsContext);
+				SmbFile newFile = new SmbFile(file.getParent() + title, cifsContext);
 				file.renameTo(newFile);
-				newFile.close();
 				return true;
 			}
 		} catch (SmbException e) {
@@ -234,7 +233,7 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			SmbFile folder = cd(dir);
 			for (String fileToCopyPath : filesToCopy) {
 				SmbFile fileToCopy = cd(fileToCopyPath);
-				SmbFile newFile = new SmbFile(folder.getCanonicalPath() + fileToCopy.getName(), this.cifsContext);
+				SmbFile newFile = new SmbFile(folder.getCanonicalPath() + fileToCopy.getName(), cifsContext);
 				if (copy) {
 					fileToCopy.copyTo(newFile);
 				} else {
@@ -298,11 +297,11 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 			URI uri = new URI(dir.replace(" ", "%20")).normalize();
 			filename = filename.replace("\n", "").replace("\r", "");
 			if(uri.getScheme().equals("smb")) {
-				newFile = new SmbFile(dir + "/" + filename, this.cifsContext);
+				newFile = new SmbFile(dir + "/" + filename, cifsContext);
 			}
 			else {
 				SmbFile folder = cd(dir);
-				newFile = new SmbFile(folder.getCanonicalPath() + filename, this.cifsContext);
+				newFile = new SmbFile(folder.getCanonicalPath() + filename, cifsContext);
 			}
 			if (newFile.exists()) {
 				switch (uploadOption) {
@@ -313,10 +312,10 @@ public class SmbAccessImpl extends FsAccessService implements DisposableBean {
 					break;
 				case RENAME_NEW :
 					newFile.close();
-					newFile = new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-new-"), this.cifsContext);
+					newFile = new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-new-"), cifsContext);
 					break;
 				case RENAME_OLD :
-					newFile.renameTo(new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-old-"), this.cifsContext));
+					newFile.renameTo(new SmbFile(newFile.getParent() + this.getUniqueFilename(filename, "-old-"), cifsContext));
 					break;
 				}
 			}
