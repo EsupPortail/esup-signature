@@ -1132,6 +1132,7 @@ export class SignRequestParams extends EventFactory {
                     self.#refreshDate();
                 }, 1000);
                 this.#addTextArea();
+                this.changeSignImage(0);
             } else {
                 this.divExtra.removeClass("d-none");
             }
