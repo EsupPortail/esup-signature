@@ -137,7 +137,7 @@ public class WorkflowService {
             try {
                 ClassWorkflow classWorkflow = (ClassWorkflow) getWorkflowByClassName(workflow.getName());
                 if (classWorkflow != null) {
-                    List<WorkflowStep> generatedWorkflowSteps = classWorkflow.generateWorkflowSteps("system", null);
+                    List<WorkflowStep> generatedWorkflowSteps = classWorkflow.getWorkflowSteps();
                     int i = 0;
                     for (WorkflowStep generatedWorkflowStep : generatedWorkflowSteps) {
                         if (workflow.getWorkflowSteps().size() > i) {
@@ -353,13 +353,16 @@ public class WorkflowService {
             if(workflow.getId() != null) {
                 modelWorkflow = getById(workflow.getId());
             }
+            List<WorkflowStep> workflowSteps;
             if (modelWorkflow.getFromCode()) {
                 modelWorkflow = getWorkflowByClassName(workflow.getName());
                 modelWorkflow.setId(workflow.getId());
-                modelWorkflow.setWorkflowSteps(((ClassWorkflow) modelWorkflow).generateWorkflowSteps(userEppn, steps));
+                workflowSteps = ((ClassWorkflow) modelWorkflow).generateWorkflowSteps(userEppn, steps);
+            } else {
+                workflowSteps = modelWorkflow.getWorkflowSteps();
             }
             int stepNumber = 1;
-            for (WorkflowStep workflowStep : modelWorkflow.getWorkflowSteps()) {
+            for (WorkflowStep workflowStep : workflowSteps) {
                 entityManager.detach(workflowStep);
                 replaceStepSystemUsers(userEppn, workflowStep);
                 if(!computeForDisplay) {
@@ -825,7 +828,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps) throws EsupSignatureException {
+    public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
         logger.debug("importing workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
         Workflow dataBaseWorkflow;
         if(BooleanUtils.isTrue(workflow.getFromCode())) {
@@ -833,8 +836,16 @@ public class WorkflowService {
         } else {
             dataBaseWorkflow = getById(workflow.getId());
         }
+        List<WorkflowStep> workflowSteps;
+        if (workflow.getFromCode()) {
+            workflow = getWorkflowByClassName(workflow.getName());
+            workflow.setId(workflow.getId());
+            workflowSteps = ((ClassWorkflow) workflow).generateWorkflowSteps(userEppn, steps);
+        } else {
+            workflowSteps = workflow.getWorkflowSteps();
+        }
         int i = 0;
-        for (WorkflowStep workflowStep : workflow.getWorkflowSteps()) {
+        for (WorkflowStep workflowStep : workflowSteps) {
             WorkflowStepDto step = new WorkflowStepDto();
             int finalI = i + 1;
             Optional<WorkflowStepDto> optionalStep = steps.stream().filter(s -> s.getStepNumber() == finalI).findFirst();

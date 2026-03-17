@@ -1,6 +1,6 @@
-<ConstraintsParameters Name="QES AdESQC TL based" xmlns="http://dss.esig.europa.eu/validation/policy">
-    <Description>Validates electronic signatures and indicates whether they are Advanced electronic Signatures (AdES), AdES supported by a Qualified Certificate (AdES/QC) or a
-        Qualified electronic Signature (QES). All certificates and their related chains supporting the signatures are validated against the EU Member State Trusted Lists (this includes
+<ConstraintsParameters Name="QES AES/QC AES TL based" xmlns="http://dss.esig.europa.eu/validation/policy">
+    <Description>Validates electronic signatures and indicates whether they are advanced electronic signatures (AES), AES supported by a qualified certificate (AES/QC) or a
+        qualified electronic signature (QES). All certificates and their related chains supporting the signatures are validated against the EU Member State Trusted Lists (this includes
         signer's certificate and certificates used to validate certificate validity status services - CRLs, OCSP, and time-stamps).
     </Description>
     <ContainerConstraints>
@@ -20,6 +20,7 @@
         </AcceptableMimeTypeFileContent>
         <ManifestFilePresent Level="FAIL" />
         <SignedFilesPresent Level="FAIL" />
+        <FilenameAdherence Level="WARN" />
         <AllFilesSigned Level="WARN" />
     </ContainerConstraints>
     <PDFAConstraints>
@@ -64,16 +65,16 @@
             <FieldMDP Level="WARN" />
             <SigFieldLock Level="WARN" />
             <UndefinedChanges Level="WARN" />
-            <!-- 			<TrustServiceTypeIdentifier Level="WARN"> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
-            <!-- 			</TrustServiceTypeIdentifier> -->
-            <!-- 			<TrustServiceStatus Level="FAIL"> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/undersupervision</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/accredited</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/supervisionincessation</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn</Id> -->
-            <!-- 			</TrustServiceStatus> -->
+            <!--			<TrustServiceTypeIdentifier Level="WARN"> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
+            <!--			</TrustServiceTypeIdentifier> -->
+            <!--			<TrustServiceStatus Level="FAIL"> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/undersupervision</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/accredited</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/supervisionincessation</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn</Id> -->
+            <!--			</TrustServiceStatus> -->
             <SigningCertificate>
                 <Recognition Level="FAIL" />
                 <Signature Level="FAIL" />
@@ -96,6 +97,7 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
                 <NoRevAvail Level="WARN" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
@@ -121,9 +123,9 @@
                 <NotSelfSigned Level="WARN" />
                 <!--				<QcCompliance Level="WARN" /> -->
                 <!--				<QcSSCD Level="WARN" /> -->
-                <!-- 				<QcLegislationCountryCodes Level="WARN" /> -->
-                <!-- 				<IssuedToNaturalPerson Level="INFORM" /> -->
-                <!-- 				<IssuedToLegalPerson Level="INFORM" /> -->
+                <!--				<QcLegislationCountryCodes Level="WARN" /> -->
+                <!--				<IssuedToNaturalPerson Level="INFORM" /> -->
+                <!--				<IssuedToLegalPerson Level="INFORM" /> -->
                 <UsePseudonym Level="INFORM" />
                 <Cryptographic />
             </SigningCertificate>
@@ -142,6 +144,8 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
+                <SubjectKeyIdentifierPresent Level="FAIL" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -176,21 +180,26 @@
             <IssuerSerialMatch Level="WARN" />
             <KeyIdentifierMatch Level="WARN" />
             <SigningTime Level="FAIL" />
+            <SigningTimeInCertRange Level="FAIL" />
+            <!--			<ContentType Level="FAIL">-->
+            <!--				<Id>1.2.840.113549.1.7.1</Id>-->
+            <!--			</ContentType>-->
+            <!--			<ContentHints Level="FAIL">-->
+            <!--				<Id>*</Id>-->
+            <!--			</ContentHints>-->
+            <!--			<CommitmentTypeIndication Level="FAIL">-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.1</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.4</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.5</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.6</Id>-->
+            <!--			</CommitmentTypeIndication>-->
+            <!--			<SignerLocation Level="FAIL" />-->
+            <!--			<ContentTimeStamp Level="FAIL" />-->
             <MessageDigestOrSignedPropertiesPresent Level="FAIL" />
             <EllipticCurveKeySize Level="WARN" />
-            <!--		<ContentType Level="FAIL" value="1.2.840.113549.1.7.1" />
-                        <ContentHints Level="FAIL" value="*" />
-                        <CommitmentTypeIndication Level="FAIL">
-                            <Id>1.2.840.113549.1.9.16.6.1</Id>
-                            <Id>1.2.840.113549.1.9.16.6.4</Id>
-                            <Id>1.2.840.113549.1.9.16.6.5</Id>
-                            <Id>1.2.840.113549.1.9.16.6.6</Id>
-                        </CommitmentTypeIndication>
-                        <SignerLocation Level="FAIL" />
-                        <ContentTimeStamp Level="FAIL" /> -->
         </SignedAttributes>
         <UnsignedAttributes>
-            <!--		<CounterSignature Level="IGNORE" /> check presence -->
+            <!--			<CounterSignature Level="IGNORE" /> check presence -->
         </UnsignedAttributes>
     </SignatureConstraints>
     <CounterSignatureConstraints>
@@ -205,16 +214,16 @@
             <SignatureIntact Level="FAIL" />
             <SignatureDuplicated Level="FAIL" />
             <ProspectiveCertificateChain Level="FAIL" />
-            <!-- 			<TrustServiceTypeIdentifier Level="WARN"> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
-            <!-- 			</TrustServiceTypeIdentifier> -->
-            <!-- 			<TrustServiceStatus Level="FAIL"> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/undersupervision</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/accredited</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/supervisionincessation</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted</Id> -->
-            <!-- 				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn</Id> -->
-            <!-- 			</TrustServiceStatus> -->
+            <!--			<TrustServiceTypeIdentifier Level="WARN"> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/Svctype/CA/QC</Id> -->
+            <!--			</TrustServiceTypeIdentifier> -->
+            <!--			<TrustServiceStatus Level="FAIL"> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/undersupervision</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/accredited</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/supervisionincessation</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/granted</Id> -->
+            <!--				<Id>http://uri.etsi.org/TrstSvc/TrustedList/Svcstatus/withdrawn</Id> -->
+            <!--			</TrustServiceStatus> -->
             <SigningCertificate>
                 <Recognition Level="FAIL" />
                 <Signature Level="FAIL" />
@@ -237,6 +246,7 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
                 <NoRevAvail Level="WARN" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
@@ -281,6 +291,8 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
+                <SubjectKeyIdentifierPresent Level="FAIL" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -315,18 +327,23 @@
             <IssuerSerialMatch Level="WARN" />
             <KeyIdentifierMatch Level="WARN" />
             <SigningTime Level="FAIL" />
+            <SigningTimeInCertRange Level="FAIL" />
+            <!--			<ContentType Level="FAIL">-->
+            <!--				<Id>1.2.840.113549.1.7.1</Id>-->
+            <!--			</ContentType>-->
+            <!--			<ContentHints Level="FAIL">-->
+            <!--				<Id>*</Id>-->
+            <!--			</ContentHints>-->
+            <!--			<CommitmentTypeIndication Level="FAIL">-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.1</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.4</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.5</Id>-->
+            <!--				<Id>1.2.840.113549.1.9.16.6.6</Id>-->
+            <!--			</CommitmentTypeIndication>-->
+            <!--			<SignerLocation Level="FAIL" />-->
+            <!--			<ContentTimeStamp Level="FAIL" />-->
             <MessageDigestOrSignedPropertiesPresent Level="FAIL" />
             <EllipticCurveKeySize Level="WARN" />
-            <!--		<ContentType Level="FAIL" value="1.2.840.113549.1.7.1" />
-                        <ContentHints Level="FAIL" value="*" />
-                        <CommitmentTypeIndication Level="FAIL">
-                            <Id>1.2.840.113549.1.9.16.6.1</Id>
-                            <Id>1.2.840.113549.1.9.16.6.4</Id>
-                            <Id>1.2.840.113549.1.9.16.6.5</Id>
-                            <Id>1.2.840.113549.1.9.16.6.6</Id>
-                        </CommitmentTypeIndication>
-                        <SignerLocation Level="FAIL" />
-                        <ContentTimeStamp Level="FAIL" /> -->
         </SignedAttributes>
     </CounterSignatureConstraints>
     <Timestamp>
@@ -368,6 +385,7 @@
                 </ExtendedKeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -405,6 +423,8 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
+                <SubjectKeyIdentifierPresent Level="FAIL" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -443,6 +463,11 @@
     </Timestamp>
     <Revocation>
         <UnknownStatus Level="FAIL" />
+        <ThisUpdatePresent Level="FAIL" />
+        <RevocationIssuerKnown Level="FAIL" />
+        <RevocationIssuerValidAtProductionTime Level="FAIL" />
+        <RevocationAfterCertificateIssuance Level="FAIL" />
+        <RevocationHasInformationAboutCertificate Level="FAIL" />
         <OCSPResponderIdMatch Level="FAIL" />
         <SelfIssuedOCSP Level="WARN" />
         <BasicSignatureConstraints>
@@ -466,6 +491,7 @@
                 <RevocationFreshness Level="IGNORE" Unit="DAYS" Value="0" />
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -500,6 +526,8 @@
                 </KeyUsage>
                 <PolicyTree Level="WARN" />
                 <NameConstraints Level="WARN" />
+                <AuthorityKeyIdentifierPresent Level="WARN" />
+                <SubjectKeyIdentifierPresent Level="FAIL" />
                 <SupportedCriticalExtensions Level="WARN">
                     <Id>2.5.29.15</Id> <!-- keyUsage -->
                     <Id>2.5.29.32</Id> <!-- certificatePolicies -->
@@ -542,7 +570,7 @@
             <Algo>DSA</Algo>
             <Algo>ECDSA</Algo>
             <Algo>PLAIN-ECDSA</Algo>
-            <!-- 		<Algo>EdDSA</Algo> 				Not referenced in ETSI/SOGIS -->
+            <!--			<Algo>EdDSA</Algo> 				Not referenced in ETSI/SOGIS -->
         </AcceptableEncryptionAlgo>
         <MiniPublicKeySize>
             <Algo Size="1024">DSA</Algo>
@@ -567,7 +595,7 @@
             <Algo>RIPEMD160</Algo>
             <Algo>WHIRLPOOL</Algo>
         </AcceptableDigestAlgo>
-        <AlgoExpirationDate Level="FAIL" Format="yyyy-MM-dd" UpdateDate="2025-01-01" LevelAfterUpdate="WARN">
+        <AlgoExpirationDate Level="FAIL" Format="yyyy-MM-dd" UpdateDate="2024-10-13" LevelAfterUpdate="WARN">
             <!-- Digest algorithms -->
             <Algo Date="2004-08-01">MD5</Algo> <!-- ETSI TS 102 176-1 (Historical) V2.1.1 -->
             <Algo Date="2012-08-01">SHA1</Algo> <!-- ETSI TS 119 312 v1.5.1 -->
@@ -618,5 +646,6 @@
             <Id>5</Id>
             <Id>6</Id>
         </TLVersion>
+        <TLStructure Level="WARN" />
     </eIDAS>
 </ConstraintsParameters>

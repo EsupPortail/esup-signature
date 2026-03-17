@@ -38,12 +38,12 @@
                 </ul>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">
+        <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             <i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span>
         </td>
         <td th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signBook.signRequests.size() > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
-                <button th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="max-width: 200px; overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm multi-doc-font dropdown-toggle" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
+                <button th:classappend="${signRequest.viewedBy.contains(user)} ? '' : 'fw-bold'" th:if="${signRequest.originalDocuments.size() > 0}" th:title="${signBook.subject}" style="overflow: clip;" onclick="event.stopPropagation();" class="btn btn-sm dropdown-toggle w-100 text-start p-0 border-0" type="button" th:id="'dropdownFilesButton-' + ${signBook.id}" data-bs-toggle="dropdown">
                     <i class="fi fi-rr-folder-open"></i>
                     <span th:if="${signBook.subject == signRequest.originalDocuments.get(0).getFileName()}" th:text="${signRequest.getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
                     <span th:if="${signBook.subject != signRequest.originalDocuments.get(0).getFileName()}" th:text="${signBook.subject}"></span>

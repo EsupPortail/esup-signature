@@ -305,23 +305,26 @@ export class SignRequestParams extends EventFactory {
         this.border = $("#borders_" + this.id);
         this.tools = $("#crossTools_" + this.id);
         this.canvas = $("#canvas_" + this.id);
-        this.signScale=1;
+        this.signScale=2;
         this.originalWidth = 300;
         this.originalHeight = 75;
         this.signWidth = 300;
         this.signHeight = 150;
         this.cross.css("width", this.originalWidth + "px");
         this.cross.css("height", this.originalHeight + "px");
+        this.cross.css('background-position', "bottom");
         this.#restoreFromFavorite();
         let img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[0];
         this.canvas.css("background-image", "url('" + img + "')");
-        this.canvas.css('background-size', 300);
+        this.canvas.css('background-size', 200);
         this.canvas.css('background-repeat', "no-repeat");
         if(this.text != null) {
             this.textareaExtra.attr("readonly", true);
             this.textareaExtra.attr("disabled", true);
         }
         this.#refreshExtraDiv();
+        this.extraOnTop = !this.extraOnTop;
+        this.#toggleExtraOnTop();
     }
 
     #initSpot() {
@@ -461,7 +464,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #disableCanvas() {
-        this.cross.draggable("enable");
+        if(this.signType != null) {
+            this.cross.draggable("enable");
+        }
         this.canvas.hide();
         if(this.userSignaturePad != null) {
             this.userSignaturePad.signImageBase64 = null;
@@ -1132,6 +1137,7 @@ export class SignRequestParams extends EventFactory {
                     self.#refreshDate();
                 }, 1000);
                 this.#addTextArea();
+                this.changeSignImage(0);
             } else {
                 this.divExtra.removeClass("d-none");
             }
@@ -1153,8 +1159,6 @@ export class SignRequestParams extends EventFactory {
             if(this.divExtra != null) {
                 this.divExtra.addClass("d-none");
             }
-            // $("#extraTools_" + this.id).addClass("d-none");
-            // $("#crossTools_" + this.id).css("top", "-45px");
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
         }
@@ -1195,9 +1199,12 @@ export class SignRequestParams extends EventFactory {
                 $("#signExtraOnTop_" + this.id).addClass("btn-outline-dark");
                 $("#signExtraOnTop_" + this.id).children().next().text("Au dessus");
                 if(this.isLight) {
-                    this.#initLight();
                     this.canvas.css("top", "");
-
+                    this.cross.css("background-position", "center bottom");
+                    this.signScale=2;
+                    this.cross.css("width", 400 + "px");
+                    this.cross.css("height", this.signHeight + "px");
+                    // this.cross.css("height", 150 + "px");
                 }
             } else {
                 if(this.addWatermark) {
@@ -1223,22 +1230,28 @@ export class SignRequestParams extends EventFactory {
                 } else {
                     this.cross.css("width", 400 * this.currentScale + "px");
                     this.cross.css("height", 100 * this.currentScale + "px");
+                    this.cross.css("background-position", "center");
                 }
                 this.divExtra.addClass("div-extra-right");
                 this.divExtra.removeClass("div-extra-top");
                 if(this.isLight) {
-                    this.cross.css("width", 600 + "px");
-                    this.cross.css("height", 150 + "px");
-                    this.canvas.css("background-size", 300 + "px");
-                    // this.canvas.css("width", 200 + "px");
+                    this.signHeight = parseInt(this.cross.css("height"));
+                    this.canvas.css("top", "");
+                    this.cross.css("background-position", "center left");
+                    this.cross.css("width", 800 + "px");
+                    this.cross.css("height", 200 + "px");
+                    this.canvas.css("background-size", 200 + "px");
                     this.canvas.css("top", 0);
+                    this.signScale=2;
                 }
             }
             if(!this.firstLaunch && !this.isShare) {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
-        this.#refreshAllPagesSigns();
+        if(!this.isLight) {
+            this.#refreshAllPagesSigns();
+        }
     }
 
     #refreshDate() {

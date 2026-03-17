@@ -359,6 +359,8 @@ public class GlobalProperties {
      */
     private Boolean enableHelp = true;
 
+    private Boolean enableTransfertForUsers = true;
+
     /*
      * Email de test remplaçant les destinataires toutes les notifications
      */
@@ -953,5 +955,14 @@ public class GlobalProperties {
 
     public void setNbSignOtpTries(int nbSignOtpTries) {
         this.nbSignOtpTries = nbSignOtpTries;
+    }
+
+    public Boolean getEnableTransfertForUsers() {
+        if(enableTransfertForUsers == null) { return true; }
+        return enableTransfertForUsers;
+    }
+
+    public void setEnableTransfertForUsers(Boolean enableTransfertForUsers) {
+        this.enableTransfertForUsers = enableTransfertForUsers;
     }
 }

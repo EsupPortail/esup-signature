@@ -171,7 +171,9 @@ export class SignPosition extends EventFactory {
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop));
             }
             if(signImageNumber !== 999999) {
-                this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                if(this.signType !== "visa") {
+                    this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                }
             }
         } else {
             if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
