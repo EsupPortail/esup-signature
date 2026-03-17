@@ -171,10 +171,7 @@ public class UpgradeService {
         logger.info("#### Starting update end dates of signBooks ####");
         List<SignBook> signBooks = signBookRepository.findAll(Pageable.unpaged()).getContent();
         for(SignBook signBook : signBooks.stream().filter(signBook -> signBook.getEndDate() == null).toList()) {
-            if((signBook.getStatus().equals(SignRequestStatus.completed)
-                    || signBook.getStatus().equals(SignRequestStatus.exported)
-                    || signBook.getStatus().equals(SignRequestStatus.refused)
-                    || signBook.getStatus().equals(SignRequestStatus.signed)
+            if((signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported) || signBook.getStatus().equals(SignRequestStatus.refused) || signBook.getStatus().equals(SignRequestStatus.signed)
                     || signBook.getDeleted())) {
                 List<Action> actions = signBook.getSignRequests().stream().map(SignRequest::getRecipientHasSigned).map(Map::values).flatMap(Collection::stream).filter(action -> action.getDate() != null).sorted(Comparator.comparing(Action::getDate).reversed()).collect(Collectors.toList());
                 if(!actions.isEmpty()) {
