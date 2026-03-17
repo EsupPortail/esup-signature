@@ -905,7 +905,7 @@ public class SignRequestService {
 		} else {
 			signBookRepository.delete(signBook);
 		}
-		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
 			boolean isNextWorkflow = nextWorkFlowStep(signBook);
 			if(isNextWorkflow) {
 				for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
@@ -1346,11 +1346,11 @@ public class SignRequestService {
 		if(!force && !disposition.equals("inline")
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
 				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
-				&& !signRequest.getStatus().equals(SignRequestStatus.exported)) {
+				) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
 		}
 		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
@@ -1414,9 +1414,8 @@ public class SignRequestService {
 		if(!force
 			&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 			&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-			&& (!signRequest.getStatus().equals(SignRequestStatus.completed)
+			&& (!signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
 			&& !signRequest.getStatus().equals(SignRequestStatus.refused)
-			&& !signRequest.getStatus().equals(SignRequestStatus.exported)
 			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
 			&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned))) {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
@@ -1438,7 +1437,7 @@ public class SignRequestService {
 		Map<InputStream, String> inputStreams = new HashMap<>();
 		String name = "";
 		InputStream inputStream = null;
-		if (signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.refused)) {
+		if (signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported) || signRequest.getStatus().equals(SignRequestStatus.refused)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());
 			if(documents.size() == 1) {
 				name = documents.get(0).getFileName();
@@ -1492,7 +1491,8 @@ public class SignRequestService {
 				.stream()
 				.noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))
 			&&
-				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd()) && !signRequest.getStatus().equals(SignRequestStatus.completed)) {
+				signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
+				&& !(signRequest.getStatus().equals(SignRequestStatus.completed) || signRequest.getStatus().equals(SignRequestStatus.exported))) {
 			throw new EsupSignatureRuntimeException("Téléchargement interdit avant la fin du circuit");
 		}
 		webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
