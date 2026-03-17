@@ -160,7 +160,7 @@
                     <th class="d-none d-xxxl-table-cell" style="min-width:138px">
                         <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
                             <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                Modification 
+                                Terminé le 
                                 <i th:class="${order == null || order.direction.name() == 'ASC'
                                     ? 'fi fi-rr-sort-amount-down'
                                     : 'fi fi-rr-sort-amount-up'}">

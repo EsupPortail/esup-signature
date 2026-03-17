@@ -66,7 +66,7 @@ public class OtpService {
         User extUser = userService.getById(extUserId);
         if(extUser.getUserType().equals(UserType.external) && (!globalProperties.getSmsRequired() || smsService != null)) {
             SignBook signBook = signBookRepository.findById(id).get();
-            if(!signBook.getStatus().equals(SignRequestStatus.pending) && !signBook.getStatus().equals(SignRequestStatus.completed)) {
+            if(!signBook.getStatus().equals(SignRequestStatus.pending) && !signBook.getStatus().equals(SignRequestStatus.completed) && !signBook.getStatus().equals(SignRequestStatus.exported)) {
                 return null;
             }
             Otp otp = new Otp();
