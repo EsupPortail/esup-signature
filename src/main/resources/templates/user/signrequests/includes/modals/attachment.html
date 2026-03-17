@@ -112,7 +112,6 @@
         </div>
     </div>
 </div>
-<!-- Modals pour chaque attachment -->
 <th:block th:each="attachment : ${attachments}">
     <div class="modal fade modal-pdf" th:id="'pdfModal' + ${attachment.id}" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl modal-pdf" role="document">
@@ -122,9 +121,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body modal-pdf">
-                    <iframe style="width: 100%; height: 100%; border: none;"
-                            th:src="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}">
-                    </iframe>
+                    <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                        <iframe style="width: 100%; height: 100%; border: none;"
+                                th:src="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}">
+                        </iframe>
+                    </th:block>
+                    <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                        <div class="alert alert-info">
+                            Aperçu indisponible pour ce format.
+                            <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}"
+                                target="_blank">Télécharger le document</a>
+                        </div>
+                    </th:block>
                 </div>
             </div>
         </div>

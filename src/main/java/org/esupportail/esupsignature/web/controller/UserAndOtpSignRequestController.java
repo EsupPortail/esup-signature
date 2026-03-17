@@ -52,14 +52,13 @@ public class UserAndOtpSignRequestController {
     private final UserService userService;
     private final CertificatService certificatService;
     private final PreAuthorizeService preAuthorizeService;
-    private final WorkflowService workflowService;
+    private final GlobalProperties globalProperties;
     private final SignBookService signBookService;
     private final LogService logService;
     private final AuditTrailService auditTrailService;
-    private final XSLTService xsltService;
     private final SignService signService;
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, SignWithService signWithService, DataService dataService, UserService userService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, WorkflowService workflowService, SignBookService signBookService, LogService logService, AuditTrailService auditTrailService, XSLTService xsltService, SignService signService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, SignWithService signWithService, DataService dataService, UserService userService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, GlobalProperties globalProperties, SignBookService signBookService, LogService logService, AuditTrailService auditTrailService, SignService signService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.signWithService = signWithService;
@@ -67,11 +66,10 @@ public class UserAndOtpSignRequestController {
         this.userService = userService;
         this.certificatService = certificatService;
         this.preAuthorizeService = preAuthorizeService;
-        this.workflowService = workflowService;
+        this.globalProperties = globalProperties;
         this.signBookService = signBookService;
         this.logService = logService;
         this.auditTrailService = auditTrailService;
-        this.xsltService = xsltService;
         this.signService = signService;
     }
 
@@ -432,6 +430,10 @@ public class UserAndOtpSignRequestController {
                            @RequestParam(value = "firstnames", required = false) String firstnames,
                            @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
                            RedirectAttributes redirectAttributes) {
+        if(!globalProperties.getEnableTransfertForUsers()) {
+            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Opération interdite"));
+            return "redirect:/user/signrequests/" + signRequestId;
+        }
         if(keepFollow == null) keepFollow = false;
         try {
             signBookService.transfertSignRequest(signRequestId, authUserEppn, transfertRecipientsEmails, phones, names, firstnames, keepFollow);
