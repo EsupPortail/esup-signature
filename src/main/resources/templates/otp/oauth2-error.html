@@ -11,14 +11,10 @@
                     <div class="error-icon text-danger">
                         <i class="fi fi-rr-octagon-xmark" style="font-size: 6em;"></i>
                     </div>
-
                     <h4>Erreur d'authentification</h4>
-
                     <div class="error-message">
                         <p th:text="${errorMessage}"></p>
                     </div>
-
-                    <!-- Afficher les détails techniques en cas d'erreur serveur -->
                     <div class="error-details" th:if="${oauth2Error}">
                         <details>
                             <summary>Détails techniques</summary>
@@ -36,70 +32,17 @@
                         </details>
                     </div>
 
-                    <div class="error-actions">
-                        <a th:if="${oauth2Error == 'access_denied'}" href="javascript:history.back()" class="btn btn-primary btn-lg">
-                            <i class="fa-solid fa-arrow-left"></i> Réessayer l'authentification
-                        </a>
-                        <a th:if="${oauth2Error == 'invalid_request' || oauth2Error == 'invalid_scope' || oauth2Error == 'invalid_client' || oauth2Error == 'unauthorized_client' || oauth2Error == 'unsupported_response_type' || oauth2Error == 'unsupported_grant_type'}" href="/" class="btn btn-primary btn-lg">
-                            <i class="fa-solid fa-home"></i> Accueil
-                        </a>
-                        <a th:if="${oauth2Error == 'server_error' || oauth2Error == 'temporarily_unavailable'}" href="javascript:history.back()" class="btn btn-primary btn-lg">
-                            <i class="fa-solid fa-arrow-rotate-right"></i> Réessayer
-                        </a>
-                        <a href="/" class="btn btn-secondary btn-lg">
-                            <i class="fa-solid fa-home"></i> Accueil
-                        </a>
-                    </div>
-
                     <div class="error-info">
                         <h5>Que faire ?</h5>
-
-                        <!-- access_denied : problème utilisateur, peut recommencer ou changer de mode -->
+                        <p>L'authentification a échoué. Pour retenter l'authentification, merci de cliquer de nouveau sur le lien fourni par email. En cas de difficulté persistante, veuillez contacter le créateur de la demande (mentionné dans votre premier email) pour obtenir un nouveau lien de signature.</p>
                         <div th:if="${oauth2Error == 'access_denied'}" class="error-advice">
-                            <ul>
-                                <li>Vérifiez que vous vous connectez avec les bonnes identifiants</li>
-                                <li>Assurez-vous que vos données personnelles sont correctes auprès du fournisseur d'identité</li>
-                                <li>Si le problème persiste, essayez un autre mode de connexion</li>
-                                <li>En cas de besoin, contactez le support du fournisseur d'identité pour corriger vos données</li>
-                            </ul>
+                            <p><strong>Conseil :</strong> Vérifiez vos identifiants et assurez-vous que vos données personnelles sont correctes auprès du fournisseur d'identité.</p>
                         </div>
-
-                        <!-- invalid_request, invalid_scope, invalid_client, etc : problème de configuration, affecte tous les utilisateurs -->
                         <div th:if="${oauth2Error == 'invalid_request' || oauth2Error == 'invalid_scope' || oauth2Error == 'invalid_client' || oauth2Error == 'unauthorized_client' || oauth2Error == 'unsupported_response_type' || oauth2Error == 'unsupported_grant_type'}" class="error-advice">
-                            <ul>
-                                <li>Ce mode de connexion est indisponible actuellement</li>
-                                <li>Veuillez essayer un autre mode de connexion si disponible</li>
-                                <li>Contactez le support si aucun autre mode de connexion n'est disponible</li>
-                            </ul>
+                            <p><strong>Conseil :</strong> Ce mode de connexion semble indisponible. Essayez un autre mode de connexion si disponible.</p>
                         </div>
-
-                        <!-- server_error : erreur serveur, peut être temporaire -->
-                        <div th:if="${oauth2Error == 'server_error'}" class="error-advice">
-                            <ul>
-                                <li>Vérifiez votre connexion Internet</li>
-                                <li>Patientez quelques instants et réessayez</li>
-                                <li>Si le problème persiste, essayez un autre mode de connexion</li>
-                                <li>Contactez le support si le problème continue</li>
-                            </ul>
-                        </div>
-
-                        <!-- temporarily_unavailable : indisponibilité temporaire -->
-                        <div th:if="${oauth2Error == 'temporarily_unavailable'}" class="error-advice">
-                            <ul>
-                                <li>Le service est temporairement indisponible</li>
-                                <li>Patientez quelques instants et réessayez</li>
-                                <li>Si le problème persiste, essayez un autre mode de connexion</li>
-                                <li>Contactez le support si le problème continue après plusieurs tentatives</li>
-                            </ul>
-                        </div>
-
-                        <!-- Erreur inconnue -->
-                        <div th:if="${oauth2Error != 'access_denied' && oauth2Error != 'invalid_request' && oauth2Error != 'invalid_scope' && oauth2Error != 'invalid_client' && oauth2Error != 'unauthorized_client' && oauth2Error != 'unsupported_response_type' && oauth2Error != 'unsupported_grant_type' && oauth2Error != 'server_error' && oauth2Error != 'temporarily_unavailable'}" class="error-advice">
-                            <ul>
-                                <li>Vérifiez votre connexion Internet</li>
-                                <li>Réessayez à nouveau</li>
-                                <li>Si le problème persiste, essayez un autre mode de connexion ou contactez le support</li>
-                            </ul>
+                        <div th:if="${oauth2Error == 'server_error' || oauth2Error == 'temporarily_unavailable'}" class="error-advice">
+                            <p><strong>Conseil :</strong> Le service rencontre un problème technique. Patientez quelques instants avant de retenter.</p>
                         </div>
                     </div>
                 </div>
