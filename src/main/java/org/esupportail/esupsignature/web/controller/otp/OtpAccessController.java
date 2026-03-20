@@ -194,6 +194,39 @@ public class OtpAccessController {
         }
     }
 
+    @GetMapping(value = "/oauth2")
+    public String oauth2Error(
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false) String error_description,
+            @RequestParam(required = false) String state,
+            Model model) {
+        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}", error, error_description, state);
+        model.addAttribute("oauth2Error", error);
+        model.addAttribute("oauth2ErrorDescription", error_description);
+        model.addAttribute("oauth2State", state);
+        String errorMessage = mapOAuth2ErrorToMessage(error);
+        model.addAttribute("errorMessage", errorMessage);
+        return "otp/oauth2-error";
+    }
+
+    private String mapOAuth2ErrorToMessage(String error) {
+        if (error == null) {
+            return "Une erreur inconnue s'est produite lors de l'authentification.";
+        }
+        return switch (error) {
+            case "access_denied" -> "Votre authentification n'a pas pu être complétée. Veuillez vérifier vos informations et réessayer, ou choisir un autre mode de connexion.";
+            case "invalid_request" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            case "invalid_scope" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            case "invalid_client" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            case "unauthorized_client" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            case "server_error" -> "Le service d'authentification rencontre un problème technique. Veuillez réessayer ou choisir un autre mode de connexion.";
+            case "temporarily_unavailable" -> "Le service d'authentification est temporairement indisponible. Veuillez réessayer dans quelques instants ou choisir un autre mode de connexion.";
+            case "unsupported_response_type" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            case "unsupported_grant_type" -> "La connexion via ce service d'authentification n'est pas disponible. Veuillez choisir un autre mode de connexion ou contacter le support.";
+            default -> "Une erreur s'est produite lors de l'authentification. Veuillez réessayer ou choisir un autre mode de connexion.";
+        };
+    }
+
     private void authOtp(Model model, HttpServletRequest httpServletRequest, User user) {
         httpServletRequest.getSession().setAttribute("securityServiceName", "sms");
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
