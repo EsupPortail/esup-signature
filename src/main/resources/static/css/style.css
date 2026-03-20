@@ -668,10 +668,6 @@ textarea:placeholder-shown.required-field {
     margin: 0;
 }
 
-.multi-doc-font {
-    font-weight: 300;
-}
-
 .text-disable-selection > [role=presentation] {
     pointer-events: none;
 }

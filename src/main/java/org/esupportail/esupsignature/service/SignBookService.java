@@ -1143,7 +1143,7 @@ public class SignBookService {
             allParams.addAll(ws.getSignRequestParams());
         }
         signRequestService.addDocsToSignRequest(signRequest, scanSignatureFields, orderSignsByName,0, allParams, signRequestParamsDetectionPattern, false, multipartFile);
-        workflowService.importWorkflow(signBook, computedWorkflow, steps);
+        workflowService.importWorkflow(signBook, computedWorkflow, steps, userEppn);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
         Workflow workflow = workflowService.getById(computedWorkflow.getId());
@@ -1381,7 +1381,7 @@ public class SignBookService {
                 workflowService.computeWorkflow(steps, signBook);
             } else {
                 Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), steps, userEppn, false);
-                workflowService.importWorkflow(signBook, workflow, steps);
+                workflowService.importWorkflow(signBook, workflow, steps, userEppn);
                 signRequestService.nextWorkFlowStep(signBook);
             }
 //            dispatchSignRequestParams(signBook);
@@ -1888,7 +1888,7 @@ public class SignBookService {
     @Transactional
     public void addWorkflowToSignBook(SignBook signBook, String authUserEppn, Long workflowSignBookId) throws EsupSignatureRuntimeException, EsupSignatureException {
         Workflow workflow = workflowService.getById(workflowSignBookId);
-        workflowService.importWorkflow(signBook, workflow, new ArrayList<>());
+        workflowService.importWorkflow(signBook, workflow, new ArrayList<>(), authUserEppn);
         dispatchSignRequestParams(signBook);
         signRequestService.nextWorkFlowStep(signBook);
         pendingSignBook(signBook, null, authUserEppn, authUserEppn, false, true);
@@ -2019,7 +2019,7 @@ public class SignBookService {
                             j++;
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
-                            workflowService.importWorkflow(signBook, workflow, new ArrayList<>());
+                            workflowService.importWorkflow(signBook, workflow, new ArrayList<>(), authUser.getEppn());
                             dispatchSignRequestParams(signBook);
                         }
                         fsAccessService.remove(fsFile);

@@ -21,6 +21,7 @@ public class Log {
 
     private String signRequestToken;
 
+    @Column(columnDefinition = "TEXT")
     private String subject;
 
     private String workflowName;

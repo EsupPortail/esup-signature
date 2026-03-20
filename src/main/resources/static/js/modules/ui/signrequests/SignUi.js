@@ -138,26 +138,35 @@ export class SignUi {
                                 }
                             });
                         } else {
-                            bootbox.confirm({
-                                message: "<div class='alert alert-secondary'><h4>Attention, vous allez signer sans appliquer d’image de signature</h4>Vous pouvez continuer mais, dans ce cas, un certificat électronique sera nécessaire.</div>",
-                                buttons: {
-                                    cancel: {
-                                        label: '<i class="fa fa-undo"></i> Ajouter une signature',
-                                        className: 'btn-primary'
+                            if(self.currentSignType === 'signature') {
+                                bootbox.confirm({
+                                    message: "<div class='alert alert-secondary'><h4>Attention, vous allez signer sans appliquer d’image de signature</h4>Vous pouvez continuer mais, dans ce cas, un certificat électronique sera nécessaire.</div>",
+                                    buttons: {
+                                        cancel: {
+                                            label: '<i class="fa fa-undo"></i> Ajouter une signature',
+                                            className: 'btn-primary'
+                                        },
+                                        confirm: {
+                                            label: '<i class="fa fa-arrow-right"></i> Continuer sans visuel',
+                                            className: 'btn-secondary'
+                                        }
                                     },
-                                    confirm: {
-                                        label: '<i class="fa fa-arrow-right"></i> Continuer sans visuel',
-                                        className: 'btn-secondary'
+                                    callback: function (result) {
+                                        if (result) {
+                                            self.checkAttachement();
+                                        } else {
+                                            $("#addSignButton").click();
+                                        }
                                     }
-                                },
-                                callback: function (result) {
-                                    if (result) {
-                                        self.checkAttachement();
-                                    } else {
-                                        $("#addSignButton").click();
+                                });
+                            } else {
+                                bootbox.alert({
+                                    message: "Pour cette étape de visa, vous devez obligatoirement insérer un visuel de signature",
+                                    callback: function (result) {
+                                        $("#addSignButton2").click();
                                     }
-                                }
-                            });
+                                });
+                            }
                             self.checkSignOptions();
                         }
                     } else {

@@ -62,20 +62,20 @@
                     <tbody id="signRequestTable">
                     <tr th:each="httpSession : ${httpSessions}" th:class="${httpSession.userEppn == null && httpSession.originRequestUri != '/login/casentry'} ? 'table-secondary d-none' : ''" th:with="live=${((#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60) < 1}">
                         <!--/*@thymesVar id="httpSession" type="org.springframework.session.MapSession"*/-->
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}">
+                        <td th:unless="${httpSession.userEppn == null}" th:classappend="${live} ? 'bg-success-subtle' : ''">
                             <input type="text" th:value="${httpSession.userEppn}" disabled>
                         </td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:unless="${httpSession.userEppn != null}" >Anonyme</td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:text="${httpSession.sessionId}"></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:text="${#dates.format(httpSession.createdDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:text="${httpSession.remoteIp}"></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:text="${httpSession.originRequestUri}"></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}" th:text="${#dates.format(httpSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}"><span th:if="${httpSession.lastRequest != null}" th:text="${(#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}">
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:unless="${httpSession.userEppn != null}" >Anonyme</td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:text="${httpSession.sessionId}"></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:text="${#dates.format(httpSession.createdDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:text="${httpSession.remoteIp}"></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:text="${httpSession.originRequestUri}"></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.lastRequest != null}" th:text="${#dates.format(httpSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.lastRequest != null}"><span th:text="${(#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''">
                             <i th:class="${httpSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
                         </td>
-                        <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.userEppn != null}">
+                        <td th:classappend="${live} ? 'bg-success-subtle' : ''">
                             <form th:action="'/admin/currentsessions'" th:method="'delete'"
                                 onsubmit="return confirm('Attention,️ cette action va déconnecter l’utilisateur.')">
                                 <input type="hidden" name="sessionId" th:value="${httpSession.sessionId}"/>

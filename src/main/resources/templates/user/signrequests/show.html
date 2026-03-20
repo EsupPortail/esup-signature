@@ -100,7 +100,7 @@
                         <a tabindex="1" id="visaLaunchButton" role="button" class="btn-floating btn-lg bg-success d-none"
                             title="Viser"><i class="fa-solid fa-check fa-2xl"></i></a>
                     </li>
-                    <li th:if="${signable}">
+                    <li th:if="${signable && globalProperties.enableTransfertForUsers}">
                         <button tabindex="1" id="forward-btn" class="btn-floating btn-lg bg-primary d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal" style="border: 0;">
                             <i class="fi fi-rr-refer-arrow fa-2xl text-light" style="margin-top: 0; border: 0;"></i>
                         </button>
@@ -157,7 +157,7 @@
                             title="Télécharger la dernière version des documents dans une archive ZIP">
                             <i class="fi fi-rr-box fa-2xl" style="margin-top: 10px;"></i></a>
                     </li>
-                    <li th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <li th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
                         <a tabindex="1" class="btn-lg btn-floating bg-dark"
                             onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures éléctroniques ne sont présentes que dans la version numérique")'
                             th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
