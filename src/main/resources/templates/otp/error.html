@@ -12,15 +12,15 @@
                         <i class="fi fi-rr-octagon-xmark" style="font-size: 6em;"></i>
                     </div>
 
-                    <h4>Une erreur s'est produite</h4>
+                    <h4>Une erreur s’est produite.</h4>
 
                     <div class="error-message" th:utext="${errorMsg}">
                     </div>
 
                     <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
-                          th:action="@{/logout}"
-                          method="post"
-                          class="error-form">
+                        th:action="@{/logout}"
+                        method="post"
+                        class="error-form">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i class="fa-solid fa-power-off"></i> Déconnexion
                         </button>
