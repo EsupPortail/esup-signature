@@ -24,7 +24,27 @@ public class OAuth2FailureHandler implements AuthenticationFailureHandler {
         } else {
             logger.warn(exception.getMessage(), exception);
         }
-        request.getSession().setAttribute("errorMsg", exception.getMessage());
-        response.sendRedirect("/otp-access/oauth2");
+        String error = request.getParameter("error");
+        String errorDescription = request.getParameter("error_description");
+        String state = request.getParameter("state");
+        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}",
+                error, errorDescription, state);
+        StringBuilder redirectUrl = new StringBuilder("/otp-access/oauth2?");
+        if (error != null && !error.isEmpty()) {
+            redirectUrl.append("error=").append(java.net.URLEncoder.encode(error, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        if (errorDescription != null && !errorDescription.isEmpty()) {
+            if (redirectUrl.toString().contains("=")) {
+                redirectUrl.append("&");
+            }
+            redirectUrl.append("error_description=").append(java.net.URLEncoder.encode(errorDescription, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        if (state != null && !state.isEmpty()) {
+            if (redirectUrl.toString().contains("=")) {
+                redirectUrl.append("&");
+            }
+            redirectUrl.append("state=").append(java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8));
+        }
+        response.sendRedirect(redirectUrl.toString());
     }
 }
