@@ -36,24 +36,16 @@
                         </details>
                     </div>
 
-                    <!-- Actions disponibles selon le contexte -->
                     <div class="error-actions">
-                        <!-- En cas d'erreur utilisateur (access_denied) : permet de recommencer -->
                         <a th:if="${oauth2Error == 'access_denied'}" href="javascript:history.back()" class="btn btn-primary btn-lg">
                             <i class="fa-solid fa-arrow-left"></i> Réessayer l'authentification
                         </a>
-
-                        <!-- En cas d'erreur de configuration/requête : pas de sens de recommencer -->
                         <a th:if="${oauth2Error == 'invalid_request' || oauth2Error == 'invalid_scope' || oauth2Error == 'invalid_client' || oauth2Error == 'unauthorized_client' || oauth2Error == 'unsupported_response_type' || oauth2Error == 'unsupported_grant_type'}" href="/" class="btn btn-primary btn-lg">
                             <i class="fa-solid fa-home"></i> Accueil
                         </a>
-
-                        <!-- En cas d'erreur serveur temporaire : invite à recommencer -->
                         <a th:if="${oauth2Error == 'server_error' || oauth2Error == 'temporarily_unavailable'}" href="javascript:history.back()" class="btn btn-primary btn-lg">
                             <i class="fa-solid fa-arrow-rotate-right"></i> Réessayer
                         </a>
-
-                        <!-- Pour tous les cas : accueil -->
                         <a href="/" class="btn btn-secondary btn-lg">
                             <i class="fa-solid fa-home"></i> Accueil
                         </a>

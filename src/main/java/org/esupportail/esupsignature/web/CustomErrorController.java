@@ -19,6 +19,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Collections;
 import java.util.Map;
@@ -68,6 +69,19 @@ public class CustomErrorController implements ErrorController {
     public ResponseEntity<String> mediaTypeNotAcceptable(HttpServletRequest request) {
         HttpStatus status = customErrorService.getStatus(request);
         return ResponseEntity.status(status).build();
+    }
+
+    @RequestMapping("/oauth2")
+    public String oauth2Error(
+            @RequestParam(required = false) String error,
+            @RequestParam(required = false) String error_description,
+            @RequestParam(required = false) String state) {
+        String redirectUrl = "/otp-access/oauth2?" +
+                "error=" + (error != null ? java.net.URLEncoder.encode(error, java.nio.charset.StandardCharsets.UTF_8) : "") +
+                "&error_description=" + (error_description != null ? java.net.URLEncoder.encode(error_description, java.nio.charset.StandardCharsets.UTF_8) : "") +
+                "&state=" + (state != null ? java.net.URLEncoder.encode(state, java.nio.charset.StandardCharsets.UTF_8) : "");
+
+        return "redirect:" + redirectUrl;
     }
 
     @ExceptionHandler({
