@@ -42,13 +42,16 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -151,30 +154,67 @@ public class CertificatService implements HealthIndicator {
         certificatRepository.delete(certificat);
     }
 
-    public String encryptPassword(String password) {
+    public String decryptPassword(Certificat certificat) {
         try {
-            Key aesKey = new SecretKeySpec(signProperties.getAesKey().getBytes(), "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-            String charSet = "UTF-8";
-            byte[] encrypted = cipher.doFinal(password.getBytes(charSet));
-            return new String(Base64.getEncoder().encode(encrypted));
+            return decryptPasswordGCM(certificat.getPassword());
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.warn(e.getMessage() + " : convert to new encryption method");
+            try {
+                String decrypted = decryptPasswordLegacyECB(certificat.getPassword());
+                String reencrypted = encryptPassword(decrypted);
+                certificat.setPassword(reencrypted);
+                certificatRepository.save(certificat);
+                logger.info("Certificat migré: " + certificat.getId());
+                return decrypted;
+            } catch (Exception e2) {
+                logger.error("Déchiffrement échoué", e2);
+                throw new RuntimeException("Déchiffrement échoué", e2);
+            }
         }
-        return null;
     }
 
-    public String decryptPassword(String key) {
+    private String decryptPasswordLegacyECB(String encodedData) throws Exception {
+        Key aesKey = new SecretKeySpec(signProperties.getAesKey().getBytes(StandardCharsets.UTF_8), "AES");
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        cipher.init(Cipher.DECRYPT_MODE, aesKey);
+        return new String(cipher.doFinal(Base64.getDecoder().decode(encodedData)), StandardCharsets.UTF_8);
+    }
+
+    private String decryptPasswordGCM(String encodedData) throws Exception {
+        Key aes256Key = new SecretKeySpec(signProperties.getAes256Key().getBytes(StandardCharsets.UTF_8), 0, 32, "AES");
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+
+        byte[] data = Base64.getDecoder().decode(encodedData);
+        byte[] iv = Arrays.copyOfRange(data, 0, 12);
+        byte[] ciphertext = Arrays.copyOfRange(data, 12, data.length);
+
+        GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+        cipher.init(Cipher.DECRYPT_MODE, aes256Key, spec);
+
+        return new String(cipher.doFinal(ciphertext), StandardCharsets.UTF_8);
+    }
+
+    public String encryptPassword(String password) {
         try {
-            Key aesKey = new SecretKeySpec(signProperties.getAesKey().getBytes(), "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, aesKey);
-            return new String(cipher.doFinal(Base64.getDecoder().decode(key)));
+            Key aes256Key = new SecretKeySpec(signProperties.getAes256Key().getBytes(StandardCharsets.UTF_8), 0, 32, "AES");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+
+            byte[] iv = new byte[12];
+            SecureRandom.getInstanceStrong().nextBytes(iv);
+            GCMParameterSpec spec = new GCMParameterSpec(128, iv);
+
+            cipher.init(Cipher.ENCRYPT_MODE, aes256Key, spec);
+            byte[] encrypted = cipher.doFinal(password.getBytes(StandardCharsets.UTF_8));
+
+            byte[] result = new byte[iv.length + encrypted.length];
+            System.arraycopy(iv, 0, result, 0, iv.length);
+            System.arraycopy(encrypted, 0, result, iv.length, encrypted.length);
+
+            return Base64.getEncoder().encodeToString(result);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Erreur chiffrement", e);
+            throw new RuntimeException("Chiffrement échoué", e);
         }
-        return null;
     }
 
     public SignatureTokenConnection getSealToken(SealCertificatProperties sealCertificatProperties) {

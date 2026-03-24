@@ -296,6 +296,7 @@ server:
         max-swallow-size: -1
 sign:
     aes-key : "0000000000000000"
+    aes256-key: "00000000000000000000000000000000"
     cades-digest-algorithm: SHA256
     cades-signature-level: CAdES_BASELINE_LTA
 #    container-type: ASiC_E
