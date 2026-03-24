@@ -84,7 +84,7 @@ public class CertificatService implements HealthIndicator {
         this.workflowStepRepository = workflowStepRepository;
         this.appliVersionRepository = appliVersionRepository;
         if(!globalProperties.getSealCertificatProperties().isEmpty()) {
-            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray()), signProperties);
+            this.openSCSignatureToken = new OpenSCSignatureToken(new KeyStore.PasswordProtection(globalProperties.getSealCertificatProperties().get("default").getSealCertificatPin().toCharArray()), signProperties, globalProperties.getSealCertificatProperties().get("default").getSealCertificatDriver());
         } else {
             this.openSCSignatureToken = null;
         }

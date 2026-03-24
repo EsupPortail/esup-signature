@@ -42,7 +42,6 @@ public class SignProperties {
     private String openscCommandGetId = "pkcs11-tool -O --type pubkey";
     private String openscCommandGetKey = "pkcs11-tool -r --id {0} --type cert";
     private String openscCommandCertId;
-    private String openscCommandModule;
     private String openscPathLinux = "";
 
     public SignatureForm getDefaultSignatureForm() {
@@ -170,14 +169,6 @@ public class SignProperties {
 
     public void setOpenscCommandCertId(String openscCommandCertId) {
         this.openscCommandCertId = openscCommandCertId;
-    }
-
-    public String getOpenscCommandModule() {
-        return openscCommandModule;
-    }
-
-    public void setOpenscCommandModule(String openscCommandModule) {
-        this.openscCommandModule = openscCommandModule;
     }
 
     public String getOpenscPathLinux() {
