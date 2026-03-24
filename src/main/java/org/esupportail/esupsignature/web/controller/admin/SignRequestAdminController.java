@@ -36,6 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,6 +105,9 @@ public class SignRequestAdminController {
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
 			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+			if(signRequest.getDocumentsHistory() != null) {
+				model.addAttribute("documentsHistory", Collections.singleton(signRequest.getDocumentsHistory()));
+			}
 			model.addAttribute("isManager", true);
 			return "admin/signrequests/show";
 		} else {

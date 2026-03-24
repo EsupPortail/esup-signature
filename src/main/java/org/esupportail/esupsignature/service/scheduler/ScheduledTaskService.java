@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @EnableScheduling
@@ -238,7 +239,7 @@ public class ScheduledTaskService {
 	}
 
 	@Scheduled(initialDelay = 12000, fixedRate = 300000)
-	public void cleanAllSignRequestDocuments() {
+	public void cleanAllSignRequestDocuments() throws IOException {
 		if(globalProperties.getDocumentsHistoryDelay() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findSignRequestsByCleanDocumentsHistoryDateIsNull();
 			if (!signRequests.isEmpty()) {

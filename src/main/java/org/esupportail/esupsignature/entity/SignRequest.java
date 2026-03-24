@@ -59,6 +59,10 @@ public class SignRequest {
     private List<Document> signedDocuments = new ArrayList<>();
 
     @JsonIgnore
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Document documentsHistory;
+
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
@@ -191,6 +195,14 @@ public class SignRequest {
         this.signedDocuments = signedDocuments;
     }
 
+    public Document getDocumentsHistory() {
+        return documentsHistory;
+    }
+
+    public void setDocumentsHistory(Document documentsHistory) {
+        this.documentsHistory = documentsHistory;
+    }
+
     public List<Document> getAttachments() {
         return attachments;
     }
@@ -301,8 +313,8 @@ public class SignRequest {
         return cleanDocumentsHistoryDate;
     }
 
-    public void setCleanDocumentsHystoryDate(Date cleanDocumentsHystoryDate) {
-        this.cleanDocumentsHistoryDate = cleanDocumentsHystoryDate;
+    public void setCleanDocumentsHistoryDate(Date cleanDocumentsHistoryDate) {
+        this.cleanDocumentsHistoryDate = cleanDocumentsHistoryDate;
     }
 
     @JsonIgnore

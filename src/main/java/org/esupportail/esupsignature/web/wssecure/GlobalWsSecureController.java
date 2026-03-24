@@ -139,6 +139,20 @@ public class GlobalWsSecureController {
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping("/get-documents-history/{id}/documents/{version}")
+    public ResponseEntity<byte[]> downloadDocumentVersion(
+            @PathVariable Long id,
+            @PathVariable int version, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn
+    ) throws IOException, InterruptedException {
+        byte[] pdf = signRequestService.getDocumentFromArchive(id, version);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-Disposition", "attachment; filename=document_v" + version + ".pdf")
+                .body(pdf);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-last-file-inline/{id}")
     public ResponseEntity<Void> getLastFileFromSignRequestInLine(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {

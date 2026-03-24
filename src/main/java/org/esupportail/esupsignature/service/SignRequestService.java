@@ -47,11 +47,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Service dédié à la gestion des demandes de signature (SignRequest).
@@ -1993,17 +1997,135 @@ public class SignRequestService {
 	}
 
 	@Transactional
-	public void cleanSignRequestDocumentsHistory(Long signRequestId) {
+	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
 		if(signRequest.getParentSignBook().getEndDate()
 				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
 		) {
 			logger.info("cleaning signRequest documents history : " + signRequestId);
 			signRequest.getOriginalDocuments().clear();
-			Document lastDoc = signRequest.getLastSignedDocument();
-			Long lastDocId = lastDoc != null ? lastDoc.getId() : null;
-			signRequest.getSignedDocuments().removeIf(d -> !d.getId().equals(lastDocId));
-			signRequest.setCleanDocumentsHystoryDate(new Date());
+			Document lastSignedDocument = signRequest.getLastSignedDocument();
+			if(signRequest.getSignedDocuments().size() > 1) {
+				byte[] archive = createArchiveWithDiffs(
+						signRequest.getSignedDocuments().get(0),
+						signRequest.getSignedDocuments()
+				);
+				Document documentsHistory = documentService.createDocument(
+						new ByteArrayInputStream(archive),
+						userService.getSystemUser(),
+						signRequest.getId() + "_" + lastSignedDocument.getFileName() + ".zip",
+						"application/zip"
+				);
+				documentsHistory.setParentId(signRequest.getParentSignBook().getId());
+				signRequest.setDocumentsHistory(documentsHistory);
+				signRequest.getSignedDocuments().clear();
+				signRequest.getSignedDocuments().add(lastSignedDocument);
+			}
+			signRequest.setCleanDocumentsHistoryDate(new Date());
+		}
+	}
+
+	private byte[] createArchiveWithDiffs(Document original, List<Document> allVersions) throws IOException {
+		ByteArrayOutputStream zipOutput = new ByteArrayOutputStream();
+
+		try (ZipOutputStream zos = new ZipOutputStream(zipOutput)) {
+			zos.putNextEntry(new ZipEntry("original.pdf"));
+			zos.write(original.getInputStream().readAllBytes());
+			zos.closeEntry();
+			byte[] previousContent = original.getInputStream().readAllBytes();
+			for (int i = 1; i < allVersions.size(); i++) {
+				Document currentDoc = allVersions.get(i);
+				byte[] currentContent = currentDoc.getInputStream().readAllBytes();
+				byte[] delta = createDelta(previousContent, currentContent);
+				zos.putNextEntry(new ZipEntry("delta_v" + i + ".xdelta"));
+				zos.write(delta);
+				zos.closeEntry();
+				previousContent = currentContent;
+			}
+		} catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return zipOutput.toByteArray();
+	}
+
+	private byte[] createDelta(byte[] oldContent, byte[] newContent) throws IOException, InterruptedException {
+		File oldFile = File.createTempFile("old_", ".pdf");
+		File newFile = File.createTempFile("new_", ".pdf");
+		File deltaFile = File.createTempFile("delta_", ".xdelta");
+
+		try {
+			Files.write(oldFile.toPath(), oldContent);
+			Files.write(newFile.toPath(), newContent);
+			ProcessBuilder pb = new ProcessBuilder(
+					"xdelta3", "-f", "-e", "-S", "djw",
+					"-s", oldFile.getAbsolutePath(),
+					newFile.getAbsolutePath(),
+					deltaFile.getAbsolutePath()
+			);
+			Process process = pb.start();
+			String errorOutput = new String(process.getErrorStream().readAllBytes());
+			int exitCode = process.waitFor();
+			if (exitCode != 0) {
+				logger.error("xdelta3 error: {}", errorOutput);
+				throw new IOException("xdelta3 failed with exit code: " + exitCode + ", error: " + errorOutput);
+			}
+			return Files.readAllBytes(deltaFile.toPath());
+		} finally {
+			oldFile.delete();
+			newFile.delete();
+			deltaFile.delete();
+		}
+	}
+
+	@Transactional
+	public byte[] getDocumentFromArchive(Long signRequestId, int versionIndex) throws IOException, InterruptedException {
+		SignRequest signRequest = getById(signRequestId);
+		byte[] archive = signRequest.getDocumentsHistory().getInputStream().readAllBytes();
+
+		if (archive == null) {
+			throw new IllegalStateException("No archive found");
+		}
+
+		try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(archive))) {
+			byte[] current = null;
+			ZipEntry entry;
+
+			while ((entry = zis.getNextEntry()) != null) {
+				if (entry.getName().equals("original.pdf")) {
+					current = zis.readAllBytes();
+					if (versionIndex == 0) return current;
+				} else if (entry.getName().equals("delta_v" + versionIndex + ".xdelta")) {
+					byte[] delta = zis.readAllBytes();
+					return applyDelta(current, delta);
+				}
+			}
+		}
+
+		throw new IllegalArgumentException("Version not found: " + versionIndex);
+	}
+
+	private byte[] applyDelta(byte[] oldContent, byte[] delta) throws IOException, InterruptedException {
+		File oldFile = File.createTempFile("old_", ".pdf");
+		File deltaFile = File.createTempFile("delta_", ".xdelta");
+		File newFile = File.createTempFile("new_", ".pdf");
+
+		try {
+			Files.write(oldFile.toPath(), oldContent);
+			Files.write(deltaFile.toPath(), delta);
+			ProcessBuilder pb = new ProcessBuilder(
+					"xdelta3", "-f", "-d", "-S", "djw",
+					"-s", oldFile.getAbsolutePath(),
+					deltaFile.getAbsolutePath(),
+					newFile.getAbsolutePath()
+			);
+			Process process = pb.start();
+			process.waitFor();
+			return Files.readAllBytes(newFile.toPath());
+		} finally {
+			oldFile.delete();
+			deltaFile.delete();
+			newFile.delete();
 		}
 	}
 
