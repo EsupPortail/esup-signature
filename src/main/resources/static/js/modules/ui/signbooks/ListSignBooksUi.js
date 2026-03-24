@@ -46,6 +46,7 @@ export class ListSignBooksUi {
         if(infiniteScrolling) {
             this.detectEndDiv();
         }
+        this.isLoadingPage = false;
     }
 
     initListeners() {
@@ -306,6 +307,8 @@ export class ListSignBooksUi {
     }
 
     addToPage() {
+        if (this.isLoadingPage) return;
+        this.isLoadingPage = true;
         console.info("Add to page");
         let self = this;
         const urlParams = new URLSearchParams(window.location.search);
@@ -318,6 +321,7 @@ export class ListSignBooksUi {
         $("#loader").show();
         $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
             $("#loader").hide();
+            self.isLoadingPage = false;
             if(typeof data === 'string' && data.trim().length > 0) {
                 self.listSignRequestTable.unbind('scroll');
                 self.listSignRequestTable.addClass("wait");
@@ -336,8 +340,8 @@ export class ListSignBooksUi {
                 self.listSignRequestTable.removeClass("wait");
                 self.refreshListeners();
                 self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
-                let displayedElements = $("#signRequestTable tr").length;
             } else {
+                self.listSignRequestTable.unbind('scroll');
                 self.signRequestTable.parent().children('tfoot').remove();
             }
         });
