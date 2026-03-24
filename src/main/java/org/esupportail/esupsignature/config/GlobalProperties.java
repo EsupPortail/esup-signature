@@ -68,9 +68,13 @@ public class GlobalProperties {
      */
     private Integer delayBeforeCleaning = -1;
     /**
-     * Délai de conservation dans la corbeille en jours (-1 non actif)
+     * Délai de conservation dans la corbeille en jours (-1 conservation infinie)
      */
     private Integer trashKeepDelay = -1;
+    /**
+     * Durée de conservation des documents originaux et des documents intermediates (-1 conservation infinie)
+     */
+    private Integer documentsHistoryDelay= -1;
     /**
      * Activer la fonction Switch User pour les administrateurs
      */
@@ -504,6 +508,14 @@ public class GlobalProperties {
 
     public void setTrashKeepDelay(Integer trashKeepDelay) {
         this.trashKeepDelay = trashKeepDelay;
+    }
+
+    public Integer getDocumentsHistoryDelay() {
+        return documentsHistoryDelay;
+    }
+
+    public void setDocumentsHistoryDelay(Integer documentsHistoryDelay) {
+        this.documentsHistoryDelay = documentsHistoryDelay;
     }
 
     public Boolean getEnableSu() {

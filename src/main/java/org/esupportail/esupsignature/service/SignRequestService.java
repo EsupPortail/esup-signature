@@ -48,6 +48,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -1197,7 +1199,7 @@ public class SignRequestService {
 	@Transactional
 	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1) {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1 && signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getAllSignToComplete()) {
 			throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
 		}
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
@@ -1959,7 +1961,7 @@ public class SignRequestService {
 
 	/**
      * Nettoie les paramètres de requêtes de signature associés à un identifiant donné.
-     *
+	 *
      * Cette méthode supprime les paramètres de requêtes de signature si les conditions
      * définies sont remplies. Elle vérifie si la liste des identifiants de signature
      * dans le rapport simple est vide et si le workflow associé est nul,
@@ -1989,4 +1991,20 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		return signRequest.getRecipientHasSigned().entrySet().stream().anyMatch(rhs -> rhs.getValue().getActionType().equals(ActionType.signed) && rhs.getKey().getUser().getEppn().equals(user.getEppn()));
 	}
+
+	@Transactional
+	public void cleanSignRequestDocumentsHistory(Long signRequestId) {
+		SignRequest signRequest = getById(signRequestId);
+		if(signRequest.getParentSignBook().getEndDate()
+				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
+		) {
+			logger.info("cleaning signRequest documents history : " + signRequestId);
+			signRequest.getOriginalDocuments().clear();
+			Document lastDoc = signRequest.getLastSignedDocument();
+			Long lastDocId = lastDoc != null ? lastDoc.getId() : null;
+			signRequest.getSignedDocuments().removeIf(d -> !d.getId().equals(lastDocId));
+			signRequest.setCleanDocumentsHystoryDate(new Date());
+		}
+	}
+
 }

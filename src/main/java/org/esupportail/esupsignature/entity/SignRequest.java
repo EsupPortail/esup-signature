@@ -99,6 +99,10 @@ public class SignRequest {
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    private Date cleanDocumentsHistoryDate;
+
     @JsonIgnore
     @Transient
     transient Data data;
@@ -291,6 +295,14 @@ public class SignRequest {
 
     public void setAuditTrail(AuditTrail auditTrail) {
         this.auditTrail = auditTrail;
+    }
+
+    public Date getCleanDocumentsHistoryDate() {
+        return cleanDocumentsHistoryDate;
+    }
+
+    public void setCleanDocumentsHystoryDate(Date cleanDocumentsHystoryDate) {
+        this.cleanDocumentsHistoryDate = cleanDocumentsHystoryDate;
     }
 
     @JsonIgnore
