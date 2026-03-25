@@ -13,11 +13,4 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(basePackages = "org.esupportail.esupsignature.repository")
 public class DataSourceConfig {
 
-    @Bean
-    @Primary
-    @ConfigurationProperties("spring.datasource")
-    public DataSource dataSource() {
-        return DataSourceBuilder.create().build();
-    }
-
 }
