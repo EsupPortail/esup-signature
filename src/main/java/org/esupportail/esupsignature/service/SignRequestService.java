@@ -47,9 +47,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Service dédié à la gestion des demandes de signature (SignRequest).
@@ -283,103 +289,112 @@ public class SignRequestService {
      * @throws EsupSignatureRuntimeException En cas d'erreur critique lors de la signature ou de la génération de métadonnées.
      * @throws IOException En cas de problème lors de la lecture ou de l'écriture de contenu lié aux documents.
      */
-    @Transactional
-    public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment, boolean keepSignFields) throws EsupSignatureRuntimeException, IOException {
-        User user = userService.getByEppn(userEppn);
-        if(signRequest.getAuditTrail() == null) {
-            signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
-        }
-        boolean isViewed = signRequest.getViewedBy().contains(user);
-        StepStatus stepStatus;
-        Date date = new Date();
-        List<Log> lastSignLogs = new ArrayList<>();
-        User signerUser = user;
-        if(userShareId != null) {
-            UserShare userShare = userShareService.getById(userShareId);
-            if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
-                signerUser = userService.getByEppn(authUserEppn);
-            }
-        }
-        List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
-        SignType signType = signRequest.getCurrentSignType();
-        byte[] filledInputStream;
-        boolean isForm = false;
-        if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
-            if(data != null && data.getForm() != null) {
-                Form form = data.getForm();
-                for (Field field : form.getFields()) {
-                    if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
-                        if (field.getExtValueReturn().equals("id")) {
-                            data.getDatas().put(field.getName(), signRequest.getToken());
-                            formDataMap.put(field.getName(), signRequest.getToken());
-                        }
-                    }
-                }
-                isForm = true;
-            }
-        }
-        byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
-        Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
-        if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
-                && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
-            filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
-        } else {
-            filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
-        }
+	@Transactional
+	public StepStatus sign(SignRequest signRequest, String password, String signWith, String sealCertificat, Data data, Map<String, String> formDataMap, String userEppn, String authUserEppn, Long userShareId, String comment, boolean keepSignFields) throws EsupSignatureRuntimeException, IOException {
+		User user = userService.getByEppn(userEppn);
+		if(signRequest.getAuditTrail() == null) {
+			signRequest.setAuditTrail(auditTrailService.create(signRequest.getToken()));
+		}
+		boolean isViewed = signRequest.getViewedBy().contains(user);
+		StepStatus stepStatus;
+		Date date = new Date();
+		List<Log> lastSignLogs = new ArrayList<>();
+		User signerUser = user;
+		if(userShareId != null) {
+			UserShare userShare = userShareService.getById(userShareId);
+			if (userShare.getUser().getEppn().equals(userEppn) && userShare.getSignWithOwnSign() != null && userShare.getSignWithOwnSign()) {
+				signerUser = userService.getByEppn(authUserEppn);
+			}
+		}
+		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
+		SignType signType = signRequest.getCurrentSignType();
+		byte[] filledInputStream;
+		boolean isForm = false;
+		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
+			if(data != null && data.getForm() != null) {
+				Form form = data.getForm();
+				for (Field field : form.getFields()) {
+					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
+						if (field.getExtValueReturn().equals("id")) {
+							data.getDatas().put(field.getName(), signRequest.getToken());
+							formDataMap.put(field.getName(), signRequest.getToken());
+						}
+					}
+				}
+				isForm = true;
+			}
+		}
+		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
+		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+		if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
+				&& (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
+		} else {
+			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
+		}
 		if(toSignDocuments.get(0).isPdf() && !isMoreWorkflowStep(signRequest.getParentSignBook()) && !keepSignFields) {
 			filledInputStream = pdfService.normalizePDF(filledInputStream, signRequest.getSignRequestParams().stream().anyMatch(srp -> srp.getRotate().equals(0)), true);
 		}
-        boolean visual = true;
-        if(signWith == null || SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
-            byte[] signedInputStream = filledInputStream;
-            String fileName = toSignDocuments.get(0).getFileName();
-            if(signType.equals(SignType.hiddenVisa)) visual = false;
-            if(signRequest.getSignRequestParams().isEmpty() && visual) {
-                throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
-            }
-            int nbSign = 0;
-            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
-                for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
-                    if((signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
-                        signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
-                        lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
-                        auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
-                    } else if(signRequestParams.getSignImageNumber() >= 0 && !StringUtils.hasText(signRequestParams.getTextPart()) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || nbSign == 0)) {
-                        signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false);
-                        lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
-                        auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
-                        nbSign++;
-                    }
-                }
-            } else {
-                auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Visa", "Pas de timestamp", "", "", date, isViewed, null, null, null);
-            }
-            if (BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getConvertToPDFA()) && isStepAllSignDone(signRequest.getParentSignBook()) && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) && BooleanUtils.isNotFalse(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getConvertToPDFA())) {
-                signedInputStream = pdfService.convertToPDFA(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
-            }
-            byte[] signedBytes = signedInputStream;
-            stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
-            documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
-        } else {
-            SignRequestParams lastSignRequestParams = signService.findLastSignRequestParams(signRequest);
-            reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
-            if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
-                filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
-            } else {
-                logger.warn("skip add visuals because document already signed");
-            }
-            if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && lastSignRequestParams != null) {
-                signRequestParamsService.copySignRequestParams(signRequest.getId(), Collections.singletonList(lastSignRequestParams));
-                toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
-            }
-            Document signedDocument = signService.sign(toSignDocuments, signRequest, signerUser, password, signWith, sealCertificat, lastSignRequestParams);
-            auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
-            stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.signature, comment);
+		boolean visual = true;
+		if(signWith == null || SignWith.valueOf(signWith).equals(SignWith.imageStamp)) {
+			byte[] signedInputStream = filledInputStream;
+			String fileName = toSignDocuments.get(0).getFileName();
+			if(signType.equals(SignType.hiddenVisa)) visual = false;
+			if(signRequest.getSignRequestParams().isEmpty() && visual) {
+				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
+			}
+			String ocgName = "signature_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() + "_" + authUserEppn + "_" + System.currentTimeMillis();
+			int nbSign = 0;
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
+				for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
+					if((signRequestParams.getSignImageNumber() < 0 || StringUtils.hasText(signRequestParams.getTextPart())) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation())) {
+						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false, ocgName);
+						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Ajout d'un élément", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+					} else if(signRequestParams.getSignImageNumber() >= 0 && !StringUtils.hasText(signRequestParams.getTextPart()) && (signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign() || nbSign == 0)) {
+						signedInputStream = pdfService.stampImage(signedInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), false, ocgName);
+						lastSignLogs.add(updateStatus(signRequest.getId(), signRequest.getStatus(), "Apposition de la signature", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn));
+						auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Signature simple", "Pas de timestamp", "", "", date, isViewed, signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos());
+						nbSign++;
+					}
+				}
+			} else {
+				auditTrailService.addAuditStep(signRequest.getToken(), userEppn, "Visa", "Pas de timestamp", "", "", date, isViewed, null, null, null);
+			}
 
-        }
-        customMetricsService.incValue("esup-signature.signrequests", "signed");
-        return stepStatus;
-    }
+			if (BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getConvertToPDFA()) && isStepAllSignDone(signRequest.getParentSignBook()) && (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) && BooleanUtils.isNotFalse(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getConvertToPDFA())) {
+//				signedInputStream = pdfService.flattenOcg(signedInputStream);
+				signedInputStream = pdfService.convertToPDFA(pdfService.writeMetadatas(signedInputStream, fileName, signRequest, lastSignLogs));
+			}
+			byte[] signedBytes = signedInputStream;
+			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, signType, comment);
+			Document lastSignedDoc = signRequest.getLastSignedDocument();
+			if (lastSignedDoc != null) {
+				signRequest.getSignedDocuments().remove(lastSignedDoc);
+				documentService.delete(lastSignedDoc);
+			}
+
+			documentService.addSignedFile(signRequest, new ByteArrayInputStream(signedBytes), signRequest.getTitle() + "." + fileService.getExtension(toSignDocuments.get(0).getFileName()), toSignDocuments.get(0).getContentType(), user);
+		} else {
+			SignRequestParams lastSignRequestParams = signService.findLastSignRequestParams(signRequest);
+			reports = validationService.validate(getToValidateFile(signRequest.getId()), null);
+			if (reports == null || reports.getDiagnosticData().getAllSignatures().isEmpty()) {
+				filledInputStream = stampImagesOnFirstSign(signRequest, signRequest.getSignRequestParams(), userEppn, authUserEppn, filledInputStream, date, lastSignLogs, lastSignRequestParams);
+			} else {
+				logger.warn("skip add visuals because document already signed");
+			}
+			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && lastSignRequestParams != null) {
+				signRequestParamsService.copySignRequestParams(signRequest.getId(), Collections.singletonList(lastSignRequestParams));
+				toSignDocuments.get(0).setTransientInputStream(new ByteArrayInputStream(filledInputStream));
+			}
+			Document signedDocument = signService.sign(toSignDocuments, signRequest, signerUser, password, signWith, sealCertificat, lastSignRequestParams);
+			auditTrailService.createSignAuditStep(signRequest, userEppn, signedDocument, isViewed);
+			stepStatus = applyEndOfSignRules(signRequest.getId(), userEppn, authUserEppn, SignType.signature, comment);
+
+		}
+		customMetricsService.incValue("esup-signature.signrequests", "signed");
+		return stepStatus;
+	}
 
 
 	/**
@@ -395,13 +410,14 @@ public class SignRequestService {
      * @param lastSignRequestParams Le dernier paramètre de signature utilisé dans le processus, permettant d'éviter des doublons.
      * @return Le flux PDF représenté comme un tableau d'octets, contenant les images supplémentaires insérées.
      */
-    public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
+	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
 		User signerUser = userService.getByEppn(userEppn);
 		boolean isViewed = signRequest.getViewedBy().contains(signerUser);
+		String ocgName = "SignStep_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() + "_" + System.currentTimeMillis();
 		if (signRequestParamses.size() > 1) {
 			for (SignRequestParams signRequestParams : signRequestParamses) {
 				if(signRequestParams.equals(lastSignRequestParams)) continue;
-				filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true);
+				filledInputStream = pdfService.stampImage(filledInputStream, signRequest, signRequestParams, 1, signerUser, date, userService.getRoles(userEppn).contains("ROLE_OTP"), true, ocgName);
 				Log log = updateStatus(signRequest.getId(), signRequest.getStatus(), "Ajout d'un élément", null, "SUCCESS", signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos(), signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber(), userEppn, authUserEppn);
 				if(lastSignLogs != null) {
 					lastSignLogs.add(log);
@@ -1197,7 +1213,7 @@ public class SignRequestService {
 	@Transactional
 	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1) {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1 && signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getAllSignToComplete()) {
 			throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
 		}
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
@@ -1959,7 +1975,7 @@ public class SignRequestService {
 
 	/**
      * Nettoie les paramètres de requêtes de signature associés à un identifiant donné.
-     *
+	 *
      * Cette méthode supprime les paramètres de requêtes de signature si les conditions
      * définies sont remplies. Elle vérifie si la liste des identifiants de signature
      * dans le rapport simple est vide et si le workflow associé est nul,
@@ -1989,4 +2005,138 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		return signRequest.getRecipientHasSigned().entrySet().stream().anyMatch(rhs -> rhs.getValue().getActionType().equals(ActionType.signed) && rhs.getKey().getUser().getEppn().equals(user.getEppn()));
 	}
+
+	@Transactional
+	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
+		SignRequest signRequest = getById(signRequestId);
+		if(signRequest.getParentSignBook().getEndDate()
+				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
+		) {
+			logger.info("cleaning signRequest documents history : " + signRequestId);
+			signRequest.getOriginalDocuments().clear();
+			Document lastSignedDocument = signRequest.getLastSignedDocument();
+			if(signRequest.getSignedDocuments().size() > 1) {
+				byte[] archive = createArchiveWithDiffs(
+						signRequest.getSignedDocuments().get(0),
+						signRequest.getSignedDocuments()
+				);
+				Document documentsHistory = documentService.createDocument(
+						new ByteArrayInputStream(archive),
+						userService.getSystemUser(),
+						signRequest.getId() + "_" + lastSignedDocument.getFileName() + ".zip",
+						"application/zip"
+				);
+				documentsHistory.setParentId(signRequest.getParentSignBook().getId());
+				signRequest.setDocumentsHistory(documentsHistory);
+				signRequest.getSignedDocuments().clear();
+				signRequest.getSignedDocuments().add(lastSignedDocument);
+			}
+			signRequest.setCleanDocumentsHistoryDate(new Date());
+		}
+	}
+
+	private byte[] createArchiveWithDiffs(Document original, List<Document> allVersions) throws IOException {
+		ByteArrayOutputStream zipOutput = new ByteArrayOutputStream();
+
+		try (ZipOutputStream zos = new ZipOutputStream(zipOutput)) {
+			zos.putNextEntry(new ZipEntry("original.pdf"));
+			zos.write(original.getInputStream().readAllBytes());
+			zos.closeEntry();
+			byte[] previousContent = original.getInputStream().readAllBytes();
+			for (int i = 1; i < allVersions.size(); i++) {
+				Document currentDoc = allVersions.get(i);
+				byte[] currentContent = currentDoc.getInputStream().readAllBytes();
+				byte[] delta = createDelta(previousContent, currentContent);
+				zos.putNextEntry(new ZipEntry("delta_v" + i + ".xdelta"));
+				zos.write(delta);
+				zos.closeEntry();
+				previousContent = currentContent;
+			}
+		} catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        return zipOutput.toByteArray();
+	}
+
+	private byte[] createDelta(byte[] oldContent, byte[] newContent) throws IOException, InterruptedException {
+		File oldFile = File.createTempFile("old_", ".pdf");
+		File newFile = File.createTempFile("new_", ".pdf");
+		File deltaFile = File.createTempFile("delta_", ".xdelta");
+
+		try {
+			Files.write(oldFile.toPath(), oldContent);
+			Files.write(newFile.toPath(), newContent);
+			ProcessBuilder pb = new ProcessBuilder(
+					"xdelta3", "-f", "-e", "-S", "djw",
+					"-s", oldFile.getAbsolutePath(),
+					newFile.getAbsolutePath(),
+					deltaFile.getAbsolutePath()
+			);
+			Process process = pb.start();
+			String errorOutput = new String(process.getErrorStream().readAllBytes());
+			int exitCode = process.waitFor();
+			if (exitCode != 0) {
+				logger.error("xdelta3 error: {}", errorOutput);
+				throw new IOException("xdelta3 failed with exit code: " + exitCode + ", error: " + errorOutput);
+			}
+			return Files.readAllBytes(deltaFile.toPath());
+		} finally {
+			oldFile.delete();
+			newFile.delete();
+			deltaFile.delete();
+		}
+	}
+
+	@Transactional
+	public byte[] getDocumentFromArchive(Long signRequestId, int versionIndex) throws IOException, InterruptedException {
+		SignRequest signRequest = getById(signRequestId);
+		byte[] archive = signRequest.getDocumentsHistory().getInputStream().readAllBytes();
+
+		if (archive == null) {
+			throw new IllegalStateException("No archive found");
+		}
+
+		try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(archive))) {
+			byte[] current = null;
+			ZipEntry entry;
+
+			while ((entry = zis.getNextEntry()) != null) {
+				if (entry.getName().equals("original.pdf")) {
+					current = zis.readAllBytes();
+					if (versionIndex == 0) return current;
+				} else if (entry.getName().equals("delta_v" + versionIndex + ".xdelta")) {
+					byte[] delta = zis.readAllBytes();
+					return applyDelta(current, delta);
+				}
+			}
+		}
+
+		throw new IllegalArgumentException("Version not found: " + versionIndex);
+	}
+
+	private byte[] applyDelta(byte[] oldContent, byte[] delta) throws IOException, InterruptedException {
+		File oldFile = File.createTempFile("old_", ".pdf");
+		File deltaFile = File.createTempFile("delta_", ".xdelta");
+		File newFile = File.createTempFile("new_", ".pdf");
+
+		try {
+			Files.write(oldFile.toPath(), oldContent);
+			Files.write(deltaFile.toPath(), delta);
+			ProcessBuilder pb = new ProcessBuilder(
+					"xdelta3", "-f", "-d", "-S", "djw",
+					"-s", oldFile.getAbsolutePath(),
+					deltaFile.getAbsolutePath(),
+					newFile.getAbsolutePath()
+			);
+			Process process = pb.start();
+			process.waitFor();
+			return Files.readAllBytes(newFile.toPath());
+		} finally {
+			oldFile.delete();
+			deltaFile.delete();
+			newFile.delete();
+		}
+	}
+
 }

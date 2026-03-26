@@ -947,7 +947,9 @@ public class SignBookService {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
                 if(stepNumber == currentStepNumber - 1) {
                     signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
-                    pendingSignBook(authUserEppn, id);
+                    if(signBook.getStatus().equals(SignRequestStatus.pending)) {
+                        pendingSignBook(authUserEppn, id);
+                    }
                 }
             } else {
                 if(signBook.getStatus().equals(SignRequestStatus.draft)) {

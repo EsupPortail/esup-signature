@@ -21,6 +21,7 @@ global:
     naming-template: "[title]"
     enable-scheduled-cleanup: false
     trash-keep-delay: -1
+    documents-history-delay: -1
     disable-cert-storage: false
     nb-days-before-deleting: -1
     nb-days-before-warning: -1
@@ -98,9 +99,10 @@ spring:
         url: jdbc:postgresql://localhost:5432/esupsignature
         password: esup
         username: esupsignature
-        jdbc-url: ${spring.datasource.url}
         hikari:
-            auto-commit: false
+            maximum-pool-size: 15
+            minimum-idle: 3
+            connection-timeout: 30000
         tomcat:
             validation-query: SELECT 1;
     jpa:
@@ -295,6 +297,7 @@ server:
         max-swallow-size: -1
 sign:
     aes-key : "0000000000000000"
+    aes256-key: "00000000000000000000000000000000"
     cades-digest-algorithm: SHA256
     cades-signature-level: CAdES_BASELINE_LTA
 #    container-type: ASiC_E
