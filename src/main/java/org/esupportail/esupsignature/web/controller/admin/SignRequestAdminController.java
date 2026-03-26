@@ -135,20 +135,4 @@ public class SignRequestAdminController {
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
-	@GetMapping(value = "/get-last-file/{id}")
-	@Transactional
-	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-		List<Document> documents = signRequestService.getToSignDocuments(id);
-		try {
-			if(documents.size() > 1) {
-				httpServletResponse.sendRedirect("/user/signrequests/" + id);
-			} else {
-				Document document = documents.get(0);
-				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
-			}
-		} catch (Exception e) {
-			logger.error("get file error", e);
-		}
-	}
-
 }

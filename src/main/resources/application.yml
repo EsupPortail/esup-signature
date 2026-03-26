@@ -99,9 +99,10 @@ spring:
         url: jdbc:postgresql://localhost:5432/esupsignature
         password: esup
         username: esupsignature
-        jdbc-url: ${spring.datasource.url}
         hikari:
-            auto-commit: false
+            maximum-pool-size: 15
+            minimum-idle: 3
+            connection-timeout: 30000
         tomcat:
             validation-query: SELECT 1;
     jpa:
