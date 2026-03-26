@@ -1173,10 +1173,78 @@ tr[aria-expanded="true"] .caret-toggle::before {
     max-width: 80vw !important;
 }
 
-.modal-pdf .modal-body {
-    min-height: 80vh;
+:root {
+    --underline-max-width: 100%;
+    --underline-hover-width: 0;
+    --underline-idle-width: var(--underline-max-width);
+    --underline-x: calc(var(--underline-max-width) * 0);
+    --underline-thickness: 1px;
+    --underline-img: linear-gradient(0deg, currentColor, currentColor);
+    --external-link-content: "";
+    --text-decoration: none;
 }
 
-.modal-pdf iframe {
-    min-height: 80vh;
+.oidc-connect {
+    --text-spacing: 0 0 1rem 0;
+    color: #000091;
+    font-size: .875rem  !important;
+    line-height: 1.5rem  !important;
+    font-family: Marianne,arial,sans-serif !important;
+    font-weight: bold !important;
+}
+
+.oidc-connect p {
+    color: #666;
+    font-size: .75rem;
+    line-height: 1.25rem;
+    margin: var(--text-spacing);
+}
+
+.oidc-connect a {
+    color: #000091;
+    font-size: .875rem  !important;
+    line-height: 1.5rem  !important;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.oidc-connect a {
+    --hover-tint: transparent;
+    --active-tint: #ededed;
+    text-decoration: var(--text-decoration);
+}
+
+.oidc-connect [href] {
+    background-image: var(--underline-img), var(--underline-img);
+    background-position: var(--underline-x) 100%, var(--underline-x) calc(100% - var(--underline-thickness));
+    background-repeat: no-repeat, no-repeat;
+    background-size: var(--underline-hover-width) calc(var(--underline-thickness) * 2), var(--underline-idle-width) var(--underline-thickness);
+    transition: background-size 0s;
+}
+
+
+.oidc-connect a::after {
+    --icon-size: 1rem;
+    background-color: currentColor;
+    content: "";
+    display: inline-block;
+    flex: 0 0 auto;
+    height: var(--icon-size);
+    margin-left: .25rem;
+    -webkit-mask-image: url('/images/icons/external-link-line.svg');
+    mask-image: url('/images/icons/external-link-line.svg');
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    vertical-align: calc((.75em - var(--icon-size)) * .5);
+    width: var(--icon-size);
+}
+
+@media (hover: hover) and (pointer:fine) {
+    .oidc-connect a[href]:active {
+        background-color: #ededed;
+        --underline-hover-width: var(--underline-max-width);
+    }
+    .oidc-connect a[href]:hover {
+        background-color: transparent;
+        --underline-hover-width: var(--underline-max-width);
+    }
 }

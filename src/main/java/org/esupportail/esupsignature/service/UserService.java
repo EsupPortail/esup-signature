@@ -275,7 +275,6 @@ public class UserService {
         return null;
     }
 
-    @Transactional
     public User createUserWithAuthentication(String eppn, String name, String firstName, String mail, Authentication authentication, UserType userType) {
         String authName;
         if (authentication.getName().contains("@")) {

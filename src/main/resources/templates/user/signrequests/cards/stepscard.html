@@ -9,10 +9,26 @@
             <div id="stepper" class="bs-stepper vertical">
                 <div class="bs-stepper-header w-100" role="tablist">
                     <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
-                        Le circuit n’est pas démarré
+                        Le circuit n'est pas démarré
                     </th:block>
+
+                    <div th:if="${signRequest.documentsHistory == null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="step border border-secondary border-2 bg-white rounded p-1">
+                        <span class="bs-stepper-circle bg-info">
+                            <i class="fi fi-rr-document"></i>
+                        </span>
+                        <span class="step-type">Document original</span>
+                        <td>
+                            <button class="btn btn-sm btn-outline-dark float-end toggle-layer-btn"
+                                    th:data-step="0"
+                                    title="Masquer tous les calques">
+                                <i class="fi fi-rr-eye"></i>
+                            </button>
+                        </td>
+                    </div>
+                    <div th:if="${signRequest.documentsHistory == null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="bs-stepper-line"></div>
+
                     <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                        <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary-subtle border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
+                        <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                             <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                 <span title="Étape à venir" class="bs-stepper-circle">
                                     <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fi fi-rr-pending"></i>
@@ -60,131 +76,131 @@
                                     <span th:text="${liveWorkflowStep.description}"></span>
                                 </th:block>
                                 <table th:if="${!liveWorkflowStep.getAutoSign()}" class="table table-sm table-hover table-borderless">
-                                <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                    <tr>
-                                        <td th:title="${recipient.user.email}" style="max-width: 140px;">
-                                            <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                            <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
-                                            <br/>
-                                            <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
-                                        </td>
-                                        <td class="text-right">
-                                            <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
-                                            <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
-                                            <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
-                                            <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
-                                        </td>
-                                        <td>
-                                            <a th:if="${signRequest.documentsHistory == null && ((signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.signedDocuments.size() > iterator.index && signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed')}" class="btn btn-sm btn-outline-primary"
-                                                th:href="@{'/ws-secure/global/get-file/' + ${signRequest.signedDocuments.get(iterator.index).id}}"
-                                                title="Récupérer le document signé à cette étape">
-                                                <i class="fa-solid fa-download"></i>
-                                            </a>
-                                            <a th:unless="${signRequest.documentsHistory == null}" class="btn btn-sm btn-outline-primary"
-                                                th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequest.id} + '/documents/' + ${iterator.index}}"
-                                                title="Récupérer le document signé à cette étape">
-                                                <i class="fa-solid fa-download"></i>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm"
-                                                    title="Envoyer un nouveau lien d'accès"
-                                                    th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                    th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber && isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                                                <i class="fa-solid fa-key"></i></button>
-                                        </td>
-                                    </tr>
-                                    <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal border-1 border-secondary-subtle" th:id="'menu-' + ${recipient.id}" style="top:220px;--bs-modal-border-color:grey">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header"><h3>Envoyer un nouveau lien d’accès</h3></div>
-                                                <div class="modal-body">
-                                                    <p>Confirmer l’envoi un nouveau lien d’accès</p>
-                                                    <div>
-                                                        <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
-                                                        <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
-                                                        <br>
-                                                        <input
-                                                            type="tel"
-                                                            th:id="'phone_' + ${liveWorkflowStep.id}"
-                                                            name="phone"
-                                                            class="form-control"
-                                                            th:value="${recipient.user.hidedPhone}">
-                                                        <br><br>
-                                                        <button type="button"
-                                                                th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
-                                                                class="btn btn-success float-end mb-2"
-                                                                title="Envoyer un nouveau lien d'accès" style="right: 17px; bottom: 7px !important; position: absolute;">
-                                                            Confirmer
-                                                        </button>
-                                                    </div>
-                                                    <script th:inline="javascript" >
-                                                        $(document).ready(function() {
-                                                            const phoneInput = document.querySelector("#phone_[[${liveWorkflowStep.id}]]");
-                                                            let iti = null;
-                                                            if(phoneInput) {
-                                                                iti = intlTelInput(phoneInput, {
-                                                                    validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                                                                    strictMode: true,
-                                                                    separateDialCode: false,
-                                                                    nationalMode: true,
-                                                                    countryOrder: ["fr"],
-                                                                    initialCountry: "auto",
-                                                                    geoIpLookup: callback => {
-                                                                        callback(navigator.language.split('-')[0]);
-                                                                    },
-                                                                    customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                                                                    searchPlaceholder: "Rechercher",
-                                                                });
-                                                            }
-                                                            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-                                                            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-
-                                                            $(document.querySelector("#confirmBtn_[[${liveWorkflowStep.id}]]")).on("click", async function () {
-                                                                // Récupérer le numéro complet
-                                                                let fullNumber = "";
-                                                                if(iti != null) fullNumber = iti.getNumber();
-
-                                                                // Désactiver le bouton pendant l'envoi
-                                                                $(this).prop('disabled', true).text('Envoi en cours...');
-
-                                                                try {
-                                                                    const url = '/user/signrequests/send-otp/' + [[${signRequest.parentSignBook.id}]] + '/' + [[${recipient.user.id}]];
-                                                                    const response = await fetch(url, {
-                                                                        method: 'POST',
-                                                                        headers: {
-                                                                            'Content-Type': 'application/x-www-form-urlencoded',
-                                                                            [csrfHeader]: csrfToken
+                                    <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                        <tr>
+                                            <td th:title="${recipient.user.email}" style="max-width: 140px;">
+                                                <span th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
+                                                <span th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: keep-all; overflow: hidden;text-overflow: ellipsis;" th:text="${recipient.user.email}"></span>
+                                                <br/>
+                                                <small th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" th:text="'Le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></small>
+                                            </td>
+                                            <td class="text-right">
+                                                <i th:title="'A signé le document le ' + ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}" class="fa-solid fa-check-circle text-success"></i>
+                                                <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
+                                                <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
+                                                <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
+                                            </td>
+                                            <td>
+                                                <a th:unless="${signRequest.documentsHistory == null}" class="btn btn-sm btn-outline-primary"
+                                                   th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequest.id} + '/documents/' + ${iterator.index}}"
+                                                   title="Récupérer le document signé à cette étape">
+                                                    <i class="fi fi-rr-download"></i>
+                                                </a>
+                                                <button th:if="${signRequest.documentsHistory == null && iterator.index + 1 <= signRequest.parentSignBook.liveWorkflow.currentStepNumber}" class="btn btn-sm btn-outline-dark float-end toggle-layer-btn"
+                                                        th:data-step="${iterator.index + 1}"
+                                                        title="Afficher l'état du document à cette étape">
+                                                    <i class="fi fi-rr-eye"></i>
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm"
+                                                        title="Envoyer un nouveau lien d'accès"
+                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
+                                                        th:if="${iterator.index + 1 == signRequest.parentSignBook.liveWorkflow.currentStepNumber && isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                                                    <i class="fa-solid fa-key"></i></button>
+                                            </td>
+                                        </tr>
+                                        <div th:if="${isManager && recipient.user.userType.name() == 'external' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" data-bs-focus="false" class="modal border-1 border-secondary" th:id="'menu-' + ${recipient.id}" style="top:220px;--bs-modal-border-color:grey">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header"><h3>Envoyer un nouveau lien d'accès</h3></div>
+                                                    <div class="modal-body">
+                                                        <p>Confirmer l'envoi un nouveau lien d'accès</p>
+                                                        <div>
+                                                            <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
+                                                            <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
+                                                            <br>
+                                                            <input
+                                                                    type="tel"
+                                                                    th:id="'phone_' + ${liveWorkflowStep.id}"
+                                                                    name="phone"
+                                                                    class="form-control"
+                                                                    th:value="${recipient.user.hidedPhone}">
+                                                            <br><br>
+                                                            <button type="button"
+                                                                    th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
+                                                                    class="btn btn-success float-end mb-2"
+                                                                    title="Envoyer un nouveau lien d'accès" style="right: 17px; bottom: 7px !important; position: absolute;">
+                                                                Confirmer
+                                                            </button>
+                                                        </div>
+                                                        <script th:inline="javascript" >
+                                                            $(document).ready(function() {
+                                                                const phoneInput = document.querySelector("#phone_[[${liveWorkflowStep.id}]]");
+                                                                let iti = null;
+                                                                if(phoneInput) {
+                                                                    iti = intlTelInput(phoneInput, {
+                                                                        validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                                                        strictMode: true,
+                                                                        separateDialCode: false,
+                                                                        nationalMode: true,
+                                                                        countryOrder: ["fr"],
+                                                                        initialCountry: "auto",
+                                                                        geoIpLookup: callback => {
+                                                                            callback(navigator.language.split('-')[0]);
                                                                         },
-                                                                        body: new URLSearchParams({
-                                                                            'phone': fullNumber
-                                                                        })
+                                                                        customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                                                        searchPlaceholder: "Rechercher",
                                                                     });
+                                                                }
+                                                                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                                                                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-                                                                    if (response.ok) {
-                                                                        // Succès - recharger la page ou rediriger
-                                                                        alert('Nouvelle demande OTP envoyée');
-                                                                        window.location.reload();
-                                                                    } else {
-                                                                        // Erreur serveur
-                                                                        alert('Une erreur est survenue lors de l\'envoi du SMS');
+                                                                $(document.querySelector("#confirmBtn_[[${liveWorkflowStep.id}]]")).on("click", async function () {
+                                                                    // Récupérer le numéro complet
+                                                                    let fullNumber = "";
+                                                                    if(iti != null) fullNumber = iti.getNumber();
+
+                                                                    // Désactiver le bouton pendant l'envoi
+                                                                    $(this).prop('disabled', true).text('Envoi en cours...');
+
+                                                                    try {
+                                                                        const url = '/user/signrequests/send-otp/' + [[${signRequest.parentSignBook.id}]] + '/' + [[${recipient.user.id}]];
+                                                                        const response = await fetch(url, {
+                                                                            method: 'POST',
+                                                                            headers: {
+                                                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                                                                [csrfHeader]: csrfToken
+                                                                            },
+                                                                            body: new URLSearchParams({
+                                                                                'phone': fullNumber
+                                                                            })
+                                                                        });
+
+                                                                        if (response.ok) {
+                                                                            // Succès - recharger la page ou rediriger
+                                                                            alert('Nouvelle demande OTP envoyée');
+                                                                            window.location.reload();
+                                                                        } else {
+                                                                            // Erreur serveur
+                                                                            alert('Une erreur est survenue lors de l\'envoi du SMS');
+                                                                            $(this).prop('disabled', false).text('Confirmer');
+                                                                        }
+                                                                    } catch (error) {
+                                                                        console.error('Erreur:', error);
+                                                                        alert('Erreur de connexion au serveur');
                                                                         $(this).prop('disabled', false).text('Confirmer');
                                                                     }
-                                                                } catch (error) {
-                                                                    console.error('Erreur:', error);
-                                                                    alert('Erreur de connexion au serveur');
-                                                                    $(this).prop('disabled', false).text('Confirmer');
-                                                                }
+                                                                });
                                                             });
-                                                        });
-                                                    </script>
-                                                    <br><br>
-                                                    <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
+                                                        </script>
+                                                        <br><br>
+                                                        <button class="btn btn-secondary float-start" title="Fermer" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').hide();'">Annuler</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </th:block>
+                                    </th:block>
                                 </table>
                                 <small title="" th:if="${liveWorkflowStep.getAutoSign()}">Étape automatique</small>
                                 <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
@@ -199,13 +215,13 @@
                         <div class="bs-stepper-line"></div>
                         <div class="step border border-dark rounded" th:classappend="${signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned && signRequest.parentSignBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived} ? 'div-disable'">
                             <div th:classappend="${target.targetOk} ? 'bg-success'" class="bs-stepper-circle">
-                                <i class="fi fi-rr-file-export"></i></div> Export vers :<br/>
+                                <i class="fi fi-rr-file-export"></i></div> Export vers :<br/>
                             <span th:text="${target.protectedTargetUri}" ></span>
                         </div>
                     </th:block>
                     <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
                         <div class="bs-stepper-line"></div>
-                        <div class="step border border-dark rounded">
+                        <div class="step border border-secondary border-2 rounded">
                             <div title="Fin" class="bs-stepper-circle bg-success">
                                 <i class="fi fi-rr-flag"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
@@ -213,7 +229,7 @@
                     </th:block>
                     <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                         <div class="bs-stepper-line"></div>
-                        <div class="step border border-dark rounded">
+                        <div class="step border border-secondary border-2 rounded">
                             <div title="Fin" class="bs-stepper-circle bg-danger">
                                 <i class="fi fi-rr-triangle-warning"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
