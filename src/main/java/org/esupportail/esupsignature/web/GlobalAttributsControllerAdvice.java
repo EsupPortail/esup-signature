@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -92,15 +93,13 @@ public class GlobalAttributsControllerAdvice {
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
-            GlobalProperties myGlobalProperties = new GlobalProperties();
-            BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-            myGlobalProperties.newVersion = globalProperties.newVersion;
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
-                logger.error("user " + userEppn + " not found");
+                logger.error("user {} not found", userEppn);
                 return;
             }
-            userService.parseRoles(userEppn, myGlobalProperties);
+            GlobalProperties myGlobalProperties = new GlobalProperties();
+            generateMyProperties(userEppn, myGlobalProperties);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
@@ -137,6 +136,18 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
+    }
+
+    private void generateMyProperties(String userEppn, GlobalProperties myGlobalProperties) {
+        BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+        myGlobalProperties.setSealCertificatDriver(null);
+        myGlobalProperties.setSealCertificatFile(null);
+        myGlobalProperties.setSealCertificatPin(null);
+        myGlobalProperties.setSealCertificatType(null);
+        myGlobalProperties.setSealCertificatProperties(null);
+        myGlobalProperties.setExternalSignatureParams(null);
+        myGlobalProperties.newVersion = globalProperties.newVersion;
+        userService.parseRoles(userEppn, myGlobalProperties);
     }
 
 }

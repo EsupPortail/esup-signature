@@ -191,19 +191,53 @@ public class FileService {
 			final BufferedImage signImage = ImageIO.read(imageStream);
 			int extraWidth = 0;
 			int extraHeight = 0;
-			int nbExtra = 0;
-			if (signRequestParams.getExtraType()) nbExtra++;
-			if (signRequestParams.getExtraName()) nbExtra++;
-			if (signRequestParams.getExtraDate()) nbExtra++;
-			if (StringUtils.hasText(signRequestParams.getExtraText())) {
-				nbExtra += signRequestParams.getExtraText().split("\\s*\n\\s*").length;
-			} else if (signRequestParams.getIsExtraText()) {
-                nbExtra++;
-            }
+
 			if (!signRequestParams.getExtraOnTop()) {
 				extraWidth = 200;
-			} else {
-				extraHeight = 17 * nbExtra;
+			}
+
+			// Pré-calculer tous les wraps
+			List<List<String>> allWrappedLines = new ArrayList<>();
+			BufferedImage tempImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+			Graphics2D tempGraphics = tempImage.createGraphics();
+			int tempFontSize = (int) (globalProperties.getDefaultFontSize() * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
+			try {
+				Font tempFont = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) tempFontSize);
+				tempGraphics.setFont(tempFont);
+				FontMetrics tempFm = tempGraphics.getFontMetrics();
+				int maxWidth = (int) ((200 + extraWidth) * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
+				if(signRequestParams.getExtraType()) {
+					String typeSign = "Signature";
+					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
+					if(otp!= null && otp) {
+						typeSign = user.getPhone() != null ? "Signature OTP : " + user.getPhone() : "Signature OTP";
+					}
+					allWrappedLines.add(wrapText(typeSign, tempFm, maxWidth));
+				}
+				if(signRequestParams.getExtraName()) {
+					String fullName = user.getFirstname() + " " + user.getName();
+					allWrappedLines.add(wrapText(fullName, tempFm, maxWidth));
+				}
+				if(signRequestParams.getExtraDate()) {
+					DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss XXX", Locale.FRENCH);
+					String dateStr = "le " + dateFormat.format(date);
+					allWrappedLines.add(wrapText(dateStr, tempFm, maxWidth));
+				}
+				if(StringUtils.hasText(signRequestParams.getExtraText())) {
+					List<String> textLines = List.of(signRequestParams.getExtraText().split("\\s*\n\\s*"));
+					for (String line : textLines) {
+						allWrappedLines.add(wrapText(line, tempFm, maxWidth));
+					}
+				}
+			} catch (FontFormatException e) {
+				logger.error("unable to get font", e);
+			} finally {
+				tempGraphics.dispose();
+				tempImage.flush();
+			}
+			float nbExtra = allWrappedLines.stream().mapToInt(List::size).sum() + 1.5f;
+			if (signRequestParams.getExtraOnTop()) {
+				extraHeight = Math.round(signRequestParams.getFontSize() * nbExtra);
 			}
 			int widthOffset = (int) (extraWidth * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
 			int heightOffset = (int) (extraHeight  * signRequestParams.getSignScale() * qualityFactor * globalProperties.getFixFactor());
@@ -212,7 +246,7 @@ public class FileService {
 			signRequestParams.setSignWidth(Math.round((float) width / qualityFactor / globalProperties.getFixFactor() / signRequestParams.getSignScale()));
 			signRequestParams.setSignHeight(Math.round((float) height / qualityFactor / globalProperties.getFixFactor() / signRequestParams.getSignScale()));
 			BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-//			changeColor(signImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
+
 			Graphics2D graphics2D = (Graphics2D) image.getGraphics();
 			if(signRequestParams.getExtraOnTop()) {
 				graphics2D.drawImage(signImage, 0, heightOffset, width, height - heightOffset, null);
@@ -222,7 +256,7 @@ public class FileService {
 			graphics2D.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 			int lineCount = 0;
 			Map<TextAttribute, Object> attributes = new Hashtable<>();
-			int fontSize = (int) (10f * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
+			int fontSize = (int) (globalProperties.getDefaultFontSize() * qualityFactor * signRequestParams.getSignScale() * globalProperties.getFixFactor());
 			setQualityParams(graphics2D);
 			try {
 				Font font = Font.createFont(Font.TRUETYPE_FONT, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream()).deriveFont(Font.PLAIN).deriveFont((float) fontSize);
@@ -230,45 +264,13 @@ public class FileService {
 				graphics2D.setFont(font);
 				graphics2D.setPaint(Color.black);
 				FontMetrics fm = graphics2D.getFontMetrics();
-				int lineHeight = Math.round(fontSize);
-				if(signRequestParams.getExtraType()) {
-					String typeSign = "Signature";
-					if(signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa)) typeSign = "Visa";
-					if(otp!= null && otp) {
-						if(user.getPhone() != null) {
-							typeSign = "Signature OTP : " + user.getPhone();
-						} else {
-							typeSign = "Signature OTP";
-						}
-					}
-					graphics2D.drawString(typeSign, widthOffset, fm.getHeight());
-					lineCount++;
-				}
-				if(signRequestParams.getExtraName()) {
-					if(lineCount == 0) {
-						graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight());
-					} else {
-						graphics2D.drawString(user.getFirstname() + " " + user.getName(), widthOffset, fm.getHeight() + lineHeight * lineCount);
-					}
-
-					lineCount++;
-				}
-				if(signRequestParams.getExtraDate()) {
-					DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss XXX", Locale.FRENCH);
-					if(lineCount == 0) {
-						graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight());
-					} else {
-						graphics2D.drawString("le " + dateFormat.format(date), widthOffset, fm.getHeight() + lineHeight * lineCount);
-					}
-					lineCount++;
-				}
-				if(StringUtils.hasText(signRequestParams.getExtraText())) {
-					List<String> text = List.of(signRequestParams.getExtraText().split("\\s*\n\\s*"));
-					for (String line : text) {
+				int lineHeight = Math.round(fontSize * 1.5f);
+				for (List<String> wrappedLines : allWrappedLines) {
+					for (String wrappedLine : wrappedLines) {
 						if (lineCount == 0) {
-							graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
+							graphics2D.drawString(new String(wrappedLine.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight());
 						} else {
-							graphics2D.drawString(new String(line.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
+							graphics2D.drawString(new String(wrappedLine.getBytes(), StandardCharsets.UTF_8), widthOffset, fm.getHeight() + lineHeight * lineCount);
 						}
 						lineCount++;
 					}
@@ -282,6 +284,33 @@ public class FileService {
 			}
 		}
 		return textAddedInputStream;
+	}
+
+	private List<String> wrapText(String text, FontMetrics fm, int maxWidth) {
+		List<String> lines = new ArrayList<>();
+		String[] words = text.split(" ");
+		StringBuilder currentLine = new StringBuilder();
+
+		for (String word : words) {
+			String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+			int lineWidth = fm.stringWidth(testLine);
+
+			if (lineWidth > maxWidth && currentLine.length() > 0) {
+				lines.add(currentLine.toString());
+				currentLine = new StringBuilder(word);
+			} else {
+				if (currentLine.length() > 0) {
+					currentLine.append(" ");
+				}
+				currentLine.append(word);
+			}
+		}
+
+		if (currentLine.length() > 0) {
+			lines.add(currentLine.toString());
+		}
+
+		return lines;
 	}
 
 	private void setQualityParams(Graphics2D graphics2D) {

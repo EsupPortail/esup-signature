@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.PostConstruct;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -203,29 +204,34 @@ public class GlobalProperties {
      *  Type de certificat cachet (PKCS11, PKCS12, OPENSC)
      */
     @Deprecated
+    @JsonIgnore
     private SealCertificatProperties.TokenType sealCertificatType;
 
     /**
      *  Emplacement du certificat cachet (actif pour PKCS12)
      */
     @Deprecated
+    @JsonIgnore
     private String sealCertificatFile;
 
     /**
      *  Pilote du certificat cachet
      */
     @Deprecated
+    @JsonIgnore
     private String sealCertificatDriver;
 
     /**
      *  Pin du certificat cachet
      */
     @Deprecated
+    @JsonIgnore
     private String sealCertificatPin = "";
 
     /**
      * Liste des propriétés de certificats cachet utilisées pour configurer ou gérer les certificats dans l'application.
      */
+    @JsonIgnore
     public Map<String, SealCertificatProperties> sealCertificatProperties = new HashMap<>();
 
     /**
@@ -352,6 +358,7 @@ public class GlobalProperties {
     /**
      * Configuration des signatures des externes
      */
+    @JsonIgnore
     private SignRequestParams externalSignatureParams = new SignRequestParams();
 
     private int nbSignOtpTries = 3;
@@ -384,6 +391,10 @@ public class GlobalProperties {
      * Indique si une alerte concernant un problème de polices dans les fichiers PDF doit être désactivée.
      */
     private Boolean disablePdfFontAlert = false;
+
+    /** Taille de police par défaut pour le texte des signatures */
+    private Integer defaultFontSize = 12;
+
 
     public String newVersion;
 
@@ -976,5 +987,13 @@ public class GlobalProperties {
 
     public void setEnableTransfertForUsers(Boolean enableTransfertForUsers) {
         this.enableTransfertForUsers = enableTransfertForUsers;
+    }
+
+    public Integer getDefaultFontSize() {
+        return defaultFontSize;
+    }
+
+    public void setDefaultFontSize(Integer defaultFontSize) {
+        this.defaultFontSize = defaultFontSize;
     }
 }
