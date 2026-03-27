@@ -77,8 +77,8 @@ header {
 }
 
 .content-full {
-    /*width: calc(100vw - 75px);*/
-    margin-left: 60px;
+    padding-left: 6px;
+    padding-right: 4px;
 }
 
 .content-full-fixed {
@@ -143,28 +143,18 @@ header {
 }
 
 .workspace {
-    margin-top: 130px;
+    width: 100%;
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
 }
 
 .workspace-pdf {
-    margin-top: 130px;
+    width: 100%;
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
 }
 
 .workspace-sign {
-    margin-top: 174px;
+    width: 100%;
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.workspace-margin-top {
-    margin-top: 130px;
 }
 
 .workspace-margin-top-admin {
@@ -219,14 +209,8 @@ header {
 }
 
 #sidebar {
-    top: 50px;
-    padding-right: 5px;
-    padding-bottom: 12px;
-    position: fixed;
-    z-index: 1030 !important;
     min-width: 260px;
     max-width: 260px;
-    height: calc(100vh - 80px);
     overflow-y: auto;
 }
 
@@ -245,16 +229,16 @@ header {
     z-index: 1 !important;
 }
 
-.tools {
-    top: 82px;
-    /*height: 50px;*/
-    padding-top: 5px;
-    background-color: white;
-    width: 100%;
-    z-index: 1029;
-    position: fixed;
-    /*padding-left: 10px;*/
-}
+/*.tools {*/
+/*    top: 82px;*/
+/*    !*height: 50px;*!*/
+/*    padding-top: 5px;*/
+/*    background-color: white;*/
+/*    width: 100%;*/
+/*    z-index: 1029;*/
+/*    position: fixed;*/
+/*    !*padding-left: 10px;*!*/
+/*}*/
 
 .tools-admin {
     top: 128px;
@@ -287,7 +271,6 @@ header {
     top:50px;
     padding: 5px;
     position: fixed;
-    margin-left: 260px;
     width: 100%;
     z-index: 1029;
 }
@@ -295,8 +278,6 @@ header {
 .breadcrumb-nav-full {
     z-index: 1;
     padding: 5px;
-    margin-left: 60px;
-    width: calc(100vw - 75px);
 }
 
 .breadcrumb-nav-full-fixed {

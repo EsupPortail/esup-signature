@@ -144,13 +144,6 @@ td {
     background-color: white;
 }
 
-#sidebar {
-    background: white;
-    -moz-box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-    box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-}
-
 .nav-tabs {
     border-bottom : 1px solid #555;
     background-color: white;

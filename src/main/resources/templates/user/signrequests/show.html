@@ -37,25 +37,13 @@
 </script>
 
 <main role="main">
-    <div class="wrapper">
-        <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
-        <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" th:class="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal && user.userType.name() == 'external'} ? 'breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full' : 'breadcrumb-nav'">
-            <ol class="breadcrumb">
-                <li th:if="${editable && userEppn == authUserEppn && user.userType.name() != 'external'}" class="breadcrumb-item"><a href="/user/signbooks">Tableau
-                    de bord</a></li>
-                <li th:if="${userEppn == authUserEppn  && user.userType.name() != 'external'}" th:unless="${editable}" class="breadcrumb-item">
-                    <a href="/user/signbooks?statusFilter=toSign">Tableau de bord</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Demande : <span
-                        th:text="${signRequest.parentSignBook.subject}"></span>&nbsp;du&nbsp;<span
-                        th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                    <span class="not-viewed fw-bold" th:unless="${signRequest.viewedBy != null && signRequest.viewedBy.contains(user)}">(non lu)</span>
-                </li>
-            </ol>
-        </nav>
+    <div class="wrapper bg-secondary-subtle">
+        <div class="d-flex breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full justify-content-center">
+        <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
+        </div>
         <div id="content"
             th:data-es-signbook-id="${signRequest.parentSignBook.id}"
-            th:classappend="${signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.disableSidebarForExternal && user.userType.name() == 'external'} ? 'content-full' : 'content'">
+            class = "content-full">
             <div id="signButtons" class="fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${isManager && signRequest.data == null}">
@@ -199,11 +187,10 @@
                     </li>
                 </ul>
             </div>
-            <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
             <div style="position: absolute;top: 200px;" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
                 <div id="potit-comment" class="postit-global d-none overflow-hidden"
-                    th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
-                    style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 1000;">
+                     th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
+                     style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 1000;">
                     <button type="button" class="postit-global-close close">
                         <i class="fa-solid fa-eye"></i>
                     </button>
@@ -215,7 +202,7 @@
                 </div>
                 <th:block th:each="postit, iterate : ${postits}">
                     <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"
-                        th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${190 + (iterate.index * 70)} + 'px;'">
+                         th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${290 + (iterate.index * 15)} + 'px; top : ' + ${190 + (iterate.index * 70)} + 'px;'">
                         <button type="button" class="postit-global-close close">
                             <i class="fa-solid fa-eye"></i>
                         </button>
@@ -237,57 +224,61 @@
                     </div>
                 </th:block>
             </div>
-            <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
-                <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
-            </th:block>
-            <th:block th:if="${signRequest.parentSignBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
-                <div class="alert alert-success">
-                    <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</h5>
-                    <label>Emplacement physique du document :</label>
-                    <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" style="width: 100%;" disabled />
-                </div>
-            </th:block>
-            <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
-                class="workspace alert alert-secondary row" style="margin-top: 128px;">
-                <div class="card col-lg-10 mx-auto mb-1">
-                    <div class="card-body">
-                        <h5 class="text-center">Liste des documents originaux</h5>
-                        <div class="file-loading">
-                            <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
+            <div class="d-flex m-1 gap-2" style="padding-top: 103px;">
+                <nav th:if="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
+                <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+                <th:block th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
+                    <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
+                </th:block>
+                <th:block th:if="${signRequest.parentSignBook.archiveStatus == T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
+                    <div class="alert alert-success">
+                        <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</h5>
+                        <label>Emplacement physique du document :</label>
+                        <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" style="width: 100%;" disabled />
+                    </div>
+                </th:block>
+                <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
+                    class="workspace alert alert-secondary row" style="margin-top: 128px;">
+                    <div class="card col-lg-10 mx-auto mb-1">
+                        <div class="card-body">
+                            <h5 class="text-center">Liste des documents originaux</h5>
+                            <div class="file-loading">
+                                <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="card col-lg-10 mx-auto"
-                    th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
-                    <div class="card-body">
-                        <h5 class="text-center">Liste des documents signés</h5>
-                        <div class="file-loading">
-                            <input id="signedFiles" name="signedFiles" type="file" multiple="multiple"/>
+                    <div class="card col-lg-10 mx-auto"
+                        th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
+                        <div class="card-body">
+                            <h5 class="text-center">Liste des documents signés</h5>
+                            <div class="file-loading">
+                                <input id="signedFiles" name="signedFiles" type="file" multiple="multiple"/>
+                            </div>
                         </div>
                     </div>
+                    <script th:inline="javascript" type="module">
+                        import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
+                        new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.originalDocuments}]], true);
+                        new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.signedDocuments}]], true);
+                    </script>
                 </div>
-                <script th:inline="javascript" type="module">
-                    import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
-                    new FilesInput($("#multipartFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.originalDocuments}]], true);
-                    new FilesInput($("#signedFiles"),[[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signRequest.signedDocuments}]], true);
-                </script>
-            </div>
-            <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
-                Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
-            </div>
-            <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace">
-                <div class=" alert alert-success w-100">
-                    <p>Le document a bien été signé, vous pouvez le télécharger</p>
-                    <a tabindex="1" class="btn btn-lg btn-dark" th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank" title="Télécharger la dernière version du document">
-                        Télécharger la dernière version du document
-                    </a>
+                <div th:if="${!signable && toSignDocument == null && signRequest.originalDocuments.size() > 0}" class="workspace alert alert-danger">
+                    Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
                 </div>
-            </div>
-            <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
-                <h4>La demande de signature a été supprimée</h4>
-                <p th:if="${signRequest.exportedDocumentURI != null}">
-                    Vous trouverez une copie du document signé ici : <a th:href="${signRequest.exportedDocumentURI}" th:text="${signRequest.exportedDocumentURI}"></a>
-                </p>
+                <div th:if="${toSignDocument != null && toSignDocument.contentType != 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="workspace">
+                    <div class=" alert alert-success w-100">
+                        <p>Le document a bien été signé, vous pouvez le télécharger</p>
+                        <a tabindex="1" class="btn btn-lg btn-dark" th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank" title="Télécharger la dernière version du document">
+                            Télécharger la dernière version du document
+                        </a>
+                    </div>
+                </div>
+                <div th:if="${toSignDocument == null && signRequest.deleted}" class="alert alert-danger">
+                    <h4>La demande de signature a été supprimée</h4>
+                    <p th:if="${signRequest.exportedDocumentURI != null}">
+                        Vous trouverez une copie du document signé ici : <a th:href="${signRequest.exportedDocumentURI}" th:text="${signRequest.exportedDocumentURI}"></a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
