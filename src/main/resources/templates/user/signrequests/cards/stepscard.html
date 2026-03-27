@@ -2,8 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard">
-    <div class="hr">Étapes du circuit</div>
-    <div class="card card-body bg-light mb-1">
+    <div class="fw-bold mt-1 mb-1">Étapes du circuit</div>
+    <div class="mb-1">
         <p th:if="${workflow != null}">Circuit : <b th:text="${workflow.description}"></b></p>
         <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps != null}">
             <div id="stepper" class="bs-stepper vertical">
@@ -12,7 +12,7 @@
                         Le circuit n'est pas démarré
                     </th:block>
 
-                    <div th:if="${signRequest.documentsHistory == null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="step border border-secondary border-2 bg-white rounded p-1">
+                    <div th:if="${signRequest.documentsHistory == null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="step bg-white rounded p-1">
                         <span class="bs-stepper-circle bg-info">
                             <i class="fi fi-rr-document"></i>
                         </span>
@@ -28,7 +28,7 @@
                     <div th:if="${signRequest.documentsHistory == null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" class="bs-stepper-line"></div>
 
                     <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                        <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-secondary border-2 bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
+                        <div th:id="'liveStep-' + ${iterator.index + 1}" class="step bg-white rounded p-1" th:name="'step_' + ${iterator.index}" th:classappend="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft} ? 'div-disable'">
                             <th:block th:if="${iterator.index + 1 > signRequest.parentSignBook.liveWorkflow.currentStepNumber || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                 <span title="Étape à venir" class="bs-stepper-circle">
                                     <i th:if="${!liveWorkflowStep.getAutoSign()}" class="fi fi-rr-pending"></i>
@@ -71,6 +71,16 @@
                             </th:block>
                             <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
                             <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
+                            <a th:unless="${signRequest.documentsHistory == null}" class="btn btn-sm btn-outline-primary"
+                               th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequest.id} + '/documents/' + ${iterator.index}}"
+                               title="Récupérer le document signé à cette étape">
+                                <i class="fi fi-rr-download"></i>
+                            </a>
+                            <button th:if="${signRequest.documentsHistory == null && iterator.index + 1 <= signRequest.parentSignBook.liveWorkflow.currentStepNumber}" class="btn btn-sm btn-outline-dark float-end toggle-layer-btn"
+                                    th:data-step="${iterator.index + 1}"
+                                    title="Afficher l'état du document à cette étape">
+                                <i class="fi fi-rr-eye"></i>
+                            </button>
                             <div>
                                 <th:block th:if="${liveWorkflowStep.description != null}">
                                     <span th:text="${liveWorkflowStep.description}"></span>
@@ -89,18 +99,6 @@
                                                 <i title="En attente de signature" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-clock text-warning"></i>
                                                 <i title="" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'none' && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="fa-solid fa-minus-circle text-secondary"></i>
                                                 <i title="A refusé le document" th:if="${signRequest.recipientHasSigned.get(recipient) != null && signRequest.recipientHasSigned.get(recipient).actionType.name() == 'refused'}" class="fa-solid fa-times-circle text-danger"></i>
-                                            </td>
-                                            <td>
-                                                <a th:unless="${signRequest.documentsHistory == null}" class="btn btn-sm btn-outline-primary"
-                                                   th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequest.id} + '/documents/' + ${iterator.index}}"
-                                                   title="Récupérer le document signé à cette étape">
-                                                    <i class="fi fi-rr-download"></i>
-                                                </a>
-                                                <button th:if="${signRequest.documentsHistory == null && iterator.index + 1 <= signRequest.parentSignBook.liveWorkflow.currentStepNumber}" class="btn btn-sm btn-outline-dark float-end toggle-layer-btn"
-                                                        th:data-step="${iterator.index + 1}"
-                                                        title="Afficher l'état du document à cette étape">
-                                                    <i class="fi fi-rr-eye"></i>
-                                                </button>
                                             </td>
                                             <td>
                                                 <button class="btn btn-sm"
@@ -221,7 +219,7 @@
                     </th:block>
                     <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned || signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
                         <div class="bs-stepper-line"></div>
-                        <div class="step border border-secondary border-2 rounded">
+                        <div class="step rounded bg-white">
                             <div title="Fin" class="bs-stepper-circle bg-success">
                                 <i class="fi fi-rr-flag"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>
@@ -229,7 +227,7 @@
                     </th:block>
                     <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                         <div class="bs-stepper-line"></div>
-                        <div class="step border border-secondary border-2 rounded">
+                        <div class="step rounded bg-white">
                             <div title="Fin" class="bs-stepper-circle bg-danger">
                                 <i class="fi fi-rr-triangle-warning"></i></div>
                             <div class="bs-stepper-label text-break">La procédure est terminée. <span th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">Les intervenants ont été informés par mail</span></div>

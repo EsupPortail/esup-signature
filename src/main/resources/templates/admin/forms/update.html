@@ -30,24 +30,24 @@
             <div class="fixed-action-btns">
                 <ul class="list-unstyled">
                     <li>
-                        <a role="button" title="Modifier le modèle" type="button" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#updateModel">
-                            <i class="fi fi-rr-cloud-upload fa-2xl" style="margin-top: 10px;"></i>
+                        <a role="button" title="Modifier le modèle" type="button" class="btn btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#updateModel">
+                            <i class="fi fi-rr-cloud-upload " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a class="btn-floating btn-lg bg-primary" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
-                            <i class="fi fi-rr-file-export fa-2xl" style="margin-top: 10px;"></i>
+                        <a class="btn btn-floating btn-lg bg-primary" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                            <i class="fi fi-rr-file-export " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a role="button" title="Importer la configuration d'un formulaire" type="button" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                            <i class="fi fi-rr-file-import fa-2xl" style="margin-top: 10px;"></i>
+                        <a role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
+                            <i class="fi fi-rr-file-import " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a id="saveButton" title="Enregistrer" role="button" class="btn-floating btn-lg bg-success"
+                        <a id="saveButton" title="Enregistrer" role="button" class="btn btn-floating btn-lg bg-success"
                             onclick="$('#formUpdate').submit();">
-                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
+                            <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>
@@ -184,7 +184,7 @@
                                                         <input class="form-control" name="fieldNames[]" type="text" placeholder="Nom"/>
                                                         <input class="form-control" name="fieldTypes[]" type="text" placeholder="Type"/>
                                                         <button type="button" class="btn btn-success btn-add-field">
-                                                            <span class="fa-solid fa-plus fa-2xl" aria-hidden="true"></span>
+                                                            <span class="fa-solid fa-plus " aria-hidden="true"></span>
                                                         </button>
                                                     </div>
                                                 </div>

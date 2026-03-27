@@ -77,8 +77,6 @@ header {
 }
 
 .content-full {
-    padding-left: 6px;
-    padding-right: 4px;
 }
 
 .content-full-fixed {
@@ -150,6 +148,8 @@ header {
 .workspace-pdf {
     width: 100%;
     display: flex;
+    height: calc(100vh - 150px);
+    overflow-y: scroll;
 }
 
 .workspace-sign {
@@ -212,6 +212,8 @@ header {
     min-width: 260px;
     max-width: 260px;
     overflow-y: auto;
+    padding-left: 0 !important;
+    height: calc(100vh - 150px);
 }
 
 #sidebar.active {
@@ -245,7 +247,7 @@ header {
 }
 
 .second-tools {
-    top: 130px;
+    top: 98px;
     z-index: 1;
 }
 
@@ -332,8 +334,8 @@ header {
 }
 
 .pdf-alerts-btn {
-    left: 277px;
-    top:135px;
+    left: 281px;
+    top:110px;
     position: fixed;
     z-index: 9999;
 }

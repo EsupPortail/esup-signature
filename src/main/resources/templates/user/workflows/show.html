@@ -18,15 +18,15 @@
             </ol>
         </nav>
         <div id="content" class="content-fixed-breadcrumb">
-            <div id="addButton" class="fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+            <div id="addButton" class="bg-secondary-subtle fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
-                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success">
+                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn btn-floating bg-success">
                             <i class="fa-solid fa-binoculars"></i>
                         </a>
                     </li>
                     <li>
-                        <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
+                        <a role="button" title="Ajouter une étape" class="btn-lg btn btn-floating bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
                             <span class="fa-stack fa-1x">
                                 <i class="fa-solid fa-shoe-prints fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
                                 <i class="fa-solid fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
@@ -34,8 +34,8 @@
                     </li>
                     <li>
                         <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
-                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger">
-                                <i class="fa-solid fa-trash-alt fa-2xl"></i>
+                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn btn-floating bg-danger">
+                                <i class="fa-solid fa-trash-alt "></i>
                             </a>
                         </form>
                     </li>

@@ -208,7 +208,7 @@ td {
 }
 
 .breadcrumb-nav {
-    background-color: white;
+    border-bottom: 1px solid #cccccc;
 }
 
 .scrollbar-lite {
@@ -1240,4 +1240,62 @@ tr[aria-expanded="true"] .caret-toggle::before {
         background-color: transparent;
         --underline-hover-width: var(--underline-max-width);
     }
+}
+
+
+/* Vertical Steps Style */
+.steps-vertical {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 0;
+}
+
+.step-vertical {
+    display: flex;
+    position: relative;
+    padding: 1rem 0;
+}
+
+.step-vertical:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 25px;
+    top: 60px;
+    bottom: 0;
+    width: 2px;
+    background: #e9ecef;
+}
+
+.step-vertical-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 20px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-vertical-content {
+    padding-top: 0.5rem;
+}
+
+.step-vertical.active .step-vertical-icon {
+    background: #4361ee;
+    border-color: #4361ee;
+    color: white;
+    box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.2);
+}
+
+.step-vertical.complete .step-vertical-icon {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: white;
 }

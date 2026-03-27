@@ -2,10 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style alert alert-light border-0 p-1">
+<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style alert alert-secondary border-secondary-subtle p-1 m-2">
     <div class="ms-1 mt-1">
-        <div class="hr">Statut</div>
-        <div class="card card-body bg-light">
+        <div class="fw-bold">Statut</div>
+        <div class="card card-body">
             <th:block th:if="${signRequest != null}">
                 <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
                 <div class="text-center mb-1">

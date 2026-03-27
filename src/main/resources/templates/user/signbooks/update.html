@@ -18,23 +18,23 @@
             <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg bg-primary float-end">
-                            <i class="fi fi-rr-add-document fa-2xl" style="margin-top: 10px;"></i>
+                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn btn-floating btn-lg bg-primary float-end">
+                            <i class="fi fi-rr-add-document " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end">
-                            <i class="fi fi-rr-workflow-setting fa-2xl" style="margin-top: 10px;"></i>
+                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn btn-floating btn-lg bg-primary float-end">
+                            <i class="fi fi-rr-workflow-setting " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
-                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
+                        <a id="saveButton" onclick="$('#params').submit();" class="btn btn-floating btn-lg bg-success" title="Enregistrer">
+                            <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                     <li>
-                        <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary" title="Retour au parapheur">
-                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 10px;"></i>
+                        <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn btn-floating btn-lg bg-secondary" title="Retour au parapheur">
+                            <i class="fi fi-rr-leave " style="margin-top: 10px;"></i>
                         </a>
                     </li>
                 </ul>
