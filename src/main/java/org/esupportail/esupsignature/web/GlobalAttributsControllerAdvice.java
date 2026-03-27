@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
+import org.esupportail.esupsignature.dto.FrontendGlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -98,8 +99,7 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user {} not found", userEppn);
                 return;
             }
-            GlobalProperties myGlobalProperties = new GlobalProperties();
-            generateMyProperties(userEppn, myGlobalProperties);
+            FrontendGlobalProperties myGlobalProperties = generateMyProperties(userEppn);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
@@ -116,7 +116,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("enableSms", smsProperties.getEnableSms());
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
-            model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
+            model.addAttribute("hoursBeforeRefreshNotif", globalProperties.getHoursBeforeRefreshNotif());
             model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
             if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
@@ -138,16 +138,12 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
-    private void generateMyProperties(String userEppn, GlobalProperties myGlobalProperties) {
+    private FrontendGlobalProperties generateMyProperties(String userEppn) {
+        GlobalProperties myGlobalProperties = new GlobalProperties();
         BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-        myGlobalProperties.setSealCertificatDriver(null);
-        myGlobalProperties.setSealCertificatFile(null);
-        myGlobalProperties.setSealCertificatPin(null);
-        myGlobalProperties.setSealCertificatType(null);
-        myGlobalProperties.setSealCertificatProperties(null);
-        myGlobalProperties.setExternalSignatureParams(null);
-        myGlobalProperties.newVersion = globalProperties.newVersion;
         userService.parseRoles(userEppn, myGlobalProperties);
+        myGlobalProperties.newVersion = globalProperties.newVersion;
+        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
     }
 
 }
