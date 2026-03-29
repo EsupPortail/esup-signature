@@ -5,37 +5,7 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div th:fragment="workspace" id="workspace" class="alert border-secondary-subtle justify-content-center mt-2 me-2" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-<!--    <div class="steps-vertical">-->
-<!--        <div class="step-vertical complete">-->
-<!--            <div class="step-vertical-icon">-->
-<!--                <i class="fas fa-check"></i>-->
-<!--            </div>-->
-<!--            <div class="step-vertical-content">-->
-<!--                <h4>Account Created</h4>-->
-<!--                <p>Your account has been created successfully</p>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="step-vertical active">-->
-<!--            <div class="step-vertical-icon">-->
-<!--                <i class="fas fa-envelope"></i>-->
-<!--            </div>-->
-<!--            <div class="step-vertical-content">-->
-<!--                <h4>Verification Email</h4>-->
-<!--                <p>Please check your email to verify your account</p>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--        <div class="step-vertical">-->
-<!--            <div class="step-vertical-icon">-->
-<!--                <i class="fas fa-cog"></i>-->
-<!--            </div>-->
-<!--            <div class="step-vertical-content">-->
-<!--                <h4>Setup Complete</h4>-->
-<!--                <p>Complete your profile setup</p>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-
+<div th:fragment="workspace" id="workspace" class="alert bg-light pt-1 border-0 justify-content-center me-2" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'workspace-sign' : 'workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? 'alert-secondary' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div id="display-pdf-alerts-dropdown" class="dropdown d-none" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
         <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
         title="Afficher les alertes">
@@ -166,7 +136,7 @@
     </div>
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
-        <div tabindex="0" id="pdf" style="position: relative !important; opacity: 1; cursor: default;">
+        <div tabindex="0" id="pdf">
             <th:block th:each="comment : ${comments}">
                 <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                     class="circle" th:id="'inDocComment_' + ${comment.id}"

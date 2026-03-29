@@ -34,10 +34,6 @@ textarea:invalid {
     box-shadow:none;
 }
 
-.alert {
-    margin-bottom: 0;
-}
-
 .btn-transparent {
     background: transparent;
     color: #F2F2F2;

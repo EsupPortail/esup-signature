@@ -237,7 +237,7 @@
             <div class="col-12 col-xxl-10 mx-auto" id="new-div" >
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
-            <div id="shortcuts" th:if="${userEppn == authUserEppn}" class="col-12 col-xxl-10 alert rounded-3 border-secondary-subtle mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
+            <div id="shortcuts" th:if="${userEppn == authUserEppn}" class="col-12 col-xxl-10 alert alert-light rounded-3 border-secondary-subtle mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
 <!--                <a tabindex="0"  id="to-sign-btn" role="button"-->
 <!--                   class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=toSign" title="Afficher mes signature en attente"-->
 <!--                   th:classappend="${nbToSign > 0} ? '' : 'disabled'"-->
@@ -293,7 +293,7 @@
                 </a>
             </div>
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-1 gap-xxl-3">
-                <div id="toSignDiv" class="alert rounded-3 border-secondary-subtle gap-2 border-end border-secondary-subtle pe-xxl-3 position-relative"
+                <div id="toSignDiv" class="alert alert-light rounded-3 border-secondary-subtle gap-2 border-end border-secondary-subtle pe-xxl-3 position-relative"
                      style="max-width: 100%;"
                      th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
                     <div class="d-flex justify-content-between">
@@ -331,7 +331,7 @@
                         <div id="pending-list" th:replace="~{fragments/pendingList :: pending-list}"></div>
                     </div>
                 </div>
-                <div id="myFavorites" th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0)}" class="alert rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
+                <div id="myFavorites" th:if="${userEppn == authUserEppn && (workflows.size() > 0 || forms.size() > 0 || featuredWorkflows.size() > 0)}" class="alert alert-light rounded-3 border-secondary-subtle d-flex flex-row gap-2 d-flex flex-column border-end pe-xxl-3 w-100 w-75-l" style="max-width: 100%;">
                     <div th:insert="~{fragments/new-featured :: new-featured}" th:if="${featuredWorkflows.size() > 0}"></div>
                     <div class="w-100"  th:if="${workflows.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">

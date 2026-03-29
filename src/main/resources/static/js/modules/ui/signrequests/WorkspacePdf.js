@@ -1017,7 +1017,7 @@ export class WorkspacePdf {
     enableCommentMode() {
         console.info("enable comments mode");
         $("#hideComments").hide();
-        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline"> Quitter annotation</span>')
+        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline"> </span>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();

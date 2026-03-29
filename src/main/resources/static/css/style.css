@@ -39,6 +39,9 @@ main {
     user-select: none;
 }
 
+#content {
+}
+
 .main-selectable {
     -webkit-touch-callout: initial !important;
     -webkit-user-select: initial !important;
@@ -1301,10 +1304,158 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-warning) !important;
     border-color: var(--bs-warning) !important;
     color: white;
-    box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.2);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .step-vertical.complete .step-vertical-icon {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+/* Horizontal Steps Style - Version 1: Text below icon */
+.steps-horizontal {
+    max-width: none;
+    padding: 0;
+    display: flex;
+    gap: 0;
+}
+
+.step-horizontal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    padding-right: 1rem;
+}
+
+.step-horizontal:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 0;
+    height: 2px;
+    background: white;
+}
+
+.step-horizontal-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-size: 20px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-horizontal-content {
+    padding-left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.step-horizontal.doc .step-horizontal-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+.step-horizontal.active .step-horizontal-icon {
+    background: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal.complete .step-horizontal-icon {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+
+/* Horizontal Steps Style - Version 2: Text beside icon with corrected connector */
+.steps-horizontal-v2 {
+    max-width: none;
+    padding: 0;
+    display: flex;
+    gap: 0;
+}
+
+.step-horizontal-v2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    padding-right: 5rem;
+    padding-left: 5rem;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.step-horizontal-v2:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    width: 4rem;
+    height: 2px;
+    background: #dee2e6;
+    transform: translateY(-50%);
+}
+
+.step-horizontal-v2-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: black;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-horizontal-v2-content {
+    padding-left: 0;
+    width: auto;
+}
+
+.step-horizontal-v2.doc .step-horizontal-v2-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+.step-horizontal-v2.active .step-horizontal-v2-icon {
+    background: var(--bs-white) !important;
+    border-color: var(--bs-success) !important;
+    color: var(--bs-success);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal-v2.disable .step-horizontal-v2-icon {
+    background: var(--bs-secondary) !important;
+    border-color: var(--bs-secondary) !important;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal-v2.complete .step-horizontal-v2-icon {
     background: var(--bs-success);
     border-color: var(--bs-success);
     color: white;

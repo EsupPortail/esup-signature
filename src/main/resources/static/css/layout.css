@@ -141,14 +141,16 @@ header {
 }
 
 .workspace {
-    width: 100%;
+    margin-left: 0px;
+    width: calc(100vw - 136px);
     display: flex;
+    height: calc(100vh - 136px);
+
 }
 
 .workspace-pdf {
     width: 100%;
     display: flex;
-    height: calc(100vh - 150px);
     overflow-y: scroll;
 }
 
@@ -159,6 +161,13 @@ header {
 
 .workspace-margin-top-admin {
     margin-top: 175px;
+}
+
+#pdf {
+    position: relative !important;
+    opacity: 1;
+    cursor: default;
+    padding-bottom: 5px;
 }
 
 #actionDiv {
@@ -213,7 +222,8 @@ header {
     max-width: 300px;
     overflow-y: auto;
     padding-left: 0 !important;
-    height: calc(100vh - 150px);
+    height: 100vh;
+    top: 50px;
 }
 
 #sidebar.active {
@@ -247,7 +257,7 @@ header {
 }
 
 .second-tools {
-    top: 98px;
+    margin-top: 5px;
     z-index: 1;
 }
 
