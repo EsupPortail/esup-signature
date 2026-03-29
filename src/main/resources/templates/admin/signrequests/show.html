@@ -14,8 +14,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/signrequests">Liste
@@ -25,24 +24,10 @@
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn btn-floating btn-lg bg-primary" title="Restaurer">
-                            <i class="fa-solid fa-trash-restore "></i>
-                        </a>
-                    </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn btn-floating btn-lg bg-danger"
-                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>
-                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt "></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div id="content" class="content-full">
+            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Statut</h5>
@@ -139,6 +124,25 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+                </div>
+            <div id="signButtons" class="bg-light fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
+                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn btn-floating btn-lg bg-primary" title="Restaurer">
+                            <i class="fa-solid fa-trash-restore "></i>
+                        </a>
+                    </li>
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                        <a id="trashLaunchButton" role="button" class="btn btn-floating btn-lg bg-danger"
+                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt "></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             </div>
         </div>
     </div>

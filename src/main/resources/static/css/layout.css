@@ -36,7 +36,7 @@ header {
 }
 
 .navbar-brand {
-    width: 260px;
+    width: 300px;
     margin-right: 0px;
 }
 
@@ -71,7 +71,7 @@ header {
 .content {
     width: calc(100vw - 275px);
     margin-top: 86px;
-    margin-left: 260px;
+    margin-left: 300px;
     padding-left: 6px;
     padding-right: 4px;
 }
@@ -81,7 +81,7 @@ header {
 
 .content-full-fixed {
     margin-left: 0;
-    margin-top: 50px;
+    margin-top: 86px;
 }
 
 .content-fixed-breadcrumb {
@@ -209,8 +209,8 @@ header {
 }
 
 #sidebar {
-    min-width: 260px;
-    max-width: 260px;
+    min-width: 300px;
+    max-width: 300px;
     overflow-y: auto;
     padding-left: 0 !important;
     height: calc(100vh - 150px);
@@ -223,8 +223,8 @@ header {
 
 .sidebar-mobile {
     display: block !important;
-    width: 260px !important;
-    max-width: 260px !important;
+    width: 300px !important;
+    max-width: 300px !important;
     position: absolute !important;
     top: 105px !important;
     height: calc(100vh - 138px) !important;
@@ -334,7 +334,7 @@ header {
 }
 
 .pdf-alerts-btn {
-    left: 281px;
+    left: 322px;
     top:110px;
     position: fixed;
     z-index: 9999;

@@ -288,11 +288,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.webjars.npm</groupId>
-			<artifactId>bs-stepper</artifactId>
-			<version>1.7.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars.npm</groupId>
 			<artifactId>intl-tel-input</artifactId>
 			<version>25.3.0</version>
 		</dependency>

@@ -3,9 +3,8 @@
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style alert alert-secondary border-secondary-subtle p-1 m-2">
-    <div class="ms-1 mt-1">
-        <div class="fw-bold">Statut</div>
-        <div class="card card-body">
+        <p class="text-uppercase m-2">Statut</p>
+        <div class="card card-body m-1">
             <th:block th:if="${signRequest != null}">
                 <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
                 <div class="text-center mb-1">
@@ -45,6 +44,5 @@
 <!--        </button>-->
         <div th:if="${signRequest != null && comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
         <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
-    </div>
 </nav>
 </html>

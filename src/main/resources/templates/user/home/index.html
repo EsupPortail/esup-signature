@@ -34,7 +34,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <div id="content" class="content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3 p-2">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
             <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
                     <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
@@ -49,6 +49,10 @@
 <!--                    <button title="Rechercher" id="submit-mega-search" class="btn btn-light border-secondary-subtle"><i class="fi fi-rr-search"></i></button>-->
 <!--                    <button title="Réinitialiser la recherche" id="reset-mega-search" class="btn btn-light border-secondary-subtle rounded-end-2"><i class="fi fi-rr-cross-circle"></i></button>-->
                 </div>
+            </div>
+        </nav>
+        <div id="content" class="content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3 p-2">
+            <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;" data-bs-focus="false" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-scrollable">
                         <div class="modal-content" style="height: 100%;">

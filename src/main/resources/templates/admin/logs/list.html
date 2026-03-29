@@ -6,14 +6,16 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Logs</li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="content-full">
+            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
             <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
                     <table class="table table-light table-borderless table-hover">
                         <thead class="table-secondary">
@@ -45,6 +47,8 @@
                     </table>
                     <nav th:replace="~{fragments/pagination :: pagination}"></nav>
                 </div>
+                </div>
+            </div>
         </div>
     </div>
 </main>

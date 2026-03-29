@@ -141,7 +141,7 @@
                 </button>
                 <form th:if="${displayNotif}"
                     th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
-                    <button type="submit" class="d-flex align-items-center btn btn-transparent text-dark  me-1">
+                    <button title="Relancer le destinataire" type="submit" class="d-flex align-items-center btn btn-transparent text-dark  me-1">
                         <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxxl-inline"> Relancer</span>
                     </button>
                 </form>

@@ -14,34 +14,17 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
                 <li class="breadcrumb-item active"><span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
-        <div id="content" class="content-fixed-breadcrumb">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${hided}">
-                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
-                            <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li th:unless="${hided}">
-                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
-                            <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-floating btn-lg bg-primary">
-                            <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="d-flex align-items-center justify-content-center"><h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5> <h5 th:if="${hided}">(Demandes masquées)</h5></div>
-            <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
+        <div id="content" class="content-full">
+            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+                <div class="flex-grow-1">
+                    <div class="d-flex align-items-center justify-content-center"><h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5> <h5 th:if="${hided}">(Demandes masquées)</h5></div>
+                    <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                 <table class="table table-light table-borderless table-hover">
                     <thead class="table-secondary">
                     <tr style="z-index: 2;">
@@ -219,6 +202,27 @@
                     </tr>
                     </tfoot>
                 </table>
+                    </div>
+                </div>
+                <div id="signButtons" class="bg-light fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li th:if="${hided}">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
+                                <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li th:unless="${hided}">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
+                                <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-floating btn-lg bg-primary">
+                                <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

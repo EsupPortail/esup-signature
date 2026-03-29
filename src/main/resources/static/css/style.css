@@ -208,6 +208,9 @@ td {
 }
 
 .breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    height:48px;
     border-bottom: 1px solid #cccccc;
 }
 
@@ -1246,36 +1249,35 @@ tr[aria-expanded="true"] .caret-toggle::before {
 /* Vertical Steps Style */
 .steps-vertical {
     max-width: 500px;
-    margin: 2rem auto;
     padding: 0;
 }
 
 .step-vertical {
     display: flex;
     position: relative;
-    padding: 1rem 0;
+    padding-bottom: 1rem;
 }
 
 .step-vertical:not(:last-child)::after {
     content: '';
     position: absolute;
-    left: 25px;
-    top: 60px;
+    left: 20px;
+    top: 40px;
     bottom: 0;
     width: 2px;
-    background: #e9ecef;
+    background: white;
 }
 
 .step-vertical-icon {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: white;
     border: 2px solid #dee2e6;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
+    margin-right: .5rem;
     font-size: 20px;
     color: #6c757d;
     position: relative;
@@ -1285,17 +1287,25 @@ tr[aria-expanded="true"] .caret-toggle::before {
 
 .step-vertical-content {
     padding-top: 0.5rem;
+    width: 100%;
 }
 
+.step-vertical.doc .step-vertical-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+
 .step-vertical.active .step-vertical-icon {
-    background: #4361ee;
-    border-color: #4361ee;
+    background: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
     color: white;
     box-shadow: 0 0 0 5px rgba(67, 97, 238, 0.2);
 }
 
 .step-vertical.complete .step-vertical-icon {
-    background: #2ecc71;
-    border-color: #2ecc71;
+    background: var(--bs-success);
+    border-color: var(--bs-success);
     color: white;
 }
