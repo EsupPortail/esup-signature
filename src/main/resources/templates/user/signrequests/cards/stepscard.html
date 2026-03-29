@@ -14,7 +14,7 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-document"></i>
                         </div>
-                        <div class="step-vertical-content bg-white p-1 rounded">
+                        <div class="step-vertical-content bg-light p-1 rounded">
                             <b>Document original</b>
                             <button class="btn btn-sm btn-outline-dark toggle-layer-btn"
                                     th:data-step="0"
@@ -28,8 +28,8 @@
                 <!-- Message si circuit non démarré -->
                 <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
                     <div class="step-vertical">
-                        <div class="step-vertical-content bg-white p-1 rounded">
-                            <p class="text-muted">Le circuit n'est pas démarré</p>
+                        <div class="step-vertical-content bg-light p-1 rounded">
+                            <p class="text-muted">Le circuit n’est pas démarré</p>
                         </div>
                     </div>
                 </th:block>
@@ -71,7 +71,7 @@
                             </div>
 
                             <!-- Contenu -->
-                            <div class="step-vertical-content  bg-white p-1 rounded">
+                            <div class="step-vertical-content  bg-light p-1 rounded">
                                 <b th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></b>
 
                                 <!-- Description -->
@@ -98,7 +98,7 @@
                                     <table class="table table-sm table-hover table-borderless step-recipients">
                                         <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                                             <tr>
-                                                <td class="recipient-name">
+                                                <td class="recipient-name bg-light">
                                                     <span th:if="${not #strings.isEmpty(recipient.user.firstname) and not #strings.isEmpty(recipient.user.name)}"
                                                           th:text="${recipient.user.firstname + ' ' + recipient.user.name}"
                                                           th:title="${recipient.user.email}"></span>
@@ -109,7 +109,7 @@
                                                     <small th:if="${signRequest.recipientHasSigned.get(recipient) != null and signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
                                                            th:text="|Le ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}|"></small>
                                                 </td>
-                                                <td class="recipient-status">
+                                                <td class="recipient-status bg-light">
                                                     <i th:if="${signRequest.recipientHasSigned.get(recipient) != null and signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
                                                        class="fa-solid fa-check-circle text-success"
                                                        th:title="|A signé le ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}|"></i>
@@ -122,7 +122,7 @@
                                                        class="fa-solid fa-times-circle text-danger"
                                                        title="A refusé le document"></i>
                                                 </td>
-                                                <td>
+                                                <td class="bg-light">
                                                     <button class="btn btn-sm"
                                                             title="Envoyer un nouveau lien d'accès"
                                                             th:onclick="|$('#menu-${recipient.id}').toggle();|"
