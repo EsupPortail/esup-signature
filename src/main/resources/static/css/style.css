@@ -43,6 +43,18 @@ main {
     background-color: var(--bs-light);
 }
 
+ #sidebar {
+     background-color: var(--bs-secondary-bg);
+ }
+
+.tools {
+    font-size: 18px;
+}
+
+.tools button {
+    font-size: 18px;
+}
+
 .main-selectable {
     -webkit-touch-callout: initial !important;
     -webkit-user-select: initial !important;
@@ -216,6 +228,14 @@ td {
     align-items: center;
     height:48px;
     border-bottom: 1px solid #cccccc;
+}
+
+.breadcrumb-nav i:before {
+    font-size: 20px;
+}
+
+.signButtons i:before {
+    font-size: 20px;
 }
 
 .scrollbar-lite {
@@ -600,6 +620,11 @@ input:focus, textarea:focus, select:focus {
     outline: none !important;
     /*box-shadow: none !important;*/
     /*    border-radius: .125rem;*/
+}
+
+.global-button {
+    background-color: white;
+
 }
 
 .btn-material {

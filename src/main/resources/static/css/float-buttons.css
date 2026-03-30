@@ -80,13 +80,6 @@
     margin-bottom: 15px;
 }
 
-.fixed-action-btns {
-    pointer-events: none;
-    padding: 10px;
-    height: calc(100vh - 98px);
-
-}
-
 .fixed-action-btns ul {
     pointer-events: initial;
     opacity: 1;

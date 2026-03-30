@@ -38,71 +38,85 @@
 
 <main role="main">
     <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-white justify-content-start bg-light breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
-                <div class="d-flex align-items-center" style="width: 33%;">
-                    <button id="display-side-btn" type="button" class="d-flex align-items-center btn btn-transparent text-dark  me-1 d-flex d-xl-none" title="Afficher l'état du circuit">
-                        <i class="fi fi-rr-sidebar"></i>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-white justify-content-center gap-5 bg-light breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+            <div class="d-flex align-items-center">
+                <button id="display-side-btn" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-flex d-xl-none" title="Afficher l'état du circuit">
+                    <i class="fi fi-rr-sidebar"></i>
+                </button>
+                <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                    <button class="d-flex align-items-center btn btn-warning ms-1 me-1"
+                            name="changeMode"
+                            id="changeMode1"><i class="fi fi-rr-pencil"></i> <span class="d-none d-xl-inline"> Mode annotation</span> <span class="badge rounded-pill bg-dark" th:if="${comments.size() > 0}" th:text="${comments.size()}"></span></button>
+                </th:block>
+                <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1 h-100" style="display: none;">
+                    <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
+                            class="d-flex align-items-center btn btn-warning text-start">
+                        <i class="fi fi-rr-digital-signature" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Emplacement de signature</span>
                     </button>
-
-                    <th:block th:if="${editable && signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                        <button class="d-flex align-items-center btn btn-warning ms-1 me-1"
-                                name="changeMode"
-                                id="changeMode1"><i class="fi fi-rr-pencil"></i> <span class="d-none d-xl-inline"> Mode annotation</span> <span class="badge rounded-pill bg-dark" th:if="${comments.size() > 0}" th:text="${comments.size()}"></span></button>
-                    </th:block>
-                    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-inline-flex d-none text-start gap-1 h-100"
-                         style="display: none;">
-                        <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
-                                class="d-flex align-items-center btn btn-warning text-start">
-                            <i class="fi fi-rr-digital-signature" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Emplacement de signature</span>
-                        </button>
-                        <button id="addCommentButton"
-                                class="d-flex align-items-center btn btn-warning text-start">
-                            <i class="fi fi-rr-comment-alt" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Annotation</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
-                    <button id="fullheight" title="Pleine hauteur" class="d-flex align-items-center btn btn-transparent text-dark  me-1 d-none d-sm-flex"><i
-                            class="fi fi-rr-compress-alt"></i></button>
-                    <button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-transparent text-dark  me-1"><i
-                            class="fi fi-rr-zoom-out"></i></button>
-                    <div class="zoom me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
-                    <button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark  me-1"><i
-                            class="fi fi-rr-zoom-in"></i></button>
-                    <button id="fullwidth" title="Pleine largeur" class="d-flex align-items-center btn btn-transparent text-dark  me-1 d-none d-sm-flex"><i
-                            class="fi fi-rr-expand-arrows"></i></button>
-                    <div class="border ms-1 me-2 d-none d-lg-block"></div>
-                    <div class="border border-secondary ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                    <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark  me-1 d-none d-sm-flex" aria-label="Précédent">
-                        <i class="fi fi-rr-up"></i>
+                    <button id="addCommentButton"
+                            class="d-flex align-items-center btn btn-warning text-start">
+                        <i class="fi fi-rr-comment-alt" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Annotation</span>
                     </button>
-                    <div class="d-flex me-1 p-1 pt-2 fw-bold" style="width: 150px;">
-                        <span>Page </span>
-                        <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 40px;"/> <span> / </span> <span id="page_count"></span>
-                    </div>
-                    <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" aria-label="Prochain">
-                        <i class="fi fi-rr-down"></i>
-                    </button>
-                    <div class="border border-secondary ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                    <button id="autototate" th:if="${signable}" class="d-flex align-items-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
-                        <i class="fi fi-rr-navigation" style="font-size: 18px;"></i>
-                    </button>
-                    <a tabindex="0" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
-                       class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex"
-                       onclick="printIt()" target="_blank"
-                       title="Imprimer le document"><i class="fi fi-rr-print"></i></a>
-                    <script th:inline="javascript">
-                        function printIt() {
-                            let win = window.open('/ws-secure/global/get-last-file-inline/[[${id}]]', '', '');
-                            $(win).ready(function() {
-                                setTimeout(function(){
-                                    win.window.print();
-                                },500);
-                            });
-                        }
-                    </script>
                 </div>
 
+            </div>
+            <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
+            <div class="d-flex align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
+                <button id="fullheight" title="Pleine hauteur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i
+                        class="fi fi-rr-compress-alt"></i></button>
+                <button id="fullwidth" title="Pleine largeur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i
+                    class="fi fi-rr-expand-arrows"></i></button>
+                <button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-transparent text-dark"><i
+                        class="fi fi-rr-zoom-out"></i></button>
+                <div class="zoom me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
+                <button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark"><i
+                        class="fi fi-rr-zoom-in"></i></button>
+                <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex" aria-label="Précédent">
+                    <i class="fi fi-rr-up"></i>
+                </button>
+                <div class="d-flex me-1 p-1 pt-2 fw-bold" style="width: 150px;">
+                    <span>Page </span>
+                    <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 40px;"/> <span> / </span> <span id="page_count"></span>
+                </div>
+                <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" aria-label="Prochain">
+                    <i class="fi fi-rr-down"></i>
+                </button>
+                <button id="autototate" th:if="${signable}" class="d-flex align-items-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
+                    <i class="fi fi-rr-navigation" style="font-size: 18px;"></i>
+                </button>
+                <a tabindex="0" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+                   class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex"
+                   onclick="printIt()" target="_blank"
+                   title="Imprimer le document"><i class="fi fi-rr-print"></i></a>
+                <script th:inline="javascript">
+                    function printIt() {
+                        let win = window.open('/ws-secure/global/get-last-file-inline/[[${id}]]', '', '');
+                        $(win).ready(function() {
+                            setTimeout(function(){
+                                win.window.print();
+                            },500);
+                        });
+                    }
+                </script>
+            </div>
+            <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
+            <div class="d-flex">
+                <div th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                    <a tabindex="1" class="btn btn-transparent text-dark"
+                       th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
+                       title="Télécharger le document">
+                        <i class="fi fi-rr-download " style="margin-top: 10px;"></i>
+                    </a>
+                </div>
+                <div class="d-sm-block d-none" th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
+                    <button tabindex="1" id="trashLaunchButton" class="btn btn-transparent text-danger"
+                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}" style="border: 0; ">
+                        <i th:if="${signRequest.deleted}" class="fi fi-rr-trash-xmark " style="margin-top: 0;"></i>
+                        <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
+                    </button>
+                </div>
+            </div>
         </nav>
         <div id="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}" class = "content-full">
             <div style="position: absolute;top: 200px;" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
@@ -142,13 +156,11 @@
                     </div>
                 </th:block>
             </div>
-
             <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
                 <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
-
-                <div class="workspace d-flex flex-column bg-light" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
-                    <div class="m-2" style="width: 100%; height: 60px; min-width: 0; text-overflow: ellipsis;text-wrap: nowrap; overflow: hidden;">
+                <div id="workspace" class="workspace d-flex flex-column" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
+                    <div class="p-2" style="width: 100%; margin-bottom: 78px; min-width: 0; text-overflow: ellipsis;text-wrap: nowrap;">
                         <div class="d-flex gap-1 align-items-center align-content-center text-primary-emphasis">
                             <i class="fi fi-tr-folder-open" style="font-size: 20px;flex-shrink: 0;"></i>
                             <h5 class="text-uppercase p-0 m-0" th:text="${signBook.workflowName} + ' - '"
@@ -167,8 +179,7 @@
                         <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" style="width: 100%;" disabled />
                     </div>
                 </th:block>
-                <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace"
-                    class=" alert alert-secondary row" style="margin-top: 128px;">
+                <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace" class=" alert alert-secondary row" style="margin-top: 128px;">
                     <div class="card col-lg-10 mx-auto mb-1">
                         <div class="card-body">
                             <h5 class="text-center">Liste des documents originaux</h5>
@@ -209,45 +220,43 @@
                         Vous trouverez une copie du document signé ici : <a th:href="${signRequest.exportedDocumentURI}" th:text="${signRequest.exportedDocumentURI}"></a>
                     </p>
                 </div>
-                <div id="signButtons" class="bg-white fixed-action-btns active">
-                    <ul id="buttonList" class="list-unstyled">
-                        <button th:if="${user.userType.name() != 'external' && externalsRecipients != null && externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-transparent text-dark  me-1" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
+                <div id="signButtons" class="signButtons d-flex flex-column justify-content-between bg-white fixed-action-btns active">
+                    <div class="d-flex flex-column gap-4">
+                    <button class="d-flex flex-column gap-1 align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
+                            data-bs-target="#attachment"
+                            th:if="${user.userType.name() != 'external' || signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
+                        <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
+                             th:text="${attachments.size() + signRequest.links.size()}"
+                             class="badge rounded-pill bg-primary"></div>
+                        <i class="fi fi-rr-clip"></i> <span class="d-none"> Pièces jointes </span>
+                    </button>
+                    <button class="d-flex align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Ajouter un post-it"
+                            data-bs-target="#addCommentModal"
+                            th:if="${(signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanEdit == true || user.userType.name() != 'external') && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+                    >
+                        <i class="fi fi-rr-notes"></i> <span class="d-none"> Post-it</span>
+                    </button>
+                    <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Gérer mes images de signature">
+                        <i class="fi fi-rr-drawer-alt"></i> <span class="d-none"> Mes signatures</span>
+                    </button>
+                    <form th:if="${displayNotif}"
+                          th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                        <button title="Relancer le destinataire" type="submit" class="d-flex align-items-center btn btn-transparent text-dark">
+                            <i class="fi fi-rr-bullhorn"></i> <span class="d-none"> Relancer</span>
+                        </button>
+                    </form>
+                        <button th:if="${user.userType.name() != 'external' && externalsRecipients != null && externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-transparent text-dark" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
                             <i class="fi fi-rr-share"></i>
                         </button>
-                        <a th:if="${isManager}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex ms-1 me-1" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
+                        <a th:if="${isManager}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
                             <i class="fi fi-rr-overview"></i>
                         </a>
                         <a th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-md-flex" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${signRequest.parentSignBook.id}">
                             <i class="fi fi-rr-settings-sliders"></i>
                         </a>
-                        <a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+                        <a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
                             <i class="fi fi-rr-info"></i>
                         </a>
-                        <div id="signModeBtns" class="">
-                            <button class="d-flex align-items-center btn btn-transparent text-dark  ms-1 me-1" data-bs-toggle="modal" title="Pièces jointes"
-                                    data-bs-target="#attachment"
-                                    th:if="${user.userType.name() != 'external' || signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanReaderAttachments == true}">
-                                <i class="fi fi-rr-clip"></i> <span class="d-none d-xxxxl-inline"> Pièces jointes </span>
-                                <div th:if="${attachments != null && attachments.size() + signRequest.links.size() > 0 }"
-                                     th:text="${attachments.size() + signRequest.links.size()}"
-                                     class="badge rounded-pill bg-primary"></div>
-                            </button>
-                            <button class="d-flex align-items-center btn btn-transparent text-dark  me-1" data-bs-toggle="modal" title="Ajouter un post-it"
-                                    data-bs-target="#addCommentModal"
-                                    th:if="${(signBook.liveWorkflow.workflow == null || signBook.liveWorkflow.workflow.externalCanEdit == true || user.userType.name() != 'external') && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
-                            >
-                                <i class="fi fi-rr-notes"></i> <span class="d-none d-xxxl-inline"> Post-it</span>
-                            </button>
-                            <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-transparent text-dark  me-1 d-none d-lg-flex" title="Gérer mes images de signature">
-                                <i class="fi fi-rr-drawer-alt"></i> <span class="d-none d-xxxxl-inline"> Mes signatures</span>
-                            </button>
-                            <form th:if="${displayNotif}"
-                                  th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
-                                <button title="Relancer le destinataire" type="submit" class="d-flex align-items-center btn btn-transparent text-dark  me-1">
-                                    <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxxl-inline"> Relancer</span>
-                                </button>
-                            </form>
-                        </div>
 
                         <!--                        <li th:if="${isManager && signRequest.data == null}">-->
 <!--                            <button tabindex="1" id="addSpotButton2" role="button" class="btn btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0">-->
@@ -296,12 +305,7 @@
 <!--                                <i class="fi fi-rr-refer-arrow  text-light" style="margin-top: 0; border: 0;"></i>-->
 <!--                            </button>-->
 <!--                        </li>-->
-<!--                        <li th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">-->
-<!--                            <button tabindex="1" id="refuseLaunchButton" class="btn btn-floating btn-lg bg-danger border-0 d-none" title="Refuser"-->
-<!--                                    th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">-->
-<!--                                <i class="fi fi-rr-document-circle-wrong " style="margin-top: 0;"></i>-->
-<!--                            </button>-->
-<!--                        </li>-->
+
                         <li th:if="${(signRequest.createBy.eppn == userEppn || (signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.managers.contains(user.email))) && signRequest.deleted}">
                             <a tabindex="1" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" class="btn btn-floating btn-lg bg-primary" title="Restaurer">
                                 <i class="fi fi-rr-trash-restore-alt " style="margin-top: 10px;"></i>
@@ -320,21 +324,7 @@
                                 <i class="fi fi-rr-refresh "style="margin-top: 10px;"></i>
                             </a>
                         </li>
-                        <li class="d-sm-block d-none" th:if="${@preAuthorizeService.signRequestDelete(signRequest.id, authUserEppn) && (!signRequest.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed) || signBook.status.equals(T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed))}">
-                            <button tabindex="1" id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
-                                    th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                                    data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}" style="border: 0; ">
-                                <i th:if="${signRequest.deleted}" class="fi fi-rr-trash-xmark " style="margin-top: 0;"></i>
-                                <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
-                            </button>
-                        </li>
-                        <li th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                            <a tabindex="1" class="btn-lg btn btn-floating bg-dark"
-                               th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
-                               title="Télécharger le document">
-                                <i class="fi fi-rr-download " style="margin-top: 10px;"></i>
-                            </a>
-                        </li>
+
                         <li th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                             <a tabindex="1" class="btn-lg btn btn-floating bg-dark"
                                th:href="'/ws-secure/global/get-last-file/' + ${id}" target="_blank"
@@ -378,19 +368,20 @@
                                 </a>
                             </li>
                         </th:block>
+                    </div>
+                    <div>
                         <li th:if="${nextSignBook != null}" class="d-md-block d-none">
                             <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
-                               class="btn-lg btn btn-floating bg-secondary" title="Aller à la suivante">
+                               class="btn btn-transparent text-dark" title="Aller à la suivante">
                                 <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>
                             </a>
                             <a tabindex="1" th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}"
-                               class="btn-lg btn btn-floating bg-secondary" title="Aller à la suivante">
+                               class="btn btn-transparent text-dark" title="Aller à la suivante">
                                 <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>
                             </a>
                         </li>
-                    </ul>
+                    </div>
                 </div>
-
             </div>
         </div>
     </div>

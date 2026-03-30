@@ -68,6 +68,10 @@ header {
     display: block;
 }
 
+#content {
+    height: 100vh;
+}
+
 .content {
     width: calc(100vw - 275px);
     margin-top: 86px;
@@ -141,17 +145,15 @@ header {
 }
 
 .workspace {
-    margin-left: 0px;
+    margin-left: 0;
     width: calc(100vw - 136px);
     display: flex;
     height: calc(100vh - 136px);
-
+    overflow-y: scroll;
 }
 
 .workspace-pdf {
-    width: 100%;
     display: flex;
-    overflow-y: scroll;
 }
 
 .workspace-sign {
@@ -222,7 +224,7 @@ header {
     max-width: 300px;
     overflow-y: auto;
     padding-left: 0 !important;
-    height: 100vh;
+    height: calc(100vh - 98px);
     top: 50px;
 }
 
@@ -241,16 +243,18 @@ header {
     z-index: 1 !important;
 }
 
-/*.tools {*/
-/*    top: 82px;*/
-/*    !*height: 50px;*!*/
-/*    padding-top: 5px;*/
-/*    background-color: white;*/
-/*    width: 100%;*/
-/*    z-index: 1029;*/
-/*    position: fixed;*/
-/*    !*padding-left: 10px;*!*/
-/*}*/
+.fixed-action-btns {
+    padding: 10px;
+    height: calc(100vh - 128px);
+
+}
+
+.tools {
+    width: calc(100vw - 380px);
+    top: 128px;
+    z-index: 1029;
+    position: absolute;
+}
 
 .tools-admin {
     top: 128px;

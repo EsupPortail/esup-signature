@@ -10,7 +10,7 @@
         <a tabindex="0" id="link-accueil" type="button"
             href="/user" class="btn btn-transparent text-left d-flex d-sm-none align-items-center">
             <i class="fi fi-rr-home"  style="line-height: 14px;"></i></a>
-        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand d-flex flex-row justify-content-center" aria-label="Esup-Signature">
+        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand d-flex flex-row justify-content-start ms-1" aria-label="Esup-Signature">
             <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         </a>
         <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
