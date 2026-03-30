@@ -2,7 +2,8 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 
 <nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-    <div class="d-flex align-items-center">
+    <div class="d-flex justify-content-center gap-5 align-items-center vw-100">
+    <div>
         <button id="display-side-btn" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-flex d-xl-none" title="Afficher l'état du circuit">
             <i class="fi fi-rr-sidebar"></i>
         </button>
@@ -21,7 +22,6 @@
                 <i class="fi fi-rr-comment-alt" style="font-size: 18px; padding-bottom: 2px;"></i> <span class="d-none d-xxl-inline"> Annotation</span>
             </button>
         </div>
-
     </div>
     <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
     <div class="d-flex align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
@@ -79,6 +79,7 @@
                 <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
             </button>
         </div>
+    </div>
     </div>
 </nav>
 
