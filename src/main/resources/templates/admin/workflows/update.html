@@ -22,29 +22,11 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="es-fixed-action-btns" >
-                <ul class="list-unstyled">
-                    <li>
-                        <a class="btn btn-floating btn-lg bg-primary" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
-                            <i class="fi fi-rr-file-export " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                            <i class="fi fi-rr-file-import " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="saveButton" role="button" title="Enregistrer" class="btn btn-floating btn-lg bg-success"
-                            onclick="document.getElementById('updateSignBook').submit();">
-                            <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
@@ -435,6 +417,26 @@
                     </form>
                 </div>
             </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a class="btn btn-transparent text-dark" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
+                                <i class="fi fi-rr-file-export"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
+                                <i class="fi fi-rr-file-import"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
+                               onclick="document.getElementById('updateSignBook').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

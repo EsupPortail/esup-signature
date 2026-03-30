@@ -26,34 +26,11 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="bg-light es-fixed-action-btns">
-                <ul class="list-unstyled">
-                    <li>
-                        <a role="button" title="Modifier le modèle" type="button" class="btn btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#updateModel">
-                            <i class="fi fi-rr-cloud-upload " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="btn btn-floating btn-lg bg-primary" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
-                            <i class="fi fi-rr-file-export " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                            <i class="fi fi-rr-file-import " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="saveButton" title="Enregistrer" role="button" class="btn btn-floating btn-lg bg-success"
-                            onclick="$('#formUpdate').submit();">
-                            <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
@@ -253,6 +230,31 @@
                     </form>
                 </div>
             </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a role="button" title="Modifier le modèle" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#updateModel">
+                                <i class="fi fi-rr-cloud-upload"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                                <i class="fi fi-rr-file-export"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
+                                <i class="fi fi-rr-file-import"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="saveButton" title="Enregistrer" role="button" class="btn btn-transparent text-dark"
+                               onclick="$('#formUpdate').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

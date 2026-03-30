@@ -14,15 +14,11 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="fixed-action-simple-btn" >
-                <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
-                    class="btn-lg btn btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add " style="margin-top: 10px;"></i>
-                </a>
-            </div>
             <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
                 <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
@@ -163,7 +159,17 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+                </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
+                               class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-apps-add"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

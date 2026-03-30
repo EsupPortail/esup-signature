@@ -3,47 +3,6 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools p-2  position-fixed" th:if="${toSignDocument != null}">
     <div class="m-2 p-2 bg-white rounded-3 shadow-sm">
-    <ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
-        <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
-            <li class="nav-item ws-tab" th:classappend="${(signRequest.id == signRequestTab.id ? 'active' : '') + ' ' + (nbSignRequestInSignBookParent > 1 ? 'file-tab' : '')}">
-                <a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning text-dark' : '')}"
-                   th:href="${urlProfil} + '/signrequests/' + ${signRequestTab.id}">
-                    <div class="truncate">
-                        <span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                            <i class="fa-solid fa-clock" th:classappend="${(signRequest.id == signRequestTab.id ? 'text-warning' : 'text-dark')}"></i>
-                            <span th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                        </span>
-                        <span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
-                              th:classappend="${(signRequest.id == signRequestTab.id ? 'text-success' : 'text-light')}">
-                            <i class="fa-solid fa-check-circle"></i>
-                            <span th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                        </span>
-                        <span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"
-                              th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
-                            <i class="fa-solid fa-times-circle"></i>
-                            <span th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                        </span>
-                        <span title="Document supprimé" th:if="${signRequestTab.deleted}"
-                              th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
-                            <i class="fa-solid fa-stop-circle"></i>
-                            <span th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                        </span>
-                        <span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                            <i class="fa-solid fa-file"></i>
-                            <span th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                        </span>
-                    </div>
-                </a>
-            </li>
-        </th:block>
-        <li class="nav-item dropdown d-none">
-            <a class="nav-link dropdown-toggle" href="#" id="DropdownMenu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-diplay="static">
-                Suite des documents
-            </a>
-            <ul class="dropdown-menu p-2 dropdown-menu-right" aria-labelledby="DropdownMenu">
-            </ul>
-        </li>
-    </ul>
         <div class=" d-flex justify-content-around">
         <div class="steps-horizontal-v2">
             <div class="step-horizontal-v2 active">

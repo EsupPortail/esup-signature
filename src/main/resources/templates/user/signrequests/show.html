@@ -37,13 +37,12 @@
 </script>
 
 <main role="main">
-    <div class="es-wrapper">
         <nav th:replace="~{user/signrequests/includes/show-sections :: breadcrumb}"></nav>
         <div id="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}" class = "es-content-full">
-            <div style="position: absolute;top: 200px;" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
-                <div id="potit-comment" class="postit-global d-none overflow-hidden"
+            <div class="es-signrequest-postits-layer" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
+                <div id="potit-comment" class="postit-global d-none overflow-hidden es-signrequest-postit-note"
                      th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
-                     style="cursor: move;background-color: #FFF740;position: fixed; left: 278px; top : 178px;z-index: 1000;">
+                    >
                     <button type="button" class="postit-global-close close">
                         <i class="fa-solid fa-eye"></i>
                     </button>
@@ -65,12 +64,12 @@
                             <i th:es-postit-id="${postit.id}" class="fa-regular fa-copy"></i>
                         </button>
                         <p th:if="${postit.createBy.eppn != userEppn || postit.refuse}" class="postitarea" th:text="${postit.text}"></p>
-                        <form style="height: 70%;" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/update/' + ${postit.id}" th:method="put">
+                        <form class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/update/' + ${postit.id}" th:method="put">
                             <textarea th:style="'color: black; width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
-                            <button type="submit" class="btn btn-sm btn-dark float-end position-absolute" style="right: 12px; bottom: 12px;" title="Enregistrer"><i class="fa fa-save"></i></button>
+                            <button type="submit" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn" title="Enregistrer"><i class="fa fa-save"></i></button>
                         </form>
                         <form th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/delete/' + ${postit.id}" th:method="delete">
-                            <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute"  title="Supprimer" style="left: 12px; bottom: 12px;">
+                            <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn"  title="Supprimer">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </form>
@@ -81,15 +80,7 @@
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
                 <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
                 <div id="workspace" class="es-workspace d-flex flex-column" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
-                    <div class="p-2" style="width: 100%; margin-bottom: 78px; min-width: 0; text-overflow: ellipsis;text-wrap: nowrap;">
-                        <div class="d-flex gap-1 align-items-center align-content-center text-primary-emphasis">
-                            <i class="fi fi-tr-folder-open" style="font-size: 20px;flex-shrink: 0;"></i>
-                            <h5 class="text-uppercase p-0 m-0" th:text="${signBook.workflowName} + ' - '"
-                                style="min-width: 0; overflow: hidden; text-overflow: ellipsis;"></h5>
-                            <h5 class="text-uppercase p-0 m-0" th:text="${signBook.subject}"
-                                style="min-width: 0; overflow: hidden; text-overflow: ellipsis;"></h5>
-                        </div>
-                    </div>
+                    <div th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs}"></div>
                     <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
                     <div th:replace="~{user/signrequests/includes/workspace :: workspace}"></div>
                 </div>
@@ -97,10 +88,10 @@
                     <div class="alert alert-success">
                         <h5>Les documents contenus dans cette demande de signature ont été archivés. Vous avez la possibilité de les télécharger à l’aide du bouton en bas à droite.</h5>
                         <label>Emplacement physique du document :</label>
-                        <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" style="width: 100%;" disabled />
+                        <input type="text" class="form-control" th:value="${signRequest.exportedDocumentURI}" disabled />
                     </div>
                 </th:block>
-                <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace" class=" alert alert-secondary row" style="margin-top: 128px;">
+                <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace" class="alert alert-secondary row es-signrequest-workspace-list">
                     <div class="card col-lg-10 mx-auto mb-1">
                         <div class="card-body">
                             <h5 class="text-center">Liste des documents originaux</h5>
@@ -144,7 +135,6 @@
                 <div th:replace="~{user/signrequests/includes/show-sections :: sign-buttons}"></div>
             </div>
         </div>
-    </div>
 </main>
 
 <div th:replace="~{user/signrequests/includes/modals/show-modals :: all-modals}"></div>

@@ -261,13 +261,12 @@ header {
 .es-fixed-action-btns {
     padding: 10px;
     height: calc(100vh - 128px);
-
 }
 
 .tools,
 .es-tools {
     width: calc(100vw - 380px);
-    top: 128px;
+    top: 136px;
     z-index: 1029;
     position: absolute;
 }

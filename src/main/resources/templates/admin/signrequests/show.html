@@ -26,7 +26,9 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1">
             <div class="card text-bg-light col-lg-11 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
@@ -126,15 +128,15 @@
                 </div>
             </div>
                 </div>
-            <div id="signButtons" class="bg-light es-fixed-action-btns active">
+            <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn btn-floating btn-lg bg-primary" title="Restaurer">
+                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
                             <i class="fa-solid fa-trash-restore "></i>
                         </a>
                     </li>
                     <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn btn-floating btn-lg bg-danger"
+                        <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
                             th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>

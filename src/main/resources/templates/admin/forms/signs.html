@@ -20,8 +20,10 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
             <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
                 <li class="nav-item">
@@ -43,16 +45,16 @@
                 Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire
             </div>
                 </div>
-            <div class="bg-light es-fixed-action-btns active" th:if="${workflow != null}">
+            <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
                     <li>
-                        <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0">
+                        <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-transparent text-dark d-none" title="Ajouter un emplacement de signature">
                             <i class="fi fi-rr-digital-signature  text-dark" style="margin-top: 0;"></i>
                         </button>
                     </li>
                     <li th:if="${form.document != null && form.signRequestParams != null}">
-                        <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn btn-floating btn-lg bg-warning" style="border: 0">
-                            <i class="fi fi-rr-task-checklist  text-dark" style="margin-top: 15px"></i>
+                        <a id="addSignRequestParams" title="Modifier les champs signature" type="button" data-bs-toggle="modal" data-bs-target="#updateSignsModal" class="btn btn-transparent text-dark">
+                            <i class="fi fi-rr-task-checklist text-dark" style="margin-top: 0"></i>
                         </a>
                     </li>
                 </ul>

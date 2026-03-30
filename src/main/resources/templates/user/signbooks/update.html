@@ -5,7 +5,6 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
@@ -110,7 +109,7 @@
                         <div th:replace="~{user/signrequests/cards/stepscard-updatable :: stepscard-updatable}"></div>
                     </th:block>
                 </div>
-                <div id="addButton" class="bg-light es-fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <div id="addButton" class="es-fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                     <ul id="buttonList" class="list-unstyled">
                         <li>
                             <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn btn-floating btn-lg bg-primary float-end">
@@ -136,7 +135,6 @@
                 </div>
             </div>
         </div>
-    </div>
 </main>
 
 <div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true" th:if="${signBook.createBy.eppn == userEppn && signBook.isEditable()}">

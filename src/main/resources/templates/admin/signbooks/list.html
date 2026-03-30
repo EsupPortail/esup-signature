@@ -22,7 +22,9 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1">
             <div id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="outline: none;">
                 <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
@@ -135,20 +137,20 @@
                 </table>
             </div>
                 </div>
-            <div id="signButtons" class="bg-light es-fixed-action-btns active">
+            <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
-                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-floating btn-lg bg-primary">
+                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-transparent text-dark">
                             <i class="fa-solid fa-search "></i>
                         </a>
                     </li>
                     <li>
-                        <a type="button" id="deleteMultipleButton" class="btn btn-floating btn-lg bg-danger d-none">
+                        <a type="button" id="deleteMultipleButton" class="btn btn-transparent text-dark d-none">
                             <i class="fa-solid fa-trash-alt "></i>
                         </a>
                     </li>
                     <li>
-                        <a type="button" id="downloadMultipleButton" class="btn btn-floating btn-lg bg-primary d-none">
+                        <a type="button" id="downloadMultipleButton" class="btn btn-transparent text-dark d-none">
                             <i class="fa-solid fa-download "></i>
                         </a>
                     </li>

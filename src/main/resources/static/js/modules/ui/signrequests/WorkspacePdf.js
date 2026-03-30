@@ -1398,7 +1398,7 @@ export class WorkspacePdf {
             $(menu + ' .dropdown').removeClass('d-none');
             totalWidth = calculateTotalWidth();
             while (totalWidth > maxWidth) {
-                let children = $(menu + ' > li:not(.dropdown)');
+                let children = $(menu + ' > li.file-tab');
                 let count = children.length;
                 if (count === 0) break; // Sécurité
                 $(children[count - 1]).prependTo(menu + ' .dropdown-menu');

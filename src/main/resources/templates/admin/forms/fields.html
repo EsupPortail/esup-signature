@@ -21,8 +21,10 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
@@ -157,13 +159,13 @@
             </table>
             </div>
                 </div>
-            <div class="bg-light es-fixed-action-btns active" >
+            <div class="es-sign-buttons es-fixed-action-btns active">
                 <ul class="list-unstyled">
                     <li>
-                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn btn-floating btn-lg text-dark bg-primary"><i class="fa-solid fa-plus "></i></a></li>
+                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn btn-transparent text-dark"><i class="fa-solid fa-plus"></i></a></li>
                     <li>
-                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn btn-floating btn-lg bg-success">
-                            <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
+                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn btn-transparent text-dark">
+                            <i class="fi fi-rr-disk"></i>
                         </a>
                     </li>
                 </ul>

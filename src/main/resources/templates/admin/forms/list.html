@@ -19,14 +19,11 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="fixed-action-simple-btn" >
-                <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add " style="margin-top: 10px;"></i>
-                </a>
-            </div>
             <div class="input-group mb-3">
                 <span class="input-group-text">Filtrer</span>
                 <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
@@ -172,11 +169,20 @@
                 <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
                     Aucun formulaire actif pour le moment
                 </div>
-            </div>
                 </div>
-            </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-apps-add"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
         </div>
     </div>
+</div>
 </main>
 <script th:inline="javascript" type="module">
     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';

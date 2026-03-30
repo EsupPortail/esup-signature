@@ -39,6 +39,10 @@ main {
     user-select: none;
 }
 
+.es-fixed-action-btns {
+    background-color: var(--bs-white);
+}
+
 #content {
     background-color: var(--bs-light);
 }
@@ -163,9 +167,9 @@ td {
 }
 
 .nav-tabs {
-    border-bottom : 1px solid #555;
-    background-color: white;
-    margin-left: -5px;
+    /*border-bottom : 1px solid #555;*/
+    /*background-color: white;*/
+    /*margin-left: -5px;*/
 
 }
 
@@ -204,21 +208,14 @@ td {
 
 .nav-tabs .nav-link {
     color: rgba(0, 0, 0, 1);
-    border-color: rgba(85, 85, 85, 1) !important;
-    border-bottom : 1px solid rgba(0, 0, 0, 1) !important;
     background-color: #FFF;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
 }
 
 .nav-link.current {
     color: black;
     font-weight: bold;
-    border-color: #555 #555 #fff #555 !important;
-    background-color: white !important;
-}
-
-.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    color: black;
-    border-color: #555 #555 transparent #555 !important;
 }
 
 .nav-tab-admin {
@@ -333,6 +330,57 @@ dd {
 
 .postit-global > .ui-resizable-s {
     height: 0;
+}
+
+.es-signrequest-postits-layer {
+    position: absolute;
+    top: 200px;
+}
+
+.es-signrequest-postit-note {
+    cursor: move;
+    background-color: #FFF740;
+    position: fixed;
+    left: 278px;
+    top: 178px;
+    z-index: 1000;
+}
+
+.es-postit-edit-form {
+    height: 70%;
+}
+
+.es-postit-save-btn {
+    right: 12px;
+    bottom: 12px;
+}
+
+.es-postit-delete-btn {
+    left: 12px;
+    bottom: 12px;
+}
+
+.es-signrequest-workspace-header {
+    width: 100%;
+    margin-bottom: 78px;
+    min-width: 0;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+}
+
+.es-signrequest-workspace-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.es-signrequest-workspace-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.es-signrequest-workspace-list {
+    margin-top: 128px;
 }
 
 .postitarea {
