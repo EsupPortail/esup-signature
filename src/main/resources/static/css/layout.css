@@ -69,7 +69,7 @@ header {
 }
 
 #content {
-    height: 100vh;
+    height: calc(100vh - 128px);
 }
 
 .content {
@@ -80,7 +80,12 @@ header {
     padding-right: 4px;
 }
 
+.main-content {
+    padding-top: 98px; height: calc(100vh - 98px);
+}
+
 .content-full {
+    height: calc(100vh - 40px) !important
 }
 
 .content-full-fixed {
@@ -224,8 +229,7 @@ header {
     max-width: 300px;
     overflow-y: auto;
     padding-left: 0 !important;
-    height: calc(100vh - 98px);
-    top: 50px;
+    height: calc(100vh - 128px);
 }
 
 #sidebar.active {

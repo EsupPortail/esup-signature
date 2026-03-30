@@ -1317,6 +1317,30 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .step-vertical-content {
     padding-top: 0.5rem;
     width: 100%;
+    border-left: 4px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.step-vertical.doc .step-vertical-content {
+    border-left: 4px solid #adb5bd;
+}
+
+.step-vertical.active .step-vertical-content {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.step-vertical.complete .step-vertical-content {
+    border-left: 4px solid var(--bs-success);
+}
+
+.step-vertical.refused .step-vertical-content {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.step-vertical.refused .step-vertical-icon {
+    background: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: white;
 }
 
 .step-vertical.doc .step-vertical-icon {
