@@ -7,12 +7,12 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
         <ol id="breadcrumb-ol" class="breadcrumb">
             <li th:if="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
         </ol>
     </nav>
-    <div class="content content-full">
+    <div class="content es-content-full">
         <div class="col-10 mx-auto" style="" th:fragment="control">
             <div class="alert alert-primary mb-1 text-center">
                 <h5>Vérification de la conformité du document <span th:if="${token != null && token != 'null'}" th:text="' : ' + ${token}"></span></h5>

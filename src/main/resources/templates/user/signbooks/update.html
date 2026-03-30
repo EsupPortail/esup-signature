@@ -5,16 +5,16 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.subject}"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edition</li>
             </ol>
         </nav>
-        <div id="content" class="content-full">
-            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
                 <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
                 <div class="flex-grow-1 overflow-auto">
                     <div class="card text-bg-light border-light m-2">
@@ -110,7 +110,7 @@
                         <div th:replace="~{user/signrequests/cards/stepscard-updatable :: stepscard-updatable}"></div>
                     </th:block>
                 </div>
-                <div id="addButton" class="bg-light fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                <div id="addButton" class="bg-light es-fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                     <ul id="buttonList" class="list-unstyled">
                         <li>
                             <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn btn-floating btn-lg bg-primary float-end">

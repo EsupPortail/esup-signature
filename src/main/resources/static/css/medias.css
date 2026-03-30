@@ -61,7 +61,8 @@
         width: 100%;
     }
 
-    .second-tools {
+    .second-tools,
+    .es-second-tools {
         top: 104px;
     }
 
@@ -70,23 +71,28 @@
         margin-left: 0;
     }
 
-    .tools {
+    .tools,
+    .es-tools {
         top: 50px;
     }
 
-    .workspace-pdf {
+    .workspace-pdf,
+    .es-workspace-pdf {
         margin-top: 55px;
     }
 
-    .workspace-sign {
+    .workspace-sign,
+    .es-workspace-sign {
         margin-top: 142px;
     }
 
-    .workspace {
+    .workspace,
+    .es-workspace {
         margin-top: 0;
     }
 
-    .content {
+    .content,
+    .es-content {
         margin-top: 100px;
         width: 100vw;
         margin-left: 0;
@@ -154,11 +160,13 @@
         display: none;
     }
 
-    .workspace-sign {
+    .workspace-sign,
+    .es-workspace-sign {
         display: flex;
     }
 
-    .fixed-action-btns {
+    .fixed-action-btns,
+    .es-fixed-action-btns {
         bottom: 25px;
         right: -5px;
     }
@@ -213,30 +221,36 @@
         display: none;
     }
 
-    .tools {
+    .tools,
+    .es-tools {
         top: 50px;
     }
 
-    .workspace-pdf {
+    .workspace-pdf,
+    .es-workspace-pdf {
         padding: 10px;
         margin-top: 50px;
     }
 
-    .workspace {
+    .workspace,
+    .es-workspace {
         width: min-content;
         margin-top: 0;
         padding: 3px;
     }
 
-    .workspace-sign {
+    .workspace-sign,
+    .es-workspace-sign {
         margin-top: 86px;
     }
 
-    .content-full-fixed {
+    .content-full-fixed,
+    .es-content-full-fixed {
         width: 100% ;
     }
 
-    .content {
+    .content,
+    .es-content {
         overflow: auto;
         margin-top: 55px;
     }

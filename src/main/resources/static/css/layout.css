@@ -64,7 +64,8 @@ header {
     margin-top: 95px;
 }
 
-.wrapper {
+.wrapper,
+.es-wrapper {
     display: block;
 }
 
@@ -72,7 +73,8 @@ header {
     height: calc(100vh - 128px);
 }
 
-.content {
+.content,
+.es-content {
     width: calc(100vw - 275px);
     margin-top: 86px;
     margin-left: 300px;
@@ -80,20 +82,24 @@ header {
     padding-right: 4px;
 }
 
-.main-content {
+.main-content,
+.es-main-content {
     padding-top: 98px; height: calc(100vh - 98px);
 }
 
-.content-full {
+.content-full,
+.es-content-full {
     height: calc(100vh - 40px) !important
 }
 
-.content-full-fixed {
+.content-full-fixed,
+.es-content-full-fixed {
     margin-left: 0;
     margin-top: 86px;
 }
 
-.content-fixed-breadcrumb {
+.content-fixed-breadcrumb,
+.es-content-fixed-breadcrumb {
     padding: 10px;
     width: calc(100vw - 76px);
     margin-left: 0;
@@ -149,7 +155,8 @@ header {
     overflow-y: auto;
 }
 
-.workspace {
+.workspace,
+.es-workspace {
     margin-left: 0;
     width: calc(100vw - 136px);
     display: flex;
@@ -157,11 +164,13 @@ header {
     overflow-y: scroll;
 }
 
-.workspace-pdf {
+.workspace-pdf,
+.es-workspace-pdf {
     display: flex;
 }
 
-.workspace-sign {
+.workspace-sign,
+.es-workspace-sign {
     width: 100%;
     display: flex;
 }
@@ -237,7 +246,8 @@ header {
     max-width: 60px;
 }
 
-.sidebar-mobile {
+.sidebar-mobile,
+.es-sidebar-mobile {
     display: block !important;
     width: 300px !important;
     max-width: 300px !important;
@@ -247,24 +257,28 @@ header {
     z-index: 1 !important;
 }
 
-.fixed-action-btns {
+.fixed-action-btns,
+.es-fixed-action-btns {
     padding: 10px;
     height: calc(100vh - 128px);
 
 }
 
-.tools {
+.tools,
+.es-tools {
     width: calc(100vw - 380px);
     top: 128px;
     z-index: 1029;
     position: absolute;
 }
 
-.tools-admin {
+.tools-admin,
+.es-tools-admin {
     top: 128px;
 }
 
-.second-tools {
+.second-tools,
+.es-second-tools {
     margin-left: 38px !important;
     margin-top: 46px;
     z-index: 1;
@@ -288,7 +302,8 @@ header {
     padding-left: 15px !important;
 }
 
-.breadcrumb-nav {
+.breadcrumb-nav,
+.es-breadcrumb-nav {
     top:50px;
     padding: 5px;
     position: fixed;
@@ -296,12 +311,14 @@ header {
     z-index: 1029;
 }
 
-.breadcrumb-nav-full {
+.breadcrumb-nav-full,
+.es-breadcrumb-nav-full {
     z-index: 1;
     padding: 5px;
 }
 
-.breadcrumb-nav-full-fixed {
+.breadcrumb-nav-full-fixed,
+.es-breadcrumb-nav-full-fixed {
     z-index: 1;
     padding: 5px;
     margin-left: 0;

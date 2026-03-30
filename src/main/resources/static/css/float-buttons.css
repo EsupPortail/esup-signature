@@ -80,7 +80,8 @@
     margin-bottom: 15px;
 }
 
-.fixed-action-btns ul {
+.fixed-action-btns ul,
+.es-fixed-action-btns ul {
     pointer-events: initial;
     opacity: 1;
     display: -webkit-box;
@@ -93,18 +94,21 @@
     transition: 400ms all;
 }
 
-.fixed-action-btns li {
+.fixed-action-btns li,
+.es-fixed-action-btns li {
     display: -webkit-box;
     margin-right: auto;
     margin-left: auto;
 }
 
-.fixed-action-btns li button {
+.fixed-action-btns li button,
+.es-fixed-action-btns li button {
     margin-top: 7px;
     margin-bottom: 7px;
 }
 
-.fixed-action-btns li a {
+.fixed-action-btns li a,
+.es-fixed-action-btns li a {
     margin-top: 7px;
     margin-bottom: 7px;
 }

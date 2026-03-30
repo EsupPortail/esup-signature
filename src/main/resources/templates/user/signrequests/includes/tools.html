@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<div th:fragment="tools" id="tools" class="tools p-2  position-fixed" th:if="${toSignDocument != null}">
+<div th:fragment="tools" id="tools" class="es-tools p-2  position-fixed" th:if="${toSignDocument != null}">
     <div class="m-2 p-2 bg-white rounded-3 shadow-sm">
     <ul id="ws-tabs" class="nav nav-tabs" th:if="${nbSignRequestInSignBookParent > 1}">
         <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
@@ -61,7 +61,7 @@
                                 data-bs-toggle="collapse" href="#second-tools">
                             <i class="fi fi-rr-plus" style="font-size: 18px; padding-bottom: 2px;"></i> <i class="fi fi-rr-caret-down"></i>
                         </button>
-                        <div id="second-tools" class="second-tools position-fixed collapse">
+                        <div id="second-tools" class="es-second-tools position-fixed collapse">
                             <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
                                 <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1 shadow">
                                     <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}"

@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <!--/*@thymesVar id="form" type="org.esupportail.esupsignature.entity.Form"*/-->
-<div th:fragment="tools" id="tools" class="tools tools-admin" th:if="${document != null}">
+<div th:fragment="tools" id="tools" class="es-tools es-tools-admin" th:if="${document != null}">
 	<div class="d-flex mb-1" th:if="${workflow != null}">
 		<th:block th:if="${document.contentType == 'application/pdf'}">
 			<button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-light btn-outline-dark me-1"><i

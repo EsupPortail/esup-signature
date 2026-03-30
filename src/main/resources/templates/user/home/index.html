@@ -33,8 +33,8 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-white breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
                     <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </nav>
-        <div id="content" class="content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3 p-2">
+        <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3 p-2">
             <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="modal fade" id="mega-result" tabindex="-1" aria-hidden="true" style="display: none;" data-bs-focus="false" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-scrollable">

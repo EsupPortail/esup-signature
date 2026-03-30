@@ -47,11 +47,13 @@ main {
      background-color: var(--bs-secondary-bg);
  }
 
-.tools {
+.tools,
+.es-tools {
     font-size: 18px;
 }
 
-.tools button {
+.tools button,
+.es-tools button {
     font-size: 18px;
 }
 
@@ -223,18 +225,22 @@ td {
     background-color: white;
 }
 
-.breadcrumb-nav {
+.breadcrumb-nav,
+.es-breadcrumb-nav {
     display: flex;
     align-items: center;
     height:48px;
+    background-color: #fff;
     border-bottom: 1px solid #cccccc;
 }
 
-.breadcrumb-nav i:before {
+.breadcrumb-nav i:before,
+.es-breadcrumb-nav i:before {
     font-size: 20px;
 }
 
-.signButtons i:before {
+.signButtons i:before,
+.es-sign-buttons i:before {
     font-size: 20px;
 }
 

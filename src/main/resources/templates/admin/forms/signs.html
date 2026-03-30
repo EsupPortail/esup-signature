@@ -10,16 +10,16 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
                 <li class="breadcrumb-item active" th:text="'Liste des champs signatures du formulaire : ' + ${form.name}"></li>
             </ol>
         </nav>
-        <div id="content" class="content-full">
-            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
                 <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 <div class="flex-grow-1">
@@ -43,7 +43,7 @@
                 Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire
             </div>
                 </div>
-            <div class="bg-light fixed-action-btns active" th:if="${workflow != null}">
+            <div class="bg-light es-fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
                     <li>
                         <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-floating btn-lg bg-warning d-none" title="Ajouter un emplacement de signature" style="border: 0">

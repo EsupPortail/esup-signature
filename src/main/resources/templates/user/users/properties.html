@@ -6,14 +6,14 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item active">Mes saisies enregistrées</li>
             </ol>
         </nav>
-        <div id="content" class="content-full">
-            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
                 <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
                 <div class="flex-grow-1">
             <div class="row">

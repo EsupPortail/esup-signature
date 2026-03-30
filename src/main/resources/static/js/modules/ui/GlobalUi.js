@@ -146,7 +146,7 @@ export class GlobalUi {
         });
 
         $("#display-side-btn").on('click', function(e) {
-           $("#sidebar").toggleClass("sidebar-mobile");
+           $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
         });
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
@@ -370,7 +370,7 @@ export class GlobalUi {
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
-            $("#sidebar").removeClass("sidebar-mobile");
+            $("#sidebar").removeClass("es-sidebar-mobile").removeClass("sidebar-mobile");
         }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");

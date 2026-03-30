@@ -9,16 +9,16 @@
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content-fixed-breadcrumb">
-            <div id="addButton" class="bg-secondary-subtle fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+        <div id="content" class="es-content-fixed-breadcrumb">
+            <div id="addButton" class="bg-secondary-subtle es-fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                 <ul id="collapseExample" class="list-unstyled">
                     <li>
                         <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn btn-floating bg-success">

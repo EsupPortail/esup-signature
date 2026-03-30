@@ -13,15 +13,15 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="d-flex bg-secondary-subtle breadcrumb-nav breadcrumb-nav-full-fixed breadcrumb-nav-full">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Tableau de bord</li>
             </ol>
         </nav>
-        <div id="content" class="content-full">
-            <div class="d-flex" style="padding-top: 98px; height: calc(100vh - 98px);">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
                 <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 <div class="flex-grow-1">
             <div id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="outline: none;">
@@ -135,7 +135,7 @@
                 </table>
             </div>
                 </div>
-            <div id="signButtons" class="bg-light fixed-action-btns active">
+            <div id="signButtons" class="bg-light es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
                     <li>
                         <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-floating btn-lg bg-primary">
