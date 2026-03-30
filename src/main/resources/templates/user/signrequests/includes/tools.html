@@ -53,10 +53,13 @@
                 <div class="step-horizontal-v2-content">
                     <span class="text-xs font-bold d-flex align-items-center gap-1">
                         Étape 1 :
-                        <div id="insert-btn-div">
-                        <button id="insert-btn" th:if="${editable}" class="h-100 d-flex align-items-center btn btn-success"
+                        <div id="insert-btn-div" class="d-flex input-group flex-nowrap" th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
+                        <button tabindex="3" id="addSignButton2" role="button" class="btn btn-success pulse-success" title="Insérer une signature" style="border: 1px solid #198754; outline:none;">
+                            <i class="fi fi-rr-file-signature" style="margin-top: 0;"></i> Insérer une signature
+                        </button>
+                        <button id="insert-btn" th:if="${editable}" class="h-100 d-flex align-items-center btn btn-success rounded-end-2 ms-1"
                                 data-bs-toggle="collapse" href="#second-tools">
-                            <i class="fi fi-rr-multiple" style="font-size: 18px; padding-bottom: 2px;"></i><span class="d-none d-xxl-inline"> Insérer une signature<i class="fi fi-rr-caret-down"></i></span>
+                            <i class="fi fi-rr-plus" style="font-size: 18px; padding-bottom: 2px;"></i> <i class="fi fi-rr-caret-down"></i>
                         </button>
                         <div id="second-tools" class="second-tools position-fixed collapse">
                             <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">

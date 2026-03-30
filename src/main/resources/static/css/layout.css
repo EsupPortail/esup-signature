@@ -265,7 +265,8 @@ header {
 }
 
 .second-tools {
-    margin-top: 5px;
+    margin-left: 38px !important;
+    margin-top: 46px;
     z-index: 1;
 }
 
