@@ -357,10 +357,10 @@ header {
 }
 
 #pdf-progress-bar {
-    width: calc(100% - 300px);
+    width: calc(100% - 400px);
     position: fixed;
     z-index: 2;
-    bottom: 40px;
+    top: 134px;
     opacity: 1;
     -webkit-transition:opacity 2s linear;
     -moz-transition: opacity 2s linear;

@@ -103,11 +103,13 @@
                                 <i class="fi fi-rr-angle-small-down"  style="font-size: 20px;"></i>
                             </button>
                         </div>
-                        <div th:if="${signable}" id="insert-btn-div" class="d-flex gap-1">
+                        <div th:if="${signable}" id="insert-btn-div" class="d-flex gap-1 align-items-center">
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
                             <button id="autototate" th:if="${signable}" class="d-flex align-items-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
                                 <i class="fi fi-rr-navigation"></i>
                             </button>
+                            <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
+
                             <button th:if="${signRequest.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}"
                                     id="addSignButton"
                                     role="button"

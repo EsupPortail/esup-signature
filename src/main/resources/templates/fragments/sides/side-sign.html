@@ -2,33 +2,48 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style p-1" style="z-index: 1000;">
-        <p class="text-uppercase m-2">Statut</p>
-        <div class="card card-body bg-light m-1">
-            <th:block th:if="${signRequest != null}">
-                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
-                <div class="text-center mb-1">
-                    <div class="badge rounded-pill badge-status bg-secondary" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
-                        <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
-                    </div>
+<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-2" style="z-index: 1000;">
+    <div class="d-flex justify-content-between align-items-center" th:if="${signRequest != null}">
+        <span class="text-uppercase ms-2">STATUT</span>
+        <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+    </div>
+    <div class="alert bg-light m-1">
+        <th:block th:if="${signRequest != null}">
+            <!-- Archive Status Badge -->
+            <div class="text-center" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+            <span class="badge rounded-pill bg-secondary">
+                <i class="fi fi-rr-box"></i>
+                <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+            </span>
+            </div>
+
+            <!-- Creator Info -->
+            <div class="d-flex align-items-start gap-1" th:if="${signRequest != null}">
+                <i class="fi fi-rr-user" style="font-size: 1.25rem; flex-shrink: 0;"></i>
+                <div class="d-flex flex-column">
+                    <span class="mb-1 fw-semibold" th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span>
+                    <span class="small bg-primary-subtle pe-1 ps-1" style="width: fit-content;" th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
-                <p class="mb-2" th:if="${signRequest != null}">Créé par <b th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></b></p>
-                <th:block th:if="${signBook.viewers.size() > 0 }">
-                    <p>
-                    Suivi par :
-                        <ul>
-                            <li th:each="user : ${signBook.viewers}" >
-                                <span th:if="${user.firstname != '' && user.name != ''}" th:text="${user.firstname + ' ' + user.name}"></span>
-                                <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>
-                            </li>
-                        </ul>
-                    </p>
-                </th:block>
+            </div>
+
+            <!-- Viewers Section -->
+            <th:block th:if="${signBook.viewers.size() > 0}">
+                <div style="border-top: 1px solid #dee2e6; padding-top: 1rem; margin-top: 1rem;">
+                    <p class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Suivi par</p>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-1" th:each="user : ${signBook.viewers}">
+                            <span th:if="${user.firstname != '' && user.name != ''}" th:text="${user.firstname + ' ' + user.name}"></span>
+                            <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>
+                        </li>
+                    </ul>
+                </div>
             </th:block>
-            <th:block th:unless="${signRequest != null}">
-                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
-            </th:block>
-        </div>
+        </th:block>
+
+        <th:block th:unless="${signRequest != null}">
+            <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+        </th:block>
+    </div>
 <!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
 <!--        <button data-bs-toggle="modal" data-bs-target="#signAllModal"-->
 <!--                class="btn btn-light col-3 col-md-12 mb-1 text-left d-none"-->
@@ -43,6 +58,8 @@
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge rounded-pill bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
         <div th:if="${signRequest != null && comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
-        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
+    <span class="text-uppercase ms-2">Étapes du circuit</span>
+
+    <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
 </nav>
 </html>

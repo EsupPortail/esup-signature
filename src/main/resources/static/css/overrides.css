@@ -303,6 +303,7 @@ textarea:invalid {
     /*border-radius: revert !important;*/
     height: 25px;
     padding: 0 !important;
+    padding-right: 10px !important;
 }
 
 .badge-status > i {

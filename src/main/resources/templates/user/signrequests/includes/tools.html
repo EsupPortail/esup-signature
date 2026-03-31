@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools p-2  position-fixed" th:if="${toSignDocument != null}">
-    <div class="m-2 p-2 bg-white rounded-3 shadow shadow-lg text-center" th:if="${annotation != null}">
+    <div class="m-2 p-2 bg-white rounded-3 border shadow shadow-lg text-center" th:if="${annotation != null}">
         <div class="btn btn-warning" style="font-size: 22px; pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>

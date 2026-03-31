@@ -2,7 +2,6 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="stepscard" th:fragment="stepscard">
-    <p class="text-uppercase m-2">Étapes du circuit</p>
     <div class="m-1">
         <p th:if="${workflow != null}">Circuit : <b th:text="${workflow.description}"></b></p>
 
@@ -136,8 +135,8 @@
                                                             th:text="${recipient.user.email}"
                                                             th:title="${recipient.user.email}"></span>
                                                         <br/>
-                                                        <small th:if="${signRequest.recipientHasSigned.get(recipient) != null and signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
-                                                            th:text="|Le ${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}|"></small>
+                                                        <span class="small bg-primary-subtle pe-1 ps-1" th:if="${signRequest.recipientHasSigned.get(recipient) != null and signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
+                                                            th:text="${#dates.format(signRequest.recipientHasSigned.get(recipient).date, 'dd/MM/YYYY HH:mm')}"></span>
                                                     </td>
                                                     <td class="recipient-status bg-light">
                                                         <i th:if="${signRequest.recipientHasSigned.get(recipient) != null and signRequest.recipientHasSigned.get(recipient).actionType.name() == 'signed'}"
