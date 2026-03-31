@@ -95,6 +95,13 @@ public class GlobalAttributsControllerAdvice {
             GlobalProperties myGlobalProperties = new GlobalProperties();
             BeanUtils.copyProperties(globalProperties, myGlobalProperties);
             myGlobalProperties.newVersion = globalProperties.newVersion;
+            myGlobalProperties.setSealCertificatProperties(null);
+            myGlobalProperties.setSealCertificatPin(null);
+            myGlobalProperties.setSealCertificatType(null);
+            myGlobalProperties.setSealCertificatFile(null);
+            myGlobalProperties.setSealCertificatDriver(null);
+            myGlobalProperties.setArchiveUri(null);
+            myGlobalProperties.setOpenXPKIServerUrl(null);
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
                 logger.error("user " + userEppn + " not found");
