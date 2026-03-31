@@ -215,11 +215,16 @@ public class SignBookService {
             }
         }
 
+        Page<SignBook> signBooks;
         if(hided) {
-            return signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+            signBooks = signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         } else {
-            return signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+            signBooks = signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         }
+        for(SignBook signBook : signBooks) {
+            signBook.setDisplayNotif(signRequestService.isDisplayNotif(signBook.getSignRequests().get(0), userEppn));
+        }
+        return signBooks;
     }
 
     /**
@@ -947,7 +952,9 @@ public class SignBookService {
                 signBook.getLiveWorkflow().getLiveWorkflowSteps().add(stepNumber, liveWorkflowStep);
                 if(stepNumber == currentStepNumber - 1) {
                     signBook.getLiveWorkflow().setCurrentStep(liveWorkflowStep);
-                    pendingSignBook(authUserEppn, id);
+                    if(signBook.getStatus().equals(SignRequestStatus.pending)) {
+                        pendingSignBook(authUserEppn, id);
+                    }
                 }
             } else {
                 if(signBook.getStatus().equals(SignRequestStatus.draft)) {

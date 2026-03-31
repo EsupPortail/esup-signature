@@ -389,6 +389,21 @@ textarea:invalid {
     font-family: "LiberationSans-Regular", sans-serif;
 }
 
+.annotationLayer .popupContent {
+    display: none;
+    z-index: 999;
+    border-radius: 5px;
+    position: absolute;
+    border: 1px solid rgb(51 51 51);
+    margin-top: calc(2px * var(--total-scale-factor));
+    padding: 5px;
+    background-color: #d6d6d6;;
+}
+
+.annotationLayer .popupTriggerArea {
+    cursor: revert;
+}
+
 .annotationLayer .textWidgetAnnotation * {
     padding-top: 0px;
     font-size: calc(7.5px * var(--scale-factor)) !important;

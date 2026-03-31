@@ -37,12 +37,12 @@ public class SignProperties {
     private SignaturePackaging signaturePackaging = SignaturePackaging.DETACHED;
     private Boolean signWithExpiredCertificate = false;
     private Long passwordTimeout;
-    private String aesKey;
+    private String aesKey;      // 16 chars, legacy ECB
+    private String aes256Key;   // 32 chars, nouveau GCM
     private String openscCommandSign = "pkcs11-tool --sign -v --id {0} -p {1} --mechanism SHA256-RSA-PKCS --input-file {2} --output-file {3}";
     private String openscCommandGetId = "pkcs11-tool -O --type pubkey";
     private String openscCommandGetKey = "pkcs11-tool -r --id {0} --type cert";
     private String openscCommandCertId;
-    private String openscCommandModule;
     private String openscPathLinux = "";
 
     public SignatureForm getDefaultSignatureForm() {
@@ -140,6 +140,14 @@ public class SignProperties {
         this.aesKey = aesKey;
     }
 
+    public String getAes256Key() {
+        return aes256Key;
+    }
+
+    public void setAes256Key(String aes256Key) {
+        this.aes256Key = aes256Key;
+    }
+
     public String getOpenscCommandSign() {
         return openscCommandSign;
     }
@@ -170,14 +178,6 @@ public class SignProperties {
 
     public void setOpenscCommandCertId(String openscCommandCertId) {
         this.openscCommandCertId = openscCommandCertId;
-    }
-
-    public String getOpenscCommandModule() {
-        return openscCommandModule;
-    }
-
-    public void setOpenscCommandModule(String openscCommandModule) {
-        this.openscCommandModule = openscCommandModule;
     }
 
     public String getOpenscPathLinux() {

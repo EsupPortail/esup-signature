@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
@@ -23,6 +24,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @EnableScheduling
@@ -41,8 +43,9 @@ public class ScheduledTaskService {
 	private final SignRequestRepository signRequestRepository;
 	private final OtpService otpService;
     private final UpgradeService upgradeService;
+	private final SignRequestService signRequestService;
 
-    public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService, UpgradeService upgradeService) {
+	public ScheduledTaskService(GlobalProperties globalProperties, SignBookRepository signBookRepository, SignBookService signBookService, TaskService taskService, WorkflowService workflowService, UserService userService, SignRequestRepository signRequestRepository, OtpService otpService, UpgradeService upgradeService, SignRequestService signRequestService) {
         this.globalProperties = globalProperties;
         this.signBookRepository = signBookRepository;
         this.signBookService = signBookService;
@@ -52,7 +55,8 @@ public class ScheduledTaskService {
         this.signRequestRepository = signRequestRepository;
 		this.otpService = otpService;
         this.upgradeService = upgradeService;
-    }
+		this.signRequestService = signRequestService;
+	}
 
 	/**
      * Scanne toutes les sources de workflows disponibles et tente
@@ -232,6 +236,19 @@ public class ScheduledTaskService {
     @Scheduled(cron="0 0 * * * *")
 	public void refreshOJKeystore() {
 		taskService.initDssRefresh();
+	}
+
+	@Scheduled(cron="00 02 02 * * *")
+	public void cleanAllSignRequestDocuments() throws IOException {
+		if(globalProperties.getDocumentsHistoryDelay() > -1) {
+			List<SignRequest> signRequests = signRequestRepository.findSignRequestsByCleanDocumentsHistoryDateIsNull();
+			if (!signRequests.isEmpty()) {
+				logger.info(signRequests.size() + " sign requests found to clean history");
+				for (SignRequest signRequest : signRequests) {
+					signRequestService.cleanSignRequestDocumentsHistory(signRequest.getId());
+				}
+			}
+		}
 	}
 
 	/**

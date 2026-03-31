@@ -34,18 +34,18 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
 
     private final SignProperties signProperties;
 
-    public OpenSCSignatureToken(KeyStore.PasswordProtection passwordProtection, SignProperties signProperties) {
+    public OpenSCSignatureToken(KeyStore.PasswordProtection passwordProtection, SignProperties signProperties, String module) {
         this.passwordProtection = passwordProtection;
         this.signProperties = signProperties;
-        if(StringUtils.isNotBlank(signProperties.getOpenscCommandModule())) {
-            this.module += " --module " + signProperties.getOpenscCommandModule();
+        if(StringUtils.isNotBlank(module)) {
+            this.module += " --module " + module;
         }
-        logger.info("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
+        logger.debug("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
     }
 
     @Override
     public void close() {
-        logger.info("OpenSC>>>Closing connection");
+        logger.debug("OpenSC>>>Closing connection");
     }
 
     @Override
@@ -57,7 +57,7 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
         final EncryptionAlgorithm encryptionAlgo = dssPrivateKeyEntry.getEncryptionAlgorithm();
         final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.getAlgorithm(encryptionAlgo, digestAlgorithm);
 
-        logger.info("OpenSC>>>Signature algorithm: {}", signatureAlgorithm.getJCEId());
+        logger.debug("OpenSC>>>Signature algorithm: {}", signatureAlgorithm.getJCEId());
         File tmpDir = null;
         try {
             String password = String.valueOf(passwordProtection.getPassword());
@@ -67,14 +67,14 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
             FileUtils.copyInputStreamToFile(inputStream, toSignFile);
             File signedFile = new File(tmpDir + "/signed");
             String command = MessageFormat.format(signProperties.getOpenscCommandSign(), getId(), password, toSignFile.getAbsolutePath(), signedFile.getAbsolutePath());
-            logger.info("OpenSC>>>Executing sign command: {}", command + module);
+            logger.debug("OpenSC>>>Executing sign command: {}", command + module);
             launchProcess(command + module);
             SignatureValue value = new SignatureValue();
             value.setAlgorithm(signatureAlgorithm);
             value.setValue(FileUtils.readFileToByteArray(signedFile));
             toSignFile.delete();
             signedFile.delete();
-            logger.info("OpenSC>>>Signature created successfully");
+            logger.debug("OpenSC>>>Signature created successfully");
             return value;
         } catch (IOException e) {
             logger.error("OpenSC>>>IO error during signing", e);
@@ -103,20 +103,20 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
 
     @Override
     public List<DSSPrivateKeyEntry> getKeys() throws DSSException {
-        logger.info("OpenSC>>>Getting keys");
+        logger.debug("OpenSC>>>Getting keys");
         final List<DSSPrivateKeyEntry> list = new ArrayList<>();
         list.add(getKey());
         return list;
     }
 
     public DSSPrivateKeyEntry getKey() throws DSSException {
-        logger.info("OpenSC>>>Getting certificate for signature");
+        logger.debug("OpenSC>>>Getting certificate for signature");
         String command = MessageFormat.format(signProperties.getOpenscCommandGetKey(), getId());
-        logger.info("OpenSC>>>Executing getKey command: {}", command + module);
+        logger.debug("OpenSC>>>Executing getKey command: {}", command + module);
         byte[] cert = launchProcess(command + module);
-        logger.info("OpenSC>>>Certificate retrieved, size: {} bytes", cert.length);
+        logger.debug("OpenSC>>>Certificate retrieved, size: {} bytes", cert.length);
         CertificateToken certificateToken = DSSUtils.loadCertificate(cert);
-        logger.info("OpenSC>>>Certificate loaded successfully");
+        logger.debug("OpenSC>>>Certificate loaded successfully");
         try {
             return new OpenSCPrivateKeyEntry(certificateToken.getCertificate().getEncoded());
         } catch (CertificateEncodingException e) {
@@ -129,30 +129,30 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
         String id = signProperties.getOpenscCommandCertId();
         if(StringUtils.isBlank(id)) {
             String command = signProperties.getOpenscCommandGetId() + module;
-            logger.info("OpenSC>>>Executing getId command: {}", command);
+            logger.debug("OpenSC>>>Executing getId command: {}", command);
             byte[] ids = launchProcess(command);
             String output = new String(ids);
-            logger.info("OpenSC>>>getId output:\n{}", output);
+            logger.debug("OpenSC>>>getId output:\n{}", output);
             String[] lines = output.split("\n");
             if (lines.length > 0) {
                 String lineWithID = "";
                 for (String line : lines) {
                     if (line.contains("ID:")) {
                         lineWithID = line;
-                        logger.info("OpenSC>>>Found ID line: {}", lineWithID);
+                        logger.debug("OpenSC>>>Found ID line: {}", lineWithID);
                         break;
                     }
                 }
                 if (lineWithID.split(":").length > 1) {
                     id = lineWithID.split(":")[1].trim();
-                    logger.info("OpenSC>>>Extracted ID: {}", id);
+                    logger.debug("OpenSC>>>Extracted ID: {}", id);
                 }
             } else {
                 logger.error("OpenSC>>>No output from getId command");
                 throw new DSSException("No ID found");
             }
         } else {
-            logger.info("OpenSC>>>Using configured certificate ID: {}", id);
+            logger.debug("OpenSC>>>Using configured certificate ID: {}", id);
         }
         return id;
     }
@@ -162,7 +162,7 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
             String fullCommand = signProperties.getOpenscPathLinux() + command;
-            logger.info("OpenSC>>>Full command: {}", fullCommand);
+            logger.debug("OpenSC>>>Full command: {}", fullCommand);
             processBuilder.command("bash", "-c", fullCommand);
 
             // Rediriger stderr vers stdout pour capturer tous les messages
@@ -176,7 +176,7 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
             byte[] result = outputStream.toByteArray();
 
             if (exitVal == 0) {
-                logger.info("OpenSC>>>Command executed successfully");
+                logger.debug("OpenSC>>>Command executed successfully");
                 return result;
             } else {
                 logger.error("OpenSC>>>Command failed with exit code: {}", exitVal);
