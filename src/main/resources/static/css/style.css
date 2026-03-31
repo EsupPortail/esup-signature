@@ -1411,13 +1411,12 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-warning) !important;
     border-color: var(--bs-warning) !important;
     color: white;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .step-vertical.complete .step-vertical-icon {
-    background: var(--bs-success);
+    background: var(--bs-white);
     border-color: var(--bs-success);
-    color: white;
+    color: var(--bs-success);
 }
 
 /* Horizontal Steps Style - Version 1: Text below icon */
