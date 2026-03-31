@@ -84,7 +84,7 @@ header {
 
 .main-content,
 .es-main-content {
-    padding-top: 98px; height: calc(100vh - 98px);
+    padding-top: 92px; height: calc(100vh - 92px);
 }
 
 .content-full,
@@ -159,8 +159,12 @@ header {
 .es-workspace {
     margin-left: 0;
     width: calc(100vw - 136px);
-    display: flex;
-    height: calc(100vh - 136px);
+    height: calc(100vh - 114px);
+}
+
+#workspace {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     overflow-y: scroll;
 }
 
@@ -171,6 +175,7 @@ header {
 
 .workspace-sign,
 .es-workspace-sign {
+    /*margin-top: 15px;*/
     width: 100%;
     display: flex;
 }
@@ -183,7 +188,7 @@ header {
     position: relative !important;
     opacity: 1;
     cursor: default;
-    padding-bottom: 5px;
+    padding-bottom: 60px;
 }
 
 #actionDiv {
@@ -266,7 +271,7 @@ header {
 .tools,
 .es-tools {
     width: calc(100vw - 380px);
-    top: 136px;
+    bottom: 32px;
     z-index: 1029;
     position: absolute;
 }
@@ -285,6 +290,7 @@ header {
 
 #ws-tabs {
     width: 100% !important;
+    height: 100% !important;
     flex-wrap: nowrap !important;
 }
 
@@ -295,6 +301,10 @@ header {
     width: 100%;
 }
 
+.file-tab {
+
+}
+
 .breadcrumb {
     padding: 0 !important;
     padding-top: 2px !important;
@@ -303,24 +313,13 @@ header {
 
 .breadcrumb-nav,
 .es-breadcrumb-nav {
-    top:50px;
-    padding: 5px;
+    top: 50px;
+    height: 42px;
     position: fixed;
     width: 100%;
     z-index: 1029;
-}
-
-.breadcrumb-nav-full,
-.es-breadcrumb-nav-full {
-    z-index: 1;
-    padding: 5px;
-}
-
-.breadcrumb-nav-full-fixed,
-.es-breadcrumb-nav-full-fixed {
-    z-index: 1;
-    padding: 5px;
-    margin-left: 0;
+    display: flex;
+    align-items: center;
 }
 
 .breadcrumb {
@@ -369,8 +368,8 @@ header {
 }
 
 .pdf-alerts-btn {
-    left: 322px;
-    top:110px;
+    left: 304px;
+    top: 96px;
     position: fixed;
     z-index: 9999;
 }

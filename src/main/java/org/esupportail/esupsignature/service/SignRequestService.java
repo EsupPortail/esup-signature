@@ -2012,7 +2012,7 @@ public class SignRequestService {
 	@Transactional
 	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getParentSignBook().getEndDate()
+		if(signRequest.getParentSignBook().getEndDate() != null && signRequest.getParentSignBook().getEndDate()
 				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
 		) {
 			logger.info("cleaning signRequest documents history : " + signRequestId);

@@ -51,6 +51,10 @@ main {
      background-color: var(--bs-secondary-bg);
  }
 
+ .es-nav-tools {
+     font-size: 18px;
+ }
+
 .tools,
 .es-tools {
     font-size: 18px;
@@ -58,7 +62,7 @@ main {
 
 .tools button,
 .es-tools button {
-    font-size: 18px;
+    font-size: 22px;
 }
 
 .main-selectable {
@@ -167,10 +171,9 @@ td {
 }
 
 .nav-tabs {
-    /*border-bottom : 1px solid #555;*/
+    border-bottom : 1px solid #CCC;
     /*background-color: white;*/
     /*margin-left: -5px;*/
-
 }
 
 .nav-link:focus-visible {
@@ -181,17 +184,9 @@ td {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
-#signLaunchButton:focus-visible {
-    box-shadow: 0 0 0 2px #000;
-}
-
-#trashLaunchButton:focus-visible {
-    box-shadow: 0 0 0 2px #000;
-}
-
 .nav-item.ws-tab {
     margin-bottom: -1px;
-    /*border-bottom : 1px solid #555;*/
+    border-bottom : 1px solid #CCC;
 }
 
 .nav-item.ws-tab a {
@@ -211,6 +206,8 @@ td {
     background-color: #FFF;
     border-top-left-radius: 0 !important;
     border-top-right-radius: 0 !important;
+    margin-top: 1px;
+    max-height: 40px;
 }
 
 .nav-link.current {
@@ -224,11 +221,7 @@ td {
 
 .breadcrumb-nav,
 .es-breadcrumb-nav {
-    display: flex;
-    align-items: center;
-    height:48px;
     background-color: #fff;
-    border-bottom: 1px solid #cccccc;
 }
 
 .breadcrumb-nav i:before,
@@ -244,17 +237,6 @@ td {
 .scrollbar-lite {
     overflow-y: hidden;
 }
-
-/*.scrollbar-style::-webkit-scrollbar {*/
-/*    background-color: #CECECE;*/
-/*    width: 5px;*/
-/*    height: 5px;*/
-/*}*/
-
-/*.scrollbar-style::-webkit-scrollbar-thumb {*/
-/*    background-color: #E10F46;*/
-/*    width: 5px !important;*/
-/*}*/
 
 dd {
     font-weight: bold;
@@ -362,7 +344,6 @@ dd {
 
 .es-signrequest-workspace-header {
     width: 100%;
-    margin-bottom: 78px;
     min-width: 0;
     text-overflow: ellipsis;
     text-wrap: nowrap;
@@ -540,7 +521,7 @@ input:focus, textarea:focus, select:focus {
 .sign-field {
     font-weight: bold;
     color: black;
-    border: 1px solid transparent !important;
+    border: 3px dashed rgb(123, 246, 123); !important;
     background-color: rgba(220, 250, 220, 0.8);
     cursor: pointer !important;
     overflow: hidden;
@@ -566,9 +547,31 @@ input:focus, textarea:focus, select:focus {
     z-index: 1;
 }
 
+.sign-space .sign-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--bs-success);
+    font-size: 14px;
+}
+
+.sign-space .sign-icon {
+    font-size: 40px;
+    font-weight: bold;
+    color: var(--bs-success);
+}
+
+.sign-space .sign-text {
+    font-size: 14px;
+    text-align: center;
+}
+
 .zoom {
     text-align: center;
-    min-width: 60px !important;
+    min-width: 65px !important;
 }
 
 .thumbnail {
@@ -1369,7 +1372,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 .step-vertical-content {
-    padding-top: 0.5rem;
+    padding-left: 0.5rem;
     width: 100%;
     border-left: 4px solid #dee2e6;
     border-radius: 6px;
@@ -1495,6 +1498,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
     gap: 0;
 }
 
+.steps-horizontal-v2 > .btn{
+    font-size: 30px;
+}
+
 .step-horizontal-v2 {
     display: flex;
     flex-direction: row;
@@ -1527,7 +1534,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
     color: #6c757d;
     position: relative;
     z-index: 2;
@@ -1546,21 +1553,21 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 .step-horizontal-v2.active .step-horizontal-v2-icon {
-    background: var(--bs-white) !important;
+    background: var(--bs-success) !important;
     border-color: var(--bs-success) !important;
-    color: var(--bs-success);
+    color: var(--bs-white);
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .step-horizontal-v2.disable .step-horizontal-v2-icon {
-    background: var(--bs-secondary) !important;
+    background: var(--bs-white) !important;
     border-color: var(--bs-secondary) !important;
-    color: white;
+    color: var(--bs-secondary);
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
 .step-horizontal-v2.complete .step-horizontal-v2-icon {
-    background: var(--bs-success);
+    background: var(--bs-white);
     border-color: var(--bs-success);
-    color: white;
+    color: var(--bs-success);
 }

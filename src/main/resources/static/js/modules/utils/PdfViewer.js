@@ -271,8 +271,12 @@ export class PdfViewer extends EventFactory {
     checkCurrentPage(e) {
         if(this.renderedPages < this.numPages) return;
         let numPages = this.pdfDoc.numPages;
+
         for(let i = 1; i < numPages + 1; i++) {
-            if(e > $("#page_" + i).offset().top - 250) {
+            let page = $("#page_" + i);
+            let pagePos = page.position().top;
+
+            if(e > pagePos - 250) {
                 this.pageNum = i;
                 document.getElementById('page_num').value = this.pageNum;
                 if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
@@ -364,11 +368,11 @@ export class PdfViewer extends EventFactory {
         let self = this;
         let page = $("#page_" + num);
         if(page.length) {
-            let scrollTo = page.offset().top - self.initialOffset;
-            $([document.documentElement, document.body]).animate({
+            let workspace = $("#workspace");
+            let scrollTo = page.position().top - self.initialOffset;
+            workspace.animate({
                 scrollTop: scrollTo
-            }, 100, function (){
-            });
+            }, 100);
         }
     }
 

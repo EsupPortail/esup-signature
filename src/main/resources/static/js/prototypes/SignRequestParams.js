@@ -609,12 +609,12 @@ export class SignRequestParams extends EventFactory {
             }
         });
 
-        if (!this.inside) {
-            console.log("La signature n'est pas entièrement dans une page !");
-            $("#signLaunchButton").attr("disabled", "disabled");
-        } else {
-            $("#signLaunchButton").removeAttr("disabled");
-        }
+        // if (!this.inside) {
+        //     console.log("La signature n'est pas entièrement dans une page !");
+        //     $("#signLaunchButton").attr("disabled", "disabled");
+        // } else {
+        //     $("#signLaunchButton").attr("disabled", "disabled");
+        // }
         this.#computeBgColor();
     }
 
@@ -627,7 +627,7 @@ export class SignRequestParams extends EventFactory {
             return;
         }
         if(this.signSpace != null && this.signSpace.ready) {
-            this.cross.css("background-color", "rgba(220, 250, 220, 1)");
+            this.cross.css("background-color", "rgba(220, 250, 220, 0.5)");
         } else {
             this.cross.css("background-color", "rgba(255, 255, 255, 0.8)");
         }
@@ -772,7 +772,7 @@ export class SignRequestParams extends EventFactory {
             self.signSpace.addClass("sign-field");
             self.signSpace.removeClass("sign-field-dropped");
             self.ready = false;
-            self.signSpace.text("Vous devez placer une signature ici");
+            self.signSpace.html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
             self.signSpace.css("pointer-events", "auto");
             self.signSpace = null;
         }

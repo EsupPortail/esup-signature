@@ -265,11 +265,7 @@ export class WorkspacePdf {
                 signSpaceDiv = $("#signSpace_" + i);
                 signSpaceDiv.on("click", e => this.addSign(i));
                 if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                    if(this.currentSignType !== "visa") {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre signature");
-                    } else {
-                        signSpaceDiv.html("Cliquez ici pour insérer votre visa");
-                    }
+                    signSpaceDiv.html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
                 }
                 if (currentSignRequestParams.ready) {
                     signSpaceDiv.removeClass("sign-field");
@@ -329,6 +325,7 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        this.signPosition.goStep2();
     }
 
 
@@ -876,6 +873,7 @@ export class WorkspacePdf {
                         cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
                         signRequestParams.dropped = true;
+                        self.signPosition.goStep2();
                         console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
                     }
                 }
@@ -889,7 +887,7 @@ export class WorkspacePdf {
                 $(this).addClass("sign-field");
                 $(this).removeClass("sign-field-dropped");
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                $(this).text("Vous devez placer une signature ici");
+                $(this).html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Placer la signature ici</span></div>");
                 $(this).css("pointer-events", "auto");
                 for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
                     let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
@@ -897,6 +895,7 @@ export class WorkspacePdf {
                     if (cross.attr("id") === ui.draggable.attr("id")) {
                         cross.resizable("enable");
                         signRequestParams.signSpace = null;
+                        self.signPosition.goStep1();
                     }
                 }
             }
@@ -1017,7 +1016,7 @@ export class WorkspacePdf {
     enableCommentMode() {
         console.info("enable comments mode");
         $("#hideComments").hide();
-        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave"></i> <span class="d-none d-xl-inline"> </span>')
+        $("#changeMode1").removeClass('btn-warning').removeClass("d-none").addClass('btn-secondary').html('<i class="fi fi-rr-leave text-white"></i>')
         localStorage.setItem('mode', 'comment');
         $("#postitHelp").remove();
         this.disableAllModes();
@@ -1432,6 +1431,7 @@ export class WorkspacePdf {
             }
         }
     }
+
     getBrowserZoom() {
         return 1 || 1;
     }

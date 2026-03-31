@@ -71,6 +71,7 @@ export class SignPosition extends EventFactory {
             $("#addSignButton").removeAttr("disabled");
             $(window).unbind("beforeunload");
             this.enableForwardButton();
+            this.goStep1();
         }
     }
 
@@ -223,6 +224,47 @@ export class SignPosition extends EventFactory {
 
     getBrowserZoom() {
         return window.devicePixelRatio || 1;
+    }
+
+    goStep1() {
+        let step1 = $("#step-1");
+        let step2 = $("#step-2");
+        let addSignButton = $("#addSignButton2");
+        let insertBtn = $("#insert-btn");
+        let refuseLaunchButton = $("#refuseLaunchButton");
+        addSignButton.removeAttr("disabled");
+        insertBtn.removeAttr("disabled");
+        refuseLaunchButton.removeAttr("disabled");
+        addSignButton.toggleClass("btn-secondary btn-success");
+        insertBtn.toggleClass("btn-secondary btn-success");
+        refuseLaunchButton.toggleClass("btn-secondary btn-danger");
+        step1.toggleClass("active complete");
+        step2.toggleClass("active disable");
+        let signLaunchButton = $("#signLaunchButton");
+        signLaunchButton.attr("disabled", "disabled");
+        signLaunchButton.toggleClass("btn-secondary btn-success");
+        step1.find(".step-horizontal-v2-icon").html("1");
+    }
+
+    goStep2() {
+        let step1 = $("#step-1");
+        let step2 = $("#step-2");
+        let addSignButton = $("#addSignButton2");
+        let insertBtn = $("#insert-btn");
+        let refuseLaunchButton = $("#refuseLaunchButton");
+        addSignButton.attr("disabled", "disabled");
+        // insertBtn.attr("disabled", "disabled");
+        refuseLaunchButton.attr("disabled", "disabled");
+        addSignButton.toggleClass("btn-secondary btn-success");
+        insertBtn.toggleClass("btn-secondary btn-success");
+        refuseLaunchButton.toggleClass("btn-secondary btn-danger");
+        step1.toggleClass("active complete")
+        step2.toggleClass("active disable")
+        let signLaunchButton = $("#signLaunchButton");
+        signLaunchButton.removeAttr("disabled");
+        signLaunchButton.removeClass("btn-secondary");
+        signLaunchButton.addClass("btn-success");
+        step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
     }
 
 }

@@ -5,9 +5,9 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div th:fragment="workspace" class="alert light pt-1 border-0 justify-content-center me-2" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+<div id="workspace" th:fragment="workspace" class="alert light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div id="display-pdf-alerts-dropdown" class="dropdown d-none" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
-        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown" th:style="${nbSignRequestInSignBookParent > 1} ? 'top:172px' : ''"
+        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown"
         title="Afficher les alertes">
             <i class="fa-solid fa-bell"></i> 
         </button>
@@ -195,7 +195,6 @@
 
         </div>
     </form>
-
     <div id="crossTools_x" class="badge opacity-90 bg-light position-absolute cross-tools d-none">
         <div id="defaultTools_x" class="">
             <button type="button" id="signDrop_x"
@@ -310,9 +309,6 @@
             </button>
         </div>
     </div>
-
-
-
     <div id="spot-modal" data-bs-focus="false" class="modal text-black">
         <div class="modal-dialog">
             <div class="modal-content">

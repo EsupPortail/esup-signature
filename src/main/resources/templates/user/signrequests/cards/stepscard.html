@@ -308,7 +308,7 @@
                                 <i class="fi fi-rr-file-export"></i>
                             </div>
                             <div class="step-vertical-content">
-                                <h4>Export vers</h4>
+                                <p>Export vers</p>
                                 <p th:text="${target.protectedTargetUri}"></p>
                             </div>
                         </div>
@@ -324,8 +324,8 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-flag"></i>
                         </div>
-                        <div class="step-vertical-content">
-                            <h4>Procédure terminée</h4>
+                        <div class="step-vertical-content bg-light">
+                            <b>Procédure terminée</b>
                             <p th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null and signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">
                                 Les intervenants ont été informés par mail
                             </p>
@@ -339,8 +339,8 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-triangle-warning"></i>
                         </div>
-                        <div class="step-vertical-content">
-                            <h4>Procédure refusée</h4>
+                        <div class="step-vertical-content bg-light">
+                            <b>Procédure refusée</b>
                             <p th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null and signRequest.parentSignBook.liveWorkflow.workflow.sendAlertToAllRecipients}">
                                 Les intervenants ont été informés par mail
                             </p>

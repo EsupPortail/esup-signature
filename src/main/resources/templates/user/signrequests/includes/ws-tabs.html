@@ -9,10 +9,10 @@
                class="nav-link"
                th:href="${urlProfil} + '/signrequests/' + ${signRequest.parentSignBook.signRequests[signRequestTabStat.index - 1].id}"
                title="Document precedent">
-                <i class="fa-solid fa-chevron-left"></i>
+                <i class="fi fi-rr-angle-small-left" style="font-size: 20px;"></i>
             </a>
             <span th:unless="${signRequestTabStat.index > 0}" class="nav-link disabled" title="Premier document">
-                <i class="fa-solid fa-chevron-left"></i>
+                <i class="fi fi-rr-angle-small-left" style="font-size: 20px;"></i>
             </span>
         </li>
         <li class="nav-item ws-tab-nav">
@@ -26,10 +26,10 @@
                class="nav-link"
                th:href="${urlProfil} + '/signrequests/' + ${signRequest.parentSignBook.signRequests[signRequestTabStat.index + 1].id}"
                title="Document suivant">
-                <i class="fa-solid fa-chevron-right"></i>
+                <i class="fi fi-rr-angle-small-right" style="font-size: 20px;"></i>
             </a>
             <span th:unless="${signRequestTabStat.index + 1 < #lists.size(signRequest.parentSignBook.signRequests)}" class="nav-link disabled" title="Dernier document">
-                <i class="fa-solid fa-chevron-right"></i>
+                <i class="fi fi-rr-angle-small-right" style="font-size: 20px;"></i>
             </span>
         </li>
     </th:block>
@@ -38,13 +38,12 @@
             <a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success text-light' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning text-dark' : '')}"
                th:href="${urlProfil} + '/signrequests/' + ${signRequestTab.id}">
                 <div class="truncate">
-                    <span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <i class="fa-solid fa-clock"></i>
+                    <span title="À signer" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                        <i class="fi fi-rr-document" style="font-size: 18px;"></i> 
                         <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                     </span>
-                    <span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}"
-                          th:classappend="${(signRequest.id == signRequestTab.id ? 'text-success' : 'text-light')}">
-                        <i class="fa-solid fa-check-circle"></i>
+                    <span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                        <i class="fi fi-rr-memo-circle-check"></i>
                         <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                     </span>
                     <span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"
