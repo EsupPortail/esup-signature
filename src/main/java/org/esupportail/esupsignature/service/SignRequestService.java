@@ -343,7 +343,9 @@ public class SignRequestService {
 			if(signRequest.getSignRequestParams().isEmpty() && visual) {
 				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
 			}
-			String ocgName = "signature_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() + "_" + authUserEppn + "_" + System.currentTimeMillis();
+			String textDate = java.time.ZonedDateTime.now()
+					.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			String ocgName = "sign_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getId() + "_" + authUserEppn + "_" + textDate;
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
 				for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
@@ -1362,12 +1364,13 @@ public class SignRequestService {
 		if(!force && !disposition.equals("inline")
 				&& signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
 				&&  BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
-				&& !signRequest.getStatus().equals(SignRequestStatus.completed) && !signRequest.getStatus().equals(SignRequestStatus.exported)
+				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
 				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
 				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
 				) {
-			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit");
+			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
 		}
 		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
 			List<Document> documents = getToSignDocuments(signRequest.getId());

@@ -83,6 +83,10 @@ public class SignBook {
     @Transient
     transient Boolean deleteableByCurrentUser;
 
+    @JsonIgnore
+    @Transient
+    transient Boolean displayNotif;
+
     @ManyToMany
     private Set<User> viewers = new HashSet<>();
 
@@ -244,6 +248,14 @@ public class SignBook {
 
     public void setDeleteableByCurrentUser(Boolean deleteableByCurrentUser) {
         this.deleteableByCurrentUser = deleteableByCurrentUser;
+    }
+
+    public Boolean getDisplayNotif() {
+        return displayNotif;
+    }
+
+    public void setDisplayNotif(Boolean displayNotif) {
+        this.displayNotif = displayNotif;
     }
 
     public Set<User> getViewers() {
