@@ -3,17 +3,19 @@ package org.esupportail.esupsignature.config.datasource;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DatabaseIndexInitializer {
+@EnableJpaRepositories(basePackages = "org.esupportail.esupsignature.repository")
+public class DatabaseInitializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseIndexInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
 
     private final JdbcTemplate jdbcTemplate;
 
-    public DatabaseIndexInitializer(JdbcTemplate jdbcTemplate) {
+    public DatabaseInitializer(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
