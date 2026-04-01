@@ -210,13 +210,7 @@ export class SignRequestParams extends EventFactory {
         if (!page.length) {
             return 0;
         }
-        const firstPage = $("#page_1");
-        const pageTop = page.position()?.top ?? 0;
-        if (!firstPage.length) {
-            return Math.round(pageTop);
-        }
-        const firstPageTop = firstPage.position()?.top ?? 0;
-        return Math.round(pageTop - firstPageTop);
+        return Math.round(page.position()?.top ?? 0);
     }
 
     #refreshPageAttributeFromRect(rect) {

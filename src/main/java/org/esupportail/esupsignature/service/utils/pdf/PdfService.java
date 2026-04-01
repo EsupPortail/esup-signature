@@ -223,23 +223,22 @@ public class PdfService {
         float tx = 0;
         float ty = 0;
         Float fixFactor = globalProperties.getFixFactor();
+        PDRectangle pageBox = pdPage.getCropBox();
+        float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = 0;
             ty = 0;
         } else if (pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() * fixFactor + signRequestParams.getSignHeight() * signRequestParams.getSignScale());
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = pdfParameters.getWidth();
             ty = pdfParameters.getHeight();
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getWidth() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
                 ty = pdfParameters.getHeight();
             } else {
@@ -262,12 +261,12 @@ public class PdfService {
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight);
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             String[] lines = signRequestParams.getTextPart().split("\n", -1);
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() + fontSize);
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - (signRequestParams.getyPos() * fixFactor + fontSize);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);
@@ -281,10 +280,10 @@ public class PdfService {
         contentStream.endMarkedContent();
         contentStream.close();
         if (!StringUtils.hasText(signRequestParams.getTextPart()) && signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-            addLinkInLayer(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+            addLinkInLayer(signRequest, renderedSignWidth, renderedSignHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
         } else {
-            float signWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-            float signHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+            float signWidth = renderedSignWidth;
+            float signHeight = renderedSignHeight;
             if (StringUtils.hasText(signRequestParams.getTextPart())) {
                 float fontSize = signRequestParams.getFontSize() * fixFactor;
                 PDFont pdFont = PDType0Font.load(pdDocument,
@@ -1256,7 +1255,8 @@ public class PdfService {
      */
     public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
         PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-        return new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+        PDRectangle pageBox = pdPage.getCropBox();
+        return new PdfParameters((int) pageBox.getWidth(), (int) pageBox.getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
     }
 
     /**

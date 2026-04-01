@@ -271,7 +271,7 @@ export class WorkspacePdf {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                let offset = this.pdfViewer.getPageRelativeTop(currentSignRequestParams.signPageNumber);
+                let offset = this.pdfViewer.getPageTopInPdf(currentSignRequestParams.signPageNumber);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
                 signSpaceDiv.css("left", xPos);
@@ -291,7 +291,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
                 signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
                 signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
-                let offset = this.pdfViewer.getPageRelativeTop(signSpaceDiv.attr("data-es-pos-page"));
+                let offset = this.pdfViewer.getPageTopInPdf(signSpaceDiv.attr("data-es-pos-page"));
                 signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
                 signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
             }
@@ -675,7 +675,7 @@ export class WorkspacePdf {
                 if (this.mode === 'comment' || this.displayComments) {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
-                    let offset = this.pdfViewer.getPageRelativeTop(comment.pageNumber);
+                    let offset = this.pdfViewer.getPageTopInPdf(comment.pageNumber);
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
@@ -738,7 +738,7 @@ export class WorkspacePdf {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let offset = this.pdfViewer.getPageRelativeTop(spot.signPageNumber);
+                    let offset = this.pdfViewer.getPageTopInPdf(spot.signPageNumber);
                     let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale));
                     let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + offset);
                     console.log("spot pos : " + xPos + ", " + yPos);
@@ -847,9 +847,16 @@ export class WorkspacePdf {
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
                         signRequestParams.signSpace = signSpaceDiv;
-                        let offset = self.pdfViewer.getPageRelativeTop(signSpaceDiv.attr("data-es-pos-page"));
-                        signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
-                        signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
+                        const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
+                        let offset = self.pdfViewer.getPageTopInPdf(pageNum);
+                        const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
+                        const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
+                        signRequestParams.signPageNumber = pageNum;
+                        signRequestParams.xPos = Number.isFinite(targetX) ? targetX : 0;
+                        signRequestParams.yPos = Number.isFinite(targetY) ? targetY : 0;
+                        cross.attr("page", pageNum);
+                        // Prevent simulateDrop from re-running a synthetic drag that may shift persisted yPos.
+                        signRequestParams.firstLaunch = false;
                         signRequestParams.applyCurrentSignRequestParams(offset);
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
@@ -934,7 +941,7 @@ export class WorkspacePdf {
         commentPosX.val(Math.round(xPos));
         commentPosY.val(Math.round(yPos));
         comment.css('left', xPos * this.pdfViewer.scale);
-        let offset = this.pdfViewer.getPageRelativeTop(commentPageNumber);
+        let offset = this.pdfViewer.getPageTopInPdf(commentPageNumber);
         comment.css('top', yPos * this.pdfViewer.scale + offset);
         $("#postitComment").removeAttr("disabled");
         $("#spotStepNumber").removeAttr("disabled");

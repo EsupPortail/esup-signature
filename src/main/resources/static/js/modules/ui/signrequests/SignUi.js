@@ -365,22 +365,71 @@ export class SignUi {
         if(this.workspace != null) {
             let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
-                let paramToSend = Object.assign({}, originalParams);
-                paramToSend.signScale = originalParams.signScale;
-                paramToSend.xPos = originalParams.xPos * self.getBrowserZoom();
-                paramToSend.yPos = originalParams.yPos * self.getBrowserZoom();
-                paramToSend.fontSize = originalParams.fontSize;
-                paramToSend.signWidth = originalParams.signWidth / originalParams.signScale
-                paramToSend.signHeight = originalParams.signHeight / originalParams.signScale
-                paramToSend.rotate = self.workspace.pdfViewer.rotation;
-                delete paramToSend.signImages;
+                let signScale = self.normalizeFloat(originalParams.signScale, 1, 0.01);
+                let signPageNumber = self.normalizeInteger(originalParams.signPageNumber, 1, 1);
+                let xPos = self.normalizeInteger(originalParams.xPos, 0, 0);
+                let yPos = self.normalizeInteger(originalParams.yPos, 0, 0);
+                // If the signature is dropped on a predefined slot, slot coordinates are the source of truth.
+                if (originalParams.signSpace != null && originalParams.signSpace.attr) {
+                    const slotPage = Number.parseInt(originalParams.signSpace.attr("data-es-pos-page"), 10);
+                    const slotX = Number.parseInt(originalParams.signSpace.attr("data-es-pos-x"), 10);
+                    const slotY = Number.parseInt(originalParams.signSpace.attr("data-es-pos-y"), 10);
+                    const crossPage = Number.parseInt(originalParams.cross?.attr?.("page"), 10);
+                    const visualPage = Number.isFinite(crossPage) ? crossPage : slotPage;
+                    if (Number.isFinite(slotPage)) {
+                        signPageNumber = slotPage;
+                    }
+
+                    // Prefer visual position to match exactly what user sees.
+                    const crossLeft = Number.parseFloat(originalParams.cross?.css?.("left"));
+                    const crossTop = Number.parseFloat(originalParams.cross?.css?.("top"));
+                    if (Number.isFinite(crossLeft) && Number.isFinite(crossTop) && Number.isFinite(visualPage)) {
+                        const pageTop = self.workspace.pdfViewer.getPageTopInPdf(visualPage);
+                        signPageNumber = visualPage;
+                        xPos = self.normalizeInteger(Math.round(crossLeft / self.workspace.pdfViewer.scale), 0, 0);
+                        yPos = self.normalizeInteger(Math.round((crossTop - pageTop) / self.workspace.pdfViewer.scale), 0, 0);
+                    } else {
+                        if (Number.isFinite(slotX)) {
+                            xPos = slotX;
+                        }
+                        if (Number.isFinite(slotY)) {
+                            yPos = slotY;
+                        }
+                    }
+                }
+                let paramToSend = {
+                    signPageNumber: signPageNumber,
+                    signDocumentNumber: self.normalizeInteger(originalParams.signDocumentNumber, 0, 0),
+                    signWidth: self.normalizeInteger(originalParams.signWidth / signScale, 200, 1),
+                    signHeight: self.normalizeInteger(originalParams.signHeight / signScale, 100, 1),
+                    xPos: xPos,
+                    yPos: yPos,
+                    rotate: self.normalizeInteger(self.workspace.pdfViewer.rotation, 0, 0),
+                    signImageNumber: self.normalizeInteger(originalParams.signImageNumber, 0),
+                    pdSignatureFieldName: originalParams.pdSignatureFieldName ?? null,
+                    signScale: signScale,
+                    extraText: originalParams.extraText ?? "",
+                    isExtraText: Boolean(originalParams.isExtraText),
+                    addWatermark: Boolean(originalParams.addWatermark),
+                    allPages: Boolean(originalParams.allPages),
+                    addImage: Boolean(originalParams.addImage),
+                    addExtra: Boolean(originalParams.addExtra),
+                    extraType: Boolean(originalParams.extraType),
+                    extraName: Boolean(originalParams.extraName),
+                    extraDate: Boolean(originalParams.extraDate),
+                    extraOnTop: originalParams.extraOnTop == null ? true : Boolean(originalParams.extraOnTop),
+                    textPart: originalParams.textPart ?? null,
+                    red: self.normalizeInteger(originalParams.red, 0, 0),
+                    green: self.normalizeInteger(originalParams.green, 0, 0),
+                    blue: self.normalizeInteger(originalParams.blue, 0, 0),
+                    fontSize: self.normalizeInteger(originalParams.fontSize, self.globalProperties?.defaultFontSize ?? 16, 1),
+                };
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
                         signaturesCheck = false;
                     } else {
                         originalParams.userSignaturePad.save();
                         paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
-                        delete paramToSend.userSignaturePad;
                     }
                 }
                 return paramToSend;
@@ -390,23 +439,7 @@ export class SignUi {
                 'certType' : this.certTypeSelect.val(),
                 'signAll' : $("#sign-all").prop("checked"),
                 'sealCertificat' : this.sealCertificatSelect.val(),
-                'signRequestParams' : JSON.stringify(signRequestParamsesToSend, function replacer(key, value) {
-                    if (this &&
-                        (key === "events"
-                            || key === "globalProperties"
-                            || key === "signSpace"
-                            || key === "cross"
-                            || key === "defaultTools"
-                            || key === "tools"
-                            || key === "signColorPicker"
-                            || key === "textareaExtra"
-                            || key === "divExtra"
-                            || key === "border"
-                            || key === "textareaPart")) {
-                        return undefined;
-                    }
-                    return value;
-                }),
+                'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
                 // 'visual' : visual,
                 'comment' : this.signComment.val(),
                 'formData' : JSON.stringify(formData)
@@ -541,6 +574,28 @@ export class SignUi {
                 self.launchSign();
             }
         });
+    }
+
+    normalizeInteger(value, fallback = 0, min = null) {
+        let normalized = Number.parseInt(value, 10);
+        if (Number.isNaN(normalized)) {
+            normalized = fallback;
+        }
+        if (min != null && normalized < min) {
+            normalized = min;
+        }
+        return normalized;
+    }
+
+    normalizeFloat(value, fallback = 1, min = null) {
+        let normalized = Number.parseFloat(value);
+        if (!Number.isFinite(normalized)) {
+            normalized = fallback;
+        }
+        if (min != null && normalized < min) {
+            normalized = min;
+        }
+        return Math.round(normalized * 1000) / 1000;
     }
 
     getBrowserZoom() {
