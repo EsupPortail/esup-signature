@@ -76,10 +76,7 @@ export class SignRequestParams extends EventFactory {
         this.inside = true;
         this.isLight = light;
         if(!light) {
-            let signPage = $("#page_" + this.signPageNumber);
-            if(signPage != null && signPage.offset() != null) {
-                this.offset = (signPage.offset().top);
-            }
+            this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
         if(signImages === 999999) {
             this.#initSpot();
@@ -110,7 +107,7 @@ export class SignRequestParams extends EventFactory {
             let pdfWidthPixels = parseInt($("#pdf").css("width"));
             let finalXPixels = (pdfWidthPixels / 2) - ((this.signWidth * this.currentScale * this.signScale) / 4);
             this.xPos = finalXPixels / scale / this.getBrowserZoom();
-            let mid = scrollTop + $(window).height() / 2;
+            let mid = scrollTop + this.#getViewportHeight() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
         this.lastWidth = window.innerWidth;
@@ -160,7 +157,7 @@ export class SignRequestParams extends EventFactory {
                     const deltaW = Math.abs(w - self.lastWidth);
                     const deltaH = Math.abs(h - self.lastHeight);
                     if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
-                    self.cross.css('top', Math.round(self.yPos * self.currentScale * self.getBrowserZoom()) + 'px');
+                    self.cross.css('top', Math.round(self.yPos * self.currentScale * self.getBrowserZoom() + self.#getPageRelativeTop(self.signPageNumber)) + 'px');
                     self.cross.css('left', Math.round(self.xPos * self.currentScale * self.getBrowserZoom()) + 'px');
                     self.cross.css('width', Math.round(self.signWidth * self.currentScale * self.getBrowserZoom()) + 'px');
                     self.cross.css('height', Math.round(self.signHeight * self.currentScale * self.getBrowserZoom()) + 'px');
@@ -174,6 +171,70 @@ export class SignRequestParams extends EventFactory {
                 }, DEBOUNCE_DELAY);
             });
         }
+    }
+
+    #getScrollContainer() {
+        return document.getElementById("workspace");
+    }
+
+    #getScrollTop() {
+        const workspace = this.#getScrollContainer();
+        return workspace ? workspace.scrollTop : window.scrollY;
+    }
+
+    #getViewportHeight() {
+        const workspace = this.#getScrollContainer();
+        return workspace ? workspace.clientHeight : window.innerHeight;
+    }
+
+    #scrollBy(delta) {
+        const workspace = this.#getScrollContainer();
+        if (workspace) {
+            workspace.scrollBy({top: delta, left: 0, behavior: 'auto'});
+            return;
+        }
+        window.scrollBy(0, delta);
+    }
+
+    #scrollTo(top) {
+        const workspace = this.#getScrollContainer();
+        if (workspace) {
+            workspace.scrollTo({top: Math.max(0, top), left: 0, behavior: 'auto'});
+            return;
+        }
+        window.scrollTo(0, Math.max(0, top));
+    }
+
+    #getPageRelativeTop(pageNumber) {
+        const page = $("#page_" + pageNumber);
+        if (!page.length) {
+            return 0;
+        }
+        const firstPage = $("#page_1");
+        const pageTop = page.position()?.top ?? 0;
+        if (!firstPage.length) {
+            return Math.round(pageTop);
+        }
+        const firstPageTop = firstPage.position()?.top ?? 0;
+        return Math.round(pageTop - firstPageTop);
+    }
+
+    #refreshPageAttributeFromRect(rect) {
+        let detectedPage = parseInt(this.cross.attr("page"), 10) || this.signPageNumber;
+        $(".pdf-page").each(function () {
+            const pageRect = this.getBoundingClientRect();
+            if (
+                rect.left + 10 >= pageRect.left &&
+                rect.top + 10 >= pageRect.top &&
+                rect.right - 10 <= pageRect.right &&
+                rect.bottom - 10 <= pageRect.bottom
+            ) {
+                detectedPage = parseInt($(this).attr("page-num") || $(this).attr("id").split("_")[1], 10);
+                return false;
+            }
+        });
+        this.cross.attr("page", detectedPage);
+        return detectedPage;
     }
 
     #initCross() {
@@ -580,6 +641,7 @@ export class SignRequestParams extends EventFactory {
 
     #dragStop(event, ui) {
         const dragRect = this.cross[0].getBoundingClientRect();
+        this.#refreshPageAttributeFromRect(dragRect);
         this.#checkInside(dragRect, this);
         this.tools.removeClass("d-none");
         if($(event.originalEvent.target).attr("id") != null && $("#border_" + $(event.originalEvent.target).attr("id").split("_")[1]).hasClass("cross-warning") && this.firstCrossAlert) {
@@ -737,7 +799,7 @@ export class SignRequestParams extends EventFactory {
     #afterDropRefresh(ui) {
         this.signPageNumber = this.cross.attr("page");
         this.xPos = Math.round(ui.position.left / (this.currentScale * this.getBrowserZoom()));
-        const deltaTop = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
+        const deltaTop = this.#getPageRelativeTop(this.signPageNumber);
         this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * this.getBrowserZoom()));
         if (this.yPos < 0) this.yPos = 0;
         console.log("x : " + this.xPos + ", y : " + this.yPos + ", page : " + this.signPageNumber);
@@ -848,11 +910,14 @@ export class SignRequestParams extends EventFactory {
                 const rect = draggable[0].getBoundingClientRect();
                 const margin = 100;
                 const scrollStep = distance;
-                if (rect.bottom > window.innerHeight - margin) {
-                    window.scrollBy(0, scrollStep);
+                const workspace = this.#getScrollContainer();
+                const viewportBottom = workspace ? workspace.getBoundingClientRect().bottom : window.innerHeight;
+                const viewportTop = workspace ? workspace.getBoundingClientRect().top : 0;
+                if (rect.bottom > viewportBottom - margin) {
+                    this.#scrollBy(scrollStep);
                 }
-                if (rect.top < margin) {
-                    window.scrollBy(0, -scrollStep);
+                if (rect.top < viewportTop + margin) {
+                    this.#scrollBy(-scrollStep);
                 }
                 const ui = {
                     position: position,
@@ -863,13 +928,6 @@ export class SignRequestParams extends EventFactory {
                     ui,
                     draggable[0]
                 );
-                $(container).find('.page').each((index, page) => {
-                    const $page = $(page);
-                    const pageRect = $page[0].getBoundingClientRect();
-                    if (rect.top >= pageRect.top && rect.bottom <= pageRect.bottom) {
-                        this.cross.attr("page", index + 1);
-                    }
-                });
                 e.preventDefault();
             }
         }
@@ -995,15 +1053,14 @@ export class SignRequestParams extends EventFactory {
             this.allPages = true;
             $(".cross-ghost_" + this.id).remove();
             let self = this;
-            const currentPageTop = $("#page_" + self.signPageNumber).offset().top;
-            const signTopOnPage = parseInt(self.cross.css('top')) - (currentPageTop - $("#page_1").offset().top);
+            const signTopOnPage = parseInt(self.cross.css('top')) - self.#getPageRelativeTop(self.signPageNumber);
 
             $("[id^='page_'].pdf-page").each(function() {
                 const pageNum = parseInt($(this).attr('id').split('_')[1]);
                 if(pageNum === parseInt(self.signPageNumber)) {
                     return;
                 }
-                const pageOffset = $(this).offset().top - $("#page_1").offset().top;
+                const pageOffset = self.#getPageRelativeTop(pageNum);
                 const ghostClone = self.cross.clone();
                 ghostClone.attr('class', 'cross-ghost_' + self.id);
                 ghostClone.css({
@@ -1618,7 +1675,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", this.signWidth * scale + "px");
         this.cross.css("height", this.signHeight * scale + "px");
         this.cross.css("left", this.xPos * scale + 'px');
-        let offset = $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top;
+        let offset = this.#getPageRelativeTop(this.signPageNumber);
         this.cross.css("top", this.yPos * scale + offset + 'px');
         this.canvas.css("width", (this.signWidth * scale - this.extraWidth) + "px");
         this.canvas.css("height", (this.signHeight * scale - this.extraHeight) + "px");
@@ -1672,12 +1729,12 @@ export class SignRequestParams extends EventFactory {
     simulateDrop() {
         if(this.firstLaunch) {
             let x = Math.round(this.xPos * this.currentScale * this.getBrowserZoom());
-            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + $("#page_" + this.signPageNumber).offset().top - $("#page_1").offset().top);
+            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + this.#getPageRelativeTop(this.signPageNumber));
             let self = this;
             this.cross.on("dragstop", function () {
-                let test = self.scrollTop + $(window).height();
+                let test = self.#getScrollTop() + self.#getViewportHeight();
                 if (y > test) {
-                    window.scrollTo(0, y);
+                    self.#scrollTo(y);
                 }
                 $(this).unbind("dragstop");
             });

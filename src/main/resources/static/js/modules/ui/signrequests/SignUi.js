@@ -134,7 +134,7 @@ export class SignUi {
                             bootbox.alert("Merci de placer la signature", function () {
                                 let signSpace = $("#signSpace_" + signId);
                                 if(signSpace.length) {
-                                    window.scrollTo(0, signSpace.offset().top - self.workspace.pdfViewer.initialOffset);
+                                    self.workspace.pdfViewer.animateScrollToPosition(parseInt(signSpace.css('top').replace('px', ''), 10));
                                 }
                             });
                         } else {

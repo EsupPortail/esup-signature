@@ -26,7 +26,7 @@ export class SignPosition extends EventFactory {
         this.id = 0;
         this.signsList = [];
         this.currentScale;
-        this.scrollTop = 0;
+        this.scrollTop = this.getCurrentScrollTop();
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
         this.addSignButton = $("#addSignButton");
@@ -39,11 +39,27 @@ export class SignPosition extends EventFactory {
         this.initListeners();
     }
 
+    getScrollContainer() {
+        return document.getElementById("workspace");
+    }
+
+    getCurrentScrollTop() {
+        const workspace = this.getScrollContainer();
+        return workspace ? workspace.scrollTop : window.scrollY;
+    }
+
     initListeners() {
         let self = this;
-        $(window).on('scroll', function(e) {
-            self.scrollTop = $(this).scrollTop();
-        });
+        const workspace = this.getScrollContainer();
+        if (workspace) {
+            workspace.addEventListener('scroll', function() {
+                self.scrollTop = workspace.scrollTop;
+            });
+        } else {
+            $(window).on('scroll', function() {
+                self.scrollTop = $(this).scrollTop();
+            });
+        }
         $(document).ready(function() {
             if(self.signImages != null && self.signImages.length === 1) {
                 self.popUserUi();

@@ -136,6 +136,65 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    getWorkspaceElement() {
+        return document.getElementById('workspace');
+    }
+
+    getScrollTop() {
+        const workspace = this.getWorkspaceElement();
+        return workspace ? workspace.scrollTop : window.scrollY;
+    }
+
+    getViewportHeight() {
+        const workspace = this.getWorkspaceElement();
+        return workspace ? workspace.clientHeight : window.innerHeight;
+    }
+
+    scrollToPosition(top, behavior = 'auto') {
+        const workspace = this.getWorkspaceElement();
+        if (workspace) {
+            workspace.scrollTo({
+                top: Math.max(0, top),
+                left: 0,
+                behavior: behavior,
+            });
+            return;
+        }
+        window.scrollTo({
+            top: Math.max(0, top),
+            left: 0,
+            behavior: behavior,
+        });
+    }
+
+    animateScrollToPosition(top) {
+        const targetTop = Math.max(0, top);
+        const workspace = this.getWorkspaceElement();
+        if (workspace) {
+            $(workspace).stop().animate({
+                scrollTop: targetTop
+            }, 100);
+            return;
+        }
+        $('html, body').stop().animate({
+            scrollTop: targetTop
+        }, 100);
+    }
+
+    getPageRelativeTop(pageNum) {
+        const page = $("#page_" + pageNum);
+        if (!page.length) {
+            return 0;
+        }
+        const firstPage = $("#page_1");
+        const pageTop = page.position()?.top ?? 0;
+        if (!firstPage.length) {
+            return Math.round(pageTop);
+        }
+        const firstPageTop = firstPage.position()?.top ?? 0;
+        return Math.round(pageTop - firstPageTop);
+    }
+
     set optionalContentConfigPromise(promise) {
         this._optionalContentConfigPromise = promise;
         this.eventBus.dispatch("optionalcontentconfigchanged", {
@@ -171,15 +230,14 @@ export class PdfViewer extends EventFactory {
 
     getVisiblePages() {
         const visiblePages = [];
-        const scrollTop = window.scrollY;
-        const scrollBottom = scrollTop + window.innerHeight;
+        const scrollTop = this.getScrollTop();
+        const scrollBottom = scrollTop + this.getViewportHeight();
 
         for (let i = 1; i <= this.numPages; i++) {
             const pageElement = document.getElementById(`page_${i}`);
             if (pageElement) {
-                const rect = pageElement.getBoundingClientRect();
-                const elementTop = rect.top + scrollTop;
-                const elementBottom = elementTop + rect.height;
+                const elementTop = this.getPageRelativeTop(i);
+                const elementBottom = elementTop + pageElement.offsetHeight;
                 if (elementBottom > scrollTop && elementTop < scrollBottom) {
                     visiblePages.push(i);
                 }
@@ -190,11 +248,7 @@ export class PdfViewer extends EventFactory {
 
     restoreScrolling() {
         let newScrolling = Math.round(this.saveScrolling * this.scale);
-        window.scrollTo({
-            top: newScrolling,
-            left: 0,
-            behavior: 'auto',
-        });
+        this.scrollToPosition(newScrolling);
     }
 
     listenToSearchCompletion() {
@@ -273,8 +327,7 @@ export class PdfViewer extends EventFactory {
         let numPages = this.pdfDoc.numPages;
 
         for(let i = 1; i < numPages + 1; i++) {
-            let page = $("#page_" + i);
-            let pagePos = page.position().top;
+            let pagePos = this.getPageRelativeTop(i);
 
             if(e > pagePos - 250) {
                 this.pageNum = i;
@@ -341,7 +394,7 @@ export class PdfViewer extends EventFactory {
                     if (self._isRefreshingOCG) {
                         self._isRefreshingOCG = false;
                     } else {
-                        self.initialOffset = parseInt($("#page_1").offset().top);
+                        self.initialOffset = self.getPageRelativeTop(1);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
                         if(self.pages.length === self.numPages) {
@@ -365,14 +418,10 @@ export class PdfViewer extends EventFactory {
     }
 
     scrollToPage(num) {
-        let self = this;
         let page = $("#page_" + num);
         if(page.length) {
-            let workspace = $("#workspace");
-            let scrollTo = page.position().top - self.initialOffset;
-            workspace.animate({
-                scrollTop: scrollTo
-            }, 100);
+            let scrollTo = this.getPageRelativeTop(num);
+            this.animateScrollToPosition(scrollTo);
         }
     }
 
@@ -1046,7 +1095,7 @@ export class PdfViewer extends EventFactory {
         if (this.scale >= newScale) {
             return;
         }
-        this.saveScrolling = Math.round(window.scrollY / this.scale);
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
         this.scale = Math.round((this.scale + this.zoomStep) * 1000) / 1000;
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
@@ -1180,6 +1229,17 @@ export class PdfViewer extends EventFactory {
         field.focus();
         let offset = field.offset();
         if(offset != null) {
+            const workspace = this.getWorkspaceElement();
+            if (workspace) {
+                const workspaceOffset = $(workspace).offset();
+                if (workspaceOffset != null) {
+                    $(workspace).animate({
+                        scrollTop: offset.top - workspaceOffset.top + workspace.scrollTop - 170,
+                        scrollLeft: 0
+                    });
+                    return;
+                }
+            }
             $('html, body').animate({
                 scrollTop: offset.top - 170,
                 scrollLeft: offset.left

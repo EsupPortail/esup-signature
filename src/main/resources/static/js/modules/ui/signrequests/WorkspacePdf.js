@@ -271,7 +271,7 @@ export class WorkspacePdf {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                let offset = Math.round($("#page_" + currentSignRequestParams.signPageNumber).offset().top - this.pdfViewer.initialOffset);
+                let offset = this.pdfViewer.getPageRelativeTop(currentSignRequestParams.signPageNumber);
                 let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
                 let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
                 signSpaceDiv.css("left", xPos);
@@ -291,7 +291,7 @@ export class WorkspacePdf {
                 signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
                 signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
                 signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
-                let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top - this.pdfViewer.initialOffset);
+                let offset = this.pdfViewer.getPageRelativeTop(signSpaceDiv.attr("data-es-pos-page"));
                 signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
                 signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
             }
@@ -596,16 +596,20 @@ export class WorkspacePdf {
 
     pointIt2(e) {
         let target = e.target;
-        let page = $(target).parent().parent().parent();
-        let offset = 0;
-        if(page.attr("page-num") !== undefined) {
-            let pageNumber = page.attr("page-num");
-            offset = $("#page_" + pageNumber).offset().top;
+        let page = $(target).closest('.pdf-page');
+        if(page.length) {
+            let pageNumber = page.attr("page-num") || page.attr("id")?.split("_")[1];
+            const pageRect = page.get(0).getBoundingClientRect();
             $('#commentPageNumber').val(pageNumber);
-            console.warn(pageNumber);
+            let xPos = Math.round(e.clientX - pageRect.left);
+            let yPos = Math.round(e.clientY - pageRect.top);
+            $("#commentPosX").val(xPos);
+            $('#commentPosY').val(yPos);
+            console.debug("debug - mouse pos : " + xPos + ", " + yPos);
+            return;
         }
         let xPos = e.offsetX ? (e.offsetX) : e.clientX;
-        let yPos = e.pageY - offset;
+        let yPos = e.offsetY ? (e.offsetY) : e.clientY;
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
@@ -657,7 +661,7 @@ export class WorkspacePdf {
 
     focusComment(postit) {
         this.refreshAfterPageChange();
-        $('html,body').animate({scrollTop: $('#inDocComment_' + postit.id).css('top').replace('px', '')}, 'slow');
+        this.pdfViewer.animateScrollToPosition(parseInt($('#inDocComment_' + postit.id).css('top').replace('px', ''), 10));
     }
 
     refreshAfterPageChange() {
@@ -671,11 +675,7 @@ export class WorkspacePdf {
                 if (this.mode === 'comment' || this.displayComments) {
                     postitDiv.show();
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
-                    let pageOffset = $("#page_" + comment.pageNumber).offset();
-                    let offset = 10;
-                    if(pageOffset) {
-                        offset = pageOffset.top - this.pdfViewer.initialOffset ;
-                    }
+                    let offset = this.pdfViewer.getPageRelativeTop(comment.pageNumber);
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
@@ -738,11 +738,7 @@ export class WorkspacePdf {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let page = $("#page_" + spot.signPageNumber);
-                    let offset = 0;
-                    if(page.offset() != null) {
-                        offset = page.offset().top - this.pdfViewer.initialOffset ;
-                    }
+                    let offset = this.pdfViewer.getPageRelativeTop(spot.signPageNumber);
                     let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale));
                     let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + offset);
                     console.log("spot pos : " + xPos + ", " + yPos);
@@ -851,7 +847,7 @@ export class WorkspacePdf {
                     let cross = signRequestParams.cross;
                     if (cross.attr("id") === ui.draggable.attr("id")) {
                         signRequestParams.signSpace = signSpaceDiv;
-                        let offset = Math.round($("#page_" + signSpaceDiv.attr("data-es-pos-page")).offset().top) - self.pdfViewer.initialOffset ;
+                        let offset = self.pdfViewer.getPageRelativeTop(signSpaceDiv.attr("data-es-pos-page"));
                         signRequestParams.xPos = signSpaceDiv.attr("data-es-pos-x");
                         signRequestParams.yPos = signSpaceDiv.attr("data-es-pos-y");
                         signRequestParams.applyCurrentSignRequestParams(offset);
@@ -938,7 +934,7 @@ export class WorkspacePdf {
         commentPosX.val(Math.round(xPos));
         commentPosY.val(Math.round(yPos));
         comment.css('left', xPos * this.pdfViewer.scale);
-        let offset = $("#page_" + commentPageNumber).offset().top - this.pdfViewer.initialOffset;
+        let offset = this.pdfViewer.getPageRelativeTop(commentPageNumber);
         comment.css('top', yPos * this.pdfViewer.scale + offset);
         $("#postitComment").removeAttr("disabled");
         $("#spotStepNumber").removeAttr("disabled");
