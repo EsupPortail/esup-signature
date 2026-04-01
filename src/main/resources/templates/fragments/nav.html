@@ -105,7 +105,7 @@
                     </form>
                 </li>
                 <li class="nav-item">
-                    <a class="btn btn-transparent user-toggle d-inline-flex text-white align-middle me-1" id="user-toggle"
+                    <a class="btn btn-transparent user-toggle d-inline-flex align-items-center text-white me-1" id="user-toggle"
                         th:classappend="${activeMenu == 'user'} ? 'bg-secondary bg-opacity-75'"
                         type="button" href="#user-infos"
                         aria-expanded="false"
@@ -113,7 +113,19 @@
                         data-bs-toggle="collapse">
                         <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
                         <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.email}"></b>
-                        <div class="user-toggle align-middle ms-2"><i class="fi fi-rr-user"></i></div>
+                        <div class="user-toggle align-middle ms-2">
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
+                                 style="width: 2rem; height: 2rem; flex-shrink: 0; font-size: 0.75rem;"
+                                 th:with="firstInitial=${user.firstname != null && !#strings.isEmpty(user.firstname) ? #strings.substring(user.firstname, 0, 1) : ''},
+                              lastInitial=${user.name != null && !#strings.isEmpty(user.name) ? #strings.substring(user.name, 0, 1) : ''},
+                              initials=${#strings.toUpperCase(firstInitial + lastInitial)},
+                              userId=${user.id != null ? user.id : 0},
+                              hue=${T(java.lang.Math).abs(userId) % 360}"
+                                 th:styleappend="'background-color: hsl(' + ${hue} + ', 70%, 60%);'"
+                                 th:text="${!#strings.isEmpty(initials) ? initials : '?'}">
+                                ??
+                            </div>
+                        </div>
                     </a>
                 </li>
                 <li class="nav-item">

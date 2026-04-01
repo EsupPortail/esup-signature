@@ -299,6 +299,7 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
+        // alert(forceSignNumber)
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;

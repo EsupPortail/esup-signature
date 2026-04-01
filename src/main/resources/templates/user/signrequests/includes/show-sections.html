@@ -193,7 +193,7 @@
                     th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                 <i th:if="${signRequest.deleted}" class="fi fi-rr-trash-xmark " style="margin-top: 0;"></i>
-                <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash bg-danger " style="margin-top: 0;"></i>
+                <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
             </button>
         </div>
         <li th:if="${nextSignBook != null}" class="d-md-block d-none">

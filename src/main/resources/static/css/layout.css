@@ -70,7 +70,7 @@ header {
 }
 
 #content {
-    height: calc(100vh - 128px);
+    height: calc(100vh - 134px);
 }
 
 .content,
@@ -243,8 +243,7 @@ header {
     min-width: 300px;
     max-width: 300px;
     overflow-y: auto;
-    padding-left: 0 !important;
-    height: calc(100vh - 128px);
+    height: calc(100vh - 134px);
 }
 
 #sidebar.active {
@@ -266,7 +265,8 @@ header {
 .fixed-action-btns,
 .es-fixed-action-btns {
     padding: 10px;
-    height: calc(100vh - 128px);
+    height: calc(100vh - 134px);
+    overflow-y: auto;
 }
 
 .tools,
