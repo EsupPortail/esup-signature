@@ -9,8 +9,8 @@ public class PdfProperties {
     private String pathToGS = "/usr/bin/gs";
     private String pathToFonts = "/usr/share/fonts";
     private boolean convertToPdfA = true;
-    private int pdfALevel = 2;
-    private String gsCommandParams = "-dPDFSTOPONERROR -dSubsetFonts=true -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.4 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1";
+    private int pdfALevel = 3;
+    private String gsCommandParams = "-dPDFSTOPONERROR -dSubsetFonts=true -dEmbedAllFonts=true -dAlignToPixels=0 -dGridFitTT=2 -dCompatibilityLevel=1.7 -sColorConversionStrategy=RGB -sDEVICE=pdfwrite -dPDFACompatibilityPolicy=1";
 
     public int getPdfToImageDpi() {
         return pdfToImageDpi;

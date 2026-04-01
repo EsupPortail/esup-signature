@@ -253,7 +253,7 @@ fs:
 
 pdf:
     convert-to-pdf-a: true
-    pdf-a-level: 2
+    pdf-a-level: 3
     path-to-g-s: /usr/bin/gs
     path-to-fonts : /usr/share/fonts
     pdf-to-image-dpi: 72
