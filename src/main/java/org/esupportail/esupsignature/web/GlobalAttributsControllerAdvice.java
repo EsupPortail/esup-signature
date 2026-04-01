@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
+import org.esupportail.esupsignature.dto.FrontendGlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)
@@ -92,22 +94,12 @@ public class GlobalAttributsControllerAdvice {
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {
-            GlobalProperties myGlobalProperties = new GlobalProperties();
-            BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-            myGlobalProperties.newVersion = globalProperties.newVersion;
-            myGlobalProperties.setSealCertificatProperties(null);
-            myGlobalProperties.setSealCertificatPin(null);
-            myGlobalProperties.setSealCertificatType(null);
-            myGlobalProperties.setSealCertificatFile(null);
-            myGlobalProperties.setSealCertificatDriver(null);
-            myGlobalProperties.setArchiveUri(null);
-            myGlobalProperties.setOpenXPKIServerUrl(null);
             User user = userService.getFullUserByEppn(userEppn);
             if(user == null) {
-                logger.error("user " + userEppn + " not found");
+                logger.error("user {} not found", userEppn);
                 return;
             }
-            userService.parseRoles(userEppn, myGlobalProperties);
+            FrontendGlobalProperties myGlobalProperties = generateMyProperties(userEppn);
             model.addAttribute("securityServiceName", httpServletRequest.getSession().getAttribute("securityServiceName"));
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
@@ -124,7 +116,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("enableSms", smsProperties.getEnableSms());
             model.addAttribute("reportNumber", reportService.countByUser(authUserEppn));
-            model.addAttribute("hoursBeforeRefreshNotif", myGlobalProperties.getHoursBeforeRefreshNotif());
+            model.addAttribute("hoursBeforeRefreshNotif", globalProperties.getHoursBeforeRefreshNotif());
             model.addAttribute("myUiParams", userService.getUiParams(authUserEppn));
             if (environment.getActiveProfiles().length > 0 && environment.getActiveProfiles()[0].equals("dev")) {
                 model.addAttribute("profile", environment.getActiveProfiles()[0]);
@@ -144,6 +136,14 @@ public class GlobalAttributsControllerAdvice {
         }
         model.addAttribute("maxInactiveInterval", httpSession.getMaxInactiveInterval());
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
+    }
+
+    private FrontendGlobalProperties generateMyProperties(String userEppn) {
+        GlobalProperties myGlobalProperties = new GlobalProperties();
+        BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+        userService.parseRoles(userEppn, myGlobalProperties);
+        myGlobalProperties.newVersion = globalProperties.newVersion;
+        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
     }
 
 }

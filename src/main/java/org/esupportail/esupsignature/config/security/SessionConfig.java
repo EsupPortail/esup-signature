@@ -1,8 +1,10 @@
 package org.esupportail.esupsignature.config.security;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -10,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.util.StreamUtils;
 
+import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 
 @Configuration
@@ -18,11 +21,10 @@ public class SessionConfig implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionConfig.class);
 
-
     private final JdbcTemplate jdbcTemplate;
 
-    public SessionConfig(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SessionConfig(@Qualifier("dataSource") DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Bean

@@ -76,7 +76,7 @@
 
 @font-face {
     font-family: 'Signature';
-    src: url('/fonts/Signature/otf') format('opentype');
+    src: url('/fonts/Signature.otf') format('opentype');
     font-weight: 200;
 }
 
@@ -84,4 +84,10 @@
     font-family: 'Signature';
     src: url('/fonts/Signature.otf') format('opentype');
     font-weight: 100;
+}
+
+@font-face {
+    font-family: 'Marianne';
+    src: url('/fonts/Marianne-Light.woff2') format("woff2"), url('fonts/Marianne-Light.woff') format("woff");
+    font-weight: 300;
 }

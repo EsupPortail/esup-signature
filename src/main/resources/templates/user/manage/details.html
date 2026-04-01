@@ -153,7 +153,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <form th:if="${displayNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
+                                            <form th:if="${signBook.displayNotif}" th:action="'/user/signrequests/replay-notif/' + ${signBook.signRequests.get(0).id}" method="post">
                                                 <button type="submit" class="btn btn-transparent text-dark text-left col-12">
                                                     <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
                                                 </button>

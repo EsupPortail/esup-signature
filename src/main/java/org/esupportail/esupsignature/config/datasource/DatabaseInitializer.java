@@ -3,18 +3,31 @@ package org.esupportail.esupsignature.config.datasource;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
+
+import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
 
 @Component
-public class DatabaseIndexInitializer {
+@EnableJdbcHttpSession
+public class DatabaseInitializer {
 
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseIndexInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
 
     private final JdbcTemplate jdbcTemplate;
 
-    public DatabaseIndexInitializer(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public DatabaseInitializer(@Qualifier("dataSource") DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @PostConstruct

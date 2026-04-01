@@ -36,6 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,6 +105,9 @@ public class SignRequestAdminController {
 			model.addAttribute("signRequest", signRequest);
 			model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
 			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
+			if(signRequest.getDocumentsHistory() != null) {
+				model.addAttribute("documentsHistory", Collections.singleton(signRequest.getDocumentsHistory()));
+			}
 			model.addAttribute("isManager", true);
 			return "admin/signrequests/show";
 		} else {
@@ -129,22 +133,6 @@ public class SignRequestAdminController {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document ne peut pas être supprimé définitivement"));
 		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
-	}
-
-	@GetMapping(value = "/get-last-file/{id}")
-	@Transactional
-	public void getLastFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
-		List<Document> documents = signRequestService.getToSignDocuments(id);
-		try {
-			if(documents.size() > 1) {
-				httpServletResponse.sendRedirect("/user/signrequests/" + id);
-			} else {
-				Document document = documents.get(0);
-				webUtilsService.copyFileStreamToHttpResponse(document.getFileName(), document.getContentType(), "attachment", document.getInputStream(), httpServletResponse);
-			}
-		} catch (Exception e) {
-			logger.error("get file error", e);
-		}
 	}
 
 }

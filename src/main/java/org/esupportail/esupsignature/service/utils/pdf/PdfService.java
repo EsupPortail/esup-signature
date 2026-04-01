@@ -15,6 +15,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.*;
@@ -27,11 +29,10 @@ import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
+import org.apache.pdfbox.pdmodel.interactive.annotation.*;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import org.apache.pdfbox.pdmodel.interactive.form.*;
@@ -129,7 +130,8 @@ public class PdfService {
      * @param endingWithCert Indique si l'opération doit se terminer par une certification
      * @return Le fichier PDF modifié en tant que tableau de bytes
      */
-    public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp, Boolean endingWithCert) {
+
+    public byte[] stampImage(byte[] inputStream, SignRequest signRequest, SignRequestParams signRequestParams, int j, User user, Date date, Boolean otp, Boolean endingWithCert, String ocgName) {
         LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
         if(liveWorkflowStep.getRecipients().size() == 1 && !liveWorkflowStep.getRecipients().get(0).getUser().equals(user)) {
             signRequestParams.setSignScale(.5f);
@@ -144,21 +146,32 @@ public class PdfService {
             PDDocument pdDocument = Loader.loadPDF(inputStream);
             pdDocument.setAllSecurityToBeRemoved(true);
             pdfParameters = getPdfParameters(pdDocument, signRequestParams.getSignPageNumber());
+            PDOptionalContentGroup ocg = new PDOptionalContentGroup(ocgName);
+            PDOptionalContentProperties ocProperties = pdDocument.getDocumentCatalog().getOCProperties();
+            if (ocProperties == null) {
+                ocProperties = new PDOptionalContentProperties();
+                pdDocument.getDocumentCatalog().setOCProperties(ocProperties);
+            }
+            PDOptionalContentGroup existingOcg = ocProperties.getGroup(ocgName);
+            if (existingOcg != null) {
+                ocg = existingOcg;
+            } else {
+                ocProperties.addGroup(ocg);
+            }
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
                     if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.signature)) {
-                        stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date, otp, endingWithCert);
+                        stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date, otp, endingWithCert, ocg);
                     }
                     i++;
                 }
             } else {
                 if(j > 0) {
                     PDPage pdPage = pdDocument.getPage(signRequestParams.getSignPageNumber() - 1);
-                    stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber(), date, otp, endingWithCert);
+                    stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, signRequestParams.getSignPageNumber(), date, otp, endingWithCert, ocg);
                 }
             }
-
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pdDocument.save(out);
             byte[] in = out.toByteArray();
@@ -170,7 +183,7 @@ public class PdfService {
         return null;
     }
 
-    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp, Boolean endingWithCert) throws IOException {
+    private void stampImageToPage(SignRequest signRequest, SignRequestParams signRequestParams, User user, SignType signType, PdfParameters pdfParameters, PDDocument pdDocument, PDPage pdPage, int pageNumber, Date newDate, Boolean otp, Boolean endingWithCert, PDOptionalContentGroup ocg) throws IOException {
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.FRENCH);
         InputStream signImage = null;
         if (signRequestParams.getSignImageNumber() < 0) {
@@ -233,23 +246,23 @@ public class PdfService {
                 tx = pdfParameters.getWidth();
             }
         }
+
         Matrix rotation = null;
         PDPageContentStream contentStream = new PDPageContentStream(pdDocument, pdPage, AppendMode.APPEND, true, true);
         if (pdfParameters.getRotation() != 0 && pdfParameters.getRotation() != 360) {
             rotation = Matrix.getRotateInstance(Math.toRadians(pdfParameters.getRotation()), tx, ty);
             contentStream.transform(rotation);
         }
+
+        contentStream.beginMarkedContent(COSName.OC, ocg);
+
         if (signImage != null) {
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
-//            fileService.changeColor(bufferedSignImage, 0, 0, 0, signRequestParams.getRed(), signRequestParams.getGreen(), signRequestParams.getBlue());
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
             contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
-            if (signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-                addLink(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters);
-            }
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
@@ -264,19 +277,49 @@ public class PdfService {
             }
             contentStream.endText();
         }
+
+        contentStream.endMarkedContent();
         contentStream.close();
+        if (!StringUtils.hasText(signRequestParams.getTextPart()) && signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
+            addLinkInLayer(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+        } else {
+            float signWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+            float signHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+            if (StringUtils.hasText(signRequestParams.getTextPart())) {
+                float fontSize = signRequestParams.getFontSize() * fixFactor;
+                PDFont pdFont = PDType0Font.load(pdDocument,
+                        new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(),
+                        true);
+                String[] lines = signRequestParams.getTextPart().split("\n", -1);
+                float lineHeight = fontSize * 1.2f;
+                float textHeight = lines.length * lineHeight;
+                float maxWidth = 0;
+                for (String line : lines) {
+                    float w = pdFont.getStringWidth(line) / 1000 * fontSize;
+                    if (w > maxWidth) maxWidth = w;
+                }
+                float realY = yAdjusted - textHeight + fontSize;
+                float padding = fontSize * 0.2f;
+                float descent = Math.abs(pdFont.getFontDescriptor().getDescent() / 1000 * fontSize);
+                    signWidth = maxWidth + padding * 2;
+                signHeight = textHeight + padding * 2 + descent;
+                xAdjusted = xAdjusted - padding;
+                yAdjusted = realY - padding;
+            }
+            addMetadataAnnotation(signRequest, signWidth, signHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+        }
     }
 
-    private void addLink(SignRequest signRequest, float signWidth, float signHeight, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation, PdfParameters pdfParameters) throws IOException {
-        PDFTextStripper pdfTextStripper = new PDFTextStripper();
+    private void addLinkInLayer(SignRequest signRequest, float signWidth, float signHeight, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation, PdfParameters pdfParameters, PDOptionalContentGroup ocg) throws IOException {
 
-        String signatureInfos =
-                "Signature calligraphique" + pdfTextStripper.getLineSeparator() +
-                        "De : " + user.getFirstname() + " " + user.getName() + pdfTextStripper.getLineSeparator() +
-                        "Le : " +  dateFormat.format(newDate) + pdfTextStripper.getLineSeparator() +
-                        "Depuis : " + logService.getIp() + pdfTextStripper.getLineSeparator() +
-                        "Liens de contrôle : " + pdfTextStripper.getLineSeparator() +
-                        globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken();
+        String contentJson = "{\n" +
+                "  \"type\": \"Signature calligraphique\",\n" +
+                "  \"person\": \"" + user.getFirstname() + " " + user.getName() + "\",\n" +
+                "  \"date\": \"" + dateFormat.format(newDate) + "\",\n" +
+                "  \"depuis\": \"" + logService.getIp() + "\",\n" +
+                "  \"control\": \"" + globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken() + "\",\n" +
+                "  \"layer_id\": \"" + ocg.getName() + "\"\n" +
+                "}";
 
         PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
 
@@ -327,7 +370,9 @@ public class PdfService {
         action.setURI(globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken());
         pdAnnotationLink.setAction(action);
         pdAnnotationLink.setPage(pdPage);
-        pdAnnotationLink.setContents(signatureInfos);
+        pdAnnotationLink.setContents(contentJson);
+        pdAnnotationLink.setOptionalContent(ocg);
+        pdAnnotationLink.setAnnotationName(ocg.getName());
         pdPage.getAnnotations().add(pdAnnotationLink);
 
         if(pdDocument.getDocumentCatalog().getDocumentOutline() == null) {
@@ -336,8 +381,101 @@ public class PdfService {
         }
         PDOutlineItem pdOutlineItem = new PDOutlineItem();
         pdOutlineItem.setDestination(pdAnnotationLink.getDestination());
-        pdOutlineItem.setTitle(signatureInfos);
+        pdOutlineItem.setTitle(contentJson);
         pdDocument.getDocumentCatalog().getDocumentOutline().addLast(pdOutlineItem);
+    }
+
+    private void addMetadataAnnotation(SignRequest signRequest, float signWidth, float signHeight, User user, double fixFactor, PDDocument pdDocument, PDPage pdPage, Date newDate, DateFormat dateFormat, float xAdjusted, float yAdjusted, Matrix rotation, PdfParameters pdfParameters, PDOptionalContentGroup ocg) throws IOException {
+        String contentJson = "{\n" +
+                "  \"type\": \"Signature calligraphique\",\n" +
+                "  \"person\": \"" + user.getFirstname() + " " + user.getName() + "\",\n" +
+                "  \"date\": \"" + dateFormat.format(newDate) + "\",\n" +
+                "  \"depuis\": \"" + logService.getIp() + "\",\n" +
+                "  \"control\": \"" + globalProperties.getRootUrl() + "/public/control/" + signRequest.getToken() + "\",\n" +
+                "  \"layer_id\": \"" + ocg.getName() + "\"\n" +
+                "}";
+
+        PDAnnotationSquare annotation = new PDAnnotationSquare();
+
+        // Position
+        float linkX, linkY, linkWidth, linkHeight;
+        float pageW = pdfParameters.getWidth();
+        float pageH = pdfParameters.getHeight();
+        float scaleX = 1;
+        float scaleY = 1;
+        if(pdfParameters.getRotation() == 90 || pdfParameters.getRotation() == 270){
+            scaleX = (pageW / pageH);
+            scaleY = (pageH / pageW);
+        }
+        if(pdfParameters.getRotation() == 270) {
+            linkWidth  = signWidth * scaleX;
+            linkHeight = signHeight * scaleY;
+            linkX = xAdjusted * scaleX;
+            linkY = yAdjusted * scaleY;
+        } else if(pdfParameters.getRotation() == 90) {
+            linkWidth  = signWidth * scaleX;
+            linkHeight = signHeight * scaleY;
+            linkX = pageW - xAdjusted * scaleX - linkWidth;
+            linkY = pageH - yAdjusted * scaleY - linkHeight;
+        } else if(pdfParameters.getRotation() == 180) {
+            linkWidth = signWidth;
+            linkHeight = signHeight;
+            linkX = pageW - xAdjusted - linkWidth;
+            linkY = pageH - yAdjusted - linkHeight;
+        } else {
+            linkWidth = signWidth;
+            linkHeight = signHeight;
+            linkX = xAdjusted;
+            linkY = yAdjusted;
+        }
+
+        PDRectangle position = new PDRectangle(linkX, linkY, linkWidth, linkHeight);
+        annotation.setRectangle(position);
+
+        // ⚠️ Invisible mais présent
+        annotation.setColor(new PDColor(new float[]{1,1,1}, PDDeviceRGB.INSTANCE));
+        annotation.setConstantOpacity(0f); // totalement transparent
+
+        // Border = none
+        PDBorderStyleDictionary border = new PDBorderStyleDictionary();
+        border.setWidth(0);
+        annotation.setBorderStyle(border);
+
+        // Métadonnées
+        annotation.setContents(contentJson);
+        annotation.setAnnotationName(ocg.getName());
+
+        // Lien avec le calque
+        annotation.setOptionalContent(ocg);
+
+        // Important pour pdf.js (affichage)
+        annotation.setPrinted(true);
+        annotation.setNoView(false);
+
+        pdPage.getAnnotations().add(annotation);
+    }
+
+    public byte[] flattenOcg(byte[] pdfWithOcg) throws IOException {
+        PDDocument doc = Loader.loadPDF(pdfWithOcg);
+
+        PDOptionalContentProperties ocProperties = doc.getDocumentCatalog().getOCProperties();
+        if (ocProperties != null) {
+            COSArray groups = (COSArray) ocProperties.getCOSObject().getDictionaryObject(COSName.OCGS);
+            if (groups != null) {
+                for (int i = 0; i < groups.size(); i++) {
+                    COSBase item = groups.get(i);
+                    if (item instanceof COSDictionary groupDict) {
+                        groupDict.setItem(COSName.STATE, COSName.ON);
+                    }
+                }
+            }
+        }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        doc.save(out);
+        doc.close();
+
+        return out.toByteArray();
     }
 
     /**
@@ -615,7 +753,7 @@ public class PdfService {
     public byte[] convertToPDFA(byte[] originalBytes) throws EsupSignatureRuntimeException {
         if (!isPdfAComplient(originalBytes) && pdfConfig.getPdfProperties().isConvertToPdfA()) {
             String params = pdfConfig.getPdfProperties().getGsCommandParams();
-            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=" + pdfConfig.getPdfProperties().getPdfALevel() + " -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
+            String cmd = pdfConfig.getPdfProperties().getPathToGS() + " -dAutoRotatePages=/None -sstdout=%stderr -dPDFA=3 -dNOPAUSE -dNOSAFER -dBATCH -sFONTPATH=" + pdfConfig.getPdfProperties().getPathToFonts() + " " + params + " -sOutputFile=- '" + pdfConfig.getPdfADefPath() + "' - 2>/dev/null";
             logger.info("GhostScript PDF/A conversion : " + cmd);
             ProcessBuilder processBuilder = new ProcessBuilder();
             if(SystemUtils.IS_OS_WINDOWS) {

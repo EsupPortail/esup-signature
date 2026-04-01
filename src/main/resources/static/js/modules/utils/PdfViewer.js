@@ -1,15 +1,17 @@
 import {EventBus} from "../../customs/ui_utils.js?version=@version@";
 import {EventFactory} from "./EventFactory.js?version=@version@";
 import {DataField} from "../../prototypes/DataField.js?version=@version@";
+import { LayerHighlighter } from './LayerHighlighter.js';
 
 export class PdfViewer extends EventFactory {
 
     constructor(url, signable, editable, currentStepNumber, forcePageNum, fields, disableAllFields) {
         super();
         console.info("Starting PDF Viewer, signable : " + signable);
+        this.highlighter = new LayerHighlighter(this);
         this.timer = null;
         this.viewed = false;
-        this.url= url;
+        this.url = url;
         this.interval = null;
         this.initialOffset = 0;
         this.pages = [];
@@ -19,6 +21,9 @@ export class PdfViewer extends EventFactory {
         this.saveScrolling = 0;
         this.pageNum = 1;
         this.annotationDisplay = null;
+        this.eventBus = new EventBus({dispatchToDOM: false});
+        this._optionalContentConfigPromise = null;
+        this._isRefreshingOCG = false;
         const testUrl = new URL(window.location.href);
         const hasAnnotation = testUrl.searchParams.has("annotation");
         if(forcePageNum != null) {
@@ -50,10 +55,11 @@ export class PdfViewer extends EventFactory {
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
+        this.currentOptionalContentConfig = null;
         let self = this;
         $(document).ready(function() {
             if (!globalThis.pdfjsLib || !Promise.withResolvers) {
-                bootbox.alert("Votre navigateur ne support pas pdfJs pour l’affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
+                bootbox.alert("Votre navigateur ne support pas pdfJs pour l'affichage des PDF.<br>Version minimales : Firefox 121, Chrome 119, Safari 17.4", function () {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
@@ -71,12 +77,41 @@ export class PdfViewer extends EventFactory {
     }
 
     initListeners() {
+        let self = this;
+
         $('#zoomin').on('click', e => this.zoomIn());
         $('#zoomout').on('click', e => this.zoomOut());
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
         $('#autototate').on('click', e => this.autoRotate());
-        let self = this;
+        $(document).on('click', '.toggle-layer-btn', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+
+            $('.toggle-layer-btn').each(function() {
+                const btnStep = parseInt($(this).data('step'));
+                const $icon = $(this).find('i');
+
+                if (btnStep <= stepNumber) {
+                    // Niveaux inférieurs et courant : fi-rr-eye + noir
+                    $(this).css('opacity', '1');
+                    $icon.removeClass('fi-rr-eye-crossed').addClass('fi-rr-eye');
+                } else {
+                    // Niveaux supérieurs : fi-rr-eye-crossed + gris
+                    $(this).css('opacity', '0.5');
+                    $icon.removeClass('fi-rr-eye').addClass('fi-rr-eye-crossed');
+                }
+            });
+
+            self.showLayerByStep(stepNumber);
+        });
+        $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            self.highlightStep(stepNumber);
+        });
+
+        $(document).on('mouseleave', '.toggle-layer-btn', (e) => {
+            self.clearHighlight();
+        });
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
@@ -99,6 +134,58 @@ export class PdfViewer extends EventFactory {
         } else {
             this.adjustZoom();
         }
+    }
+
+    set optionalContentConfigPromise(promise) {
+        this._optionalContentConfigPromise = promise;
+        this.eventBus.dispatch("optionalcontentconfigchanged", {
+            source: this,
+            promise: promise
+        });
+        this.refreshVisiblePages(promise);
+    }
+
+    get optionalContentConfigPromise() {
+        return this._optionalContentConfigPromise;
+    }
+
+    refreshVisiblePages(configPromise) {
+        if (!configPromise) {
+            return;
+        }
+        this._isRefreshingOCG = true;
+        const visiblePages = this.getVisiblePages();
+        visiblePages.forEach(pageNum => {
+            const pageContainer = document.getElementById(`page_${pageNum}`);
+            if (pageContainer) {
+                // Vider le canvas, garder l'enveloppe
+                const canvasWrapper = pageContainer.querySelector('.canvasWrapper');
+                if (canvasWrapper) {
+                    canvasWrapper.innerHTML = '';
+                }
+                this.renderQueue.unshift(pageNum);
+            }
+        });
+        this.processRenderQueue();
+    }
+
+    getVisiblePages() {
+        const visiblePages = [];
+        const scrollTop = window.scrollY;
+        const scrollBottom = scrollTop + window.innerHeight;
+
+        for (let i = 1; i <= this.numPages; i++) {
+            const pageElement = document.getElementById(`page_${i}`);
+            if (pageElement) {
+                const rect = pageElement.getBoundingClientRect();
+                const elementTop = rect.top + scrollTop;
+                const elementBottom = elementTop + rect.height;
+                if (elementBottom > scrollTop && elementTop < scrollBottom) {
+                    visiblePages.push(i);
+                }
+            }
+        }
+        return visiblePages;
     }
 
     restoreScrolling() {
@@ -222,6 +309,7 @@ export class PdfViewer extends EventFactory {
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
 
+        this._optionalContentConfigPromise = this.pdfDoc.getOptionalContentConfig();
 
         for (let i = 1; i <= this.numPages; i++) {
             this.renderQueue.push(i);
@@ -238,12 +326,17 @@ export class PdfViewer extends EventFactory {
             this.activeRenders++;
 
             let self = this;
-            this.pdfDoc.getPage(pageNum).then(page =>
-                this.renderTask(page, pageNum).then(function() {
-                    self.activeRenders--;
-                    self.renderedPages++;
+            this.pdfDoc.getPage(pageNum).then(page => {
+                return self.renderTask(page, pageNum, self._optionalContentConfigPromise);
+            }).then(function() {
+                self.activeRenders--;
+                self.renderedPages++;
 
-                    if(self.renderQueue.length === 0 && self.activeRenders === 0) {
+                if(self.renderQueue.length === 0 && self.activeRenders === 0) {
+                    // Si c'est un refresh OCG, ne pas lancer postRenderAll
+                    if (self._isRefreshingOCG) {
+                        self._isRefreshingOCG = false;
+                    } else {
                         self.initialOffset = parseInt($("#page_1").offset().top);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
@@ -253,28 +346,28 @@ export class PdfViewer extends EventFactory {
                             $("#pdf-progress-bar").css("opacity", 0);
                             self.enableScrollBtn();
                         }
-                    } else {
-                        self.processRenderQueue();
                     }
-                })
-            ).catch(err => {
-                console.error(`Erreur rendu page ${pageNum}:`, err);
-                self.activeRenders--;
-                self.processRenderQueue();
-            });
+                } else {
+                    self.processRenderQueue();
+                }
+            })
+                .catch(err => {
+                    console.error(`Erreur rendu page ${pageNum}:`, err);
+                    self.activeRenders--;
+                    self._isRefreshingOCG = false;
+                    self.processRenderQueue();
+                });
         }
     }
 
     scrollToPage(num) {
         let self = this;
         let page = $("#page_" + num);
-        // self.disableScrollBtn();
         if(page.length) {
             let scrollTo = page.offset().top - self.initialOffset;
             $([document.documentElement, document.body]).animate({
                 scrollTop: scrollTo
             }, 100, function (){
-                // self.enableScrollBtn();
             });
         }
     }
@@ -303,9 +396,8 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    renderTask(page, i) {
+    async renderTask(page, i, configPromise) {
         return new Promise((resolve, reject) => {
-            console.info("launch render task scaled to : " + this.scale);
             let container = document.getElementById(`page_${i}`);
             if (!container) {
                 container = document.createElement("div");
@@ -323,7 +415,6 @@ export class PdfViewer extends EventFactory {
             });
 
             const browserZoom = this.getBrowserZoom();
-
             this.pageRotation = page.rotate;
 
             if(this.rotation == null) {
@@ -336,9 +427,8 @@ export class PdfViewer extends EventFactory {
             });
 
             const dispatchToDOM = false;
-            const eventBus = new EventBus({dispatchToDOM});
             const pdfPageView = new pdfjsViewer.PDFPageView({
-                eventBus: eventBus,
+                eventBus: this.eventBus,
                 container: container,
                 id: this.pageNum,
                 scale: this.scale,
@@ -346,76 +436,45 @@ export class PdfViewer extends EventFactory {
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
                 textLayerMode: 0,
-                annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS
+                annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
+                // CORRECTIF CRUCIAL: Passer la config OCG ici
+                optionalContentConfigPromise: configPromise
             });
 
             pdfPageView.setPdfPage(page);
-            const originalRender = page.render.bind(page);
-            page.render = function() {
-                return { promise: Promise.resolve(), cancel() {} };
-            };
 
+            let self = this;
             pdfPageView.draw().then(() => {
-                page.render = originalRender;
-
-                const canvas = container.querySelector('canvas');
-                if (canvas) {
-                    const context = canvas.getContext('2d');
-
-                    canvas.width = Math.floor(viewport.width * browserZoom);
-                    canvas.height = Math.floor(viewport.height * browserZoom);
-                    canvas.style.width = `${Math.floor(viewport.width)}px`;
-                    canvas.style.height = `${Math.floor(viewport.height)}px`;
-
-                    const pageDiv = container.querySelector('.page');
-                    const canvasWrapper = container.querySelector('.canvasWrapper');
-                    if (pageDiv) {
-                        pageDiv.style.width = `${Math.floor(viewport.width)}px`;
-                        pageDiv.style.height = `${Math.floor(viewport.height)}px`;
-                        pageDiv.style.padding = '0';
-                        pageDiv.style.margin = '0';
-                    }
-                    if (canvasWrapper) {
-                        canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
-                        canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
-                        canvasWrapper.style.padding = '0';
-                        canvasWrapper.style.margin = '0';
-                        canvasWrapper.style.overflow = 'hidden';
-                    }
-                    container.style.width = `${Math.floor(viewport.width)}px`;
-                    container.style.height = `${Math.floor(viewport.height)}px`;
-                    container.style.overflow = 'hidden';
-
-                    const transform = browserZoom !== 1
-                        ? [browserZoom, 0, 0, browserZoom, 0, 0]
-                        : null;
-
-                    const renderContext = {
-                        canvasContext: context,
-                        transform: transform,
-                        viewport: viewport,
-                        annotationMode: this.annotationDisplay
-                    };
-
-                    return page.render(renderContext).promise.then(() => {
-                        return page.getAnnotations().then(annotations => {
-                            const hasSignatures = annotations.some(ann =>
-                                ann.subtype === 'Widget' && ann.fieldType === 'Sig'
-                            );
-                            if (hasSignatures) {
-                                const sigRenderContext = {
-                                    canvasContext: context,
-                                    transform: transform,
-                                    viewport: viewport,
-                                    annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
-                                    annotationCanvasMap: new Map()
-                                };
-                                return page.render(sigRenderContext).promise;
-                            }
-                        });
-                    });
+                const container = document.getElementById(`page_${i}`);
+                if (!container) {
+                    reject(new Error("Container disparu"));
+                    return;
                 }
-            }).then(() => {
+                const canvas = container.querySelector('canvas');
+                if (!canvas) {
+                    reject(new Error("Pas de canvas"));
+                    return;
+                }
+                canvas.style.width = `${Math.floor(viewport.width)}px`;
+                canvas.style.height = `${Math.floor(viewport.height)}px`;
+                const canvasWrapper = container.querySelector('.canvasWrapper');
+                if (canvasWrapper) {
+                    canvasWrapper.style.width = `${Math.floor(viewport.width)}px`;
+                    canvasWrapper.style.height = `${Math.floor(viewport.height)}px`;
+                    canvasWrapper.style.padding = '0';
+                    canvasWrapper.style.margin = '0';
+                    canvasWrapper.style.overflow = 'hidden';
+                }
+                const pageDiv = container.querySelector('.page');
+                if (pageDiv) {
+                    pageDiv.style.width = `${Math.floor(viewport.width)}px`;
+                    pageDiv.style.height = `${Math.floor(viewport.height)}px`;
+                    pageDiv.style.padding = '0';
+                    pageDiv.style.margin = '0';
+                }
+                container.style.width = `${Math.floor(viewport.width)}px`;
+                container.style.height = `${Math.floor(viewport.height)}px`;
+                container.style.overflow = 'hidden';
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
                     annotationLayer.setAttribute("data-main-rotation", this.rotation);
@@ -430,14 +489,16 @@ export class PdfViewer extends EventFactory {
                 }
                 this.pages.push(page);
                 resolve("ok");
-            }).catch(reject);
+            }).catch(err => {
+                console.error("Erreur dans pdfPageView.draw() page", i, ":", err);
+                reject(err);
+            });
         });
     }
 
     insertPageAtCorrectPosition(container, pageNum) {
         const pdfDivElement = this.pdfDiv[0];
         const allPages = pdfDivElement.querySelectorAll('.pdf-page');
-
         let inserted = false;
         for (let page of allPages) {
             const currentPageNum = parseInt(page.getAttribute('page-num'));
@@ -447,7 +508,6 @@ export class PdfViewer extends EventFactory {
                 break;
             }
         }
-
         if (!inserted) {
             pdfDivElement.appendChild(container);
         }
@@ -458,7 +518,6 @@ export class PdfViewer extends EventFactory {
             this.postRender(this.pages[i]);
         }
         this.restoreScrolling();
-
     }
 
     postRender(page) {
@@ -679,7 +738,6 @@ export class PdfViewer extends EventFactory {
                 if (dataField.editable) {
                     inputField.val(items[i].fieldValue);
                     if (dataField.defaultValue != null) {
-                        // inputField.attr("es-data", dataField.defaultValue);
                         inputField.val(dataField.defaultValue);
                     }
                     this.enableInputField(inputField, dataField)
@@ -999,7 +1057,6 @@ export class PdfViewer extends EventFactory {
         this.fireEvent("scaleChange", ['out']);
     }
 
-
     fullWidth() {
         const workspaceDiv = document.getElementById('workspace');
         const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
@@ -1033,7 +1090,7 @@ export class PdfViewer extends EventFactory {
         autorotatebtn.toggleClass("btn-light btn-dark");
         autorotatebtn.toggleClass("btn-outline-dark border-dark");
         autorotatebtn.children().toggleClass("fi-rr-navigation fi-rr-compass-north")
-        this.startRender()
+        this.startRender(this.pdfDoc)
         this.fireEvent("rotate", ['left']);
     }
 
@@ -1168,5 +1225,66 @@ export class PdfViewer extends EventFactory {
 
     getBrowserZoom() {
         return window.devicePixelRatio || 1;
+    }
+
+    async showLayerByStep(stepNumber) {
+        if (!this.pdfDoc) {
+            return;
+        }
+        try {
+            const config = await this.pdfDoc.getOptionalContentConfig();
+            if (!config) {
+                return;
+            }
+            const allGroups = [];
+            for (const [id, group] of config) {
+                allGroups.push({ id, name: group.name });
+            }
+
+            allGroups.forEach((group, index) => {
+                const shouldBeVisible = (index + 1) <= stepNumber;
+                config.setVisibility(group.id, shouldBeVisible);
+            });
+            this.optionalContentConfigPromise = Promise.resolve(config);
+        } catch(err) {
+            console.error('Erreur showLayerByStep:', err);
+        }
+    }
+
+    async highlightStep(stepNumber) {
+        if (!this.highlighter) {
+            console.error('highlightStep: LayerHighlighter non initialisé');
+            return;
+        }
+
+        try {
+            const config = await Promise.resolve(this._optionalContentConfigPromise);
+            if (!config) {
+                console.warn('highlightStep: Aucun calque disponible');
+                return;
+            }
+            const allGroups = [];
+            for (const [id, group] of config) {
+                allGroups.push({ id, name: group.name });
+            }
+
+            if (stepNumber < 1 || stepNumber > allGroups.length) {
+                console.warn(`highlightStep: Step ${stepNumber} hors limites (1-${allGroups.length})`);
+                return;
+            }
+            const targetGroup = allGroups[stepNumber - 1];
+            this.highlighter.clearHighlights();
+            await this.highlighter.highlightLayer(targetGroup.id);
+            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${highlightColor}`);
+        } catch(err) {
+            console.error('highlightStep error:', err);
+        }
+    }
+
+    clearHighlight() {
+        if (this.highlighter) {
+            this.highlighter.clearHighlights();
+            console.log('Highlight effacé');
+        }
     }
 }
