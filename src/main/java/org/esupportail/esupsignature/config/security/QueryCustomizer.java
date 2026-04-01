@@ -10,20 +10,19 @@ public class QueryCustomizer
             INSERT INTO %TABLE_NAME%_ATTRIBUTES (SESSION_PRIMARY_ID, ATTRIBUTE_NAME, ATTRIBUTE_BYTES) 
             VALUES (?, ?, ?)
             ON CONFLICT (SESSION_PRIMARY_ID, ATTRIBUTE_NAME)
-            DO NOTHING
+            DO UPDATE SET ATTRIBUTE_BYTES = EXCLUDED.ATTRIBUTE_BYTES
             """;
 
     private static final String UPDATE_SESSION_ATTRIBUTE_QUERY = """
-		UPDATE %TABLE_NAME%_ATTRIBUTES
-		SET ATTRIBUTE_BYTES = ?
-		WHERE SESSION_PRIMARY_ID = ?
-		AND ATTRIBUTE_NAME = ?
-		""";
+            UPDATE %TABLE_NAME%_ATTRIBUTES
+            SET ATTRIBUTE_BYTES = ?
+            WHERE SESSION_PRIMARY_ID = ?
+            AND ATTRIBUTE_NAME = ?
+            """;
 
     @Override
     public void customize(JdbcIndexedSessionRepository sessionRepository) {
         sessionRepository.setCreateSessionAttributeQuery(CREATE_SESSION_ATTRIBUTE_QUERY);
         sessionRepository.setUpdateSessionAttributeQuery(UPDATE_SESSION_ATTRIBUTE_QUERY);
     }
-
 }
