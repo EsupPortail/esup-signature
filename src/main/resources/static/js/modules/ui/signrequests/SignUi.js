@@ -374,27 +374,14 @@ export class SignUi {
                     const slotPage = Number.parseInt(originalParams.signSpace.attr("data-es-pos-page"), 10);
                     const slotX = Number.parseInt(originalParams.signSpace.attr("data-es-pos-x"), 10);
                     const slotY = Number.parseInt(originalParams.signSpace.attr("data-es-pos-y"), 10);
-                    const crossPage = Number.parseInt(originalParams.cross?.attr?.("page"), 10);
-                    const visualPage = Number.isFinite(crossPage) ? crossPage : slotPage;
                     if (Number.isFinite(slotPage)) {
                         signPageNumber = slotPage;
                     }
-
-                    // Prefer visual position to match exactly what user sees.
-                    const crossLeft = Number.parseFloat(originalParams.cross?.css?.("left"));
-                    const crossTop = Number.parseFloat(originalParams.cross?.css?.("top"));
-                    if (Number.isFinite(crossLeft) && Number.isFinite(crossTop) && Number.isFinite(visualPage)) {
-                        const pageTop = self.workspace.pdfViewer.getPageTopInPdf(visualPage);
-                        signPageNumber = visualPage;
-                        xPos = self.normalizeInteger(Math.round(crossLeft / self.workspace.pdfViewer.scale), 0, 0);
-                        yPos = self.normalizeInteger(Math.round((crossTop - pageTop) / self.workspace.pdfViewer.scale), 0, 0);
-                    } else {
-                        if (Number.isFinite(slotX)) {
-                            xPos = slotX;
-                        }
-                        if (Number.isFinite(slotY)) {
-                            yPos = slotY;
-                        }
+                    if (Number.isFinite(slotX)) {
+                        xPos = slotX;
+                    }
+                    if (Number.isFinite(slotY)) {
+                        yPos = slotY;
                     }
                 }
                 let paramToSend = {
