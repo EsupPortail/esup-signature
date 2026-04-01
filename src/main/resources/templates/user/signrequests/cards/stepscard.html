@@ -75,7 +75,11 @@
                                     isAutoSign=${liveWorkflowStep.getAutoSign()}">
 
                         <div th:id="'liveStep-' + ${stepNumber}"
-                            th:class="'step-vertical' + ${(isCompleted or (isCurrent and not isPending and not isRefused and not isDraft)) ? ' complete' : ''} + ${(isCurrent and isPending and not isRefused and not isDraft) ? ' active' : ''} + ${(isCurrent and isRefused) ? ' refused' : ''}">
+                            th:class="'step-vertical'
+                                + ${(isCompleted or (isCurrent and not isPending and not isRefused and not isDraft)) ? ' complete' : ''}
+                                + ${(isCompleted and isRefused) ? ' refused' : ''}
+                                + ${(isCurrent and isPending and not isRefused and not isDraft) ? ' active' : ''}
+                                + ${(isCurrent and isRefused) ? ' refused' : ''}">
 
                             <!-- Icône -->
                             <div class="step-vertical-icon">
@@ -323,7 +327,7 @@
                                 or signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
                                 or signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
                                 or signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
-                    <div class="step-vertical complete">
+                    <div class="step-vertical complete signed">
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-flag"></i>
                         </div>
@@ -338,7 +342,7 @@
 
                 <!-- Fin de procédure (refusée) -->
                 <th:block th:if="${signRequest.parentSignBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                    <div class="step-vertical complete">
+                    <div class="step-vertical complete refused">
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-triangle-warning"></i>
                         </div>

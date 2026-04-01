@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
-<div th:fragment="tools" id="tools" class="es-tools p-2  position-fixed" th:if="${toSignDocument != null}">
-    <div class="m-2 p-2 bg-white rounded-3 border shadow shadow-lg text-center" th:if="${annotation != null}">
-        <div class="btn btn-warning" style="font-size: 22px; pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+<div th:fragment="tools" id="tools" class="es-tools position-fixed" th:if="${toSignDocument != null}">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}">
+        <div class="btn p-3 bg-warning-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>
     </div>
-    <div class="m-2 p-2 bg-white rounded-3 shadow-lg" th:if="${annotation == null}">
-        <div class="d-flex justify-content-around">
-            <div class="btn btn-danger" style="font-size: 22px; pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                <i class="fi fi-rr-flag"></i> Signature refusée
-            </div>
-        <div class="btn btn-success" style="font-size: 22px; pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}">
+        <div class="btn p-3 bg-warning-subtle" style="pointer-events: none;" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+            <i class="fi fi-rr-pending"></i> En attente de signature
+        </div>
+        <div class="btn p-3 bg-danger-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+            <i class="fi fi-rr-flag"></i> Signature refusée
+        </div>
+        <div class="btn p-3 bg-success-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
         <div class="steps-horizontal-v2" th:if="${signable}">
@@ -26,7 +28,7 @@
                 <div class="step-horizontal-v2-content">
                     <span class="text-xs font-bold d-flex align-items-center gap-1">
                         <div id="insert-btn-div" class="d-flex flex-nowrap" th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
-                        <button tabindex="3" id="addSignButton2" role="button" class="btn btn-success pulse-success" title="Insérer une signature">
+                        <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" title="Insérer une signature" style="width: 300px;">
                             <i class="fi fi-rr-file-signature"></i> Insérer une signature
                         </button>
                         <div id="second-tools" class="es-second-tools position-fixed collapse">
@@ -39,8 +41,8 @@
                     </div>
                         <div th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         ou
-                            <button tabindex="1" id="refuseLaunchButton" class="btn btn-danger border-0 d-none" title="Refuser"
-                                    th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
+                            <button tabindex="1" id="refuseLaunchButton" class="btn p-3 btn-danger border-0 d-none" title="Refuser"
+                                    th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"  style="width: 300px;">
                                 <i class="fi fi-rr-document-circle-wrong "></i> Refuser
                             </button>
                         </div>
@@ -57,14 +59,13 @@
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
                     <div th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled" style="outline:none;">
+                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled" style="width: 300px;">
                             <i class="fi fi-rr-signature-lock " style="margin-top: 0; border: 0"></i> Signer
                         </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
     </div>
 </div>
 </html>

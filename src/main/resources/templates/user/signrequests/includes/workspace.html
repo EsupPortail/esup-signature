@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div id="workspace" th:fragment="workspace" class="alert rounded-bottom-0 light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+<div id="workspace" th:fragment="workspace" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <div id="pdf-progress-bar" class="progress">
         <div class="progress-bar bg-dark progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
     </div>

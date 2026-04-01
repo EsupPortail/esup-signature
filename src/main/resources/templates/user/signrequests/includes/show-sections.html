@@ -2,7 +2,7 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 
 <nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-    <div class="d-flex border-end" style="width: 354px;">
+    <div class="ps-2 d-flex border-end" style="width: 354px;">
         <i class="fi fi-rr-folder"></i> <p class="text-uppercase m-0" th:text="${signBook.workflowName}"></p>
     </div>
 
@@ -20,7 +20,7 @@
             <i class="fi fi-rr-edit"></i>
         </button>
     </th:block>
-    <div id="commentsTools" th:if="${toSignDocument.contentType == 'application/pdf' && editable}" class="d-flex flex-column d-none text-start gap-4" style="display: none;">
+    <div id="commentsTools" th:if="${editable && toSignDocument.contentType == 'application/pdf'}" class="d-flex flex-column d-none text-start gap-4" style="display: none;">
         <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
                 class="d-flex align-items-center btn btn-warning text-start">
             <i class="fi fi-rr-digital-signature" style="font-size: 18px; padding-bottom: 2px;"></i>
@@ -193,7 +193,7 @@
                     th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                 <i th:if="${signRequest.deleted}" class="fi fi-rr-trash-xmark " style="margin-top: 0;"></i>
-                <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
+                <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash bg-danger " style="margin-top: 0;"></i>
             </button>
         </div>
         <li th:if="${nextSignBook != null}" class="d-md-block d-none">

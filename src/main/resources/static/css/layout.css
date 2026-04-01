@@ -188,7 +188,8 @@ header {
     position: relative !important;
     opacity: 1;
     cursor: default;
-    padding-bottom: 60px;
+    padding-top: 66px;
+    padding-bottom: 1px;
 }
 
 #actionDiv {
@@ -271,7 +272,7 @@ header {
 .tools,
 .es-tools {
     width: calc(100vw - 380px);
-    bottom: 32px;
+    top: 126px;
     z-index: 1029;
     position: absolute;
 }
@@ -357,14 +358,14 @@ header {
 }
 
 #pdf-progress-bar {
-    width: calc(100% - 400px);
+    width: calc(100% - 408px);
     position: fixed;
     z-index: 2;
-    top: 134px;
+    top: 202px;
     opacity: 1;
-    -webkit-transition:opacity 2s linear;
-    -moz-transition: opacity 2s linear;
-    -o-transition:opacity 2s linear;
+    -webkit-transition:opacity 1s linear;
+    -moz-transition: opacity 1s linear;
+    -o-transition:opacity 1s linear;
 }
 
 .pdf-alerts-btn {

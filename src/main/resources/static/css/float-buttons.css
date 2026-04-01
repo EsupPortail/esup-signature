@@ -103,7 +103,6 @@
 .es-fixed-action-btns .btn,
 .fixed-action-btns .btn-floating,
 .es-fixed-action-btns .btn-floating {
-    color: #212529 !important;
     border: 0 !important;
     box-shadow: none !important;
 }
@@ -113,6 +112,5 @@
 .fixed-action-btns .btn-floating i,
 .es-fixed-action-btns .btn-floating i {
     margin-top: 0 !important;
-    color: #212529 !important;
 }
 

@@ -957,7 +957,7 @@ export class WorkspacePdf {
     }
 
     enableReadMode() {
-        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i> <span class="d-none d-xl-inline">Mode annotation</span>');
+        $("#changeMode1").removeClass("btn-outline-dark").addClass("btn-warning").html('<i class="fi fi-rr-comment-alt-medical"></i>');
         console.info("enable read mode");
         this.disableAllModes();
         this.mode = 'read';

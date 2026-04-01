@@ -52,17 +52,17 @@ main {
  }
 
  .es-nav-tools {
-     font-size: 18px;
+     font-size: 16px;
  }
 
 .tools,
 .es-tools {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .tools button,
 .es-tools button {
-    font-size: 22px;
+    font-size: 16px;
 }
 
 .main-selectable {
@@ -187,6 +187,17 @@ td {
 .nav-item.ws-tab {
     margin-bottom: -1px;
     border-bottom : 1px solid #CCC;
+    position: relative;
+}
+
+.nav-item.ws-tab::after {
+    content: '';
+    position: absolute;
+    top: 8px;          /* distance depuis le haut */
+    bottom: 8px;       /* distance depuis le bas */
+    right: -1px;
+    width: 3px;
+    background-color: #AAA;
 }
 
 .nav-item.ws-tab a {
@@ -488,9 +499,8 @@ progress:before {
 }
 
 .progress {
-    height: 18px;
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 10px;
+    color: white;
 }
 
 .cursor-move {
@@ -1395,15 +1405,15 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 .step-vertical.refused .step-vertical-icon {
-    background: var(--bs-danger);
+    background: var(--bs-light);
     border-color: var(--bs-danger);
-    color: white;
+    color: var(--bs-danger);
 }
 
 .step-vertical.doc .step-vertical-icon {
     background: var(--bs-light);
-    border-color: var(--bs-light);
-    color: var(--bs-dark);
+    border-color: var(--bs-secondary);
+    color: var(--bs-secondary);
 }
 
 
@@ -1417,6 +1427,28 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-white);
     border-color: var(--bs-success);
     color: var(--bs-success);
+}
+
+/* Fin de procédure signée (complete + signed) */
+.step-vertical.complete.signed .step-vertical-content {
+    border-left: 4px solid var(--bs-success);
+}
+
+.step-vertical.complete.signed .step-vertical-icon {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+/* Étape complétée dans un workflow refusé (complete + refused) */
+.step-vertical.complete.refused .step-vertical-content {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.step-vertical.complete.refused .step-vertical-icon {
+    background: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: white;
 }
 
 /* Horizontal Steps Style - Version 1: Text below icon */
