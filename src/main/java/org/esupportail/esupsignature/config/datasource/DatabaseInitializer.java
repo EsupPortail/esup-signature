@@ -29,6 +29,7 @@ public class DatabaseInitializer {
     public DatabaseInitializer(@Qualifier("dataSource") DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
+
     @PostConstruct
     public void init() {
         try {
@@ -68,16 +69,6 @@ public class DatabaseInitializer {
             jdbcTemplate.execute("create index if not exists sign_book_team_team_id_index on sign_book_team (team_id);");
         } catch (Exception e) {
             logger.warn(e.getMessage());
-        }
-        try {
-            String schemaSql = StreamUtils.copyToString(
-                    new ClassPathResource("org/springframework/session/jdbc/schema-postgresql.sql").getInputStream(),
-                    StandardCharsets.UTF_8
-            );
-            jdbcTemplate.execute(schemaSql);
-            logger.info("Spring Session JDBC schema initialized successfully.");
-        } catch (Exception e) {
-            logger.info("Spring Session JDBC schema already exists, skipping initialization.");
         }
     }
 

@@ -213,8 +213,8 @@ public class WebSecurityConfig {
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/logged-out")).permitAll());
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/ws/workflows/*/datas/csv"))
 				.access(new WebExpressionAuthorizationManager("hasIpAddress('" + webSecurityProperties.getCsvAccessAuthorizeMask() + "')")));
-		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps());
-		setIpsAutorizations(http, webSecurityProperties.getActuatorsAccessAuthorizeIps());
+		setIpsAutorizations(http, webSecurityProperties.getWsAccessAuthorizeIps(), "/ws/**");
+		setIpsAutorizations(http, webSecurityProperties.getActuatorsAccessAuthorizeIps(), "/actuator/**");
 		http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
 				.requestMatchers("/api-docs/**").hasAnyRole("ADMIN")
 				.requestMatchers("/swagger-ui/**").hasAnyRole("ADMIN")
@@ -236,7 +236,7 @@ public class WebSecurityConfig {
                 );
 	}
 
-	private void setIpsAutorizations(HttpSecurity http, String[] authorizeIps) throws Exception {
+	private void setIpsAutorizations(HttpSecurity http, String[] authorizeIps, String path) throws Exception {
 		StringBuilder hasIpAddresses = new StringBuilder();
 		int nbIps = 0;
 		if(authorizeIps != null && authorizeIps.length > 0) {
@@ -249,18 +249,13 @@ public class WebSecurityConfig {
 			}
 			String finalHasIpAddresses = hasIpAddresses.toString();
 			if(StringUtils.hasText(finalHasIpAddresses)) {
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/ws/**"))
-						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/actuator/**"))
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(path)
 						.access(new WebExpressionAuthorizationManager(finalHasIpAddresses)));
 			} else {
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/ws/**")).denyAll());
-				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/actuator/**")).denyAll());
+				http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(path).denyAll());
 			}
-//			http.authorizeRequests().requestMatchers("/ws/**").access("hasRole('WS')").and().addFilter(apiKeyFilter());
 		} else {
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/ws/**")).denyAll());
-			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(("/actuator/**")).denyAll());
+			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(path).denyAll());
 		}
 	}
 
