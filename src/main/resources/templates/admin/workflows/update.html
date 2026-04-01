@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.dto.FrontendGlobalProperties"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
@@ -233,7 +234,7 @@
                                     <div class="accordion-body">
                                         <div class="form-group mb-2">
                                             <h5>Options de fin de circuit</h5>
-                                            <div class="form-check mb-2" th:if="${globalProperties.sealCertificatDriver != null}">
+                                            <div class="form-check mb-2" th:if="${globalProperties.sealDriverConfigured}">
                                                 <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
                                                 <label for="sealAtEnd" class="form-check-label">Signature avec cachet en fin de circuit</label>
                                             </div>

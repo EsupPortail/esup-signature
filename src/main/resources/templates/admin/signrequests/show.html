@@ -8,6 +8,7 @@
     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
     new FilesInput($("#multipartFiles"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${originalDocuments}]], true, null);
     new FilesInput($("#signedFiles"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signedDocuments}]], true, null);
+    new FilesInput($("#documentsHistory"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${documentsHistory}]], true, null);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -62,6 +63,16 @@
                 <div class="card-body">
                     <div class="file-loading">
                         <input id="multipartFiles" name="multipartFiles" type="file" multiple="multiple"/>
+                    </div>
+                </div>
+            </div>
+            <div class="card text-bg-light col-lg-11 m-2">
+                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                    <h5 class="ms-4">Historique des modifications</h5>
+                </div>
+                <div class="card-body">
+                    <div class="file-loading">
+                        <input id="documentsHistory" name="historyFiles" type="file" multiple="multiple"/>
                     </div>
                 </div>
             </div>

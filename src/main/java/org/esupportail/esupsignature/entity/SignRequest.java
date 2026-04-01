@@ -59,6 +59,10 @@ public class SignRequest {
     private List<Document> signedDocuments = new ArrayList<>();
 
     @JsonIgnore
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Document documentsHistory;
+
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderColumn
     private List<Document> attachments = new ArrayList<>();
@@ -98,6 +102,10 @@ public class SignRequest {
 
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
+    private Date cleanDocumentsHistoryDate;
 
     @JsonIgnore
     @Transient
@@ -185,6 +193,14 @@ public class SignRequest {
 
     public void setSignedDocuments(List<Document> signedDocuments) {
         this.signedDocuments = signedDocuments;
+    }
+
+    public Document getDocumentsHistory() {
+        return documentsHistory;
+    }
+
+    public void setDocumentsHistory(Document documentsHistory) {
+        this.documentsHistory = documentsHistory;
     }
 
     public List<Document> getAttachments() {
@@ -291,6 +307,14 @@ public class SignRequest {
 
     public void setAuditTrail(AuditTrail auditTrail) {
         this.auditTrail = auditTrail;
+    }
+
+    public Date getCleanDocumentsHistoryDate() {
+        return cleanDocumentsHistoryDate;
+    }
+
+    public void setCleanDocumentsHistoryDate(Date cleanDocumentsHistoryDate) {
+        this.cleanDocumentsHistoryDate = cleanDocumentsHistoryDate;
     }
 
     @JsonIgnore

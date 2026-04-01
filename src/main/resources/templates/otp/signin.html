@@ -13,14 +13,14 @@
             </div>
             <div class="d-flex justify-content-center mx-auto my-auto gap-2 row">
                 <th:block th:each="securityService : ${securityServices}">
-                    <div th:if="${#lists.contains(externalAuths, securityService.externalAuth)}" class="d-flex flex-column text-center col-5 p-4 alert alert-light" style="min-width: 300px;">
+                    <div th:if="${#lists.contains(externalAuths, securityService.externalAuth)}" class="d-flex flex-column align-items-center text-center col-5 p-4 alert alert-light" style="min-width: 300px;">
                         <div class="h-100">
                         <h3 th:text="'Utilisez ' + ${securityService.title}"></h3>
                         <p class="text-left" th:utext="${securityService.description}"></p>
                         </div>
-                        <div class=" text-center w-100">
+                        <div class="oidc-connect d-flex flex-column align-items-start">
                             <form th:action="${securityService.loginUrl}" method="post">
-                                <button th:class="${securityService.code} + '-button'">
+                                <button th:class="'oidc-connect-btn ' + ${securityService.code} + '-button'">
                                     <span th:class="${securityService.code} + '-sr-only'" th:text="'S`identifier avec ' + ${securityService.title}"></span>
                                 </button>
                             </form>
@@ -30,7 +30,7 @@
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         th:title="'Qu’est-ce que ' + ${securityService.title} + ' ? - nouvelle fenêtre'"
-                                        th:text="'Qu’est-ce que ' + ${securityService.title}"
+                                        th:text="'Qu’est-ce que ' + ${securityService.title} + ' ?'"
                                 >
                                 </a>
                             </p>

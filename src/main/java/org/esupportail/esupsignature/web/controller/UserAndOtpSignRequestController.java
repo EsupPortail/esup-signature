@@ -18,6 +18,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.hibernate.annotations.Synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -37,6 +38,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
 @RequestMapping(path = {"/user/signrequests", "/otp/signrequests"})
@@ -57,6 +60,11 @@ public class UserAndOtpSignRequestController {
     private final LogService logService;
     private final AuditTrailService auditTrailService;
     private final SignService signService;
+
+    private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
+    private Object getLock(String authUserEppn) {
+        return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
+    }
 
     public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, SignWithService signWithService, DataService dataService, UserService userService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, GlobalProperties globalProperties, SignBookService signBookService, LogService logService, AuditTrailService auditTrailService, SignService signService) {
         this.signRequestService = signRequestService;
@@ -336,26 +344,31 @@ public class UserAndOtpSignRequestController {
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-attachment/{id}/{attachementId}")
     public void getAttachment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-        try {
-            if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
-                httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+        synchronized (getLock(authUserEppn)) {
+            try {
+                if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
+                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
             }
-        } catch (Exception e) {
-            logger.error("get file error", e);
         }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/get-attachment-inline/{id}/{attachementId}")
     public void getAttachmentInline(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-        try {
-            if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
-                httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+        synchronized (getLock(authUserEppn)) {
+            try {
+                logger.info("get file attachment");
+                if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
+                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
+                }
+            } catch (Exception e) {
+                logger.error("get file error", e);
             }
-        } catch (Exception e) {
-            logger.error("get file error", e);
         }
     }
 

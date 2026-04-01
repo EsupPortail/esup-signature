@@ -21,6 +21,7 @@ global:
     naming-template: "[title]"
     enable-scheduled-cleanup: false
     trash-keep-delay: -1
+    documents-history-delay: -1
     disable-cert-storage: false
     nb-days-before-deleting: -1
     nb-days-before-warning: -1
@@ -54,6 +55,7 @@ global:
     seal-for-externals: false
     seal-authorized-for-signed-files: false
     hide-hidden-visa: false
+    default-font-size: 14
 #    test-email: toto@univ-ville.fr
 
 #tomcat:
@@ -98,9 +100,10 @@ spring:
         url: jdbc:postgresql://localhost:5432/esupsignature
         password: esup
         username: esupsignature
-        jdbc-url: ${spring.datasource.url}
         hikari:
-            auto-commit: false
+            maximum-pool-size: 15
+            minimum-idle: 3
+            connection-timeout: 30000
         tomcat:
             validation-query: SELECT 1;
     jpa:
@@ -250,7 +253,7 @@ fs:
 
 pdf:
     convert-to-pdf-a: true
-    pdf-a-level: 2
+    pdf-a-level: 3
     path-to-g-s: /usr/bin/gs
     path-to-fonts : /usr/share/fonts
     pdf-to-image-dpi: 72
@@ -295,6 +298,7 @@ server:
         max-swallow-size: -1
 sign:
     aes-key : "0000000000000000"
+    aes256-key: "00000000000000000000000000000000"
     cades-digest-algorithm: SHA256
     cades-signature-level: CAdES_BASELINE_LTA
 #    container-type: ASiC_E

@@ -9,6 +9,7 @@ export class SignRequestParams extends EventFactory {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         console.log(this.globalProperties);
+        this.fontSize = this.globalProperties.defaultFontSize;
         this.signWidth = 200;
         this.signHeight = 100;
         this.addWatermark = null;
@@ -88,7 +89,6 @@ export class SignRequestParams extends EventFactory {
             this.red = 0;
             this.green = 0;
             this.blue = 0;
-            this.fontSize = 10;
             this.addImage = true;
             if(restore && !isVisa) {
                 this.addExtra = false;
@@ -107,7 +107,9 @@ export class SignRequestParams extends EventFactory {
         }
         this.stringLength = 1;
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
-            this.xPos = ((parseInt($("#pdf").css("width")) / 2 / scale) - (this.signWidth * scale / 2)) / this.getBrowserZoom();
+            let pdfWidthPixels = parseInt($("#pdf").css("width"));
+            let finalXPixels = (pdfWidthPixels / 2) - ((this.signWidth * this.currentScale * this.signScale) / 4);
+            this.xPos = finalXPixels / scale / this.getBrowserZoom();
             let mid = scrollTop + $(window).height() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
@@ -339,7 +341,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 6 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
-        this.cross.css("font-size", Math.round(10 * this.signScale * this.currentScale)  + "px");
+        this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale)  + "px");
         this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute d-flex m-1' style='z-index: 4; bottom:5px; left: 10px;'><i class='fi fi-rr-trash'></i></button>");
         this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute d-flex m-1' style='z-index: 4; bottom:5px; right: 10px;'><i class='fi fi-rr-floppy-disk-pen'></i></button>");
         this.border.remove();
@@ -1416,7 +1418,7 @@ export class SignRequestParams extends EventFactory {
             if(!this.extraDate) maxLines++;
             if(!this.extraType) maxLines++;
             let fontSize = this.fontSize * this.currentScale * this.signScale;
-            this.divExtra.css("font-size", Math.round(fontSize));
+            this.divExtra.css("font-size", Math.floor(fontSize));
             let text = this.textareaExtra.val();
             let lines = text.split(/\r|\r\n|\n/);
             text = "";
@@ -1691,7 +1693,7 @@ export class SignRequestParams extends EventFactory {
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
         this.border.remove();
-        this.fontSize = 10;
+        this.fontSize = this.globalProperties.defaultFontSize;
         this.textareaPart.on("input", function () {
             self.textPart = $(this).val();
             self.#resizeText();
