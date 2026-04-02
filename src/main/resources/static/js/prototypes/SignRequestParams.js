@@ -106,7 +106,9 @@ export class SignRequestParams extends EventFactory {
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
             const pageLayout = this.#getPageLayout(this.signPageNumber);
             const zoom = this.getBrowserZoom();
-            const crossWidthPixels = this.signWidth * this.currentScale * zoom;
+            // At first drop, rendered width is signWidth scaled by signScale.
+            const initialRenderedWidth = this.signWidth * this.signScale;
+            const crossWidthPixels = initialRenderedWidth * this.currentScale * zoom;
             const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - crossWidthPixels) / 2);
             this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / (scale * zoom));
             let mid = scrollTop + this.#getViewportHeight() / 2;
@@ -536,6 +538,9 @@ export class SignRequestParams extends EventFactory {
         }
 
         this.cross.css("position", "absolute");
+        // Keep a stable absolute origin even when #pdf layout changes (flex/center).
+        this.cross.css("left", "0px");
+        this.cross.css("top", "0px");
         this.cross.css("z-index", "1028");
         this.cross.attr("data-id", this.id);
 
@@ -1760,13 +1765,18 @@ export class SignRequestParams extends EventFactory {
     simulateDrop() {
         if(this.firstLaunch) {
             const pageLayout = this.#getPageLayout(this.signPageNumber);
-            let x = Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left);
-            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + pageLayout.top);
+            const targetX = Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left);
+            const targetY = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + pageLayout.top);
+            const currentLeft = parseInt(this.cross.css("left"), 10) || 0;
+            const currentTop = parseInt(this.cross.css("top"), 10) || 0;
+            // simulate("drag") expects movement deltas, not absolute coordinates.
+            const x = targetX - currentLeft;
+            const y = targetY - currentTop;
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.#getScrollTop() + self.#getViewportHeight();
-                if (y > test) {
-                    self.#scrollTo(y);
+                if (targetY > test) {
+                    self.#scrollTo(targetY);
                 }
                 $(this).unbind("dragstop");
             });
