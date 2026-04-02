@@ -104,9 +104,11 @@ export class SignRequestParams extends EventFactory {
         }
         this.stringLength = 1;
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
-            let pdfWidthPixels = parseInt($("#pdf").css("width"));
-            let finalXPixels = (pdfWidthPixels / 2) - ((this.signWidth * this.currentScale * this.signScale) / 4);
-            this.xPos = finalXPixels / scale / this.getBrowserZoom();
+            const pageLayout = this.#getPageLayout(this.signPageNumber);
+            const zoom = this.getBrowserZoom();
+            const crossWidthPixels = this.signWidth * this.currentScale * zoom;
+            const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - crossWidthPixels) / 2);
+            this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / (scale * zoom));
             let mid = scrollTop + this.#getViewportHeight() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
@@ -157,8 +159,9 @@ export class SignRequestParams extends EventFactory {
                     const deltaW = Math.abs(w - self.lastWidth);
                     const deltaH = Math.abs(h - self.lastHeight);
                     if (w === self.lastWidth || (deltaW < THRESHOLD && deltaH < THRESHOLD)) return;
-                    self.cross.css('top', Math.round(self.yPos * self.currentScale * self.getBrowserZoom() + self.#getPageRelativeTop(self.signPageNumber)) + 'px');
-                    self.cross.css('left', Math.round(self.xPos * self.currentScale * self.getBrowserZoom()) + 'px');
+                    const pageLayout = self.#getPageLayout(self.signPageNumber);
+                    self.cross.css('top', Math.round(self.yPos * self.currentScale * self.getBrowserZoom() + pageLayout.top) + 'px');
+                    self.cross.css('left', Math.round(self.xPos * self.currentScale * self.getBrowserZoom() + pageLayout.left) + 'px');
                     self.cross.css('width', Math.round(self.signWidth * self.currentScale * self.getBrowserZoom()) + 'px');
                     self.cross.css('height', Math.round(self.signHeight * self.currentScale * self.getBrowserZoom()) + 'px');
                     if(self.addExtra) {
@@ -211,6 +214,33 @@ export class SignRequestParams extends EventFactory {
             return 0;
         }
         return Math.round(page.position()?.top ?? 0);
+    }
+
+    #getPageRelativeLeft(pageNumber) {
+        const page = $("#page_" + pageNumber);
+        if (!page.length) {
+            return 0;
+        }
+        return Math.round(page.position()?.left ?? 0);
+    }
+
+    #getPageLayout(pageNumber) {
+        const page = $("#page_" + pageNumber);
+        if (!page.length) {
+            const pdf = $("#pdf");
+            return {
+                top: 0,
+                left: 0,
+                width: parseInt(pdf.css("width"), 10) || 0,
+                height: parseInt(pdf.css("height"), 10) || 0
+            };
+        }
+        return {
+            top: Math.round(page.position()?.top ?? 0),
+            left: Math.round(page.position()?.left ?? 0),
+            width: Math.round(page.outerWidth() || 0),
+            height: Math.round(page.outerHeight() || 0)
+        };
     }
 
     #refreshPageAttributeFromRect(rect) {
@@ -661,16 +691,15 @@ export class SignRequestParams extends EventFactory {
                 dragRect.bottom - 10 <= pageRect.bottom
             ) {
                 self.inside = true;
-                return;
-            }
+           }
         });
 
-        // if (!this.inside) {
-        //     console.log("La signature n'est pas entièrement dans une page !");
-        //     $("#signLaunchButton").attr("disabled", "disabled");
-        // } else {
-        //     $("#signLaunchButton").attr("disabled", "disabled");
-        // }
+        if (!this.inside) {
+            console.log("La signature n'est pas entièrement dans une page !");
+            $("#signLaunchButton").attr("disabled", "disabled");
+        } else {
+            $("#signLaunchButton").removeAttr("disabled");
+        }
         this.#computeBgColor();
     }
 
@@ -792,9 +821,11 @@ export class SignRequestParams extends EventFactory {
 
     #afterDropRefresh(ui) {
         this.signPageNumber = this.cross.attr("page");
-        this.xPos = Math.round(ui.position.left / (this.currentScale * this.getBrowserZoom()));
-        const deltaTop = this.#getPageRelativeTop(this.signPageNumber);
-        this.yPos = Math.round((ui.position.top - deltaTop) / (this.currentScale * this.getBrowserZoom()));
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
+        const scaleFactor = this.currentScale * this.getBrowserZoom();
+        this.xPos = Math.round((ui.position.left - pageLayout.left) / scaleFactor);
+        this.yPos = Math.round((ui.position.top - pageLayout.top) / scaleFactor);
+        if (this.xPos < 0) this.xPos = 0;
         if (this.yPos < 0) this.yPos = 0;
         console.log("x : " + this.xPos + ", y : " + this.yPos + ", page : " + this.signPageNumber);
         if(this.textareaPart != null) {
@@ -1048,6 +1079,7 @@ export class SignRequestParams extends EventFactory {
             $(".cross-ghost_" + this.id).remove();
             let self = this;
             const signTopOnPage = parseInt(self.cross.css('top')) - self.#getPageRelativeTop(self.signPageNumber);
+            const signLeftOnPage = parseInt(self.cross.css('left')) - self.#getPageRelativeLeft(self.signPageNumber);
 
             $("[id^='page_'].pdf-page").each(function() {
                 const pageNum = parseInt($(this).attr('id').split('_')[1]);
@@ -1055,6 +1087,7 @@ export class SignRequestParams extends EventFactory {
                     return;
                 }
                 const pageOffset = self.#getPageRelativeTop(pageNum);
+                const pageLeft = self.#getPageRelativeLeft(pageNum);
                 const ghostClone = self.cross.clone();
                 ghostClone.attr('class', 'cross-ghost_' + self.id);
                 ghostClone.css({
@@ -1063,6 +1096,7 @@ export class SignRequestParams extends EventFactory {
                     'pointer-events': 'none',
                     'position': 'absolute',
                     'top': (signTopOnPage + pageOffset) + 'px',
+                    'left': (signLeftOnPage + pageLeft) + 'px',
                     'z-index': '1000',
                     'border': '1px dashed rgba(0,0,0,0.2)',
                     'filter': 'grayscale(100%)'
@@ -1660,17 +1694,20 @@ export class SignRequestParams extends EventFactory {
     }
 
     applyCurrentSignRequestParams(offset) {
-        this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + offset) + 'px');
-        this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom()) + 'px');
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
+        const topOffset = pageLayout.top || offset || 0;
+        this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + topOffset) + 'px');
+        this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left) + 'px');
     }
 
     updateScale(scale) {
         this.currentScale = scale;
+        const zoom = this.getBrowserZoom();
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
         this.cross.css("width", this.signWidth * scale + "px");
         this.cross.css("height", this.signHeight * scale + "px");
-        this.cross.css("left", this.xPos * scale + 'px');
-        let offset = this.#getPageRelativeTop(this.signPageNumber);
-        this.cross.css("top", this.yPos * scale + offset + 'px');
+        this.cross.css("left", this.xPos * scale * zoom + pageLayout.left + 'px');
+        this.cross.css("top", this.yPos * scale * zoom + pageLayout.top + 'px');
         this.canvas.css("width", (this.signWidth * scale - this.extraWidth) + "px");
         this.canvas.css("height", (this.signHeight * scale - this.extraHeight) + "px");
         if(this.addImage) {
@@ -1722,8 +1759,9 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
-            let x = Math.round(this.xPos * this.currentScale * this.getBrowserZoom());
-            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + this.#getPageRelativeTop(this.signPageNumber));
+            const pageLayout = this.#getPageLayout(this.signPageNumber);
+            let x = Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left);
+            let y = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + pageLayout.top);
             let self = this;
             this.cross.on("dragstop", function () {
                 let test = self.#getScrollTop() + self.#getViewportHeight();

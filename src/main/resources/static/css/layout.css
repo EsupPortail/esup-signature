@@ -185,6 +185,9 @@ header {
 }
 
 #pdf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative !important;
     opacity: 1;
     cursor: default;

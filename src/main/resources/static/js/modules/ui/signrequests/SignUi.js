@@ -153,7 +153,9 @@ export class SignUi {
                                     },
                                     callback: function (result) {
                                         if (result) {
-                                            self.checkAttachement();
+                                            if(self.checkAttachement()) {
+                                                self.confirmLaunchSignModal();
+                                            }
                                         } else {
                                             $("#addSignButton").click();
                                         }
@@ -190,12 +192,16 @@ export class SignUi {
                         if(self.currentSignType === "visa") {
                             $("#certType").val('imageStamp');
                         }
-                        self.checkAttachement();
+                        if(self.checkAttachement()) {
+                            self.confirmLaunchSignModal();
+                        }
                     }
                 }
             });
         } else {
-            self.checkAttachement();
+            if(self.checkAttachement()) {
+                self.confirmLaunchSignModal();
+            }
         }
     }
 
@@ -209,7 +215,6 @@ export class SignUi {
     }
 
     checkAttachement() {
-        let self = this;
         if (this.attachmentRequire) {
             bootbox.dialog({
                 message: "Vous devez joindre un document à cette étape avant de signer",
@@ -234,13 +239,14 @@ export class SignUi {
                 },
                 callback: function (result) {
                     if (result) {
-                        self.confirmLaunchSignModal();
+                       return true;
                     }
                 }
             });
         } else {
-            this.confirmLaunchSignModal();
+            return true;
         }
+        return false;
     }
 
     confirmLaunchSignModal() {

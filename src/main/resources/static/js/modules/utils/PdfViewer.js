@@ -204,6 +204,15 @@ export class PdfViewer extends EventFactory {
         return Math.round(page.position()?.top ?? 0);
     }
 
+    // Absolute left within #pdf positioning context (used by absolute overlays).
+    getPageLeftInPdf(pageNum) {
+        const page = $("#page_" + pageNum);
+        if (!page.length) {
+            return 0;
+        }
+        return Math.round(page.position()?.left ?? 0);
+    }
+
     set optionalContentConfigPromise(promise) {
         this._optionalContentConfigPromise = promise;
         this.eventBus.dispatch("optionalcontentconfigchanged", {

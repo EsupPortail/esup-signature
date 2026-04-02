@@ -256,6 +256,7 @@ public class PdfService {
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
         if (signImage != null) {
+            validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
@@ -266,7 +267,18 @@ public class PdfService {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             String[] lines = signRequestParams.getTextPart().split("\n", -1);
+            float lineHeight = fontSize * 1.2f;
+            float textHeight = lines.length * lineHeight;
+            float maxWidth = 0;
+            for (String line : lines) {
+                float w = pdFont.getStringWidth(line) / 1000 * fontSize;
+                if (w > maxWidth) {
+                    maxWidth = w;
+                }
+            }
             yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - (signRequestParams.getyPos() * fixFactor + fontSize);
+            float textBottomY = yAdjusted - textHeight;
+            validateSignatureBounds(pageBox, xAdjusted, textBottomY, maxWidth, textHeight, pageNumber);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);
@@ -306,6 +318,19 @@ public class PdfService {
                 yAdjusted = realY - padding;
             }
             addMetadataAnnotation(signRequest, signWidth, signHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+        }
+    }
+
+    private void validateSignatureBounds(PDRectangle pageBox, float x, float y, float width, float height, int pageNumber) {
+        float minX = pageBox.getLowerLeftX();
+        float minY = pageBox.getLowerLeftY();
+        float maxX = pageBox.getUpperRightX();
+        float maxY = pageBox.getUpperRightY();
+        boolean outOfBounds = width <= 0 || height <= 0 || x < minX || y < minY || x + width > maxX || y + height > maxY;
+        if (outOfBounds) {
+            throw new EsupSignatureRuntimeException(String.format(Locale.ROOT,
+                    "La signature est hors page (page=%d, x=%.2f, y=%.2f, width=%.2f, height=%.2f, pageWidth=%.2f, pageHeight=%.2f)",
+                    pageNumber, x, y, width, height, pageBox.getWidth(), pageBox.getHeight()));
         }
     }
 

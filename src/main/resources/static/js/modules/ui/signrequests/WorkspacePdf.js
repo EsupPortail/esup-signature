@@ -271,9 +271,10 @@ export class WorkspacePdf {
                     signSpaceDiv.removeClass("sign-field");
                 }
                 signSpaceDiv.show();
-                let offset = this.pdfViewer.getPageTopInPdf(currentSignRequestParams.signPageNumber);
-                let xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale);
-                let yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + offset);
+                const pageTop = this.pdfViewer.getPageTopInPdf(currentSignRequestParams.signPageNumber);
+                const pageLeft = this.pdfViewer.getPageLeftInPdf(currentSignRequestParams.signPageNumber);
+                const xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale + pageLeft);
+                const yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + pageTop);
                 signSpaceDiv.css("left", xPos);
                 signSpaceDiv.css("top", yPos);
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
@@ -290,9 +291,11 @@ export class WorkspacePdf {
             if(signSpaceDiv.length) {
                 signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
                 signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
-                signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + 'px');
-                let offset = this.pdfViewer.getPageTopInPdf(signSpaceDiv.attr("data-es-pos-page"));
-                signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + offset + 'px');
+                const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
+                const pageTop = this.pdfViewer.getPageTopInPdf(pageNum);
+                const pageLeft = this.pdfViewer.getPageLeftInPdf(pageNum);
+                signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + pageLeft + 'px');
+                signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + pageTop + 'px');
                 signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
             }
         }
@@ -664,6 +667,14 @@ export class WorkspacePdf {
         this.pdfViewer.animateScrollToPosition(parseInt($('#inDocComment_' + postit.id).css('top').replace('px', ''), 10));
     }
 
+    getPageOffsets(pageNum) {
+        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
+        return {
+            top: this.pdfViewer.getPageTopInPdf(normalizedPage),
+            left: this.pdfViewer.getPageLeftInPdf(normalizedPage)
+        };
+    }
+
     refreshAfterPageChange() {
         console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
         // this.removeSignFields();
@@ -674,9 +685,9 @@ export class WorkspacePdf {
                 let postitButton = $('#postit' + comment.id);
                 if (this.mode === 'comment' || this.displayComments) {
                     postitDiv.show();
-                    postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale)) + "px");
-                    let offset = this.pdfViewer.getPageTopInPdf(comment.pageNumber);
-                    postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + offset) + "px");
+                    const pageOffsets = this.getPageOffsets(comment.pageNumber);
+                    postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale) + pageOffsets.left) + "px");
+                    postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + pageOffsets.top) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
                     postitButton.css("background-color", "#FFC");
                     postitDiv.unbind('mouseup');
@@ -738,9 +749,9 @@ export class WorkspacePdf {
                 let spotDiv = $('#inDocSpot_' + spot.id);
                 if (this.mode === 'comment') {
                     spotDiv.show();
-                    let offset = this.pdfViewer.getPageTopInPdf(spot.signPageNumber);
-                    let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale));
-                    let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + offset);
+                    const pageOffsets = this.getPageOffsets(spot.signPageNumber);
+                    let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale) + pageOffsets.left);
+                    let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + pageOffsets.top);
                     console.log("spot pos : " + xPos + ", " + yPos);
                     spotDiv.css('left',  xPos + "px");
                     spotDiv.css('top',  yPos + "px");
@@ -803,8 +814,10 @@ export class WorkspacePdf {
         });
         let postitForm = $("#postit");
         if (postitForm.is(':visible')) {
-            postitForm.css('left', (parseInt($("#commentPosX").val()) * this.pdfViewer.scale));
-            postitForm.css('top', (parseInt($("#commentPosY").val()) * this.pdfViewer.scale));
+            const commentPageNumber = $("#commentPageNumber").val();
+            const pageOffsets = this.getPageOffsets(commentPageNumber);
+            postitForm.css('left', (parseInt($("#commentPosX").val()) * this.pdfViewer.scale) + pageOffsets.left);
+            postitForm.css('top', (parseInt($("#commentPosY").val()) * this.pdfViewer.scale) + pageOffsets.top);
             $("#postit :input").each(function () {
                 $(this).removeAttr('disabled');
             });
@@ -940,9 +953,9 @@ export class WorkspacePdf {
         let yPos = (parseInt(commentPosY.val()) + yOffset) / this.pdfViewer.scale;
         commentPosX.val(Math.round(xPos));
         commentPosY.val(Math.round(yPos));
-        comment.css('left', xPos * this.pdfViewer.scale);
-        let offset = this.pdfViewer.getPageTopInPdf(commentPageNumber);
-        comment.css('top', yPos * this.pdfViewer.scale + offset);
+        const pageOffsets = this.getPageOffsets(commentPageNumber);
+        comment.css('left', xPos * this.pdfViewer.scale + pageOffsets.left);
+        comment.css('top', yPos * this.pdfViewer.scale + pageOffsets.top);
         $("#postitComment").removeAttr("disabled");
         $("#spotStepNumber").removeAttr("disabled");
         comment.show();

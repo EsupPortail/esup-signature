@@ -597,8 +597,12 @@ input:focus, textarea:focus, select:focus {
     font-size: 14px;
 }
 
+.sign-content {
+    transform-origin: center;
+}
+
 .sign-space .sign-icon {
-    font-size: 40px;
+    font-size: clamp(12px, 5vw, 40px);
     font-weight: bold;
     color: var(--bs-success);
 }
