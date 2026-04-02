@@ -188,7 +188,6 @@ export class SignUi {
                             }
                         });
                         if(self.currentSignType === "visa") {
-                            imageStampOption.attr('selected', 'selected');
                             $("#certType").val('imageStamp');
                         }
                         self.checkAttachement();
@@ -269,12 +268,12 @@ export class SignUi {
         let self = this;
         if($("#certType").val() == null) {
             this.checkSignOptions();
-            this.workspace.signPosition.goStep2();
             return;
         }
         if($("#certType").val() === "nexuCert") {
             this.nexu.checkNexuClient().then(function (e) {
                 console.info("Esup-DSS-Client est lancé !");
+                $("#certType > option[value='nexuCert']").remove('unavailable');
                 $("#nexu_missing_alert").hide();
                 $("#no-options").hide();
                 $("#no-options-alert").hide();

@@ -61,8 +61,8 @@
                     </div>
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
-                        <select id="certType" name="certType" class="slim-select-simple form-control form-control-xl" required disabled>
-                            <option data-placeholder="true" value="" data-html="<i class='fi fi-rr-signature'></i> Type de signature" disabled selected><i class="fi fi-rr-signature"></i>Type de signature</option>
+                        <select id="certType" name="certType" class="form-select es-form-select-xl" required disabled>
+                            <option value="" disabled selected hidden>Type de signature</option>
                             <th:block th:each="signWith : ${signWiths}">
                                 <th:block th:if="${signWith.name != 'sealCert'}">
                                     <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>

@@ -221,19 +221,19 @@ td {
     max-height: 40px;
 }
 
-.ss-main.form-control-xl {
-    width: 300px;
+.es-form-select-xl {
     min-height: 58px !important;
 }
-.ss-main.form-control-xl.ss-disabled {
+
+.es-form-select-xl:disabled {
     background-color: var(--bs-secondary) !important;
     opacity: 0.65 !important;
+     color: white !important;
 }
 
-.ss-main.form-control-xl.ss-disabled > .ss-values > div {
-    color: white !important;
+option[unavailable="unavailable"] {
+    color: var(--bs-secondary);
 }
-
 
 .nav-item:is(.active) > .nav-link {
     border-top-left-radius: 10px !important;

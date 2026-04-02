@@ -316,17 +316,21 @@ export class SignPosition extends EventFactory {
         this.setStepState(step2, true, false, false);
         this.setStepState(step3, false, false, true);
 
-        let count = selectCertType.find("option:not(:disabled)").length;
         this.setCertTypeHighlight(false);
-        if(count === 1) {
-            selectCertType.find("option:not(:disabled)").prop("selected", true);
-            selectCertType.trigger("change");
-        } else {
-            selectCertType.removeAttr("disabled");
-            selectCertType.trigger("focus");
-        }
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
+        let countEnable = selectCertType.find("option:not(:disabled):not([unavailable]").length;
+        if(countEnable === 1) {
+            selectCertType.find("option:not(:disabled):not([unavailable]").prop("selected", true);
+            selectCertType.trigger("change");
+            this.goStep3();
+        } else {
+            selectCertType.trigger("focus");
+        }
+        let countVisible = selectCertType.find("option:not([unavailable])").length;
+        if(countVisible > 1) {
+            selectCertType.removeAttr("disabled");
+        }
     }
 
     goStep3() {
