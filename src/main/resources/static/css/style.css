@@ -221,6 +221,35 @@ td {
     max-height: 40px;
 }
 
+.ss-main.form-control-xl {
+    width: 300px;
+    min-height: 58px !important;
+}
+.ss-main.form-control-xl.ss-disabled {
+    background-color: var(--bs-secondary) !important;
+    opacity: 0.65 !important;
+}
+
+.ss-main.form-control-xl.ss-disabled > .ss-values > div {
+    color: white !important;
+}
+
+
+.nav-item:is(.active) > .nav-link {
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+.nav-item.ws-tab a:hover {
+    opacity: 1 !important;
+}
+
+.nav-item:not(.active) > .nav-link:hover > .truncate {
+    border-radius: 5px !important;
+    background-color: rgb(0 0 0 / 0.2);
+    outline: 5px solid rgb(0 0 0 / 0.2);
+}
+
 .nav-link.current {
     color: black;
     font-weight: bold;
@@ -1357,10 +1386,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 .step-vertical:not(:last-child)::after {
     content: '';
     position: absolute;
-    left: 20px;
+    left: 18px;
     top: 40px;
     bottom: 0;
-    width: 2px;
+    width: 3px;
     background: white;
 }
 

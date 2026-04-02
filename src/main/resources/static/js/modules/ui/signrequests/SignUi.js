@@ -42,8 +42,8 @@ export class SignUi {
         if(status !== "archived" && status !== "cleaned" && currentSignType !== "form") {
             this.initReportModal();
         }
-        this.checkAfterChangeSignType();
-        this.checkSignOptions();
+        // this.checkAfterChangeSignType();
+        this.nexu = this.checkSignOptions();
     }
 
     initListeners() {
@@ -170,8 +170,6 @@ export class SignUi {
                             self.checkSignOptions();
                         }
                     } else {
-                        let imageStampOption = $("#certType > option[value='imageStamp']");
-                        imageStampOption.remove();
                         if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa") && (self.currentStepMinSignLevel === "simple")) {
                             $('#certType').prepend($('<option>', {
                                 value: 'imageStamp',
@@ -195,13 +193,6 @@ export class SignUi {
                         }
                         self.checkAttachement();
                     }
-                    self.certTypeSelect.children().each(function(e) {
-                        if(!$(this).attr('disabled')) {
-                            $(this).attr('selected', 'selected');
-                            $("#certType").val($(this).attr('value')).trigger('change');
-                            return false;
-                        }
-                    });
                 }
             });
         } else {
@@ -212,8 +203,9 @@ export class SignUi {
     checkSignOptions() {
         console.info("check sign options");
         if (this.signable) {
-            new Nexu(null, null, this.currentSignType, null, null);
+            let nexu = new Nexu(null, null, this.currentSignType, null, null);
             $("#certType").focus();
+            return nexu;
         }
     }
 
@@ -269,30 +261,77 @@ export class SignUi {
                 checkValidateSignButtonNext.focus();
             }
         });
-        signModal.modal('show');
+        // signModal.modal('show');
+        this.launchSign();
     }
 
     checkAfterChangeSignType() {
+        let self = this;
+        if($("#certType").val() == null) {
+            this.checkSignOptions();
+            this.workspace.signPosition.goStep2();
+            return;
+        }
+        if($("#certType").val() === "nexuCert") {
+            this.nexu.checkNexuClient().then(function (e) {
+                console.info("Esup-DSS-Client est lancé !");
+                $("#nexu_missing_alert").hide();
+                $("#no-options").hide();
+                $("#no-options-alert").hide();
+                $("#selectTypeDiv").show();
+                // $("#certType > option[value='nexuCert']").removeAttr('disabled');
+                if (self.currentSignType === 'nexuSign') {
+                    $("#certType").val("nexuCert");
+                    $("#nexu_ready_alert").show();
+                    $("#alertNexu").hide();
+                    $("#signLaunchButton").show();
+                }
+            }).catch(function (e) {
+                console.info("Esup-DSS-Client non lancé !");
+                console.info(e);
+                $("#nexu_ready_alert").hide();
+                // $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
+                $("#alertNexu").show();
+                bootbox.alert(`
+                <div id="nexu_missing_alert" class="alert alert-warning">
+                    <p>L'application Esup-DSS-Client n'a pas été détectée</p>
+                    <p class="text-left">
+                        Si vous devez signer à l'aide d'un certificat présent sur votre poste ou sur clé USB,
+                        merci de lancer l'application Esup-DSS-Client sur votre poste puis de cliquer sur
+                        le bouton "Actualiser".<br/>
+                        Pour plus d'informations :
+                        <a target="_blank"
+                           href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">
+                           Documentation Esup-DSS-Client
+                        </a>
+                    </p>
+                </div>
+            `, function () {
+                    $("#certType").val("").trigger("change");
+                });
+            });
+        }
         let value = this.certTypeSelect.val();
         $("#alert-sign-present").hide();
-        if(value === "userCert") {
+        if (value === "userCert") {
             $("#password").show();
         } else {
             $("#password").hide();
         }
-        if(value === "nexuCert") {
+        if (value === "nexuCert") {
             $("#nexuCheck").removeClass('d-none');
         } else {
             $("#nexuCheck").addClass('d-none');
         }
-        if(value === "imageStamp") {
+        if (value === "imageStamp") {
             $("#alert-sign-present").show();
         }
-        if(value === "sealCert") {
+        if (value === "sealCert") {
             $("#sealChoose").removeClass('d-none');
         } else {
             $("#sealChoose").addClass('d-none');
         }
+        this.workspace.signPosition.goStep3();
     }
 
     launchNoInfiniteSign(next) {

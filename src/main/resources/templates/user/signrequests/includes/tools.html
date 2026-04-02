@@ -2,25 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools position-fixed" th:if="${toSignDocument != null}">
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}">
-        <div class="btn p-3 bg-warning-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="height: 80px;">
+        <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>
     </div>
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}">
-        <div class="btn p-3 bg-warning-subtle" style="pointer-events: none;" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}" style="height: 80px;">
+        <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
             <i class="fi fi-rr-pending"></i> En attente de signature
         </div>
-        <div class="btn p-3 bg-danger-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+        <div class="alert p-3 bg-danger-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
             <i class="fi fi-rr-flag"></i> Signature refusée
         </div>
-        <div class="btn p-3 bg-success-subtle" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }">
+        <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }">
+        <div class="alert p-3 bg-success-subtle d-flex align-items-center h-100" style="pointer-events: none;">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
+        </div>
+        <a  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }" tabindex="1" class="ms-1 d-flex align-items-center btn btn-success me-1 d-none d-sm-flex" href="/ws-secure/global/get-last-file/1156" target="_blank" title="Télécharger le document signé">
+            <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
+        </a>
         <div class="steps-horizontal-v2" th:if="${signable}">
             <div id="step-1" class="step-horizontal-v2 active d-flex gap-4 align-items-center">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="text-secondary">Étape</span>
                     <div class="step-horizontal-v2-icon">
                         1
                     </div>
@@ -52,9 +56,30 @@
             </div>
             <div id="step-2" class="step-horizontal-v2 disable">
                 <div class="d-flex align-items-center gap-2">
-                    <span class="text-secondary">Étape</span>
                     <div class="step-horizontal-v2-icon">
                         2
+                    </div>
+                </div>
+                <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
+                        <select id="certType" name="certType" class="slim-select-simple form-control form-control-xl" required disabled>
+                            <option data-placeholder="true" value="" data-html="<i class='fi fi-rr-signature'></i> Type de signature" disabled selected><i class="fi fi-rr-signature"></i>Type de signature</option>
+                            <th:block th:each="signWith : ${signWiths}">
+                                <th:block th:if="${signWith.name != 'sealCert'}">
+                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                </th:block>
+                                <th:block th:if="${signWith.name == 'sealCert'}">
+                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                                </th:block>
+                            </th:block>
+                        </select>
+<!--                        <button id="refresh-certType" type="button" class="btn btn-secondary" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
+                    </div>
+            </div>
+            <div id="step-3" class="step-horizontal-v2 disable">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="step-horizontal-v2-icon">
+                        3
                     </div>
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">

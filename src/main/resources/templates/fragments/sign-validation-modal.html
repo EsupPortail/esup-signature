@@ -39,21 +39,21 @@
                     </div>
                 </div>
                 <div id="selectTypeDiv" class="alert alert-secondary mb-1" th:if="${signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() > 0}">
-                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>
-                    <div class="input-group mt-2 mb-2">
-                        <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>
-                            <th:block th:each="signWith : ${signWiths}">
-                                <th:block th:if="${signWith.name != 'sealCert'}">
-                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                </th:block>
-                                <th:block th:if="${signWith.name == 'sealCert'}">
-                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                </th:block>
-                            </th:block>
-                        </select>
-                        <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>
-                    </div>
+<!--                    <label for="certType">Si besoin, merci de sélectionner le type de signature que vous souhaitez utiliser parmi ceux disponibles</label>-->
+<!--                    <div class="input-group mt-2 mb-2">-->
+<!--                        <select id="certType" name="certType" class="form-control form-select border-light-subtle" required>-->
+<!--                            <th:block th:each="signWith : ${signWiths}">-->
+<!--                                <th:block th:if="${signWith.name != 'sealCert'}">-->
+<!--                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>-->
+<!--                                </th:block>-->
+<!--                                <th:block th:if="${signWith.name == 'sealCert'}">-->
+<!--                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>-->
+<!--                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>-->
+<!--                                </th:block>-->
+<!--                            </th:block>-->
+<!--                        </select>-->
+<!--                        <button id="refresh-certType" type="button" class="btn btn-primary border-light-subtle" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
+<!--                    </div>-->
                     <input type="text" autocomplete="username" name="username" class="d-none">
                     <input class="form-control mt-2 mb-1" autocomplete="new-password" type="password" id="password" name="password" value="" placeholder="Saisir le passe de votre magasin de certificats" />
                     <div id="sealChoose">
@@ -90,13 +90,7 @@
                             <br/>
                             <small>Après validation, vous allez être redirigé vers le système signature eIDas</small>
                         </div>
-                        <div id="nexu_missing_alert" class="alert alert-warning mt-1" style="display: none;">
-                            <p>L’application Esup-DSS-Client n’a pas été détectée</p>
-                            <p  class="text-left">Si vous devez signer à l’aide d’un certificat présent sur votre poste ou sur clé USB, merci de lancer l’application Esup-DSS-Client sur votre poste puis de cliquer sur le bouton "Actualiser".<br/>
-                                Pour plus d’informations sur l’utilisation de Esup-DSS-Client merci de consulter la documentation à cette adresse :
-                                <a target="_blank" href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client</a>
-                            </p>
-                        </div>
+
                     </div>
                 </div>
                 <div id="alert-sign-present" class="alert alert-danger mb-1" th:if="${signRequest != null && !(signRequest.parentSignBook.liveWorkflow.currentStep.signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature) && signatureIds.size() > 0}">

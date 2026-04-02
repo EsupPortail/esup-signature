@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div id="workspace" th:fragment="workspace" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+<div id="workspace" tabindex="1" th:fragment="workspace" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <form th:id="'signForm'" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf">

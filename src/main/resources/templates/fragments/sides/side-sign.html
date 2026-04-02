@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-2" style="z-index: 1000;">
+<nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-1" style="z-index: 1000;">
     <div class="d-flex justify-content-between align-items-center" th:if="${signRequest != null}">
         <span class="text-uppercase ms-1">STATUT</span>
         <div class="pe-2">
