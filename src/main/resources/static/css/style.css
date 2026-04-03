@@ -558,7 +558,7 @@ input:focus, textarea:focus, select:focus {
 }
 
 .sign-space .sign-text {
-    font-size: 14px;
+    /*font-size: 14px;*/
     text-align: center;
 }
 
@@ -584,7 +584,7 @@ input:focus, textarea:focus, select:focus {
     justify-content: center;
     height: 100%;
     gap: 8px;
-    font-size: 14px;
+    /*font-size: 14px;*/
 }
 
 .sign-field .sign-content {
@@ -595,11 +595,10 @@ input:focus, textarea:focus, select:focus {
     height: 100%;
     gap: 8px;
     color: var(--bs-success);
-    font-size: 14px;
+    /*font-size: 14px;*/
 }
 
 .sign-space .sign-icon {
-    font-size: clamp(12px, 5vw, 40px);
     font-weight: bold;
     color: var(--bs-success);
 }

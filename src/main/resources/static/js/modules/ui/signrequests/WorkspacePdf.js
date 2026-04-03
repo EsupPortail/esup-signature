@@ -314,9 +314,12 @@ export class WorkspacePdf {
                 const yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + pageTop);
                 signSpaceDiv.css("left", xPos);
                 signSpaceDiv.css("top", yPos);
-                signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                signSpaceDiv.css("font-size", 6 *  this.pdfViewer.scale);
+                const renderedWidth = Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom());
+                const renderedHeight = Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom());
+                signSpaceDiv.css("width", renderedWidth + "px");
+                signSpaceDiv.css("height", renderedHeight + "px");
+                signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
+                signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
             }
         }
     }
@@ -450,14 +453,18 @@ export class WorkspacePdf {
     refreshSignFields() {
         $(".sign-space").each((_, element) => {
             const signSpaceDiv = $(element);
-            signSpaceDiv.css("width", signSpaceDiv.attr("data-es-sign-width") * this.pdfViewer.scale + "px");
-            signSpaceDiv.css("height", signSpaceDiv.attr("data-es-sign-height") * this.pdfViewer.scale + "px");
+            const signHeight = parseFloat(signSpaceDiv.attr("data-es-sign-height"));
+            const renderedHeight = Math.round(signHeight * this.pdfViewer.scale);
+            const renderedWidth = Math.round(parseFloat(signSpaceDiv.attr("data-es-sign-width")) * this.pdfViewer.scale);
+            signSpaceDiv.css("width", renderedWidth + "px");
+            signSpaceDiv.css("height", renderedHeight + "px");
             const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
             const pageTop = this.pdfViewer.getPageTopInPdf(pageNum);
             const pageLeft = this.pdfViewer.getPageLeftInPdf(pageNum);
             signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + pageLeft + 'px');
             signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + pageTop + 'px');
-            signSpaceDiv.css("font-size", Math.round(6 * this.pdfViewer.scale) + "px");
+            signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
+            signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
         });
     }
 

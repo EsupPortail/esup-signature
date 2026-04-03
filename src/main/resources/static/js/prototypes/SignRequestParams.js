@@ -425,7 +425,7 @@ export class SignRequestParams extends EventFactory {
         this.#createTools();
         this.#updateSize();
         this.#toggleMinimalTools();
-        this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 6 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
+        this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 10 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale) - 1  + "px");
@@ -533,7 +533,8 @@ export class SignRequestParams extends EventFactory {
         spotDiv.css("top", cssTop + "px");
         spotDiv.css("width", cssWidth + "px");
         spotDiv.css("height", cssHeight + "px");
-        spotDiv.css("font-size", Math.round(6 * this.currentScale) + "px");
+        spotDiv.css("font-size", Math.round(cssHeight * 0.15) + "px");
+        spotDiv.find(".sign-icon").css("font-size", Math.round(cssHeight * 0.45) + "px");
 
         const deleteBtn = spotDiv.find(".slot-delete-btn");
         deleteBtn.on("click", (e) => {
