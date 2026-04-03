@@ -255,20 +255,34 @@ export class WorkspacePdf {
         for(let i = 0; i < this.currentSignRequestParamses.length; i++) {
             let currentSignRequestParams = this.currentSignRequestParamses[i];
             let signSpaceDiv = $("#signSpace_" + i);
-            if (this.mode === "sign" && this.signable) {
+            if (this.mode === "sign" && (this.signable || this.editable)) {
                 if(signSpaceDiv.length) {
                     signSpaceDiv.unbind();
                     signSpaceDiv.remove();
                 }
-                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-field sign-space' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'></div>";
+                const spotId = this.findSpotIdForSignParams(currentSignRequestParams);
+                const deleteBtnHtml = this.editable && spotId != null
+                    ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
+                    : "";
+                let signSpaceHtml = "<div id='signSpace_" + i + "' title='Emplacement de signature : " + currentSignRequestParams.comment + "' class='sign-space" + (this.signable ? " sign-field" : "") + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + currentSignRequestParams.pdSignatureFieldName + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#signSpace_" + i);
-                signSpaceDiv.on("click", e => this.addSign(i));
-                if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                    signSpaceDiv.html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
+
+                if (this.signable) {
+                    signSpaceDiv.on("click", e => this.addSign(i));
+                    if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
+                        signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
+                    }
+                    if (currentSignRequestParams.ready) {
+                        signSpaceDiv.removeClass("sign-field");
+                    }
+                    this.makeItDroppable(signSpaceDiv);
+                } else {
+                    signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Emplacement de signature</span></div>");
                 }
-                if (currentSignRequestParams.ready) {
-                    signSpaceDiv.removeClass("sign-field");
+
+                if (this.editable) {
+                    this.bindSignSpaceDelete(signSpaceDiv);
                 }
                 signSpaceDiv.show();
                 const pageTop = this.pdfViewer.getPageTopInPdf(currentSignRequestParams.signPageNumber);
@@ -280,9 +294,51 @@ export class WorkspacePdf {
                 signSpaceDiv.css("width", Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
                 signSpaceDiv.css("height", Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom()) + "px");
                 signSpaceDiv.css("font-size", 6 *  this.pdfViewer.scale);
-                this.makeItDroppable(signSpaceDiv);
             }
         }
+    }
+
+    findSpotIdForSignParams(signParams) {
+        if (!Array.isArray(this.spots)) {
+            return null;
+        }
+        const page = parseInt(signParams.signPageNumber, 10);
+        const x = parseInt(signParams.xPos, 10);
+        const y = parseInt(signParams.yPos, 10);
+        for (let i = 0; i < this.spots.length; i++) {
+            const spot = this.spots[i];
+            if (parseInt(spot.signPageNumber, 10) === page && parseInt(spot.xPos, 10) === x && parseInt(spot.yPos, 10) === y) {
+                return spot.id;
+            }
+        }
+        return null;
+    }
+
+    bindSignSpaceDelete(signSpaceDiv) {
+        const spotId = parseInt(signSpaceDiv.attr("data-es-spot-id"), 10);
+        const deleteBtn = signSpaceDiv.find(".slot-delete-btn");
+        if (!Number.isFinite(spotId) || !deleteBtn.length) {
+            return;
+        }
+        deleteBtn.on("click", e => {
+            e.stopPropagation();
+            bootbox.confirm("Supprimer cet emplacement de signature ?", result => {
+                if (!result) {
+                    return;
+                }
+                let url = "/ws-secure/global/delete-spot/" + this.signRequestId + "/" + spotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+                if (this.currentSignType === "form") {
+                    url = "/" + this.userName + "/forms/delete-spot/" + this.formId + "/" + spotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+                }
+                $.ajax({
+                    method: 'DELETE',
+                    url: url,
+                    success: () => {
+                        signSpaceDiv.remove();
+                    }
+                });
+            });
+        });
     }
 
     refreshSignFields() {
@@ -738,75 +794,6 @@ export class WorkspacePdf {
                 }
             }
         });
-        let index = 0;
-        this.spots.forEach((spot, iterator) => {
-            if(spot.stepNumber != null) {
-                let spotDiv = $('#inDocSpot_' + spot.id);
-                if (this.mode === 'comment') {
-                    spotDiv.show();
-                    const pageOffsets = this.getPageOffsets(spot.signPageNumber);
-                    let xPos = Math.round((parseInt(spot.xPos) * this.pdfViewer.scale) + pageOffsets.left);
-                    let yPos = Math.round((parseInt(spot.yPos) * this.pdfViewer.scale) + pageOffsets.top);
-                    console.log("spot pos : " + xPos + ", " + yPos);
-                    spotDiv.css('left',  xPos + "px");
-                    spotDiv.css('top',  yPos + "px");
-                    let signDiv = $('#inDocSign_' + spot.id);
-                    if(signDiv != null) {
-                        if (signDiv.attr('data-es-width') !== undefined && signDiv.attr('data-es-height') !== undefined) {
-                            spot.signWidth = signDiv.attr('data-es-width');
-                            spot.signHeight = signDiv.attr('data-es-height');
-                            spotDiv.css("width", signDiv.attr('data-es-width') * this.pdfViewer.scale * this.getBrowserZoom());
-                            spotDiv.css("height", signDiv.attr('data-es-height') * this.pdfViewer.scale * this.getBrowserZoom());
-                        }
-                        signDiv.css("width", Math.round(spot.signWidth * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                        signDiv.css("height", Math.round(spot.signHeight * self.pdfViewer.scale * this.getBrowserZoom()) + "px");
-                        signDiv.css("font-size", 6 * self.pdfViewer.scale);
-                        signDiv.droppable({
-                            accept: ".cross",
-                            tolerance: "touch",
-                            drop: function (event, ui) {
-                                $('#cross_999999').addClass("cross-warning");
-                                $('#submit-add-spot').attr("disabled", true);
-                            },
-                            over: function (event, ui) {
-                                $('#cross_999999').addClass("cross-warning");
-                                $('#submit-add-spot').attr("disabled", true);
-                            },
-                            out: function (event, ui) {
-                                $('#cross_999999').removeClass("cross-warning");
-                                $('#submit-add-spot').removeAttr("disabled");
-                            }
-                        });
-                        if (signDiv.attr("data-es-delete")) {
-                            spotDiv.unbind('mouseup');
-
-                            spotDiv.on('mouseup', function (e) {
-                                e.stopPropagation();
-                                bootbox.confirm("Supprimer cet emplacement de signature ?", function (result) {
-                                    if (result) {
-                                        let url = "/ws-secure/global/delete-spot/" + self.signRequestId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                        if (self.currentSignType === "form") {
-                                            url = "/" + self.userName + "/forms/delete-spot/" + self.formId + "/" + spot.id + "?" + self.csrf.parameterName + "=" + self.csrf.token;
-                                        }
-                                        $.ajax({
-                                            method: 'DELETE',
-                                            url: url,
-                                            success: function () {
-                                                spotDiv.remove();
-                                                if (self.currentSignType === "form") {
-                                                    location.reload();
-                                                }
-                                            }
-                                        });
-                                    }
-                                });
-                            });
-                        }
-                    }
-                }
-                index++;
-            }
-        });
         let postitForm = $("#postit");
         if (postitForm.is(':visible')) {
             const commentPageNumber = $("#commentPageNumber").val();
@@ -996,9 +983,6 @@ export class WorkspacePdf {
         // $('#addCommentButton2').removeClass('d-none');
         $('#commentsBar').show();
         this.refreshAfterPageChange();
-        $('div[id^=inDocSpot_]').each(function () {
-            $(this).hide();
-        });
         $(".circle").each(function () {
             $(this).show();
             $(this).css('width', '0px');

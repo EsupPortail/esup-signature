@@ -561,14 +561,14 @@ input:focus, textarea:focus, select:focus {
     font-weight: bold;
     color: black;
     border: 3px dashed rgb(123, 246, 123); !important;
-    background-color: rgba(220, 250, 220, 0.8);
+    background-color: rgba(220, 250, 220, 0.5);
     cursor: pointer !important;
     overflow: hidden;
 }
 
 .sign-field:hover {
     background-color: rgb(220, 250, 220);
-    border: 1px solid rgb(123, 246, 123) !important;
+    border: 3px solid rgb(123, 246, 123) !important;
 }
 
 .sign-field.ui-droppable-active {
@@ -838,6 +838,34 @@ textarea:placeholder-shown.required-field {
     cursor: pointer;
     z-index: 3;
     color: #1e7e34;
+}
+
+.sign-slot {
+    border: 2px dashed rgba(25, 135, 84, 0.6);
+    background: rgba(220, 250, 220, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    overflow: hidden;
+}
+
+.sign-slot.sign-slot-editable {
+    border-color: rgba(220, 53, 69, 0.7);
+    background: rgba(255, 235, 238, 0.85);
+}
+
+.sign-slot.sign-slot-signable {
+    border-color: rgba(25, 135, 84, 0.7);
+    background: rgba(220, 250, 220, 0.85);
+}
+
+.slot-delete-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 4;
+    padding: 0 6px;
 }
 
 .admin-spot .sign-field {
