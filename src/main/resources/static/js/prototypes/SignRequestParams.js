@@ -439,7 +439,7 @@ export class SignRequestParams extends EventFactory {
         });
         $("#delete-add-spot").on("click", function (){
             const url = new URL(window.location.href);
-            url.searchParams.set("annotation", "");
+            
             window.location.href = url.toString();
         });
         this.saveSpotButton = $("#save-spot-button")
@@ -470,12 +470,12 @@ export class SignRequestParams extends EventFactory {
                 url: url,
                 success: function (result) {
                     const url = new URL(window.location.href);
-                    url.searchParams.set("annotation", "");
+                    
                     window.location.href = url.toString();
                 },
                 error: function (error) {
                     const url = new URL(window.location.href);
-                    url.searchParams.set("annotation", "");
+                    
                     bootbox.alert(error.responseText, function(){
                         window.location.href = url.toString();
                     });
@@ -830,8 +830,11 @@ export class SignRequestParams extends EventFactory {
         const scaleFactor = this.currentScale * this.getBrowserZoom();
         this.xPos = Math.round((ui.position.left - pageLayout.left) / scaleFactor);
         this.yPos = Math.round((ui.position.top - pageLayout.top) / scaleFactor);
+        // Clamp coordinates to page bounds.
         if (this.xPos < 0) this.xPos = 0;
+        if (this.xPos > pageLayout.width / scaleFactor) this.xPos = Math.round(pageLayout.width / scaleFactor);
         if (this.yPos < 0) this.yPos = 0;
+        if (this.yPos > pageLayout.height / scaleFactor) this.yPos = Math.round(pageLayout.height / scaleFactor);
         console.log("x : " + this.xPos + ", y : " + this.yPos + ", page : " + this.signPageNumber);
         if(this.textareaPart != null) {
             this.#resizeText();
@@ -1698,10 +1701,9 @@ export class SignRequestParams extends EventFactory {
         this.canvas.css("height", (this.signHeight - this.extraHeight - this.padMargin) * this.currentScale);
     }
 
-    applyCurrentSignRequestParams(offset) {
+    applyCurrentSignRequestParams() {
         const pageLayout = this.#getPageLayout(this.signPageNumber);
-        const topOffset = pageLayout.top || offset || 0;
-        this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + topOffset) + 'px');
+        this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + pageLayout.top) + 'px');
         this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left) + 'px');
     }
 
@@ -1764,6 +1766,11 @@ export class SignRequestParams extends EventFactory {
 
     simulateDrop() {
         if(this.firstLaunch) {
+            // Guard: ensure cross is in DOM before simulating drag.
+            if (!this.cross || !this.cross.length || !this.cross.closest("html").length) {
+                console.warn("Cross element not in DOM, cannot simulate drop for sign " + this.id);
+                return;
+            }
             const pageLayout = this.#getPageLayout(this.signPageNumber);
             const targetX = Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left);
             const targetY = Math.round(this.yPos * this.currentScale  * this.getBrowserZoom() + pageLayout.top);

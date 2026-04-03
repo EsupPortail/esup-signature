@@ -83,6 +83,17 @@
                 <div  class="es-workspace d-flex flex-column">
                     <div class="es-nav-tools d-flex justify-content-center"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                         <div class="d-flex justify-content-center align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
+                            <div id="commentsTools" th:if="${editable && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4">
+                                <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
+                                        class="d-flex align-items-center btn btn-sm btn-warning text-dark">
+                                    <i class="fi fi-rr-digital-signature"></i> Insérer emplacement
+                                </button>
+                                <button id="addCommentButton"
+                                        class="d-flex align-items-center btn btn-sm btn-warning text-dark">
+                                    <i class="fi fi-rr-comment-alt"></i> Annotation
+                                </button>
+                            </div>
+                            <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
                             <button id="fullheight" title="Pleine hauteur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i
                                     class="fi fi-rr-compress-alt"></i></button>
                             <button id="fullwidth" title="Pleine largeur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i

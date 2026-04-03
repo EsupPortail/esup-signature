@@ -148,6 +148,7 @@ export class GlobalUi {
         $("#display-side-btn").on('click', function(e) {
            $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
         });
+
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
             const h = window.innerHeight;

@@ -359,24 +359,19 @@ export class WorkspacePdf {
             }
             console.info("init to " + this.mode + " mode");
             const url = new URL(window.location.href);
-            const hasAnnotation = url.searchParams.has("annotation");
-            if(hasAnnotation) {
-                this.enableCommentMode();
-            } else {
-                if (this.signable) {
-                    if (localStorage.getItem('mode') === 'comment') {
-                        this.enableCommentMode();
-                    } else if (this.currentSignType !== 'form') {
-                        this.enableSignMode();
-                    }
-                } else if (!this.editable) {
+            if (this.signable) {
+                if (localStorage.getItem('mode') === 'comment') {
+                    this.enableCommentMode();
+                } else if (this.currentSignType !== 'form') {
                     this.enableSignMode();
+                }
+            } else if (!this.editable) {
+                this.enableSignMode();
+            } else {
+                if (this.status === 'draft') {
+                    this.enableCommentMode();
                 } else {
-                    if (this.status === 'draft') {
-                        this.enableCommentMode();
-                    } else {
-                        this.enableReadMode();
-                    }
+                    this.enableReadMode();
                 }
             }
         }
@@ -861,7 +856,6 @@ export class WorkspacePdf {
                     if (cross.attr("id") === ui.draggable.attr("id")) {
                         signRequestParams.signSpace = signSpaceDiv;
                         const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
-                        let offset = self.pdfViewer.getPageTopInPdf(pageNum);
                         const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
                         const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
                         signRequestParams.signPageNumber = pageNum;
@@ -870,7 +864,8 @@ export class WorkspacePdf {
                         cross.attr("page", pageNum);
                         // Prevent simulateDrop from re-running a synthetic drag that may shift persisted yPos.
                         signRequestParams.firstLaunch = false;
-                        signRequestParams.applyCurrentSignRequestParams(offset);
+                        // applyCurrentSignRequestParams() uses #getPageLayout to position cross, no offset param needed.
+                        signRequestParams.applyCurrentSignRequestParams();
                         let ui = { size: { width: 0, height: 0 }};
                         let width = parseInt(cross.css("width"));
                         let height = parseInt(cross.css("height"));
@@ -891,7 +886,7 @@ export class WorkspacePdf {
                         cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
                         signRequestParams.dropped = true;
                         self.signPosition.goStep2();
-                        console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos + " - offset " + offset);
+                        console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos);
                     }
                 }
                 self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
@@ -969,7 +964,7 @@ export class WorkspacePdf {
             return;
         }
         const url = new URL(window.location.href);
-        url.searchParams.set("annotation", "");
+        
         window.location.href = url.toString();
     }
 
@@ -1129,7 +1124,6 @@ export class WorkspacePdf {
         $('#forward-btn').removeClass('d-none');
         $('#refuseLaunchButton').removeClass('d-none');
         $('#trashLaunchButton').removeClass('d-none');
-        $('#commentsTools').addClass('d-none');
         $('#signTools').removeClass("d-none");
         if(this.isPdf) {
             this.refreshAfterPageChange();
