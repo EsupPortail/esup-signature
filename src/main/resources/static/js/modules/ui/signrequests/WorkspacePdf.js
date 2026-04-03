@@ -268,10 +268,13 @@ export class WorkspacePdf {
                 const deleteBtnHtml = (this.editable && this.isManager) && spotId != null
                     ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
                     : "";
-                // Déterminer les classes CSS: toujours appliquer sign-field pour l'apparence
-                let cssClasses = "sign-space sign-field ";
-                if (this.signable && currentSignRequestParams.ready) {
-                    cssClasses = "sign-space"; // Retirer sign-field une fois signature déposée
+                // Déterminer les classes CSS selon le contexte
+                let cssClasses = "sign-space";
+                if (this.signable) {
+                    cssClasses += " sign-field";
+                    if (currentSignRequestParams.ready) {
+                        cssClasses += " sign-field-dropped";
+                    }
                 }
                 
                 let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";

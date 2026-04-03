@@ -55,7 +55,7 @@
                             </th:block>
                         </div>
                     </div>
-                        <div th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
+                        <div id="refuseLaunchDiv" th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         ou
                             <button tabindex="1" id="refuseLaunchButton" class="btn p-3 btn-danger border-0 d-none" title="Refuser"
                                     th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"  style="width: 250px;">

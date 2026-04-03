@@ -557,6 +557,53 @@ input:focus, textarea:focus, select:focus {
     outline: none;
 }
 
+.sign-space .sign-text {
+    font-size: 14px;
+    text-align: center;
+}
+
+
+.sign-space {
+    font-weight: bold;
+    color: black;
+    border: 3px dashed rgb(159 159 159);;
+    background-color: rgb(243 243 243 / 0.5);
+    cursor: auto !important;
+    overflow: hidden;
+}
+
+.sign-space:hover {
+    border: 3px solid rgb(159 159 159); !important;
+    background-color: rgb(243 243 243 / 1);
+}
+
+.sign-space .sign-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.sign-field .sign-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--bs-success);
+    font-size: 14px;
+}
+
+.sign-space .sign-icon {
+    font-size: clamp(12px, 5vw, 40px);
+    font-weight: bold;
+    color: var(--bs-success);
+}
+
 .sign-field {
     font-weight: bold;
     color: black;
@@ -582,35 +629,16 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field-dropped {
     background-color: transparent !important;
+    border: 0 !important;
     cursor: default;
     z-index: 1;
-}
-
-.sign-space .sign-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 8px;
-    color: var(--bs-success);
-    font-size: 14px;
 }
 
 .sign-content {
     transform-origin: center;
 }
 
-.sign-space .sign-icon {
-    font-size: clamp(12px, 5vw, 40px);
-    font-weight: bold;
-    color: var(--bs-success);
-}
 
-.sign-space .sign-text {
-    font-size: 14px;
-    text-align: center;
-}
 
 .zoom {
     text-align: center;

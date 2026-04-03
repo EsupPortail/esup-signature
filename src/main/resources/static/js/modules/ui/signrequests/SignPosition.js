@@ -271,12 +271,14 @@ export class SignPosition extends EventFactory {
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
         let selectCertType = $("#certType");
+        let refuseLaunchDiv = $("#refuseLaunchDiv");
 
         addSignButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
         selectCertType.attr("disabled", "disabled");
+        refuseLaunchDiv.removeClass("d-none");
 
         this.setButtonVariant(addSignButton, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
@@ -301,11 +303,13 @@ export class SignPosition extends EventFactory {
         let refuseLaunchButton = $("#refuseLaunchButton");
         let selectCertType = $("#certType");
         let signLaunchButton = $("#signLaunchButton");
+        let refuseLaunchDiv = $("#refuseLaunchDiv");
 
         addSignButton.attr("disabled", "disabled");
         refuseLaunchButton.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
+        refuseLaunchDiv.addClass("d-none");
 
         this.setButtonVariant(addSignButton, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");
