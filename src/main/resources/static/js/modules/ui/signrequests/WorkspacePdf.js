@@ -28,6 +28,7 @@ export class WorkspacePdf {
         this.isManager = isManager;
         this.signRequestId = id;
         this.currentSignType = currentSignType;
+        this.currentStepNumber = currentStepNumber;
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
@@ -38,6 +39,8 @@ export class WorkspacePdf {
         this.actionInitialyzed = false;
         this.saveAlert = false;
         this.scrollTop = 0;
+        this.nextCommand = "none";
+        this.hoverLiveStepState = null;
         if(fields != null) {
             for (let i = 0; i < fields.length; i++) {
                 let field = fields[i];
@@ -128,7 +131,7 @@ export class WorkspacePdf {
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspacePdf());
-            if(this.currentSignType != "form") {
+            if(this.currentSignType !== "form") {
                 this.pdfViewer.addEventListener('reachEnd', e => this.markAsViewed());
             }
             this.pdfViewer.addEventListener('scaleChange', e => this.refreshWorkspace());
@@ -256,7 +259,8 @@ export class WorkspacePdf {
         const signParamsToDisplay = this.getSignParamsToDisplay();
         for (let i = 0; i < signParamsToDisplay.length; i++) {
             let currentSignRequestParams = signParamsToDisplay[i];
-            const signSpaceId = this.getSignSpaceId(currentSignRequestParams, i);
+            const isSignableField = this.isCurrentSignableParam(currentSignRequestParams) && this.signable;
+            const signSpaceId = this.getSignSpaceId(currentSignRequestParams, i, isSignableField);
             let signSpaceDiv = $("#" + signSpaceId);
 
             if (this.signable || this.editable) {
@@ -268,28 +272,36 @@ export class WorkspacePdf {
                 const deleteBtnHtml = (this.editable && this.isManager) && spotId != null
                     ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
                     : "";
-                // Déterminer les classes CSS selon le contexte
+                // Style: sign-field uniquement pour les emplacements réellement signables.
                 let cssClasses = "sign-space";
-                if (this.signable) {
+                if (isSignableField) {
                     cssClasses += " sign-field";
                     if (currentSignRequestParams.ready) {
                         cssClasses += " sign-field-dropped";
                     }
                 }
-                
-                let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
+                const rawStepNumber = currentSignRequestParams?.stepNumber;
+                const resolvedStepNumber = Number.isFinite(parseInt(rawStepNumber, 10))
+                    ? parseInt(rawStepNumber, 10)
+                    : parseInt(this.currentStepNumber, 10);
+
+                let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-step-number='" + (Number.isFinite(resolvedStepNumber) ? resolvedStepNumber : "") + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#" + signSpaceId);
 
-                if (this.signable) {
+                if (isSignableField) {
                     signSpaceDiv.on("click", e => this.addSign(i));
                     if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                         signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
                     }
                     this.makeItDroppable(signSpaceDiv);
                 } else {
-                    // Non-signable: pas d'icône plus, juste le texte
                     signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div>");
+                    const stepNumberFromDom = parseInt(signSpaceDiv.attr("data-es-step-number"), 10);
+                    if (Number.isFinite(stepNumberFromDom)) {
+                        signSpaceDiv.on("mouseenter", () => this.highlightLiveStep(stepNumberFromDom));
+                        signSpaceDiv.on("mouseleave", () => this.resetLiveStepHighlight());
+                    }
                 }
 
                 if (this.editable) {
@@ -309,8 +321,8 @@ export class WorkspacePdf {
         }
     }
 
-    getSignSpaceId(signParams, index) {
-        if (this.signable) {
+    getSignSpaceId(signParams, index, isSignableField) {
+        if (isSignableField) {
             return "signSpace_" + index;
         }
         const spotId = this.findSpotIdForSignParams(signParams);
@@ -320,13 +332,35 @@ export class WorkspacePdf {
         return "signSpace_readonly_" + index;
     }
 
+    isCurrentSignableParam(signParams) {
+        const currentParams = Array.isArray(this.currentSignRequestParamses) ? this.currentSignRequestParamses : [];
+        for (let i = 0; i < currentParams.length; i++) {
+            const current = currentParams[i];
+            if (current?.id != null && signParams?.id != null && parseInt(current.id, 10) === parseInt(signParams.id, 10)) {
+                return true;
+            }
+            const sameGeo = parseInt(current?.signPageNumber, 10) === parseInt(signParams?.signPageNumber, 10)
+                && parseInt(current?.xPos, 10) === parseInt(signParams?.xPos, 10)
+                && parseInt(current?.yPos, 10) === parseInt(signParams?.yPos, 10)
+                && parseInt(current?.signWidth, 10) === parseInt(signParams?.signWidth, 10)
+                && parseInt(current?.signHeight, 10) === parseInt(signParams?.signHeight, 10);
+            if (sameGeo) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     getSignParamsToDisplay() {
         const currentParams = Array.isArray(this.currentSignRequestParamses) ? this.currentSignRequestParamses : [];
         const spots = Array.isArray(this.spots) ? this.spots : [];
 
-        // Non-signataire manager: afficher les spots existants (source de vérité) sans doublons.
-        if (!this.signable && this.editable && this.isManager) {
-            const merged = [...spots, ...currentParams];
+        // Cas manager editable + signable:
+        // - currentSignRequestParamses = emplacements signables de l'etape courante
+        // - spots = emplacements manager; on ajoute seulement les spots hors etape courante.
+        if (this.editable && this.isManager && this.signable) {
+            const otherStepSpots = this.filterSpotsNotCurrentStep(spots);
+            const merged = [...currentParams, ...otherStepSpots];
             const byKey = new Map();
             for (let i = 0; i < merged.length; i++) {
                 const item = merged[i];
@@ -340,7 +374,26 @@ export class WorkspacePdf {
             return Array.from(byKey.values());
         }
 
+        // Cas manager editable non-signable: afficher les spots manager (complet).
+        if (this.editable && this.isManager) {
+            return spots;
+        }
+
         return currentParams;
+    }
+
+    filterSpotsNotCurrentStep(spots) {
+        const currentStep = parseInt(this.currentStepNumber, 10);
+        if (!Number.isFinite(currentStep)) {
+            return spots;
+        }
+        return spots.filter(spot => {
+            const step = parseInt(spot?.stepNumber, 10);
+            if (!Number.isFinite(step)) {
+                return true;
+            }
+            return step !== currentStep;
+        });
     }
 
     findSpotIdForSignParams(signParams) {
@@ -1236,10 +1289,8 @@ export class WorkspacePdf {
         let stepNumber = $("#spotStepNumber").val();
         $('[id^="liveStep-"]').each(function () {
             $(this).removeClass("bg-success");
-            $(this).addClass("bg-white");
         });
         let liveStep = $("#liveStep-" + stepNumber);
-        liveStep.removeClass("bg-white");
         liveStep.addClass("bg-success");
     }
 
@@ -1324,6 +1375,32 @@ export class WorkspacePdf {
 
     getBrowserZoom() {
         return 1 || 1;
+    }
+
+    highlightLiveStep(stepNumber) {
+        const parsedStepNumber = parseInt(stepNumber, 10);
+        if (!Number.isFinite(parsedStepNumber)) {
+            return;
+        }
+        if (this.hoverLiveStepState == null) {
+            this.hoverLiveStepState = [];
+            $("[id^='liveStep-'].bg-success").each((_, element) => {
+                const id = $(element).attr("id");
+                if (id) {
+                    this.hoverLiveStepState.push(id);
+                }
+            });
+        }
+        const liveStep = $("#liveStep-" + parsedStepNumber);
+        if (liveStep.length) {
+            liveStep.find(".step-vertical-content").toggleClass("bg-light bg-secondary-subtle");
+        }
+    }
+
+    resetLiveStepHighlight() {
+        $("[id^='liveStep-']").find(".step-vertical-content").removeClass("bg-secondary-subtle");
+        $("[id^='liveStep-']").find(".step-vertical-content").addClass("bg-light");
+        this.hoverLiveStepState = null;
     }
 
 }
