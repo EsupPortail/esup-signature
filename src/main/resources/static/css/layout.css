@@ -9,6 +9,11 @@ body {
     padding-right: 0 !important;
 }
 
+body.es-signrequest-page {
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
 body.modal-open {
     overflow: auto !important;
 }
@@ -85,6 +90,7 @@ header {
 .main-content,
 .es-main-content {
     padding-top: 92px; height: calc(100vh - 92px);
+    min-width: 0;
 }
 
 .content-full,
@@ -158,13 +164,26 @@ header {
 .workspace,
 .es-workspace {
     margin-left: 0;
-    width: calc(100vw - 136px);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
     height: calc(100vh - 114px);
 }
 
+/* Prevent horizontal overflow on signrequest show layout (sidebar + workspace in flex row). */
+.es-signrequest-main-content > #sidebar {
+    flex: 0 0 300px;
+}
+
+.es-signrequest-main-content > .es-workspace {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+}
+
 #workspace {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
     overflow-y: scroll;
 }
 
@@ -191,7 +210,6 @@ header {
     position: relative !important;
     opacity: 1;
     cursor: default;
-    padding-top: 80px;
     padding-bottom: 1px;
 }
 
@@ -293,9 +311,12 @@ header {
 }
 
 #ws-tabs {
-    width: 100% !important;
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
     height: 100% !important;
     flex-wrap: nowrap !important;
+    overflow: hidden;
 }
 
 .nav-tab-admin {
@@ -415,3 +436,6 @@ header {
 .global-button {
     width: 200px;
 }
+
+
+

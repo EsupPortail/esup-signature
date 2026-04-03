@@ -2,12 +2,12 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools position-fixed" th:if="${toSignDocument != null}">
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="height: 80px;">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="min-height: 80px; height: auto;">
         <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>
     </div>
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}" style="height: 80px;">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}" style="min-height: 80px; height: auto;">
 <!--        <th:block th:if="${editable}">-->
 <!--            <button class="d-flex flex-column align-items-center btn btn-warning" name="changeMode" id="changeMode1">-->
 <!--                <span class="badge rounded-pill bg-dark" th:if="${comments.size() > 0}" th:text="${comments.size()}"></span>-->
@@ -33,8 +33,8 @@
         <a  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }" tabindex="1" class="ms-1 d-flex align-items-center btn btn-success me-1 d-none d-sm-flex" href="/ws-secure/global/get-last-file/1156" target="_blank" title="Télécharger le document signé">
             <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
         </a>
-        <div class="steps-horizontal-v2" th:if="${signable}">
-            <div id="step-1" class="step-horizontal-v2 active d-flex gap-4 align-items-center">
+        <div class="steps-horizontal-v2 d-flex justify-content-center" th:if="${signable}" style="width: 100%;">
+            <div id="step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
                 <div class="d-flex align-items-center gap-2">
                     <div class="step-horizontal-v2-icon">
                         1
@@ -42,23 +42,15 @@
                 </div>
                 <div class="step-horizontal-v2-content">
                     <span class="text-xs font-bold d-flex align-items-center gap-1">
-                        <div id="insert-btn-div" class="d-flex flex-nowrap" th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}">
-                        <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" title="Insérer une signature" style="width: 250px;">
-                            <i class="fi fi-rr-file-signature"></i> Insérer une signature
-                        </button>
-                        <div id="second-tools" class="es-second-tools position-fixed collapse">
-                            <th:block th:if="${toSignDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || comments.size() > 0)}">
-                                <div id="signTools" th:if="${toSignDocument.contentType == 'application/pdf' && signable}" class="alert alert-light d-flex flex-column text-start gap-1 shadow">
-
-                                </div>
-                            </th:block>
-                            </th:block>
+                        <div class="d-flex flex-nowrap" th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}" style="flex: 1 1 0;">
+                            <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" title="Insérer une signature">
+                                <i class="fi fi-rr-file-signature"></i> Insérer une signature
+                            </button>
                         </div>
-                    </div>
                         <div id="refuseLaunchDiv" th:if="${signable && (currentStepNumber > 1 || signRequest.createBy.eppn != userEppn)}">
                         ou
                             <button tabindex="1" id="refuseLaunchButton" class="btn p-3 btn-danger border-0 d-none" title="Refuser"
-                                    th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal"  style="width: 250px;">
+                                    th:token="${signRequest.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
                                 <i class="fi fi-rr-document-circle-wrong "></i> Refuser
                             </button>
                         </div>
@@ -66,14 +58,14 @@
                     </span>
                 </div>
             </div>
-            <div id="step-2" class="step-horizontal-v2 disable">
+            <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
                 <div class="d-flex align-items-center gap-2">
                     <div class="step-horizontal-v2-icon">
                         2
                     </div>
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
-                        <select id="certType" name="certType" class="form-select es-form-select-xl" required disabled style="width: 250px;">
+                        <select id="certType" name="certType" class="form-select es-form-select-xl" required disabled>
                             <option value="" disabled selected hidden>Type de signature</option>
                             <th:block th:each="signWith : ${signWiths}">
                                 <th:block th:if="${signWith.name != 'sealCert'}">
@@ -88,7 +80,7 @@
 <!--                        <button id="refresh-certType" type="button" class="btn btn-secondary" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
                     </div>
             </div>
-            <div id="step-3" class="step-horizontal-v2 disable">
+            <div id="step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
                 <div class="d-flex align-items-center gap-2">
                     <div class="step-horizontal-v2-icon">
                         3
@@ -96,7 +88,7 @@
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
                     <div th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled" style="width: 250px;">
+                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled">
                             <i class="fi fi-rr-signature-lock " style="margin-top: 0; border: 0"></i> Signer
                         </button>
                     </div>

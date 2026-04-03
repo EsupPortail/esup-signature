@@ -51,11 +51,32 @@
     }
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1399.98px) {
     th.col-nom { min-width: 130px; }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: flex !important;
+    }
+
+    /* On signrequest page, sidebar is hidden by default on <= xl and opened only via mobile toggle class. */
+    body.es-signrequest-page #sidebar {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #sidebar.es-sidebar-mobile,
+    body.es-signrequest-page #sidebar.sidebar-mobile {
+        display: block !important;
+        position: fixed !important;
+        left: 0;
+        top: 92px !important;
+        max-width: 300px !important;
+        width: 300px !important;
+        height: calc(100vh - 138px) !important;
+        z-index: 10003 !important;
+    }
+
     .navbar-brand {
         width: revert;
         margin-right: 0px;
@@ -80,12 +101,7 @@
         top: 50px;
     }
 
-    .workspace-pdf,
-    .es-workspace-pdf {
-        margin-top: 55px;
-    }
-
-    .workspace-sign,
+        .workspace-sign,
     .es-workspace-sign {
         margin-top: 142px;
     }
@@ -142,11 +158,33 @@
 
 }
 
-@media (max-width: 992px) {
+@media (max-width: 991.98px) {
     th.col-nom { min-width: 110px; }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: flex !important;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0;
+        width: auto;
+        max-width: none;
+        z-index: 1031;
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2-content {
+        transform: scale(0.92);
+        transform-origin: center top;
+    }
+
+    #insert-btn-div {
+        display: none !important;
+    }
+
 
     #returnButton {
         display: none;
@@ -208,7 +246,22 @@
     }
 }
 
-@media (max-width: 575px) {
+@media (max-width: 575.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: flex !important;
+    }
+
+    body.es-signrequest-page #signButtons {
+        display: none !important;
+    }
+
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2-content {
+        transform: scale(0.82);
+    }
 
     .nav-item-label {
         display: inline !important;
@@ -230,15 +283,11 @@
         top: 50px;
     }
 
-    .workspace-pdf,
-    .es-workspace-pdf {
-        padding: 10px;
-        margin-top: 50px;
-    }
-
     .workspace,
     .es-workspace {
-        width: min-content;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         margin-top: 0;
         padding: 3px;
     }

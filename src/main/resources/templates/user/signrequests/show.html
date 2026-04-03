@@ -8,7 +8,7 @@
 <!--/*@thymesVar id="currentSignType" type="org.esupportail.esupsignature.entity.enums.SignType"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<body>
+<body class="es-signrequest-page">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
@@ -39,7 +39,7 @@
 <main role="main">
         <nav th:replace="~{user/signrequests/includes/show-sections :: breadcrumb}"></nav>
         <div id="content" th:data-es-signbook-id="${signRequest.parentSignBook.id}" class = "es-content-full">
-            <div class="es-main-content d-flex">
+            <div class="es-main-content es-signrequest-main-content d-flex">
                 <div class="es-signrequest-postits-layer" th:if="${signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.externalCanReaderAnnotations || user.userType.name() != 'external'}">
                     <div id="potit-comment" class="postit-global d-none overflow-hidden es-signrequest-postit-note"
                          th:if="${signRequest.parentSignBook.description != null && signRequest.parentSignBook.description != ''}"
@@ -86,17 +86,17 @@
                             <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4">
                                 <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
                                         class="d-flex align-items-center btn btn-sm btn-warning text-dark">
-                                    <i class="fi fi-rr-digital-signature"></i> Insérer emplacement
+                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xl-flex"> Insérer emplacement</span>
                                 </button>
                                 <button th:if="${editable}" id="addCommentButton"
                                         class="d-flex align-items-center btn btn-sm btn-warning text-dark">
-                                    <i class="fi fi-rr-comment-alt"></i> Annotation
+                                    <i class="fi fi-rr-comment-alt"></i><span class="d-none d-xl-flex"> Annotation</span>
                                 </button>
                             </div>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="fullheight" title="Pleine hauteur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i
+                            <button id="fullheight" title="Pleine hauteur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark d-none"><i
                                     class="fi fi-rr-compress-alt"></i></button>
-                            <button id="fullwidth" title="Pleine largeur" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex"><i
+                            <button id="fullwidth" title="Pleine largeur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark d-none"><i
                                     class="fi fi-rr-expand-arrows"></i></button>
                             <button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-transparent text-dark"><i
                                     class="fi fi-rr-zoom-out"></i></button>
@@ -104,7 +104,7 @@
                             <button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark"><i
                                     class="fi fi-rr-zoom-in"></i></button>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark d-none d-sm-flex" aria-label="Précédent">
+                            <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark d-none" aria-label="Précédent">
                                 <i class="fi fi-rr-angle-small-up"  style="font-size: 20px;"></i>
                             </button>
                             <div class="d-flex me-1 p-1 pt-2 fw-bold" style="width: 128px;">

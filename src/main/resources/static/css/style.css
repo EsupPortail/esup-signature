@@ -55,6 +55,85 @@ main {
      font-size: 16px;
  }
 
+/* Keep signrequest toolbar responsive and prevent horizontal page overflow. */
+body.es-signrequest-page .es-nav-tools {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+}
+
+body.es-signrequest-page .es-nav-tools > div {
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Keep #tools visible without hiding the document area on signrequest page. */
+body.es-signrequest-page #tools.es-tools {
+    position: sticky !important;
+    top: 126px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+body.es-signrequest-page #tools .steps-horizontal-v2 {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+body.es-signrequest-page #tools .step-horizontal-v2 {
+    flex: 1 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+body.es-signrequest-page #tools .step-horizontal-v2-content {
+    width: 100%;
+    min-width: 0;
+}
+
+body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > span {
+    width: 100%;
+}
+
+body.es-signrequest-page #tools #insert-btn-div,
+body.es-signrequest-page #tools #refuseLaunchDiv {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+body.es-signrequest-page #tools #insert-btn-div {
+    flex-wrap: nowrap !important;
+}
+
+body.es-signrequest-page #tools #addSignButton2,
+body.es-signrequest-page #tools #refuseLaunchButton,
+body.es-signrequest-page #tools #certType,
+body.es-signrequest-page #tools #signLaunchButton {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (max-width: 1599.98px) {
+    /* Under 1600px, keep only steps that are not disabled and not complete. */
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]:not(.disabled):not(.disable):not(.complete) {
+        display: flex !important;
+    }
+
+    /* Hide connectors when intermediate steps are hidden to avoid overlap. */
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
+        display: none;
+    }
+}
+
 .tools,
 .es-tools {
     font-size: 16px;
@@ -1687,6 +1766,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
     box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
 }
 
+.step-horizontal-v2.disabled .step-horizontal-v2-icon,
 .step-horizontal-v2.disable .step-horizontal-v2-icon {
     background: var(--bs-white) !important;
     border-color: var(--bs-secondary) !important;
