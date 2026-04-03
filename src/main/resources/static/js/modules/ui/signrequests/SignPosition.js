@@ -78,6 +78,10 @@ export class SignPosition extends EventFactory {
         if(this.signsList.length === 0) {
             $('#addSignButton').removeAttr('disabled');
         }
+        // Ne pas modifier l'état des étapes si c'est un spot (999999) qui est supprimé.
+        if(id === 999999) {
+            return;
+        }
         if(this.signRequestParamses.size === 0) {
             let addSignButton2 = $("#addSignButton2");
             addSignButton2.removeClass("d-none");
@@ -129,14 +133,17 @@ export class SignPosition extends EventFactory {
             this.popUserUi();
             return;
         }
-        this.disableForwardButton();
-        $(window).bind("beforeunload", function (event) {
-            console.log("beforeunload déclenché");
-            event.preventDefault();
-            event.returnValue = "";
-        });
-        this.addSignButton.removeClass("pulse-success");
-        $("#addSignButton2").removeClass("pulse-success");
+        const isSpot = signImageNumber === 999999;
+        if (!isSpot) {
+            this.disableForwardButton();
+            $(window).bind("beforeunload", function (event) {
+                console.log("beforeunload déclenché");
+                event.preventDefault();
+                event.returnValue = "";
+            });
+            this.addSignButton.removeClass("pulse-success");
+            $("#addSignButton2").removeClass("pulse-success");
+        }
         let id = this.id;
         let currentSignRequestParams = null;
         if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999) {

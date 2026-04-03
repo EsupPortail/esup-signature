@@ -425,12 +425,15 @@ export class SignRequestParams extends EventFactory {
         this.#createTools();
         this.#updateSize();
         this.#toggleMinimalTools();
-        this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 10 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
+        this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 8 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale) - 1  + "px");
-        this.cross.append("<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger position-absolute d-flex m-1' style='z-index: 4; bottom:5px; left: 10px;'><i class='fi fi-rr-trash'></i></button>");
-        this.cross.append("<button id='submit-add-spot' type='button' class='btn btn-sm btn-success position-absolute d-flex m-1' style='z-index: 4; bottom:5px; right: 10px;'><i class='fi fi-rr-floppy-disk-pen'></i></button>");
+        const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge opacity-90 bg-light border-1 border-secondary-subtle position-absolute d-flex justify-content-between gap-1' style='width: 100%;z-index: 4; top: -38px; left: 0;'>" +
+            "<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger' title='Annuler'><i class='fi fi-rr-trash'></i></button>" +
+            "<button id='submit-add-spot' type='button' class='btn btn-sm btn-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
+            "</div>";
+        this.cross.prepend(spotToolsHtml);
         this.border.remove();
         this.tools.remove();
         this.submitAddSpotBtn = $("#submit-add-spot");
@@ -737,10 +740,12 @@ export class SignRequestParams extends EventFactory {
             bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
         }
         this.#afterDropRefresh(ui);
-        let signLaunchButton = $("#signLaunchButton");
-        if(signLaunchButton.length) {
-            signLaunchButton.focus();
-            signLaunchButton.addClass("pulse-success");
+        if(this.signImages !== 999999) {
+            let signLaunchButton = $("#signLaunchButton");
+            if(signLaunchButton.length) {
+                signLaunchButton.focus();
+                signLaunchButton.addClass("pulse-success");
+            }
         }
     }
 
@@ -758,6 +763,10 @@ export class SignRequestParams extends EventFactory {
            }
         });
 
+        if(this.signImages === 999999) {
+            this.#computeBgColor();
+            return;
+        }
         if (!this.inside) {
             console.log("La signature n'est pas entièrement dans une page !");
             $("#signLaunchButton").attr("disabled", "disabled");

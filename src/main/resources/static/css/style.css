@@ -637,8 +637,6 @@ input:focus, textarea:focus, select:focus {
     transform-origin: center;
 }
 
-
-
 .zoom {
     text-align: center;
     min-width: 65px !important;
@@ -889,10 +887,21 @@ textarea:placeholder-shown.required-field {
 
 .slot-delete-btn {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 2px;
+    right: 2px;
     z-index: 4;
-    padding: 0 6px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-delete-btn i {
+    font-size: 11px;
+    line-height: 1;
 }
 
 .admin-spot .sign-field {
