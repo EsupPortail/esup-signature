@@ -56,6 +56,10 @@
 }
 
 @media (max-width: 1200px) {
+    .navbar-brand {
+        width: revert;
+        margin-right: 0px;
+    }
 
     .new-max-w {
         width: 100%;

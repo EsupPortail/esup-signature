@@ -20,12 +20,10 @@ export class PdfViewer extends EventFactory {
         this.currentStepNumber = currentStepNumber;
         this.saveScrolling = 0;
         this.pageNum = 1;
-        this.annotationDisplay = null;
         this.eventBus = new EventBus({dispatchToDOM: false});
         this._optionalContentConfigPromise = null;
         this._isRefreshingOCG = false;
         const testUrl = new URL(window.location.href);
-        const hasAnnotation = testUrl.searchParams.has("annotation");
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -63,10 +61,6 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.DISABLE;
-                if(hasAnnotation) {
-                    self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.ENABLE_FORMS;
-                }
                 let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
                 loadingTask.promise.then(function(pdf) {
                     self.startRender(pdf)
@@ -92,11 +86,9 @@ export class PdfViewer extends EventFactory {
                 const $icon = $(this).find('i');
 
                 if (btnStep <= stepNumber) {
-                    // Niveaux inférieurs et courant : fi-rr-eye + noir
                     $(this).css('opacity', '1');
                     $icon.removeClass('fi-rr-eye-crossed').addClass('fi-rr-eye');
                 } else {
-                    // Niveaux supérieurs : fi-rr-eye-crossed + gris
                     $(this).css('opacity', '0.5');
                     $icon.removeClass('fi-rr-eye').addClass('fi-rr-eye-crossed');
                 }
@@ -506,9 +498,8 @@ export class PdfViewer extends EventFactory {
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 0,
+                textLayerMode: 1,
                 annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
-                // CORRECTIF CRUCIAL: Passer la config OCG ici
                 optionalContentConfigPromise: configPromise
             });
 
