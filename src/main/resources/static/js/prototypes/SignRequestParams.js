@@ -437,10 +437,9 @@ export class SignRequestParams extends EventFactory {
         this.submitAddSpotBtn.on("click", function () {
             $("#spot-modal").modal("show");
         });
+        let self = this;
         $("#delete-add-spot").on("click", function (){
-            const url = new URL(window.location.href);
-            
-            window.location.href = url.toString();
+            self.#deleteSign();
         });
         this.saveSpotButton = $("#save-spot-button")
         this.saveSpotButton.unbind();
@@ -453,6 +452,9 @@ export class SignRequestParams extends EventFactory {
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {
+            const saveSpotButton = $("#save-spot-button");
+            const initialBtnHtml = saveSpotButton.html();
+            saveSpotButton.prop("disabled", true);
             let commentUrlParams = "comment=" + encodeURIComponent($("#spotComment").val() ?? "") +
                 "&commentPosX=" + Math.round(this.xPos * this.getBrowserZoom()) +
                 "&commentPosY=" + Math.round(this.yPos * this.getBrowserZoom()) +
@@ -460,7 +462,7 @@ export class SignRequestParams extends EventFactory {
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + this.spotStepNumber +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
-            this.signRequestId = $("#save-spot-button").attr("data-es-signrequest-id");
+            this.signRequestId = saveSpotButton.attr("data-es-signrequest-id");
             let url = "/user/signrequests/add-spot/" + this.signRequestId + "?" + commentUrlParams;
             if (this.signType === "form") {
                 url = "/" + this.userName + "/forms/add-spot/" + this.signRequestId + "?" + commentUrlParams;
@@ -468,49 +470,105 @@ export class SignRequestParams extends EventFactory {
             $.ajax({
                 method: 'POST',
                 url: url,
-                success: function (result) {
-                    const url = new URL(window.location.href);
-                    
-                    window.location.href = url.toString();
+                success: (data) => {
+                    $("#spot-modal").modal("hide");
+                    saveSpotButton.removeClass("btn-success").addClass("btn-outline-success");
+                    saveSpotButton.html("<i class='fi fi-rr-check'></i> Enregistre");
+
+                    this.transformToDisplayedSpot(data);
+
+                    const snackbar = document.getElementById("snackbar");
+                    if (snackbar != null) {
+                        snackbar.className = "show";
+                        snackbar.innerText = "Emplacement enregistre";
+                        setTimeout(() => {
+                            snackbar.className = snackbar.className.replace("show", "");
+                        }, 2500);
+                    }
+
+                    setTimeout(() => {
+                        saveSpotButton.removeClass("btn-outline-success").addClass("btn-success");
+                        saveSpotButton.html(initialBtnHtml);
+                        saveSpotButton.prop("disabled", false);
+                    }, 1000);
                 },
-                error: function (error) {
-                    const url = new URL(window.location.href);
-                    
-                    bootbox.alert(error.responseText, function(){
-                        window.location.href = url.toString();
-                    });
+                error: (error) => {
+                    saveSpotButton.prop("disabled", false);
+                    saveSpotButton.html(initialBtnHtml);
+                    const message = error?.responseText || "Erreur lors de l'enregistrement de l'emplacement";
+                    bootbox.alert(message);
                 }
             });
         }
     }
 
-    #restoreFromFavorite() {
-        let text = this.extraText;
-        this.addExtra = !this.addExtra;
-        this.#toggleExtra();
-        if(this.divExtra != null) {
-            this.extraType = !this.extraType;
-            this.#toggleType();
-            this.extraName = !this.extraName;
-            this.#toggleName();
-            this.extraDate = !this.extraDate;
-            this.#toggleDate();
-            this.extraText = text;
-            this.isExtraText = !(this.extraText !== "" && this.extraText !== null);
-            this.#toggleText();
-            this.textareaExtra.val(text);
-            if(!this.extraOnTop) {
-                this.extraOnTop = !this.extraOnTop;
-                this.#toggleExtraOnTop();
-            }
-        } else {
-            this.extraType = false;
-            this.extraName = false;
-            this.extraDate = false;
-            this.isExtraText = false;
+    transformToDisplayedSpot(spotId) {
+        const parsedSpotId = parseInt(spotId, 10);
+        if (!Number.isFinite(parsedSpotId)) {
+            return;
         }
-        this.addWatermark = !this.addWatermark;
-        this.#toggleWatermark();
+
+        const spotDomId = "signSpace_spot_" + parsedSpotId;
+        $("#" + spotDomId).remove();
+
+        // Figer totalement l'objet edition avant de le transformer en spot visuel.
+        try { this.cross.draggable("destroy"); } catch (e) {}
+        try { this.cross.resizable("destroy"); } catch (e) {}
+        this.tools && this.tools.remove();
+        this.border && this.border.remove();
+        $(document).off("keydown");
+
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
+        const zoom = this.getBrowserZoom();
+        const cssLeft = Math.round(this.xPos * this.currentScale * zoom + pageLayout.left);
+        const cssTop = Math.round(this.yPos * this.currentScale * zoom + pageLayout.top);
+        const cssWidth = parseInt(this.cross.css("width"), 10) || Math.round(this.signWidth * this.currentScale * zoom);
+        const cssHeight = parseInt(this.cross.css("height"), 10) || Math.round(this.signHeight * this.currentScale * zoom);
+
+        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + (parseInt(cssWidth / (this.currentScale * zoom), 10) || 0) + "' data-es-sign-height='" + (parseInt(cssHeight / (this.currentScale * zoom), 10) || 0) + "'><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
+        $("#pdf").append(spotHtml);
+
+        const spotDiv = $("#" + spotDomId);
+        spotDiv.css("left", cssLeft + "px");
+        spotDiv.css("top", cssTop + "px");
+        spotDiv.css("width", cssWidth + "px");
+        spotDiv.css("height", cssHeight + "px");
+        spotDiv.css("font-size", Math.round(6 * this.currentScale) + "px");
+
+        const deleteBtn = spotDiv.find(".slot-delete-btn");
+        deleteBtn.on("click", (e) => {
+            e.stopPropagation();
+            let deleteUrl = "/ws-secure/global/delete-spot/" + this.signRequestId + "/" + parsedSpotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+            if (this.signType === "form") {
+                deleteUrl = "/" + this.userName + "/forms/delete-spot/" + this.signRequestId + "/" + parsedSpotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+            }
+            $.ajax({
+                method: "DELETE",
+                url: deleteUrl,
+                success: () => {
+                    spotDiv.remove();
+                }
+            });
+        });
+
+        this.#deleteSign();
+    }
+
+    #restoreFromFavorite() {
+        const favorite = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams") || "null");
+        if (favorite == null) {
+            return;
+        }
+        this.addWatermark = !!favorite.addWatermark;
+        this.extraText = favorite.extraText || "";
+        this.extraOnTop = favorite.extraOnTop !== false;
+        this.extraType = !!favorite.extraType;
+        this.extraName = !!favorite.extraName;
+        this.extraDate = !!favorite.extraDate;
+        this.isExtraText = !(this.extraText !== "");
+        if (Number.isFinite(parseInt(favorite.signImageNumber, 10))) {
+            this.signImageNumber = parseInt(favorite.signImageNumber, 10);
+        }
     }
 
     #createCross() {
@@ -947,10 +1005,10 @@ export class SignRequestParams extends EventFactory {
                 const viewportBottom = workspace ? workspace.getBoundingClientRect().bottom : window.innerHeight;
                 const viewportTop = workspace ? workspace.getBoundingClientRect().top : 0;
                 if (rect.bottom > viewportBottom - margin) {
-                    this.#scrollBy(scrollStep);
+                    this.#scrollTo(targetY);
                 }
                 if (rect.top < viewportTop + margin) {
-                    this.#scrollBy(-scrollStep);
+                    this.#scrollTo(-scrollStep);
                 }
                 const ui = {
                     position: position,
@@ -1705,6 +1763,8 @@ export class SignRequestParams extends EventFactory {
         const pageLayout = this.#getPageLayout(this.signPageNumber);
         this.cross.css('top', Math.round(this.yPos * this.currentScale * this.getBrowserZoom() + pageLayout.top) + 'px');
         this.cross.css('left', Math.round(this.xPos * this.currentScale * this.getBrowserZoom() + pageLayout.left) + 'px');
+        this.cross.css("width", this.signWidth * this.currentScale + "px");
+        this.cross.css("height", this.signHeight * this.currentScale + "px");
     }
 
     updateScale(scale) {
