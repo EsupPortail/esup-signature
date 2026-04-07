@@ -65,17 +65,39 @@
 </main>
 <script th:inline="javascript" type="module" th:if="${workflow != null}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
+    const rawSpots = [[${spots}]];
+    const rawSrpMap = [[${srpMap}]];
+    const idToStepMap = {};
+    if (rawSrpMap != null) {
+        Object.entries(rawSrpMap).forEach(([step, srpId]) => {
+            const parsedStep = parseInt(step, 10);
+            const parsedSrpId = parseInt(srpId, 10);
+            if (Number.isFinite(parsedStep) && Number.isFinite(parsedSrpId)) {
+                idToStepMap[parsedSrpId] = parsedStep;
+            }
+        });
+    }
+    const spotsWithStepNumber = Array.isArray(rawSpots)
+        ? rawSpots.map(spot => {
+            const parsedId = parseInt(spot?.id, 10);
+            const mappedStep = Number.isFinite(parsedId) ? idToStepMap[parsedId] : null;
+            return {
+                ...spot,
+                stepNumber: Number.isFinite(mappedStep) ? mappedStep : (spot?.stepNumber ?? 1)
+            };
+        })
+        : [];
     new SignUi(
         [[${form.id}]],
         null,
         [[${form.id}]],
-        [[${spots}]],
+        spotsWithStepNumber,
         [[${user.defaultSignImageNumber}]],
         'form',
         false,
         true,
         [],
-        [[${spots}]],
+        spotsWithStepNumber,
         [[${document != null && document.contentType == 'application/pdf'}]],
         1,
         false,

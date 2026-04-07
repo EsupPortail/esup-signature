@@ -271,12 +271,11 @@ export class WorkspacePdf {
                     signSpaceDiv.remove();
                 }
                 const spotId = this.findSpotIdForSignParams(currentSignRequestParams);
-                const deleteBtnHtml = (this.editable && this.isManager) && spotId != null
+                const deleteBtnHtml = (this.signable && this.editable) && spotId != null
                     ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
                     : "";
-                // Style: sign-field uniquement pour les emplacements réellement signables.
                 let cssClasses = "sign-space";
-                if (isSignableField) {
+                if (this.signable) {
                     cssClasses += " sign-field";
                     if (currentSignRequestParams.ready) {
                         cssClasses += " sign-field-dropped";
@@ -291,7 +290,7 @@ export class WorkspacePdf {
                 $("#pdf").append(signSpaceHtml);
                 signSpaceDiv = $("#" + signSpaceId);
 
-                if (isSignableField) {
+                if (this.signable) {
                     signSpaceDiv.on("click", e => this.addSign(i));
                     if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
                         signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
