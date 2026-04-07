@@ -580,6 +580,30 @@ export class PdfViewer extends EventFactory {
             this.postRender(this.pages[i]);
         }
         this.restoreScrolling();
+        this.updateHorizontalOverflowState();
+    }
+
+    updateHorizontalOverflowState() {
+        const workspace = this.getWorkspaceElement();
+        if (!workspace) {
+            return;
+        }
+        workspace.style.overflowX = 'auto';
+        const firstPage = document.getElementById('page_1');
+        if (!firstPage) {
+            return;
+        }
+        const hasHorizontalOverflow = firstPage.offsetWidth > workspace.clientWidth;
+        // Bootstrap's justify-content-center uses !important; override with inline !important on overflow.
+        if (hasHorizontalOverflow) {
+            workspace.style.setProperty('justify-content', 'flex-start', 'important');
+        } else {
+            workspace.style.removeProperty('justify-content');
+        }
+        this.pdfDiv.css('align-items', hasHorizontalOverflow ? 'flex-start' : 'center');
+        if (!hasHorizontalOverflow) {
+            workspace.scrollLeft = 0;
+        }
     }
 
     postRender(page) {
@@ -1100,8 +1124,13 @@ export class PdfViewer extends EventFactory {
     zoomIn(e) {
         const workspaceDiv = document.getElementById('workspace');
         const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
-        if (this.scale >= newScale) {
+        const baseLimit = Math.round(workspaceWidth / 600 * 10) / 10 - 0.1;
+        // On small screens, allow controlled overflow so text stays readable.
+        const overflowBonus = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 1.2
+            : 0;
+        const maxZoomLimit = Math.min(3.2, Math.max(baseLimit + overflowBonus, 1.8));
+        if (this.scale >= maxZoomLimit) {
             return;
         }
         this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
@@ -1111,10 +1140,17 @@ export class PdfViewer extends EventFactory {
     }
 
     zoomOut(e) {
-        if (this.scale <= 0.2) {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        // On small screens, keep a higher minimum zoom to preserve readability.
+        const smallScreenPenalty = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 0.5
+            : 0;
+        const minZoomLimit = Math.min(0.9, Math.max(0.2 + smallScreenPenalty, 0.2));
+        if (this.scale <= minZoomLimit) {
             return;
         }
-        this.scale = Math.round((this.scale - this.zoomStep) * 1000) / 1000;
+        this.scale = Math.max(minZoomLimit, Math.round((this.scale - this.zoomStep) * 1000) / 1000);
         console.info('zoom out, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['out']);
     }

@@ -118,13 +118,19 @@ body.es-signrequest-page #tools #signLaunchButton {
     max-width: 100%;
 }
 
-@media (max-width: 1599.98px) {
-    /* Under 1600px, keep only steps that are not disabled and not complete. */
+/* Fully disable tools bar interactions while placing spot/comment. */
+#tools.tools-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+@media (max-width: 1199.98px) {
+    /* Under 1200px, show only the current step in tools bar. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
         display: none !important;
     }
 
-    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]:not(.disabled):not(.disable):not(.complete) {
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
         display: flex !important;
     }
 
@@ -663,6 +669,11 @@ input:focus, textarea:focus, select:focus {
     background-color: rgb(243 243 243 / 1);
 }
 
+.sign-space.sign-space-disabled {
+    opacity: 0.45;
+    filter: grayscale(1);
+}
+
 .sign-space .sign-content {
     display: flex;
     flex-direction: column;
@@ -705,7 +716,7 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field.ui-droppable-active {
     background-color: rgb(220, 250, 220);
-    border: 1px solid rgb(123, 246, 123) !important;
+    border: 3px solid rgb(123, 246, 123) !important;
 }
 
 .sign-field.ui-droppable-hover {

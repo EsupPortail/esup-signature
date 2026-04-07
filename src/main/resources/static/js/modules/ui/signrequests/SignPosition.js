@@ -95,6 +95,10 @@ export class SignPosition extends EventFactory {
         }
     }
 
+    onSpotSaved(spotData) {
+        this.fireEvent("spotSaved", [spotData]);
+    }
+
     updateScales(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
         this.currentScale = scale;
@@ -207,6 +211,7 @@ export class SignPosition extends EventFactory {
             this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop));
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
+        this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
         if (signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }

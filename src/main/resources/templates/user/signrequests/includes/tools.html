@@ -26,11 +26,11 @@
             <i class="fi fi-rr-flag"></i> Signature refusée
         </div>
         <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }">
-        <div class="alert p-3 bg-success-subtle d-flex align-items-center h-100" style="pointer-events: none;">
+        <div class="alert p-3 bg-success-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
         </div>
-        <a  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }" tabindex="1" class="ms-1 d-flex align-items-center btn btn-success me-1 d-none d-sm-flex" href="/ws-secure/global/get-last-file/1156" target="_blank" title="Télécharger le document signé">
+        <a  th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported }" tabindex="1" class="ms-1 d-flex align-items-center btn btn-success me-1 d-flex" href="/ws-secure/global/get-last-file/1156" target="_blank" title="Télécharger le document signé">
             <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
         </a>
         <div class="steps-horizontal-v2 d-flex justify-content-center" th:if="${signable}" style="width: 100%;">

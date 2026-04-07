@@ -65,6 +65,7 @@ export class WorkspacePdf {
             signImageNumber,
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);
+        this.signPosition.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
         this.currentSignRequestParamses = currentSignRequestParamses;
         // Mode system deprecated: UI is now driven by rights (signable/editable).
         this.wheelDetector = new WheelDetector();
@@ -422,6 +423,49 @@ export class WorkspacePdf {
             }
         }
         return null;
+    }
+
+    onSpotSaved(spotData) {
+        if (spotData == null) {
+            return;
+        }
+        if (!Array.isArray(this.spots)) {
+            this.spots = [];
+        }
+
+        const spotId = parseInt(spotData.id, 10);
+        const spotStep = parseInt(spotData.stepNumber, 10);
+        const currentStep = parseInt(this.currentStepNumber, 10);
+        const normalizedSpot = {
+            id: spotId,
+            signPageNumber: parseInt(spotData.signPageNumber, 10),
+            xPos: parseInt(spotData.xPos, 10),
+            yPos: parseInt(spotData.yPos, 10),
+            signWidth: parseInt(spotData.signWidth, 10),
+            signHeight: parseInt(spotData.signHeight, 10),
+            stepNumber: spotStep
+        };
+
+        const existingSpotIdx = this.spots.findIndex(spot => parseInt(spot?.id, 10) === spotId);
+        if (existingSpotIdx >= 0) {
+            this.spots[existingSpotIdx] = {...this.spots[existingSpotIdx], ...normalizedSpot};
+        } else {
+            this.spots.push(normalizedSpot);
+        }
+
+        if (this.signable && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
+            // Replace transient manager spot node by the real signable signSpace_* node.
+            $("#signSpace_spot_" + spotId).remove();
+            if (!Array.isArray(this.currentSignRequestParamses)) {
+                this.currentSignRequestParamses = [];
+            }
+            const alreadyCurrent = this.currentSignRequestParamses
+                .some(param => parseInt(param?.id, 10) === spotId);
+            if (!alreadyCurrent) {
+                this.currentSignRequestParamses.push({...normalizedSpot, ready: false});
+            }
+            this.initSignFields();
+        }
     }
 
     bindSignSpaceDelete(signSpaceDiv) {
@@ -1071,6 +1115,8 @@ export class WorkspacePdf {
     enableSignMode() {
         console.info("apply unified workspace ui");
         this.disableAllModes();
+        this.setToolsBarDisabled(false);
+        this.setSignSpacesDroppableEnabled(true);
         this.signPosition.pointItEnable = false;
         if (this.status === 'deleted') {
             $('#workspace').addClass('alert-danger');
@@ -1227,6 +1273,8 @@ export class WorkspacePdf {
         }
 
         this.exitCommentAddMode();
+        this.setToolsBarDisabled(true);
+        this.setSignSpacesDroppableEnabled(false);
         this.enableAddComment();
         this.addSpotEnabled = false;
 
@@ -1276,6 +1324,8 @@ export class WorkspacePdf {
         $('#saveCommentButton').off('click.commentAdd');
         $('#hideCommentButton').off('click.commentAdd');
         $("#comment-div").hide();
+        this.setToolsBarDisabled(false);
+        this.setSignSpacesDroppableEnabled(true);
         this.disableAddComment();
         this.addSpotEnabled = false;
         this.setCommentAddButtonsState(false);
@@ -1305,12 +1355,43 @@ export class WorkspacePdf {
 
     enableSpotAdd() {
         this.disableAddComment();
+        this.setToolsBarDisabled(true);
+        this.setSignSpacesDroppableEnabled(false);
+        $(document).off("click.spotAdd");
+        $(document).on("click.spotAdd", "#delete-add-spot, #submit-add-spot", () => {
+            this.setToolsBarDisabled(false);
+            this.setSignSpacesDroppableEnabled(true);
+            $(document).off("click.spotAdd");
+        });
         $("#commentHelp").remove();
         $("#addSpotButton").attr("disabled", true);
         $("#addCommentButton").attr("disabled", true);
         $("#addSpotButton2").attr("disabled", true);
         $("#addCommentButton2").attr("disabled", true);
         this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null);
+    }
+
+    setToolsBarDisabled(disabled) {
+        const toolsBar = $("#tools");
+        if (!toolsBar.length) {
+            return;
+        }
+        toolsBar.toggleClass("tools-disabled", disabled);
+        toolsBar.attr("aria-disabled", disabled ? "true" : "false");
+    }
+
+    setSignSpacesDroppableEnabled(enabled) {
+        $(".sign-space").each((_, element) => {
+            const signSpace = $(element);
+            if (signSpace.hasClass("ui-droppable")) {
+                try {
+                    signSpace.droppable(enabled ? "enable" : "disable");
+                } catch (error) {
+                    // Ignore non-initialized droppable elements.
+                }
+            }
+            signSpace.toggleClass("sign-space-disabled", !enabled);
+        });
     }
 
     displayCommentPointer() {

@@ -527,8 +527,10 @@ export class SignRequestParams extends EventFactory {
         const cssTop = Math.round(this.yPos * this.currentScale * zoom + pageLayout.top);
         const cssWidth = parseInt(this.cross.css("width"), 10) || Math.round(this.signWidth * this.currentScale * zoom);
         const cssHeight = parseInt(this.cross.css("height"), 10) || Math.round(this.signHeight * this.currentScale * zoom);
+        const pdfWidth = parseInt(cssWidth / (this.currentScale * zoom), 10) || 0;
+        const pdfHeight = parseInt(cssHeight / (this.currentScale * zoom), 10) || 0;
 
-        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + (parseInt(cssWidth / (this.currentScale * zoom), 10) || 0) + "' data-es-sign-height='" + (parseInt(cssHeight / (this.currentScale * zoom), 10) || 0) + "'><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
+        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + pdfWidth + "' data-es-sign-height='" + pdfHeight + "'><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
         $("#pdf").append(spotHtml);
 
         const spotDiv = $("#" + spotDomId);
@@ -554,6 +556,17 @@ export class SignRequestParams extends EventFactory {
                 }
             });
         });
+
+        // Notify upper layers so the new spot can become immediately signable when applicable.
+        this.fireEvent("spotSaved", [{
+            id: parsedSpotId,
+            signPageNumber: this.signPageNumber,
+            xPos: this.xPos,
+            yPos: this.yPos,
+            signWidth: pdfWidth,
+            signHeight: pdfHeight,
+            stepNumber: parseInt(this.spotStepNumber, 10)
+        }]);
 
         this.#deleteSign();
     }
