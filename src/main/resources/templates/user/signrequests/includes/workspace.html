@@ -6,31 +6,20 @@
 <!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <div id="workspace" tabindex="1" th:fragment="workspace" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-2 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
-    <form th:id="'signForm'" th:action="''">
+    <form id="signForm" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf">
-            <th:block th:each="comment : ${comments}">
-                <div th:if="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
-                    class="circle" th:id="'inDocComment_' + ${comment.id}"
-                    th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
-                    th:title="${comment.text}"
-                    th:es-comment-text="${comment.text}"
-                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                    es-comment-delete=true
-                >
-                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
-                </div>
-                <div th:unless="${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
-                    class="circle" th:id="'inDocComment_' + ${comment.id}"
-                    th:onmouseover="'$(\'#postit' + ${comment.id} + '\').addClass(\'circle-border\');'"
-                    th:onmouseout="'$(\'#postit' + ${comment.id} + '\').removeClass(\'circle-border\');'"
-                    th:title="${comment.text}"
-                    th:es-comment-text="${comment.text}"
-                    th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                    es-comment-delete=false
-                >
-                    <img src="/images/icons/rr-commentaire-alt.png" style="width: 40px;height: 40px;margin-top: 20px;" />
+            <th:block th:each="comment : ${comments}"
+                      th:with="canDelete=${isManager && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                <div class="circle"
+                     th:id="'inDocComment_' + ${comment.id}"
+                     th:onmouseover="'$(\'#annotation_' + ${comment.id} + '\').addClass(\'circle-border\');'"
+                     th:onmouseout="'$(\'#annotation_' + ${comment.id} + '\').removeClass(\'circle-border\');'"
+                     th:title="${comment.text}"
+                     th:es-comment-text="${comment.text}"
+                     th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
+                     th:es-comment-delete="${canDelete}">
+                    <i class="fi fi-sr-comment" style="font-size: 30px; color: var(--bs-warning)"></i>
                 </div>
             </th:block>
             <!-- inDocSpot_ removed: signSpace_ is now the single front representation for slots -->

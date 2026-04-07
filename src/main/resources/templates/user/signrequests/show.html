@@ -90,7 +90,7 @@
                                 </button>
                                 <button th:if="${editable}" id="addCommentButton"
                                         class="d-flex align-items-center btn btn-sm btn-warning text-dark">
-                                    <i class="fi fi-rr-comment-alt"></i><span class="d-none d-xl-flex"> Annotation</span>
+                                    <i class="fi fi-rr-comment"></i><span class="d-none d-xl-flex"> Annotation</span>
                                 </button>
                             </div>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
@@ -192,12 +192,12 @@
                                         const commentCount = '[[${comments.size()}]]';
                                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
                                         displayPdfAlertsDropdown.removeClass("d-none");
-                                        displayPdfAlertsBtn.click();
+                                        // displayPdfAlertsBtn.click();
                                     </script>
                                     <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
                                         <div class="pdf-warning-bar bg-warning"></div>
                                         <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-circle-info text-warning"></i>Cette demande comporte des annotations</div>
-                                        <div><button id="showComments" class="btn btn-sm btn-warning" >Voir les annotations</button></div>
+                                        <div><button class="toggleComments btn btn-sm btn-warning" >Voir/Masquer les annotations</button></div>
                                     </div>
                                 </th:block>
                                 <div id="warningSelectDiv" title="Masquer ce message" class="alert bg-light text-dark border-secondary warning" th:if="${signable && signType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && signWiths.size() == 0}">

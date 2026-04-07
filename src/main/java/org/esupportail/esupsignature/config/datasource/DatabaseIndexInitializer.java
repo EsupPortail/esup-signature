@@ -57,6 +57,11 @@ public class DatabaseIndexInitializer {
         } catch (Exception e) {
             logger.warn(e.getMessage());
         }
+        try {
+            jdbcTemplate.execute("create index if not exists idx_user_roles_user_id on user_roles(user_id);");
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+        }
     }
 
 }

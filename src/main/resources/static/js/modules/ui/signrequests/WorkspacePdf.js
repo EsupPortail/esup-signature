@@ -120,13 +120,14 @@ export class WorkspacePdf {
             $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
             $('#addSpotButton2').on('click', e => this.enableSpotAdd());
             $("#spotStepNumber").on('change', e => this.changeSpotStep());
-            $("#showComments").on('click', e => this.showComments());
-            $("#hideComments").on("click", () => {
-                if (this.displayComments === true) {
-                    this.hideComments();
-                } else {
-                    this.showComments();
-                }
+            $(".toggleComments").each((_, el) => {
+                $(el).on("click", () => {
+                    if (this.displayComments) {
+                        this.hideComments();
+                    } else {
+                        this.showComments();
+                    }
+                });
             });
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
@@ -193,7 +194,7 @@ export class WorkspacePdf {
 
             if(this.comments != null) {
                 this.comments.forEach((postit, index) => {
-                    let postitButton = $('#postit' + postit.id);
+                    let postitButton = $('#annotation_' + postit.id);
                     postitButton.on('click', e => this.focusComment(postit));
                     postitButton.on('mouseover', function () {
                         $('#inDocComment_' + postit.id).addClass('circle-background');
@@ -513,7 +514,6 @@ export class WorkspacePdf {
         console.info("init workspace");
         if(!this.ready) {
             this.ready = true;
-            this.displayComments = new URL(window.location.href).searchParams.has("annotation");
             this.enableSignMode();
         }
     }
@@ -522,8 +522,6 @@ export class WorkspacePdf {
         console.info("init workspace pdf");
         if(!this.ready) {
             this.ready = true;
-            const url = new URL(window.location.href);
-            this.displayComments = url.searchParams.has("annotation");
             this.enableSignMode();
             this.wheelDetector.addEventListener("down", e => this.pdfViewer.checkCurrentPage(e));
             this.wheelDetector.addEventListener("up", e => this.pdfViewer.checkCurrentPage(e));
@@ -700,19 +698,18 @@ export class WorkspacePdf {
     pointIt2(e) {
         let target = e.target;
         let page = $(target).closest('.pdf-page');
-        if(page.length) {
-            let pageNumber = page.attr("page-num") || page.attr("id")?.split("_")[1];
-            const pageRect = page.get(0).getBoundingClientRect();
-            $('#commentPageNumber').val(pageNumber);
-            let xPos = Math.round(e.clientX - pageRect.left);
-            let yPos = Math.round(e.clientY - pageRect.top);
-            $("#commentPosX").val(xPos);
-            $('#commentPosY').val(yPos);
-            console.debug("debug - mouse pos : " + xPos + ", " + yPos);
+        if (!page.length) {
+            page = $("#page_" + this.pdfViewer.pageNum);
+        }
+        if (!page.length) {
             return;
         }
-        let xPos = e.offsetX ? (e.offsetX) : e.clientX;
-        let yPos = e.offsetY ? (e.offsetY) : e.clientY;
+
+        let pageNumber = page.attr("page-num") || page.attr("id")?.split("_")[1] || this.pdfViewer.pageNum;
+        const pageRect = page.get(0).getBoundingClientRect();
+        $('#commentPageNumber').val(pageNumber);
+        let xPos = Math.round(e.clientX - pageRect.left);
+        let yPos = Math.round(e.clientY - pageRect.top);
         $("#commentPosX").val(xPos);
         $('#commentPosY').val(yPos);
         console.debug("debug - mouse pos : " + xPos + ", " + yPos);
@@ -769,9 +766,34 @@ export class WorkspacePdf {
 
     getPageOffsets(pageNum) {
         const normalizedPage = Number.parseInt(pageNum, 10) || 1;
+        const page = $("#page_" + normalizedPage);
+        if (page.length) {
+            return {
+                top: Math.round(page.position()?.top ?? 0),
+                left: Math.round(page.position()?.left ?? 0)
+            };
+        }
         return {
             top: this.pdfViewer.getPageTopInPdf(normalizedPage),
             left: this.pdfViewer.getPageLeftInPdf(normalizedPage)
+        };
+    }
+
+    getCommentDialogCssPosition(pageNum, renderedX, renderedY) {
+        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
+        const page = $("#page_" + normalizedPage);
+        const commentDiv = $("#comment-div");
+        if (!page.length || !commentDiv.length) {
+            return {
+                left: Math.round(renderedX || 0),
+                top: Math.round(renderedY || 0)
+            };
+        }
+        const pageOffset = page.offset() || {left: 0, top: 0};
+        const parentOffset = commentDiv.offsetParent().offset() || {left: 0, top: 0};
+        return {
+            left: Math.round(pageOffset.left - parentOffset.left + (renderedX || 0)),
+            top: Math.round(pageOffset.top - parentOffset.top + (renderedY || 0))
         };
     }
 
@@ -782,14 +804,14 @@ export class WorkspacePdf {
         this.comments.forEach((comment, iterator) => {
             if(comment.stepNumber == null) {
                 let postitDiv = $('#inDocComment_' + comment.id);
-                let postitButton = $('#postit' + comment.id);
+                let postitButton = $('#annotation_' + comment.id);
                 if (this.editable || this.displayComments) {
                     postitDiv.show();
                     const pageOffsets = this.getPageOffsets(comment.pageNumber);
                     postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale) + pageOffsets.left) + "px");
                     postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + pageOffsets.top) + "px");
                     postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
-                    postitButton.css("background-color", "#FFC");
+                    postitButton.css("background-color", "var(--bs-warning-bg-subtle)");
                     postitDiv.unbind('mouseup');
                     if((self.status === "draft" || self.status === "pending")) {
                         let deletable = postitDiv.attr('es-comment-delete') === "true";
@@ -833,7 +855,7 @@ export class WorkspacePdf {
                                         });
                                     }
                                 }
-                            }).find('.modal-content').css({'background-color': 'rgb(255, 255, 204)'});
+                            }).find('.modal-content').css({'background-color': 'var(--bs-warning-bg-subtle)'});
                         });
                     }
                 } else {
@@ -843,13 +865,15 @@ export class WorkspacePdf {
                 }
             }
         });
-        let postitForm = $("#postit");
+        let postitForm = $("#comment-div");
         if (postitForm.is(':visible')) {
             const commentPageNumber = $("#commentPageNumber").val();
-            const pageOffsets = this.getPageOffsets(commentPageNumber);
-            postitForm.css('left', (parseInt($("#commentPosX").val()) * this.pdfViewer.scale) + pageOffsets.left);
-            postitForm.css('top', (parseInt($("#commentPosY").val()) * this.pdfViewer.scale) + pageOffsets.top);
-            $("#postit :input").each(function () {
+            const renderedX = (parseInt($("#commentPosX").val(), 10) || 0) * this.pdfViewer.scale;
+            const renderedY = (parseInt($("#commentPosY").val(), 10) || 0) * this.pdfViewer.scale;
+            const cssPos = this.getCommentDialogCssPosition(commentPageNumber, renderedX, renderedY);
+            postitForm.css('left', cssPos.left + "px");
+            postitForm.css('top', cssPos.top + "px");
+            $("#comment-div :input").each(function () {
                 $(this).removeAttr('disabled');
             });
             postitForm.children('select[name="spotStepNumber"]').each(function () {
@@ -966,27 +990,25 @@ export class WorkspacePdf {
     // }
 
     displayDialogBox() {
-        $('#pdf').unbind("mousemove");
+        $('#pdf').off("mousemove.commentAdd");
         let comment = $("#comment-div");
         if (comment.is(':visible')) {
             return;
         }
-        console.log(comment);
         this.signPosition.pointItEnable = false;
         $('#pdf').css('cursor', 'default');
         let commentPosX = $("#commentPosX");
         let commentPosY = $('#commentPosY');
         let commentPageNumber = $("#commentPageNumber").val();
-        let xOffset = 12;
-        let yOffset = 24;
-        if (this.addCommentEnabled) xOffset = 0;
-        let xPos = (parseInt(commentPosX.val()) + xOffset) / this.pdfViewer.scale;
-        let yPos = (parseInt(commentPosY.val()) + yOffset) / this.pdfViewer.scale;
+        const clickedRenderedX = parseInt(commentPosX.val(), 10) || 0;
+        const clickedRenderedY = parseInt(commentPosY.val(), 10) || 0;
+        let xPos = clickedRenderedX / this.pdfViewer.scale;
+        let yPos = clickedRenderedY / this.pdfViewer.scale;
         commentPosX.val(Math.round(xPos));
         commentPosY.val(Math.round(yPos));
-        const pageOffsets = this.getPageOffsets(commentPageNumber);
-        comment.css('left', xPos * this.pdfViewer.scale + pageOffsets.left);
-        comment.css('top', yPos * this.pdfViewer.scale + pageOffsets.top);
+        const cssPos = this.getCommentDialogCssPosition(commentPageNumber, clickedRenderedX, clickedRenderedY);
+        comment.css('left', cssPos.left + "px");
+        comment.css('top', cssPos.top + "px");
         $("#postitComment").removeAttr("disabled");
         $("#spotStepNumber").removeAttr("disabled");
         comment.show();
@@ -996,9 +1018,7 @@ export class WorkspacePdf {
 
     hideComment(e) {
         e.stopPropagation();
-        const url = new URL(window.location.href);
-        
-        window.location.href = url.toString();
+        this.exitCommentAddMode();
     }
 
     enableReadMode() {
@@ -1075,7 +1095,6 @@ export class WorkspacePdf {
             $('#commentsTools').show();
             $('#addCommentButton2').removeClass('d-none');
             $('#addSpotButton2').removeClass('d-none');
-            $('#commentsBar').show();
             $('#postit').removeClass("d-none");
             $('#commentHelp').removeClass("d-none");
             $('#insert-btn-div').show();
@@ -1202,53 +1221,64 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
-        let saveCommentButton = $('#saveCommentButton');
-        let hideCommentButton = $('#hideCommentButton');
-        saveCommentButton.unbind();
-        hideCommentButton.unbind();
-        let last = 0;
-        let inside = false;
-        $('#pdf')
-            .on('mouseenter', () => { inside = true; })
-            .on('mouseleave', () => { inside = false; });
-        $('#pdf').on('click', e => {
-            if (!inside) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
-            this.clickAction(e);
-        });
-        $('#pdf').on('mousemove', e => {
-            const now = performance.now();
-            if (now - last < 50) return; // 50ms = ~20 fps
-            last = now;
-            this.moveAction(e);
-        });
-        $(document).off('keydown');
-        document.addEventListener('keydown', function onEscCapture(e) {
-            if (e.key === 'Escape') {
-                e.stopImmediatePropagation?.();
-                e.stopPropagation();
-                e.preventDefault();
-                location.reload();
-            }
-        }, { capture: true});
-        $("#addSpotButton").attr("disabled", true);
-        $("#addCommentButton").addClass("btn-danger");
-        let addCommentButton2 = $("#addCommentButton2");
-        addCommentButton2.addClass("bg-danger");
-        addCommentButton2.children().addClass("text-white");
-        addCommentButton2.attr("title", "Annuler l'ajout d'annotation");
-        $("#addSpotButton2").attr("disabled", true);
         if (this.addCommentEnabled) {
-            location.reload();
-        } else {
-            this.enableAddComment();
+            this.exitCommentAddMode();
+            return;
         }
+
+        this.exitCommentAddMode();
+        this.enableAddComment();
         this.addSpotEnabled = false;
-        saveCommentButton.on('click', e => this.saveComment(e));
-        hideCommentButton.on('click', e => this.hideComment(e));
+
+        let last = 0;
+        $('#pdf')
+            .off('.commentAdd')
+            .on('click.commentAdd', e => this.clickAction(e))
+            .on('mousemove.commentAdd', e => {
+                const now = performance.now();
+                if (now - last < 50) return;
+                last = now;
+                this.moveAction(e);
+            });
+
+        $(document)
+            .off('keydown.commentAdd')
+            .on('keydown.commentAdd', e => {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.exitCommentAddMode();
+                }
+            });
+
+        this.setCommentAddButtonsState(true);
+
+        $('#saveCommentButton')
+            .off('click.commentAdd')
+            .on('click.commentAdd', e => this.saveComment(e));
+        $('#hideCommentButton')
+            .off('click.commentAdd')
+            .on('click.commentAdd', e => this.hideComment(e));
+    }
+
+    setCommentAddButtonsState(enabled) {
+        $("#addSpotButton").attr("disabled", enabled);
+        $("#addSpotButton2").attr("disabled", enabled);
+        $("#addCommentButton").toggleClass("border-dark", enabled);
+        let addCommentButton2 = $("#addCommentButton2");
+        addCommentButton2.toggleClass("bg-danger", enabled);
+        addCommentButton2.children().toggleClass("text-white", enabled);
+        addCommentButton2.attr("title", enabled ? "Annuler l'ajout d'annotation" : "Ajouter une annotation");
+    }
+
+    exitCommentAddMode() {
+        $('#pdf').off('.commentAdd');
+        $(document).off('keydown.commentAdd');
+        $('#saveCommentButton').off('click.commentAdd');
+        $('#hideCommentButton').off('click.commentAdd');
+        $("#comment-div").hide();
+        this.disableAddComment();
+        this.addSpotEnabled = false;
+        this.setCommentAddButtonsState(false);
     }
 
     disableAddComment() {
@@ -1284,12 +1314,19 @@ export class WorkspacePdf {
     }
 
     displayCommentPointer() {
-        const png = '/images/icons/rr-commentaire-alt.png';
-        this.pdfViewer.pdfDiv.css('cursor', `url("${png}"), auto`);
+        const png = '/images/icons/rr-comment-32.png';
+        $('body *').css('pointer-events', 'none');
+        this.pdfViewer.pdfDiv.css({
+            'pointer-events': 'auto',
+            'cursor': `url("${png}"), auto`
+        });
+        $("#addCommentButton").css('pointer-events', 'auto');
+        $("#comment-div, #comment-div *").css('pointer-events', 'auto');
     }
 
     disablePointer() {
         this.pdfViewer.pdfDiv.css('cursor', 'default');
+        $('body *').css('pointer-events', 'auto');
     }
 
     changeSpotStep() {

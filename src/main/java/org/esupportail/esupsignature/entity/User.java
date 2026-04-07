@@ -96,8 +96,16 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @JsonIgnore
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            indexes = {
+                    @Index(name = "idx_user_roles_role", columnList = "roles")
+            }
+    )
+    @Column(name = "roles")
     private Set<String> roles = new HashSet<>();
 
     @JsonIgnore

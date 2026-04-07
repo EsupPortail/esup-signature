@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <div id="comments" th:fragment="comments">
-    <a id="hideComments" type="button" class="d-flex justify-content-between align-content-center text-decoration-none text-dark">
+    <a type="button" class="toggleComments d-flex justify-content-between align-content-center text-decoration-none text-dark">
         <div class="text-uppercase ms-1">Annotations </div>
         <span class="badge rounded-pill bg-dark" th:text="${comments.size()}" style="height: 20px; margin-top: 5px;"></span>
         <button class="btn btn-sm btn-transparent text-dark">
@@ -12,7 +12,7 @@
         <div th:if="${comments.size() > 0}" class="alert alert-light m-1">
             <ul class="list-group gap-1">
                 <th:block th:each="comment : ${comments}">
-                    <li th:id="'postit' + ${comment.id}" class="list-group-item" style="position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
+                    <li th:id="'annotation_' + ${comment.id}" class="list-group-item" style="border: 2px solid transparent; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <div class="d-flex align-items-center"><span th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}" class="step-type"></span></div>
                         <div class="d-flex align-items-center"><small th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></small></div>
                         <p class="postitarea" th:text="${comment.text}"></p>
