@@ -227,7 +227,7 @@
 
     body.es-signrequest-page #tools .step-horizontal-v2-content {
         transform: scale(0.92);
-        transform-origin: center top;
+        /*transform-origin: center top;*/
     }
 
     #returnButton {
@@ -311,6 +311,7 @@
     }
 
     .nav-tabs .nav-link {
+        padding: 0;
         border: 0;
         background-color: var(--bs-light);
     }
@@ -341,6 +342,7 @@
 
     body.es-signrequest-page #tools .step-horizontal-v2-content {
         transform: scale(0.82);
+
     }
 
     .nav-item-label {

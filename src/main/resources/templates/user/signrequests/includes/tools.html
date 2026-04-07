@@ -85,11 +85,11 @@
                     </div>
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
-                    <div th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                    <th:block th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled">
                             <i class="fi fi-rr-signature-lock " style="margin-top: 0; border: 0"></i> Signer
                         </button>
-                    </div>
+                    </th:block>
                 </div>
             </div>
         </div>

@@ -1325,7 +1325,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 /* ========== CÔTÉS (Lignes) ========== */
-/* Droite - Ligne verticale */
 .cross .ui-resizable-e {
     width: 2px !important;
     background-color: rgba(63, 63, 63, 0.8) !important;
@@ -1380,80 +1379,80 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 /* ========== BOULES CENTRALES sur les côtés ========== */
-/* Droite - Boule centrale */
-.cross .ui-resizable-e::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Droite - Boule centrale *!*/
+/*.cross .ui-resizable-e::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Gauche - Boule centrale */
-.cross .ui-resizable-w::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Gauche - Boule centrale *!*/
+/*.cross .ui-resizable-w::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Bas - Boule centrale */
-.cross .ui-resizable-s::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Bas - Boule centrale *!*/
+/*.cross .ui-resizable-s::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Haut - Boule centrale */
-.cross .ui-resizable-n::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Haut - Boule centrale *!*/
+/*.cross .ui-resizable-n::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Hover sur les boules centrales */
-.cross .ui-resizable-e:hover::after, .cross .ui-resizable-w:hover::after,
-.cross .ui-resizable-n:hover::after, .cross .ui-resizable-s:hover::after {
-    background-color: rgba(100, 150, 255, 0.9);
-    transform: translate(-50%, -50%) scale(1.2);
-    transition: all 0.15s ease;
-}
+/*!* Hover sur les boules centrales *!*/
+/*.cross .ui-resizable-e:hover::after, .cross .ui-resizable-w:hover::after,*/
+/*.cross .ui-resizable-n:hover::after, .cross .ui-resizable-s:hover::after {*/
+/*    background-color: rgba(100, 150, 255, 0.9);*/
+/*    transform: translate(-50%, -50%) scale(1.2);*/
+/*    transition: all 0.15s ease;*/
+/*}*/
 
 /* Cacher toutes les poignées si la div a la classe "hide-handles" */
-.hide-handles .cross .ui-resizable-handle {
+.hide-handles > .ui-resizable-handle {
     display: none !important;
 }
 
@@ -1743,7 +1742,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
     align-items: center;
     position: relative;
     flex: 1;
-    padding-right: 3rem;
+    padding-right: 4rem;
     padding-left: 3rem;
     gap: 0.5rem;
     white-space: nowrap;

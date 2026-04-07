@@ -108,9 +108,9 @@
                             <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark" aria-label="Précédent">
                                 <i class="fi fi-rr-angle-small-up"  style="font-size: 20px;"></i>
                             </button>
-                            <div class="d-none d-sm-flex me-1 p-1 pt-2 fw-bold" style="width: 128px;">
-                                <span>Page </span>
-                                <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 40px;"/> <span> / </span> <span id="page_count"></span>
+                            <div class="d-flex gap-1 align-items-center fw-bold">
+                                <span class="d-none d-sm-flex">Page </span>
+                                <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 100%; min-width: 20px; max-width: 60px;">/<span id="page_count"></span>
                             </div>
                             <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1" aria-label="Prochain">
                                 <i class="fi fi-rr-angle-small-down"  style="font-size: 20px;"></i>
