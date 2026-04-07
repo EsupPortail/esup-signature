@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 
-<div th:fragment="breadcrumb-content" class="d-flex align-items-center w-100" style="min-width: 0;">
+<div th:fragment="breadcrumb-content" class="d-flex align-items-center w-100 border-0" style="min-width: 0;">
     <div id="workflowName" class="ps-2 d-none d-lg-flex border-end" style="flex: 0 0 300px;">
         <i class="fi fi-rr-folder"></i> <p class="text-uppercase m-0" th:text="${signBook.workflowName}"></p>
     </div>
@@ -9,7 +9,7 @@
     <div style="flex: 1 1 auto; min-width: 0;" th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs}"></div>
 </div>
 
-<nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+<nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full es-breadcrumb-sign">
     <th:block th:replace="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></th:block>
 </nav>
 
@@ -145,22 +145,22 @@
         </div>
         <div th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
             <a tabindex="1" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
+               th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
+               title="Enregistrer le document signé et le rapport de signature">
+                <i class="fi fi-rr-compliance-document " style="margin-top: 0;"></i>
+            </a>
+        </div>
+        <div  th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
+            <a tabindex="1" title="Export SEDA" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" th:href="'/ws-secure/global/get-seda/' + ${id}">
+                <i class="fi fi-rr-file-export"></i>
+            </a>
+        </div>
+        <div th:if="${signRequest.lastSignedDocument != null && signRequest.lastSignedDocument.contentType == 'application/pdf' && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
+            <a tabindex="1" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                onclick='alert("Le document ainsi téléchargé est destiné exclusivement à l`impression. Les signatures électroniques ne sont présentes que dans la version numérique")'
                th:href="'/ws-secure/global/print-with-code/' + ${id}" target="_blank"
                title="Imprimer avec un code datamatrix">
                 <i class="fi fi-rr-print " style="margin-top: 0;"></i></a>
-        </div>
-        <div>
-            <a tabindex="1" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
-               th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank"
-               title="Enregistrer le document signé et le rapport de signature">
-                <i class="fi fi-rr-compliance-document " style="margin-top: 1;"></i>
-            </a>
-        </div>
-        <div>
-            <a tabindex="1" title="Export SEDA" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" th:href="'/ws-secure/global/get-seda/' + ${id}">
-                <i class="fi fi-rr-file-export"></i>
-            </a>
         </div>
         <a tabindex="0" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd == null || !signRequest.parentSignBook.liveWorkflow.workflow.forbidDownloadsBeforeEnd) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
            class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex"
@@ -184,16 +184,16 @@
                 <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash " style="margin-top: 0;"></i>
             </button>
         </div>
-        <li th:if="${nextSignBook != null}" class="d-md-block d-none">
-            <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"
-               class="btn btn-transparent text-dark" title="Aller à la suivante">
-                <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>
-            </a>
-            <a tabindex="1" th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}"
-               class="btn btn-transparent text-dark" title="Aller à la suivante">
-                <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>
-            </a>
-        </li>
+<!--        <li th:if="${nextSignBook != null}" class="d-md-block d-none">-->
+<!--            <a tabindex="1" th:unless="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/user/signbooks/' + ${nextSignBook.id}"-->
+<!--               class="btn btn-transparent text-dark" title="Aller à la suivante">-->
+<!--                <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>-->
+<!--            </a>-->
+<!--            <a tabindex="1" th:if="${user.userType.name() == 'external'}" id="nextSignBookButton" role="button" th:href="'/otp/signrequests/' + ${nextSignBook.signRequests.get(0).id}"-->
+<!--               class="btn btn-transparent text-dark" title="Aller à la suivante">-->
+<!--                <i class="fi fi-rr-arrow-alt-to-right " style="margin-top: 10px;"></i>-->
+<!--            </a>-->
+<!--        </li>-->
     </div>
 </div>
 

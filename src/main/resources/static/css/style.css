@@ -293,6 +293,7 @@ td {
 
 .nav-item.ws-tab.active a {
     opacity: 1;
+    border-bottom: 1px solid white;
 }
 
 .nav-item.ws-tab.active {
@@ -306,6 +307,7 @@ td {
     border-top-right-radius: 0 !important;
     margin-top: 1px;
     max-height: 40px;
+    border-bottom: 1px solid #CCC;
 }
 
 .es-form-select-xl {
@@ -349,6 +351,12 @@ option[unavailable="unavailable"] {
 .breadcrumb-nav,
 .es-breadcrumb-nav {
     background-color: #fff;
+    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+}
+
+.breadcrumb-nav.breadcrumb-sign,
+.es-breadcrumb-nav.es-breadcrumb-sign {
+    border: 0 !important;
 }
 
 .breadcrumb-nav i:before,
@@ -674,6 +682,16 @@ input:focus, textarea:focus, select:focus {
 .sign-space.sign-space-disabled {
     opacity: 0.45;
     filter: grayscale(1);
+}
+
+.sign-space.sign-space-readonly {
+    border: 3px dashed var(--bs-warning) !important;
+    background-color: var(--bs-warning-bg-subtle);
+}
+
+.sign-space.sign-space-readonly .sign-text,
+.sign-space.sign-space-readonly .sign-icon {
+    color: #7a5a00;
 }
 
 .sign-space .sign-content {
@@ -1537,13 +1555,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
     }
 }
 
-
-/* Vertical Steps Style */
-.steps-vertical {
-    max-width: 500px;
-    padding: 0;
-}
-
 .step-vertical {
     display: flex;
     position: relative;
@@ -1645,6 +1656,12 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-danger);
     border-color: var(--bs-danger);
     color: white;
+}
+
+/* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */
+#admin-workflow-stepscard .admin-workflow-steps .step-vertical:not(:last-child)::after {
+    background: #343a40;
+    width: 3px;
 }
 
 /* Horizontal Steps Style - Version 1: Text below icon */

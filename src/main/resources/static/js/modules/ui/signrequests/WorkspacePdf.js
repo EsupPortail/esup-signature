@@ -276,6 +276,9 @@ export class WorkspacePdf {
                     : "";
                 // Style: sign-field uniquement pour les emplacements réellement signables.
                 let cssClasses = "sign-space";
+                if (!this.signable) {
+                    cssClasses += " sign-space-readonly";
+                }
                 if (isSignableField) {
                     cssClasses += " sign-field";
                     if (currentSignRequestParams.ready) {
@@ -927,7 +930,7 @@ export class WorkspacePdf {
         if(this.status === "pending") {
             this.initFormAction();
         }
-        if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
+        if(this.currentSignType !== "hiddenVisa") {
             if(this.first) {
                 this.initSignFields();
             } else {

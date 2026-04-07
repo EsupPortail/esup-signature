@@ -37,17 +37,26 @@
 }
 
 @media (min-width: 1800px) {
-    .d-xxxxl-table-cell {
+    .d-xxxl-table-cell {
         display: table-cell !important;
     }
 
-    .d-xxxxl-inline {
+    .d-xxxl-inline {
         display: inline !important;
     }
     .d-xxxl-inline-flex {
         display: inline-flex !important;
         flex-direction: row;
         align-items: center;
+    }
+    .d-xxxl-flex {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .d-xxl-flex {
+        display: flex !important;
     }
 }
 

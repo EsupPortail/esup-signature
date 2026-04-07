@@ -200,7 +200,7 @@ header {
 }
 
 .workspace-margin-top-admin {
-    margin-top: 175px;
+    margin-top: 30px;
 }
 
 #pdf {
@@ -301,6 +301,7 @@ header {
 .tools-admin,
 .es-tools-admin {
     top: 128px;
+    margin-top: 8px;
 }
 
 .second-tools,
@@ -316,7 +317,7 @@ header {
     min-width: 0;
     height: 100% !important;
     flex-wrap: nowrap !important;
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .nav-tab-admin {

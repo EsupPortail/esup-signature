@@ -38,7 +38,7 @@
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-body">
                     <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">

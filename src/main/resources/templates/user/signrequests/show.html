@@ -84,13 +84,13 @@
                     <div class="es-nav-tools d-flex justify-content-start"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
                         <div class="d-flex justify-content-center align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
-                            <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4">
+                            <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4 ms-2">
                                 <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
-                                        class="d-none d-lg-flex align-items-center btn btn-warning text-dark">
-                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xl-flex"> Insérer emplacement</span>
+                                        class="d-none d-lg-flex align-items-center btn btn-warning text-dark" style="max-height: 33px;">
+                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Insérer emplacement</span>
                                 </button>
                                 <button th:if="${editable}" id="addCommentButton"
-                                        class="d-none d-xl-flex align-items-center btn btn-warning text-dark">
+                                        class="d-none d-xl-flex align-items-center btn btn-warning text-dark" style="max-height: 33px;">
                                     <i class="fi fi-rr-comment"></i><span class="d-none d-xl-flex"> Annotation</span>
                                 </button>
                             </div>
@@ -336,7 +336,7 @@
                     </div>
                 </th:block>
                 <div th:if="${signable && (toSignDocument == null || toSignDocument.contentType != 'application/pdf') && signRequest.originalDocuments.size() > 0}" id="workspace" class="alert alert-secondary row es-signrequest-workspace-list">
-                    <div class="card col-lg-10 mx-auto mb-1">
+                    <div class="card col-lg-12 mb-1">
                         <div class="card-body">
                             <h5 class="text-center">Liste des documents originaux</h5>
                             <div class="file-loading">
@@ -344,7 +344,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card col-lg-10 mx-auto"
+                    <div class="card col-lg-12"
                         th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}">
                         <div class="card-body">
                             <h5 class="text-center">Liste des documents signés</h5>
