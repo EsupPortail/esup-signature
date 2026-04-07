@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 
-<nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-    <div id="workflowName" class="ps-2 d-sm-flex d-none border-end" style="flex: 0 0 300px;">
+<div th:fragment="breadcrumb-content" class="d-flex align-items-center w-100" style="min-width: 0;">
+    <div id="workflowName" class="ps-2 d-none d-lg-flex border-end" style="flex: 0 0 300px;">
         <i class="fi fi-rr-folder"></i> <p class="text-uppercase m-0" th:text="${signBook.workflowName}"></p>
     </div>
 
     <div style="flex: 1 1 auto; min-width: 0;" th:replace="~{user/signrequests/includes/ws-tabs :: ws-tabs}"></div>
+</div>
+
+<nav th:fragment="breadcrumb" id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+    <th:block th:replace="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></th:block>
 </nav>
 
 <div th:fragment="sign-buttons" id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active">

@@ -159,12 +159,48 @@
 }
 
 @media (max-width: 991.98px) {
-    th.col-nom { min-width: 110px; }
+    th.col-nom {
+        min-width: 110px;
+    }
+
+    body.es-signrequest-page #breadcrumb {
+        display: none !important;
+    }
+
+    body.es-signrequest-page .es-nav-tools {
+        display: flex !important;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 0;
+        width: 100%;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb {
+        display: flex !important;
+        align-items: center;
+        min-height: 42px;
+        background: var(--bs-white);
+        border-bottom: 1px solid var(--bs-border-color);
+        padding-right: 0.5rem;
+    }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top:58px;
+    }
 }
 
 @media (max-width: 767.98px) {
     body.es-signrequest-page #breadcrumb {
-        display: flex !important;
+        display: none !important;
     }
 
     body.es-signrequest-page #tools.es-tools {
@@ -181,11 +217,6 @@
         transform-origin: center top;
     }
 
-    #insert-btn-div {
-        display: none !important;
-    }
-
-
     #returnButton {
         display: none;
     }
@@ -197,7 +228,6 @@
     /*.new-width-full {*/
     /*    width: calc(100vw);*/
     /*}*/
-
     #breadcrumb {
         display: none;
     }
@@ -244,11 +274,48 @@
         top: 40px;
         position: absolute;
     }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top: 58px;
+    }
+
+    .nav-tabs {
+        border: 0;
+    }
+
+    .nav-tabs li {
+        background-color: var(--bs-light);
+        border: 0;
+    }
+
+    .nav-tabs .nav-link {
+        border: 0;
+        background-color: var(--bs-light);
+    }
+
+    body.es-signrequest-page .es-nav-tools > div {
+        border: 0;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb {
+        background-color: var(--bs-light);
+
+    }
+
 }
 
 @media (max-width: 575.98px) {
     body.es-signrequest-page #breadcrumb {
-        display: flex !important;
+        display: none !important;
     }
 
     body.es-signrequest-page #signButtons {
@@ -336,6 +403,20 @@
     .pdf-alerts .alert {
         padding: 2px !important;
     }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top:58px;
+    }
+
 }
 
 @media (max-width: 319px) {

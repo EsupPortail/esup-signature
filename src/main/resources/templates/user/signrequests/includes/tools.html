@@ -2,23 +2,21 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="tools" id="tools" class="es-tools position-fixed" th:if="${toSignDocument != null}">
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="min-height: 80px; height: auto;">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation != null}" style="min-height: 72px; height: auto;">
         <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
             <i class="fi fi-rr-edit"></i> Mode annotation
         </div>
     </div>
-    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}" style="min-height: 80px; height: auto;">
+    <div class="d-flex justify-content-center m-2 p-1 bg-white rounded-3 shadow-sm" th:if="${annotation == null}" style="min-height: 72px; height: auto;">
 <!--        <th:block th:if="${editable}">-->
 <!--            <button class="d-flex flex-column align-items-center btn btn-warning" name="changeMode" id="changeMode1">-->
 <!--                <span class="badge rounded-pill bg-dark" th:if="${comments.size() > 0}" th:text="${comments.size()}"></span>-->
 <!--                <i class="fi fi-rr-edit"></i>-->
 <!--            </button>-->
 <!--        </th:block>-->
-        <div class="my-auto">
-            <a tabindex="1" id="start-button" role="button" class="btn p-3 btn-success pulse-success" title="Démarrer le circuit" data-bs-toggle="modal" data-bs-target="#sendModal" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                <i class="fi fi-rr-play-alt" style="margin-top: 0"></i> Envoyer la demande
-            </a>
-        </div>
+        <a tabindex="1" id="start-button" role="button" class="btn p-3 btn-success pulse-success" title="Démarrer le circuit" data-bs-toggle="modal" data-bs-target="#sendModal" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+            <i class="fi fi-rr-play-alt" style="margin-top: 0"></i> Envoyer la demande
+        </a>
         <div class="alert p-3 bg-warning-subtle d-flex align-items-center h-100" style="pointer-events: none;" th:if="${!signable && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
             <i class="fi fi-rr-pending"></i> En attente de signature
         </div>

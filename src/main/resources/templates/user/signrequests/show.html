@@ -80,21 +80,22 @@
 
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
                 <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
-                <div  class="es-workspace d-flex flex-column">
-                    <div class="es-nav-tools d-flex justify-content-center"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
+                <div class="es-workspace d-flex flex-column">
+                    <div class="es-nav-tools d-flex justify-content-start"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
+                        <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
                         <div class="d-flex justify-content-center align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
                             <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4">
                                 <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
-                                        class="d-flex align-items-center btn btn-sm btn-warning text-dark">
+                                        class="d-none d-lg-flex align-items-center btn btn-warning text-dark">
                                     <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xl-flex"> Insérer emplacement</span>
                                 </button>
                                 <button th:if="${editable}" id="addCommentButton"
-                                        class="d-flex align-items-center btn btn-sm btn-warning text-dark">
+                                        class="d-none d-xl-flex align-items-center btn btn-warning text-dark">
                                     <i class="fi fi-rr-comment"></i><span class="d-none d-xl-flex"> Annotation</span>
                                 </button>
                             </div>
-                            <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="fullheight" title="Pleine hauteur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark d-none"><i
+                            <div class="border border-secondary-subtle ms-2 d-none d-lg-block" style="height: 25px;"></div>
+                            <button id="fullheight" title="Pleine hauteur" class="d-none d-xl-flex ms-2 align-items-center btn btn-transparent text-dark d-none"><i
                                     class="fi fi-rr-compress-alt"></i></button>
                             <button id="fullwidth" title="Pleine largeur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark d-none"><i
                                     class="fi fi-rr-expand-arrows"></i></button>
@@ -104,18 +105,18 @@
                             <button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark"><i
                                     class="fi fi-rr-zoom-in"></i></button>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark d-none" aria-label="Précédent">
+                            <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark" aria-label="Précédent">
                                 <i class="fi fi-rr-angle-small-up"  style="font-size: 20px;"></i>
                             </button>
-                            <div class="d-flex me-1 p-1 pt-2 fw-bold" style="width: 128px;">
+                            <div class="d-none d-sm-flex me-1 p-1 pt-2 fw-bold" style="width: 128px;">
                                 <span>Page </span>
                                 <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 40px;"/> <span> / </span> <span id="page_count"></span>
                             </div>
-                            <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" aria-label="Prochain">
+                            <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1" aria-label="Prochain">
                                 <i class="fi fi-rr-angle-small-down"  style="font-size: 20px;"></i>
                             </button>
                         </div>
-                        <div th:if="${signable}" id="insert-btn-div" class="d-flex gap-1 align-items-center">
+                        <div th:if="${signable}" id="insert-btn-div" class="d-none d-lg-flex gap-1 align-items-center">
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
                             <button id="autototate" th:if="${signable}" class="d-flex align-items-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
                                 <i class="fi fi-rr-navigation"></i>
@@ -176,7 +177,7 @@
                         </div>
                     </div>
                     <div id="display-pdf-alerts-dropdown" class="dropdown d-none" th:if="${annotation == null}" style="position: fixed; width: 100%;z-index: 1030;">
-                        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-flex align-items-center gap-1" data-bs-toggle="dropdown"
+                        <button id="display-pdf-alerts-btn" type="button" class="btn btn-sm btn-light border-secondary-subtle dropdown-toggle pdf-alerts-btn d-none d-lg-flex align-items-center gap-1" data-bs-toggle="dropdown"
                                 title="Afficher les alertes">
                             <i class="fa-solid fa-bell"></i> 
                         </button>
