@@ -29,7 +29,6 @@ export default class FormSignsUi {
             srpMap.push($(this).attr("id").split("_")[1], $(this).val());
             i++;
         });
-        let test = JSON.stringify(srpMap);
         $.ajax({
             type: "POST",
             url: "/" + self.domain + "/forms/update-signs-order/" + self.formId + "?"+ this.csrf.parameterName +"=" + this.csrf.token,

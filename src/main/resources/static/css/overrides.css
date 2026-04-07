@@ -167,9 +167,6 @@ textarea:invalid {
     /*min-width: 3px !important;*/
 }
 
-.step {
-    border: 1px solid #343a40 !important;
-}
 
 .line {
     background-color: #343a40 !important;

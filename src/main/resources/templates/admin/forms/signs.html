@@ -7,7 +7,7 @@
     import {default as FormSignsUi} from '/js/modules/ui/forms/FormSignsUi.js?version=@[(${versionApp})]@';
     new FormSignsUi("admin", [[${form.id}]], [[${_csrf}]]);
 </script>
-<body>
+<body class="es-signrequest-page">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
@@ -19,12 +19,12 @@
             </ol>
         </nav>
         <div id="content" class="es-content-full">
-            <div class="es-main-content d-flex">
+            <div class="es-main-content es-signrequest-main-content d-flex">
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 d-flex flex-column">
             <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
@@ -37,15 +37,15 @@
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-            <div style="position: fixed; z-index: 999;width: 300px;" th:if="${workflow != null}">
-            <div th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}" th:if="${workflow != null}"></div>
+            <div class="d-flex gap-2 flex-grow-1 overflow-hidden workspace-margin-top-admin" th:if="${workflow != null}">
+                <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
+                <div class="flex-grow-1 overflow-hidden" th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
             </div>
-            <div th:replace="~{admin/forms/includes/workspace :: workspace}" th:if="${workflow != null}"></div>
             <div th:if="${workflow == null}" class="alert alert-warning">
                 Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire
             </div>
                 </div>
-            <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
+            <div style="margin-top: 30px;" class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
                     <li>
                         <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-transparent text-dark d-none" title="Ajouter un emplacement de signature">
@@ -65,17 +65,39 @@
 </main>
 <script th:inline="javascript" type="module" th:if="${workflow != null}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
+    const rawSpots = [[${spots}]];
+    const rawSrpMap = [[${srpMap}]];
+    const idToStepMap = {};
+    if (rawSrpMap != null) {
+        Object.entries(rawSrpMap).forEach(([step, srpId]) => {
+            const parsedStep = parseInt(step, 10);
+            const parsedSrpId = parseInt(srpId, 10);
+            if (Number.isFinite(parsedStep) && Number.isFinite(parsedSrpId)) {
+                idToStepMap[parsedSrpId] = parsedStep;
+            }
+        });
+    }
+    const spotsWithStepNumber = Array.isArray(rawSpots)
+        ? rawSpots.map(spot => {
+            const parsedId = parseInt(spot?.id, 10);
+            const mappedStep = Number.isFinite(parsedId) ? idToStepMap[parsedId] : null;
+            return {
+                ...spot,
+                stepNumber: Number.isFinite(mappedStep) ? mappedStep : (spot?.stepNumber ?? 1)
+            };
+        })
+        : [];
     new SignUi(
         [[${form.id}]],
         null,
         [[${form.id}]],
-        null,
+        spotsWithStepNumber,
         [[${user.defaultSignImageNumber}]],
         'form',
-        true,
+        false,
         true,
         [],
-        [[${spots}]],
+        spotsWithStepNumber,
         [[${document != null && document.contentType == 'application/pdf'}]],
         1,
         false,

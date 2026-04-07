@@ -99,6 +99,10 @@ export class SignPosition extends EventFactory {
         this.fireEvent("spotSaved", [spotData]);
     }
 
+    onSpotDeleted(spotId) {
+        this.fireEvent("spotDeleted", [spotId]);
+    }
+
     updateScales(scale) {
         console.info("update sign scale from " + this.currentScale + " to " + scale);
         this.currentScale = scale;
@@ -212,6 +216,7 @@ export class SignPosition extends EventFactory {
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
         this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
+        this.signRequestParamses.get(id).addEventListener("spotDeleted", e => this.onSpotDeleted(e));
         if (signImageNumber != null && signImageNumber >= 0) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }

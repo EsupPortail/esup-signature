@@ -66,6 +66,7 @@ export class WorkspacePdf {
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);
         this.signPosition.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
+        this.signPosition.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
         this.currentSignRequestParamses = currentSignRequestParamses;
         // Mode system deprecated: UI is now driven by rights (signable/editable).
         this.wheelDetector = new WheelDetector();
@@ -271,10 +272,9 @@ export class WorkspacePdf {
                     signSpaceDiv.remove();
                 }
                 const spotId = this.findSpotIdForSignParams(currentSignRequestParams);
-                const deleteBtnHtml = (this.editable && this.isManager) && spotId != null
+                const deleteBtnHtml = (this.signable && this.editable) && spotId != null
                     ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
                     : "";
-                // Style: sign-field uniquement pour les emplacements réellement signables.
                 let cssClasses = "sign-space";
                 if (isSignableField) {
                     cssClasses += " sign-field";
@@ -286,6 +286,15 @@ export class WorkspacePdf {
                 const resolvedStepNumber = Number.isFinite(parseInt(rawStepNumber, 10))
                     ? parseInt(rawStepNumber, 10)
                     : parseInt(this.currentStepNumber, 10);
+                const currentStep = parseInt(this.currentStepNumber, 10);
+
+                if (!isSignableField
+                    && spotId != null
+                    && Number.isFinite(currentStep)
+                    && Number.isFinite(resolvedStepNumber)
+                    && resolvedStepNumber < currentStep) {
+                    continue;
+                }
 
                 let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-step-number='" + (Number.isFinite(resolvedStepNumber) ? resolvedStepNumber : "") + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
                 $("#pdf").append(signSpaceHtml);
@@ -298,8 +307,9 @@ export class WorkspacePdf {
                     }
                     this.makeItDroppable(signSpaceDiv);
                 } else {
-                    signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div>");
                     const stepNumberFromDom = parseInt(signSpaceDiv.attr("data-es-step-number"), 10);
+                    const stepLabel = Number.isFinite(stepNumberFromDom) ? " étape " + stepNumberFromDom : "";
+                    signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature" + stepLabel + "</span></div>");
                     if (Number.isFinite(stepNumberFromDom)) {
                         signSpaceDiv.on("mouseenter", () => this.highlightLiveStep(stepNumberFromDom));
                         signSpaceDiv.on("mouseleave", () => this.resetLiveStepHighlight());
@@ -362,13 +372,24 @@ export class WorkspacePdf {
 
         // Cas manager editable + signable:
         // - currentSignRequestParamses = emplacements signables de l'etape courante
-        // - spots = emplacements manager; on ajoute seulement les spots hors etape courante.
+        // - spots = emplacements manager; on conserve seulement l'etape courante et les suivantes.
         if (this.editable && this.isManager && this.signable) {
             const otherStepSpots = this.filterSpotsNotCurrentStep(spots);
             const merged = [...currentParams, ...otherStepSpots];
+            const currentStep = parseInt(this.currentStepNumber, 10);
+            const filteredMerged = merged.filter(item => {
+                if (!Number.isFinite(currentStep)) {
+                    return true;
+                }
+                const step = parseInt(item?.stepNumber, 10);
+                if (!Number.isFinite(step)) {
+                    return true;
+                }
+                return step >= currentStep;
+            });
             const byKey = new Map();
-            for (let i = 0; i < merged.length; i++) {
-                const item = merged[i];
+            for (let i = 0; i < filteredMerged.length; i++) {
+                const item = filteredMerged[i];
                 const idKey = item != null && item.id != null ? "id:" + item.id : null;
                 const geoKey = "geo:" + [item?.signPageNumber, item?.xPos, item?.yPos, item?.signWidth, item?.signHeight].join("|");
                 const key = idKey || geoKey;
@@ -397,7 +418,7 @@ export class WorkspacePdf {
             if (!Number.isFinite(step)) {
                 return true;
             }
-            return step !== currentStep;
+            return step >= currentStep;
         });
     }
 
@@ -432,6 +453,15 @@ export class WorkspacePdf {
         if (!Array.isArray(this.spots)) {
             this.spots = [];
         }
+        $(".step-vertical-content")
+            .removeClass("bg-success bg-secondary-subtle")
+            .addClass("bg-light");
+        this.setToolsBarDisabled(false);
+        this.setSignSpacesDroppableEnabled(true);
+        $("#addSpotButton").removeAttr("disabled");
+        $("#addCommentButton").removeAttr("disabled");
+        $("#addSpotButton2").removeAttr("disabled");
+        $("#addCommentButton2").removeAttr("disabled");
 
         const spotId = parseInt(spotData.id, 10);
         const spotStep = parseInt(spotData.stepNumber, 10);
@@ -468,6 +498,19 @@ export class WorkspacePdf {
         }
     }
 
+    onSpotDeleted(spotId) {
+        const parsedId = parseInt(spotId, 10);
+        if (!Number.isFinite(parsedId)) {
+            return;
+        }
+        if (Array.isArray(this.spots)) {
+            this.spots = this.spots.filter(spot => parseInt(spot?.id, 10) !== parsedId);
+        }
+        if (Array.isArray(this.currentSignRequestParamses)) {
+            this.currentSignRequestParamses = this.currentSignRequestParamses.filter(param => parseInt(param?.id, 10) !== parsedId);
+        }
+    }
+
     bindSignSpaceDelete(signSpaceDiv) {
         const spotId = parseInt(signSpaceDiv.attr("data-es-spot-id"), 10);
         const deleteBtn = signSpaceDiv.find(".slot-delete-btn");
@@ -489,6 +532,12 @@ export class WorkspacePdf {
                     url: url,
                     success: () => {
                         signSpaceDiv.remove();
+                        if (Array.isArray(this.spots)) {
+                            this.spots = this.spots.filter(spot => parseInt(spot?.id, 10) !== spotId);
+                        }
+                        if (Array.isArray(this.currentSignRequestParamses)) {
+                            this.currentSignRequestParamses = this.currentSignRequestParamses.filter(param => parseInt(param?.id, 10) !== spotId);
+                        }
                     }
                 });
             });
@@ -927,7 +976,7 @@ export class WorkspacePdf {
         if(this.status === "pending") {
             this.initFormAction();
         }
-        if(this.currentSignType !== "form" && this.currentSignType !== "hiddenVisa") {
+        if(this.currentSignType !== "hiddenVisa") {
             if(this.first) {
                 this.initSignFields();
             } else {
@@ -1413,10 +1462,14 @@ export class WorkspacePdf {
     changeSpotStep() {
         let stepNumber = $("#spotStepNumber").val();
         $('[id^="liveStep-"]').each(function () {
-            $(this).removeClass("bg-success");
+            $(this).find(".step-vertical-content")
+                .removeClass("bg-success bg-secondary-subtle")
+                .addClass("bg-light");
         });
         let liveStep = $("#liveStep-" + stepNumber);
-        liveStep.addClass("bg-success");
+        liveStep.find(".step-vertical-content")
+            .removeClass("bg-light bg-secondary-subtle")
+            .addClass("bg-secondary");
     }
 
     initChangeModeSelector() {

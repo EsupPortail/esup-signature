@@ -83,7 +83,7 @@ body.es-signrequest-page #tools.es-tools {
 
 body.es-signrequest-page #tools .steps-horizontal-v2 {
     flex-wrap: nowrap;
-    overflow-x: auto;
+    /*overflow-x: auto;*/
 }
 
 body.es-signrequest-page #tools .step-horizontal-v2 {
@@ -120,10 +120,14 @@ body.es-signrequest-page #tools #signLaunchButton {
     max-width: 100%;
 }
 
-/* Fully disable tools bar interactions while placing spot/comment. */
 #tools.tools-disabled {
     pointer-events: none;
     opacity: 0.45;
+}
+
+#tools.tools-disabled,
+#tools.tools-disabled * {
+    pointer-events: none !important;
 }
 
 @media (max-width: 1199.98px) {
@@ -293,6 +297,7 @@ td {
 
 .nav-item.ws-tab.active a {
     opacity: 1;
+    border-bottom: 1px solid white;
 }
 
 .nav-item.ws-tab.active {
@@ -306,6 +311,7 @@ td {
     border-top-right-radius: 0 !important;
     margin-top: 1px;
     max-height: 40px;
+    border-bottom: 1px solid #CCC;
 }
 
 .es-form-select-xl {
@@ -349,6 +355,12 @@ option[unavailable="unavailable"] {
 .breadcrumb-nav,
 .es-breadcrumb-nav {
     background-color: #fff;
+    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+}
+
+.breadcrumb-nav.breadcrumb-sign,
+.es-breadcrumb-nav.es-breadcrumb-sign {
+    border: 0 !important;
 }
 
 .breadcrumb-nav i:before,
@@ -676,6 +688,7 @@ input:focus, textarea:focus, select:focus {
     filter: grayscale(1);
 }
 
+
 .sign-space .sign-content {
     display: flex;
     flex-direction: column;
@@ -706,7 +719,7 @@ input:focus, textarea:focus, select:focus {
     font-weight: bold;
     color: black;
     border: 3px dashed rgb(123, 246, 123); !important;
-    background-color: rgba(220, 250, 220, 0.5);
+    background-color: rgba(220, 250, 220, 0.8);
     cursor: pointer !important;
     overflow: hidden;
 }
@@ -1034,7 +1047,7 @@ textarea:placeholder-shown.required-field {
     z-index: 3;
     background-position: bottom left;
     background-repeat: no-repeat;
-    background-color: rgb(220, 250, 220, 0.5);
+    background-color: rgb(220, 250, 220, 0.8);
     cursor: move;
     -webkit-transition: background-image 0.2s ease-in-out;
     transition: background-image 0.2s ease-in-out;
@@ -1085,10 +1098,6 @@ textarea:placeholder-shown.required-field {
     float: right;
     width: 50%;
     left: 50%;
-}
-
-.opacity-90 {
-    opacity: 94%;
 }
 
 .div-extra {
@@ -1537,13 +1546,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
     }
 }
 
-
-/* Vertical Steps Style */
-.steps-vertical {
-    max-width: 500px;
-    padding: 0;
-}
-
 .step-vertical {
     display: flex;
     position: relative;
@@ -1585,7 +1587,7 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 .step-vertical.doc .step-vertical-content {
-    border-left: 4px solid #adb5bd;
+    border-left: 4px solid var(--bs-primary);
 }
 
 .step-vertical.active .step-vertical-content {
@@ -1608,8 +1610,8 @@ tr[aria-expanded="true"] .caret-toggle::before {
 
 .step-vertical.doc .step-vertical-icon {
     background: var(--bs-light);
-    border-color: var(--bs-secondary);
-    color: var(--bs-secondary);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
 }
 
 
@@ -1645,6 +1647,12 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-danger);
     border-color: var(--bs-danger);
     color: white;
+}
+
+/* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */
+#admin-workflow-stepscard .admin-workflow-steps .step-vertical:not(:last-child)::after {
+    background: #343a40;
+    width: 3px;
 }
 
 /* Horizontal Steps Style - Version 1: Text below icon */

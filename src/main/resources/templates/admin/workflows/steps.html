@@ -37,7 +37,7 @@
                     <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-body text-center">
                     <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard}"></div>
                     <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
