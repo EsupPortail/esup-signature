@@ -276,9 +276,6 @@ export class WorkspacePdf {
                     : "";
                 // Style: sign-field uniquement pour les emplacements réellement signables.
                 let cssClasses = "sign-space";
-                if (!this.signable) {
-                    cssClasses += " sign-space-readonly";
-                }
                 if (isSignableField) {
                     cssClasses += " sign-field";
                     if (currentSignRequestParams.ready) {
