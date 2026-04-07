@@ -429,7 +429,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale) - 1  + "px");
-        const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge opacity-90 bg-light border-1 border-secondary-subtle position-absolute d-flex justify-content-between gap-1' style='width: 100%;z-index: 4; top: -38px; left: 0;'>" +
+        const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge bg-light border-1 border-secondary-subtle position-absolute d-flex justify-content-between gap-1' style='width: 100%;z-index: 4; top: -38px; left: 0;'>" +
             "<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger' title='Annuler'><i class='fi fi-rr-trash'></i></button>" +
             "<button id='submit-add-spot' type='button' class='btn btn-sm btn-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
             "</div>";
@@ -553,6 +553,7 @@ export class SignRequestParams extends EventFactory {
                 url: deleteUrl,
                 success: () => {
                     spotDiv.remove();
+                    this.fireEvent("spotDeleted", [parsedSpotId]);
                 }
             });
         });
@@ -798,9 +799,9 @@ export class SignRequestParams extends EventFactory {
             return;
         }
         if(this.signSpace != null && this.signSpace.ready) {
-            this.cross.css("background-color", "rgba(220, 250, 220, 0.5)");
+            this.cross.css("background-color", "rgba(220, 250, 220, 0.8)");
         } else {
-            this.cross.css("background-color", "rgba(255, 255, 255, 0.8)");
+            this.cross.css("background-color", "rgba(255, 255, 255, 0.9)");
         }
     }
 

@@ -84,8 +84,8 @@
                     <div class="es-nav-tools d-flex justify-content-start"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
                         <div class="d-flex justify-content-center align-items-center" th:if="${toSignDocument.contentType == 'application/pdf'}">
-                            <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-4 ms-2">
-                                <button th:if="${isManager && signRequest.data == null}" id="addSpotButton"
+                            <div id="commentsTools" th:if="${(editable || isManager) && toSignDocument.contentType == 'application/pdf'}" class="d-flex text-start gap-1">
+                                <button th:if="${isManager && signRequest.data == null && (signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
                                         class="d-none d-lg-flex align-items-center btn btn-warning text-dark" style="max-height: 33px;">
                                     <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Insérer emplacement</span>
                                 </button>

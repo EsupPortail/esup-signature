@@ -9,8 +9,11 @@ body {
     padding-right: 0 !important;
 }
 
+.es-nav-tools {
+    margin-left: 80px;
+}
+
 body.es-signrequest-page {
-    overflow-x: hidden;
     overflow-x: clip;
 }
 

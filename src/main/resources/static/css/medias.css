@@ -193,6 +193,10 @@
         padding-right: 0.5rem;
     }
 
+    .es-nav-tools {
+        margin-left: 0;
+    }
+
     .workspace,
     .es-workspace {
         margin-top: -45px;
