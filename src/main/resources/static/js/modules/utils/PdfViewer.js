@@ -505,7 +505,6 @@ export class PdfViewer extends EventFactory {
 
             pdfPageView.setPdfPage(page);
 
-            let self = this;
             pdfPageView.draw().then(() => {
                 const container = document.getElementById(`page_${i}`);
                 if (!container) {
@@ -537,17 +536,23 @@ export class PdfViewer extends EventFactory {
                 container.style.width = `${Math.floor(viewport.width)}px`;
                 container.style.height = `${Math.floor(viewport.height)}px`;
                 container.style.overflow = 'hidden';
+                const isPortrait = viewport.width < viewport.height;
+                const layerWidth = Math.floor(isPortrait ? viewport.width : viewport.height);
+                const layerHeight = Math.floor(isPortrait ? viewport.height : viewport.width);
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
                     annotationLayer.setAttribute("data-main-rotation", this.rotation);
-                    const isPortrait = viewport.width < viewport.height;
-                    if (!isPortrait) {
-                        annotationLayer.style.width = `${Math.floor(viewport.height)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.width)}px`;
-                    } else {
-                        annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
-                    }
+                    annotationLayer.style.width = `${layerWidth}px`;
+                    annotationLayer.style.height = `${layerHeight}px`;
+                }
+                const textLayer = container.querySelector('.textLayer');
+                if (textLayer) {
+                    textLayer.style.width = `${layerWidth}px`;
+                    textLayer.style.height = `${layerHeight}px`;
+                    textLayer.style.left = '0';
+                    textLayer.style.top = '0';
+                    textLayer.style.setProperty('--scale-factor', this.scale);
+                    textLayer.style.setProperty('--total-scale-factor', this.scale);
                 }
                 this.pages.push(page);
                 resolve("ok");
