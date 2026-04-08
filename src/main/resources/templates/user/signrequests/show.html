@@ -78,8 +78,8 @@
                     </th:block>
                 </div>
 
-                <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
-                <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+                <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side-otp}" th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.workflow.disableSidebarForExternal}"></nav>
+                <nav th:unless="${user.userType.name() == 'external'}" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
                 <div class="es-workspace d-flex flex-column">
                     <div class="es-nav-tools d-flex justify-content-start"  th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
