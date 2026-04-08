@@ -37,7 +37,7 @@
     >
         <i class="fi fi-rr-notes"></i> <span class="d-none"> Post-it</span>
     </button>
-    <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Gérer mes images de signature">
+    <button th:if="${user.userType.name() == 'external'}" id="signImageBtn" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Configuration de la signature">
         <i class="fi fi-rr-drawer-alt"></i> <span class="d-none"> Mes signatures</span>
     </button>
     <form th:if="${displayNotif}"

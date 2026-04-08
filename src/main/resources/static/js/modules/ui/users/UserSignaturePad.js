@@ -11,11 +11,11 @@ export class UserSignaturePad {
         });
         this.firstClear = true;
         this.lastSign = null;
+        this.cachedData = [];
         this.initListeners();
         this.resizeCanvas();
         this.canvas.mousedown();
         this.cachedWidth = null;
-        this.cachedImage = null;
     }
 
     initListeners() {
@@ -39,15 +39,21 @@ export class UserSignaturePad {
     resizeCanvas() {
         if(this.canvas[0].offsetWidth !== this.cachedWidth ) {
             if (typeof this.signaturePad != 'undefined') {
-                this.cachedImage = this.signaturePad.toDataURL("image/png");
+                this.cachedData = this.signaturePad.toData();
             }
             this.cachedWidth = this.canvas[0].offsetWidth;  
             let ratio = Math.max(window.devicePixelRatio || 1, 1);
             this.canvas[0].width = this.canvas[0].offsetWidth * ratio;
             this.canvas[0].height = this.canvas[0].offsetHeight * ratio;
             this.canvas[0].getContext("2d").scale(ratio, ratio);
-            if (typeof this.signaturePad != 'undefined' && !this.signaturePad.isEmpty()) {
-                this.signaturePad.fromDataURL(this.cachedImage);
+            if (typeof this.signaturePad != 'undefined') {
+                this.signaturePad.clear();
+                if (Array.isArray(this.cachedData) && this.cachedData.length > 0) {
+                    this.signaturePad.fromData(this.cachedData);
+                    this.hidePlaceholder();
+                } else {
+                    this.showPlaceholder();
+                }
             }
         }
     }
@@ -66,9 +72,8 @@ export class UserSignaturePad {
         if (this.firstClear) {
             this.clear();
             this.firstClear = false;
-        } else {
-            $("#signPadTip").hide();
         }
+        this.hidePlaceholder();
         this.setLastSign();
     }
 
@@ -77,12 +82,34 @@ export class UserSignaturePad {
         this.signImageBase64.val(imageBase64);
         this.signImageBase64Val = imageBase64;
         this.canvas.css("background", "rgba(0, 255, 0, .5)");
+        this.hidePlaceholder();
     }
 
     clear() {
         console.info("clear sign pad");
         this.signaturePad.clear();
-        $("#signPadTip").show();
+        this.cachedData = [];
+        this.showPlaceholder();
+    }
+
+    reset() {
+        this.firstClear = true;
+        this.signImageBase64.val("");
+        this.signImageBase64Val = null;
+        this.canvas.css("background", "");
+        this.clear();
+    }
+
+    getPlaceholderElements() {
+        return $("#signPadTip, #signPad .signature-pad-background");
+    }
+
+    showPlaceholder() {
+        this.getPlaceholderElements().show();
+    }
+
+    hidePlaceholder() {
+        this.getPlaceholderElements().hide();
     }
 
 }

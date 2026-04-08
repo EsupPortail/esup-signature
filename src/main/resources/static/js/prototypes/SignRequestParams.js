@@ -8,7 +8,7 @@ export class SignRequestParams extends EventFactory {
     constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType) {
         super();
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        console.log(this.globalProperties);
+        console.warn(this.globalProperties);
         this.fontSize = this.globalProperties.defaultFontSize;
         this.signWidth = 200;
         this.signHeight = 100;
@@ -352,6 +352,7 @@ export class SignRequestParams extends EventFactory {
         }
 
         if(this.isOtp && this.isSign) {
+            $("#canvasBtn_" + this.id).remove();
             this.#toggleExtra();
             this.#toggleText();
             if(this.userName.length < 2) {
@@ -383,7 +384,8 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
                 this.#toggleExtraOnTop();
-                // $("#displayMoreTools_" + this.id).remove();
+                $("#extraTools_" + this.id).remove();
+                $("#displayMoreTools_" + this.id).remove();
             }
         }
         this.cross.attr("page", this.signPageNumber);
@@ -1920,43 +1922,39 @@ export class SignRequestParams extends EventFactory {
         return new Promise((resolve, reject) => {
             if(imageNum != null && imageNum >= 0) {
                 if(this.signImages != null) {
-                    if(imageNum > this.signImages.length - 1 && imageNum !== 999998 && imageNum !== 999997) {
-                        imageNum = 0;
+                    const requestedImageNum = imageNum;
+                    let resolvedImageNum = imageNum;
+                    if (requestedImageNum === 999998) {
+                        if (Number.isInteger(this.generatedSignImageNumber)) {
+                            resolvedImageNum = this.generatedSignImageNumber;
+                        } else if (Number.isInteger(this.parapheSignImageNumber)) {
+                            resolvedImageNum = Math.max(0, this.parapheSignImageNumber - 1);
+                        } else {
+                            resolvedImageNum = Math.max(0, this.signImages.length - 1);
+                        }
+                    } else if (requestedImageNum === 999997) {
+                        if (Number.isInteger(this.parapheSignImageNumber)) {
+                            resolvedImageNum = this.parapheSignImageNumber;
+                        } else {
+                            resolvedImageNum = Math.max(0, this.signImages.length - 1);
+                        }
+                    } else if(resolvedImageNum > this.signImages.length - 1) {
+                        resolvedImageNum = 0;
                     }
-                    this.signImageNumber = imageNum;
-                    console.debug("debug - " + "change sign image to " + imageNum);
+                    this.signImageNumber = requestedImageNum;
+                    console.debug("debug - " + "change sign image to " + requestedImageNum);
                     let img = null;
-                    if(this.signImages[imageNum] != null) {
-                        img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[imageNum];
+                    if(this.signImages[resolvedImageNum] != null) {
+                        img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[resolvedImageNum];
                         this.cross.css("background-image", "url('" + img + "')");
                         let sizes = this.#getImageDimensions(img);
                         sizes.then(result => this.changeSignSize(result));
-                        if(imageNum !== 999999) {
-                            localStorage.setItem('signNumber', imageNum);
+                        if(requestedImageNum !== 999999) {
+                            localStorage.setItem('signNumber', requestedImageNum);
                         }
                         resolve(img);
                     } else {
-                        let self = this;
-                        let url = "/ws-secure/users/get-default-image-base64";
-                        if(imageNum === 999997) {
-                            url = "/ws-secure/users/get-default-paraphe-base64";
-                        }
-                        $.get({
-                            url: url,
-                            success: function(data) {
-                                img = "data:image/PNG;charset=utf-8;base64, " + data;
-                                self.cross.css("background-image", "url('" + img + "')");
-                                let sizes = self.#getImageDimensions(img);
-                                sizes.then(result => self.changeSignSize(result));
-                                if(imageNum !== 999999) {
-                                    localStorage.setItem('signNumber', imageNum);
-                                }
-                                resolve(img);
-                            },
-                            error: function(err) {
-                                reject(err);
-                            }
-                        });
+                        reject(new Error("Unable to resolve sign image from local state"));
                     }
                 }
             } else if(imageNum < 0) {

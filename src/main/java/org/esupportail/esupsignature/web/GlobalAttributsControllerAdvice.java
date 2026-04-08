@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.dto.FrontendGlobalProperties;
+import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -31,7 +31,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller"})
 @EnableConfigurationProperties(GlobalProperties.class)

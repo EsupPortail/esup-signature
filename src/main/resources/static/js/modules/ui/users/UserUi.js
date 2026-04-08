@@ -37,8 +37,11 @@ export class UserUi {
 
     initListeners() {
         $("#saveButton").on('click', e => this.save());
+        document.addEventListener('resetUserSignatureModal', e => this.resetSignatureModal(e));
 
         this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
+        $("#sign-div, #sign-pad").on('shown.bs.collapse', () => this.refreshSignaturePadLayout());
+        $("#add-sign-image").on('shown.bs.modal', () => this.refreshSignaturePadLayout());
         if(this.emailAlertFrequencySelect != null) {
             this.emailAlertFrequencySelect.on("change", e => this.checkAlertFrequency(e));
         }
@@ -88,6 +91,9 @@ export class UserUi {
 
     save() {
         this.userSignaturePad.checkSignatureUpdate();
+        const userParamsForm = $("#userParamsForm");
+        const formElement = userParamsForm.get(0);
+        const isFetchModalContext = userParamsForm.closest("#add-sign-image").length > 0;
         if(!this.saveSignRequestParams) {
             this.signRequestParams.xPos = 0;
             this.signRequestParams.yPos = 0;
@@ -101,7 +107,37 @@ export class UserUi {
         if(this.userSignaturePad.signaturePad.isEmpty() && this.userSignatureCrop.signImageBase64 === null) {
             $("#signImageBase64").val("");
         }
-        $("#userParamsForm").submit();
+        if(isFetchModalContext && formElement) {
+            document.dispatchEvent(new CustomEvent("userParamsPrepared", {
+                detail: {form: formElement}
+            }));
+            return;
+        }
+        userParamsForm.submit();
+    }
+
+    resetSignatureModal(event) {
+        if (event?.detail?.form?.id && event.detail.form.id !== 'userParamsForm') {
+            return;
+        }
+        this.userSignaturePad.reset();
+        this.userSignatureCrop.reset();
+        $("#sign-div").collapse('hide');
+        this.refreshSignaturePadLayout();
+    }
+
+    refreshSignaturePadLayout() {
+        const refresh = () => {
+            if (this.userSignaturePad == null) {
+                return;
+            }
+            this.userSignaturePad.cachedWidth = null;
+            this.userSignaturePad.resizeCanvas();
+        };
+        window.requestAnimationFrame(() => {
+            refresh();
+            window.setTimeout(refresh, 50);
+        });
     }
 
     checkAlertFrequency() {

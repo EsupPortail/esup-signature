@@ -563,7 +563,6 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
-        // alert(forceSignNumber)
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
@@ -590,7 +589,6 @@ export class WorkspacePdf {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
         this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
-        this.signPosition.goStep2();
     }
 
 
@@ -1169,8 +1167,6 @@ export class WorkspacePdf {
         this.signPosition.pointItEnable = false;
         if (this.status === 'deleted') {
             $('#workspace').addClass('alert-danger');
-        } else {
-            $('#workspace').addClass('alert-success');
         }
 
         if (this.signable) {

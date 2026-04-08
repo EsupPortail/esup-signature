@@ -65,6 +65,57 @@ export class SignPosition extends EventFactory {
                 self.popUserUi();
             }
         });
+        document.addEventListener('userSignatureUpdated', e => this.applyUserSignatureState(e.detail));
+        document.addEventListener('userSignatureDeleted', e => this.applyUserSignatureState(e.detail));
+    }
+
+    getGeneratedSignImageNumber(userState) {
+        const signImageIds = Array.isArray(userState?.signImageIds) ? userState.signImageIds : [];
+        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
+        return signImages.length > signImageIds.length ? signImageIds.length : null;
+    }
+
+    getParapheSignImageNumber(userState) {
+        const generatedSignImageNumber = this.getGeneratedSignImageNumber(userState);
+        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
+        return generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
+            ? generatedSignImageNumber + 1
+            : null;
+    }
+
+    applySpecialSignImageNumbers(signRequestParams) {
+        if (signRequestParams == null) {
+            return;
+        }
+        signRequestParams.generatedSignImageNumber = this.generatedSignImageNumber;
+        signRequestParams.parapheSignImageNumber = this.parapheSignImageNumber;
+    }
+
+    applyUserSignatureState(userState) {
+        if (!userState) {
+            return;
+        }
+        const displayName = [userState.firstname, userState.name].filter(Boolean).join(' ').trim();
+        if (displayName) {
+            this.userName = displayName;
+            this.authUserName = displayName;
+        }
+        this.generatedSignImageNumber = this.getGeneratedSignImageNumber(userState);
+        this.parapheSignImageNumber = this.getParapheSignImageNumber(userState);
+        if (Array.isArray(userState.signImages)) {
+            this.signImages = userState.signImages;
+            if (this.userUI != null) {
+                this.userUI.signImages = userState.signImages;
+                this.userUI.userName = displayName || this.userUI.userName;
+            }
+            this.signRequestParamses.forEach(signRequestParams => {
+                signRequestParams.signImages = userState.signImages;
+                this.applySpecialSignImageNumbers(signRequestParams);
+                if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== 999999) {
+                    signRequestParams.changeSignImage(signRequestParams.signImageNumber);
+                }
+            });
+        }
     }
 
     removeSign(srpId, id) {
@@ -136,10 +187,36 @@ export class SignPosition extends EventFactory {
         $("#add-sign-image").modal("show");
     }
 
-    addSign(page, restore, signImageNumber, forceSignNumber) {
-        if (this.signImages != null && this.signImages.length === 1) {
+    async addSign(page, restore, signImageNumber, forceSignNumber) {
+        if (this.isOtp) {
             this.popUserUi();
-            return;
+            const selection = await new Promise((resolve) => {
+                const modalElement = document.getElementById('add-sign-image');
+                const selectionHandler = e => {
+                    cleanup();
+                    resolve(e.detail || null);
+                };
+                const hiddenHandler = () => {
+                    cleanup();
+                    resolve(null);
+                };
+                const cleanup = () => {
+                    document.removeEventListener('userSignatureSelected', selectionHandler);
+                    if (modalElement) {
+                        modalElement.removeEventListener('hidden.bs.modal', hiddenHandler);
+                    }
+                };
+                document.addEventListener('userSignatureSelected', selectionHandler);
+                if (modalElement) {
+                    modalElement.addEventListener('hidden.bs.modal', hiddenHandler, { once: true });
+                }
+            });
+            const selectedSignImageNumber = selection?.selectedSignImageNumber != null ? parseInt(selection.selectedSignImageNumber, 10) : null;
+            if (selectedSignImageNumber == null || Number.isNaN(selectedSignImageNumber)) {
+                return;
+            }
+            this.applyUserSignatureState(selection);
+            signImageNumber = selectedSignImageNumber;
         }
         const isSpot = signImageNumber === 999999;
         if (!isSpot) {
@@ -171,6 +248,7 @@ export class SignPosition extends EventFactory {
             if (signImageNumber === 999999) {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
+                    this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
                 this.signRequestParamses.get(id).changeSignSize(null);
 
@@ -187,6 +265,7 @@ export class SignPosition extends EventFactory {
                     }
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
+                this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 this.signsList.push(id);
                 if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
                     if(this.currentStepSingleSignWithAnnotation === false) {
@@ -201,6 +280,7 @@ export class SignPosition extends EventFactory {
                     return;
                 }
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop));
+                this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
             }
             if(signImageNumber !== 999999) {
                 if(this.signType !== "visa") {
@@ -213,6 +293,7 @@ export class SignPosition extends EventFactory {
                 return;
             }
             this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop));
+            this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
         this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
@@ -226,6 +307,7 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
         let srp = this.signRequestParamses.get(id);
         this.id++;
+        this.goStep2();
         return srp;
     }
 

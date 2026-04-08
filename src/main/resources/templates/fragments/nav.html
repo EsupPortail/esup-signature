@@ -111,10 +111,9 @@
                         aria-expanded="false"
                         aria-controls="user-infos"
                         data-bs-toggle="collapse">
-                        <b th:if="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.firstname} + ' ' + ${user.name}"></b>
-                        <b th:unless="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname)}" class="nav-item-label d-none d-xl-inline" th:text="${user.email}"></b>
+                        <b id="navbar-user-display-name" class="nav-item-label d-none d-xl-inline" th:text="${!#strings.isEmpty(user.name) && !#strings.isEmpty(user.firstname) ? user.firstname + ' ' + user.name : user.email}"></b>
                         <div class="user-toggle align-middle ms-2">
-                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
+                            <div id="navbar-user-avatar" class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
                                  style="width: 2rem; height: 2rem; flex-shrink: 0; font-size: 0.75rem;"
                                  th:with="firstInitial=${user.firstname != null && !#strings.isEmpty(user.firstname) ? #strings.substring(user.firstname, 0, 1) : ''},
                               lastInitial=${user.name != null && !#strings.isEmpty(user.name) ? #strings.substring(user.name, 0, 1) : ''},
@@ -128,7 +127,7 @@
                         </div>
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item d-flex align-items-center">
                     <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
                         th:action="@{/logout}"
                         method="post"
@@ -141,10 +140,10 @@
                         </button>
                     </form>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item d-flex align-items-center">
                     <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
                         data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: #096fb2;" class="btn text-white d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur">
-                        <i class="fi fi-rr-interrogation" style="font-size: 24px; line-height: 33px;"></i>
+                        <i class="fi fi-rr-interrogation" style="font-size: 20px;"></i>
                     </a>
                 </li>
             </ul>
@@ -181,7 +180,7 @@
                 </tr>
                 <tr>
                     <td>Mes signatures</td>
-                    <td>
+                    <td id="navbar-user-signatures-content">
                         <div style="width: 250px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
                             <div class="carousel-inner">
                                 <th:block th:each="signImageId, iterator : ${userImagesIds}">
