@@ -88,7 +88,6 @@ public class GlobalAttributsControllerAdvice {
         logger.info("Session timeout = " + sessionTimeout.toMinutes() + " min");
     }
 
-    @Cacheable(value = "globalAttributes", key = "#userEppn + '-' + #authUserEppn")
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());

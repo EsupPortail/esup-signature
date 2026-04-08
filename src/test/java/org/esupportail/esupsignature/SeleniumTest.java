@@ -100,10 +100,8 @@ public class SeleniumTest {
         // Récupérer l'attribut "signBookId"
         String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Cliquer sur le bouton "signLaunchButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
-        // Cliquer sur le bouton "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
-        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton")));
+        WebElement btn = driver.findElement(By.id("signLaunchButton"));
         btn.click();
         wait.until(ExpectedConditions.stalenessOf(btn));
         // Cliquer sur le bouton "link-dashboard"
@@ -159,10 +157,9 @@ public class SeleniumTest {
         // Store attribute "signBookId"
         String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
         // Click "signLaunchButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton")));
         // Click "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
-        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
+        WebElement btn = driver.findElement(By.id("signLaunchButton"));
         btn.click();
         wait.until(ExpectedConditions.stalenessOf(btn));
         // Click "link-dashboard" button
