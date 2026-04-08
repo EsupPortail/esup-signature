@@ -620,10 +620,10 @@
                                     <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                         <div class="carousel-item h-100" th:classappend="${iterator.index == 0} ? 'active'">
                                             <div class="h-100 bg-white">
-                                                <div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2">
-                                                    <img height="145" class="img-fluid" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
+                                                <div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden">
+                                                    <img height="145" class="img-fluid" style="max-height: 145px; width: auto; object-fit: contain;" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
                                                     <div class="d-flex justify-content-center gap-2"
-                                                         style="position: absolute; z-index: 5; width: max-content; margin-bottom: -58px;">
+                                                         style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">
                                                         <button type="button" th:data-delete-sign-id="${signImageId}" class="btn btn-sm btn-danger text-white delete-sign-btn">
                                                             <i class="fi fi-rr-trash"></i>
                                                         </button>
@@ -738,6 +738,8 @@
                     const firstnameInput = document.getElementById('firstname');
                     const generatedSignaturePreviewImage = document.getElementById('generated-signature-preview-image');
                     const generatedSignaturePreviewEmpty = document.getElementById('generated-signature-preview-empty');
+                    const signDivElement = document.getElementById('sign-div');
+                    const eraseButton = document.getElementById('erase');
                     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
                     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
                     const currentUserType = /*[[${user.userType.name()}]]*/ 'user';
@@ -863,7 +865,7 @@
                                 : '';
                             const sizeAttr = imageHeight != null ? `height="${imageHeight}"` : `width="${imageWidth}"`;
                             if (hasActionButtons) {
-                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2"><img ${sizeAttr} class="img-fluid" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; z-index: 5; width: max-content; margin-bottom: -58px;">${deleteButton}${signButton}</div></div></div></div>`;
+                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
                             }
                             return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /></div>`;
                         }).join('');
@@ -940,6 +942,36 @@
                     function resetSaveButton() {
                         setActionButtonsDisabled(false);
                         saveButton.innerHTML = '<i class="fi fi-rr-disk"></i> Enregistrer la signature';
+                    }
+
+                    function resetCustomSignatureInputs() {
+                        eraseButton?.click();
+                        document.getElementById('signImageBase64').value = '';
+                        const signPad = document.getElementById('signPad');
+                        const signPadLabel = document.getElementById('signPadLabel');
+                        const cropDiv = document.getElementById('crop-div');
+                        const vanillaUpload = document.getElementById('vanilla-upload');
+                        if (signPad) {
+                            signPad.style.display = '';
+                        }
+                        if (signPadLabel) {
+                            signPadLabel.style.display = '';
+                        }
+                        if (cropDiv) {
+                            cropDiv.style.display = 'none';
+                        }
+                        if (vanillaUpload) {
+                            vanillaUpload.value = '';
+                        }
+                    }
+
+                    function collapseSignDiv() {
+                        if (!signDivElement || typeof bootstrap === 'undefined' || !bootstrap.Collapse) {
+                            return;
+                        }
+                        bootstrap.Collapse.getOrCreateInstance(signDivElement, {
+                            toggle: false
+                        }).hide();
                     }
 
                     function bindDeleteSignButtons() {
@@ -1062,11 +1094,15 @@
                                     updateLiveUserState(userState, { modalActiveIndex: lastImageIndex });
                                 }
                                 resetSaveButton();
-                                document.dispatchEvent(new CustomEvent('resetUserSignatureModal', {
-                                    detail: {
-                                        form: userParamsForm
-                                    }
-                                }));
+                                if (!isSelectionAction) {
+                                    resetCustomSignatureInputs();
+                                    collapseSignDiv();
+                                    document.dispatchEvent(new CustomEvent('resetUserSignatureModal', {
+                                        detail: {
+                                            form: userParamsForm
+                                        }
+                                    }));
+                                }
                                 document.dispatchEvent(new CustomEvent('userSignatureUpdated', { detail: currentUserSignatureState }));
                                 if (isSelectionAction) {
                                     document.dispatchEvent(new CustomEvent('userSignatureSelected', { detail: { ...currentUserSignatureState, selectedSignImageNumber } }));

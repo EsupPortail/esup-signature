@@ -120,9 +120,16 @@ export class UserUi {
         if (event?.detail?.form?.id && event.detail.form.id !== 'userParamsForm') {
             return;
         }
-        this.userSignaturePad.reset();
+        const signDiv = $("#sign-div");
+        $("#erase").trigger('click');
+        this.userSignaturePad.firstClear = true;
+        this.userSignaturePad.signImageBase64.val("");
+        this.userSignaturePad.signImageBase64Val = null;
+        this.userSignaturePad.canvas.css("background", "");
         this.userSignatureCrop.reset();
-        $("#sign-div").collapse('hide');
+        if (signDiv.length) {
+            signDiv.collapse('hide');
+        }
         this.refreshSignaturePadLayout();
     }
 

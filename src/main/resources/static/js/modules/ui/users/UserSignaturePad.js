@@ -81,7 +81,6 @@ export class UserSignaturePad {
         let imageBase64 = this.signaturePad.toDataURL("image/png");
         this.signImageBase64.val(imageBase64);
         this.signImageBase64Val = imageBase64;
-        this.canvas.css("background", "rgba(0, 255, 0, .5)");
         this.hidePlaceholder();
     }
 
