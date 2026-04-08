@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.web.controller;
+package org.esupportail.esupsignature.web.wssecure;
 
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.time.DayOfWeek;
 
 @RestController
-@RequestMapping(path = {"/user/users/fetch", "/otp/users/fetch"})
+@RequestMapping(path = {"/ws-secure/user/fetch", "/ws-secure/otp/fetch"})
 public class UserAndOtpUserFetchController {
 
     private final SignBookService signBookService;

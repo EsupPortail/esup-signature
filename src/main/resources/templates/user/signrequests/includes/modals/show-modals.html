@@ -983,7 +983,7 @@
                             btn.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 const signImageId = this.getAttribute('data-delete-sign-id');
-                                const deleteUrl = '/' + userType + '/users/fetch/delete-sign/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
+                                const deleteUrl = '/ws-secure/' + userType + '/fetch/delete-sign/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
 
                                 if(confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
                                     fetch(deleteUrl, {
@@ -1059,7 +1059,7 @@
                         }
 
                         const formData = new FormData(userParamsForm);
-                        const submitUrl = '/' + userType + '/users/fetch';
+                        const submitUrl = '/ws-secure/' + userType + '/fetch';
                         const hasCustomImagePayload = `${formData.get('signImageBase64') || ''}`.trim() !== '';
                         if (signRequestId) {
                             formData.append('signRequestId', signRequestId);
