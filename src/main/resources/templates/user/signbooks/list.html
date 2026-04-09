@@ -13,59 +13,19 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-dashboard :: side-dashboard}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Tableau de bord</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${statusFilter == 'deleted'}">
-                        <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
-                              onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
-                            <button type="submit" tabindex="1" id="trashLaunchButton" class="btn-floating btn-lg bg-danger"
-                                    title="Vider la corbeille" style="border: 0;">
-                                <i class="fi fi-rr-dumpster-fire fa-2xl" style="margin-top: 0;"></i>
-                            </button>
-                        </form>
-                    </li>
-                    <li>
-                        <a type="button" id="massSignModalButton"
-                            data-bs-toggle="modal" data-bs-target="#signModal"
-                            title="Signer en masse les demandes sélectionnées"
-                            class="btn-floating btn-lg bg-success d-none">
-                            <i class="fi fi-rr-signature-lock fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="deleteMultipleButton"
-                            title="Supprimer en masse les demandes sélectionnées"
-                            class="btn-floating btn-lg bg-danger d-none">
-                            <i class="fi fi-rr-trash fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="downloadMultipleButton"
-                            title="Télécharger la selection"
-                            class="btn-floating btn-lg bg-primary d-none">
-                            <i class="fi fi-rr-download fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="downloadMultipleButtonWithReport"
-                            title="Télécharger la selection avec les rapports"
-                            class="btn-floating btn-lg bg-primary d-none">
-                            <i class="fi fi-rr-folder-download fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-11 p-0 m-2" style="outline: none;">
-                <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
-                <table class="table table-borderless table-hover table-light">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-dashboard :: side-dashboard}"></nav>
+                <div class="flex-grow-1">
+                    <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="outline: none;">
+                        <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
+                        <table class="table table-borderless table-hover table-light">
                 <thead class="table-secondary">
                 <tr style="z-index: 2;">
                     <th class="d-none d-lg-table-cell" style="width: 20px; z-index: 3;">
@@ -191,7 +151,51 @@
                     <td th:replace="~{fragments/pagination :: pagination}"></td>
                 </tr>
                 </tfoot>
-            </table>
+                        </table>
+                    </div>
+                </div>
+                <div id="signButtons" class="es-fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li th:if="${statusFilter == 'deleted'}">
+                            <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
+                                  onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
+                                <button type="submit" tabindex="1" id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
+                                        title="Vider la corbeille" style="border: 0;">
+                                    <i class="fi fi-rr-dumpster-fire " style="margin-top: 0;"></i>
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <a type="button" id="massSignModalButton"
+                               data-bs-toggle="modal" data-bs-target="#signModal"
+                               title="Signer en masse les demandes sélectionnées"
+                               class="btn btn-floating btn-lg bg-success d-none">
+                                <i class="fi fi-rr-signature-lock " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a type="button" id="deleteMultipleButton"
+                               title="Supprimer en masse les demandes sélectionnées"
+                               class="btn btn-floating btn-lg bg-danger d-none">
+                                <i class="fi fi-rr-trash " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a type="button" id="downloadMultipleButton"
+                               title="Télécharger la selection"
+                               class="btn btn-floating btn-lg bg-primary d-none">
+                                <i class="fi fi-rr-download " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a type="button" id="downloadMultipleButtonWithReport"
+                               title="Télécharger la selection avec les rapports"
+                               class="btn btn-floating btn-lg bg-primary d-none">
+                                <i class="fi fi-rr-folder-download " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

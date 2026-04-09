@@ -1,51 +1,31 @@
 import {EventFactory} from "./EventFactory.js?version=@version@";
-
 export class WheelDetector extends EventFactory {
-
     constructor() {
         super();
         this.initListeners();
         this.lastScrollTop = 0;
-
     }
-
     initListeners() {
         let self = this;
         window.addEventListener("DOMMouseScroll", e => this.computeWhellEvent(e));
         window.addEventListener("wheel", e => this.computeWhellEvent(e), {passive: false});
-        window.addEventListener("scroll", function(){ // or window.addEventListener("scroll"....
-            let st = window.scrollY || document.documentElement.scrollTop;
-            if (st > this.lastScrollTop){
-                self.fireEvent("down", [window.scrollY]);
-            } else {
-                self.fireEvent("up", [window.scrollY]);
-            }
-            this.lastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
-        }, false);
+
+        const workspace = document.getElementById("workspace");
+        if(workspace) {
+            workspace.addEventListener("scroll", function() {
+                let st = workspace.scrollTop;
+                if (st > self.lastScrollTop){
+                    self.fireEvent("down", [st]);
+                } else {
+                    self.fireEvent("up", [st]);
+                }
+                self.lastScrollTop = st <= 0 ? 0 : st;
+            }, false);
+        }
     }
 
     computeWhellEvent(event) {
         const workspace = document.getElementById("pdf");
-        // if (event.ctrlKey) {
-        //     if(workspace && workspace.contains(event.target))  {
-        //         event.preventDefault();
-        //         if (this.detectMouseWheelDirection(event) === 'down'){
-        //             console.debug("debug - " + "wheel down zoom out");
-        //             this.fireEvent("zoomin", [event]);
-        //         } else {
-        //             console.debug("debug - " + "wheel up zoom in");
-        //             this.fireEvent("zoomout", [event]);
-        //         }
-        //     } else {
-        //         if (this.detectMouseWheelDirection(event) === 'down') {
-        //             console.debug("debug - " + "wheel down zoom out");
-        //             this.fireEvent("zoomout", [event]);
-        //         } else {
-        //             console.debug("debug - " + "wheel up zoom in");
-        //             this.fireEvent("zoomin", [event]);
-        //         }
-        //     }
-        // }
     }
 
     detectMouseWheelDirection(e) {
@@ -62,5 +42,4 @@ export class WheelDetector extends EventFactory {
         }
         return direction;
     }
-
 }

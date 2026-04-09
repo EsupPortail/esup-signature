@@ -5,24 +5,28 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Statistiques</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="card mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Statistiques</b></h5>
-                    <div style="width: 100%; height: 500px;">
-                        <canvas id="signsCount" style="width: 100%; height: 100%;"></canvas>
-                        <script th:inline="javascript">
-                            let ctx = document.getElementById('signsCount');
-                            new Chart(ctx, JSON.parse([[${signsByYears}]]));
-                        </script>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
+                    <div class="card mx-auto">
+                        <div class="card-body">
+                            <h5 class="text-center"><b>Statistiques</b></h5>
+                            <div style="width: 100%; height: 500px;">
+                                <canvas id="signsCount" style="width: 100%; height: 100%;"></canvas>
+                                <script th:inline="javascript">
+                                    let ctx = document.getElementById('signsCount');
+                                    new Chart(ctx, JSON.parse([[${signsByYears}]]));
+                                </script>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

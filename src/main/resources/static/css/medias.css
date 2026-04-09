@@ -37,11 +37,11 @@
 }
 
 @media (min-width: 1800px) {
-    .d-xxxxl-table-cell {
+    .d-xxxl-table-cell {
         display: table-cell !important;
     }
 
-    .d-xxxxl-inline {
+    .d-xxxl-inline {
         display: inline !important;
     }
     .d-xxxl-inline-flex {
@@ -49,19 +49,54 @@
         flex-direction: row;
         align-items: center;
     }
+    .d-xxxl-flex {
+        display: flex !important;
+    }
 }
 
-@media (max-width: 1400px) {
+@media (min-width: 1400px) {
+    .d-xxl-flex {
+        display: flex !important;
+    }
+}
+
+@media (max-width: 1399.98px) {
     th.col-nom { min-width: 130px; }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1199.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: flex !important;
+    }
+
+    /* On signrequest page, sidebar is hidden by default on <= xl and opened only via mobile toggle class. */
+    body.es-signrequest-page #sidebar {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #sidebar.es-sidebar-mobile,
+    body.es-signrequest-page #sidebar.sidebar-mobile {
+        display: block !important;
+        position: fixed !important;
+        left: 0;
+        top: 92px !important;
+        max-width: 300px !important;
+        width: 300px !important;
+        height: calc(100vh - 138px) !important;
+        z-index: 10003 !important;
+    }
+
+    .navbar-brand {
+        width: revert;
+        margin-right: 0px;
+    }
 
     .new-max-w {
         width: 100%;
     }
 
-    .second-tools {
+    .second-tools,
+    .es-second-tools {
         top: 104px;
     }
 
@@ -70,23 +105,23 @@
         margin-left: 0;
     }
 
-    .tools {
+    .tools,
+    .es-tools {
         top: 50px;
     }
 
-    .workspace-pdf {
-        margin-top: 55px;
-    }
-
-    .workspace-sign {
+        .workspace-sign,
+    .es-workspace-sign {
         margin-top: 142px;
     }
 
-    .workspace {
+    .workspace,
+    .es-workspace {
         margin-top: 0;
     }
 
-    .content {
+    .content,
+    .es-content {
         margin-top: 100px;
         width: 100vw;
         margin-left: 0;
@@ -132,11 +167,68 @@
 
 }
 
-@media (max-width: 992px) {
-    th.col-nom { min-width: 110px; }
+@media (max-width: 991.98px) {
+    th.col-nom {
+        min-width: 110px;
+    }
+
+    body.es-signrequest-page #breadcrumb {
+        display: none !important;
+    }
+
+    body.es-signrequest-page .es-nav-tools {
+        display: flex !important;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 0;
+        width: 100%;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb {
+        display: flex !important;
+        align-items: center;
+        min-height: 42px;
+        background: var(--bs-white);
+        border-bottom: 1px solid var(--bs-border-color);
+        padding-right: 0.5rem;
+    }
+
+    .es-nav-tools {
+        margin-left: 0;
+    }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top:58px;
+    }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0;
+        width: auto;
+        max-width: none;
+        z-index: 1031;
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2-content {
+        transform: scale(0.92);
+        /*transform-origin: center top;*/
+    }
 
     #returnButton {
         display: none;
@@ -149,16 +241,17 @@
     /*.new-width-full {*/
     /*    width: calc(100vw);*/
     /*}*/
-
     #breadcrumb {
         display: none;
     }
 
-    .workspace-sign {
+    .workspace-sign,
+    .es-workspace-sign {
         display: flex;
     }
 
-    .fixed-action-btns {
+    .fixed-action-btns,
+    .es-fixed-action-btns {
         bottom: 25px;
         right: -5px;
     }
@@ -194,9 +287,63 @@
         top: 40px;
         position: absolute;
     }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top: 58px;
+    }
+
+    .nav-tabs {
+        border: 0;
+    }
+
+    .nav-tabs li {
+        background-color: var(--bs-light);
+        border: 0;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0;
+        border: 0;
+        background-color: var(--bs-light);
+    }
+
+    body.es-signrequest-page .es-nav-tools > div {
+        border: 0;
+    }
+
+    body.es-signrequest-page .es-nav-tools-breadcrumb {
+        background-color: var(--bs-light);
+
+    }
+
 }
 
-@media (max-width: 575px) {
+@media (max-width: 575.98px) {
+    body.es-signrequest-page #breadcrumb {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #signButtons {
+        display: none !important;
+    }
+
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2-content {
+        transform: scale(0.82);
+
+    }
 
     .nav-item-label {
         display: inline !important;
@@ -213,30 +360,32 @@
         display: none;
     }
 
-    .tools {
+    .tools,
+    .es-tools {
         top: 50px;
     }
 
-    .workspace-pdf {
-        padding: 10px;
-        margin-top: 50px;
-    }
-
-    .workspace {
-        width: min-content;
+    .workspace,
+    .es-workspace {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         margin-top: 0;
         padding: 3px;
     }
 
-    .workspace-sign {
+    .workspace-sign,
+    .es-workspace-sign {
         margin-top: 86px;
     }
 
-    .content-full-fixed {
+    .content-full-fixed,
+    .es-content-full-fixed {
         width: 100% ;
     }
 
-    .content {
+    .content,
+    .es-content {
         overflow: auto;
         margin-top: 55px;
     }
@@ -269,6 +418,20 @@
     .pdf-alerts .alert {
         padding: 2px !important;
     }
+
+    .workspace,
+    .es-workspace {
+        margin-top: -45px;
+    }
+
+    body.es-signrequest-page #tools.es-tools {
+        top: 90px;
+    }
+
+    .pdf-alerts-btn {
+        top:58px;
+    }
+
 }
 
 @media (max-width: 319px) {

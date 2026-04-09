@@ -5,134 +5,136 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:unless="${user.userType.name() == 'external'}" id="sidebar" class="scrollbar-lite scrollbar-style" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-            <ol class="breadcrumb">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+            <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/signrequests">Tableau de bord</a></li>
                 <li class="breadcrumb-item"><a th:href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:text="${signBook.subject}"></a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edition</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <ul id="buttonList" class="list-unstyled">
-                    <li>
-                        <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn-floating btn-lg bg-primary float-end">
-                            <i class="fi fi-rr-add-document fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn-floating btn-lg bg-primary float-end">
-                            <i class="fi fi-rr-workflow-setting fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="saveButton" onclick="$('#params').submit();" class="btn-floating btn-lg bg-success" title="Enregistrer">
-                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn-floating btn-lg bg-secondary" title="Retour au parapheur">
-                            <i class="fi fi-rr-leave fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="col-11 card text-bg-light border-light m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                    <h5 class="ms-4"><b>Paramètres généraux</b></h5>
-                </div>
-                <div class="card-body">
-                    <form id="params" th:action="'/user/signbooks/update/' + ${signBook.id}" th:method="put">
-                        <div class="form-group">
-                            <label for="subject">Titre</label>
-                            <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:unless="${user.userType.name() == 'external'}" th:replace="~{fragments/sides/side-sign :: side-sign}"></nav>
+                <div class="flex-grow-1 overflow-auto">
+                    <div class="card text-bg-light border-light m-2">
+                        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                            <h5 class="ms-4"><b>Paramètres généraux</b></h5>
                         </div>
-                        <div class="form-group">
-                            <label for="description">Description</label>
-                            <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
+                        <div class="card-body">
+                            <form id="params" th:action="'/user/signbooks/update/' + ${signBook.id}" th:method="put">
+                                <div class="form-group">
+                                    <label for="subject">Titre</label>
+                                    <input type="text" class="form-control" name="subject" id="subject" th:value="${signBook.subject}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="description">Description</label>
+                                    <textarea id="description" name="description" class="form-control" th:text="${signBook.description}"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="viewersSelect">Observateurs</label>
+                                    <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
+                                        <th:block th:each="viewer : ${signBook.viewers}">
+                                            <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                        </th:block>
+                                    </select>
+                                </div>
+                            </form>
                         </div>
-                        <div class="form-group">
-                            <label for="viewersSelect">Observateurs</label>
-                            <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
-                                <th:block th:each="viewer : ${signBook.viewers}">
-                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
-                                </th:block>
-                            </select>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="col-11 card text-bg-light border-light m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                    <h5 class="ms-4"><b>Documents à signer dans ce parapheur</b></h5>
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm table-hover">
-                            <thead class="table-secondary">
-                            <tr>
-                                <th>Titre</th>
-                                <th class="d-none d-md-table-cell">Date de création</th>
-                                <th class="d-none d-lg-table-cell">Créé par</th>
-                                <th th:if="${signBook.isEditable()}" class="">Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <th:block th:each="signRequest : ${signBook.signRequests}">
-                                <tr>
-                                    <td class="text-break" th:text="${signRequest.title}"></td>
-                                    <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                    <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
-                                    <td th:if="${signBook.isEditable() && signRequest.createBy.eppn == userEppn}" class="">
-                                        <div class="dropdown position-relative">
-                                            <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
-                                                <i class="fa-solid fa-ellipsis-v"></i>
-                                            </button>
-                                            <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
-                                                <li>
-                                                    <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                                                        <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <form id="command" th:action="'/user/signrequests/' + ${signRequest.id}" th:method="delete">
-                                                        <div class="modal-header">
-                                                            <h2>Attention</h2>
-                                                            <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                                                            </button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                                                            <button type="submit" class="btn btn-danger">Oui</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </th:block>
-                            </tbody>
-                        </table>
-                    <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
-                        Aucun document à signer pour le moment
                     </div>
+                    <div class="card text-bg-light border-light m-2">
+                        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                            <h5 class="ms-4"><b>Documents à signer dans ce parapheur</b></h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th class="d-none d-md-table-cell">Date de création</th>
+                                        <th class="d-none d-lg-table-cell">Créé par</th>
+                                        <th th:if="${signBook.isEditable()}" class="">Action</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="signRequest : ${signBook.signRequests}">
+                                        <tr>
+                                            <td class="text-break" th:text="${signRequest.title}"></td>
+                                            <td class="d-none d-md-table-cell"><span th:text="${#dates.format(signRequest.createDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                            <td class="d-none d-lg-table-cell"><span th:text="${signRequest.createBy.firstname} + ' ' + ${signRequest.createBy.name}"></span></td>
+                                            <td th:if="${signBook.isEditable() && signRequest.createBy.eppn == userEppn}" class="">
+                                                <div class="dropdown position-relative">
+                                                    <button type="button" th:id="'menu-toggle-' + ${signRequest.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signRequest.id}" th:aria-controls="'menu-' + ${signRequest.id}" data-bs-toggle="dropdown">
+                                                        <i class="fa-solid fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signRequest.id}">
+                                                        <li>
+                                                            <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signRequest.id}" role="button" title="Supprimer" data-bs-toggle="modal" data-bs-target="#modal-warning" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                                                                <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <form id="command" th:action="'/user/signrequests/' + ${signRequest.id}" th:method="delete">
+                                                                <div class="modal-header">
+                                                                    <h2>Attention</h2>
+                                                                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
+
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                                                                    <button type="submit" class="btn btn-danger">Oui</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            <div th:unless="${#lists.size(signBook.signRequests) > 0}" class="alert alert-secondary">
+                                Aucun document à signer pour le moment
+                            </div>
+                        </div>
+                    </div>
+                    <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                        <div th:replace="~{user/signrequests/cards/stepscard-updatable :: stepscard-updatable}"></div>
+                    </th:block>
+                </div>
+                <div id="addButton" class="es-fixed-action-btns active" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li>
+                            <a th:if="${signBook.isEditable() && signBook.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="btn btn-floating btn-lg bg-primary float-end">
+                                <i class="fi fi-rr-add-document " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a title="Ajouter une étape au circuit" role="button" data-bs-toggle="modal" data-bs-target="#addStep" class="btn btn-floating btn-lg bg-primary float-end">
+                                <i class="fi fi-rr-workflow-setting " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="saveButton" onclick="$('#params').submit();" class="btn btn-floating btn-lg bg-success" title="Enregistrer">
+                                <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a id="cancelButton" th:href="'/user/signbooks/' + ${signBook.id}" class="btn btn-floating btn-lg bg-secondary" title="Retour au parapheur">
+                                <i class="fi fi-rr-leave " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            <th:block th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                <div th:replace="~{user/signrequests/cards/stepscard-updatable :: stepscard-updatable}"></div>
-            </th:block>
         </div>
-    </div>
 </main>
 
 <div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true" th:if="${signBook.createBy.eppn == userEppn && signBook.isEditable()}">
@@ -245,7 +247,8 @@
             </form>
             <script th:inline="javascript" type="module">
                 import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=@[(${versionApp})]@';
-                new SelectUser("recipientsEmails2", null, null, [[${_csrf}]]);
+                const csrf = /*[[${_csrf}]]*/ {};
+                new SelectUser("recipientsEmails2", null, null, csrf);
             </script>
         </div>
     </div>

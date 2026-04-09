@@ -5,16 +5,18 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" class="main-selectable">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Utilisateurs</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="card mb-1 col-lg-10 mx-auto">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
+            <div class="card col-lg-12">
                 <div class="card-body">
                     <form method="get">
                         <div class="input-group">
@@ -109,6 +111,8 @@
                     </table>
                     <nav th:replace="~{fragments/pagination :: pagination}"></nav>
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>

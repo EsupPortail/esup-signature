@@ -5,16 +5,18 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Sessions courantes</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="card text-bg-light col-lg-11 m-2">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4"><b>Sessions courantes</b></h5>
                 </div>
@@ -87,6 +89,8 @@
                     </tr>
                     </tbody>
                 </table>
+            </div>
+                </div>
             </div>
         </div>
     </div>

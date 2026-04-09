@@ -146,8 +146,9 @@ export class GlobalUi {
         });
 
         $("#display-side-btn").on('click', function(e) {
-           $("#sidebar").toggleClass("sidebar-mobile");
+           $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
         });
+
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -370,7 +371,7 @@ export class GlobalUi {
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
-            $("#sidebar").removeClass("sidebar-mobile");
+            $("#sidebar").removeClass("es-sidebar-mobile").removeClass("sidebar-mobile");
         }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
@@ -497,23 +498,23 @@ export class GlobalUi {
     }
 
     showSideBar() {
-        console.debug("debug - " + "show side");
-        this.sideBar.removeClass('active');
-        this.sideBar2.removeClass('d-none');
-        this.sideBarLabels.removeClass('d-none');
-        this.content.removeClass('content-full');
-        this.newDiv.removeClass('new-width-full');
-        this.breadcrumb.removeClass('breadcrumb-nav-full');
+        // console.debug("debug - " + "show side");
+        // this.sideBar.removeClass('active');
+        // this.sideBar2.removeClass('d-none');
+        // this.sideBarLabels.removeClass('d-none');
+        // this.content.removeClass('content-full');
+        // this.newDiv.removeClass('new-width-full');
+        // this.breadcrumb.removeClass('breadcrumb-nav-full');
     }
 
     hideSideBar() {
-        console.debug("debug - " + "hide side");
-        this.sideBar.addClass('active');
-        this.sideBar2.addClass('d-none');
-        this.sideBarLabels.addClass('d-none');
-        this.content.addClass('content-full');
-        this.newDiv.addClass('new-width-full');
-        this.breadcrumb.addClass('breadcrumb-nav-full');
+        // console.debug("debug - " + "hide side");
+        // this.sideBar.addClass('active');
+        // this.sideBar2.addClass('d-none');
+        // this.sideBarLabels.addClass('d-none');
+        // this.content.addClass('content-full');
+        // this.newDiv.addClass('new-width-full');
+        // this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
     checkSelectUser() {

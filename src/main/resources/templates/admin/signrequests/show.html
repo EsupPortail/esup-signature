@@ -13,9 +13,8 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/signrequests">Liste
@@ -25,25 +24,13 @@
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
-                            <i class="fa-solid fa-trash-restore fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger"
-                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="card text-bg-light col-lg-11 m-2">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Statut</h5>
                 </div>
@@ -56,7 +43,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Liste des documents originaux</h5>
                 </div>
@@ -66,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Historique des modifications</h5>
                 </div>
@@ -76,7 +63,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Liste des documents signés</h5>
                 </div>
@@ -87,7 +74,7 @@
                 </div>
             </div>
             <div th:replace="~{admin/signrequests/cards/stepscard}"></div>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span></h5>
                 </div>
@@ -109,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
                 </div>
@@ -139,6 +126,25 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+                </div>
+            <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
+                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
+                            <i class="fa-solid fa-trash-restore "></i>
+                        </a>
+                    </li>
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                        <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
+                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
+                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>
+                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt "></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             </div>
         </div>
     </div>

@@ -10,10 +10,8 @@
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb col-12">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
@@ -21,27 +19,13 @@
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li>
-                        <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
-                            <span class="fa-stack fa-1x">
-                                <i class="fi fi fi-rr-shoe-prints fa-stack-2x" style="margin-top: 18px; margin-left: -6px"></i>
-                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-top: 0px; margin-left: 10px"></i>
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#addAutoStep">
-                            <span class="fa-stack fa-1x">
-                                <i class="fi fi-rr-cloud-gear-automation fa-stack-2x" style="margin-top: 18px; margin-left: -6px"></i>
-                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-top: 0px; margin-left: 10px"></i>
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
+                <div class="flex-grow-1">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
@@ -53,7 +37,7 @@
                     <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
-            <div class="card text-bg-light col-lg-11 m-2">
+            <div class="card text-bg-light col-lg-12 m-2">
                 <div class="card-body text-center">
                     <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard}"></div>
                     <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
@@ -167,6 +151,27 @@
                         </form>
                     </div>
                 </div>
+            </div>
+                </div>
+            <div class="es-sign-buttons es-fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addStep">
+                            <span class="fa-stack fa-1x">
+                                <i class="fi fi fi-rr-shoe-prints fa-stack-2x" style="margin-left: -6px"></i>
+                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addAutoStep">
+                            <span class="fa-stack fa-1x">
+                                <i class="fi fi-rr-cloud-gear-automation fa-stack-2x" style="margin-left: -6px"></i>
+                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
             </div>
             </div>
         </div>

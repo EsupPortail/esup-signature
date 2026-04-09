@@ -1,0 +1,65 @@
+dn: ou=people,dc=example,dc=org
+objectClass: organizationalUnit
+ou: people
+
+
+dn: ou=groups,dc=example,dc=org
+objectClass: organizationalUnit
+ou: groups
+
+
+dn: ou=structures,dc=example,dc=org
+objectClass: organizationalUnit
+ou: structures
+
+
+dn: uid=0,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: Test User
+sn: User
+givenName: Test
+displayName: Test User
+uid: 0
+mail: 0@example.org
+userPassword: password
+
+
+dn: uid=testadmin,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: organizationalPerson
+objectClass: person
+objectClass: top
+cn: Admin User
+sn: User
+givenName: Admin
+displayName: Admin User
+uid: testadmin
+mail: testadmin@example.org
+userPassword: password
+
+
+dn: cn=for.esup-signature.user,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: for.esup-signature.user
+member: uid=0,ou=people,dc=example,dc=org
+member: uid=testadmin,ou=people,dc=example,dc=org
+
+
+dn: cn=for.esup-signature.admin,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+objectClass: top
+cn: for.esup-signature.admin
+member: uid=testadmin,ou=people,dc=example,dc=org
+
+
+dn: ou=0,ou=structures,dc=example,dc=org
+objectClass: organizationalUnit
+objectClass: top
+ou: 0
+description: Test structure 0
+postalAddress: Test address
+

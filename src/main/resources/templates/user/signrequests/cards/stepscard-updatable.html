@@ -8,87 +8,93 @@
         </div>
         <div class="card-body">
             <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
-                <div id="stepper" class="bs-stepper">
-                    <div class="bs-stepper-header container" role="tablist">
-                        <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
-                            <div class="step" th:name="'step_' + ${iterator.index}" th:data-bs-target="'#step_' + ${iterator.index}">
-                                <div class="step-trigger" th:aria-controls="'step_' + ${iterator.index}" role="tab" aria-selected="false" style="min-height: 100px; border: 1px solid #555555;">
-                                    <span title="Etape en cours" th:if="${iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-warning"><i class="fi fi-rr-duration-alt"></i></span>
-                                    <span title="Etape à venir" th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle"><i class="fi fi-rr-pause"></i></span>
-                                    <span title="Etape terminée" th:unless="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" class="bs-stepper-circle bg-success"><i class="fa-solid fa-check"></i></span>
-                                    <div class="bs-stepper-label">
-                                        <span  th:text="'Etape ' + ${iterator.index + 1}"></span>
-                                        <table class="table table-sm table-hover table-borderless">
-                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                                <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
-                                                    <td th:th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                                    <td th:th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
-                                                    <td th:if="${(iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber) && signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
-                                                        <i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
-                                                        <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
-                                                    </td>
-                                                </tr>
-                                            </th:block>
-                                        </table>
-                                    </div>
-                                    <div class="bs-stepper-bottom">
-                                        <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1 && signBook.liveWorkflow.liveWorkflowSteps.size() > signBook.liveWorkflow.currentStepNumber  && (iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber)}"
-                                                th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
-                                            <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
-                                                <i class="fa-solid fa-trash-alt"></i>
-                                            </button>
-                                        </form>
-                                        <button th:if="${iterator.index + 1 > signBook.liveWorkflow.currentStepNumber || iterator.index + 1 == signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${iterator.index + 1}" class="btn btn-sm float-end">
-                                            <i class="fa-solid fa-pencil-alt"></i>
+                <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
+                    <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}"
+                              th:with="stepNumber=${iterator.index + 1},
+                                       isCompleted=${stepNumber lt signBook.liveWorkflow.currentStepNumber},
+                                       isCurrent=${stepNumber eq signBook.liveWorkflow.currentStepNumber},
+                                       isPending=${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending},
+                                       isRefused=${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                        <div th:id="'step-' + ${stepNumber}"
+                             th:class="'step-horizontal-v2 d-flex gap-2 align-items-start'
+                                + ${(isCompleted or (isCurrent and not isPending and not isRefused)) ? ' complete' : ''}
+                                + ${(isCurrent and isPending) ? ' active' : ''}
+                                + ${(stepNumber gt signBook.liveWorkflow.currentStepNumber) ? ' disabled' : ''}">
+                            <div class="step-horizontal-v2-icon mt-1">
+                                <i th:if="${isCurrent and isPending}" class="fi fi-rr-duration-alt" title="Etape en cours"></i>
+                                <i th:if="${stepNumber gt signBook.liveWorkflow.currentStepNumber}" class="fi fi-rr-pause" title="Etape a venir"></i>
+                                <i th:if="${isCurrent and isRefused}" class="fi fi-rr-cross-small" title="Etape refusee"></i>
+                                <i th:if="${isCompleted or (isCurrent and not isPending and not isRefused)}" class="fi fi-rr-check" title="Etape terminee"></i>
+                            </div>
+                            <div class="step-horizontal-v2-content bg-white border p-1 rounded w-100">
+                                <span th:text="'Etape ' + ${stepNumber}"></span>
+                                <table class="table table-sm table-hover table-borderless mb-1">
+                                    <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
+                                        <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
+                                            <td th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
+                                            <td th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
+                                            <td th:if="${stepNumber >= signBook.liveWorkflow.currentStepNumber and signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
+                                                <i title="a signe le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
+                                                <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                </table>
+                                <div class="bs-stepper-bottom">
+                                    <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1 && signBook.liveWorkflow.liveWorkflowSteps.size() > signBook.liveWorkflow.currentStepNumber && stepNumber >= signBook.liveWorkflow.currentStepNumber}"
+                                          th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
+                                        <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
+                                            <i class="fa-solid fa-trash-alt"></i>
                                         </button>
-                                    </div>
-                                    <div data-bs-focus="false" role="dialog" class="modal modal-lg fade" th:id="'modal-update-' + ${iterator.index + 1}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form th:action="'/user/signbooks/update-recipients/' + ${signBook.id}" th:method="post" enctype="multipart/form-data">
-                                                    <div class="modal-header">
-                                                        <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l’étape : ' + ${iterator.index + 1}"></h1>
-                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="stepNumber" th:value="${iterator.index + 1}">
-                                                        <div class="alert alert-warning">Tous les participants n’ayant pas encore signé seront remplacés à cette étape</div>
-                                                        <div class="form-group mb-3">
-                                                            <label class="form-label" th:for="'recipientsEmails-' + ${iterator.index + 1}">Choisir les participants *</label>
-                                                            <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${iterator.index + 1}" multiple="multiple" required="required">
-                                                                <option data-placeholder="true"></option>
-                                                            </select>
-                                                            <div th:id="'tempUsers-recipientsEmails-' + ${iterator.index + 1}"></div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Valider</button>
-                                                    </div>
-                                                </form>
+                                    </form>
+                                    <button th:if="${stepNumber >= signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${stepNumber}" class="btn btn-sm float-end">
+                                        <i class="fa-solid fa-pencil-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div data-bs-focus="false" role="dialog" class="modal modal-lg fade" th:id="'modal-update-' + ${stepNumber}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="'/user/signbooks/update-recipients/' + ${signBook.id}" th:method="post" enctype="multipart/form-data">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l’etape : ' + ${stepNumber}"></h1>
+                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                        </div>
+                                            <div class="modal-body">
+                                                <input type="hidden" name="stepNumber" th:value="${stepNumber}">
+                                                <div class="alert alert-warning">Tous les participants n'ayant pas encore signe seront remplaces a cette etape</div>
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label" th:for="'recipientsEmails-' + ${stepNumber}">Choisir les participants *</label>
+                                                    <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${stepNumber}" multiple="multiple" required="required">
+                                                        <option data-placeholder="true"></option>
+                                                    </select>
+                                                    <div th:id="'tempUsers-recipientsEmails-' + ${stepNumber}"></div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <button type="submit" class="btn btn-primary">Valider</button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
-                            <div th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
-                        </th:block>
-                    </div>
-                </div>
-                <div id="stepper2" class="bs-stepper mt-4">
-                <div class="bs-stepper-header container" role="tablist">
-                <th:block th:if="${signBook.liveWorkflow.workflow != null}">
-                    <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
-                        <div class="bs-stepper-line"></div>
-                        <div class="step" name="target" data-bs-target="#target">
-                            <div aria-controls="target" class="step-trigger bg-light" role="tab" aria-selected="false" style="border: 1px solid #555555">
-                                <span th:classappend="${target.targetOk} ? 'bg-success' : 'bg_secondary'" class="bs-stepper-circle"><i class="fa-solid fa-file-export"></i></span>
-                                <span class="bs-stepper-label"><p>Export : <span th:text="${target.targetUri}"></span></p></span>
-                            </div>
                         </div>
                     </th:block>
-                </th:block>
                 </div>
+                <div class="steps-horizontal-v2 d-flex justify-content-center mt-4" style="width: 100%;">
+                    <th:block th:if="${signBook.liveWorkflow.workflow != null}">
+                        <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
+                            <div class="step-horizontal-v2 d-flex gap-2 align-items-center" th:classappend="${target.targetOk} ? ' complete' : ' disabled'">
+                                <div class="step-horizontal-v2-icon">
+                                    <i class="fa-solid fa-file-export"></i>
+                                </div>
+                                <div class="step-horizontal-v2-content bg-light p-1 rounded">
+                                    <p class="mb-0">Export : <span th:text="${target.targetUri}"></span></p>
+                                </div>
+                            </div>
+                        </th:block>
+                    </th:block>
                 </div>
             </th:block>
         </div>

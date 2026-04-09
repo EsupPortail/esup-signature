@@ -5,39 +5,43 @@
     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <div id="stepper1" class="bs-stepper linear">
-        <div class="bs-stepper-header" role="tablist">
-            <div class="step active" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-diagram-project"></i></span>
-                <span class="bs-stepper-label">Création du circuit</span>
+    <div id="stepper1" class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
+        <div id="wiz-step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-diagram-project"></i></div>
             </div>
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-disk"></i></span>
-                <span class="bs-stepper-label">Sauvegarde</span>
+            <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Création du circuit</span></div>
+        </div>
+        <div id="wiz-step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-disk"></i></div>
             </div>
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-flag"></i></span>
-                <span class="bs-stepper-label">Fin</span>
+            <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Sauvegarde</span></div>
+        </div>
+        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-flag"></i></div>
             </div>
+            <div class="step-horizontal-v2-content"><span class="text-xs font-bold">Fin</span></div>
         </div>
     </div>
     <hr>
-    <div id="stepper2" class="bs-stepper linear">
-        <div class="bs-stepper-header" role="tablist">
+    <div id="stepper2" class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
             <th:block th:if="${workflow != null}">
                 <th:block th:if="${workflow.workflowSteps.size() > 0}" th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                    <div th:id="'liveStep-' + ${iterator.index + 1}" class="step border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
-                        <span title="Étape à venir" class="bs-stepper-circle">
-                            <i class="fa-solid fa-clock"></i>
-                        </span>
-                        <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
-                            <span th:text="${workflowStep.description}"></span>
-                        </th:block>
-                        <span  th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
-                        <span th:replace="~{user/signrequests/cards/levelcard :: levelcard(liveWorkflowStep=${workflowStep})}"></span>
-                        <div>
+                    <div th:id="'liveStep-' + ${iterator.index + 1}" class="step-horizontal-v2 d-flex gap-2 align-items-center complete border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
+                        <div class="d-flex align-items-center gap-2">
+                            <div title="Étape configurée" class="step-horizontal-v2-icon">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="step-horizontal-v2-content">
+                            <th:block th:if="${workflowStep != null && workflowStep.description != null && workflowStep.description != ''}">
+                                <span th:text="${workflowStep.description}"></span>
+                            </th:block>
+                            <span th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
+                            <span th:replace="~{user/signrequests/cards/levelcard :: levelcard(liveWorkflowStep=${workflowStep})}"></span>
+                            <div>
                             <table class="table table-sm table-hover table-borderless">
                                 <th:block th:each="user : ${workflowStep.users}">
                                     <tr>
@@ -51,15 +55,14 @@
                             <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
                             <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}" class="float-end text-muted"><i class="fa-solid fa-users-slash"></i></span>
                             <span title="Étape infinie" th:if="${workflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fi fi-rr-infinite-cycle"></i></span>
+                            </div>
                         </div>
                     </div>
-                    <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="bs-stepper-line"></div>
                 </th:block>
             </th:block>
             <th:block th:unless="${workflow != null}">
                 <div class="alert alert-light">Pas d’étape pour le moment</div>
             </th:block>
-        </div>
     </div>
     <hr>
     <h4 class="d-flex justify-content-center mt-4" th:text="'Paramètres de l’étape ' + ${workflow != null? workflow.workflowSteps.size() + 1 : 1}"></h4>

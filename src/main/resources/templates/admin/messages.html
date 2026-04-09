@@ -6,21 +6,20 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Messages</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-simple-btn" >
-                <a data-bs-toggle="modal" data-bs-target="#newMessage" type="button" class="btn-floating btn-lg bg-primary">
-                    <i class="fa-solid fa-plus fa-2xl"></i>
-                </a>
-            </div>
-            <div class="card col-lg-10 mx-auto">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1">
+            <div class="card col-lg-12">
                 <div class="card-body">
                     <h5 class="text-center"><b>Messages</b></h5>
                     <div class="alert alert-secondary mb-2">
@@ -67,6 +66,17 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+                </div>
+            <div class="es-sign-buttons es-fixed-action-btns active">
+                <ul class="list-unstyled">
+                    <li>
+                        <a data-bs-toggle="modal" data-bs-target="#newMessage" type="button" class="btn btn-transparent text-dark" title="Ajouter un message">
+                            <i class="fa-solid fa-plus"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             </div>
         </div>
     </div>

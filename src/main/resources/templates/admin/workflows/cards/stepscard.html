@@ -2,19 +2,17 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
 <!--/*@thymesVar id="workflowStep" type="org.esupportail.esupsignature.entity.WorkflowStep"*/-->
-<div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}">
-    <div class="bs-stepper vertical linear">
-        <div class="bs-stepper-header mx-auto" role="tablist">
+<div th:fragment="stepscard" th:if="${workflow.workflowSteps != null}" id="admin-workflow-stepscard">
+    <div class="steps-vertical admin-workflow-steps">
             <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                <div class="step" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
-                    <div class="step-trigger p-1" role="tab"
-                        aria-selected="false" style="border: 1px solid #555555;">
-                        <div class="bs-stepper-label" style="width: 600px;">
+                <div class="step-vertical" th:name="${workflowStep.id}" th:id="${workflowStep.id}">
+                    <div class="step-vertical-icon bg-primary border-primary text-white fw-bold" th:text="${iterator.index + 1}"></div>
+                    <div class="step-vertical-content bg-light p-1 rounded" style="width: min(600px, 100%);">
                             <div class="accordion mb-1" th:id="'accordion_' + ${iterator.index + 1}">
                                 <div class="accordion-item">
                                     <div style="width: 100%;text-align: start;" class="accordion-header">
                                         <button class="accordion-button collapsed text-break" style="white-space: normal !important;" type="button" data-bs-toggle="collapse" th:data-bs-target="'#step_' + ${iterator.index + 1}" aria-expanded="false" aria-controls="collapseOne">
-                                        <h5><span class="bs-stepper-circle bg-primary" th:text="${iterator.index + 1}" style="padding-top: 9px;"></span> Étape <span th:if="${workflowStep.autoSign}">automatique </span><span th:text="${workflowStep.description}"></span></h5>
+                                        <h5>Étape <span th:if="${workflowStep.autoSign}">automatique </span><span th:text="${workflowStep.description}"></span></h5>
                                         </button>
                                     </div>
                                     <div th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'step_' + ${iterator.index + 1}" class="accordion-collapse collapse p-2" th:data-bs-parent="'#accordion_' + ${iterator.index + 1}">
@@ -186,44 +184,41 @@
                                     </tr>
                                 </th:block>
                             </table>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${workflow.workflowSteps.size() > iterator.index + 1}" class="line"></div>
-                <div data-bs-focus="false" class="modal fade" th:id="'reSendModal' + ${workflowStep.id}"
-                    role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}"
-                    aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <form class="form-group mb-3"
-                                th:action="'/' + ${workflowRole} + '/workflows/add-step-recipents/' + ${workflow.id} + '/' + ${workflowStep.id}"
-                                method="post">
-                                <div class="modal-header">
-                                    <h3 class="modal-title">Ajout de destinataire(s)</h3>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="form-group mb-3">
-                                        <select class="auto-select-users" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}"
-                                                multiple="multiple"
-                                                required="required" data-es-check-list="false" data-es-relative="true">
-                                            <option data-placeholder="true"></option>
-                                        </select>
+                            <div data-bs-focus="false" class="modal fade" th:id="'reSendModal' + ${workflowStep.id}"
+                                role="dialog" th:aria-labelledby="'reSendModal' + ${workflowStep.id}"
+                                aria-hidden="true">
+                                <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal-content">
+                                        <form class="form-group mb-3"
+                                            th:action="'/' + ${workflowRole} + '/workflows/add-step-recipents/' + ${workflow.id} + '/' + ${workflowStep.id}"
+                                            method="post">
+                                            <div class="modal-header">
+                                                <h3 class="modal-title">Ajout de destinataire(s)</h3>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="form-group mb-3">
+                                                    <select class="auto-select-users" name="recipientsEmails" th:id="'recipientsEmails' + ${workflowStep.id}"
+                                                            multiple="multiple"
+                                                            required="required" data-es-check-list="false" data-es-relative="true">
+                                                        <option data-placeholder="true"></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary float-end"
+                                                        data-bs-dismiss="modal">Annuler
+                                                </button>
+                                                <button type="submit" class="btn btn-success float-end">
+                                                    Ajouter
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary float-end"
-                                            data-bs-dismiss="modal">Annuler
-                                    </button>
-                                    <button type="submit" class="btn btn-success float-end">
-                                        Ajouter
-                                    </button>
-                                </div>
-                            </form>
+                            </div>
                         </div>
                     </div>
-                </div>
             </th:block>
-        </div>
     </div>
 </div>
 </html>

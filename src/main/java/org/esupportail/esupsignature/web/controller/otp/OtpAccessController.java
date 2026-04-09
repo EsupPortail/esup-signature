@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -83,7 +84,7 @@ public class OtpAccessController {
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
-            model.addAttribute("globalProperties", globalProperties);
+            model.addAttribute("globalProperties", FrontendGlobalProperties.fromGlobalProperties(globalProperties));
             return "otp/signin";
         }
         otp = otpService.getOtpFromDatabase(urlId);
