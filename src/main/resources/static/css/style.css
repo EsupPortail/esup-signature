@@ -1654,6 +1654,20 @@ tr[aria-expanded="true"] .caret-toggle::before {
     width: 3px;
 }
 
+/* Admin signrequest steps card: wider content blocks and visible connectors on light card background. */
+#admin-signrequest-stepscard .step-vertical-content {
+    width: min(720px, 100%);
+}
+
+#admin-signrequest-stepscard .step-vertical:not(:last-child)::after {
+    background: #adb5bd;
+    width: 3px;
+}
+
+#admin-signrequest-stepscard .step-recipients {
+    margin-bottom: 0;
+}
+
 /* Horizontal Steps Style - Version 1: Text below icon */
 .steps-horizontal {
     max-width: none;
