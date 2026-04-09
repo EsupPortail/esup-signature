@@ -44,10 +44,10 @@ export class Nexu {
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();
-                // $("#certType > option[value='nexuCert']").attr('disabled', 'disabled');
                 $("#alertNexu").show();
                 $("#nexu_missing_alert").show();
                 self.updateSignModal()
+                $("#certType > option[value='nexuCert']").attr('unavailable', 'unavailable');
             });
         });
     }

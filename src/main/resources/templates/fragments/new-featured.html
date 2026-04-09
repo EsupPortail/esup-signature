@@ -27,7 +27,7 @@
                     <button title="Éditer le circuit" class="btn btn-transparent btn-sm text-dark toggle-mini-menu rounded-0"
                             th:if="${workflow.createBy.eppn == userEppn}" type="button" th:id="'menu-toggle_' + ${workflow.id}"
                             th:data-bs-target="'#menu-' + ${workflow.id}" data-bs-toggle="collapse">
-                        <i class="fa-solid fa-ellipsis-h"></i>
+                        <i class="fi fi-rr-menu-dots"></i>
                     </button>
                 </div>
                 <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">

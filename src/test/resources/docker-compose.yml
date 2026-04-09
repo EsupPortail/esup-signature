@@ -1,4 +1,29 @@
 services:
+
+  openldap:
+    image: osixia/openldap:1.5.0
+    environment:
+      LDAP_ORGANISATION: "Example Org"
+      LDAP_DOMAIN: "example.org"
+      LDAP_ADMIN_PASSWORD: "admin"
+    command: --copy-service
+    ports:
+      - "3980:389"
+    volumes:
+      - ./docker/ldap-bootstrap:/container/service/slapd/assets/config/bootstrap/ldif/custom
+
+  cas:
+    image: esupportail/apereo-cas-ldap-mfa:8.0.0-RC3
+    ports:
+      - "7080:7080"
+    volumes:
+      - ./docker/cas-config/cas.properties:/etc/cas/config/cas.properties:ro
+      - ./docker/cas-config/tmp-cas:/tmp/cas:ro
+    depends_on:
+      openldap:
+        condition: service_started
+
+
   db:
     image: postgres:latest
     ports:

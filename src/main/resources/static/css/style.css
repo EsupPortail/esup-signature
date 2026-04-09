@@ -39,6 +39,123 @@ main {
     user-select: none;
 }
 
+.es-fixed-action-btns {
+    background-color: var(--bs-white);
+}
+
+#content {
+    background-color: var(--bs-light);
+}
+
+ #sidebar {
+     background-color: var(--bs-secondary-bg);
+ }
+
+ .es-nav-tools {
+     font-size: 16px;
+ }
+
+/* Keep signrequest toolbar responsive and prevent horizontal page overflow. */
+body.es-signrequest-page .es-nav-tools {
+    width: 100%;
+    min-width: 0;
+    flex-wrap: wrap;
+    row-gap: 0.25rem;
+}
+
+body.es-signrequest-page .es-nav-tools > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+    justify-content: center;
+}
+
+/* Keep #tools visible without hiding the document area on signrequest page. */
+body.es-signrequest-page #tools.es-tools {
+    position: sticky !important;
+    top: 126px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+}
+
+body.es-signrequest-page #tools .steps-horizontal-v2 {
+    flex-wrap: nowrap;
+    /*overflow-x: auto;*/
+}
+
+body.es-signrequest-page #tools .step-horizontal-v2 {
+    flex: 1 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+body.es-signrequest-page #tools .step-horizontal-v2-content {
+    width: 100%;
+    min-width: 0;
+}
+
+body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content > span {
+    width: 100%;
+}
+
+body.es-signrequest-page #tools #insert-btn-div,
+body.es-signrequest-page #tools #refuseLaunchDiv {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+body.es-signrequest-page #tools #insert-btn-div {
+    flex-wrap: nowrap !important;
+}
+
+body.es-signrequest-page #tools #addSignButton2,
+body.es-signrequest-page #tools #refuseLaunchButton,
+body.es-signrequest-page #tools #certType,
+body.es-signrequest-page #tools #signLaunchButton {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
+#tools.tools-disabled {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+#tools.tools-disabled,
+#tools.tools-disabled * {
+    pointer-events: none !important;
+}
+
+@media (max-width: 1199.98px) {
+    /* Under 1200px, show only the current step in tools bar. */
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
+        display: flex !important;
+    }
+
+    /* Hide connectors when intermediate steps are hidden to avoid overlap. */
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
+        display: none;
+    }
+}
+
+.tools,
+.es-tools {
+    font-size: 16px;
+}
+
+.tools button,
+.es-tools button {
+    font-size: 16px;
+}
+
 .main-selectable {
     -webkit-touch-callout: initial !important;
     -webkit-user-select: initial !important;
@@ -144,18 +261,10 @@ td {
     background-color: white;
 }
 
-#sidebar {
-    background: white;
-    -moz-box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-    -webkit-box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-    box-shadow: 1px 0px 0px 0px rgba(0, 0, 0, 0.3);
-}
-
 .nav-tabs {
-    border-bottom : 1px solid #555;
-    background-color: white;
-    margin-left: -5px;
-
+    border-bottom : 1px solid #CCC;
+    /*background-color: white;*/
+    /*margin-left: -5px;*/
 }
 
 .nav-link:focus-visible {
@@ -166,17 +275,20 @@ td {
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
-#signLaunchButton:focus-visible {
-    box-shadow: 0 0 0 2px #000;
-}
-
-#trashLaunchButton:focus-visible {
-    box-shadow: 0 0 0 2px #000;
-}
-
 .nav-item.ws-tab {
     margin-bottom: -1px;
-    /*border-bottom : 1px solid #555;*/
+    border-bottom : 1px solid #CCC;
+    position: relative;
+}
+
+.nav-item.ws-tab::after {
+    content: '';
+    position: absolute;
+    top: 8px;          /* distance depuis le haut */
+    bottom: 8px;       /* distance depuis le bas */
+    right: -1px;
+    width: 3px;
+    background-color: #AAA;
 }
 
 .nav-item.ws-tab a {
@@ -185,6 +297,7 @@ td {
 
 .nav-item.ws-tab.active a {
     opacity: 1;
+    border-bottom: 1px solid white;
 }
 
 .nav-item.ws-tab.active {
@@ -193,45 +306,76 @@ td {
 
 .nav-tabs .nav-link {
     color: rgba(0, 0, 0, 1);
-    border-color: rgba(85, 85, 85, 1) !important;
-    border-bottom : 1px solid rgba(0, 0, 0, 1) !important;
     background-color: #FFF;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    margin-top: 1px;
+    max-height: 40px;
+    border-bottom: 1px solid #CCC;
+}
+
+.es-form-select-xl {
+    min-height: 58px !important;
+}
+
+.es-form-select-xl:disabled {
+    background-color: var(--bs-secondary) !important;
+    opacity: 0.65 !important;
+     color: white !important;
+}
+
+option[unavailable="unavailable"] {
+    color: var(--bs-secondary);
+}
+
+.nav-item:is(.active) > .nav-link {
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+.nav-item.ws-tab a:hover {
+    opacity: 1 !important;
+}
+
+.nav-item:not(.active) > .nav-link:hover > .truncate {
+    border-radius: 5px !important;
+    background-color: rgb(0 0 0 / 0.2);
+    outline: 5px solid rgb(0 0 0 / 0.2);
 }
 
 .nav-link.current {
     color: black;
     font-weight: bold;
-    border-color: #555 #555 #fff #555 !important;
-    background-color: white !important;
-}
-
-.nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {
-    color: black;
-    border-color: #555 #555 transparent #555 !important;
 }
 
 .nav-tab-admin {
     background-color: white;
 }
 
-.breadcrumb-nav {
-    background-color: white;
+.breadcrumb-nav,
+.es-breadcrumb-nav {
+    background-color: #fff;
+    border-bottom: 1px solid var(--bs-secondary-bg-subtle);
+}
+
+.breadcrumb-nav.breadcrumb-sign,
+.es-breadcrumb-nav.es-breadcrumb-sign {
+    border: 0 !important;
+}
+
+.breadcrumb-nav i:before,
+.es-breadcrumb-nav i:before {
+    font-size: 20px;
+}
+
+.signButtons i:before,
+.es-sign-buttons i:before {
+    font-size: 20px;
 }
 
 .scrollbar-lite {
     overflow-y: hidden;
 }
-
-/*.scrollbar-style::-webkit-scrollbar {*/
-/*    background-color: #CECECE;*/
-/*    width: 5px;*/
-/*    height: 5px;*/
-/*}*/
-
-/*.scrollbar-style::-webkit-scrollbar-thumb {*/
-/*    background-color: #E10F46;*/
-/*    width: 5px !important;*/
-/*}*/
 
 dd {
     font-weight: bold;
@@ -309,6 +453,56 @@ dd {
     height: 0;
 }
 
+.es-signrequest-postits-layer {
+    position: absolute;
+    top: 200px;
+}
+
+.es-signrequest-postit-note {
+    cursor: move;
+    background-color: #FFF740;
+    position: fixed;
+    left: 278px;
+    top: 178px;
+    z-index: 1000;
+}
+
+.es-postit-edit-form {
+    height: 70%;
+}
+
+.es-postit-save-btn {
+    right: 12px;
+    bottom: 12px;
+}
+
+.es-postit-delete-btn {
+    left: 12px;
+    bottom: 12px;
+}
+
+.es-signrequest-workspace-header {
+    width: 100%;
+    min-width: 0;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+}
+
+.es-signrequest-workspace-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.es-signrequest-workspace-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.es-signrequest-workspace-list {
+    margin-top: 128px;
+}
+
 .postitarea {
     /*overflow-y: scroll;*/
     margin-bottom: 36px;
@@ -380,20 +574,27 @@ dd {
     100% { opacity: 0.8; transform: scale(1); }
 }
 
-.circle:hover img {
+.circle:hover {
     /*background-color: var(--bs-danger);*/
     /*border-radius: 4px;*/
     /*border: 2px solid var(--bs-danger) !important;*/
     animation: blinkScale 0.8s infinite ease-in-out;
 }
 
-.circle-background img {
-    animation: blinkScale 0.8s infinite ease-in-out;
+.circle i:hover{
+   color: var(--bs-dark) !important;
+}
 
+.circle-background {
+    animation: blinkScale 0.8s infinite ease-in-out;
+}
+
+.circle-background i {
+    color: var(--bs-warning);
 }
 
 .circle-border {
-    border: 2px solid var(--bs-danger) !important;
+    border: 2px solid var(--bs-warning) !important;
 }
 
 #snackbar {
@@ -433,9 +634,8 @@ progress:before {
 }
 
 .progress {
-    height: 18px;
-    font-size: 1rem;
-    font-weight: bold;
+    font-size: 10px;
+    color: white;
 }
 
 .cursor-move {
@@ -463,10 +663,62 @@ input:focus, textarea:focus, select:focus {
     outline: none;
 }
 
+.sign-space .sign-text {
+    /*font-size: 14px;*/
+    text-align: center;
+}
+
+
+.sign-space {
+    font-weight: bold;
+    color: black;
+    border: 3px dashed rgb(159 159 159);;
+    background-color: rgb(243 243 243 / 0.5);
+    cursor: auto !important;
+    overflow: hidden;
+}
+
+.sign-space:hover {
+    border: 3px solid rgb(159 159 159); !important;
+    background-color: rgb(243 243 243 / 1);
+}
+
+.sign-space.sign-space-disabled {
+    opacity: 0.45;
+    filter: grayscale(1);
+}
+
+
+.sign-space .sign-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    /*font-size: 14px;*/
+}
+
+.sign-field .sign-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--bs-success);
+    /*font-size: 14px;*/
+}
+
+.sign-space .sign-icon {
+    font-weight: bold;
+    color: var(--bs-success);
+}
+
 .sign-field {
     font-weight: bold;
     color: black;
-    border: 1px solid transparent !important;
+    border: 3px dashed rgb(123, 246, 123); !important;
     background-color: rgba(220, 250, 220, 0.8);
     cursor: pointer !important;
     overflow: hidden;
@@ -474,12 +726,12 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field:hover {
     background-color: rgb(220, 250, 220);
-    border: 1px solid rgb(123, 246, 123) !important;
+    border: 3px solid rgb(123, 246, 123) !important;
 }
 
 .sign-field.ui-droppable-active {
     background-color: rgb(220, 250, 220);
-    border: 1px solid rgb(123, 246, 123) !important;
+    border: 3px solid rgb(123, 246, 123) !important;
 }
 
 .sign-field.ui-droppable-hover {
@@ -488,13 +740,18 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field-dropped {
     background-color: transparent !important;
+    border: 0 !important;
     cursor: default;
     z-index: 1;
 }
 
+.sign-content {
+    transform-origin: center;
+}
+
 .zoom {
     text-align: center;
-    min-width: 60px !important;
+    min-width: 65px !important;
 }
 
 .thumbnail {
@@ -600,6 +857,11 @@ input:focus, textarea:focus, select:focus {
     outline: none !important;
     /*box-shadow: none !important;*/
     /*    border-radius: .125rem;*/
+}
+
+.global-button {
+    background-color: white;
+
 }
 
 .btn-material {
@@ -715,6 +977,45 @@ textarea:placeholder-shown.required-field {
     color: #1e7e34;
 }
 
+.sign-slot {
+    border: 2px dashed rgba(25, 135, 84, 0.6);
+    background: rgba(220, 250, 220, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    overflow: hidden;
+}
+
+.sign-slot.sign-slot-editable {
+    border-color: rgba(220, 53, 69, 0.7);
+    background: rgba(255, 235, 238, 0.85);
+}
+
+.sign-slot.sign-slot-signable {
+    border-color: rgba(25, 135, 84, 0.7);
+    background: rgba(220, 250, 220, 0.85);
+}
+
+.slot-delete-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 4;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-delete-btn i {
+    font-size: 11px;
+    line-height: 1;
+}
+
 .admin-spot .sign-field {
     opacity: 1;
     border-color: #1e7e34 !important;
@@ -746,7 +1047,7 @@ textarea:placeholder-shown.required-field {
     z-index: 3;
     background-position: bottom left;
     background-repeat: no-repeat;
-    background-color: rgb(220, 250, 220, 0.5);
+    background-color: rgb(220, 250, 220, 0.8);
     cursor: move;
     -webkit-transition: background-image 0.2s ease-in-out;
     transition: background-image 0.2s ease-in-out;
@@ -797,10 +1098,6 @@ textarea:placeholder-shown.required-field {
     float: right;
     width: 50%;
     left: 50%;
-}
-
-.opacity-90 {
-    opacity: 94%;
 }
 
 .div-extra {
@@ -1028,7 +1325,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 /* ========== CÔTÉS (Lignes) ========== */
-/* Droite - Ligne verticale */
 .cross .ui-resizable-e {
     width: 2px !important;
     background-color: rgba(63, 63, 63, 0.8) !important;
@@ -1083,80 +1379,80 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 /* ========== BOULES CENTRALES sur les côtés ========== */
-/* Droite - Boule centrale */
-.cross .ui-resizable-e::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Droite - Boule centrale *!*/
+/*.cross .ui-resizable-e::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Gauche - Boule centrale */
-.cross .ui-resizable-w::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Gauche - Boule centrale *!*/
+/*.cross .ui-resizable-w::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Bas - Boule centrale */
-.cross .ui-resizable-s::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Bas - Boule centrale *!*/
+/*.cross .ui-resizable-s::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Haut - Boule centrale */
-.cross .ui-resizable-n::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: rgba(63, 63, 63, 0.9);
-    /*border: 2px solid white;*/
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    pointer-events: none;
-}
+/*!* Haut - Boule centrale *!*/
+/*.cross .ui-resizable-n::after {*/
+/*    content: '';*/
+/*    position: absolute;*/
+/*    width: 10px;*/
+/*    height: 10px;*/
+/*    background-color: rgba(63, 63, 63, 0.9);*/
+/*    !*border: 2px solid white;*!*/
+/*    border-radius: 50%;*/
+/*    top: 50%;*/
+/*    left: 50%;*/
+/*    transform: translate(-50%, -50%);*/
+/*    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);*/
+/*    pointer-events: none;*/
+/*}*/
 
-/* Hover sur les boules centrales */
-.cross .ui-resizable-e:hover::after, .cross .ui-resizable-w:hover::after,
-.cross .ui-resizable-n:hover::after, .cross .ui-resizable-s:hover::after {
-    background-color: rgba(100, 150, 255, 0.9);
-    transform: translate(-50%, -50%) scale(1.2);
-    transition: all 0.15s ease;
-}
+/*!* Hover sur les boules centrales *!*/
+/*.cross .ui-resizable-e:hover::after, .cross .ui-resizable-w:hover::after,*/
+/*.cross .ui-resizable-n:hover::after, .cross .ui-resizable-s:hover::after {*/
+/*    background-color: rgba(100, 150, 255, 0.9);*/
+/*    transform: translate(-50%, -50%) scale(1.2);*/
+/*    transition: all 0.15s ease;*/
+/*}*/
 
 /* Cacher toutes les poignées si la div a la classe "hide-handles" */
-.hide-handles .cross .ui-resizable-handle {
+.hide-handles > .ui-resizable-handle {
     display: none !important;
 }
 
@@ -1247,4 +1543,266 @@ tr[aria-expanded="true"] .caret-toggle::before {
         background-color: transparent;
         --underline-hover-width: var(--underline-max-width);
     }
+}
+
+.step-vertical {
+    display: flex;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.step-vertical:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 18px;
+    top: 40px;
+    bottom: 0;
+    width: 3px;
+    background: white;
+}
+
+.step-vertical-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: .5rem;
+    font-size: 20px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-vertical-content {
+    padding-left: 0.5rem;
+    width: 100%;
+    border-left: 4px solid #dee2e6;
+    border-radius: 6px;
+}
+
+.step-vertical.doc .step-vertical-content {
+    border-left: 4px solid var(--bs-primary);
+}
+
+.step-vertical.active .step-vertical-content {
+    border-left: 4px solid var(--bs-warning);
+}
+
+.step-vertical.complete .step-vertical-content {
+    border-left: 4px solid var(--bs-success);
+}
+
+.step-vertical.refused .step-vertical-content {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.step-vertical.refused .step-vertical-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-danger);
+    color: var(--bs-danger);
+}
+
+.step-vertical.doc .step-vertical-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+
+.step-vertical.active .step-vertical-icon {
+    background: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
+    color: white;
+}
+
+.step-vertical.complete .step-vertical-icon {
+    background: var(--bs-white);
+    border-color: var(--bs-success);
+    color: var(--bs-success);
+}
+
+/* Fin de procédure signée (complete + signed) */
+.step-vertical.complete.signed .step-vertical-content {
+    border-left: 4px solid var(--bs-success);
+}
+
+.step-vertical.complete.signed .step-vertical-icon {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+/* Étape complétée dans un workflow refusé (complete + refused) */
+.step-vertical.complete.refused .step-vertical-content {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.step-vertical.complete.refused .step-vertical-icon {
+    background: var(--bs-danger);
+    border-color: var(--bs-danger);
+    color: white;
+}
+
+/* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */
+#admin-workflow-stepscard .admin-workflow-steps .step-vertical:not(:last-child)::after {
+    background: #343a40;
+    width: 3px;
+}
+
+/* Horizontal Steps Style - Version 1: Text below icon */
+.steps-horizontal {
+    max-width: none;
+    padding: 0;
+    display: flex;
+    gap: 0;
+}
+
+.step-horizontal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    padding-right: 1rem;
+}
+
+.step-horizontal:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 0;
+    height: 2px;
+    background: white;
+}
+
+.step-horizontal-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-size: 20px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-horizontal-content {
+    padding-left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.step-horizontal.doc .step-horizontal-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+.step-horizontal.active .step-horizontal-icon {
+    background: var(--bs-warning) !important;
+    border-color: var(--bs-warning) !important;
+    color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal.complete .step-horizontal-icon {
+    background: var(--bs-success);
+    border-color: var(--bs-success);
+    color: white;
+}
+
+
+/* Horizontal Steps Style - Version 2: Text beside icon with corrected connector */
+.steps-horizontal-v2 {
+    max-width: none;
+    padding: 0;
+    display: flex;
+    gap: 0;
+}
+
+.steps-horizontal-v2 > .btn{
+    font-size: 30px;
+}
+
+.step-horizontal-v2 {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    padding-right: 4rem;
+    padding-left: 3rem;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.step-horizontal-v2:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    width: 4rem;
+    height: 2px;
+    background: #dee2e6;
+    transform: translateY(-50%);
+}
+
+.step-horizontal-v2-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: black;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #6c757d;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+}
+
+.step-horizontal-v2-content {
+    padding-left: 0;
+    width: auto;
+}
+
+.step-horizontal-v2.doc .step-horizontal-v2-icon {
+    background: var(--bs-light);
+    border-color: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+.step-horizontal-v2.active .step-horizontal-v2-icon {
+    background: var(--bs-success) !important;
+    border-color: var(--bs-success) !important;
+    color: var(--bs-white);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal-v2.disabled .step-horizontal-v2-icon,
+.step-horizontal-v2.disable .step-horizontal-v2-icon {
+    background: var(--bs-white) !important;
+    border-color: var(--bs-secondary) !important;
+    color: var(--bs-secondary);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8);
+}
+
+.step-horizontal-v2.complete .step-horizontal-v2-icon {
+    background: var(--bs-white);
+    border-color: var(--bs-success);
+    color: var(--bs-success);
 }

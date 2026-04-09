@@ -4,8 +4,8 @@
 <body>
 <header th:replace="~{fragments/nav-otp :: nav-otp}"></header>
 <main role="main">
-    <div class="wrapper">
-        <div id="content" class="content-full ms-0">
+    <div class="es-wrapper">
+        <div id="content" class="es-content-full ms-0">
             <div class="text-center mb-4">
                 <div style="height: 70px"></div>
                 <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document'"></h4>

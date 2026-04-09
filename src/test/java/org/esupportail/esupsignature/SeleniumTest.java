@@ -3,8 +3,12 @@ package org.esupportail.esupsignature;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -19,7 +23,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.List;
 
@@ -30,6 +36,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SeleniumTest {
 
     private static final Logger logger = LoggerFactory.getLogger(SeleniumTest.class);
+    private static final String APP_URL = "http://localhost:7070";
+    private static final String CAS_USERNAME = "0";
+    private static final String CAS_PASSWORD = "password";
+    private static final String CURRENT_USER_EMAIL = "0@example.org";
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
     private WebDriver driver;
     private WebDriverWait wait;
@@ -50,13 +61,202 @@ public class SeleniumTest {
             chromeOptions.addArguments("--headless");
             chromeOptions.addArguments("--no-sandbox");
             chromeOptions.addArguments("--disable-dev-shm-usage");
+            chromeOptions.addArguments("--disable-gpu");
+            chromeOptions.addArguments("--disable-software-rasterizer");
+            chromeOptions.addArguments("--window-size=1920,1016");
             driver = new ChromeDriver(chromeOptions);
         } else {
             driver = new ChromeDriver();
         }
-        wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+        wait = new WebDriverWait(driver, DEFAULT_TIMEOUT);
         js = (JavascriptExecutor) driver;
         driver.manage().window().setSize(new  org.openqa.selenium.Dimension(1920, 1016));
+        waitForApplicationToBeReachable();
+    }
+
+    private void waitForApplicationToBeReachable() {
+        long deadline = System.nanoTime() + Duration.ofSeconds(30).toNanos();
+        while (System.nanoTime() < deadline) {
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress("127.0.0.1", 7070), 1_000);
+                return;
+            } catch (IOException e) {
+                sleep(Duration.ofMillis(500));
+            }
+        }
+        Assertions.fail("L'application n'a pas démarré sur le port 7070 dans le délai imparti.");
+    }
+
+    private void openUrl(String url) {
+        RuntimeException lastException = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                driver.get(url);
+                waitForUiToSettle();
+                return;
+            } catch (WebDriverException e) {
+                lastException = e;
+                if (e.getMessage() == null || !e.getMessage().contains("ERR_CONNECTION_REFUSED")) {
+                    throw e;
+                }
+                waitForApplicationToBeReachable();
+                sleep(Duration.ofSeconds(1));
+            }
+        }
+        throw lastException;
+    }
+
+    private void sleep(Duration duration) {
+        try {
+            Thread.sleep(duration.toMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interruption inattendue pendant l'attente du test.", e);
+        }
+    }
+
+    private void waitForDocumentReady() {
+        wait.until(webDriver -> "complete".equals(js.executeScript("return document.readyState")));
+    }
+
+    private void waitForToastBackdropToDisappear() {
+        wait.until(webDriver -> Boolean.TRUE.equals(js.executeScript(
+                "const backdrop = document.getElementById('toast-backdrop');" +
+                        "return !backdrop || !backdrop.classList.contains('backdrop');"
+        )));
+    }
+
+    private void waitForUiToSettle() {
+        waitForDocumentReady();
+        waitForToastBackdropToDisappear();
+    }
+
+    private void scrollIntoView(WebElement element) {
+        js.executeScript("arguments[0].scrollIntoView({block:'center', inline:'center'});", element);
+    }
+
+    private void safeClick(By locator) {
+        RuntimeException lastException = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+                safeClick(element);
+                return;
+            } catch (StaleElementReferenceException | ElementClickInterceptedException | TimeoutException e) {
+                lastException = e;
+                waitForUiToSettle();
+            }
+        }
+        throw lastException;
+    }
+
+    private void safeClick(WebElement element) {
+        waitForUiToSettle();
+        scrollIntoView(element);
+        try {
+            wait.until(ExpectedConditions.elementToBeClickable(element)).click();
+        } catch (ElementClickInterceptedException | TimeoutException e) {
+            scrollIntoView(element);
+            js.executeScript("arguments[0].click();", element);
+        }
+    }
+
+    private void waitForWizardResult(String previousUrl) {
+        wait.until(webDriver -> !previousUrl.equals(webDriver.getCurrentUrl())
+                || !webDriver.findElements(By.id("addSignButton2")).isEmpty());
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("content")));
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("addSignButton2")));
+        waitForUiToSettle();
+    }
+
+    private void waitForSignLaunchReady() {
+        wait.until(webDriver -> {
+            WebElement button = webDriver.findElement(By.id("signLaunchButton"));
+            return button.isDisplayed() && button.isEnabled();
+        });
+    }
+
+    private void deleteAllCustomSignImages() {
+        By deleteButtons = By.cssSelector("[id^='deleteSign_']");
+        for (int attempt = 0; attempt < 20; attempt++) {
+            List<WebElement> currentButtons = driver.findElements(deleteButtons);
+            if (currentButtons.isEmpty()) {
+                return;
+            }
+
+            int countBefore = currentButtons.size();
+            safeClick(currentButtons.get(0));
+            safeClick(By.cssSelector(".bootbox-accept"));
+            waitForUiToSettle();
+            wait.until(webDriver -> webDriver.findElements(deleteButtons).size() < countBefore);
+        }
+
+        Assertions.fail("Toutes les signatures personnalisées n'ont pas pu être supprimées.");
+    }
+
+    private boolean isAuthenticatedUiVisible() {
+        return !driver.findElements(By.id("new-self-sign")).isEmpty()
+                || !driver.findElements(By.id("new-fast-sign")).isEmpty()
+                || !driver.findElements(By.id("user-toggle")).isEmpty();
+    }
+
+    private void waitForAuthenticatedUi() {
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.presenceOfElementLocated(By.id("new-self-sign")),
+                ExpectedConditions.presenceOfElementLocated(By.id("new-fast-sign")),
+                ExpectedConditions.presenceOfElementLocated(By.id("user-toggle"))
+        ));
+        waitForUiToSettle();
+    }
+
+    private void loginViaCasIfNeeded() {
+        waitForUiToSettle();
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.presenceOfElementLocated(By.id("new-self-sign")),
+                ExpectedConditions.presenceOfElementLocated(By.id("new-fast-sign")),
+                ExpectedConditions.presenceOfElementLocated(By.id("user-toggle")),
+                ExpectedConditions.presenceOfElementLocated(By.id("fm1")),
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector("a[href*='/login/casentry']")),
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector("a[href*='/login/shibentry']"))
+        ));
+
+        if (isAuthenticatedUiVisible()) {
+            return;
+        }
+
+        if (!driver.findElements(By.cssSelector("a[href*='/login/shibentry']")).isEmpty()) {
+            safeClick(By.cssSelector("a[href*='/login/shibentry']"));
+            waitForAuthenticatedUi();
+            return;
+        }
+
+        if (!driver.findElements(By.cssSelector("a[href*='/login/casentry']")).isEmpty()) {
+            safeClick(By.cssSelector("a[href*='/login/casentry']"));
+            wait.until(ExpectedConditions.or(
+                    ExpectedConditions.presenceOfElementLocated(By.id("fm1")),
+                    ExpectedConditions.presenceOfElementLocated(By.id("new-self-sign")),
+                    ExpectedConditions.presenceOfElementLocated(By.id("user-toggle"))
+            ));
+            if (isAuthenticatedUiVisible()) {
+                return;
+            }
+        }
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("fm1")));
+        WebElement usernameInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("username")));
+        usernameInput.clear();
+        usernameInput.sendKeys(CAS_USERNAME);
+
+        WebElement passwordInput = wait.until(ExpectedConditions.elementToBeClickable(By.id("password")));
+        passwordInput.clear();
+        passwordInput.sendKeys(CAS_PASSWORD);
+
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("input[name='execution']")));
+
+        WebElement submitButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("submitBtn")));
+        safeClick(submitButton);
+
+        waitForAuthenticatedUi();
     }
 
     @AfterEach
@@ -69,7 +269,7 @@ public class SeleniumTest {
     @Test
     @Order(1)
     public void esupSignatureTitle() {
-        driver.get("http://localhost:7070");
+        openUrl(APP_URL);
         wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("title")));
         String title = driver.getTitle();
         assertEquals("Esup Signature", title);
@@ -78,47 +278,33 @@ public class SeleniumTest {
     @Test
     @Order(2)
     public void esupSignatureAutoSignImage() throws IOException {
-        // Naviguer vers la page utilisateur
-        driver.get("http://localhost:7070/user");
-        // Cliquer sur le bouton "new-self-sign"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("new-self-sign"))).click();
-        // Sélectionner le fichier à téléverser
+        openUrl(APP_URL + "/user");
+        loginViaCasIfNeeded();
+
+        safeClick(By.id("new-self-sign"));
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
-        // Cliquer sur le bouton "fast-sign-button"
-        WebElement fastSignButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("fast-sign-button")));
-        fastSignButton.click();
-        try {
-            wait.until(ExpectedConditions.invisibilityOf(fastSignButton));
-        } catch (Exception e) {
-            logger.warn("Element non trouvé dans le délai spécifié.", e);
-        }
-        // Cliquer sur le bouton "addSignButton2"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
-        // Exécuter du JavaScript pour récupérer "signRequestId"
+
+        String previousUrl = driver.getCurrentUrl();
+        safeClick(By.id("fast-sign-button"));
+        waitForWizardResult(previousUrl);
+
+        safeClick(By.id("addSignButton2"));
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
-        // Récupérer l'attribut "signBookId"
         String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
-        // Cliquer sur le bouton "signLaunchButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
-        // Cliquer sur le bouton "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
-        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
-        btn.click();
-        wait.until(ExpectedConditions.stalenessOf(btn));
-        // Cliquer sur le bouton "link-dashboard"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
-        // Attendre la présence de l'élément "signbook-${signBookId}"
+
+        waitForSignLaunchReady();
+        safeClick(By.id("signLaunchButton"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard")));
+
+        safeClick(By.id("link-dashboard"));
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("signbook-" + signBookId)));
-        // Cliquer sur le bouton "checkbox-signrequest-${signRequestId}"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkbox-signrequest-" + signRequestId))).click();
-        // Attendre la visibilité du bouton "deleteMultipleButton"
+
+        safeClick(By.id("checkbox-signrequest-" + signRequestId));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("deleteMultipleButton")));
-        // Cliquer sur le bouton "deleteMultipleButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("deleteMultipleButton"))).click();
-        // Cliquer sur le bouton "bootbox-accept"
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".bootbox-accept"))).click();
-        // Attendre que l'élément "signbook-${signBookId}" ne soit plus présent
+
+        safeClick(By.id("deleteMultipleButton"));
+        safeClick(By.cssSelector(".bootbox-accept"));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("signbook-" + signBookId)));
     }
 
@@ -126,69 +312,63 @@ public class SeleniumTest {
     @Test
     @Order(3)
     public void esupSignatureFastSignRequest() throws IOException {
-        driver.get("http://localhost:7070/user");
-        // Click "new-fast-sign" button
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("new-fast-sign"))).click();
-        // Type file path
+        openUrl(APP_URL + "/user");
+        loginViaCasIfNeeded();
+
+        safeClick(By.id("new-fast-sign"));
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
+
         String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
         WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
-        selectContainer.click();
+        safeClick(selectContainer);
         WebElement searchInput = wait.until(
                 ExpectedConditions.elementToBeClickable(
                         By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
                 )
         );
-        searchInput.click();
-        searchInput.sendKeys("justin");
+        safeClick(searchInput);
+        searchInput.sendKeys(CURRENT_USER_EMAIL);
         WebElement option = wait.until(
                 ExpectedConditions.elementToBeClickable(
                         By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-list .ss-option")
                 )
         );
-        option.click();
-        // Click "send-pending-button"
-        WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
-        sendPendingButton.click();
-        wait.until(ExpectedConditions.invisibilityOf(sendPendingButton));
-        // Click "addSignButton2"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2"))).click();
-        // Execute JavaScript to store "signRequestId"
+        safeClick(option);
+
+        String previousUrl = driver.getCurrentUrl();
+        safeClick(By.id("send-pending-button"));
+        waitForWizardResult(previousUrl);
+
+        safeClick(By.id("addSignButton2"));
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
-        // Store attribute "signBookId"
         String signBookId = driver.findElement(By.id("content")).getDomAttribute("data-es-signbook-id");
-        // Click "signLaunchButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("signLaunchButton"))).click();
-        // Click "checkValidateSignButtonEnd"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkValidateSignButtonEnd")));
-        WebElement btn = driver.findElement(By.id("checkValidateSignButtonEnd"));
-        btn.click();
-        wait.until(ExpectedConditions.stalenessOf(btn));
-        // Click "link-dashboard" button
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard"))).click();
-        // Wait for element present "signbook-${signBookId}"
+
+        waitForSignLaunchReady();
+        safeClick(By.id("signLaunchButton"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("link-dashboard")));
+
+        safeClick(By.id("link-dashboard"));
         wait.until(ExpectedConditions.presenceOfElementLocated(By.id("signbook-" + signBookId)));
-        // Click "checkbox-signrequest-${signRequestId}"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("checkbox-signrequest-" + signRequestId))).click();
-        // Wait for element visible "deleteMultipleButton"
+
+        safeClick(By.id("checkbox-signrequest-" + signRequestId));
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("deleteMultipleButton")));
-        // Click "deleteMultipleButton"
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("deleteMultipleButton"))).click();
-        // Click "bootbox-accept"
-        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".bootbox-accept"))).click();
-        // Wait for element not present "signbook-${signBookId}"
+
+        safeClick(By.id("deleteMultipleButton"));
+        safeClick(By.cssSelector(".bootbox-accept"));
         wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("signbook-" + signBookId)));
     }
 
     @Test
     @Order(4)
     public void esupSignatureCreateSignImage() {
-        driver.get("http://localhost:7070/user");
+        openUrl(APP_URL + "/user");
+        loginViaCasIfNeeded();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("user-toggle"))).click();
+        safeClick(By.id("user-toggle"));
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("link-user-params"))).click();
+        safeClick(By.id("link-user-params"));
+        waitForUiToSettle();
 
         WebElement canvas = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("canvas")));
 
@@ -196,26 +376,16 @@ public class SeleniumTest {
         actions.moveToElement(canvas, -1, -1).click().perform();
         actions.moveToElement(canvas, 0, 0).click().perform();
         actions.moveToElement(canvas, 1, 1).click().perform();
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("saveButton")));
-        WebElement btn = driver.findElement(By.id("saveButton"));
-        btn.click();
-        wait.until(ExpectedConditions.stalenessOf(btn));
-        try {
-            // Attendre que la modal "wait" soit visible
-            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("toast-backdrop")));
-            // Attendre que la modal "wait" ne soit plus visible
-            wait.until(ExpectedConditions.invisibilityOfElementLocated(By.id("toast-backdrop")));
-        } catch (Exception e) {
-            // Click "checkValidateSignButtonEnd"
-            System.out.println("Element non trouvé dans le délai spécifié.");
-        }
 
-        List<WebElement> elements = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.cssSelector("[id^='deleteSign_']")));
-        for(WebElement element : elements) {
-            element.click();
-            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".bootbox-accept"))).click();
-        }
-        wait.until(ExpectedConditions.invisibilityOfAllElements(elements));
+        int initialDeleteButtonCount = driver.findElements(By.cssSelector("[id^='deleteSign_']")).size();
+        WebElement btn = driver.findElement(By.id("saveButton"));
+        safeClick(btn);
+        wait.until(ExpectedConditions.stalenessOf(btn));
+
+        waitForUiToSettle();
+        wait.until(webDriver -> webDriver.findElements(By.cssSelector("[id^='deleteSign_']")).size() > initialDeleteButtonCount);
+        deleteAllCustomSignImages();
+        wait.until(webDriver -> webDriver.findElements(By.cssSelector("[id^='deleteSign_']")).isEmpty());
     }
 
     // Méthode de comparaison d'images

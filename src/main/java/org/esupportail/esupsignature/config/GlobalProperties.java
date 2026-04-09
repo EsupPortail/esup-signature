@@ -359,7 +359,7 @@ public class GlobalProperties {
      * Configuration des signatures des externes
      */
     @JsonIgnore
-    private SignRequestParams externalSignatureParams = new SignRequestParams();
+    private SignRequestParams externalSignatureParams = null;
 
     private int nbSignOtpTries = 3;
 

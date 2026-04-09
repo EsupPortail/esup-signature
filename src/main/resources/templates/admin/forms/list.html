@@ -10,21 +10,20 @@
     const workflowRole = '[[${workflowRole}]]';
 </script>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Liste des formulaires</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-simple-btn" >
-                <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
-                </a>
-            </div>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
+                <div class="flex-grow-1">
             <div class="input-group mb-3">
                 <span class="input-group-text">Filtrer</span>
                 <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
@@ -170,9 +169,20 @@
                 <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
                     Aucun formulaire actif pour le moment
                 </div>
-            </div>
+                </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-apps-add"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
         </div>
     </div>
+</div>
 </main>
 <script th:inline="javascript" type="module">
     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
@@ -226,7 +236,7 @@
                                 </th:block>
                             </select>
                             <button id="btn-add-field" type="button" class="btn btn-success">
-                                <span class="fa-solid fa-plus fa-2xl" aria-hidden="true"></span>
+                                <span class="fa-solid fa-plus " aria-hidden="true"></span>
                             </button>
                         </div>
                     </div>

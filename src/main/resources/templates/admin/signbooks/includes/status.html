@@ -10,25 +10,25 @@
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill badge-status bg-warning text-dark" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fi fi-rr-pending"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fa-solid fa-file-signature"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status bg-danger">
 			<i class="fa-solid fa-ban"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 			<br>
 			<p th:if="${signRequest != null && signRequest.comments.size() > 0}" th:title="${signRequest.comments.get(signRequest.comments.size() - 1).text}" th:text="${signRequest.comments.get(signRequest.comments.size() - 1).text}" class="bg-danger"></p>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fa-solid fa-check-circle"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fa-solid fa-file-export"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fa-solid fa-archive"></i>
@@ -40,7 +40,7 @@
 		</div>
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}" class="badge rounded-pill badge-status bg-success" th:title="#{'signbook.status.' + ${signBook.status}}">
 			<i class="fi fi-rr-flag"></i>
-				<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+			<span th:text="#{'signbook.status.' + ${signBook.status}}"></span>
 		</div>
 		<div th:case="*">
 			<span th:text="${signBook.status}"></span>

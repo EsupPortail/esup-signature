@@ -104,4 +104,31 @@ export class UserSignatureCrop extends EventFactory {
         }
     }
 
+    reset() {
+        this.signImageBase64 = null;
+        $("#signImageBase64").val("");
+        this.cropDiv.style.display = "none";
+        this.signPad.style.display = '';
+        this.signPadLabel.style.display = '';
+        this.vanillaUpload.value = '';
+        this.zoomLevel = 1;
+        this.vanillaCrop.classList.remove('good');
+        this.vanillaCroppie.destroy();
+        this.vanillaCroppie = new Croppie(this.vanillaCrop, {
+            viewport: {
+                width: 600,
+                height: 300
+            },
+            boundary: {
+                width: 604,
+                height: 304
+            },
+            enableExif: true,
+            enableOrientation: true,
+            enableResize: false,
+            enforceBoundary: false,
+            mouseWheelZoom: true
+        });
+    }
+
 }

@@ -2,31 +2,72 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<nav th:fragment="side">
-    <div class="ms-1 mt-3 d-none d-lg-block">
-        <div class="hr sidebar-label">Statut</div>
-        <div class="card card-body bg-light">
-            <th:block th:if="${signRequest != null}">
-                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
-                <span th:if="${workflow != null}" th:text="'Circuit : ' + ${workflow.description}"></span>
-                <span>Créé par <a th:href="'mailto:' + ${signRequest.createBy.email}" th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></a></span>
-                <th:block th:if="${signBook.viewers.size() > 0 }">
-                    <span>
-                    Suivi par :
-                        <ul>
-                            <li th:each="user : ${signBook.viewers}" >
-                                <span th:text="${user.firstname + ' ' + user.name}"></span>
-                            </li>
-                        </ul>
-                    </span>
-                </th:block>
-            </th:block>
-            <th:block th:unless="${signRequest != null}">
-                <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
-            </th:block>
+<nav th:fragment="side-otp" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-1" style="z-index: 1000;">
+    <div class="d-flex justify-content-between align-items-center" th:if="${signRequest != null}">
+        <span class="text-uppercase ms-1">STATUT</span>
+        <div class="pe-2">
+            <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
         </div>
-        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard-light :: stepscard}"></div>
-        <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
     </div>
+    <div class="alert bg-light m-1">
+        <th:block th:if="${signRequest != null}">
+            <!-- Archive Status Badge -->
+            <div class="text-center" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+            <span class="badge rounded-pill bg-secondary">
+                <i class="fi fi-rr-box"></i>
+                <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+            </span>
+            </div>
+
+            <!-- Creator Info -->
+            <div class="d-flex align-items-start gap-1" th:if="${signRequest != null}">
+                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
+                     style="width: 2rem; height: 2rem; flex-shrink: 0; font-size: 0.75rem;"
+                     th:with="firstInitial=${signRequest.createBy.firstname != null && !#strings.isEmpty(signRequest.createBy.firstname) ? #strings.substring(signRequest.createBy.firstname, 0, 1) : ''},
+                              lastInitial=${signRequest.createBy.name != null && !#strings.isEmpty(signRequest.createBy.name) ? #strings.substring(signRequest.createBy.name, 0, 1) : ''},
+                              initials=${#strings.toUpperCase(firstInitial + lastInitial)},
+                              userId=${signRequest.createBy.id != null ? signRequest.createBy.id : 0},
+                              hue=${T(java.lang.Math).abs(userId) % 360}"
+                     th:styleappend="'background-color: hsl(' + ${hue} + ', 70%, 60%);'"
+                     th:text="${!#strings.isEmpty(initials) ? initials : '?'}">
+                    ??
+                </div>
+                <div class="d-flex flex-column">
+                    <span class="mb-1 fw-semibold" th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span>
+                    <span class="small bg-primary-subtle pe-1 ps-1" style="font-size: 12px; width: fit-content;" th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+
+            <!-- Viewers Section -->
+            <th:block th:if="${signBook.viewers.size() > 0}">
+                <div class="m-1" style="border-top: 1px solid #dee2e6;">
+                    <p class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Suivi par</p>
+                    <ul class="d-flex gap-1 list-unstyled mb-0">
+                        <li th:each="user, iterator : ${signBook.viewers}">
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
+                                 style="width: 2rem; height: 2rem; font-size: 0.75rem;"
+                                 th:with="firstInitial=${user.firstname != null && !#strings.isEmpty(user.firstname) ? #strings.substring(user.firstname, 0, 1) : ''},
+                                       lastInitial=${user.name != null && !#strings.isEmpty(user.name) ? #strings.substring(user.name, 0, 1) : ''},
+                                       initials=${#strings.toUpperCase(firstInitial + lastInitial)},
+                                       userId=${user.id != null ? user.id : 0},
+                                       hue=${T(java.lang.Math).abs(userId) % 360}"
+                                 th:styleappend="'background-color: hsl(' + ${hue} + ', 70%, 60%);'"
+                                 th:text="${!#strings.isEmpty(initials) ? initials : '?'}"
+                                 th:title="${user.firstname} + ' ' + ${user.name} + ' (' + ${user.email} + ')'">
+                                ??
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </th:block>
+        </th:block>
+
+        <th:block th:unless="${signRequest != null}">
+            <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+        </th:block>
+    </div>
+    <div th:if="${signRequest != null && comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
+    <span th:if="${signRequest != null}" class="text-uppercase ms-1">Étapes du circuit</span>
+    <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard-light :: stepscard-light}"></div>
 </nav>
 </html>

@@ -101,9 +101,13 @@ spring:
         password: esup
         username: esupsignature
         hikari:
+            auto-commit: false
             maximum-pool-size: 15
             minimum-idle: 3
+            idle-timeout: 300000
             connection-timeout: 30000
+            leak-detection-threshold: 15000
+            max-lifetime: 600000
         tomcat:
             validation-query: SELECT 1;
     jpa:

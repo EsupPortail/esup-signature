@@ -4,16 +4,18 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
                 <li class="breadcrumb-item active" th:text="#{${'label.country.code.'+ tlInfo.parsingCacheInfo.territory}}" ></li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
             <div class="p-2">
                 <p th:if="${tlInfo == null}">No data found for this country</p>
 
@@ -45,6 +47,8 @@
                         </div>
 
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>

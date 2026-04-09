@@ -116,6 +116,9 @@ public class SignRequestParams {
     }
 
     public void setSignPageNumber(Integer signPageNumber) {
+        if(signPageNumber == null || signPageNumber < 1) {
+            signPageNumber = 1;
+        }
         this.signPageNumber = signPageNumber;
     }
 
@@ -124,6 +127,9 @@ public class SignRequestParams {
     }
 
     public void setSignDocumentNumber(Integer signDocumentNumber) {
+        if(signDocumentNumber == null || signDocumentNumber < 0) {
+            signDocumentNumber = 0;
+        }
         this.signDocumentNumber = signDocumentNumber;
     }
 
@@ -133,6 +139,9 @@ public class SignRequestParams {
     }
 
     public void setSignWidth(Integer signWidth) {
+        if(signWidth == null || signWidth < 1) {
+            signWidth = 1;
+        }
         this.signWidth = signWidth;
     }
 
@@ -142,6 +151,9 @@ public class SignRequestParams {
     }
 
     public void setSignHeight(Integer signHeight) {
+        if(signHeight == null || signHeight < 1) {
+            signHeight = 1;
+        }
         this.signHeight = signHeight;
     }
 
@@ -150,6 +162,9 @@ public class SignRequestParams {
     }
 
     public void setxPos(Integer xPos) {
+        if(xPos == null) {
+            xPos = 0;
+        }
         if(xPos < 0) {
             xPos = 0;
         }
@@ -164,6 +179,12 @@ public class SignRequestParams {
     }
 
     public void setyPos(Integer yPos) {
+        if(yPos == null) {
+            yPos = 0;
+        }
+        if(yPos < 0) {
+            yPos = 0;
+        }
         this.yPos = yPos;
     }
 
@@ -270,6 +291,9 @@ public class SignRequestParams {
     }
 
     public void setSignScale(Float signScale) {
+        if(signScale == null || !Float.isFinite(signScale) || signScale <= 0) {
+            signScale = 1f;
+        }
         this.signScale = signScale;
     }
 
@@ -302,6 +326,9 @@ public class SignRequestParams {
     }
 
     public void setFontSize(Integer fontSize) {
+        if(fontSize == null || fontSize < 1) {
+            fontSize = 16;
+        }
         this.fontSize = fontSize;
     }
 
