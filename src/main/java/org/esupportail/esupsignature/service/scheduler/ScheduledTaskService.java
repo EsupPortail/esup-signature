@@ -248,6 +248,7 @@ public class ScheduledTaskService {
 					signRequestService.cleanSignRequestDocumentsHistory(signRequest.getId());
 				}
 			}
+			logger.info("clean history ended");
 		}
 	}
 
