@@ -238,6 +238,10 @@ public class ScheduledTaskService {
 		taskService.initDssRefresh();
 	}
 
+	/**
+	 *
+	 * @throws IOException
+	 */
     @Scheduled(cron="00 02 02 * * *")
 	public void cleanAllSignRequestDocuments() throws IOException {
 		if(globalProperties.getDocumentsHistoryDelay() > -1) {
