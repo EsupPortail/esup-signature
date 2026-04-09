@@ -2012,10 +2012,10 @@ public class SignRequestService {
 	@Transactional
 	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
+		logger.info("try cleaning documents history : " + signRequestId);
 		if(signRequest.getParentSignBook().getEndDate() != null && signRequest.getParentSignBook().getEndDate()
 				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
 		) {
-			logger.info("cleaning signRequest documents history : " + signRequestId);
 			signRequest.getOriginalDocuments().clear();
 			Document lastSignedDocument = signRequest.getLastSignedDocument();
 			if(signRequest.getSignedDocuments().size() > 1) {
@@ -2035,6 +2035,7 @@ public class SignRequestService {
 				signRequest.getSignedDocuments().add(lastSignedDocument);
 			}
 			signRequest.setCleanDocumentsHistoryDate(new Date());
+			logger.info("cleaning documents history ok : " + signRequestId);
 		}
 	}
 
