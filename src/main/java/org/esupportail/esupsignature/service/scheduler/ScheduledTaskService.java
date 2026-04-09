@@ -238,7 +238,7 @@ public class ScheduledTaskService {
 		taskService.initDssRefresh();
 	}
 
-	@Scheduled(initialDelay = 12000, fixedRate = 300000000000000000000000000000000000000000)
+	@Scheduled(initialDelay = 12000)
 	public void cleanAllSignRequestDocuments() throws IOException {
 		if(globalProperties.getDocumentsHistoryDelay() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findSignRequestsByCleanDocumentsHistoryDateIsNull();
