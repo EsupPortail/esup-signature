@@ -65,7 +65,7 @@
 </main>
 <script th:inline="javascript" type="module" th:if="${workflow != null}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
-    import {ShowSignRequestDataFlowDto} from '/js/modules/ui/signrequests/dto/ShowSignRequestDataFlowDto.js?version=@[(${versionApp})]@';
+    import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
     const rawSpots = [[${spots}]];
     const rawSrpMap = [[${srpMap}]];
     const idToStepMap = {};
@@ -88,73 +88,41 @@
             };
         })
         : [];
-    const formSignsDataFlow = ShowSignRequestDataFlowDto.from({
-        back: {
-            workflow: null,
-            signRequestId: [[${form.id}]],
-            dataId: null,
-            formId: [[${form.id}]],
-            signable: false,
-            editable: true,
-            manager: true,
-            status: 'pending',
-            currentSignType: 'form',
-            currentStepNumber: 1,
-            currentStepMultiSign: false,
-            currentStepSingleSignWithAnnotation: false,
-            currentStepMinSignLevel: null,
-            stepRepeatable: null,
-            pdf: [[${document != null && document.contentType == 'application/pdf'}]],
-            attachmentAlert: false,
-            attachmentRequire: false,
-            notSigned: true,
-            nbSignRequests: 1,
-            action: null,
-            comments: [],
-            spots: spotsWithStepNumber,
-            fields: [],
-            signRequestParams: spotsWithStepNumber,
-            signImages: []
-        },
-        front: {
-            currentStepNumber: 1,
-            signUi: {
-                signRequestId: [[${form.id}]],
-                dataId: null,
-                formId: [[${form.id}]],
-                currentSignRequestParamses: spotsWithStepNumber,
-                signImageNumber: [[${user.defaultSignImageNumber}]],
-                currentSignType: 'form',
-                signable: false,
-                editable: true,
-                comments: [],
-                spots: spotsWithStepNumber,
-                pdf: [[${document != null && document.contentType == 'application/pdf'}]],
-                currentStepNumber: 1,
-                currentStepMultiSign: false,
-                currentStepSingleSignWithAnnotation: false,
-                currentStepMinSignLevel: null,
-                workflowAvailable: false,
-                signImages: [],
-                userName: [[${workflowRole}]],
-                authUserName: 'forms',
-                fields: [],
-                stepRepeatable: null,
-                status: 'pending',
-                action: null,
-                nbSignRequests: 1,
-                notSigned: true,
-                attachmentAlert: false,
-                attachmentRequire: false,
-                otp: false,
-                restore: true,
-                phone: null,
-                returnToHomeAfterSign: false,
-                manager: true
-            }
-        }
+    const formSignsFrontDto = SignUiFrontDto.from({
+        signRequestId: [[${form.id}]],
+        dataId: null,
+        formId: [[${form.id}]],
+        currentSignRequestParamses: spotsWithStepNumber,
+        signImageNumber: [[${user.defaultSignImageNumber}]],
+        currentSignType: 'form',
+        signable: false,
+        editable: true,
+        comments: [],
+        spots: spotsWithStepNumber,
+        pdf: [[${document != null && document.contentType == 'application/pdf'}]],
+        currentStepNumber: 1,
+        currentStepMultiSign: false,
+        currentStepSingleSignWithAnnotation: false,
+        currentStepMinSignLevel: null,
+        workflowAvailable: false,
+        signImages: [],
+        userName: [[${workflowRole}]],
+        authUserName: 'forms',
+        fields: [],
+        stepRepeatable: null,
+        status: 'pending',
+        action: null,
+        nbSignRequests: 1,
+        notSigned: true,
+        attachmentAlert: false,
+        attachmentRequire: false,
+        otp: false,
+        restore: true,
+        phone: null,
+        returnToHomeAfterSign: false,
+        manager: true
     });
-    new SignUi(formSignsDataFlow, [[${_csrf}]]);
+    new SignUi(formSignsFrontDto, [[${_csrf}]]);
 </script>
 <div th:if="${workflow != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">

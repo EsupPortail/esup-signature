@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
+import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto;
+import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -144,12 +147,7 @@ public class UserAndOtpSignRequestController {
         String favoriteSignRequestParamsJson = userService.getFavoriteSignRequestParamsJson(userEppn);
         List<String> signImages = new ArrayList<>();
         try {
-            Object userShareString = httpSession.getAttribute("userShareId");
-            Long userShareId = null;
-            if(userShareString != null) {
-                userShareId = Long.valueOf(userShareString.toString());
-            }
-            signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
+            signImages = getSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
         } catch (EsupSignatureUserException e) {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
@@ -186,9 +184,6 @@ public class UserAndOtpSignRequestController {
             action = signRequest.getData().getForm().getAction();
             supervisors = signRequest.getData().getForm().getWorkflow().getManagers();
         }
-
-        User frontUser = userService.getFullUserByEppn(userEppn);
-        User frontAuthUser = userService.getByEppn(authUserEppn);
 
         SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook);
         AuditTrail auditTrail = null;
@@ -227,131 +222,173 @@ public class UserAndOtpSignRequestController {
 
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
 
-        ShowSignRequestDataFlowDto showDataFlow = new ShowSignRequestDataFlowDto(
-                new ShowSignRequestBackDto(
-                        signRequest,
-                        signBook,
-                        workflow,
-                        signRequest.getId(),
-                        signBook.getId(),
-                        signRequest.getData() != null ? signRequest.getData().getId() : null,
-                        signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
-                        urlProfil,
-                        displayNotif,
-                        isTempUsers,
-                        signable,
-                        editable,
-                        isManager,
-                        signRequest.getStatus(),
-                        currentSignType,
-                        currentStepNumber,
-                        currentStepId,
-                        currentStepMultiSign,
-                        currentStepSingleSignWithAnnotation,
-                        currentStepMinSignLevel,
-                        currentStepMaxSignLevel,
-                        stepRepeatable,
-                        isLastStep,
-                        isPdf,
-                        attachmentAlert,
-                        attachmentRequire,
-                        isNotSigned,
-                        isCurrentUserAsSigned,
-                        signatureIds,
-                        signatureIssue,
-                        nbSignRequestInSignBookParent,
-                        action,
-                        supervisors,
-                        toSignDocument,
-                        postits,
-                        comments,
-                        spots,
-                        attachments,
-                        nextSignBook,
-                        nextSignRequest,
-                        fields,
-                        toUseSignRequestParams,
-                        signImages,
-                        signWiths,
-                        auditTrail,
-                        size,
-                        sealCertOK,
-                        sealCertificatPropertieses,
-                        allSignWiths,
-                        certificats,
-                        annotation,
-                        steps,
-                        refuseLogs,
-                        viewRight,
-                        frameMode,
-                        form,
-                        logs,
-                        pdfaCheck,
-                        auditTrailChecked,
-                        externalsRecipients
-                ),
-                new ShowSignRequestFrontDto(
-                        toFrontUserDto(frontUser),
-                        toFrontUserDto(frontAuthUser),
-                        toFrontUserDto(signRequest.getCreateBy()),
-                        currentStepNumber,
-                        supervisors,
-                        isLastStep,
-                        new SignUiFrontDto(
-                                signRequest.getId(),
-                                signRequest.getData() != null ? signRequest.getData().getId() : null,
-                                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
-                                toUseSignRequestParams,
-                                frontUser != null ? frontUser.getDefaultSignImageNumber() : null,
-                                currentSignType,
-                                signable,
-                                editable,
-                                comments,
-                                spots,
-                                isPdf,
-                                currentStepNumber,
-                                currentStepMultiSign,
-                                currentStepSingleSignWithAnnotation,
-                                currentStepMinSignLevel,
-                                workflow != null,
-                                signImages,
-                                toDisplayName(frontUser),
-                                toDisplayName(frontAuthUser),
-                                fields,
-                                stepRepeatable,
-                                signRequest.getStatus(),
-                                action,
-                                nbSignRequestInSignBookParent,
-                                isNotSigned,
-                                attachmentAlert,
-                                attachmentRequire,
-                                isOtpView,
-                                frontUser == null || frontUser.getFavoriteSignRequestParams() == null,
-                                frontUser != null ? frontUser.getPhone() : null,
-                                frontUser != null ? frontUser.getReturnToHomeAfterSign() : null,
-                                isManager
-                        )
-                )
+        ShowSignRequestBackDto showBack = new ShowSignRequestBackDto(
+                signRequest,
+                signBook,
+                workflow,
+                signRequest.getId(),
+                signBook.getId(),
+                signRequest.getData() != null ? signRequest.getData().getId() : null,
+                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
+                urlProfil,
+                displayNotif,
+                isTempUsers,
+                signable,
+                editable,
+                isManager,
+                signRequest.getStatus(),
+                currentSignType,
+                currentStepNumber,
+                currentStepId,
+                currentStepMultiSign,
+                currentStepSingleSignWithAnnotation,
+                currentStepMinSignLevel,
+                currentStepMaxSignLevel,
+                stepRepeatable,
+                isLastStep,
+                isPdf,
+                attachmentAlert,
+                attachmentRequire,
+                isNotSigned,
+                isCurrentUserAsSigned,
+                signatureIds,
+                signatureIssue,
+                nbSignRequestInSignBookParent,
+                action,
+                supervisors,
+                toSignDocument,
+                postits,
+                comments,
+                spots,
+                attachments,
+                nextSignBook,
+                nextSignRequest,
+                fields,
+                toUseSignRequestParams,
+                signImages,
+                signWiths,
+                auditTrail,
+                size,
+                sealCertOK,
+                sealCertificatPropertieses,
+                allSignWiths,
+                certificats,
+                annotation,
+                steps,
+                refuseLogs,
+                viewRight,
+                frameMode,
+                form,
+                logs,
+                pdfaCheck,
+                auditTrailChecked,
+                externalsRecipients
         );
-        model.addAttribute("signRequestShowDataFlow", showDataFlow);
+        model.addAttribute("signRequestShowBack", showBack);
 
         return "user/signrequests/show";
     }
 
-    private FrontUserDto toFrontUserDto(User user) {
-        if(user == null) {
-            return null;
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/front", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<SignUiFrontDto> getFront(@ModelAttribute("userEppn") String userEppn,
+                                                   @ModelAttribute("authUserEppn") String authUserEppn,
+                                                   @PathVariable("id") Long id,
+                                                   HttpSession httpSession,
+                                                   HttpServletRequest httpServletRequest) throws IOException {
+        String path = httpServletRequest.getRequestURI();
+        boolean isOtpView = path.startsWith("/otp");
+
+        SignRequest signRequest = signRequestService.getById(id);
+        SignBook signBook = signRequest.getParentSignBook();
+        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
+        LiveWorkflowStep currentStep = liveWorkflow.getCurrentStep();
+        Workflow workflow = liveWorkflow.getWorkflow();
+
+        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
+        boolean editable = signRequestService.isEditable(id, userEppn);
+        boolean isManager = signBookService.checkUserManageRights(signBook.getId(), userEppn);
+        SignType currentSignType = signRequest.getCurrentSignType();
+        Integer currentStepNumber = liveWorkflow.getCurrentStepNumber();
+        boolean currentStepMultiSign = true;
+        boolean currentStepSingleSignWithAnnotation = true;
+        SignLevel currentStepMinSignLevel = SignLevel.simple;
+        Boolean stepRepeatable = null;
+
+        if(currentStep != null) {
+            currentStepMinSignLevel = currentStep.getMinSignLevel();
+            currentStepMultiSign = currentStep.getMultiSign();
+            currentStepSingleSignWithAnnotation = currentStep.getSingleSignWithAnnotation();
+            stepRepeatable = currentStep.getRepeatable();
         }
-        return new FrontUserDto(
-                user.getId(),
-                user.getEppn(),
-                user.getName(),
-                user.getFirstname(),
-                user.getEmail(),
-                user.getDefaultSignImageNumber(),
-                user.getPhone(),
-                user.getReturnToHomeAfterSign()
+
+        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
+        Document toSignDocument = toSignDocuments.size() == 1 ? toSignDocuments.get(0) : null;
+        boolean isPdf = toSignDocument != null && "application/pdf".equals(toSignDocument.getContentType());
+        if(toSignDocuments.stream().anyMatch(d -> !d.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
+            currentStepMinSignLevel = SignLevel.advanced;
+        }
+
+        Reports reports = signService.validate(id);
+        List<String> signatureIds = reports != null ? reports.getSimpleReport().getSignatureIdList() : new ArrayList<>();
+        if(!signatureIds.isEmpty() && currentStepMinSignLevel.getValue() < 3) {
+            currentStepMinSignLevel = SignLevel.advanced;
+        }
+
+        List<SignRequestParams> currentSignRequestParamses = signRequestService.getToUseSignRequestParams(id, userEppn);
+        List<Comment> comments = signRequestService.getComments(id);
+        List<SignRequestParams> spots = signRequestService.getSpots(id);
+        List<Field> fields = signRequestService.prefillSignRequestFields(id, userEppn);
+        List<String> signImages;
+        try {
+            signImages = getSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
+        } catch (EsupSignatureUserException e) {
+            signImages = new ArrayList<>();
+        }
+
+        User frontUser = userService.getFullUserByEppn(userEppn);
+        User frontAuthUser = userService.getByEppn(authUserEppn);
+        String action = null;
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
+            action = signRequest.getData().getForm().getAction();
+        }
+
+        SignUiFrontDto frontDto = new SignUiFrontDto(
+                signRequest.getId(),
+                signRequest.getData() != null ? signRequest.getData().getId() : null,
+                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
+                currentSignRequestParamses,
+                frontUser != null ? frontUser.getDefaultSignImageNumber() : null,
+                currentSignType,
+                signable,
+                editable,
+                comments,
+                spots,
+                isPdf,
+                currentStepNumber,
+                currentStepMultiSign,
+                currentStepSingleSignWithAnnotation,
+                currentStepMinSignLevel,
+                workflow != null,
+                signImages,
+                toDisplayName(frontUser),
+                toDisplayName(frontAuthUser),
+                fields,
+                stepRepeatable,
+                signRequest.getStatus(),
+                action,
+                signBook.getSignRequests().size(),
+                !signRequestService.isSigned(signRequest, reports),
+                signRequestService.isAttachmentAlert(signRequest),
+                signRequestService.isAttachmentRequire(signRequest),
+                isOtpView,
+                frontUser == null || frontUser.getFavoriteSignRequestParams() == null,
+                frontUser != null ? frontUser.getPhone() : null,
+                frontUser != null ? frontUser.getReturnToHomeAfterSign() : null,
+                isManager
         );
+        return ResponseEntity.ok(frontDto);
     }
 
     private String toDisplayName(User user) {
@@ -361,126 +398,18 @@ public class UserAndOtpSignRequestController {
         return user.getFirstname() + " " + user.getName();
     }
 
-    public record ShowSignRequestDataFlowDto(ShowSignRequestBackDto back, ShowSignRequestFrontDto front) {}
+    private List<String> getSignImagesForRequest(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession) throws IOException, EsupSignatureUserException {
+        Long userShareId = getUserShareId(httpSession);
+        return signBookService.getSignImagesForSignRequest(signRequestId, userEppn, authUserEppn, userShareId);
+    }
 
-    public record ShowSignRequestBackDto(
-            SignRequest signRequest,
-            SignBook signBook,
-            Workflow workflow,
-            Long signRequestId,
-            Long signBookId,
-            Long dataId,
-            Long formId,
-            String urlProfil,
-            Boolean displayNotif,
-            Boolean tempUsers,
-            Boolean signable,
-            Boolean editable,
-            Boolean manager,
-            SignRequestStatus status,
-            SignType currentSignType,
-            Integer currentStepNumber,
-            Long currentStepId,
-            Boolean currentStepMultiSign,
-            Boolean currentStepSingleSignWithAnnotation,
-            SignLevel currentStepMinSignLevel,
-            SignLevel currentStepMaxSignLevel,
-            Boolean stepRepeatable,
-            Boolean lastStep,
-            Boolean pdf,
-            Boolean attachmentAlert,
-            Boolean attachmentRequire,
-            Boolean notSigned,
-            Boolean currentUserAsSigned,
-            List<String> signatureIds,
-            Boolean signatureIssue,
-            Integer nbSignRequests,
-            String action,
-            Set<String> supervisors,
-            Document toSignDocument,
-            List<Comment> postits,
-            List<Comment> comments,
-            List<SignRequestParams> spots,
-            List<Document> attachments,
-            SignBook nextSignBook,
-            SignRequest nextSignRequest,
-            List<Field> fields,
-            List<SignRequestParams> signRequestParams,
-            List<String> signImages,
-            List<SignWith> signWiths,
-            AuditTrail auditTrail,
-            String size,
-            Boolean sealCertOK,
-            List<SealCertificatProperties> sealCertificatPropertieses,
-            SignWith[] allSignWiths,
-            List<Certificat> certificats,
-            String annotation,
-            List<LiveWorkflowStep> steps,
-            List<Log> refuseLogs,
-            Boolean viewRight,
-            Boolean frameMode,
-            Form form,
-            List<Log> logs,
-            String pdfaCheck,
-            Boolean auditTrailChecked,
-            List<RecipientWsDto> externalsRecipients
-    ) {}
-
-    public record ShowSignRequestFrontDto(
-            FrontUserDto user,
-            FrontUserDto authUser,
-            FrontUserDto creator,
-            Integer currentStepNumber,
-            Set<String> supervisors,
-            Boolean lastStep,
-            SignUiFrontDto signUi
-    ) {}
-
-    public record SignUiFrontDto(
-            Long signRequestId,
-            Long dataId,
-            Long formId,
-            List<SignRequestParams> currentSignRequestParamses,
-            Integer signImageNumber,
-            SignType currentSignType,
-            Boolean signable,
-            Boolean editable,
-            List<Comment> comments,
-            List<SignRequestParams> spots,
-            Boolean pdf,
-            Integer currentStepNumber,
-            Boolean currentStepMultiSign,
-            Boolean currentStepSingleSignWithAnnotation,
-            SignLevel currentStepMinSignLevel,
-            Boolean workflowAvailable,
-            List<String> signImages,
-            String userName,
-            String authUserName,
-            List<Field> fields,
-            Boolean stepRepeatable,
-            SignRequestStatus status,
-            String action,
-            Integer nbSignRequests,
-            Boolean notSigned,
-            Boolean attachmentAlert,
-            Boolean attachmentRequire,
-            Boolean otp,
-            Boolean restore,
-            String phone,
-            Boolean returnToHomeAfterSign,
-            Boolean manager
-    ) {}
-
-    public record FrontUserDto(
-            Long id,
-            String eppn,
-            String name,
-            String firstname,
-            String email,
-            Integer defaultSignImageNumber,
-            String phone,
-            Boolean returnToHomeAfterSign
-    ) {}
+    private Long getUserShareId(HttpSession httpSession) {
+        Object userShareString = httpSession.getAttribute("userShareId");
+        if(userShareString == null) {
+            return null;
+        }
+        return Long.valueOf(userShareString.toString());
+    }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")

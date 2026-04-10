@@ -9,10 +9,7 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
 <body class="es-signrequest-page"
-      th:with="showDataFlow=${signRequestShowDataFlow},
-               back=${showDataFlow.back},
-               front=${showDataFlow.front},
-               signUi=${front.signUi},
+      th:with="back=${signRequestShowBack},
                id=${back.signRequestId},
                signRequest=${back.signRequest},
                signBook=${back.signBook},
@@ -61,13 +58,13 @@
                viewRight=${back.viewRight},
                frameMode=${back.frameMode},
                action=${back.action},
-               supervisors=${front.supervisors},
+               supervisors=${back.supervisors},
                form=${back.form},
                logs=${back.logs},
                pdfaCheck=${back.pdfaCheck},
                auditTrailChecked=${back.auditTrailChecked},
                externalsRecipients=${back.externalsRecipients},
-               isLastStep=${front.lastStep}">
+               isLastStep=${back.lastStep}">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
@@ -445,11 +442,26 @@
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module" th:if="${signBook.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
-    import {ShowSignRequestDataFlowDto} from '/js/modules/ui/signrequests/dto/ShowSignRequestDataFlowDto.js?version=@[(${versionApp})]@';
+    import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
 
-    const signRequestShowDataFlow = ShowSignRequestDataFlowDto.from([[${signRequestShowDataFlow}]]);
+    const signRequestFrontUrl = '/' + [[${urlProfil}]] + '/signrequests/' + [[${id}]] + '/front';
     sessionStorage.setItem("favoriteSignRequestParams", [[${favoriteSignRequestParamsJson}]]);
-    new SignUi(signRequestShowDataFlow, [[${_csrf}]]);
+    fetch(signRequestFrontUrl, {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+        .then(async response => {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => new SignUi(SignUiFrontDto.from(data), [[${_csrf}]]))
+        .catch(error => {
+            console.error('Impossible de charger le bootstrap front de signature', error);
+            bootbox.alert("Impossible de charger l’interface de signature.");
+        });
 
 </script>
 </body>
