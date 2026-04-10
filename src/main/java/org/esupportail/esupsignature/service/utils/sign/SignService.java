@@ -196,10 +196,13 @@ public class SignService {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat));
 			} else if (signWith.equals(SignWith.sealCert)
                     &&
-                    (userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
-                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat)
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
+                    (userEppn.equals("system")
+                    ||
+                        (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
+                    ||
+                        (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
+                    ||
+                        certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat) || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
             ) {
 				try {
                     abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(sealCertificat));

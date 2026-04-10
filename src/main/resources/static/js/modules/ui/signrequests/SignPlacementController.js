@@ -373,6 +373,21 @@ export class SignPlacementController extends EventFactory {
         }
     }
 
+    getSelectableCertTypeOptions() {
+        return $("#certType").find("option:not(:disabled):not([unavailable])");
+    }
+
+    hasValidSelectedCertType() {
+        const selectCertType = $("#certType");
+        const selectedOption = selectCertType.find("option:selected");
+        const value = selectCertType.val();
+        return value != null
+            && value !== ""
+            && selectedOption.length > 0
+            && !selectedOption.is(":disabled")
+            && !selectedOption.is("[unavailable]");
+    }
+
     goStep1() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
@@ -432,10 +447,13 @@ export class SignPlacementController extends EventFactory {
         this.setCertTypeHighlight(false);
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
-        let countEnable = selectCertType.find("option:not(:disabled):not([unavailable]").length;
+        const selectableOptions = this.getSelectableCertTypeOptions();
+        let countEnable = selectableOptions.length;
         if(countEnable === 1) {
-            selectCertType.find("option:not(:disabled):not([unavailable]").prop("selected", true);
+            selectableOptions.prop("selected", true);
             selectCertType.trigger("change");
+            this.goStep3();
+        } else if (this.hasValidSelectedCertType()) {
             this.goStep3();
         } else {
             selectCertType.trigger("focus");

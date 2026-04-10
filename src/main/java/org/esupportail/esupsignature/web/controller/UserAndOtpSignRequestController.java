@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
@@ -220,6 +221,7 @@ public class UserAndOtpSignRequestController {
         boolean auditTrailChecked = signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported);
         List<RecipientWsDto> externalsRecipients = auditTrailChecked ? signRequestService.getExternalRecipients(signRequest.getId()) : new ArrayList<>();
         boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
+        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
         SignWith[] allSignWiths = SignWith.values();
         List<Certificat> certificats = certificatService.getCertificatByUser(userEppn);
 
@@ -274,6 +276,7 @@ public class UserAndOtpSignRequestController {
                         auditTrail,
                         size,
                         sealCertOK,
+                        sealCertificatPropertieses,
                         allSignWiths,
                         certificats,
                         annotation,
@@ -408,6 +411,7 @@ public class UserAndOtpSignRequestController {
             AuditTrail auditTrail,
             String size,
             Boolean sealCertOK,
+            List<SealCertificatProperties> sealCertificatPropertieses,
             SignWith[] allSignWiths,
             List<Certificat> certificats,
             String annotation,

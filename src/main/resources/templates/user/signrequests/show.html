@@ -52,6 +52,7 @@
                auditTrail=${back.auditTrail},
                size=${back.size},
                sealCertOK=${back.sealCertOK},
+               sealCertificatPropertieses=${back.sealCertificatPropertieses},
                allSignWiths=${back.allSignWiths},
                certificats=${back.certificats},
                annotation=${back.annotation},
@@ -283,7 +284,7 @@
                                 <div class="alert bg-light text-dark warning" title="Masquer ce message" th:if="${isCurrentUserAsSigned && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
                                     <script>
                                         displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info  text-success" title="Document déjà signé"></i>');
-                                        displayPdfAlertsDropdown.removeClass("d-none");
+                                        // displayPdfAlertsDropdown.removeClass("d-none");
                                     </script>
                                     <div class="pdf-warning-bar bg-success"></div>
                                     <div class="d-flex gap-2 align-items-center">

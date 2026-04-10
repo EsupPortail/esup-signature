@@ -226,6 +226,45 @@ export class SignUi {
         this.toolsBar.toggleClass("es-tools-single-cert-type-mobile", this.getSelectableCertTypeCount() === 1);
     }
 
+    hasPendingSignaturePlacement() {
+        const signPlacementController = this.workspace?.signPlacementController;
+        if (signPlacementController == null || signPlacementController.signRequestParamses == null) {
+            return false;
+        }
+        return Array.from(signPlacementController.signRequestParamses.values()).some(signRequestParams =>
+            signRequestParams != null
+            && signRequestParams.isSign
+            && signRequestParams.signImageNumber != null
+            && signRequestParams.signImageNumber >= 0
+            && signRequestParams.signImageNumber !== 999999
+        );
+    }
+
+    hasValidSelectedCertType() {
+        if (!this.certTypeSelect.length) {
+            return false;
+        }
+        const selectedOption = this.certTypeSelect.find("option:selected");
+        const value = this.certTypeSelect.val();
+        return value != null
+            && value !== ""
+            && selectedOption.length > 0
+            && !selectedOption.is(":disabled")
+            && !selectedOption.is("[unavailable]");
+    }
+
+    syncSignatureStepUi() {
+        const signPlacementController = this.workspace?.signPlacementController;
+        if (signPlacementController == null || !this.hasPendingSignaturePlacement()) {
+            return;
+        }
+        if (this.hasValidSelectedCertType()) {
+            signPlacementController.goStep3();
+        } else {
+            signPlacementController.goStep2();
+        }
+    }
+
     initMobileCertTypeVisibility() {
         if (!this.certTypeSelect.length || !this.toolsBar.length) {
             return;
@@ -313,9 +352,7 @@ export class SignUi {
         } else {
             $("#sealChoose").addClass('d-none');
         }
-        if (this.workspace?.signPlacementController?.signsList?.length > 0) {
-            this.workspace.signPlacementController.goStep3();
-        }
+        this.syncSignatureStepUi();
         this.updateMobileCertTypeVisibility();
     }
 
