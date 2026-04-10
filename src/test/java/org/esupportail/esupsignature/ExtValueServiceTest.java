@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(SpringExtension.class)
@@ -26,6 +27,7 @@ public class ExtValueServiceTest {
 
     @Test
     public void testExtValues() {
+        assertFalse(extValueService.getExtValues().isEmpty(), "Au moins une implémentation d'ExtValue doit être disponible.");
         boolean extValueTest = true;
         for(ExtValue extValue : extValueService.getExtValues()) {
             try {

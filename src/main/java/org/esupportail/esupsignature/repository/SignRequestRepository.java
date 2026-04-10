@@ -73,7 +73,7 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     @Query(value = "select * from sign_request where DATE_PART('day', now() - create_date) > :nbBeforeDelete and status = 'pending' and warning_readed = true", nativeQuery = true)
     List<SignRequest> findByOlderPendingAndWarningReaded(Integer nbBeforeDelete);
 
-    @Query(value = "select s from SignRequest s where s.cleanDocumentsHistoryDate is null and s.status != 'pending' and s.status != 'draft' and s.status != 'uploading' and s.status != 'refused'")
+    @Query(value = "select s from SignRequest s join SignBook as sb on sb.id = s.parentSignBook.id where sb.endDate is null and s.cleanDocumentsHistoryDate is null and s.status != 'pending' and s.status != 'draft' and s.status != 'uploading' and s.status != 'refused'")
     List<SignRequest> findSignRequestsByCleanDocumentsHistoryDateIsNull();
 }
 

@@ -19,6 +19,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
 @TestPropertySource(properties = {"app.scheduling.enable=false"})
@@ -29,7 +33,9 @@ public class JpaTest {
 
     @Test
     public void testJpaConnexion() {
-        entityManager.createNativeQuery("SELECT 1").getSingleResult();
+        Object result = entityManager.createNativeQuery("SELECT 1").getSingleResult();
+        assertNotNull(result, "La requête de connectivité JPA ne doit pas retourner null.");
+        assertEquals(1, ((Number) result).intValue(), "La requête JPA de connectivité doit retourner 1.");
     }
 
     @Test
@@ -40,11 +46,13 @@ public class JpaTest {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
         final Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents("org.esupportail.esupsignature.entity");
+        assertFalse(beanDefinitions.isEmpty(), "Le scan des entités JPA ne doit pas être vide.");
         for(BeanDefinition beanDefinition : beanDefinitions) {
             metadataSources.addAnnotatedClass(Class.forName(beanDefinition.getBeanClassName()));
         }
         Metadata metadata =  metadataSources.buildMetadata();
-        System.out.println(metadata.toString());
+        assertNotNull(metadata, "Les métadonnées Hibernate doivent être construites.");
+        assertFalse(metadata.getEntityBindings().isEmpty(), "Les métadonnées Hibernate doivent contenir des entités mappées.");
     }
 
 }

@@ -154,8 +154,7 @@ public class WorkflowWsController {
                                    @RequestParam(required = false) @Parameter(deprecated = true, description = "Lites des numéros d'étape pour lesquelles tous les participants doivent signer", example = "[stepNumber]") List<String> allSignToCompletes
                                    ) {
         logger.debug("init new workflow instance : " + id);
-        logger.debug("stepsJsonString");
-        logger.debug(stepsJsonString);
+        logger.debug("stepsJsonString : " + stepsJsonString);
         if(json == null) {
             json = false;
         }

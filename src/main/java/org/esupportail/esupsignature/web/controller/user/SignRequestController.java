@@ -34,14 +34,12 @@ public class SignRequestController {
         return "signrequests";
     }
 
-    private final UserService userService;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
 
     private final OtpService otpService;
 
-    public SignRequestController(UserService userService, SignRequestService signRequestService, SignBookService signBookService, OtpService otpService) {
-        this.userService = userService;
+    public SignRequestController(SignRequestService signRequestService, SignBookService signBookService, OtpService otpService) {
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.otpService = otpService;
