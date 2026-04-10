@@ -8,7 +8,65 @@
 <!--/*@thymesVar id="currentSignType" type="org.esupportail.esupsignature.entity.enums.SignType"*/-->
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<body class="es-signrequest-page">
+<body class="es-signrequest-page"
+      th:with="showDataFlow=${signRequestShowDataFlow},
+               back=${showDataFlow.back},
+               front=${showDataFlow.front},
+               signUi=${front.signUi},
+               id=${back.signRequestId},
+               signRequest=${back.signRequest},
+               signBook=${back.signBook},
+               workflow=${back.workflow},
+               urlProfil=${back.urlProfil},
+               displayNotif=${back.displayNotif},
+               isTempUsers=${back.tempUsers},
+               signable=${back.signable},
+               editable=${back.editable},
+               isManager=${back.manager},
+               currentSignType=${back.currentSignType},
+               signType=${back.currentSignType},
+               currentStepNumber=${back.currentStepNumber},
+               currentStepId=${back.currentStepId},
+               currentStepMultiSign=${back.currentStepMultiSign},
+               currentStepSingleSignWithAnnotation=${back.currentStepSingleSignWithAnnotation},
+               currentStepMinSignLevel=${back.currentStepMinSignLevel},
+               currentStepMaxSignLevel=${back.currentStepMaxSignLevel},
+               nbSignRequestInSignBookParent=${back.nbSignRequests},
+               toSignDocument=${back.toSignDocument},
+               postits=${back.postits},
+               comments=${back.comments},
+               spots=${back.spots},
+               attachments=${back.attachments},
+               nextSignBook=${back.nextSignBook},
+               nextSignRequest=${back.nextSignRequest},
+               fields=${back.fields},
+               toUseSignRequestParams=${back.signRequestParams},
+               signImages=${back.signImages},
+               signWiths=${back.signWiths},
+               signatureIds=${back.signatureIds},
+               signatureIssue=${back.signatureIssue},
+               attachmentAlert=${back.attachmentAlert},
+               attachmentRequire=${back.attachmentRequire},
+               isNotSigned=${back.notSigned},
+               isCurrentUserAsSigned=${back.currentUserAsSigned},
+               auditTrail=${back.auditTrail},
+               size=${back.size},
+               sealCertOK=${back.sealCertOK},
+               allSignWiths=${back.allSignWiths},
+               certificats=${back.certificats},
+               annotation=${back.annotation},
+               steps=${back.steps},
+               refuseLogs=${back.refuseLogs},
+               viewRight=${back.viewRight},
+               frameMode=${back.frameMode},
+               action=${back.action},
+               supervisors=${front.supervisors},
+               form=${back.form},
+               logs=${back.logs},
+               pdfaCheck=${back.pdfaCheck},
+               auditTrailChecked=${back.auditTrailChecked},
+               externalsRecipients=${back.externalsRecipients},
+               isLastStep=${front.lastStep}">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
     let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
@@ -386,65 +444,11 @@
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module" th:if="${signBook.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
-    let signable = [[${signable}]];
-    let editable = [[${editable}]];
-    let currentSignType = [[${signRequest.currentSignType}]];
+    import {ShowSignRequestDataFlowDto} from '/js/modules/ui/signrequests/dto/ShowSignRequestDataFlowDto.js?version=@[(${versionApp})]@';
+
+    const signRequestShowDataFlow = ShowSignRequestDataFlowDto.from([[${signRequestShowDataFlow}]]);
     sessionStorage.setItem("favoriteSignRequestParams", [[${favoriteSignRequestParamsJson}]]);
-    new SignUi(
-        [[${signRequest.id}]],
-        [# th:if="${signRequest.data != null}"]
-            [[${signRequest.data.id}]],
-        [/]
-        [# th:unless="${signRequest.data != null}"]
-            null,
-        [/]
-        [# th:if="${signRequest.data != null && signRequest.data.form != null}"]
-            [[${signRequest.data.form.id}]],
-        [/]
-        [# th:unless="${signRequest.data != null && signRequest.data.form != null}"]
-            null,
-        [/]
-        [[${toUseSignRequestParams}]],
-        [[${user.defaultSignImageNumber}]],
-        currentSignType,
-        signable,
-        editable,
-        [[${comments}]],
-        [[${spots}]],
-        [[${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}]],
-        [[${currentStepNumber}]],
-        [[${currentStepMultiSign}]],
-        [[${currentStepSingleSignWithAnnotation}]],
-        [[${currentStepMinSignLevel}]],
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-            [[${workflow != null}]],
-        [/]
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
-            null,
-        [/]
-        [[${signImages}]],
-        [[${user.firstname + ' ' + user.name}]],
-        [[${authUser.firstname + ' ' + authUser.name}]],
-        [[${_csrf}]],
-        [[${fields}]],
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep != null}"]
-            [[${signRequest.parentSignBook.liveWorkflow.currentStep.repeatable}]],
-        [/]
-        [# th:if="${signRequest.parentSignBook.liveWorkflow.currentStep == null}"]
-            null,
-        [/]
-        [[${signRequest.status}]],
-        [[${action}]],
-        [[${signRequest.parentSignBook.signRequests.size()}]],
-        [[${isNotSigned}]],
-        [[${attachmentAlert}]],
-        [[${attachmentRequire}]],
-        [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]],
-        [[${user.favoriteSignRequestParams == null} ? true : false]],
-        [[${user.phone}]],
-        [[${user.returnToHomeAfterSign}]],
-        [[${isManager}]]
-    );
+    new SignUi(signRequestShowDataFlow, [[${_csrf}]]);
 
 </script>
 </body>

@@ -3,47 +3,60 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
 import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
+import {ShowSignRequestDataFlowDto} from "./dto/ShowSignRequestDataFlowDto.js?version=@version@";
 
 export class SignUi {
 
-    constructor(id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, isPdf, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, currentStepMinSignLevel, workflow, signImages, userName, authUserName, csrf, fields, stepRepeatable, status, action, nbSignRequests, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, returnToHome, isManager) {
-        console.info("Starting sign UI for " + id);
+    constructor(showDataFlowInput, csrfToken) {
+        const {showDataFlow, signUiDto, csrf} = this.normalizeInput(showDataFlowInput, csrfToken);
+        console.info("Starting sign UI for " + signUiDto.signRequestId);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.returnToHome = returnToHome;
-        this.signRequestId = id;
-        this.signable = signable;
+        this.showDataFlow = showDataFlow;
+        this.signUiDto = signUiDto;
+        this.returnToHome = signUiDto.returnToHomeAfterSign;
+        this.signRequestId = signUiDto.signRequestId;
+        this.signable = signUiDto.signable;
         this.percent = 0;
-        this.isOtp = isOtp;
+        this.isOtp = signUiDto.otp;
         this.wait = $('#wait');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.isPdf = isPdf;
-        this.formId = formId;
-        this.dataId = dataId;
-        this.currentSignType = currentSignType;
-        this.notSigned = notSigned;
-        this.workspace = new WorkspacePdf(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, this.csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, isManager);
+        this.isPdf = signUiDto.pdf;
+        this.formId = signUiDto.formId;
+        this.dataId = signUiDto.dataId;
+        this.currentSignType = signUiDto.currentSignType;
+        this.notSigned = signUiDto.notSigned;
+        this.workspace = new WorkspacePdf(showDataFlow, this.csrf);
         this.signRequestUrlParams = "";
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
-        this.stepRepeatable = stepRepeatable;
-        this.currentStepNumber = currentStepNumber;
-        this.currentStepMinSignLevel = currentStepMinSignLevel;
+        this.stepRepeatable = signUiDto.stepRepeatable;
+        this.currentStepNumber = signUiDto.currentStepNumber;
+        this.currentStepMinSignLevel = signUiDto.currentStepMinSignLevel;
         this.gotoNext = null;
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
-        this.nbSignRequests = nbSignRequests;
-        this.attachmentRequire = attachmentRequire;
-        this.attachmentAlert = attachmentAlert;
+        this.nbSignRequests = signUiDto.nbSignRequests;
+        this.attachmentRequire = signUiDto.attachmentRequire;
+        this.attachmentAlert = signUiDto.attachmentAlert;
         this.signLaunchButton = $("#signLaunchButton");
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         $("#password").hide();
         this.initListeners();
-        if(status !== "archived" && status !== "cleaned" && currentSignType !== "form") {
+        if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
             this.initReportModal();
         }
         // this.checkAfterChangeSignType();
         this.nexu = this.checkSignOptions();
+    }
+
+    normalizeInput(showDataFlowInput, csrfToken) {
+        const showDataFlow = ShowSignRequestDataFlowDto.from(showDataFlowInput);
+        return {
+            showDataFlow,
+            signUiDto: showDataFlow.front.signUi,
+            csrf: csrfToken
+        };
     }
 
     initListeners() {

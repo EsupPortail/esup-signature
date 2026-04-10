@@ -1,10 +1,43 @@
 import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
 import {SignPosition} from "./SignPosition.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
+import {ShowSignRequestDataFlowDto} from "./dto/ShowSignRequestDataFlowDto.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(isPdf, id, dataId, formId, currentSignRequestParamses, signImageNumber, currentSignType, signable, editable, comments, spots, currentStepNumber, currentStepMultiSign, currentStepSingleSignWithAnnotation, workflow, signImages, userName, authUserName, fields, stepRepeatable, status, csrf, action, notSigned, attachmentAlert, attachmentRequire, isOtp, restore, phone, isManager) {
+    constructor(showDataFlow, csrf) {
+        const normalizedShowDataFlow = ShowSignRequestDataFlowDto.from(showDataFlow);
+        const backDto = normalizedShowDataFlow.back;
+        const signUiDto = normalizedShowDataFlow.front.signUi;
+        const isPdf = signUiDto.pdf;
+        const id = signUiDto.signRequestId;
+        const dataId = signUiDto.dataId;
+        const formId = signUiDto.formId;
+        const currentSignRequestParamses = signUiDto.currentSignRequestParamses;
+        const signImageNumber = signUiDto.signImageNumber;
+        const currentSignType = signUiDto.currentSignType;
+        const signable = signUiDto.signable;
+        const editable = signUiDto.editable;
+        const comments = signUiDto.comments;
+        const spots = signUiDto.spots;
+        const currentStepNumber = signUiDto.currentStepNumber;
+        const currentStepMultiSign = signUiDto.currentStepMultiSign;
+        const currentStepSingleSignWithAnnotation = signUiDto.currentStepSingleSignWithAnnotation;
+        const workflow = backDto.workflow;
+        const signImages = signUiDto.signImages;
+        const userName = signUiDto.userName;
+        const authUserName = signUiDto.authUserName;
+        const fields = signUiDto.fields;
+        const stepRepeatable = signUiDto.stepRepeatable;
+        const status = signUiDto.status;
+        const action = signUiDto.action;
+        const notSigned = signUiDto.notSigned;
+        const attachmentAlert = signUiDto.attachmentAlert;
+        const attachmentRequire = signUiDto.attachmentRequire;
+        const isOtp = signUiDto.otp;
+        const restore = signUiDto.restore;
+        const phone = signUiDto.phone;
+        const isManager = signUiDto.manager;
         console.info("Starting workspace UI");
         this.ready = false;
         this.formInitialized = false;
