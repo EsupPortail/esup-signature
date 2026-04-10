@@ -3,44 +3,27 @@ import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
 import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
-import {ShowSignRequestDataFlowDto} from "./dto/ShowSignRequestDataFlowDto.js?version=@version@";
+import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
+import {SignatureFlowController} from "./SignatureFlowController.js?version=@version@";
 
 export class SignUi {
 
     constructor(showDataFlowInput, csrfToken) {
-        const {showDataFlow, signUiDto, csrf} = this.normalizeInput(showDataFlowInput, csrfToken);
+        this.state = WorkspaceState.from(showDataFlowInput, csrfToken);
+        const {showDataFlow, signUiDto, csrfToken: csrf} = this.normalizeInput();
         console.info("Starting sign UI for " + signUiDto.signRequestId);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.showDataFlow = showDataFlow;
-        this.signUiDto = signUiDto;
-        this.returnToHome = signUiDto.returnToHomeAfterSign;
-        this.signRequestId = signUiDto.signRequestId;
-        this.signable = signUiDto.signable;
-        this.percent = 0;
-        this.isOtp = signUiDto.otp;
         this.wait = $('#wait');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.isPdf = signUiDto.pdf;
-        this.formId = signUiDto.formId;
-        this.dataId = signUiDto.dataId;
-        this.currentSignType = signUiDto.currentSignType;
-        this.notSigned = signUiDto.notSigned;
-        this.workspace = new WorkspacePdf(showDataFlow, this.csrf);
-        this.signRequestUrlParams = "";
+        this.workspace = new WorkspacePdf(this.state, this.csrf);
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
-        this.stepRepeatable = signUiDto.stepRepeatable;
-        this.currentStepNumber = signUiDto.currentStepNumber;
-        this.currentStepMinSignLevel = signUiDto.currentStepMinSignLevel;
-        this.gotoNext = null;
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
-        this.nbSignRequests = signUiDto.nbSignRequests;
-        this.attachmentRequire = signUiDto.attachmentRequire;
-        this.attachmentAlert = signUiDto.attachmentAlert;
         this.signLaunchButton = $("#signLaunchButton");
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
+        this.signatureFlowController = new SignatureFlowController(this);
         $("#password").hide();
         this.initListeners();
         if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
@@ -50,13 +33,104 @@ export class SignUi {
         this.nexu = this.checkSignOptions();
     }
 
-    normalizeInput(showDataFlowInput, csrfToken) {
-        const showDataFlow = ShowSignRequestDataFlowDto.from(showDataFlowInput);
-        return {
-            showDataFlow,
-            signUiDto: showDataFlow.front.signUi,
-            csrf: csrfToken
-        };
+    normalizeInput() {
+        return this.state.toSignUiContext();
+    }
+
+    get showDataFlow() {
+        return this.state.showDataFlow;
+    }
+
+    get signUiDto() {
+        return this.state.signUiDto;
+    }
+
+    get returnToHome() {
+        return this.state.returnToHome;
+    }
+
+    get signRequestId() {
+        return this.state.signRequestId;
+    }
+
+    get signable() {
+        return this.state.signable;
+    }
+
+    get percent() {
+        return this.state.percent;
+    }
+
+    set percent(value) {
+        this.state.percent = value;
+    }
+
+    get isOtp() {
+        return this.state.isOtp;
+    }
+
+    get isPdf() {
+        return this.state.isPdf;
+    }
+
+    get formId() {
+        return this.state.formId;
+    }
+
+    get dataId() {
+        return this.state.dataId;
+    }
+
+    get currentSignType() {
+        return this.state.currentSignType;
+    }
+
+    get notSigned() {
+        return this.state.notSigned;
+    }
+
+    get stepRepeatable() {
+        return this.state.stepRepeatable;
+    }
+
+    get currentStepNumber() {
+        return this.state.currentStepNumber;
+    }
+
+    get currentStepMinSignLevel() {
+        return this.state.currentStepMinSignLevel;
+    }
+
+    get gotoNext() {
+        return this.state.gotoNext;
+    }
+
+    set gotoNext(value) {
+        this.state.gotoNext = value;
+    }
+
+    get nbSignRequests() {
+        return this.state.nbSignRequests;
+    }
+
+    get attachmentRequire() {
+        return this.state.attachmentRequire;
+    }
+
+    get attachmentAlert() {
+        return this.state.attachmentAlert;
+    }
+
+    get signRequestUrlParams() {
+        return this.state.signRequestUrlParams;
+    }
+
+    set signRequestUrlParams(value) {
+        this.state.signRequestUrlParams = value;
+    }
+
+    get status() {
+        return this.state.status;
     }
 
     initListeners() {
@@ -132,90 +206,7 @@ export class SignUi {
     }
 
     launchSignModal() {
-        console.info("launch sign modal");
-        window.onbeforeunload = null;
-        this.workspace.signPosition.lockSigns();
-        let self = this;
-        if (this.isPdf && this.currentSignType !== 'hiddenVisa') {
-            this.workspace.saveData(true);
-            this.workspace.pdfViewer.checkForm().then(function (result) {
-                if (result === "ok") {
-                    let signId = self.workspace.checkSignsPositions();
-                    if (signId != null) {
-                        $("#certType > option[value='imageStamp']").remove();
-                        if(self.workspace.currentSignRequestParamses.length > 0 || self.stepRepeatable) {
-                            bootbox.alert("Merci de placer la signature", function () {
-                                let signSpace = $("#signSpace_" + signId);
-                                if(signSpace.length) {
-                                    self.workspace.pdfViewer.animateScrollToPosition(parseInt(signSpace.css('top').replace('px', ''), 10));
-                                }
-                            });
-                        } else {
-                            if(self.currentSignType === 'signature') {
-                                bootbox.confirm({
-                                    message: "<div class='alert alert-secondary'><h4>Attention, vous allez signer sans appliquer d’image de signature</h4>Vous pouvez continuer mais, dans ce cas, un certificat électronique sera nécessaire.</div>",
-                                    buttons: {
-                                        cancel: {
-                                            label: '<i class="fa fa-undo"></i> Ajouter une signature',
-                                            className: 'btn-primary'
-                                        },
-                                        confirm: {
-                                            label: '<i class="fa fa-arrow-right"></i> Continuer sans visuel',
-                                            className: 'btn-secondary'
-                                        }
-                                    },
-                                    callback: function (result) {
-                                        if (result) {
-                                            if(self.checkAttachement()) {
-                                                self.confirmLaunchSignModal();
-                                            }
-                                        } else {
-                                            $("#addSignButton").click();
-                                        }
-                                    }
-                                });
-                            } else {
-                                bootbox.alert({
-                                    message: "Pour cette étape de visa, vous devez obligatoirement insérer un visuel de signature",
-                                    callback: function (result) {
-                                        $("#addSignButton2").click();
-                                    }
-                                });
-                            }
-                            self.checkSignOptions();
-                        }
-                    } else {
-                        if(self.notSigned && (self.currentSignType === "signature" || self.currentSignType === "visa") && (self.currentStepMinSignLevel === "simple")) {
-                            $('#certType').prepend($('<option>', {
-                                value: 'imageStamp',
-                                text: self.saveOptionText
-                            }));
-                        }
-                        self.checkSignOptions();
-                        self.certTypeSelect.children().each(function(e) {
-                            if($(this).val() === "imageStamp" && (self.currentSignType === "signature" || self.currentSignType === "visa")) {
-                                $(this).removeAttr('disabled');
-                                $("#no-options").hide();
-                                $("#no-options-alert").hide();
-                                $("#selectTypeDiv").show();
-                                $("#checkValidateSignButtonEnd").show();
-                                $("#checkValidateSignButtonNext").show();
-                            }
-                        });
-                        if(self.currentSignType === "visa") {
-                            $("#certType").val('imageStamp');
-                        }
-                        if(self.checkAttachement()) {
-                            self.confirmLaunchSignModal();
-                        }
-                    }
-                }
-            });
-        } else {
-            if(self.checkAttachement()) {
-                self.confirmLaunchSignModal();
-            }
-        }
+        return this.signatureFlowController.launchSignModal();
     }
 
     checkSignOptions() {
@@ -228,59 +219,11 @@ export class SignUi {
     }
 
     checkAttachement() {
-        if (this.attachmentRequire) {
-            bootbox.dialog({
-                message: "Vous devez joindre un document à cette étape avant de signer",
-                buttons: {
-                    close: {
-                        label: 'Fermer'
-                    }
-                },
-                callback: function (result) {
-                }
-            });
-        } else if (this.attachmentAlert) {
-            bootbox.confirm({
-                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                buttons: {
-                    cancel: {
-                        label: '<i class="fa fa-times"></i> Retour'
-                    },
-                    confirm: {
-                        label: '<i class="fa fa-check"></i> Continuer sans pièce jointe'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                       return true;
-                    }
-                }
-            });
-        } else {
-            return true;
-        }
-        return false;
+        return this.signatureFlowController.checkAttachement();
     }
 
     confirmLaunchSignModal() {
-        let enableInfinite = $("#enableInfinite");
-        enableInfinite.unbind();
-        enableInfinite.on("click", function () {
-            $("#infiniteForm").toggleClass("d-none");
-            $("#launchNoInfiniteSignButtonEnd").toggle();
-            $("#launchNoInfiniteSignButtonNext").toggle();
-            $("#signCommentNoInfinite").toggle();
-        });
-        let signModal = $("#signModal");
-        signModal.on('shown.bs.modal', function () {
-            $("#checkValidateSignButtonEnd").focus();
-            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
-            if(checkValidateSignButtonNext != null) {
-                checkValidateSignButtonNext.focus();
-            }
-        });
-        // signModal.modal('show');
-        this.launchSign();
+        return this.signatureFlowController.confirmLaunchSignModal();
     }
 
     checkAfterChangeSignType() {
@@ -353,209 +296,23 @@ export class SignUi {
     }
 
     launchNoInfiniteSign(next) {
-        this.signComment = $("#signComment");
-        this.launchSign(next);
+        return this.signatureFlowController.launchNoInfiniteSign(next);
     }
 
     launchSign(e) {
-        $("#checkValidateSignButtonNext").attr("disabled", "disabled");
-        $("#checkValidateSignButtonEnd").attr("disabled", "disabled");
-        let signModal = $('#signModal');
-        if(this.certTypeSelect.val() === '' || this.certTypeSelect.val() === null) {
-            bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
-            return;
-        }
-        if (this.isPdf && this.workspace.checkSignsPositions() != null && this.workspace.signType !== "hiddenVisa" && (this.certTypeSelect.val() === 'imageStamp')) {
-            bootbox.alert("Merci de placer la signature", null);
-            signModal.modal('hide');
-            return;
-        }
-        $(window).unbind("beforeunload");
-        if(e != null) {
-            this.gotoNext = $(e.currentTarget).attr("data-es-next-url");
-        }
-        signModal.modal('hide');
-        $('#stepRepeatableModal').modal('hide');
-        this.percent = 0;
-        let good = true;
-        if(this.signForm) {
-            let inputs = this.signForm.getElementsByTagName("input");
-            for (let i = 0, len = inputs.length; i < len; i++) {
-                let input = inputs[i];
-                if (!input.checkValidity()) {
-                    good = false;
-                }
-            }
-        }
-        if(good) {
-            console.log('launch sign for : ' + this.signRequestId);
-            this.wait.modal('show');
-            this.wait.modal({backdrop: 'static', keyboard: false});
-            if(this.isPdf) {
-                this.workspace.pdfViewer.promiseSaveValues().then(e => this.submitSignRequest());
-            } else {
-                this.submitSignRequest();
-            }
-        } else {
-            this.signModal.on('hidden.bs.modal', function () {
-                $("#checkDataSubmit").click();
-            })
-        }
+        return this.signatureFlowController.launchSign(e);
     }
 
     submitSignRequest() {
-        let self = this;
-        let signaturesCheck = true;
-        let formData = { };
-        if(this.isPdf) {
-            $.each($('#signForm').serializeArray(), function () {
-                if (!this.name.startsWith("comment")) {
-                    formData[this.name] = this.value;
-                }
-            });
-            if(this.formId != null) {
-                this.workspace.pdfViewer.savedFields.forEach((value, key) => {
-                    formData[key] = value;
-                });
-            }
-        }
-        if(this.workspace != null) {
-            let signRequestParamses = Array.from(this.workspace.signPosition.signRequestParamses.values());
-            let signRequestParamsesToSend = signRequestParamses.map(function (originalParams){
-                let signScale = self.normalizeFloat(originalParams.signScale, 1, 0.01);
-                let signPageNumber = self.normalizeInteger(originalParams.signPageNumber, 1, 1);
-                let xPos = self.normalizeInteger(originalParams.xPos, 0, 0);
-                let yPos = self.normalizeInteger(originalParams.yPos, 0, 0);
-                // If the signature is dropped on a predefined slot, slot coordinates are the source of truth.
-                if (originalParams.signSpace != null && originalParams.signSpace.attr) {
-                    const slotPage = Number.parseInt(originalParams.signSpace.attr("data-es-pos-page"), 10);
-                    const slotX = Number.parseInt(originalParams.signSpace.attr("data-es-pos-x"), 10);
-                    const slotY = Number.parseInt(originalParams.signSpace.attr("data-es-pos-y"), 10);
-                    if (Number.isFinite(slotPage)) {
-                        signPageNumber = slotPage;
-                    }
-                    if (Number.isFinite(slotX)) {
-                        xPos = slotX;
-                    }
-                    if (Number.isFinite(slotY)) {
-                        yPos = slotY;
-                    }
-                }
-                let paramToSend = {
-                    signPageNumber: signPageNumber,
-                    signDocumentNumber: self.normalizeInteger(originalParams.signDocumentNumber, 0, 0),
-                    signWidth: self.normalizeInteger(originalParams.signWidth / signScale, 200, 1),
-                    signHeight: self.normalizeInteger(originalParams.signHeight / signScale, 100, 1),
-                    xPos: xPos,
-                    yPos: yPos,
-                    rotate: self.normalizeInteger(self.workspace.pdfViewer.rotation, 0, 0),
-                    signImageNumber: self.normalizeInteger(originalParams.signImageNumber, 0),
-                    pdSignatureFieldName: originalParams.pdSignatureFieldName ?? null,
-                    signScale: signScale,
-                    extraText: originalParams.extraText ?? "",
-                    isExtraText: Boolean(originalParams.isExtraText),
-                    addWatermark: Boolean(originalParams.addWatermark),
-                    allPages: Boolean(originalParams.allPages),
-                    addImage: Boolean(originalParams.addImage),
-                    addExtra: Boolean(originalParams.addExtra),
-                    extraType: Boolean(originalParams.extraType),
-                    extraName: Boolean(originalParams.extraName),
-                    extraDate: Boolean(originalParams.extraDate),
-                    extraOnTop: originalParams.extraOnTop == null ? true : Boolean(originalParams.extraOnTop),
-                    textPart: originalParams.textPart ?? null,
-                    red: self.normalizeInteger(originalParams.red, 0, 0),
-                    green: self.normalizeInteger(originalParams.green, 0, 0),
-                    blue: self.normalizeInteger(originalParams.blue, 0, 0),
-                    fontSize: self.normalizeInteger(originalParams.fontSize, self.globalProperties?.defaultFontSize ?? 16, 1),
-                };
-                if(originalParams.userSignaturePad != null) {
-                    if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
-                        signaturesCheck = false;
-                    } else {
-                        originalParams.userSignaturePad.save();
-                        paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
-                    }
-                }
-                return paramToSend;
-            });
-            this.signRequestUrlParams = {
-                'password' : $("#password").val(),
-                'certType' : this.certTypeSelect.val(),
-                'signAll' : $("#sign-all").prop("checked"),
-                'sealCertificat' : this.sealCertificatSelect.val(),
-                'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
-                // 'visual' : visual,
-                'comment' : this.signComment.val(),
-                'formData' : JSON.stringify(formData)
-            };
-        } else {
-            this.signRequestUrlParams = {
-                "password": document.getElementById("password").value,
-            }
-        }
-        if(signaturesCheck) {
-            this.sendData(this.signRequestUrlParams);
-        } else {
-            bootbox.alert("Une signature est vide", null);
-        }
+        return this.signatureFlowController.submitSignRequest();
     }
 
     sendData(signRequestUrlParams) {
-        this.reset();
-        let self = this;
-        console.log("start sign");
-        console.log(self.signRequestId);
-        $.ajax({
-            url: "/ws-secure/global/sign/" + this.signRequestId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-            type: 'POST',
-            data: signRequestUrlParams,
-            success: function(data, textStatus, xhr) {
-                if(data === "initNexu") {
-                    document.location.href="/nexu-sign/start?ids=" + self.signRequestId;
-                } else {
-                    if (self.gotoNext != null) {
-                        document.location.href = self.gotoNext;
-                    } else {
-                        if(self.isOtp== null || !self.isOtp) {
-                            if(self.returnToHome == null) {
-                                if (self.nbSignRequests > 1 || !self.globalProperties.returnToHomeAfterSign) {
-                                    document.location.href = "/user/signrequests/" + self.signRequestId;
-                                } else {
-                                    document.location.href = "/user";
-                                }
-                            } else {
-                                if(self.returnToHome) {
-                                    document.location.href = "/user";
-                                } else {
-                                    document.location.href = "/user/signrequests/" + self.signRequestId;
-                                }
-                            }
-                        } else {
-                            document.location.href = "/otp/signrequests/" + self.signRequestId;
-                        }
-                    }
-                }
-            },
-            error: function(data, textStatus, xhr) {
-                $("#checkValidateSignButtonEnd").removeAttr("disabled");
-                $("#checkValidateSignButtonNext").removeAttr("disabled");
-                $("#signSpinner").hide();
-                console.error("sign error : " + data.responseText);
-                document.getElementById("signError").style.display = "block";
-                document.getElementById("signError").innerHTML =
-                    "<p>Une erreur s’est produite lors de la signature du document.</p>" +
-                    "<small>Message retourné par le système de signature : " + data.responseText + "</small>";
-                document.getElementById("closeModal").style.display = "block";
-            }
-        });
+        return this.signatureFlowController.sendData(signRequestUrlParams);
     }
 
     reset() {
-        this.percent = 0;
-        $("#signSpinner").show();
-        document.getElementById("signError").style.display = "none";
-        document.getElementById("closeModal").style.display = "none";
-        document.getElementById("validModal").style.display = "none";
+        return this.signatureFlowController.reset();
     }
 
     redirect() {

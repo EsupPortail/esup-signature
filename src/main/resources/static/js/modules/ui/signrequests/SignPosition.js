@@ -22,6 +22,11 @@ export class SignPosition extends EventFactory {
             this.currentSignRequestParamses.sort((a, b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
             this.currentSignRequestParamses.sort((a, b) => (a.signPageNumber > b.signPageNumber) ? 1 : ((b.signPageNumber > a.signPageNumber) ? -1 : 0))
         }
+        this.beforeUnloadNamespace = ".signPositionPendingChanges";
+        this.scrollNamespace = ".signPositionScroll";
+        this.workspaceScrollHandler = null;
+        this.userSignatureUpdatedHandler = e => this.applyUserSignatureState(e.detail);
+        this.userSignatureDeletedHandler = e => this.applyUserSignatureState(e.detail);
         this.signRequestParamses = new Map();
         this.id = 0;
         this.signsList = [];
@@ -52,11 +57,13 @@ export class SignPosition extends EventFactory {
         let self = this;
         const workspace = this.getScrollContainer();
         if (workspace) {
-            workspace.addEventListener('scroll', function() {
+            this.workspaceScrollHandler = () => {
                 self.scrollTop = workspace.scrollTop;
-            });
+            };
+            workspace.removeEventListener('scroll', this.workspaceScrollHandler);
+            workspace.addEventListener('scroll', this.workspaceScrollHandler);
         } else {
-            $(window).on('scroll', function() {
+            $(window).off('scroll' + this.scrollNamespace).on('scroll' + this.scrollNamespace, function() {
                 self.scrollTop = $(this).scrollTop();
             });
         }
@@ -65,8 +72,10 @@ export class SignPosition extends EventFactory {
                 self.popUserUi();
             }
         });
-        document.addEventListener('userSignatureUpdated', e => this.applyUserSignatureState(e.detail));
-        document.addEventListener('userSignatureDeleted', e => this.applyUserSignatureState(e.detail));
+        document.removeEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.removeEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
+        document.addEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.addEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
     }
 
     getGeneratedSignImageNumber(userState) {
@@ -140,7 +149,7 @@ export class SignPosition extends EventFactory {
             $("#signLaunchButton").removeClass("pulse-success");
             addSignButton2.focus();
             $("#addSignButton").removeAttr("disabled");
-            $(window).unbind("beforeunload");
+            $(window).off("beforeunload" + this.beforeUnloadNamespace);
             this.enableForwardButton();
             this.goStep1();
         }
@@ -221,7 +230,9 @@ export class SignPosition extends EventFactory {
         const isSpot = signImageNumber === 999999;
         if (!isSpot) {
             this.disableForwardButton();
-            $(window).bind("beforeunload", function (event) {
+            $(window)
+                .off("beforeunload" + this.beforeUnloadNamespace)
+                .on("beforeunload" + this.beforeUnloadNamespace, function (event) {
                 console.log("beforeunload déclenché");
                 event.preventDefault();
                 event.returnValue = "";
@@ -327,8 +338,8 @@ export class SignPosition extends EventFactory {
         this.addSign(page, false, -4);
     }
 
-    addText(page) {
-        let signRequestParams = this.addSign(page, false, null);
+    async addText(page) {
+        let signRequestParams = await this.addSign(page, false, null);
         if(signRequestParams != null) {
             signRequestParams.turnToText();
             signRequestParams.cross.css("background-image", "");
@@ -453,6 +464,17 @@ export class SignPosition extends EventFactory {
 
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
+    }
+
+    destroy() {
+        const workspace = this.getScrollContainer();
+        if (workspace != null && this.workspaceScrollHandler != null) {
+            workspace.removeEventListener('scroll', this.workspaceScrollHandler);
+        }
+        $(window).off('scroll' + this.scrollNamespace);
+        $(window).off('beforeunload' + this.beforeUnloadNamespace);
+        document.removeEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.removeEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
     }
 
 }

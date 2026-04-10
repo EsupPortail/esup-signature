@@ -1,14 +1,20 @@
 import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
 import {SignPosition} from "./SignPosition.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
-import {ShowSignRequestDataFlowDto} from "./dto/ShowSignRequestDataFlowDto.js?version=@version@";
+import {SignToolbar} from "./SignToolbar.js?version=@version@";
+import {CommentsPanel} from "./CommentsPanel.js?version=@version@";
+import {SpotManager} from "./SpotManager.js?version=@version@";
+import {SignSpaceManager} from "./SignSpaceManager.js?version=@version@";
+import {PostitManager} from "./PostitManager.js?version=@version@";
+import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
 
 export class WorkspacePdf {
 
-    constructor(showDataFlow, csrf) {
-        const normalizedShowDataFlow = ShowSignRequestDataFlowDto.from(showDataFlow);
-        const backDto = normalizedShowDataFlow.back;
-        const signUiDto = normalizedShowDataFlow.front.signUi;
+    constructor(workspaceStateInput, csrf) {
+        const workspaceState = workspaceStateInput instanceof WorkspaceState
+            ? workspaceStateInput
+            : WorkspaceState.from(workspaceStateInput, null);
+        const {showDataFlow, backDto, signUiDto} = workspaceState.toWorkspaceContext();
         const isPdf = signUiDto.pdf;
         const id = signUiDto.signRequestId;
         const dataId = signUiDto.dataId;
@@ -45,7 +51,6 @@ export class WorkspacePdf {
         this.isOtp = isOtp;
         this.phone = phone;
         this.changeModeSelector = null;
-        this.displayComments = false;
         this.action = action;
         this.dataId = dataId;
         this.formId = formId;
@@ -74,6 +79,20 @@ export class WorkspacePdf {
         this.scrollTop = 0;
         this.nextCommand = "none";
         this.hoverLiveStepState = null;
+        this.state = workspaceState;
+        this.showDataFlow = showDataFlow;
+        this.eventNamespace = ".workspacePdf";
+        this.postitNamespace = ".workspacePdfPostit";
+        this.commentDialogNamespace = ".workspacePdfCommentAdd";
+        this.spotAddNamespace = ".workspacePdfSpotAdd";
+        this.layoutNamespace = ".workspacePdfLayout";
+        this.signSpaceNamespace = ".workspacePdfSignSpace";
+        this.postitManager = new PostitManager(this.state, {
+            eventNamespace: this.eventNamespace,
+            postitNamespace: this.postitNamespace,
+            getComments: () => this.comments
+        });
+        this.displayComments = this.shouldDisplayCommentsOnLoad(comments);
         if(fields != null) {
             for (let i = 0; i < fields.length; i++) {
                 let field = fields[i];
@@ -106,6 +125,92 @@ export class WorkspacePdf {
         this.addSpotEnabled = false;
         this.addCommentEnabled = false;
         this.nextCommand = "none";
+        this.toolbar = new SignToolbar({
+            eventNamespace: ".workspacePdfToolbar",
+            onAddComment: () => this.enableCommentAdd(),
+            onAddSpot: () => this.enableSpotAdd(),
+            onAddSign: () => this.addSign(),
+            onAddParaph: () => this.addParaph(),
+            onAddCheck: () => this.signPosition.addCheckImage(this.pdfViewer.pageNum),
+            onAddTimes: () => this.signPosition.addTimesImage(this.pdfViewer.pageNum),
+            onAddCircle: () => this.signPosition.addCircleImage(this.pdfViewer.pageNum),
+            onAddMinus: () => this.signPosition.addMinusImage(this.pdfViewer.pageNum),
+            onAddText: () => this.signPosition.addText(this.pdfViewer.pageNum)
+        });
+        this.commentsPanel = new CommentsPanel(this.state, {
+            eventNamespace: this.eventNamespace,
+            postitNamespace: this.postitNamespace,
+            commentDialogNamespace: this.commentDialogNamespace,
+            getPdfViewer: () => this.pdfViewer,
+            getComments: () => this.comments,
+            isEditable: () => this.editable,
+            isDisplayComments: () => this.displayComments,
+            setDisplayComments: value => { this.displayComments = value; },
+            isAddSpotEnabled: () => this.addSpotEnabled,
+            setAddSpotEnabled: value => { this.addSpotEnabled = value; },
+            isAddCommentEnabled: () => this.addCommentEnabled,
+            setAddCommentEnabled: value => { this.addCommentEnabled = value; },
+            setToolsDisabled: disabled => this.setToolsBarDisabled(disabled),
+            setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
+            setCommentAddButtonsState: enabled => this.setCommentAddButtonsState(enabled),
+            lockSigns: () => this.signPosition.lockSigns(),
+            setPointItEnabled: enabled => { this.signPosition.pointItEnable = enabled; },
+            selectChangeMode: value => {
+                if (this.changeModeSelector != null) {
+                    this.changeModeSelector.setSelected(value);
+                }
+            },
+            showAllPostits: () => this.showAllPostits(),
+            hideAllPostits: () => this.hideAllPostits(),
+            reloadPage: () => document.location.reload(),
+            restoreAddSpotButton: () => $("#addSpotButton").attr("disabled", false),
+            signRequestId: () => this.signRequestId,
+            isOtp: () => this.isOtp,
+            csrf: () => this.csrf,
+            status: () => this.status
+        });
+        this.spotManager = new SpotManager(this.state, {
+            signSpaceNamespace: this.signSpaceNamespace,
+            spotAddNamespace: this.spotAddNamespace,
+            getSpots: () => this.spots,
+            setSpots: spots => { this.spots = spots; },
+            getCurrentSignRequestParamses: () => this.currentSignRequestParamses,
+            setCurrentSignRequestParamses: params => {
+                this.currentSignRequestParamses = params;
+                this.signPosition.currentSignRequestParamses = params;
+            },
+            getCurrentStepNumber: () => this.currentStepNumber,
+            isSignable: () => this.signable,
+            getCurrentSignType: () => this.currentSignType,
+            getUserName: () => this.userName,
+            getFormId: () => this.formId,
+            getSignRequestId: () => this.signRequestId,
+            getCsrf: () => this.csrf,
+            getPdfViewer: () => this.pdfViewer,
+            setToolsDisabled: disabled => this.setToolsBarDisabled(disabled),
+            setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
+            setSpotActionButtonsDisabled: disabled => this.setSpotActionButtonsDisabled(disabled),
+            exitCommentAddMode: () => this.exitCommentAddMode(),
+            startSpotPlacement: () => this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null),
+            refreshSignFields: () => this.initSignFields(),
+            removeSignSpaceBySpotId: spotId => $("#signSpace_spot_" + spotId).remove()
+        });
+        this.signSpaceManager = new SignSpaceManager(this.state, {
+            signSpaceNamespace: this.signSpaceNamespace,
+            getPdfViewer: () => this.pdfViewer,
+            getSignPosition: () => this.signPosition,
+            getCurrentSignRequestParamses: () => this.currentSignRequestParamses,
+            getSpots: () => this.spots,
+            getCurrentStepNumber: () => this.currentStepNumber,
+            isSignable: () => this.signable,
+            isEditable: () => this.editable,
+            isManager: () => this.isManager,
+            getBrowserZoom: () => this.getBrowserZoom(),
+            requestAddSign: signIndex => this.addSign(signIndex),
+            findSpotIdForSignParams: signParams => this.findSpotIdForSignParams(signParams),
+            filterSpotsNotCurrentStep: spotsToFilter => this.filterSpotsNotCurrentStep(spotsToFilter),
+            bindSignSpaceDelete: signSpaceDiv => this.bindSignSpaceDelete(signSpaceDiv)
+        });
         this.initChangeModeSelector();
         this.initDataFields(fields);
         this.wsTabs = $("#ws-tabs");
@@ -120,7 +225,9 @@ export class WorkspacePdf {
                 const THRESHOLD = 100;
                 const DEBOUNCE_DELAY = 100;
                 let resizeTimer = null;
-                $(window).on("resize", () => {
+                $(window)
+                    .off("resize" + this.layoutNamespace)
+                    .on("resize" + this.layoutNamespace, () => {
                     clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(() => {
                         const w = window.innerWidth;
@@ -138,6 +245,7 @@ export class WorkspacePdf {
         let root = document.querySelector(':root');
         root.setAttribute("style", "scroll-behavior: auto;");
         this.initListeners();
+        this.postitManager.applyVisibility(this.displayComments);
         if (this.isPdf) {
             this.signPosition.updateScales(this.pdfViewer.scale);
         } else {
@@ -146,24 +254,12 @@ export class WorkspacePdf {
     }
 
     initListeners() {
+        const eventNamespace = this.eventNamespace;
         if (this.isPdf) {
-            $('#prev').on('click', e => this.pdfViewer.prevPage());
-            $('#next').on('click', e => this.pdfViewer.nextPage());
-            $('#end-button').on('click', e => this.pdfViewer.nextPage());
-            $('#addCommentButton').on('click', e => this.enableCommentAdd(e));
-            $('#addSpotButton').on('click', e => this.enableSpotAdd());
-            $('#addCommentButton2').on('click', e => this.enableCommentAdd(e));
-            $('#addSpotButton2').on('click', e => this.enableSpotAdd());
-            $("#spotStepNumber").on('change', e => this.changeSpotStep());
-            $(".toggleComments").each((_, el) => {
-                $(el).on("click", () => {
-                    if (this.displayComments) {
-                        this.hideComments();
-                    } else {
-                        this.showComments();
-                    }
-                });
-            });
+            $('#prev').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.prevPage());
+            $('#next').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
+            $('#end-button').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
+            $("#spotStepNumber").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
             // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspacePdf());
@@ -174,97 +270,34 @@ export class WorkspacePdf {
             if(this.isPdf) {
                 this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
             }
-            $(".postit-global-close").on('click', function () {
-                if($(this).parent().hasClass("postit-small")) {
-                    $(this).parent().resizable("enable");
-                } else {
-                    $(this).parent().resizable("disable");
-                }
-                $(this).parent().toggleClass("postit-small");
-                const buttons = $(this).parent().find('button');
-                buttons.each(function() {
-                    if(!$(this).hasClass("postit-global-close")) {
-                        $(this).toggle();
-                    }
-                });
-            });
-
-            $(".postit-copy").on("click", async function (e) {
-                let snackbar = document.getElementById("snackbar");
-                snackbar.className = "show";
-                let text = $("#postit-text-" + $(e.target).attr("es-postit-id")).text();
-                try {
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        await navigator.clipboard.writeText(text);
-                        snackbar.innerText = "Texte copié dans le presse-papier";
-                    } else {
-                        throw new Error("Accès au presse-papier non supporté");
-                    }
-                } catch (err) {
-                    console.warn("Erreur clipboard, utilisation du fallback :", err);
-
-                    let tempTextarea = document.createElement("textarea");
-                    tempTextarea.value = text;
-                    document.body.appendChild(tempTextarea);
-                    tempTextarea.style.position = "absolute";
-                    tempTextarea.style.left = "-9999px";
-                    tempTextarea.select();
-                    tempTextarea.setSelectionRange(0, 99999); // Support mobile
-
-                    try {
-                        let success = document.execCommand("copy");
-                        snackbar.innerText = success ? "Texte copié..." : "Échec de la copie";
-                    } catch (error) {
-                        console.error("Impossible de copier le texte :", error);
-                        snackbar.innerText = "Erreur : Impossible de copier le texte";
-                    }
-
-                    document.body.removeChild(tempTextarea);
-                }
-
-                setTimeout(() => {
-                    snackbar.className = snackbar.className.replace("show", "");
-                }, 3000);
-            });
-
-            if(this.comments != null) {
-                this.comments.forEach((postit, index) => {
-                    let postitButton = $('#annotation_' + postit.id);
-                    postitButton.on('click', e => this.focusComment(postit));
-                    postitButton.on('mouseover', function () {
-                        $('#inDocComment_' + postit.id).addClass('circle-background');
-                        postitButton.addClass('circle-border');
-                    });
-                    postitButton.on('mouseout', function () {
-                        $('#inDocComment_' + postit.id).removeClass('circle-background');
-                        postitButton.removeClass('circle-border');
-                    });
-                });
-            }
+            this.commentsPanel.bind(eventNamespace);
         }
-        this.addSignButton.on('click', e => this.addSign());
-        $("#addSignButton2").on('click', e => this.addSign());
-        $("#addSignButton3").on('click', e => this.addSign());
-        $("#addParaphButton").on('click', e => this.addParaph());
-        $("#addParaphButton2").on('click', e => this.addParaph());
-        $("#addCheck").on("click", e => this.signPosition.addCheckImage(this.pdfViewer.pageNum));
-        $("#addTimes").on("click", e => this.signPosition.addTimesImage(this.pdfViewer.pageNum));
-        $("#addCircle").on("click", e => this.signPosition.addCircleImage(this.pdfViewer.pageNum));
-        $("#addMinus").on("click", e => this.signPosition.addMinusImage(this.pdfViewer.pageNum));
-        $("#addText").on("click ", e => this.signPosition.addText(this.pdfViewer.pageNum));
+        this.toolbar.bind();
+        this.postitManager.bind();
 
         let signImageBtn = $("#signImageBtn");
-        signImageBtn.unbind();
+        signImageBtn.off('click' + eventNamespace);
         let self = this;
-        signImageBtn.on('click', function () {
+        signImageBtn.on('click' + eventNamespace, function () {
             self.signPosition.popUserUi();
         });
         this.notviewedAnim();
     }
 
+    shouldDisplayCommentsOnLoad(comments = this.comments) {
+        if (this.postitManager != null && typeof this.postitManager.shouldDisplayOnLoad === 'function') {
+            return this.postitManager.shouldDisplayOnLoad(comments);
+        }
+        if (Array.isArray(comments) && comments.length > 0) {
+            return true;
+        }
+        return document.querySelector('.postit-global') != null;
+    }
+
     notviewedAnim() {
         let div = document.querySelector('.jumping');
-        if(div == null) return;
+        if(div == null || div.dataset.esNotviewedAnimBound === "true") return;
+        div.dataset.esNotviewedAnimBound = "true";
         let isPaused = false;
         function togglePause() {
             isPaused = !isPaused;
@@ -292,307 +325,43 @@ export class WorkspacePdf {
     }
 
     initSignFields() {
-        const signParamsToDisplay = this.getSignParamsToDisplay();
-        for (let i = 0; i < signParamsToDisplay.length; i++) {
-            let currentSignRequestParams = signParamsToDisplay[i];
-            const isSignableField = this.isCurrentSignableParam(currentSignRequestParams) && this.signable;
-            const signSpaceId = this.getSignSpaceId(currentSignRequestParams, i, isSignableField);
-            let signSpaceDiv = $("#" + signSpaceId);
-
-            if (this.signable || this.editable) {
-                if(signSpaceDiv.length) {
-                    signSpaceDiv.unbind();
-                    signSpaceDiv.remove();
-                }
-                const spotId = this.findSpotIdForSignParams(currentSignRequestParams);
-                const deleteBtnHtml = (this.signable && this.editable) && spotId != null
-                    ? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
-                    : "";
-                let cssClasses = "sign-space";
-                if (isSignableField) {
-                    cssClasses += " sign-field";
-                    if (currentSignRequestParams.ready) {
-                        cssClasses += " sign-field-dropped";
-                    }
-                }
-                const rawStepNumber = currentSignRequestParams?.stepNumber;
-                const resolvedStepNumber = Number.isFinite(parseInt(rawStepNumber, 10))
-                    ? parseInt(rawStepNumber, 10)
-                    : parseInt(this.currentStepNumber, 10);
-                const currentStep = parseInt(this.currentStepNumber, 10);
-
-                if (!isSignableField
-                    && spotId != null
-                    && Number.isFinite(currentStep)
-                    && Number.isFinite(resolvedStepNumber)
-                    && resolvedStepNumber < currentStep) {
-                    continue;
-                }
-
-                let signSpaceHtml = "<div id='" + signSpaceId + "' title='Emplacement de signature : " + (currentSignRequestParams.comment || "") + "' class='" + cssClasses + "' data-es-spot-id='" + (spotId == null ? "" : spotId) + "' data-es-step-number='" + (Number.isFinite(resolvedStepNumber) ? resolvedStepNumber : "") + "' data-es-pos-page='" + currentSignRequestParams.signPageNumber + "' data-es-pos-x='" + currentSignRequestParams.xPos + "' data-es-sign-name='" + (currentSignRequestParams.pdSignatureFieldName || "") + "' data-es-pos-y='" + currentSignRequestParams.yPos + "' data-es-sign-width='" + currentSignRequestParams.signWidth + "' data-es-sign-height='" + currentSignRequestParams.signHeight + "'>" + deleteBtnHtml + "</div>";
-                $("#pdf").append(signSpaceHtml);
-                signSpaceDiv = $("#" + signSpaceId);
-
-                if (isSignableField) {
-                    signSpaceDiv.on("click", e => this.addSign(i));
-                    if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-                        signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
-                    }
-                    this.makeItDroppable(signSpaceDiv);
-                } else {
-                    const stepNumberFromDom = parseInt(signSpaceDiv.attr("data-es-step-number"), 10);
-                    const stepLabel = Number.isFinite(stepNumberFromDom) ? " étape " + stepNumberFromDom : "";
-                    signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature" + stepLabel + "</span></div>");
-                    if (Number.isFinite(stepNumberFromDom)) {
-                        signSpaceDiv.on("mouseenter", () => this.highlightLiveStep(stepNumberFromDom));
-                        signSpaceDiv.on("mouseleave", () => this.resetLiveStepHighlight());
-                    }
-                }
-
-                if (this.editable) {
-                    this.bindSignSpaceDelete(signSpaceDiv);
-                }
-                signSpaceDiv.show();
-                const pageTop = this.pdfViewer.getPageTopInPdf(currentSignRequestParams.signPageNumber);
-                const pageLeft = this.pdfViewer.getPageLeftInPdf(currentSignRequestParams.signPageNumber);
-                const xPos = Math.round(currentSignRequestParams.xPos * this.pdfViewer.scale + pageLeft);
-                const yPos = Math.round(currentSignRequestParams.yPos * this.pdfViewer.scale + pageTop);
-                signSpaceDiv.css("left", xPos);
-                signSpaceDiv.css("top", yPos);
-                const renderedWidth = Math.round(currentSignRequestParams.signWidth * this.pdfViewer.scale * this.getBrowserZoom());
-                const renderedHeight = Math.round(currentSignRequestParams.signHeight * this.pdfViewer.scale * this.getBrowserZoom());
-                signSpaceDiv.css("width", renderedWidth + "px");
-                signSpaceDiv.css("height", renderedHeight + "px");
-                signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
-                signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
-            }
-        }
+        return this.signSpaceManager.initSignFields();
     }
 
     getSignSpaceId(signParams, index, isSignableField) {
-        if (isSignableField) {
-            return "signSpace_" + index;
-        }
-        const spotId = this.findSpotIdForSignParams(signParams);
-        if (spotId != null) {
-            return "signSpace_spot_" + spotId;
-        }
-        return "signSpace_readonly_" + index;
+        return this.signSpaceManager.getSignSpaceId(signParams, index, isSignableField);
     }
 
     isCurrentSignableParam(signParams) {
-        const currentParams = Array.isArray(this.currentSignRequestParamses) ? this.currentSignRequestParamses : [];
-        for (let i = 0; i < currentParams.length; i++) {
-            const current = currentParams[i];
-            if (current?.id != null && signParams?.id != null && parseInt(current.id, 10) === parseInt(signParams.id, 10)) {
-                return true;
-            }
-            const sameGeo = parseInt(current?.signPageNumber, 10) === parseInt(signParams?.signPageNumber, 10)
-                && parseInt(current?.xPos, 10) === parseInt(signParams?.xPos, 10)
-                && parseInt(current?.yPos, 10) === parseInt(signParams?.yPos, 10)
-                && parseInt(current?.signWidth, 10) === parseInt(signParams?.signWidth, 10)
-                && parseInt(current?.signHeight, 10) === parseInt(signParams?.signHeight, 10);
-            if (sameGeo) {
-                return true;
-            }
-        }
-        return false;
+        return this.signSpaceManager.isCurrentSignableParam(signParams);
     }
 
     getSignParamsToDisplay() {
-        const currentParams = Array.isArray(this.currentSignRequestParamses) ? this.currentSignRequestParamses : [];
-        const spots = Array.isArray(this.spots) ? this.spots : [];
-
-        // Cas manager editable + signable:
-        // - currentSignRequestParamses = emplacements signables de l'etape courante
-        // - spots = emplacements manager; on conserve seulement l'etape courante et les suivantes.
-        if (this.editable && this.isManager && this.signable) {
-            const otherStepSpots = this.filterSpotsNotCurrentStep(spots);
-            const merged = [...currentParams, ...otherStepSpots];
-            const currentStep = parseInt(this.currentStepNumber, 10);
-            const filteredMerged = merged.filter(item => {
-                if (!Number.isFinite(currentStep)) {
-                    return true;
-                }
-                const step = parseInt(item?.stepNumber, 10);
-                if (!Number.isFinite(step)) {
-                    return true;
-                }
-                return step >= currentStep;
-            });
-            const byKey = new Map();
-            for (let i = 0; i < filteredMerged.length; i++) {
-                const item = filteredMerged[i];
-                const idKey = item != null && item.id != null ? "id:" + item.id : null;
-                const geoKey = "geo:" + [item?.signPageNumber, item?.xPos, item?.yPos, item?.signWidth, item?.signHeight].join("|");
-                const key = idKey || geoKey;
-                if (!byKey.has(key)) {
-                    byKey.set(key, item);
-                }
-            }
-            return Array.from(byKey.values());
-        }
-
-        // Cas manager editable non-signable: afficher les spots manager (complet).
-        if (this.editable && this.isManager) {
-            return spots;
-        }
-
-        return currentParams;
+        return this.signSpaceManager.getSignParamsToDisplay();
     }
 
     filterSpotsNotCurrentStep(spots) {
-        const currentStep = parseInt(this.currentStepNumber, 10);
-        if (!Number.isFinite(currentStep)) {
-            return spots;
-        }
-        return spots.filter(spot => {
-            const step = parseInt(spot?.stepNumber, 10);
-            if (!Number.isFinite(step)) {
-                return true;
-            }
-            return step >= currentStep;
-        });
+        return this.spotManager.filterSpotsNotCurrentStep(spots);
     }
 
     findSpotIdForSignParams(signParams) {
-        if (signParams != null && signParams.id != null && Number.isFinite(parseInt(signParams.id, 10))) {
-            return parseInt(signParams.id, 10);
-        }
-        if (!Array.isArray(this.spots)) {
-            return null;
-        }
-        const page = parseInt(signParams.signPageNumber, 10);
-        const x = parseInt(signParams.xPos, 10);
-        const y = parseInt(signParams.yPos, 10);
-        const width = parseInt(signParams.signWidth, 10);
-        const height = parseInt(signParams.signHeight, 10);
-        for (let i = 0; i < this.spots.length; i++) {
-            const spot = this.spots[i];
-            const samePosition = parseInt(spot.signPageNumber, 10) === page && parseInt(spot.xPos, 10) === x && parseInt(spot.yPos, 10) === y;
-            const sameSize = !Number.isFinite(width) || !Number.isFinite(height)
-                || (parseInt(spot.signWidth, 10) === width && parseInt(spot.signHeight, 10) === height);
-            if (samePosition && sameSize) {
-                return spot.id;
-            }
-        }
-        return null;
+        return this.spotManager.findSpotIdForSignParams(signParams);
     }
 
     onSpotSaved(spotData) {
-        if (spotData == null) {
-            return;
-        }
-        if (!Array.isArray(this.spots)) {
-            this.spots = [];
-        }
-        $(".step-vertical-content")
-            .removeClass("bg-success bg-secondary-subtle")
-            .addClass("bg-light");
-        this.setToolsBarDisabled(false);
-        this.setSignSpacesDroppableEnabled(true);
-        $("#addSpotButton").removeAttr("disabled");
-        $("#addCommentButton").removeAttr("disabled");
-        $("#addSpotButton2").removeAttr("disabled");
-        $("#addCommentButton2").removeAttr("disabled");
-
-        const spotId = parseInt(spotData.id, 10);
-        const spotStep = parseInt(spotData.stepNumber, 10);
-        const currentStep = parseInt(this.currentStepNumber, 10);
-        const normalizedSpot = {
-            id: spotId,
-            signPageNumber: parseInt(spotData.signPageNumber, 10),
-            xPos: parseInt(spotData.xPos, 10),
-            yPos: parseInt(spotData.yPos, 10),
-            signWidth: parseInt(spotData.signWidth, 10),
-            signHeight: parseInt(spotData.signHeight, 10),
-            stepNumber: spotStep
-        };
-
-        const existingSpotIdx = this.spots.findIndex(spot => parseInt(spot?.id, 10) === spotId);
-        if (existingSpotIdx >= 0) {
-            this.spots[existingSpotIdx] = {...this.spots[existingSpotIdx], ...normalizedSpot};
-        } else {
-            this.spots.push(normalizedSpot);
-        }
-
-        if (this.signable && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
-            // Replace transient manager spot node by the real signable signSpace_* node.
-            $("#signSpace_spot_" + spotId).remove();
-            if (!Array.isArray(this.currentSignRequestParamses)) {
-                this.currentSignRequestParamses = [];
-            }
-            const alreadyCurrent = this.currentSignRequestParamses
-                .some(param => parseInt(param?.id, 10) === spotId);
-            if (!alreadyCurrent) {
-                this.currentSignRequestParamses.push({...normalizedSpot, ready: false});
-            }
-            this.initSignFields();
-        }
+        return this.spotManager.onSpotSaved(spotData);
     }
 
     onSpotDeleted(spotId) {
-        const parsedId = parseInt(spotId, 10);
-        if (!Number.isFinite(parsedId)) {
-            return;
-        }
-        if (Array.isArray(this.spots)) {
-            this.spots = this.spots.filter(spot => parseInt(spot?.id, 10) !== parsedId);
-        }
-        if (Array.isArray(this.currentSignRequestParamses)) {
-            this.currentSignRequestParamses = this.currentSignRequestParamses.filter(param => parseInt(param?.id, 10) !== parsedId);
-        }
+        return this.spotManager.onSpotDeleted(spotId);
     }
 
     bindSignSpaceDelete(signSpaceDiv) {
-        const spotId = parseInt(signSpaceDiv.attr("data-es-spot-id"), 10);
-        const deleteBtn = signSpaceDiv.find(".slot-delete-btn");
-        if (!Number.isFinite(spotId) || !deleteBtn.length) {
-            return;
-        }
-        deleteBtn.on("click", e => {
-            e.stopPropagation();
-            bootbox.confirm("Supprimer cet emplacement de signature ?", result => {
-                if (!result) {
-                    return;
-                }
-                let url = "/ws-secure/global/delete-spot/" + this.signRequestId + "/" + spotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
-                if (this.currentSignType === "form") {
-                    url = "/" + this.userName + "/forms/delete-spot/" + this.formId + "/" + spotId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
-                }
-                $.ajax({
-                    method: 'DELETE',
-                    url: url,
-                    success: () => {
-                        signSpaceDiv.remove();
-                        if (Array.isArray(this.spots)) {
-                            this.spots = this.spots.filter(spot => parseInt(spot?.id, 10) !== spotId);
-                        }
-                        if (Array.isArray(this.currentSignRequestParamses)) {
-                            this.currentSignRequestParamses = this.currentSignRequestParamses.filter(param => parseInt(param?.id, 10) !== spotId);
-                        }
-                    }
-                });
-            });
-        });
+        return this.spotManager.bindSignSpaceDelete(signSpaceDiv);
     }
 
     refreshSignFields() {
-        $(".sign-space").each((_, element) => {
-            const signSpaceDiv = $(element);
-            const signHeight = parseFloat(signSpaceDiv.attr("data-es-sign-height"));
-            const renderedHeight = Math.round(signHeight * this.pdfViewer.scale);
-            const renderedWidth = Math.round(parseFloat(signSpaceDiv.attr("data-es-sign-width")) * this.pdfViewer.scale);
-            signSpaceDiv.css("width", renderedWidth + "px");
-            signSpaceDiv.css("height", renderedHeight + "px");
-            const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
-            const pageTop = this.pdfViewer.getPageTopInPdf(pageNum);
-            const pageLeft = this.pdfViewer.getPageLeftInPdf(pageNum);
-            signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * this.pdfViewer.scale + pageLeft + 'px');
-            signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * this.pdfViewer.scale + pageTop + 'px');
-            signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
-            signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
-        });
+        return this.signSpaceManager.refreshSignFields();
     }
 
     addSign(forceSignNumber) {
@@ -625,13 +394,15 @@ export class WorkspacePdf {
     }
 
 
-    addParaph() {
+    async addParaph() {
         if(!this.notSigned && this.signPosition.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
-        let srp = this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
-        srp.initParaph();
+        const srp = await this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
+        if (srp != null && typeof srp.initParaph === 'function') {
+            srp.initParaph();
+        }
     }
 
     initWorkspace() {
@@ -655,7 +426,9 @@ export class WorkspacePdf {
         }
         this.refreshAfterPageChange();
         this.initForm();
-        $("#content").on('mousedown', e => this.signPosition.lockSigns());
+        $("#content")
+            .off('mousedown' + this.eventNamespace)
+            .on('mousedown' + this.eventNamespace, e => this.signPosition.lockSigns());
         this.signPosition.updateScales(this.pdfViewer.scale);
     }
 
@@ -809,201 +582,39 @@ export class WorkspacePdf {
     clickAction(e) {
         this.signPosition.lockSigns();
         if (this.addSpotEnabled || this.addCommentEnabled) {
-            this.displayDialogBox();
+            this.commentsPanel.displayDialogBox();
         }
     }
 
     moveAction(e) {
         if (this.addSpotEnabled || this.addCommentEnabled) {
-            this.pointIt2(e);
+            this.commentsPanel.pointIt2(e);
         }
     }
 
     pointIt2(e) {
-        let target = e.target;
-        let page = $(target).closest('.pdf-page');
-        if (!page.length) {
-            page = $("#page_" + this.pdfViewer.pageNum);
-        }
-        if (!page.length) {
-            return;
-        }
-
-        let pageNumber = page.attr("page-num") || page.attr("id")?.split("_")[1] || this.pdfViewer.pageNum;
-        const pageRect = page.get(0).getBoundingClientRect();
-        $('#commentPageNumber').val(pageNumber);
-        let xPos = Math.round(e.clientX - pageRect.left);
-        let yPos = Math.round(e.clientY - pageRect.top);
-        $("#commentPosX").val(xPos);
-        $('#commentPosY').val(yPos);
-        console.debug("debug - mouse pos : " + xPos + ", " + yPos);
+        return this.commentsPanel.pointIt2(e);
     }
 
     saveComment() {
-        let spotStepNumberVal = $("#spotStepNumber");
-        if (this.addSpotEnabled && spotStepNumberVal.val() === "") {
-            spotStepNumberVal.attr("required", true);
-            $("#submitPostit").click();
-            return;
-        }
-        let postitComment = $("#postitComment");
-        if (!this.addSpotEnabled && postitComment.val() === '') {
-            $("#submitPostit").click();
-            return;
-        }
-        let xPos = parseInt($("#commentPosX").val());
-        let yPos = parseInt($("#commentPosY").val());
-        let spotStepNumber = "";
-        if(this.addSpotEnabled) {
-            spotStepNumber = spotStepNumberVal.val();
-        }
-        let commentUrlParams =
-            "comment=" + encodeURIComponent(postitComment.val()) +
-            "&commentPosX=" + Math.round(xPos) +
-            "&commentPosY=" + Math.round(yPos) +
-            "&commentPageNumber=" + $("#commentPageNumber").val() +
-            "&spotStepNumber=" + spotStepNumber +
-            "&" + this.csrf.parameterName + "=" + this.csrf.token;
-        let postitDiv = $("#postit");
-        if(postitDiv.length) {
-            postitDiv.html("<div class=\"spinner-border\" role=\"status\">\n" +
-                "  <span class=\"visually-hidden\">Enregistrement</span>\n" +
-                "</div>");
-        }
-        let mode = "user";
-        if(this.isOtp) {
-            mode = "otp";
-        }
-        $.ajax({
-            method: 'POST',
-            url: "/" + mode + "/signrequests/comment/" + this.signRequestId + "?" + commentUrlParams,
-            success: function () {
-                document.location.reload();
-            }
-        });
+        return this.commentsPanel.saveComment();
     }
 
     focusComment(postit) {
-        this.refreshAfterPageChange();
-        this.pdfViewer.animateScrollToPosition(parseInt($('#inDocComment_' + postit.id).css('top').replace('px', ''), 10));
+        return this.commentsPanel.focusComment(postit);
     }
 
     getPageOffsets(pageNum) {
-        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
-        const page = $("#page_" + normalizedPage);
-        if (page.length) {
-            return {
-                top: Math.round(page.position()?.top ?? 0),
-                left: Math.round(page.position()?.left ?? 0)
-            };
-        }
-        return {
-            top: this.pdfViewer.getPageTopInPdf(normalizedPage),
-            left: this.pdfViewer.getPageLeftInPdf(normalizedPage)
-        };
+        return this.commentsPanel.getPageOffsets(pageNum);
     }
 
     getCommentDialogCssPosition(pageNum, renderedX, renderedY) {
-        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
-        const page = $("#page_" + normalizedPage);
-        const commentDiv = $("#comment-div");
-        if (!page.length || !commentDiv.length) {
-            return {
-                left: Math.round(renderedX || 0),
-                top: Math.round(renderedY || 0)
-            };
-        }
-        const pageOffset = page.offset() || {left: 0, top: 0};
-        const parentOffset = commentDiv.offsetParent().offset() || {left: 0, top: 0};
-        return {
-            left: Math.round(pageOffset.left - parentOffset.left + (renderedX || 0)),
-            top: Math.round(pageOffset.top - parentOffset.top + (renderedY || 0))
-        };
+        return this.commentsPanel.getCommentDialogCssPosition(pageNum, renderedX, renderedY);
     }
 
     refreshAfterPageChange() {
         console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
-        // this.removeSignFields();
-        let self = this;
-        this.comments.forEach((comment, iterator) => {
-            if(comment.stepNumber == null) {
-                let postitDiv = $('#inDocComment_' + comment.id);
-                let postitButton = $('#annotation_' + comment.id);
-                if (this.editable || this.displayComments) {
-                    postitDiv.show();
-                    const pageOffsets = this.getPageOffsets(comment.pageNumber);
-                    postitDiv.css('left', ((parseInt(comment.posX) * this.pdfViewer.scale) + pageOffsets.left) + "px");
-                    postitDiv.css('top', ((parseInt(comment.posY) * this.pdfViewer.scale) - 48 + pageOffsets.top) + "px");
-                    postitDiv.width(postitDiv.width() * this.pdfViewer.scale);
-                    postitButton.css("background-color", "var(--bs-warning-bg-subtle)");
-                    postitDiv.unbind('mouseup');
-                    if((self.status === "draft" || self.status === "pending")) {
-                        let deletable = postitDiv.attr('es-comment-delete') === "true";
-                        let buttons = {
-                            cancel: {
-                                label: 'Fermer',
-                                className: 'btn-secondary'
-                            }
-                        };
-                        if(deletable) {
-                            buttons = {
-                                confirm: {
-                                    label: 'Supprimer',
-                                    className: 'btn-danger'
-                                },
-                                cancel: {
-                                    label: 'Fermer',
-                                    className: 'btn-secondary'
-                                }
-                            };
-                        }
-                        postitDiv.on('mouseup', function (e) {
-                            e.stopPropagation();
-                            bootbox.dialog({
-                                title: postitDiv.attr("es-comment-title"),
-                                message: postitDiv.attr("es-comment-text"),
-                                buttons: buttons,
-                                callback: function (result) {
-                                    if (result) {
-                                        bootbox.confirm('Confirmer la suppression', function (result2){
-                                            if(result2) {
-                                                $.ajax({
-                                                    method: 'DELETE',
-                                                    url: "/ws-secure/global/delete-comment/" + self.signRequestId + "/" + comment.id + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-                                                    success: function () {
-                                                        document.location.reload();
-                                                        $("#addSpotButton").attr("disabled", false);
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    }
-                                }
-                            }).find('.modal-content').css({'background-color': 'var(--bs-warning-bg-subtle)'});
-                        });
-                    }
-                } else {
-                    postitDiv.hide();
-                    postitButton.css("background-color", "#EEE");
-                    postitDiv.unbind('mouseup');
-                }
-            }
-        });
-        let postitForm = $("#comment-div");
-        if (postitForm.is(':visible')) {
-            const commentPageNumber = $("#commentPageNumber").val();
-            const renderedX = (parseInt($("#commentPosX").val(), 10) || 0) * this.pdfViewer.scale;
-            const renderedY = (parseInt($("#commentPosY").val(), 10) || 0) * this.pdfViewer.scale;
-            const cssPos = this.getCommentDialogCssPosition(commentPageNumber, renderedX, renderedY);
-            postitForm.css('left', cssPos.left + "px");
-            postitForm.css('top', cssPos.top + "px");
-            $("#comment-div :input").each(function () {
-                $(this).removeAttr('disabled');
-            });
-            postitForm.children('select[name="spotStepNumber"]').each(function () {
-                $(this).removeAttr('disabled');
-            });
-        }
+        this.commentsPanel.refresh();
         if(this.status === "pending") {
             this.initFormAction();
         }
@@ -1020,82 +631,7 @@ export class WorkspacePdf {
     }
 
     makeItDroppable(signSpaceDiv) {
-        let self = this;
-        signSpaceDiv.droppable({
-            tolerance: "touch",
-            hoverClass: "drop-hover",
-            accept: ".drop-sign",
-            drop: function (event, ui) {
-                if ($(this).data("locked") != null) {
-                    return;
-                }
-                $(this).data("locked", ui.draggable.attr("id"));
-                $(this).removeClass("sign-field");
-                $(this).addClass("sign-field-dropped");
-                $(this).css("pointer-events", "none");
-                $(this).text("");
-                for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
-                    let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
-                    let cross = signRequestParams.cross;
-                    if (cross.attr("id") === ui.draggable.attr("id")) {
-                        signRequestParams.signSpace = signSpaceDiv;
-                        const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
-                        const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
-                        const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
-                        signRequestParams.signPageNumber = pageNum;
-                        signRequestParams.xPos = Number.isFinite(targetX) ? targetX : 0;
-                        signRequestParams.yPos = Number.isFinite(targetY) ? targetY : 0;
-                        cross.attr("page", pageNum);
-                        // Prevent simulateDrop from re-running a synthetic drag that may shift persisted yPos.
-                        signRequestParams.firstLaunch = false;
-                        // applyCurrentSignRequestParams() uses #getPageLayout to position cross, no offset param needed.
-                        signRequestParams.applyCurrentSignRequestParams();
-                        let ui = { size: { width: 0, height: 0 }};
-                        let width = parseInt(cross.css("width"));
-                        let height = parseInt(cross.css("height"));
-                        let maxWidth  = parseInt(signSpaceDiv.css("width"));
-                        let maxHeight = parseInt(signSpaceDiv.css("height"));
-                        let ratio = width / height;
-                        ui.size.width  = maxWidth;
-                        ui.size.height = ui.size.width / ratio;
-                        if (ui.size.height > maxHeight) {
-                            ui.size.height = maxHeight;
-                            ui.size.width  = ui.size.height * ratio;
-                        }
-                        ui.size.width = ui.size.width - 2;
-                        ui.size.height = ui.size.height - 2;
-                        signRequestParams.resize(ui);
-                        cross.css("width", signRequestParams.signWidth * self.pdfViewer.scale);
-                        cross.css("background-size", signRequestParams.signWidth * self.pdfViewer.scale);
-                        cross.css("height", signRequestParams.signHeight * self.pdfViewer.scale);
-                        signRequestParams.dropped = true;
-                        self.signPosition.goStep2();
-                        console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos);
-                    }
-                }
-                self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
-            },
-            out: function (event, ui) {
-                if ($(this).data("locked") != null && $(this).data("locked") !== ui.draggable.attr("id")) {
-                    return;
-                }
-                $(this).removeData("locked");
-                $(this).addClass("sign-field");
-                $(this).removeClass("sign-field-dropped");
-                self.signPosition.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-                $(this).html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Placer la signature ici</span></div>");
-                $(this).css("pointer-events", "auto");
-                for (let i = 0; i < self.signPosition.signRequestParamses.size; i++) {
-                    let signRequestParams = Array.from(self.signPosition.signRequestParamses.values())[i];
-                    let cross = signRequestParams.cross;
-                    if (cross.attr("id") === ui.draggable.attr("id")) {
-                        cross.resizable("enable");
-                        signRequestParams.signSpace = null;
-                        self.signPosition.goStep1();
-                    }
-                }
-            }
-        });
+        return this.signSpaceManager.makeItDroppable(signSpaceDiv);
     }
 
 
@@ -1114,35 +650,11 @@ export class WorkspacePdf {
     // }
 
     displayDialogBox() {
-        $('#pdf').off("mousemove.commentAdd");
-        let comment = $("#comment-div");
-        if (comment.is(':visible')) {
-            return;
-        }
-        this.signPosition.pointItEnable = false;
-        $('#pdf').css('cursor', 'default');
-        let commentPosX = $("#commentPosX");
-        let commentPosY = $('#commentPosY');
-        let commentPageNumber = $("#commentPageNumber").val();
-        const clickedRenderedX = parseInt(commentPosX.val(), 10) || 0;
-        const clickedRenderedY = parseInt(commentPosY.val(), 10) || 0;
-        let xPos = clickedRenderedX / this.pdfViewer.scale;
-        let yPos = clickedRenderedY / this.pdfViewer.scale;
-        commentPosX.val(Math.round(xPos));
-        commentPosY.val(Math.round(yPos));
-        const cssPos = this.getCommentDialogCssPosition(commentPageNumber, clickedRenderedX, clickedRenderedY);
-        comment.css('left', cssPos.left + "px");
-        comment.css('top', cssPos.top + "px");
-        $("#postitComment").removeAttr("disabled");
-        $("#spotStepNumber").removeAttr("disabled");
-        comment.show();
-        this.signPosition.lockSigns();
-        // this.signPosition.stopDragSignature(true);
+        return this.commentsPanel.displayDialogBox();
     }
 
     hideComment(e) {
-        e.stopPropagation();
-        this.exitCommentAddMode();
+        return this.commentsPanel.hideComment(e);
     }
 
     enableReadMode() {
@@ -1151,40 +663,11 @@ export class WorkspacePdf {
     }
 
     showComments() {
-        $("#postit").removeClass("d-none");
-        $("#commentHelp").removeClass("d-none");
-        this.displayComments = true;
-        this.signPosition.pointItEnable = true;
-        if (this.changeModeSelector != null) {
-            this.changeModeSelector.setSelected("comment");
-        }
-        // $('#addCommentButton2').removeClass('d-none');
-        $('#commentsBar').show();
-        this.refreshAfterPageChange();
-        $(".circle").each(function () {
-            $(this).show();
-            $(this).css('width', '0px');
-        })
-        this.showAllPostits();
+        return this.commentsPanel.showComments();
     }
 
     hideComments() {
-        $("#postit").addClass("d-none");
-        $("#commentHelp").addClass("d-none");
-        this.displayComments = false;
-        this.signPosition.pointItEnable = false;
-
-        if (this.changeModeSelector != null) {
-            this.changeModeSelector.setSelected(null);
-        }
-
-        // $('#addCommentButton2').addClass('d-none');
-        $('#commentsBar').hide();
-        $(".circle").each(function () {
-            $(this).hide();
-            $(this).css('width', '');
-        });
-        this.hideAllPostits && this.hideAllPostits();
+        return this.commentsPanel.hideComments();
     }
 
     enableCommentMode() {
@@ -1288,7 +771,7 @@ export class WorkspacePdf {
         $('#refusetools').hide();
         $('#insert-btn-div').hide();
         $('#pdf').css('cursor', 'default');
-        $('#hideCommentButton').unbind();
+        $('#hideCommentButton').off('click' + this.commentDialogNamespace);
         $(".spot").each(function () {
             $(this).hide();
         });
@@ -1299,177 +782,47 @@ export class WorkspacePdf {
     }
 
     hideAllPostits() {
-        $(".postit-global").each(function () {
-            $(this).addClass("d-none");
-        });
+        return this.postitManager.hideAll();
     }
 
     showAllPostits() {
-        $(".postit-global").each(function () {
-            let element = $(this);
-            $(this).removeClass("d-none");
-            $(this).draggable();
-            $(this).on('mousedown', function (e) {
-                let postit = $(this).attr('id');
-                $(".postit-global").each(function () {
-                    if($(this).attr('id') === postit) {
-                        $(this).css('z-index', 1001);
-                    }else {
-                        $(this).css('z-index', 1000);
-                    }
-                });
-            });
-            $(this).find("p").first().on('mousedown', function (e) {
-                $(this).parent().toggleClass("postitarea-auto");
-            });
-            $(this).find("p").first().on('scroll', function (e) {
-                $(this).addClass("postitarea-basic");
-            });
-            $(this).resizable({
-                aspectRatio: false,
-                minWidth: 215,
-                minHeight: 215,
-                resize: function( event, ui ) {
-                    let postit = document.querySelector(".postitarea");
-                    let parent = postit.closest("#potit-comment");
-
-                    if (postit && parent) {
-                        let lineHeight = parseFloat(window.getComputedStyle(postit).lineHeight);
-                        let availableHeight = parent.clientHeight;
-                        let lines = Math.floor(availableHeight / lineHeight);
-                        postit.style.webkitLineClamp = lines;
-                    }
-                }
-            });
-        });
+        return this.postitManager.showAll();
     }
 
     enableCommentAdd(e) {
-        if (this.addCommentEnabled) {
-            this.exitCommentAddMode();
-            return;
-        }
-
-        this.exitCommentAddMode();
-        this.setToolsBarDisabled(true);
-        this.setSignSpacesDroppableEnabled(false);
-        this.enableAddComment();
-        this.addSpotEnabled = false;
-
-        let last = 0;
-        $('#pdf')
-            .off('.commentAdd')
-            .on('click.commentAdd', e => this.clickAction(e))
-            .on('mousemove.commentAdd', e => {
-                const now = performance.now();
-                if (now - last < 50) return;
-                last = now;
-                this.moveAction(e);
-            });
-
-        $(document)
-            .off('keydown.commentAdd')
-            .on('keydown.commentAdd', e => {
-                if (e.key === 'Escape') {
-                    e.preventDefault();
-                    this.exitCommentAddMode();
-                }
-            });
-
-        this.setCommentAddButtonsState(true);
-
-        $('#saveCommentButton')
-            .off('click.commentAdd')
-            .on('click.commentAdd', e => this.saveComment(e));
-        $('#hideCommentButton')
-            .off('click.commentAdd')
-            .on('click.commentAdd', e => this.hideComment(e));
+        return this.commentsPanel.enableCommentAdd(e);
     }
 
     setCommentAddButtonsState(enabled) {
-        $("#addSpotButton").attr("disabled", enabled);
-        $("#addSpotButton2").attr("disabled", enabled);
-        $("#addCommentButton").toggleClass("border-dark", enabled);
-        let addCommentButton2 = $("#addCommentButton2");
-        addCommentButton2.toggleClass("bg-danger", enabled);
-        addCommentButton2.children().toggleClass("text-white", enabled);
-        addCommentButton2.attr("title", enabled ? "Annuler l'ajout d'annotation" : "Ajouter une annotation");
+        this.toolbar.setCommentAddActive(enabled);
     }
 
     exitCommentAddMode() {
-        $('#pdf').off('.commentAdd');
-        $(document).off('keydown.commentAdd');
-        $('#saveCommentButton').off('click.commentAdd');
-        $('#hideCommentButton').off('click.commentAdd');
-        $("#comment-div").hide();
-        this.setToolsBarDisabled(false);
-        this.setSignSpacesDroppableEnabled(true);
-        this.disableAddComment();
-        this.addSpotEnabled = false;
-        this.setCommentAddButtonsState(false);
+        return this.commentsPanel.exitCommentAddMode();
     }
 
     disableAddComment() {
-        this.addCommentEnabled = false;
-        this.disablePointer();
-        $("#divSpotStepNumber").show();
-        $(".textLayer").each(function () {
-            $(this).removeClass("text-disable-selection");
-        });
+        return this.commentsPanel.disableAddComment();
     }
 
     enableAddComment() {
-        let postit = $("#postit");
-        postit.removeClass("alert-success");
-        postit.addClass("alert-warning");
-        this.addCommentEnabled = true;
-        this.displayCommentPointer();
-        $("#divSpotStepNumber").hide();
-        $("#postitComment").attr("required", true);
-        $(".textLayer").each(function () {
-            $(this).addClass("text-disable-selection");
-        });
+        return this.commentsPanel.enableAddComment();
     }
 
     enableSpotAdd() {
-        this.disableAddComment();
-        this.setToolsBarDisabled(true);
-        this.setSignSpacesDroppableEnabled(false);
-        $(document).off("click.spotAdd");
-        $(document).on("click.spotAdd", "#delete-add-spot, #submit-add-spot", () => {
-            this.setToolsBarDisabled(false);
-            this.setSignSpacesDroppableEnabled(true);
-            $(document).off("click.spotAdd");
-        });
-        $("#commentHelp").remove();
-        $("#addSpotButton").attr("disabled", true);
-        $("#addCommentButton").attr("disabled", true);
-        $("#addSpotButton2").attr("disabled", true);
-        $("#addCommentButton2").attr("disabled", true);
-        this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null);
+        return this.spotManager.enableSpotAdd();
+    }
+
+    setSpotActionButtonsDisabled(disabled) {
+        this.toolbar.setSpotActionButtonsDisabled(disabled);
     }
 
     setToolsBarDisabled(disabled) {
-        const toolsBar = $("#tools");
-        if (!toolsBar.length) {
-            return;
-        }
-        toolsBar.toggleClass("tools-disabled", disabled);
-        toolsBar.attr("aria-disabled", disabled ? "true" : "false");
+        this.toolbar.setToolsDisabled(disabled);
     }
 
     setSignSpacesDroppableEnabled(enabled) {
-        $(".sign-space").each((_, element) => {
-            const signSpace = $(element);
-            if (signSpace.hasClass("ui-droppable")) {
-                try {
-                    signSpace.droppable(enabled ? "enable" : "disable");
-                } catch (error) {
-                    // Ignore non-initialized droppable elements.
-                }
-            }
-            signSpace.toggleClass("sign-space-disabled", !enabled);
-        });
+        return this.signSpaceManager.setSignSpacesDroppableEnabled(enabled);
     }
 
     displayCommentPointer() {
@@ -1489,25 +842,16 @@ export class WorkspacePdf {
     }
 
     changeSpotStep() {
-        let stepNumber = $("#spotStepNumber").val();
-        $('[id^="liveStep-"]').each(function () {
-            $(this).find(".step-vertical-content")
-                .removeClass("bg-success bg-secondary-subtle")
-                .addClass("bg-light");
-        });
-        let liveStep = $("#liveStep-" + stepNumber);
-        liveStep.find(".step-vertical-content")
-            .removeClass("bg-light bg-secondary-subtle")
-            .addClass("bg-secondary");
+        return this.spotManager.changeSpotStep();
     }
 
     initChangeModeSelector() {
         let self = this;
-        $("#changeMode1").on("click", function(e) {
+        $("#changeMode1").off("click" + this.eventNamespace).on("click" + this.eventNamespace, function(e) {
             self.displayComments = !self.displayComments;
             self.enableSignMode();
         });
-        $("#changeMode2").on("click", function(e) {
+        $("#changeMode2").off("click" + this.eventNamespace).on("click" + this.eventNamespace, function(e) {
             self.enableSignMode();
         });
     }
@@ -1585,29 +929,76 @@ export class WorkspacePdf {
     }
 
     highlightLiveStep(stepNumber) {
-        const parsedStepNumber = parseInt(stepNumber, 10);
-        if (!Number.isFinite(parsedStepNumber)) {
-            return;
-        }
-        if (this.hoverLiveStepState == null) {
-            this.hoverLiveStepState = [];
-            $("[id^='liveStep-'].bg-success").each((_, element) => {
-                const id = $(element).attr("id");
-                if (id) {
-                    this.hoverLiveStepState.push(id);
-                }
-            });
-        }
-        const liveStep = $("#liveStep-" + parsedStepNumber);
-        if (liveStep.length) {
-            liveStep.find(".step-vertical-content").toggleClass("bg-light bg-secondary-subtle");
-        }
+        return this.signSpaceManager.highlightLiveStep(stepNumber);
     }
 
     resetLiveStepHighlight() {
-        $("[id^='liveStep-']").find(".step-vertical-content").removeClass("bg-secondary-subtle");
-        $("[id^='liveStep-']").find(".step-vertical-content").addClass("bg-light");
-        this.hoverLiveStepState = null;
+        return this.signSpaceManager.resetLiveStepHighlight();
+    }
+
+    destroy() {
+        $(window).off(this.layoutNamespace);
+        $(document).off('keydown' + this.commentDialogNamespace);
+        $(document).off('click' + this.spotAddNamespace);
+        $('#pdf').off(this.commentDialogNamespace).css('cursor', 'default');
+        $('#content').off('mousedown' + this.eventNamespace);
+        $('#saveCommentButton').off('click' + this.commentDialogNamespace);
+        $('#hideCommentButton').off('click' + this.commentDialogNamespace);
+
+        [
+            '#prev',
+            '#next',
+            '#end-button',
+            '#addCommentButton',
+            '#addSpotButton',
+            '#addCommentButton2',
+            '#addSpotButton2',
+            '#spotStepNumber',
+            '#addSignButton2',
+            '#addSignButton3',
+            '#addParaphButton',
+            '#addParaphButton2',
+            '#addCheck',
+            '#addTimes',
+            '#addCircle',
+            '#addMinus',
+            '#addText',
+            '#signImageBtn',
+            '#changeMode1',
+            '#changeMode2'
+        ].forEach(selector => $(selector).off(this.eventNamespace));
+        this.addSignButton && this.addSignButton.off('click' + this.eventNamespace);
+        $('.toggleComments').off(this.eventNamespace);
+        $('.sign-space').each((_, element) => {
+            const signSpace = $(element);
+            signSpace.off(this.signSpaceNamespace);
+            signSpace.find('.slot-delete-btn').off(this.signSpaceNamespace);
+            try {
+                if (signSpace.hasClass('ui-droppable')) {
+                    signSpace.droppable('destroy');
+                }
+            } catch (error) {
+                // Ignore partially initialized droppable widgets.
+            }
+        });
+        if (this.signPosition != null && typeof this.signPosition.destroy === 'function') {
+            this.signPosition.destroy();
+        }
+        if (this.toolbar != null && typeof this.toolbar.destroy === 'function') {
+            this.toolbar.destroy();
+        }
+        if (this.postitManager != null && typeof this.postitManager.destroy === 'function') {
+            this.postitManager.destroy();
+        }
+        if (this.commentsPanel != null && typeof this.commentsPanel.destroy === 'function') {
+            this.commentsPanel.destroy();
+        }
+        if (this.spotManager != null && typeof this.spotManager.destroy === 'function') {
+            this.spotManager.destroy();
+        }
+        if (this.signSpaceManager != null && typeof this.signSpaceManager.destroy === 'function') {
+            this.signSpaceManager.destroy();
+        }
     }
 
 }
