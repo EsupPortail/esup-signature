@@ -2,7 +2,7 @@ import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?versio
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 import {UserUi} from '../users/UserUi.js?version=@version@';
 
-export class SignPosition extends EventFactory {
+export class SignPlacementController extends EventFactory {
 
     constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
         super();
@@ -381,14 +381,12 @@ export class SignPosition extends EventFactory {
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
-        let selectCertType = $("#certType");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
 
         addSignButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
-        selectCertType.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
         this.setButtonVariant(addSignButton, "btn-success");
@@ -398,7 +396,7 @@ export class SignPosition extends EventFactory {
         this.setCertTypeHighlight(false);
 
         this.setStepState(step1, true, false, false);
-        this.setStepState(step2, false, false, true);
+        this.setStepState(step2, true, false, false);
         this.setStepState(step3, false, false, true);
 
         step1.find(".step-horizontal-v2-icon").html("1");

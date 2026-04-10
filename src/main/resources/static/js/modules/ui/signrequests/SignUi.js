@@ -1,4 +1,4 @@
-import {WorkspacePdf} from "./WorkspacePdf.js?version=@version@";
+import {SignWorkspaceController} from "./SignWorkspaceController.js?version=@version@";
 import {CsrfToken} from "../../../prototypes/CsrfToken.js?version=@version@";
 import {Step} from "../../../prototypes/Step.js?version=@version@";
 import {Nexu} from "./Nexu.js?version=@version@";
@@ -16,20 +16,22 @@ export class SignUi {
         this.wait = $('#wait');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.workspace = new WorkspacePdf(this.state, this.csrf);
+        this.workspace = new SignWorkspaceController(this.state, this.csrf);
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
         this.signLaunchButton = $("#signLaunchButton");
+        this.toolsBar = $("#tools");
+        this.certTypeObserver = null;
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         this.signatureFlowController = new SignatureFlowController(this);
         $("#password").hide();
         this.initListeners();
+        this.initMobileCertTypeVisibility();
         if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
             this.initReportModal();
         }
-        // this.checkAfterChangeSignType();
         this.nexu = this.checkSignOptions();
     }
 
@@ -147,7 +149,7 @@ export class SignUi {
                 let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
                 if (checkValidateSignButtonNext.length > 0) {
                     self.launchSign(true);
-            	} else {
+                } else {
                     self.launchSign(false);
                 }
             }
@@ -192,15 +194,9 @@ export class SignUi {
                     data +
                     "</div></div></div></div>";
                 $("body").append(modal);
-                // $('#reportModal').on('hidden.bs.modal', function () {
-                //     $("div[id^='report_']").each(function() {
-                //         $(this).show();
-                //     });
-                // })
                 $("#reportSpinner").hide();
                 let reportModalBtn = $("#reportModalBtn");
                 reportModalBtn.removeClass("d-none");
-                // $("#reportModal .modal-content").addClass(reportModalBtn.attr("es-modal-style"));
             }
         });
     }
@@ -214,22 +210,48 @@ export class SignUi {
         if (this.signable) {
             let nexu = new Nexu(null, null, this.currentSignType, null, null);
             $("#certType").focus();
+            this.updateMobileCertTypeVisibility();
             return nexu;
         }
     }
 
-    checkAttachement() {
-        return this.signatureFlowController.checkAttachement();
+    getSelectableCertTypeCount() {
+        return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
     }
 
-    confirmLaunchSignModal() {
-        return this.signatureFlowController.confirmLaunchSignModal();
+    updateMobileCertTypeVisibility() {
+        if (!this.toolsBar.length || !this.certTypeSelect.length) {
+            return;
+        }
+        this.toolsBar.toggleClass("es-tools-single-cert-type-mobile", this.getSelectableCertTypeCount() === 1);
+    }
+
+    initMobileCertTypeVisibility() {
+        if (!this.certTypeSelect.length || !this.toolsBar.length) {
+            return;
+        }
+
+        this.updateMobileCertTypeVisibility();
+
+        this.certTypeObserver?.disconnect?.();
+        this.certTypeObserver = new MutationObserver(() => this.updateMobileCertTypeVisibility());
+        this.certTypeObserver.observe(this.certTypeSelect.get(0), {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["disabled", "unavailable", "selected", "hidden", "style", "class", "value"]
+        });
+
+        $(window)
+            .off("resize.signUiCertTypeVisibility")
+            .on("resize.signUiCertTypeVisibility", () => this.updateMobileCertTypeVisibility());
     }
 
     checkAfterChangeSignType() {
         let self = this;
         if($("#certType").val() == null) {
             this.checkSignOptions();
+            this.updateMobileCertTypeVisibility();
             return;
         }
         if($("#certType").val() === "nexuCert") {
@@ -240,7 +262,6 @@ export class SignUi {
                 $("#no-options").hide();
                 $("#no-options-alert").hide();
                 $("#selectTypeDiv").show();
-                // $("#certType > option[value='nexuCert']").removeAttr('disabled');
                 if (self.currentSignType === 'nexuSign') {
                     $("#certType").val("nexuCert");
                     $("#nexu_ready_alert").show();
@@ -262,8 +283,8 @@ export class SignUi {
                         le bouton "Actualiser".<br/>
                         Pour plus d'informations :
                         <a target="_blank"
-                           href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">
-                           Documentation Esup-DSS-Client
+                            href="https://www.esup-portail.org/wiki/display/SIGN/Esup-DSS-Client">
+                            Documentation Esup-DSS-Client
                         </a>
                     </p>
                 </div>
@@ -292,9 +313,10 @@ export class SignUi {
         } else {
             $("#sealChoose").addClass('d-none');
         }
-        if (this.workspace?.signPosition?.signsList?.length > 0) {
-            this.workspace.signPosition.goStep3();
+        if (this.workspace?.signPlacementController?.signsList?.length > 0) {
+            this.workspace.signPlacementController.goStep3();
         }
+        this.updateMobileCertTypeVisibility();
     }
 
     launchNoInfiniteSign(next) {
@@ -303,14 +325,6 @@ export class SignUi {
 
     launchSign(e) {
         return this.signatureFlowController.launchSign(e);
-    }
-
-    submitSignRequest() {
-        return this.signatureFlowController.submitSignRequest();
-    }
-
-    sendData(signRequestUrlParams) {
-        return this.signatureFlowController.sendData(signRequestUrlParams);
     }
 
     reset() {

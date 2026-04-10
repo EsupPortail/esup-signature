@@ -38,6 +38,29 @@
                         1
                     </div>
                 </div>
+                <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
+                    <select id="certType" name="certType" class="form-select es-form-select-xl" required title="Choix du type de signature">
+                        <option value="" disabled selected hidden>Type de signature</option>
+                        <th:block th:each="signWith : ${signWiths}">
+                            <th:block th:if="${signWith.name != 'sealCert'}">
+                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                            </th:block>
+                            <th:block th:if="${signWith.name == 'sealCert'}">
+                                <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
+                            </th:block>
+                        </th:block>
+                    </select>
+                    <!--                        <button id="refresh-certType" type="button" class="btn btn-secondary" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
+                </div>
+
+            </div>
+            <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="step-horizontal-v2-icon">
+                        2
+                    </div>
+                </div>
                 <div class="step-horizontal-v2-content">
                     <span class="text-xs font-bold d-flex align-items-center gap-1">
                         <div class="d-flex flex-nowrap" th:if="${signable && signRequest.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && toSignDocument.contentType == 'application/pdf'}" style="flex: 1 1 0;">
@@ -55,28 +78,6 @@
 
                     </span>
                 </div>
-            </div>
-            <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="step-horizontal-v2-icon">
-                        2
-                    </div>
-                </div>
-                <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
-                        <select id="certType" name="certType" class="form-select es-form-select-xl" required disabled>
-                            <option value="" disabled selected hidden>Type de signature</option>
-                            <th:block th:each="signWith : ${signWiths}">
-                                <th:block th:if="${signWith.name != 'sealCert'}">
-                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                </th:block>
-                                <th:block th:if="${signWith.name == 'sealCert'}">
-                                    <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    <option th:unless="${sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                </th:block>
-                            </th:block>
-                        </select>
-<!--                        <button id="refresh-certType" type="button" class="btn btn-secondary" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
-                    </div>
             </div>
             <div id="step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
                 <div class="d-flex align-items-center gap-2">

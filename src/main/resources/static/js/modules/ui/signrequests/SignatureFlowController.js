@@ -9,7 +9,7 @@ export class SignatureFlowController {
         const signUi = this.signUi;
         console.info("launch sign modal");
         window.onbeforeunload = null;
-        signUi.workspace.signPosition.lockSigns();
+        signUi.workspace.signPlacementController.lockSigns();
         if (signUi.isPdf && signUi.currentSignType !== 'hiddenVisa') {
             signUi.workspace.saveData(true);
             signUi.workspace.pdfViewer.checkForm().then(result => {
@@ -219,7 +219,7 @@ export class SignatureFlowController {
             }
         }
         if(signUi.workspace != null) {
-            let signRequestParamses = Array.from(signUi.workspace.signPosition.signRequestParamses.values());
+            let signRequestParamses = Array.from(signUi.workspace.signPlacementController.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(originalParams => {
                 let signScale = signUi.normalizeFloat(originalParams.signScale, 1, 0.01);
                 let signPageNumber = signUi.normalizeInteger(originalParams.signPageNumber, 1, 1);

@@ -1,14 +1,14 @@
 import {PdfViewer} from "../../utils/PdfViewer.js?version=@version@";
-import {SignPosition} from "./SignPosition.js?version=@version@";
+import {SignPlacementController} from "./SignPlacementController.js?version=@version@";
 import {WheelDetector} from "../../utils/WheelDetector.js?version=@version@";
 import {SignToolbar} from "./SignToolbar.js?version=@version@";
-import {CommentsPanel} from "./CommentsPanel.js?version=@version@";
+import {CommentManager} from "./CommentManager.js?version=@version@";
 import {SpotManager} from "./SpotManager.js?version=@version@";
 import {SignSpaceManager} from "./SignSpaceManager.js?version=@version@";
 import {PostitManager} from "./PostitManager.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
 
-export class WorkspacePdf {
+export class SignWorkspaceController {
 
     constructor(workspaceStateInput, csrf) {
         const workspaceState = workspaceStateInput instanceof WorkspaceState
@@ -107,7 +107,7 @@ export class WorkspacePdf {
                 this.pdfViewer = new PdfViewer('/ws-secure/global/get-last-file-pdf/' + id, signable, editable, currentStepNumber, this.forcePageNum, fields, false);
             }
         }
-        this.signPosition = new SignPosition(
+        this.signPlacementController = new SignPlacementController(
             currentSignType,
             currentSignRequestParamses,
             currentStepMultiSign,
@@ -115,8 +115,8 @@ export class WorkspacePdf {
             signImageNumber,
             signImages,
             userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);
-        this.signPosition.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
-        this.signPosition.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
+        this.signPlacementController.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
+        this.signPlacementController.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
         this.currentSignRequestParamses = currentSignRequestParamses;
         // Mode system deprecated: UI is now driven by rights (signable/editable).
         this.wheelDetector = new WheelDetector();
@@ -129,13 +129,13 @@ export class WorkspacePdf {
             onAddSpot: () => this.enableSpotAdd(),
             onAddSign: () => this.addSign(),
             onAddParaph: () => this.addParaph(),
-            onAddCheck: () => this.signPosition.addCheckImage(this.pdfViewer.pageNum),
-            onAddTimes: () => this.signPosition.addTimesImage(this.pdfViewer.pageNum),
-            onAddCircle: () => this.signPosition.addCircleImage(this.pdfViewer.pageNum),
-            onAddMinus: () => this.signPosition.addMinusImage(this.pdfViewer.pageNum),
-            onAddText: () => this.signPosition.addText(this.pdfViewer.pageNum)
+            onAddCheck: () => this.signPlacementController.addCheckImage(this.pdfViewer.pageNum),
+            onAddTimes: () => this.signPlacementController.addTimesImage(this.pdfViewer.pageNum),
+            onAddCircle: () => this.signPlacementController.addCircleImage(this.pdfViewer.pageNum),
+            onAddMinus: () => this.signPlacementController.addMinusImage(this.pdfViewer.pageNum),
+            onAddText: () => this.signPlacementController.addText(this.pdfViewer.pageNum)
         });
-        this.commentsPanel = new CommentsPanel(this.state, {
+        this.commentManager = new CommentManager(this.state, {
             eventNamespace: this.eventNamespace,
             postitNamespace: this.postitNamespace,
             commentDialogNamespace: this.commentDialogNamespace,
@@ -151,8 +151,8 @@ export class WorkspacePdf {
             setToolsDisabled: disabled => this.setToolsBarDisabled(disabled),
             setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
             setCommentAddButtonsState: enabled => this.setCommentAddButtonsState(enabled),
-            lockSigns: () => this.signPosition.lockSigns(),
-            setPointItEnabled: enabled => { this.signPosition.pointItEnable = enabled; },
+            lockSigns: () => this.signPlacementController.lockSigns(),
+            setPointItEnabled: enabled => { this.signPlacementController.pointItEnable = enabled; },
             selectChangeMode: value => {
                 if (this.changeModeSelector != null) {
                     this.changeModeSelector.setSelected(value);
@@ -175,7 +175,7 @@ export class WorkspacePdf {
             getCurrentSignRequestParamses: () => this.currentSignRequestParamses,
             setCurrentSignRequestParamses: params => {
                 this.currentSignRequestParamses = params;
-                this.signPosition.currentSignRequestParamses = params;
+                this.signPlacementController.currentSignRequestParamses = params;
             },
             getCurrentStepNumber: () => this.currentStepNumber,
             isSignable: () => this.signable,
@@ -189,14 +189,14 @@ export class WorkspacePdf {
             setSignSpacesDroppableEnabled: enabled => this.setSignSpacesDroppableEnabled(enabled),
             setSpotActionButtonsDisabled: disabled => this.setSpotActionButtonsDisabled(disabled),
             exitCommentAddMode: () => this.exitCommentAddMode(),
-            startSpotPlacement: () => this.signPosition.addSign(this.pdfViewer.pageNum, false, 999999, null),
+            startSpotPlacement: () => this.signPlacementController.addSign(this.pdfViewer.pageNum, false, 999999, null),
             refreshSignFields: () => this.initSignFields(),
             removeSignSpaceBySpotId: spotId => $("#signSpace_spot_" + spotId).remove()
         });
         this.signSpaceManager = new SignSpaceManager(this.state, {
             signSpaceNamespace: this.signSpaceNamespace,
             getPdfViewer: () => this.pdfViewer,
-            getSignPosition: () => this.signPosition,
+            getSignPlacementController: () => this.signPlacementController,
             getCurrentSignRequestParamses: () => this.currentSignRequestParamses,
             getSpots: () => this.spots,
             getCurrentStepNumber: () => this.currentStepNumber,
@@ -245,7 +245,7 @@ export class WorkspacePdf {
         this.initListeners();
         this.postitManager.applyVisibility(this.displayComments);
         if (this.isPdf) {
-            this.signPosition.updateScales(this.pdfViewer.scale);
+            this.signPlacementController.updateScales(this.pdfViewer.scale);
         } else {
             this.initWorkspace();
         }
@@ -258,9 +258,9 @@ export class WorkspacePdf {
             $('#next').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
             $('#end-button').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
             $("#spotStepNumber").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
-            // this.signPosition.addEventListener("startDrag", e => this.hideAllPostits());
-            // this.signPosition.addEventListener("stopDrag", e => this.showAllPostits());
-            this.pdfViewer.addEventListener('renderFinished', e => this.initWorkspacePdf());
+            // this.signPlacementController.addEventListener("startDrag", e => this.hideAllPostits());
+            // this.signPlacementController.addEventListener("stopDrag", e => this.showAllPostits());
+            this.pdfViewer.addEventListener('renderFinished', e => this.initSignWorkspace());
             if(this.currentSignType !== "form") {
                 this.pdfViewer.addEventListener('reachEnd', e => this.markAsViewed());
             }
@@ -268,7 +268,7 @@ export class WorkspacePdf {
             if(this.isPdf) {
                 this.pdfViewer.addEventListener('change', e => this.saveData(localStorage.getItem('disableFormAlert') === "true"));
             }
-            this.commentsPanel.bind(eventNamespace);
+            this.commentManager.bind(eventNamespace);
         }
         this.toolbar.bind();
         this.postitManager.bind();
@@ -277,7 +277,7 @@ export class WorkspacePdf {
         signImageBtn.off('click' + eventNamespace);
         let self = this;
         signImageBtn.on('click' + eventNamespace, function () {
-            self.signPosition.popUserUi();
+            self.signPlacementController.popUserUi();
         });
         this.notviewedAnim();
     }
@@ -351,7 +351,7 @@ export class WorkspacePdf {
     }
 
     addSign(forceSignNumber) {
-        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+        if(!this.notSigned && this.signPlacementController.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
@@ -364,7 +364,7 @@ export class WorkspacePdf {
         } else {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if (!this.currentSignRequestParamses[i].ready) {
-                    this.signPosition.currentSignRequestParamsNum = i;
+                    this.signPlacementController.currentSignRequestParamsNum = i;
                     signNum = i;
                     break;
                 }
@@ -376,16 +376,16 @@ export class WorkspacePdf {
         if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
             this.signImageNumber = localStorage.getItem('signNumber');
         }
-        this.signPosition.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
     }
 
 
     async addParaph() {
-        if(!this.notSigned && this.signPosition.signsList.length > 0) {
+        if(!this.notSigned && this.signPlacementController.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
-        const srp = await this.signPosition.addSign(this.pdfViewer.pageNum, false, 999997);
+        const srp = await this.signPlacementController.addSign(this.pdfViewer.pageNum, false, 999997);
         if (srp != null && typeof srp.initParaph === 'function') {
             srp.initParaph();
         }
@@ -399,8 +399,8 @@ export class WorkspacePdf {
         }
     }
 
-    initWorkspacePdf() {
-        console.info("init workspace pdf");
+    initSignWorkspace() {
+        console.info("init sign workspace");
         if(!this.ready) {
             this.ready = true;
             this.enableSignMode();
@@ -414,8 +414,8 @@ export class WorkspacePdf {
         this.initForm();
         $("#content")
             .off('mousedown' + this.eventNamespace)
-            .on('mousedown' + this.eventNamespace, e => this.signPosition.lockSigns());
-        this.signPosition.updateScales(this.pdfViewer.scale);
+            .on('mousedown' + this.eventNamespace, e => this.signPlacementController.lockSigns());
+        this.signPlacementController.updateScales(this.pdfViewer.scale);
     }
 
     initForm() {
@@ -515,7 +515,7 @@ export class WorkspacePdf {
     }
 
     checkSignsPositions() {
-        let testSign = Array.from(this.signPosition.signRequestParamses.values());
+        let testSign = Array.from(this.signPlacementController.signRequestParamses.values());
         if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
@@ -558,7 +558,7 @@ export class WorkspacePdf {
 
     refreshAfterPageChange() {
         console.debug("debug - " + "refresh comments and sign pos" + this.pdfViewer.pageNum);
-        this.commentsPanel.refresh();
+        this.commentManager.refresh();
         if(this.status === "pending") {
             this.initFormAction();
         }
@@ -579,7 +579,7 @@ export class WorkspacePdf {
         this.disableAllModes();
         this.setToolsBarDisabled(false);
         this.setSignSpacesDroppableEnabled(true);
-        this.signPosition.pointItEnable = false;
+        this.signPlacementController.pointItEnable = false;
         if (this.status === 'deleted') {
             $('#workspace').addClass('alert-danger');
         }
@@ -689,7 +689,7 @@ export class WorkspacePdf {
     }
 
     enableCommentAdd(e) {
-        return this.commentsPanel.enableCommentAdd(e);
+        return this.commentManager.enableCommentAdd(e);
     }
 
     setCommentAddButtonsState(enabled) {
@@ -697,7 +697,7 @@ export class WorkspacePdf {
     }
 
     exitCommentAddMode() {
-        return this.commentsPanel.exitCommentAddMode();
+        return this.commentManager.exitCommentAddMode();
     }
 
     enableSpotAdd() {
@@ -843,8 +843,8 @@ export class WorkspacePdf {
                 // Ignore partially initialized droppable widgets.
             }
         });
-        if (this.signPosition != null && typeof this.signPosition.destroy === 'function') {
-            this.signPosition.destroy();
+        if (this.signPlacementController != null && typeof this.signPlacementController.destroy === 'function') {
+            this.signPlacementController.destroy();
         }
         if (this.toolbar != null && typeof this.toolbar.destroy === 'function') {
             this.toolbar.destroy();
@@ -852,8 +852,8 @@ export class WorkspacePdf {
         if (this.postitManager != null && typeof this.postitManager.destroy === 'function') {
             this.postitManager.destroy();
         }
-        if (this.commentsPanel != null && typeof this.commentsPanel.destroy === 'function') {
-            this.commentsPanel.destroy();
+        if (this.commentManager != null && typeof this.commentManager.destroy === 'function') {
+            this.commentManager.destroy();
         }
         if (this.spotManager != null && typeof this.spotManager.destroy === 'function') {
             this.spotManager.destroy();
@@ -864,3 +864,5 @@ export class WorkspacePdf {
     }
 
 }
+
+

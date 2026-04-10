@@ -168,6 +168,11 @@
 }
 
 @media (max-width: 991.98px) {
+
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+
     th.col-nom {
         min-width: 110px;
     }
@@ -333,10 +338,6 @@
     }
 
     body.es-signrequest-page #signButtons {
-        display: none !important;
-    }
-
-    .step-horizontal-v2-icon {
         display: none !important;
     }
 

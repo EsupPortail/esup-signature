@@ -1,12 +1,12 @@
-export class CommentsPanel {
+export class CommentManager {
 
     constructor(state, options = {}) {
         this.state = state;
         this.positionLocked = false;
         this.options = {
-            eventNamespace: options.eventNamespace ?? ".commentsPanel",
-            postitNamespace: options.postitNamespace ?? ".commentsPanelPostit",
-            commentDialogNamespace: options.commentDialogNamespace ?? ".commentsPanelDialog",
+            eventNamespace: options.eventNamespace ?? ".commentManager",
+            postitNamespace: options.postitNamespace ?? ".commentManagerPostit",
+            commentDialogNamespace: options.commentDialogNamespace ?? ".commentManagerDialog",
             getPdfViewer: options.getPdfViewer ?? (() => null),
             getComments: options.getComments ?? (() => []),
             isEditable: options.isEditable ?? (() => false),
@@ -446,5 +446,7 @@ export class CommentsPanel {
     }
 
 }
+
+
 
 
