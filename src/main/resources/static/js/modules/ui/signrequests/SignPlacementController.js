@@ -2,7 +2,7 @@ import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?versio
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 import {UserUi} from '../users/UserUi.js?version=@version@';
 
-export class SignPosition extends EventFactory {
+export class SignPlacementController extends EventFactory {
 
     constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
         super();
@@ -15,13 +15,17 @@ export class SignPosition extends EventFactory {
         this.isOtp = isOtp;
         this.phone = phone;
         this.csrf = csrf;
-        this.currentSignRequestParamsNum = 0;
         this.currentSignRequestParamses = currentSignRequestParamses;
         if(currentSignRequestParamses != null) {
             this.currentSignRequestParamses.sort((a, b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
             this.currentSignRequestParamses.sort((a, b) => (a.yPos > b.yPos) ? 1 : ((b.yPos > a.yPos) ? -1 : 0))
             this.currentSignRequestParamses.sort((a, b) => (a.signPageNumber > b.signPageNumber) ? 1 : ((b.signPageNumber > a.signPageNumber) ? -1 : 0))
         }
+        this.beforeUnloadNamespace = ".signPositionPendingChanges";
+        this.scrollNamespace = ".signPositionScroll";
+        this.workspaceScrollHandler = null;
+        this.userSignatureUpdatedHandler = e => this.applyUserSignatureState(e.detail);
+        this.userSignatureDeletedHandler = e => this.applyUserSignatureState(e.detail);
         this.signRequestParamses = new Map();
         this.id = 0;
         this.signsList = [];
@@ -52,11 +56,13 @@ export class SignPosition extends EventFactory {
         let self = this;
         const workspace = this.getScrollContainer();
         if (workspace) {
-            workspace.addEventListener('scroll', function() {
+            this.workspaceScrollHandler = () => {
                 self.scrollTop = workspace.scrollTop;
-            });
+            };
+            workspace.removeEventListener('scroll', this.workspaceScrollHandler);
+            workspace.addEventListener('scroll', this.workspaceScrollHandler);
         } else {
-            $(window).on('scroll', function() {
+            $(window).off('scroll' + this.scrollNamespace).on('scroll' + this.scrollNamespace, function() {
                 self.scrollTop = $(this).scrollTop();
             });
         }
@@ -65,8 +71,10 @@ export class SignPosition extends EventFactory {
                 self.popUserUi();
             }
         });
-        document.addEventListener('userSignatureUpdated', e => this.applyUserSignatureState(e.detail));
-        document.addEventListener('userSignatureDeleted', e => this.applyUserSignatureState(e.detail));
+        document.removeEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.removeEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
+        document.addEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.addEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
     }
 
     getGeneratedSignImageNumber(userState) {
@@ -140,7 +148,7 @@ export class SignPosition extends EventFactory {
             $("#signLaunchButton").removeClass("pulse-success");
             addSignButton2.focus();
             $("#addSignButton").removeAttr("disabled");
-            $(window).unbind("beforeunload");
+            $(window).off("beforeunload" + this.beforeUnloadNamespace);
             this.enableForwardButton();
             this.goStep1();
         }
@@ -221,7 +229,9 @@ export class SignPosition extends EventFactory {
         const isSpot = signImageNumber === 999999;
         if (!isSpot) {
             this.disableForwardButton();
-            $(window).bind("beforeunload", function (event) {
+            $(window)
+                .off("beforeunload" + this.beforeUnloadNamespace)
+                .on("beforeunload" + this.beforeUnloadNamespace, function (event) {
                 console.log("beforeunload déclenché");
                 event.preventDefault();
                 event.returnValue = "";
@@ -307,7 +317,9 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
         let srp = this.signRequestParamses.get(id);
         this.id++;
-        this.goStep2();
+        if (!isSpot) {
+            this.goStep2();
+        }
         return srp;
     }
 
@@ -327,8 +339,8 @@ export class SignPosition extends EventFactory {
         this.addSign(page, false, -4);
     }
 
-    addText(page) {
-        let signRequestParams = this.addSign(page, false, null);
+    async addText(page) {
+        let signRequestParams = await this.addSign(page, false, null);
         if(signRequestParams != null) {
             signRequestParams.turnToText();
             signRequestParams.cross.css("background-image", "");
@@ -361,6 +373,21 @@ export class SignPosition extends EventFactory {
         }
     }
 
+    getSelectableCertTypeOptions() {
+        return $("#certType").find("option:not(:disabled):not([unavailable])");
+    }
+
+    hasValidSelectedCertType() {
+        const selectCertType = $("#certType");
+        const selectedOption = selectCertType.find("option:selected");
+        const value = selectCertType.val();
+        return value != null
+            && value !== ""
+            && selectedOption.length > 0
+            && !selectedOption.is(":disabled")
+            && !selectedOption.is("[unavailable]");
+    }
+
     goStep1() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
@@ -369,14 +396,12 @@ export class SignPosition extends EventFactory {
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
-        let selectCertType = $("#certType");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
 
         addSignButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
-        selectCertType.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
         this.setButtonVariant(addSignButton, "btn-success");
@@ -386,7 +411,7 @@ export class SignPosition extends EventFactory {
         this.setCertTypeHighlight(false);
 
         this.setStepState(step1, true, false, false);
-        this.setStepState(step2, false, false, true);
+        this.setStepState(step2, true, false, false);
         this.setStepState(step3, false, false, true);
 
         step1.find(".step-horizontal-v2-icon").html("1");
@@ -422,10 +447,13 @@ export class SignPosition extends EventFactory {
         this.setCertTypeHighlight(false);
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
-        let countEnable = selectCertType.find("option:not(:disabled):not([unavailable]").length;
+        const selectableOptions = this.getSelectableCertTypeOptions();
+        let countEnable = selectableOptions.length;
         if(countEnable === 1) {
-            selectCertType.find("option:not(:disabled):not([unavailable]").prop("selected", true);
+            selectableOptions.prop("selected", true);
             selectCertType.trigger("change");
+            this.goStep3();
+        } else if (this.hasValidSelectedCertType()) {
             this.goStep3();
         } else {
             selectCertType.trigger("focus");
@@ -453,6 +481,17 @@ export class SignPosition extends EventFactory {
 
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
+    }
+
+    destroy() {
+        const workspace = this.getScrollContainer();
+        if (workspace != null && this.workspaceScrollHandler != null) {
+            workspace.removeEventListener('scroll', this.workspaceScrollHandler);
+        }
+        $(window).off('scroll' + this.scrollNamespace);
+        $(window).off('beforeunload' + this.beforeUnloadNamespace);
+        document.removeEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
+        document.removeEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
     }
 
 }

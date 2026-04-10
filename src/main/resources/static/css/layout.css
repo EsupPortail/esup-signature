@@ -18,7 +18,7 @@ body.es-signrequest-page {
 }
 
 body.modal-open {
-    overflow: auto !important;
+    /*overflow: auto !important;*/
 }
 
 header {

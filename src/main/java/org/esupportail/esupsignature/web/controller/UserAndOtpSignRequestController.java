@@ -6,8 +6,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.service.XSLTService;
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -18,7 +19,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.hibernate.annotations.Synchronize;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -34,11 +34,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
@@ -89,154 +89,398 @@ public class UserAndOtpSignRequestController {
                        @RequestParam(required = false) Boolean frameMode,
                        @RequestParam(required = false) String annotation,
                        Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
-        String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
+        boolean isOtpView = path.startsWith("/otp");
+        String urlProfil = isOtpView ? "otp" : "user";
         SignRequest signRequest = signRequestService.getById(id);
-        if(path.startsWith("/otp")) {
-            urlProfil = "otp";
-            model.addAttribute("displayNotif", false);
-            model.addAttribute("isTempUsers", false);
-        } else {
-            model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
-            model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
-        }
+        SignBook signBook = signRequest.getParentSignBook();
+        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
+        LiveWorkflowStep currentStep = liveWorkflow.getCurrentStep();
+        Workflow workflow = liveWorkflow.getWorkflow();
+
+        boolean displayNotif = !isOtpView && signRequestService.isDisplayNotif(signRequest, userEppn);
+        boolean isTempUsers = !isOtpView && signBookService.isTempUsers(signBook.getId());
+
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        model.addAttribute("signable", signable);
-        model.addAttribute("urlProfil", urlProfil);
-        model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signBook", signRequest.getParentSignBook());
-        Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-        model.addAttribute("workflow", workflow);
-        model.addAttribute("postits", signRequestService.getPostits(id));
-        model.addAttribute("comments", signRequestService.getComments(id));
-        model.addAttribute("spots", signRequestService.getSpots(id));
+        boolean isManager = signBookService.checkUserManageRights(signBook.getId(), userEppn);
+        List<Comment> postits = signRequestService.getPostits(id);
+        List<Comment> comments = signRequestService.getComments(id);
+        List<SignRequestParams> spots = signRequestService.getSpots(id);
         boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
-        model.addAttribute("attachmentAlert", attachmentAlert);
         boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
-        model.addAttribute("attachmentRequire", attachmentRequire);
-        model.addAttribute("currentSignType", signRequest.getCurrentSignType());
-        model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-        model.addAttribute("currentStepMultiSign", true);
-        model.addAttribute("currentStepSingleSignWithAnnotation", true);
+        SignType currentSignType = signRequest.getCurrentSignType();
+        Integer currentStepNumber = liveWorkflow.getCurrentStepNumber();
+        boolean currentStepMultiSign = true;
+        boolean currentStepSingleSignWithAnnotation = true;
+        Long currentStepId = null;
         SignLevel currentStepMinSignLevel = SignLevel.simple;
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-            currentStepMinSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel();
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
-                model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
+        SignLevel currentStepMaxSignLevel = SignLevel.qualified;
+        Boolean stepRepeatable = null;
+
+        if(currentStep != null) {
+            currentStepMinSignLevel = currentStep.getMinSignLevel();
+            currentStepMaxSignLevel = currentStep.getMaxSignLevel();
+            currentStepMultiSign = currentStep.getMultiSign();
+            currentStepSingleSignWithAnnotation = currentStep.getSingleSignWithAnnotation();
+            stepRepeatable = currentStep.getRepeatable();
+            if(currentStep.getWorkflowStep() != null) {
+                currentStepId = currentStep.getWorkflowStep().getId();
             }
-            model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
-            model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
         }
-        model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
+
+        int nbSignRequestInSignBookParent = signBook.getSignRequests().size();
+        boolean isLastStep = !liveWorkflow.getLiveWorkflowSteps().isEmpty() && currentStepNumber >= liveWorkflow.getLiveWorkflowSteps().size();
         List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
-        if(toSignDocuments.size() == 1) {
-            model.addAttribute("toSignDocument", toSignDocuments.get(0));
-        }
+        Document toSignDocument = toSignDocuments.size() == 1 ? toSignDocuments.get(0) : null;
+        boolean isPdf = toSignDocument != null && "application/pdf".equals(toSignDocument.getContentType());
         if(toSignDocuments.stream().anyMatch(d -> !d.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
-        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
-        model.addAttribute("attachments", signRequestService.getAttachments(id));
+
+        List<Document> attachments = signRequestService.getAttachments(id);
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
-        model.addAttribute("nextSignBook", nextSignBook);
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), nextSignBook));
-        model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
-        model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
+        List<Field> fields = signRequestService.prefillSignRequestFields(id, userEppn);
+        List<SignRequestParams> toUseSignRequestParams = signRequestService.getToUseSignRequestParams(id, userEppn);
+        String favoriteSignRequestParamsJson = userService.getFavoriteSignRequestParamsJson(userEppn);
+        List<String> signImages = new ArrayList<>();
         try {
             Object userShareString = httpSession.getAttribute("userShareId");
             Long userShareId = null;
             if(userShareString != null) {
                 userShareId = Long.valueOf(userShareString.toString());
             }
-            List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
-            model.addAttribute("signImages", signImages);
+            signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
         } catch (EsupSignatureUserException e) {
             model.addAttribute("message", new JsMessage("warn", e.getMessage()));
         }
-        model.addAttribute("signatureIds", new ArrayList<>());
+
+        List<String> signatureIds = new ArrayList<>();
+        boolean signatureIssue = false;
+        List<SignWith> signWiths = new ArrayList<>();
         Reports reports = signService.validate(id);
         if(reports != null) {
-            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
-            List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
-            if(signable) {
-                model.addAttribute("signWiths", signWiths);
-            }
-            model.addAttribute("signatureIssue", false);
-            if(!reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                    if (!reports.getSimpleReport().isValid(signatureId)) {
-                        model.addAttribute("signatureIssue", true);
-                    }
-                }
-                if(currentStepMinSignLevel.getValue() < 3) {
-                    currentStepMinSignLevel = SignLevel.advanced;
+            signatureIds = reports.getSimpleReport().getSignatureIdList();
+            signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !signatureIds.isEmpty());
+            for (String signatureId : signatureIds) {
+                if (!reports.getSimpleReport().isValid(signatureId)) {
+                    signatureIssue = true;
+                    break;
                 }
             }
-        } else {
-            if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
-        }
-        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
-        SignLevel currentStepMaxSignLevel = SignLevel.qualified;
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-            currentStepMaxSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMaxSignLevel();
-        }
-        model.addAttribute("currentStepMaxSignLevel", currentStepMaxSignLevel);
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
-            AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            if(auditTrail != null) {
-                model.addAttribute("auditTrail", auditTrail);
-                if(auditTrail.getDocumentSize() != null) {
-                    model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
-                }
+            if(!signatureIds.isEmpty() && currentStepMinSignLevel.getValue() < 3) {
+                currentStepMinSignLevel = SignLevel.advanced;
             }
+        } else if(signable) {
+            signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, false);
         }
-        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
-        model.addAttribute("allSignWiths", SignWith.values());
-        model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
+
         boolean editable = signRequestService.isEditable(id, userEppn);
-        model.addAttribute("editable", editable);
+        boolean isNotSigned = !signRequestService.isSigned(signRequest, reports);
+        boolean isCurrentUserAsSigned = signRequestService.isCurrentUserAsSigned(signRequest, userEppn);
+        List<LiveWorkflowStep> steps = signRequest.getStatus().equals(SignRequestStatus.draft) ? liveWorkflow.getLiveWorkflowSteps() : new ArrayList<>();
+        List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
+        boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn);
+        String action = null;
+        Set<String> supervisors = null;
+        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
+            action = signRequest.getData().getForm().getAction();
+            supervisors = signRequest.getData().getForm().getWorkflow().getManagers();
+        }
+
+        User frontUser = userService.getFullUserByEppn(userEppn);
+        User frontAuthUser = userService.getByEppn(authUserEppn);
+
+        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook);
+        AuditTrail auditTrail = null;
+        String size = null;
+        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
+            auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
+            if(auditTrail != null) {
+                if(auditTrail.getDocumentSize() != null) {
+                    size = FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize());
+                }
+            }
+        }
+
         if(annotation != null && !editable) {
             return "redirect:/user/signrequests/" + id;
-        } else {
-            model.addAttribute("annotation", annotation);
         }
-        model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
-        model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
-        if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
-        }
-        model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
-        model.addAttribute("frameMode", frameMode);
-        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
-            model.addAttribute("action", signRequest.getData().getForm().getAction());
-            model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
-        }
+
         if(signable
-                && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
-                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
-                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
+                && workflow != null && userService.getUiParams(authUserEppn) != null
+                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(workflow.getId().toString()))
+                && currentStep != null && currentStep.getSignType().equals(SignType.hiddenVisa)) {
             model.addAttribute("message", new JsMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
-            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
+            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, workflow.getId().toString() + ",");
 
         }
         Data data = dataService.getBySignBook(signRequest.getParentSignBook());
-        if(data != null && data.getForm() != null) {
-            model.addAttribute("form", data.getForm());
-        }
+        Form form = data != null ? data.getForm() : null;
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-        model.addAttribute("logs", logs);
-        if(!toSignDocuments.isEmpty()) {
-            model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
-        }
-        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported)) {
-            model.addAttribute("auditTrailChecked", true);
-            model.addAttribute("externalsRecipients", signRequestService.getExternalRecipients(signRequest.getId()));
-        }
+        String pdfaCheck = !toSignDocuments.isEmpty() ? toSignDocuments.get(0).getPdfaCheck() : null;
+        boolean auditTrailChecked = signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported);
+        List<RecipientWsDto> externalsRecipients = auditTrailChecked ? signRequestService.getExternalRecipients(signRequest.getId()) : new ArrayList<>();
+        boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
+        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
+        SignWith[] allSignWiths = SignWith.values();
+        List<Certificat> certificats = certificatService.getCertificatByUser(userEppn);
+
+        model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
+
+        ShowSignRequestDataFlowDto showDataFlow = new ShowSignRequestDataFlowDto(
+                new ShowSignRequestBackDto(
+                        signRequest,
+                        signBook,
+                        workflow,
+                        signRequest.getId(),
+                        signBook.getId(),
+                        signRequest.getData() != null ? signRequest.getData().getId() : null,
+                        signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
+                        urlProfil,
+                        displayNotif,
+                        isTempUsers,
+                        signable,
+                        editable,
+                        isManager,
+                        signRequest.getStatus(),
+                        currentSignType,
+                        currentStepNumber,
+                        currentStepId,
+                        currentStepMultiSign,
+                        currentStepSingleSignWithAnnotation,
+                        currentStepMinSignLevel,
+                        currentStepMaxSignLevel,
+                        stepRepeatable,
+                        isLastStep,
+                        isPdf,
+                        attachmentAlert,
+                        attachmentRequire,
+                        isNotSigned,
+                        isCurrentUserAsSigned,
+                        signatureIds,
+                        signatureIssue,
+                        nbSignRequestInSignBookParent,
+                        action,
+                        supervisors,
+                        toSignDocument,
+                        postits,
+                        comments,
+                        spots,
+                        attachments,
+                        nextSignBook,
+                        nextSignRequest,
+                        fields,
+                        toUseSignRequestParams,
+                        signImages,
+                        signWiths,
+                        auditTrail,
+                        size,
+                        sealCertOK,
+                        sealCertificatPropertieses,
+                        allSignWiths,
+                        certificats,
+                        annotation,
+                        steps,
+                        refuseLogs,
+                        viewRight,
+                        frameMode,
+                        form,
+                        logs,
+                        pdfaCheck,
+                        auditTrailChecked,
+                        externalsRecipients
+                ),
+                new ShowSignRequestFrontDto(
+                        toFrontUserDto(frontUser),
+                        toFrontUserDto(frontAuthUser),
+                        toFrontUserDto(signRequest.getCreateBy()),
+                        currentStepNumber,
+                        supervisors,
+                        isLastStep,
+                        new SignUiFrontDto(
+                                signRequest.getId(),
+                                signRequest.getData() != null ? signRequest.getData().getId() : null,
+                                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
+                                toUseSignRequestParams,
+                                frontUser != null ? frontUser.getDefaultSignImageNumber() : null,
+                                currentSignType,
+                                signable,
+                                editable,
+                                comments,
+                                spots,
+                                isPdf,
+                                currentStepNumber,
+                                currentStepMultiSign,
+                                currentStepSingleSignWithAnnotation,
+                                currentStepMinSignLevel,
+                                workflow != null,
+                                signImages,
+                                toDisplayName(frontUser),
+                                toDisplayName(frontAuthUser),
+                                fields,
+                                stepRepeatable,
+                                signRequest.getStatus(),
+                                action,
+                                nbSignRequestInSignBookParent,
+                                isNotSigned,
+                                attachmentAlert,
+                                attachmentRequire,
+                                isOtpView,
+                                frontUser == null || frontUser.getFavoriteSignRequestParams() == null,
+                                frontUser != null ? frontUser.getPhone() : null,
+                                frontUser != null ? frontUser.getReturnToHomeAfterSign() : null,
+                                isManager
+                        )
+                )
+        );
+        model.addAttribute("signRequestShowDataFlow", showDataFlow);
+
         return "user/signrequests/show";
     }
+
+    private FrontUserDto toFrontUserDto(User user) {
+        if(user == null) {
+            return null;
+        }
+        return new FrontUserDto(
+                user.getId(),
+                user.getEppn(),
+                user.getName(),
+                user.getFirstname(),
+                user.getEmail(),
+                user.getDefaultSignImageNumber(),
+                user.getPhone(),
+                user.getReturnToHomeAfterSign()
+        );
+    }
+
+    private String toDisplayName(User user) {
+        if(user == null) {
+            return null;
+        }
+        return user.getFirstname() + " " + user.getName();
+    }
+
+    public record ShowSignRequestDataFlowDto(ShowSignRequestBackDto back, ShowSignRequestFrontDto front) {}
+
+    public record ShowSignRequestBackDto(
+            SignRequest signRequest,
+            SignBook signBook,
+            Workflow workflow,
+            Long signRequestId,
+            Long signBookId,
+            Long dataId,
+            Long formId,
+            String urlProfil,
+            Boolean displayNotif,
+            Boolean tempUsers,
+            Boolean signable,
+            Boolean editable,
+            Boolean manager,
+            SignRequestStatus status,
+            SignType currentSignType,
+            Integer currentStepNumber,
+            Long currentStepId,
+            Boolean currentStepMultiSign,
+            Boolean currentStepSingleSignWithAnnotation,
+            SignLevel currentStepMinSignLevel,
+            SignLevel currentStepMaxSignLevel,
+            Boolean stepRepeatable,
+            Boolean lastStep,
+            Boolean pdf,
+            Boolean attachmentAlert,
+            Boolean attachmentRequire,
+            Boolean notSigned,
+            Boolean currentUserAsSigned,
+            List<String> signatureIds,
+            Boolean signatureIssue,
+            Integer nbSignRequests,
+            String action,
+            Set<String> supervisors,
+            Document toSignDocument,
+            List<Comment> postits,
+            List<Comment> comments,
+            List<SignRequestParams> spots,
+            List<Document> attachments,
+            SignBook nextSignBook,
+            SignRequest nextSignRequest,
+            List<Field> fields,
+            List<SignRequestParams> signRequestParams,
+            List<String> signImages,
+            List<SignWith> signWiths,
+            AuditTrail auditTrail,
+            String size,
+            Boolean sealCertOK,
+            List<SealCertificatProperties> sealCertificatPropertieses,
+            SignWith[] allSignWiths,
+            List<Certificat> certificats,
+            String annotation,
+            List<LiveWorkflowStep> steps,
+            List<Log> refuseLogs,
+            Boolean viewRight,
+            Boolean frameMode,
+            Form form,
+            List<Log> logs,
+            String pdfaCheck,
+            Boolean auditTrailChecked,
+            List<RecipientWsDto> externalsRecipients
+    ) {}
+
+    public record ShowSignRequestFrontDto(
+            FrontUserDto user,
+            FrontUserDto authUser,
+            FrontUserDto creator,
+            Integer currentStepNumber,
+            Set<String> supervisors,
+            Boolean lastStep,
+            SignUiFrontDto signUi
+    ) {}
+
+    public record SignUiFrontDto(
+            Long signRequestId,
+            Long dataId,
+            Long formId,
+            List<SignRequestParams> currentSignRequestParamses,
+            Integer signImageNumber,
+            SignType currentSignType,
+            Boolean signable,
+            Boolean editable,
+            List<Comment> comments,
+            List<SignRequestParams> spots,
+            Boolean pdf,
+            Integer currentStepNumber,
+            Boolean currentStepMultiSign,
+            Boolean currentStepSingleSignWithAnnotation,
+            SignLevel currentStepMinSignLevel,
+            Boolean workflowAvailable,
+            List<String> signImages,
+            String userName,
+            String authUserName,
+            List<Field> fields,
+            Boolean stepRepeatable,
+            SignRequestStatus status,
+            String action,
+            Integer nbSignRequests,
+            Boolean notSigned,
+            Boolean attachmentAlert,
+            Boolean attachmentRequire,
+            Boolean otp,
+            Boolean restore,
+            String phone,
+            Boolean returnToHomeAfterSign,
+            Boolean manager
+    ) {}
+
+    public record FrontUserDto(
+            Long id,
+            String eppn,
+            String name,
+            String firstname,
+            String email,
+            Integer defaultSignImageNumber,
+            String phone,
+            Boolean returnToHomeAfterSign
+    ) {}
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")

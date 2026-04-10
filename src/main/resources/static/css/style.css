@@ -146,6 +146,12 @@ body.es-signrequest-page #tools #signLaunchButton {
     }
 }
 
+@media (max-width: 991.98px) {
+    body.es-signrequest-page #tools.es-tools-single-cert-type-mobile #step-1 {
+        display: none !important;
+    }
+}
+
 .tools,
 .es-tools {
     font-size: 16px;

@@ -75,6 +75,8 @@ export class SignRequestParams extends EventFactory {
         this.padMargin = 0;
         this.inside = true;
         this.isLight = light;
+        this.resizeNamespace = ".signRequestParamsResize-" + this.id;
+        this.keydownNamespace = ".signRequestParamsKeydown-" + this.id;
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
@@ -153,7 +155,9 @@ export class SignRequestParams extends EventFactory {
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
         if(!self.isLight) {
-            $(window).on("resize", () => {
+            $(window)
+                .off("resize" + this.resizeNamespace)
+                .on("resize" + this.resizeNamespace, () => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
                     const w = window.innerWidth;
@@ -452,7 +456,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #saveSpot() {
-        $(window).unbind("beforeunload");
+        $(window).off("beforeunload.signPositionPendingChanges");
         this.spotStepNumber = $("#spotStepNumber").val();
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
@@ -521,7 +525,7 @@ export class SignRequestParams extends EventFactory {
         try { this.cross.resizable("destroy"); } catch (e) {}
         this.tools && this.tools.remove();
         this.border && this.border.remove();
-        $(document).off("keydown");
+        $(document).off("keydown" + this.keydownNamespace);
 
         const pageLayout = this.#getPageLayout(this.signPageNumber);
         const zoom = this.getBrowserZoom();
@@ -1056,7 +1060,9 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
-        $(document).on('keydown', e => this.#handleKeydown(e));
+        $(document)
+            .off('keydown' + this.keydownNamespace)
+            .on('keydown' + this.keydownNamespace, e => this.#handleKeydown(e));
         this.#computeBgColor();
     }
 
@@ -1840,7 +1846,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
-        $(document).unbind('keydown');
+        $(document).off('keydown' + this.keydownNamespace);
         this.canvasBtn.removeClass("d-none");
         this.#computeBgColor();
     }
