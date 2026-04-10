@@ -292,7 +292,9 @@ export class SignUi {
         } else {
             $("#sealChoose").addClass('d-none');
         }
-        this.workspace.signPosition.goStep3();
+        if (this.workspace?.signPosition?.signsList?.length > 0) {
+            this.workspace.signPosition.goStep3();
+        }
     }
 
     launchNoInfiniteSign(next) {

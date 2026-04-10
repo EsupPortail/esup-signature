@@ -49,6 +49,7 @@ export class SignToolbar {
         toolsBar.attr("aria-disabled", disabled ? "true" : "false");
     }
 
+
     setCommentAddActive(enabled) {
         $("#addSpotButton").attr("disabled", enabled);
         $("#addSpotButton2").attr("disabled", enabled);

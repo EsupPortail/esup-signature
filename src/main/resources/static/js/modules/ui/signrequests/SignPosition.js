@@ -15,7 +15,6 @@ export class SignPosition extends EventFactory {
         this.isOtp = isOtp;
         this.phone = phone;
         this.csrf = csrf;
-        this.currentSignRequestParamsNum = 0;
         this.currentSignRequestParamses = currentSignRequestParamses;
         if(currentSignRequestParamses != null) {
             this.currentSignRequestParamses.sort((a, b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
@@ -318,7 +317,9 @@ export class SignPosition extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
         let srp = this.signRequestParamses.get(id);
         this.id++;
-        this.goStep2();
+        if (!isSpot) {
+            this.goStep2();
+        }
         return srp;
     }
 

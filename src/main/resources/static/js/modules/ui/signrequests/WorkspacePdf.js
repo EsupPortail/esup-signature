@@ -38,8 +38,6 @@ export class WorkspacePdf {
         const status = signUiDto.status;
         const action = signUiDto.action;
         const notSigned = signUiDto.notSigned;
-        const attachmentAlert = signUiDto.attachmentAlert;
-        const attachmentRequire = signUiDto.attachmentRequire;
         const isOtp = signUiDto.otp;
         const restore = signUiDto.restore;
         const phone = signUiDto.phone;
@@ -328,18 +326,6 @@ export class WorkspacePdf {
         return this.signSpaceManager.initSignFields();
     }
 
-    getSignSpaceId(signParams, index, isSignableField) {
-        return this.signSpaceManager.getSignSpaceId(signParams, index, isSignableField);
-    }
-
-    isCurrentSignableParam(signParams) {
-        return this.signSpaceManager.isCurrentSignableParam(signParams);
-    }
-
-    getSignParamsToDisplay() {
-        return this.signSpaceManager.getSignParamsToDisplay();
-    }
-
     filterSpotsNotCurrentStep(spots) {
         return this.spotManager.filterSpotsNotCurrentStep(spots);
     }
@@ -564,52 +550,10 @@ export class WorkspacePdf {
         });
     }
 
-    launchValidate() {
-        if (!WorkspacePdf.validateForm()) {
-            $("#visaLaunchButton").attr('disabled', true);
-        } else {
-            $("#visaLaunchButton").attr('disabled', false);
-        }
-
-    }
-
     refreshWorkspace() {
         console.info("refresh workspace");
         this.pdfViewer.startRender();
         localStorage.setItem("scale", this.pdfViewer.scale);
-    }
-
-    clickAction(e) {
-        this.signPosition.lockSigns();
-        if (this.addSpotEnabled || this.addCommentEnabled) {
-            this.commentsPanel.displayDialogBox();
-        }
-    }
-
-    moveAction(e) {
-        if (this.addSpotEnabled || this.addCommentEnabled) {
-            this.commentsPanel.pointIt2(e);
-        }
-    }
-
-    pointIt2(e) {
-        return this.commentsPanel.pointIt2(e);
-    }
-
-    saveComment() {
-        return this.commentsPanel.saveComment();
-    }
-
-    focusComment(postit) {
-        return this.commentsPanel.focusComment(postit);
-    }
-
-    getPageOffsets(pageNum) {
-        return this.commentsPanel.getPageOffsets(pageNum);
-    }
-
-    getCommentDialogCssPosition(pageNum, renderedX, renderedY) {
-        return this.commentsPanel.getCommentDialogCssPosition(pageNum, renderedX, renderedY);
     }
 
     refreshAfterPageChange() {
@@ -628,51 +572,6 @@ export class WorkspacePdf {
         // $("div[id^='cross_']").each((index, e) => this.toggleSign(e));
         this.pdfViewer.pdfDiv.css('opacity', 1);
         this.first = false;
-    }
-
-    makeItDroppable(signSpaceDiv) {
-        return this.signSpaceManager.makeItDroppable(signSpaceDiv);
-    }
-
-
-    // toggleSign(e) {
-    //     let signId = $(e).attr("id").split("_")[1];
-    //     console.log("toggle sign_" + signId);
-    //     let signRequestParams = this.signPosition.signRequestParamses.get(parseInt(signId));
-    //     if (this.mode === 'sign') {
-    //         signRequestParams.show();
-    //     } else {
-    //         if(signRequestParams.signImages !== 999999) {
-    //             signRequestParams.hide();
-    //         }
-    //     }
-    //     if (this.first) this.first = false;
-    // }
-
-    displayDialogBox() {
-        return this.commentsPanel.displayDialogBox();
-    }
-
-    hideComment(e) {
-        return this.commentsPanel.hideComment(e);
-    }
-
-    enableReadMode() {
-        this.displayComments = true;
-        this.enableSignMode();
-    }
-
-    showComments() {
-        return this.commentsPanel.showComments();
-    }
-
-    hideComments() {
-        return this.commentsPanel.hideComments();
-    }
-
-    enableCommentMode() {
-        this.displayComments = true;
-        this.enableSignMode();
     }
 
     enableSignMode() {
@@ -801,14 +700,6 @@ export class WorkspacePdf {
         return this.commentsPanel.exitCommentAddMode();
     }
 
-    disableAddComment() {
-        return this.commentsPanel.disableAddComment();
-    }
-
-    enableAddComment() {
-        return this.commentsPanel.enableAddComment();
-    }
-
     enableSpotAdd() {
         return this.spotManager.enableSpotAdd();
     }
@@ -821,24 +712,9 @@ export class WorkspacePdf {
         this.toolbar.setToolsDisabled(disabled);
     }
 
+
     setSignSpacesDroppableEnabled(enabled) {
         return this.signSpaceManager.setSignSpacesDroppableEnabled(enabled);
-    }
-
-    displayCommentPointer() {
-        const png = '/images/icons/rr-comment-32.png';
-        $('body *').css('pointer-events', 'none');
-        this.pdfViewer.pdfDiv.css({
-            'pointer-events': 'auto',
-            'cursor': `url("${png}"), auto`
-        });
-        $("#addCommentButton").css('pointer-events', 'auto');
-        $("#comment-div, #comment-div *").css('pointer-events', 'auto');
-    }
-
-    disablePointer() {
-        this.pdfViewer.pdfDiv.css('cursor', 'default');
-        $('body *').css('pointer-events', 'auto');
     }
 
     changeSpotStep() {
@@ -854,12 +730,6 @@ export class WorkspacePdf {
         $("#changeMode2").off("click" + this.eventNamespace).on("click" + this.eventNamespace, function(e) {
             self.enableSignMode();
         });
-    }
-
-    changeMode(e) {
-        if (this.ready) {
-            this.enableSignMode();
-        }
     }
 
     initFormAction() {
@@ -926,14 +796,6 @@ export class WorkspacePdf {
 
     getBrowserZoom() {
         return 1 || 1;
-    }
-
-    highlightLiveStep(stepNumber) {
-        return this.signSpaceManager.highlightLiveStep(stepNumber);
-    }
-
-    resetLiveStepHighlight() {
-        return this.signSpaceManager.resetLiveStepHighlight();
     }
 
     destroy() {
