@@ -74,7 +74,7 @@ public class DocumentService {
 		document.setCreateDate(new Date());
 		document.setFileName(name);
 		document.setContentType(contentType);
-		if(contentType.equals("application/pdf")) {
+		if("application/pdf".equals(contentType)) {
 			document.setNbPages(getNbPages(new ByteArrayInputStream(bytes)));
 		}
 		BigFile bigFile = new BigFile();

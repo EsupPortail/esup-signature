@@ -167,6 +167,6 @@ public class Document {
     }
 
     public boolean isPdf() {
-        return contentType.equals("application/pdf");
+        return "application/pdf".equals(contentType);
     }
 }
