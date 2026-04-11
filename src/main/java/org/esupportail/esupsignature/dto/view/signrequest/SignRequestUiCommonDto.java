@@ -1,32 +1,31 @@
 package org.esupportail.esupsignature.dto.view.signrequest;
 
+import org.esupportail.esupsignature.entity.Comment;
+import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 
 import java.util.List;
 
-public record SignUiFrontDto(
+public record SignRequestUiCommonDto(
         Long signRequestId,
         Long dataId,
         Long formId,
-        List<SignRequestParamsFrontDto> currentSignRequestParamses,
-        Integer signImageNumber,
+        List<SignRequestParams> signRequestParams,
         SignType currentSignType,
         Boolean signable,
         Boolean editable,
-        List<CommentFrontDto> comments,
-        List<SignRequestParamsFrontDto> spots,
+        List<Comment> comments,
+        List<SignRequestParams> spots,
         Boolean pdf,
         Integer currentStepNumber,
         Boolean currentStepMultiSign,
         Boolean currentStepSingleSignWithAnnotation,
         SignLevel currentStepMinSignLevel,
-        Boolean workflowAvailable,
         List<String> signImages,
-        String userName,
-        String authUserName,
-        List<FieldFrontDto> fields,
+        List<Field> fields,
         Boolean stepRepeatable,
         SignRequestStatus status,
         String action,
@@ -34,11 +33,6 @@ public record SignUiFrontDto(
         Boolean notSigned,
         Boolean attachmentAlert,
         Boolean attachmentRequire,
-        Boolean otp,
-        Boolean restore,
-        String phone,
-        Boolean returnToHomeAfterSign,
         Boolean manager
 ) {}
-
 
