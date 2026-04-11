@@ -30,7 +30,7 @@
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left d-flex align-items-center gap-2">
                         <i class="fi fi-rr-paste" style="line-height: 14px;"></i>
-                        <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span><span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                        <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span><span id="navbar-badge-to-sign" aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && reportNumber > 0  && #authorization.expression('hasRole(''ROLE_USER'')')}">
@@ -65,13 +65,15 @@
                             <i class="fi fi-rr-people-arrows-left-right" style="line-height: 14px;"></i>
                             <span class="nav-item-label">Remplacement</span>
                         </a>
-                        <div th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
-                        <th:block th:each="suUser : ${suUsers}">
-                            <a th:unless="${suUser == user}" role="button" th:href="'/user/users/shares/change?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
-                                <i class="fi fi-rr-users" style="line-height: 14px;"></i>
-                                <span class="nav-item-label" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
-                            </a>
-                        </th:block>
+                        <div id="navbar-su-users-divider" th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
+                        <div id="navbar-su-users-list">
+                            <th:block th:each="suUser : ${suUsers}">
+                                <a th:unless="${suUser == user}" role="button" th:href="'/user/users/shares/change?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
+                                    <i class="fi fi-rr-users" style="line-height: 14px;"></i>
+                                    <span class="nav-item-label" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
+                                </a>
+                            </th:block>
+                        </div>
                     </div>
                 </li>
                 <li class="nav-item dropdown" th:if="${userEppn != authUserEppn  && globalProperties.shareMode > 0}">
@@ -94,7 +96,7 @@
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary bg-opacity-75' : ''">
                         <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
-                        <span title="Statut DSS" th:if="${dssStatus == true || expiredCertificat == true}" class="badge rounded-pill bg-danger d-none d-lg-inline ms-1">!</span>
+                        <span id="navbar-admin-dss-alert" title="Statut DSS" class="badge rounded-pill bg-danger ms-1" th:classappend="${dssStatus == null || dssStatus == true || expiredCertificat == true} ? '' : 'd-none'">!</span>
                     </a>
                 </li>
             </ul>
@@ -156,19 +158,19 @@
                 <tbody>
                 <tr>
                     <td class="text-break w-40">Nom</td>
-                    <td class="text-break w-60" th:text="${user.name}"></td>
+                    <td id="navbar-user-info-name" class="text-break w-60" th:text="${user.name}"></td>
                 </tr>
                 <tr>
                     <td>Prénom</td>
-                    <td th:text="${user.firstname}"></td>
+                    <td id="navbar-user-info-firstname" th:text="${user.firstname}"></td>
                 </tr>
                 <tr>
                     <td>Email</td>
-                    <td th:text="${user.email}"></td>
+                    <td id="navbar-user-info-email" th:text="${user.email}"></td>
                 </tr>
                 <tr>
                     <td>Identifiant</td>
-                    <td th:text="${user.eppn}"></td>
+                    <td id="navbar-user-info-eppn" th:text="${user.eppn}"></td>
                 </tr>
                 <tr th:if="${user.userType.name == 'ldap'}">
                     <td>Token d’accès API</td>
@@ -176,7 +178,7 @@
                 </tr>
                 <tr th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
                     <td>Auth</td>
-                    <td th:text="${securityServiceName}"></td>
+                    <td id="navbar-security-service-name" th:text="${securityServiceName}"></td>
                 </tr>
                 <tr>
                     <td>Mes signatures</td>
@@ -205,7 +207,7 @@
                 </tr>
                 <tr th:if="${!globalProperties.disableCertStorage}">
                     <td>Magasin de certificats</td>
-                    <td>
+                    <td id="navbar-keystore-content">
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
                             <br>

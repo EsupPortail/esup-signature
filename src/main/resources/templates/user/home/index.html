@@ -6,8 +6,30 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {Home2Help} from '/js/modules/help/Home2Help.js?version=@[(${versionApp})]@';
-    let help2 = new Home2Help([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).home2Help)}]]);
-    help2.autoStart();
+
+    function readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function startHelp(setting) {
+        const help2 = new Home2Help(setting);
+        help2.autoStart();
+    }
+
+    const initialUiMe = readUiMe();
+    if (initialUiMe?.uiParams != null) {
+        startHelp(initialUiMe.uiParams.home2Help ?? null);
+    } else {
+        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            startHelp(event.detail?.uiParams?.home2Help ?? null);
+        }, {once: true});
+    }
 </script>
 <script th:inline="javascript" type="module">
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';

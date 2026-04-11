@@ -7,10 +7,12 @@ export class GlobalUi {
         console.info("Starting global UI");
         this.checkBrowser();
         this.checkOS();
+        this.authUserEppn = authUserEppn;
         this.csrf = csrf;
         this.maxSize = maxSize;
         this.maxInactiveInterval = maxInactiveInterval;
         this.applicationEmail = applicationEmail;
+        this.globalProperties = this.readSessionJson("globalProperties");
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -31,6 +33,281 @@ export class GlobalUi {
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         window.__isResizingCross = false;
+    }
+
+    readSessionJson(key) {
+        try {
+            const rawValue = sessionStorage.getItem(key);
+            return rawValue ? JSON.parse(rawValue) : null;
+        } catch (e) {
+            console.debug("Unable to parse sessionStorage key", key, e);
+            return null;
+        }
+    }
+
+    async fetchUiJson(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ' for ' + url);
+        }
+        return response.json();
+    }
+
+    hasUserUiTargets() {
+        return document.getElementById('navbar-user-display-name') != null
+            || document.getElementById('navbar-user-info-name') != null
+            || document.getElementById('navbar-security-service-name') != null;
+    }
+
+    hasCounterUiTargets() {
+        return document.getElementById('navbar-badge-to-sign') != null
+            || document.getElementById('footer-certificat-problem') != null;
+    }
+
+    hasAdminStatusTargets() {
+        return document.getElementById('admin-side-nb-sessions') != null
+            || document.getElementById('admin-index-nb-sessions') != null
+            || document.getElementById('navbar-admin-dss-alert') != null;
+    }
+
+    async refreshUiFetchData() {
+        const fetchPromises = [
+            this.fetchUiJson('/ws-secure/ui/config')
+                .then(config => this.applyUiConfig(config))
+                .catch(error => console.debug('Unable to refresh UI config', error))
+        ];
+
+        if (this.hasUserUiTargets()) {
+            fetchPromises.push(
+                this.fetchUiJson('/ws-secure/ui/me')
+                    .then(me => this.applyUiMe(me))
+                    .catch(error => console.debug('Unable to refresh UI user shell', error))
+            );
+        }
+
+        if (this.hasCounterUiTargets()) {
+            fetchPromises.push(
+                this.fetchUiJson('/ws-secure/ui/counters')
+                    .then(counters => this.applyUiCounters(counters))
+                    .catch(error => console.debug('Unable to refresh UI counters', error))
+            );
+        }
+
+        if (this.hasAdminStatusTargets()) {
+            fetchPromises.push(
+                this.fetchUiJson('/ws-secure/ui/admin-status')
+                    .then(status => this.applyAdminUiStatus(status))
+                    .catch(error => console.debug('Unable to refresh admin UI status', error))
+            );
+        }
+
+        await Promise.allSettled(fetchPromises);
+    }
+
+    setElementText(id, value) {
+        const element = document.getElementById(id);
+        if (element != null && value != null) {
+            element.textContent = value;
+        }
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    setElementVisibility(id, visible, displayClass = 'd-none') {
+        const element = document.getElementById(id);
+        if (element != null) {
+            element.classList.toggle(displayClass, !visible);
+        }
+    }
+
+    toggleStatusClasses(element, isAlert, successClass = 'text-success', alertClass = 'text-danger') {
+        if (element == null) {
+            return;
+        }
+        element.classList.toggle(alertClass, Boolean(isAlert));
+        element.classList.toggle(successClass, !Boolean(isAlert));
+    }
+
+    updateUserAvatar(user) {
+        const avatar = document.getElementById('navbar-user-avatar');
+        if (avatar == null || user == null) {
+            return;
+        }
+        const firstInitial = user.firstname ? user.firstname.substring(0, 1) : '';
+        const lastInitial = user.name ? user.name.substring(0, 1) : '';
+        const initials = (firstInitial + lastInitial).toUpperCase() || '?';
+        const userId = Number.isFinite(Number(user.id)) ? Number(user.id) : 0;
+        const hue = Math.abs(userId) % 360;
+        avatar.textContent = initials;
+        avatar.style.backgroundColor = 'hsl(' + hue + ', 70%, 60%)';
+    }
+
+    renderSuUsers(suUsers, user, authUser) {
+        const divider = document.getElementById('navbar-su-users-divider');
+        const list = document.getElementById('navbar-su-users-list');
+        if (list == null) {
+            return;
+        }
+        const canShow = Array.isArray(suUsers) && suUsers.length > 0 && user?.eppn != null && user.eppn === authUser?.eppn;
+        if (divider != null) {
+            divider.classList.toggle('d-none', !canShow);
+        }
+        if (!canShow) {
+            list.innerHTML = '';
+            return;
+        }
+        list.innerHTML = suUsers
+            .filter(suUser => suUser != null && suUser.eppn != null && suUser.eppn !== user?.eppn)
+            .map(suUser => `
+                <a role="button" href="/user/users/shares/change?eppn=${encodeURIComponent(suUser.eppn)}&userShareId=${encodeURIComponent(suUser.userShareId ?? '')}" class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
+                    <i class="fi fi-rr-users" style="line-height: 14px;"></i>
+                    <span class="nav-item-label">${this.escapeHtml(((suUser.firstname ?? '') + ' ' + (suUser.name ?? '')).trim())}</span>
+                </a>
+            `)
+            .join('');
+    }
+
+    renderUserSignatures(signImageIds) {
+        const container = document.getElementById('navbar-user-signatures-content');
+        if (container == null) {
+            return;
+        }
+        if (!Array.isArray(signImageIds) || signImageIds.length === 0 || signImageIds[0] == null) {
+            container.innerHTML = '<div class="text-secondary">pas d’image de signature personalisée</div>';
+            return;
+        }
+        const items = signImageIds.map((signImageId, index) => `
+            <div class="carousel-item${index === 0 ? ' active' : ''}">
+                <img width="250" src="/ws-secure/users/get-sign-image/${encodeURIComponent(signImageId)}" alt="sign image" />
+            </div>
+        `).join('');
+        container.innerHTML = `
+            <div style="width: 250px;" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
+                <div class="carousel-inner">${items}</div>
+                <button class="carousel-control-prev" href="#carouselSign" role="button" data-bs-slide="prev">
+                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+                    <span class="sr-only">Previous</span>
+                </button>
+                <button class="carousel-control-next" href="#carouselSign" role="button" data-bs-slide="next">
+                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+                    <span class="sr-only">Next</span>
+                </button>
+            </div>
+        `;
+    }
+
+    renderKeystore(keystoreFileName) {
+        const container = document.getElementById('navbar-keystore-content');
+        if (container == null) {
+            return;
+        }
+        if (keystoreFileName == null || keystoreFileName === '') {
+            container.innerHTML = '<div class="text-secondary">pas de magasin de certificats</div>';
+            return;
+        }
+        container.innerHTML = `
+            <div class="alert alert-secondary">
+                Keystore PKCS12 :
+                <br>
+                <a href="/ws-secure/users/get-keystore">
+                    <span>${this.escapeHtml(keystoreFileName)}</span>
+                </a>
+            </div>
+        `;
+    }
+
+    applyUiMe(me) {
+        if (me == null) {
+            return;
+        }
+        sessionStorage.setItem('uiMe', JSON.stringify(me));
+        const user = me.user || null;
+        const displayName = user != null
+            ? ((user.firstname && user.name) ? (user.firstname + ' ' + user.name) : user.email)
+            : null;
+        this.setElementText('navbar-user-display-name', displayName);
+        this.setElementText('navbar-user-info-name', user?.name ?? null);
+        this.setElementText('navbar-user-info-firstname', user?.firstname ?? null);
+        this.setElementText('navbar-user-info-email', user?.email ?? null);
+        this.setElementText('navbar-user-info-eppn', user?.eppn ?? null);
+        this.setElementText('navbar-security-service-name', me.securityServiceName ?? null);
+        this.updateUserAvatar(user);
+        this.renderSuUsers(me.suUsers || [], me.user || null, me.authUser || null);
+        this.renderUserSignatures(me.userImagesIds || []);
+        this.renderKeystore(me.keystoreFileName ?? null);
+        document.dispatchEvent(new CustomEvent('uiMeLoaded', {detail: me}));
+    }
+
+    applyUiCounters(counters) {
+        if (counters == null) {
+            return;
+        }
+        sessionStorage.setItem('uiCounters', JSON.stringify(counters));
+        this.setElementText('navbar-badge-to-sign', counters.nbToSign);
+        this.setElementVisibility('footer-certificat-problem', counters.certificatProblem === true);
+        document.dispatchEvent(new CustomEvent('uiCountersLoaded', {detail: counters}));
+    }
+
+    applyUiConfig(config) {
+        if (config == null) {
+            return;
+        }
+        sessionStorage.setItem('uiConfig', JSON.stringify(config));
+        if (config.globalProperties != null) {
+            this.globalProperties = config.globalProperties;
+            sessionStorage.setItem('globalProperties', JSON.stringify(config.globalProperties));
+        }
+        if (config.enableSms != null) {
+            sessionStorage.setItem('enableSms', JSON.stringify(config.enableSms));
+        }
+        if (config.applicationEmail != null) {
+            this.applicationEmail = config.applicationEmail;
+        }
+        if (config.maxInactiveInterval != null) {
+            this.maxInactiveInterval = config.maxInactiveInterval;
+        }
+        this.setElementText('footer-version-app', config.versionApp ?? null);
+        if (config.profile != null) {
+            this.setElementText('footer-profile', ' - ' + config.profile);
+        }
+        if (config.maxInactiveInterval != null) {
+            this.setElementText('timeout-modal-minutes', Math.floor(config.maxInactiveInterval / 60));
+        }
+        const newVersionLink = document.getElementById('footer-new-version-link');
+        if (newVersionLink != null && config.globalProperties?.newVersion != null) {
+            newVersionLink.textContent = 'Nouvelle version diponible : ' + config.globalProperties.newVersion;
+            newVersionLink.setAttribute('href', 'https://github.com/EsupPortail/esup-signature/releases/tag/' + config.globalProperties.newVersion);
+        }
+        document.dispatchEvent(new CustomEvent('uiConfigLoaded', {detail: config}));
+    }
+
+    applyAdminUiStatus(status) {
+        if (status == null) {
+            return;
+        }
+        sessionStorage.setItem('adminUiStatus', JSON.stringify(status));
+        const isAlert = status.dssStatus == null || status.dssStatus === true;
+        this.setElementText('admin-side-nb-sessions', status.nbSessions);
+        this.setElementText('admin-index-nb-sessions', status.nbSessions);
+        this.toggleStatusClasses(document.getElementById('admin-side-dss-icon'), isAlert);
+        this.toggleStatusClasses(document.getElementById('admin-side-dss-label'), isAlert, 'text-success', 'text-danger');
+        this.toggleStatusClasses(document.getElementById('admin-index-dss-icon'), isAlert);
+        this.toggleStatusClasses(document.getElementById('admin-index-dss-label'), isAlert, 'text-success', 'text-danger');
+        this.setElementVisibility('navbar-admin-dss-alert', isAlert, 'd-none');
+        document.dispatchEvent(new CustomEvent('adminUiStatusLoaded', {detail: status}));
     }
 
     initListeners() {
@@ -726,9 +1003,10 @@ export class GlobalUi {
         });
     }
 
-    onDocumentLoad() {
+    async onDocumentLoad() {
         console.info("global on load");
         // $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+        await this.refreshUiFetchData();
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
@@ -738,6 +1016,9 @@ export class GlobalUi {
     }
 
     sessionTimeout() {
+        if (this.maxInactiveInterval == null || this.maxInactiveInterval <= 0) {
+            return;
+        }
         setInterval(function(){
             $("#timeoutModal").modal("show");
         }, this.maxInactiveInterval * 1000);

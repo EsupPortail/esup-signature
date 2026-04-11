@@ -4,12 +4,36 @@
 <head th:replace="~{fragments/head-full :: head}"></head>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
-    let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
-    help.autoStart();
+
+    const isOtpUserHelp = /*[[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]*/ false;
+
+    function readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function startHelp(setting) {
+        const help = new UserParamsHelp(setting, isOtpUserHelp);
+        help.autoStart();
+    }
+
+    const initialUiMe = readUiMe();
+    if (initialUiMe?.uiParams != null) {
+        startHelp(initialUiMe.uiParams.userParamsHelp ?? null);
+    } else {
+        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            startHelp(event.detail?.uiParams?.userParamsHelp ?? null);
+        }, {once: true});
+    }
 </script>
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
-    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]]);
+    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]]);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -102,7 +126,7 @@
                                         <th>Supprimer</th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="user-settings-signatures-body">
                                     <tr>
                                         <td class="text-left w-100" style="position: relative;height: 74px;" >
                                             <img class="thumbnail" th:src="'/ws-secure/users/get-default-paraphe'"  alt="Image avec paraphe"/>
@@ -265,21 +289,23 @@
                                 </div>
                             </div>
                         </label>
-                        <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
-                            Keystore actuel : <a
-                                href="/ws-secure/users/get-keystore"><span
-                                th:text="${keystoreFileName}"></span></a>
-                            <br>
-                            <button type="button"
-                                    class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
-                                    data-bs-target="#testKeystore">
-                                <i class="fa-solid fa-certificate"></i> Tester mon certificat
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
-                                    data-bs-target="#removeKeystore">
-                                <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
-                            </button>
+                        <div id="user-settings-current-keystore">
+                            <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
+                                Keystore actuel : <a
+                                    href="/ws-secure/users/get-keystore"><span
+                                    th:text="${keystoreFileName}"></span></a>
+                                <br>
+                                <button type="button"
+                                        class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
+                                        data-bs-target="#testKeystore">
+                                    <i class="fa-solid fa-certificate"></i> Tester mon certificat
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
+                                        data-bs-target="#removeKeystore">
+                                    <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <div class="custom-file">
@@ -303,10 +329,12 @@
             </div>
         </div>
     </div>
-    <th:block th:each="signImageId, iterator : ${userImagesIds}">
-        <form th:id="'deleteForm-' + ${signImageId}" th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" th:method="'delete'">
-        </form>
-    </th:block>
+    <div id="user-settings-delete-sign-forms">
+        <th:block th:each="signImageId, iterator : ${userImagesIds}">
+            <form th:id="'deleteForm-' + ${signImageId}" th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+            </form>
+        </th:block>
+    </div>
 </main>
 
 <div data-bs-focus="false" class="modal fade" id="accessTokenModal"  role="dialog" aria-labelledby="accessTokenModal" aria-hidden="true">

@@ -54,31 +54,8 @@ export class ListSignBooksUi {
         $("#certType").on("change", e => this.checkAfterChangeSignType());
         $('#checkValidateSignButtonEnd').on('click', e => this.launchMassSign());
         $('#workflowFilter').on('change', e => this.buildUrlFilter());
-        let self = this;
-        let creatorFilter = document.querySelector('#creatorFilter');
-        if(creatorFilter != null) {
-            creatorFilter.slim.settings.placeholderText = $(creatorFilter).attr("data-placeholder");
-            creatorFilter.slim.open();
-            creatorFilter.slim.close();
-            creatorFilter.slim.events.afterChange = function () {
-                self.buildUrlFilter();
-            }
-            if ($(creatorFilter).hasClass('slim-select-filter')) {
-                $(creatorFilter).on('change', function () {
-                    self.buildUrlFilter();
-                });
-            }
-        }
-        let recipientsFilter = document.querySelector('#recipientsFilter');
-        if(recipientsFilter != null) {
-            recipientsFilter.slim.settings.placeholderText = $(recipientsFilter).attr("data-placeholder");
-            document.querySelector('#recipientsFilter + div .ss-placeholder').textContent = $(recipientsFilter).attr("data-placeholder");
-            recipientsFilter.slim.open();
-            recipientsFilter.slim.close();
-            recipientsFilter.slim.events.afterChange = function () {
-                self.buildUrlFilter();
-            }
-        }
+        this.initFilterSelect('#creatorFilter');
+        this.initFilterSelect('#recipientsFilter', true);
         $('#docTitleFilter').on('change', e => this.buildUrlFilter());
         $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
@@ -89,10 +66,10 @@ export class ListSignBooksUi {
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#menuDownloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         this.listSignRequestTable.on('scroll', e => this.detectEndDiv(e));
-        $(document).on('wheel', function(e){
+        $(document).on('wheel', e => {
             let delta = e.originalEvent.deltaY;
             let scrollAmount = delta > 0 ? 50 : -50;
-            self.listSignRequestTable.scrollTop(self.listSignRequestTable.scrollTop() + scrollAmount);
+            this.listSignRequestTable.scrollTop(this.listSignRequestTable.scrollTop() + scrollAmount);
         });
         $('#selectAllButton').on("click", e => this.selectAllCheckboxes());
         $('#unSelectAllButton').on("click", e => this.unSelectAllCheckboxes());
@@ -100,6 +77,50 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
+    }
+
+    initFilterSelect(selector, updatePlaceholder = false, remainingAttempts = 20) {
+        let select = document.querySelector(selector);
+        if (select == null) {
+            return;
+        }
+
+        if (select.slim == null) {
+            if (remainingAttempts > 0) {
+                window.setTimeout(() => this.initFilterSelect(selector, updatePlaceholder, remainingAttempts - 1), 100);
+            } else {
+                $(select)
+                    .off('change.listSignBooksUi')
+                    .on('change.listSignBooksUi', () => this.buildUrlFilter());
+            }
+            return;
+        }
+
+        $(select)
+            .off('change.listSignBooksUi')
+            .on('change.listSignBooksUi', () => this.buildUrlFilter());
+
+        const placeholder = $(select).attr("data-placeholder");
+        if (placeholder != null && select.slim.settings != null) {
+            select.slim.settings.placeholderText = placeholder;
+        }
+        if (updatePlaceholder) {
+            let placeholderElement = document.querySelector(selector + ' + div .ss-placeholder');
+            if (placeholderElement != null && placeholder != null) {
+                placeholderElement.textContent = placeholder;
+            }
+        }
+
+        const previousAfterChange = select.slim.events?.afterChange;
+        if (select.slim.events == null) {
+            select.slim.events = {};
+        }
+        select.slim.events.afterChange = (...args) => {
+            if (typeof previousAfterChange === 'function') {
+                previousAfterChange(...args);
+            }
+            this.buildUrlFilter();
+        };
     }
 
     checkSignOptions() {
@@ -357,7 +378,12 @@ export class ListSignBooksUi {
         for (let i = 0 ; i < filters.length ; i++) {
             currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
         }
-        document.location.href = "/" + this.mode + "/signbooks?" + currentParams.toString();
+        const queryString = currentParams.toString();
+        const targetUrl = "/" + this.mode + "/signbooks" + (queryString !== "" ? "?" + queryString : "");
+        const currentUrl = window.location.pathname + window.location.search;
+        if (targetUrl !== currentUrl) {
+            document.location.href = targetUrl;
+        }
     }
 
     launchMassSign() {

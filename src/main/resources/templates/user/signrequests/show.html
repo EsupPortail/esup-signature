@@ -67,8 +67,32 @@
                isLastStep=${back.lastStep}">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
-    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
-    help.autoStart();
+
+    const isOtpHelp = /*[[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]*/ false;
+
+    function readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function startHelp(setting) {
+        const help = new SignRequestHelp(setting, isOtpHelp);
+        help.autoStart();
+    }
+
+    const initialUiMe = readUiMe();
+    if (initialUiMe?.uiParams != null) {
+        startHelp(initialUiMe.uiParams.signRequestHelp ?? null);
+    } else {
+        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            startHelp(event.detail?.uiParams?.signRequestHelp ?? null);
+        }, {once: true});
+    }
 </script>
 <header th:unless="${frameMode}" th:replace="~{fragments/nav :: nav}"></header>
 <script>

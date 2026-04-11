@@ -61,7 +61,7 @@
         <div class="hr"><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
             title="Sessions courantes" href="/admin/currentsessions" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
-            <i class="fi fi-rr-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
+            <i class="fi fi-rr-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span id="admin-side-nb-sessions" th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
         </a>
         <a th:if="${globalProperties.enableSu}" th:classappend="${activeMenu == 'su'} ? 'btn-secondary' : 'btn-light'"
             title="Switch user" href="/admin/su" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
@@ -73,7 +73,7 @@
         </a>
         <a th:classappend="${activeMenu == 'dss'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
             title="Statut DSS" type="button" href="/admin/dss" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
-            <i class="fi fi-rr-shield-trust" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : ''" class="sidebar-label">Statut DSS</span>
+            <i id="admin-side-dss-icon" class="fi fi-rr-shield-trust" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span id="admin-side-dss-label" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : ''" class="sidebar-label">Statut DSS</span>
         </a>
         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2">
             <i class="fi fi-rr-api-cloud"></i> <span class="sidebar-label">APIs Doc</span>
