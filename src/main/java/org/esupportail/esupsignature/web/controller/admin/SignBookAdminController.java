@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -116,7 +117,7 @@ public class SignBookAdminController {
 	@GetMapping("/workflowNames")
 	@ResponseBody
 	public List<String> workflows(@RequestParam(value = "searchString", required = false) String searchString) {
-		return signBookRepository.findAllWorkflowNamesByName("%"+searchString+"%");
+		return signBookRepository.findAllWorkflowNamesByName(searchString == null ? null : LikePatternUtils.containsPattern(searchString.toLowerCase(Locale.ROOT)));
 	}
 
 	@GetMapping("/creators")

@@ -28,6 +28,7 @@ import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
+import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
@@ -478,9 +479,9 @@ public class UserService {
         List<PersonLightLdap> personLightLdaps = new ArrayList<>();
         Set<User> users = new HashSet<>();
         if(!searchString.trim().isEmpty() && searchString.length() > 2) {
-            users.addAll(userRepository.findByEppnStartingWith(searchString));
-            users.addAll(userRepository.findByNameStartingWithIgnoreCase(searchString.toUpperCase()));
-            users.addAll(userRepository.findByEmailStartingWith(searchString));
+            users.addAll(userRepository.findByEppnStartingWith(LikePatternUtils.startsWithPattern(searchString)));
+            users.addAll(userRepository.findByNameStartingWithIgnoreCase(LikePatternUtils.startsWithPattern(searchString.toUpperCase(Locale.ROOT))));
+            users.addAll(userRepository.findByEmailStartingWith(LikePatternUtils.startsWithPattern(searchString)));
             users.removeIf(user -> user.getEppn().equals("system") || user.getEppn().equals("scheduler") || (!globalProperties.getSearchForExternalUsers() && (user.getUserType().equals(UserType.external)) || user.getEmail() == null || user.getEmail().equals(searchString)));
             for (User user : users) {
                 personLightLdaps.add(getPersonLdapLightFromUser(user));

@@ -25,11 +25,11 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findByEppnOrPhoneOrEmailAndUserTypeNot(String eppn, String phone, String email, Pageable pageable);
     Optional<User> findByEppn(String eppn);
     Optional<User> findByAccessToken(String accessToken);
-    @Query("select u from User u where u.eppn like :eppn%")
+    @Query("select u from User u where u.eppn like :eppn escape '\\'")
     List<User> findByEppnStartingWith(String eppn);
-    @Query("select u from User u where upper(u.name) like :name%")
+    @Query("select u from User u where upper(u.name) like :name escape '\\'")
     List<User> findByNameStartingWithIgnoreCase(String name);
-    @Query("select u from User u where u.email like :email%")
+    @Query("select u from User u where u.email like :email escape '\\'")
     List<User> findByEmailStartingWith(String email);
     @Query(value = "select distinct roles from user_roles", nativeQuery = true)
     List<String> getAllRoles();

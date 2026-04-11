@@ -32,6 +32,7 @@ import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.oauth.franceconnect.FranceConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.proconnect.ProConnectSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
+import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.esupportail.esupsignature.service.utils.StepStatus;
 import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -150,6 +151,13 @@ public class SignBookService {
         this.signService = signService;
     }
 
+    private String toContainsLikePattern(String value) {
+        if (value == null) {
+            return null;
+        }
+        return LikePatternUtils.containsPattern(value.toLowerCase(Locale.ROOT));
+    }
+
     /**
      * Compte le nombre de signBooks associés à un workflow donné.
      *
@@ -189,6 +197,7 @@ public class SignBookService {
     @Transactional
     public Page<SignBook> getSignBooksForManagers(SignRequestStatus statusFilter, String recipientsFilter, Long workflowId, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable, String userEppn, Boolean hided) {
         User user = userService.getByEppn(userEppn);
+        String docTitleLikeFilter = toContainsLikePattern(docTitleFilter);
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getUserByEmail(creatorFilter);
@@ -217,9 +226,9 @@ public class SignBookService {
 
         Page<SignBook> signBooks;
         if(hided) {
-            signBooks = signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+            signBooks = signBookRepository.findByWorkflowNameHided(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         } else {
-            signBooks = signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
+            signBooks = signBookRepository.findByWorkflowName(userFilter, statusFilter, SignRequestStatus.deleted.equals(statusFilter), workflowId, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable, user);
         }
         for(SignBook signBook : signBooks) {
             signBook.setDisplayNotif(signRequestService.isDisplayNotif(signBook.getSignRequests().get(0), userEppn));
@@ -244,6 +253,7 @@ public class SignBookService {
     @Transactional
     public Page<SignBook> getSignBooks(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         User user = userService.getByEppn(userEppn);
+        String docTitleLikeFilter = toContainsLikePattern(docTitleFilter);
         Calendar calendar = Calendar.getInstance();
         calendar.set(9999, Calendar.DECEMBER, 31);
         Date startDateFilter = new Date(0);
@@ -272,20 +282,20 @@ public class SignBookService {
         }
         if(statusFilter.isEmpty() || statusFilter.equals("all")) {
             if(userFilter != null) {
-                signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(userFilter, user, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+                signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(userFilter, user, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
             } else {
-                signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(user, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+                signBooks = signBookRepository.findByRecipientAndCreateByEppnIndexed(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
             }
         } else if(statusFilter.equals("toSign"))  {
-            signBooks = signBookRepository.findToSign(user, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+            signBooks = signBookRepository.findToSign(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.signed, workflowFilter, docTitleFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.signed, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.refused, workflowFilter, docTitleFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.refused, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(user, pageable);
         } else if(statusFilter.equals("sharedSign")) {
-            signBooks = signBookRepository.findOnShareByEppn(user.getEppn(), userFilter, workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+            signBooks = signBookRepository.findOnShareByEppn(user.getEppn(), userFilter, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("hided")) {
             signBooks = signBookRepository.findByHidedById(user, pageable);
         } else if(statusFilter.equals("empty")) {
@@ -322,6 +332,7 @@ public class SignBookService {
      */
     @Transactional
     public Page<SignBook> getAllSignBooks(String statusFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        String docTitleLikeFilter = toContainsLikePattern(docTitleFilter);
         Calendar calendar = Calendar.getInstance();
         calendar.set(9999, Calendar.DECEMBER, 31);
         Date startDateFilter = new Date(0);
@@ -347,7 +358,7 @@ public class SignBookService {
         if(statusFilter != null && !statusFilter.isEmpty()) {
             status = SignRequestStatus.valueOf(statusFilter);
         }
-        return signBookRepository.findSignBooksAllPaged(status, SignRequestStatus.deleted.equals(status), workflowFilter, docTitleFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
+        return signBookRepository.findSignBooksAllPaged(status, SignRequestStatus.deleted.equals(status), workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
     }
 
     /**
@@ -1036,7 +1047,7 @@ public class SignBookService {
     @Transactional
     public List<String> getAllDocTitles(String userEppn, String searchString) {
         User user = userService.getByEppn(userEppn);
-        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user, "%"+searchString+"%"));
+        Set<String> docTitles = new HashSet<>(signBookRepository.findSubjects(user, toContainsLikePattern(searchString)));
         return docTitles.stream().filter(s -> s != null && !s.isEmpty()).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
@@ -2723,12 +2734,13 @@ public class SignBookService {
      * @return Une liste d'objets UserDto contenant les informations des créateurs correspondants aux critères.
      */
     public List<UserDto> getCreators(String userEppn, String workflowFilter, String docTitleFilter, String creatorFilter) {
+        String docTitleLikeFilter = toContainsLikePattern(docTitleFilter);
         User creatorFilterUser = null;
         if(creatorFilter != null) {
             creatorFilterUser = userService.getByEppn(creatorFilter);
         }
         User user = userService.getByEppn(userEppn);
-        return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleFilter, creatorFilterUser);
+        return signBookRepository.findUserByRecipientAndCreateBy(user, workflowFilter, docTitleLikeFilter, creatorFilterUser);
     }
 
     /**
@@ -2991,7 +3003,7 @@ public class SignBookService {
      */
     @Transactional
     public List<String> getSignBooksForManagersSubjects(Long workflowId, String searchString) {
-        return signBookRepository.findByWorkflowNameSubjects(workflowId, "%"+searchString+"%");
+        return signBookRepository.findByWorkflowNameSubjects(workflowId, toContainsLikePattern(searchString));
     }
 
     /**
