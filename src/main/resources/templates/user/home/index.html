@@ -52,11 +52,11 @@
         }
     }
 </script>
-<body>
+<body class="home-page home-loading">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full home-breadcrumb-loading-shell">
             <div class="col-12 col-xxl-10 mx-auto position-relative" onclick="event.stopPropagation();">
                 <div class="input-group">
                     <label title="Rechercher" class="btn btn-light border-secondary-subtle" style="pointer-events: none;"><i class="fi fi-rr-search"></i></label>
@@ -150,7 +150,7 @@
                 </a>
             </div>
             <div class="col-12 col-xxl-10 mx-auto d-flex flex-column flex-xl-row gap-1 gap-xxl-3">
-                <div id="toSignDiv" class="alert bg-white rounded-3 shadow-sm border-0 gap-2 border-secondary-subtle pe-xxl-3 position-relative"
+                <div id="toSignDiv" class="alert bg-white rounded-3 shadow-sm border-0 gap-2 border-secondary-subtle pe-xxl-3 position-relative home-signbooks-loading-shell"
                      style="max-width: 100%;"
                      th:classappend="${userEppn == authUserEppn} ? 'd-flex flex-column' : 'w-100'">
                     <div class="d-flex justify-content-between">
@@ -169,8 +169,8 @@
                         <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                     </h5>
                     <div>
-                        <div id="to-sign-list">
-                            <div class="alert alert-secondary text-center w-100 mb-0">Chargement…</div>
+                        <div id="to-sign-list" class="home-signbook-list-loading-shell">
+                            <div style="min-width: 650px;" class="alert alert-secondary text-center w-100 mb-0 d-block align-items-center justify-content-center home-list-loading-placeholder">Chargement…</div>
                         </div>
                     </div>
                     <div class="w-100">
@@ -187,8 +187,8 @@
                         </button>
                     </div>
                     <div>
-                        <div id="pending-list">
-                            <div class="alert alert-secondary text-center w-100 mb-0">Chargement…</div>
+                        <div id="pending-list" class="home-signbook-list-loading-shell">
+                            <div class="alert alert-secondary text-center w-100 mb-0 d-flex align-items-center justify-content-center home-list-loading-placeholder">Chargement…</div>
                         </div>
                     </div>
                 </div>

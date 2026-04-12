@@ -15,18 +15,27 @@ export class HomeUi {
         }
     }
 
+    setHomeLoadingState(isLoading) {
+        document.body.classList.toggle('home-loading', Boolean(isLoading));
+    }
+
     async initialize() {
         console.info('Starting home UI');
-        this.bootstrap = await this.loadBootstrap();
-        this.renderHomeLists();
-        this.initWorkflowDeleteForms();
-        this.initFavoriteTriggers();
-        this.initFavoriteToggles();
-        this.initPendingListToggle();
-        this.initToSignToggle();
-        this.initWarningModals();
-        this.initMegaSearch();
-        this.handleRequestedStart();
+        this.setHomeLoadingState(true);
+        try {
+            this.bootstrap = await this.loadBootstrap();
+            this.renderHomeLists();
+            this.initWorkflowDeleteForms();
+            this.initFavoriteTriggers();
+            this.initFavoriteToggles();
+            this.initPendingListToggle();
+            this.initToSignToggle();
+            this.initWarningModals();
+            this.initMegaSearch();
+            this.handleRequestedStart();
+        } finally {
+            window.requestAnimationFrame(() => this.setHomeLoadingState(false));
+        }
     }
 
     async loadBootstrap() {

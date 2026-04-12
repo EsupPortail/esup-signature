@@ -219,6 +219,43 @@ textarea:invalid {
     border-bottom-left-radius: 0;
 }
 
+body.home-page #breadcrumb.home-breadcrumb-loading-shell {
+    min-height: 60px;
+}
+
+body.home-page.home-loading #breadcrumb.home-breadcrumb-loading-shell {
+    visibility: hidden;
+}
+
+body.home-page .home-signbooks-loading-shell {
+    min-height: 620px;
+}
+
+body.home-page .home-signbook-list-loading-shell {
+    min-height: 220px;
+}
+
+body.home-page .home-list-loading-placeholder {
+    min-height: 220px;
+    height: 100%;
+}
+
+body.home-page.home-loading .home-list-loading-placeholder {
+    background: linear-gradient(90deg, rgba(248, 249, 250, 0.95) 25%, rgba(233, 236, 239, 0.95) 37%, rgba(248, 249, 250, 0.95) 63%);
+    background-size: 400% 100%;
+    animation: placeholder-shimmer 1.2s ease-in-out infinite;
+    color: #6c757d;
+}
+
+@keyframes placeholder-shimmer {
+    0% {
+        background-position: 100% 0;
+    }
+    100% {
+        background-position: -100% 0;
+    }
+}
+
 .paper-clip {
     background: transparent;
     height: 40px;
