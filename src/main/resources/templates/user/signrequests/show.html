@@ -9,10 +9,7 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
 <body class="es-signrequest-page"
-      th:with="showDataFlow=${signRequestShowDataFlow},
-               back=${showDataFlow.back},
-               front=${showDataFlow.front},
-               signUi=${front.signUi},
+      th:with="back=${signRequestShowBack},
                id=${back.signRequestId},
                signRequest=${back.signRequest},
                signBook=${back.signBook},
@@ -57,21 +54,48 @@
                certificats=${back.certificats},
                annotation=${back.annotation},
                steps=${back.steps},
+               signRequestTabs=${back.signRequestTabs},
+               liveWorkflowStepCount=${back.liveWorkflowStepCount},
+               viewedByCurrentUser=${back.viewedByCurrentUser},
                refuseLogs=${back.refuseLogs},
                viewRight=${back.viewRight},
                frameMode=${back.frameMode},
                action=${back.action},
-               supervisors=${front.supervisors},
+               supervisors=${back.supervisors},
                form=${back.form},
                logs=${back.logs},
                pdfaCheck=${back.pdfaCheck},
                auditTrailChecked=${back.auditTrailChecked},
                externalsRecipients=${back.externalsRecipients},
-               isLastStep=${front.lastStep}">
+               isLastStep=${back.lastStep}">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
-    let help = new SignRequestHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).signRequestHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
-    help.autoStart();
+
+    const isOtpHelp = /*[[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]*/ false;
+
+    function readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function startHelp(setting) {
+        const help = new SignRequestHelp(setting, isOtpHelp);
+        help.autoStart();
+    }
+
+    const initialUiMe = readUiMe();
+    if (initialUiMe?.uiParams != null) {
+        startHelp(initialUiMe.uiParams.signRequestHelp ?? null);
+    } else {
+        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            startHelp(event.detail?.uiParams?.signRequestHelp ?? null);
+        }, {once: true});
+    }
 </script>
 <header th:unless="${frameMode}" th:replace="~{fragments/nav :: nav}"></header>
 <script>
@@ -125,7 +149,7 @@
                             </button>
                             <p th:if="${postit.createBy.eppn != userEppn || postit.refuse}" class="postitarea" th:text="${postit.text}"></p>
                             <form class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/update/' + ${postit.id}" th:method="put">
-                                <textarea th:style="'color: black; width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
+                                <textarea th:style="'color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
                                 <button type="submit" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
                             </form>
                             <form th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${urlProfil} + '/signrequests/comment/' + ${signRequest.id} + '/delete/' + ${postit.id}" th:method="delete">
@@ -445,11 +469,26 @@
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 <script th:inline="javascript" type="module" th:if="${signBook.archiveStatus != T(org.esupportail.esupsignature.entity.enums.ArchiveStatus).cleaned}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
-    import {ShowSignRequestDataFlowDto} from '/js/modules/ui/signrequests/dto/ShowSignRequestDataFlowDto.js?version=@[(${versionApp})]@';
+    import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
 
-    const signRequestShowDataFlow = ShowSignRequestDataFlowDto.from([[${signRequestShowDataFlow}]]);
+    const signRequestFrontUrl = '/' + [[${urlProfil}]] + '/signrequests/' + [[${id}]] + '/front';
     sessionStorage.setItem("favoriteSignRequestParams", [[${favoriteSignRequestParamsJson}]]);
-    new SignUi(signRequestShowDataFlow, [[${_csrf}]]);
+    fetch(signRequestFrontUrl, {
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+        .then(async response => {
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => new SignUi(SignUiFrontDto.from(data), [[${_csrf}]]))
+        .catch(error => {
+            console.error('Impossible de charger le bootstrap front de signature', error);
+            bootbox.alert("Impossible de charger l’interface de signature.");
+        });
 
 </script>
 </body>

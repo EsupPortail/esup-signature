@@ -6,7 +6,7 @@
 .btn-floating i {
     display: inline-block;
     width: inherit;
-    color: #fff;
+    color: var(--bs-white);
     text-align: center;
     margin-top: 22px;
 }

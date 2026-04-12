@@ -155,6 +155,18 @@ public class SignRequestService {
 		return null;
 	}
 
+    public SignRequest getByIdWithShowContext(long id) {
+		Optional<SignRequest> signRequest = signRequestRepository.findByIdWithShowContext(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
+		}
+		return null;
+	}
+
     @Transactional
     public List<SignRequest> getSignRequests(long id) {
         return new ArrayList<>(getById(id).getParentSignBook().getSignRequests());

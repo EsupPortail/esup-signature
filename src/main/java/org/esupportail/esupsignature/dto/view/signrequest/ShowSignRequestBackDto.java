@@ -1,0 +1,86 @@
+package org.esupportail.esupsignature.dto.view.signrequest;
+
+import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
+import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
+import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.SignWith;
+
+import java.util.List;
+import java.util.Set;
+
+public record ShowSignRequestBackDto(
+        SignRequest signRequest,
+        SignBook signBook,
+        Workflow workflow,
+        Long signRequestId,
+        Long signBookId,
+        Long dataId,
+        Long formId,
+        String urlProfil,
+        Boolean displayNotif,
+        Boolean tempUsers,
+        Boolean signable,
+        Boolean editable,
+        Boolean manager,
+        SignRequestStatus status,
+        SignType currentSignType,
+        Integer currentStepNumber,
+        Long currentStepId,
+        Boolean currentStepMultiSign,
+        Boolean currentStepSingleSignWithAnnotation,
+        SignLevel currentStepMinSignLevel,
+        SignLevel currentStepMaxSignLevel,
+        Boolean stepRepeatable,
+        Boolean lastStep,
+        Boolean pdf,
+        Boolean attachmentAlert,
+        Boolean attachmentRequire,
+        Boolean notSigned,
+        Boolean currentUserAsSigned,
+        List<String> signatureIds,
+        Boolean signatureIssue,
+        Integer nbSignRequests,
+        String action,
+        Set<String> supervisors,
+        Document toSignDocument,
+        List<Comment> postits,
+        List<Comment> comments,
+        List<SignRequestParams> spots,
+        List<Document> attachments,
+        SignBook nextSignBook,
+        SignRequest nextSignRequest,
+        List<Field> fields,
+        List<SignRequestParams> signRequestParams,
+        List<String> signImages,
+        List<SignWith> signWiths,
+        AuditTrail auditTrail,
+        String size,
+        Boolean sealCertOK,
+        List<SealCertificatProperties> sealCertificatPropertieses,
+        SignWith[] allSignWiths,
+        List<Certificat> certificats,
+        String annotation,
+        List<LiveWorkflowStep> steps,
+        List<SignRequestTabDto> signRequestTabs,
+        Integer liveWorkflowStepCount,
+        Boolean viewedByCurrentUser,
+        List<Log> refuseLogs,
+        Boolean viewRight,
+        Boolean frameMode,
+        Form form,
+        List<Log> logs,
+        String pdfaCheck,
+        Boolean auditTrailChecked,
+        List<RecipientWsDto> externalsRecipients
+) {
+        public record SignRequestTabDto(
+                Long id,
+                String title,
+                SignRequestStatus status,
+                Boolean deleted
+        ) {}
+}
+

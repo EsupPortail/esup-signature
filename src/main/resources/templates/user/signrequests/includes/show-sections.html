@@ -137,7 +137,7 @@
                 <i class="fi fi-rr-download " style="margin-top: 0"></i>
             </a>
         </div>
-        <div th:if="${signRequest.parentSignBook.signRequests.size() > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+        <div th:if="${nbSignRequestInSignBookParent > 1 && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
             <a tabindex="1" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                th:href="'/ws-secure/global/get-last-files/' + ${signRequest.parentSignBook.id}" target="_blank"
                title="Télécharger la dernière version des documents dans une archive ZIP">

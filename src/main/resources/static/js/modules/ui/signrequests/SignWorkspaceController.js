@@ -14,7 +14,7 @@ export class SignWorkspaceController {
         const workspaceState = workspaceStateInput instanceof WorkspaceState
             ? workspaceStateInput
             : WorkspaceState.from(workspaceStateInput, null);
-        const {showDataFlow, backDto, signUiDto} = workspaceState.toWorkspaceContext();
+        const {showDataFlow, signUiDto} = workspaceState.toWorkspaceContext();
         const isPdf = signUiDto.pdf;
         const id = signUiDto.signRequestId;
         const dataId = signUiDto.dataId;
@@ -29,7 +29,7 @@ export class SignWorkspaceController {
         const currentStepNumber = signUiDto.currentStepNumber;
         const currentStepMultiSign = signUiDto.currentStepMultiSign;
         const currentStepSingleSignWithAnnotation = signUiDto.currentStepSingleSignWithAnnotation;
-        const workflow = backDto.workflow;
+        const workflowAvailable = signUiDto.workflowAvailable;
         const signImages = signUiDto.signImages;
         const userName = signUiDto.userName;
         const authUserName = signUiDto.authUserName;
@@ -53,7 +53,7 @@ export class SignWorkspaceController {
         this.dataId = dataId;
         this.formId = formId;
         this.userName = userName;
-        this.workflow = workflow;
+        this.workflow = workflowAvailable;
         this.signImageNumber = signImageNumber;
         this.restore = restore;
         this.comments = comments;
@@ -216,7 +216,7 @@ export class SignWorkspaceController {
         this.addSignButton = $("#addSignButton");
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
-        if (currentSignType === "form" || (formId == null && !workflow) || currentSignRequestParamses.length === 0) {
+        if (currentSignType === "form" || (formId == null && !workflowAvailable) || currentSignRequestParamses.length === 0) {
             if(this.wsTabs.length) {
                 this.autocollapse();
                 let self = this;

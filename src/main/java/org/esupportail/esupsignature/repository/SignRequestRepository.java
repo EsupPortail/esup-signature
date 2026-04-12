@@ -19,6 +19,18 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
 
     List<SignRequest> findByIdIn(List<Long> ids);
 
+    @Query("""
+            select distinct s from SignRequest s
+            left join fetch s.createBy
+            left join fetch s.parentSignBook sb
+            left join fetch sb.liveWorkflow lw
+            left join fetch lw.currentStep cs
+            left join fetch cs.workflowStep
+            left join fetch lw.workflow
+            where s.id = :id
+            """)
+    Optional<SignRequest> findByIdWithShowContext(@Param("id") Long id);
+
     Optional<SignRequest> findByToken(String token);
 
     @Query("""

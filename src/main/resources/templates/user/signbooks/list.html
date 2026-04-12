@@ -10,7 +10,7 @@
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
     new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
 </script>
-<body>
+<body class="signbooks-list-page signbooks-list-loading">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="es-wrapper">
@@ -23,134 +23,134 @@
             <div class="es-main-content d-flex">
                 <nav th:replace="~{fragments/sides/side-dashboard :: side-dashboard}"></nav>
                 <div class="flex-grow-1">
-                    <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="outline: none;">
+                    <div tabindex="0" id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2 signbooks-table-loading-shell" style="outline: none;">
                         <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                         <table class="table table-borderless table-hover table-light">
-                <thead class="table-secondary">
-                <tr style="z-index: 2;">
-                    <th class="d-none d-lg-table-cell" style="width: 20px; z-index: 3;">
-                        <div class="dropdown position-relative">
-                            <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
-                                <i class="fa-solid fa-ellipsis-v"></i>
-                            </button>
-                            <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
-                                <li>
-                                    <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
-                                        <i class="fa-regular fa-check-square"></i> Tout sélectionner
-                                    </button>
-                                </li>
-                                <li>
-                                    <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
-                                        <i class="fa-regular fa-minus-square"></i> Tout dé-sélectionner
-                                    </button>
-                                </li>
-                                <li>
-                                    <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-trash-alt pr-2"></i> Supprimer la sélection</button>
-                                </li>
-                                <li>
-                                    <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection</button>
-                                </li>
-                                <li>
-                                    <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
-                                </li>
-                            </ul>
-                        </div>
-                    </th>
-                    <th class="d-none d-lg-table-cell" style="width: 60px;"></th>
-                    <th class="text-center">
-                        <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
-                            <option data-placeholder="true"></option>
-                            <option value="all">Tout</option>
-                        </select>
-                    </th>
-                    <th class="d-none d-xxl-table-cell text-center">
-                        <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Circuit" data-allow-deselect="true" multiple>
-                            <option data-placeholder="true"></option>
-                            <option value="all">Tout</option>
-                            <th:block th:each="workflow : ${workflowNames}">
-                                <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
-                            </th:block>
-                        </select>
-                    </th>
-                    <th class="d-none d-xxxxl-table-cell" style="width: 150px;">
-                        <div class="d-flex text-center">
-                            <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true" multiple>
-                                <option data-placeholder="true"></option>
-                                <option value="all">Tout</option>
-                                <th:block th:each="creator : ${creators}">
-                                    <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
-                                </th:block>
-                            </select>
-                            <th:block th:with="order=${signBooks.sort.getOrderFor('createBy')}">
-                                <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                    <i th:class="${order == null || order.direction.name() == 'ASC'
-                                        ? 'fi fi-rr-sort-amount-down'
-                                        : 'fi fi-rr-sort-amount-up'}">
-                                    </i>
-                                </a>
-                            </th:block>
-                        </div>
-                    </th>
-                    <th class="d-none d-sm-table-cell" style="width: 150px;">
-                        <div class="d-flex text-center">
-                            <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
-                            <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
-                                <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                    <i th:class="${order == null || order.direction.name() == 'ASC'
-                                    ? 'fi fi-rr-sort-amount-down'
-                                    : 'fi fi-rr-sort-amount-up'}">
-                                    </i>
-                                </a>
-                            </th:block>
-                        </div>
-                    </th>
-                    <th class="d-none d-xxxl-table-cell" style="width: 150px">
-                        <select id="recipientsFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Participants" data-allow-deselect="true">
-                            <option data-placeholder="true"></option>
-                            <option value="all">Tout</option>
-                        </select>
-                    </th>
-                    <th class="d-none d-xxxl-table-cell" style="min-width:138px">
-                        <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
-                            <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                Terminé le 
-                                <i th:class="${order == null || order.direction.name() == 'ASC'
-                                    ? 'fi fi-rr-sort-amount-down'
-                                    : 'fi fi-rr-sort-amount-up'}">
-                                </i>
-                            </a>
-                        </th:block>
-                    </th>
-                    <th class="text-center" style="width: 150px;">
-                        <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
-                            <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                Statut 
-                                <i th:class="${order == null || order.direction.name() == 'ASC'
-                                    ? 'fi fi-rr-sort-amount-down'
-                                    : 'fi fi-rr-sort-amount-up'}">
-                                </i>
-                            </a>
-                        </th:block>
-                    </th>
-                    <th class="d-none d-xxl-table-cell">
-                        <a class="sorted" sd:pagination-sort="archiveStatus"></a>
-                    </th>
-                    <th >Actions</th>
-                </tr>
-                </thead>
-                <tbody id="signRequestTable">
-                    <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>
-                </tbody>
-                <tfoot>
-                <tr th:if="${infiniteScrolling}">
-                    <td colspan="100%">
-                        <a id="more-sign-request" href="javascript:void(0);">Afficher plus d’éléments</a>
-                    </td>
-                </tr>
-                <tr th:unless="${infiniteScrolling}">
-                    <td th:replace="~{fragments/pagination :: pagination}"></td>
-                </tr>
-                </tfoot>
+                            <thead class="table-secondary signbooks-thead-loading-shell">
+                            <tr class="signbooks-thead-loading-row" style="z-index: 2;">
+                                <th class="d-none d-lg-table-cell" style="width: 20px; z-index: 3;">
+                                    <div class="dropdown position-relative">
+                                        <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
+                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
+                                            <li>
+                                                <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                    <i class="fa-regular fa-check-square"></i> Tout sélectionner
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
+                                                    <i class="fa-regular fa-minus-square"></i> Tout dé-sélectionner
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-trash-alt pr-2"></i> Supprimer la sélection</button>
+                                            </li>
+                                            <li>
+                                                <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection</button>
+                                            </li>
+                                            <li>
+                                                <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </th>
+                                <th class="d-none d-lg-table-cell" style="width: 60px;"></th>
+                                <th class="text-center">
+                                    <select es-search-text="Titre du document" es-search-url="/user/signbooks/search-doc-titles" id="docTitleFilter" class="slim-select-filter-search sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                    </select>
+                                </th>
+                                <th class="d-none d-xxl-table-cell text-center">
+                                    <select id="workflowFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Circuit" data-allow-deselect="true" multiple>
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                        <th:block th:each="workflow : ${workflowNames}">
+                                            <option th:value="${workflow}" th:selected="${workflowFilter == workflow}" th:text="${workflow}"></option>
+                                        </th:block>
+                                    </select>
+                                </th>
+                                <th class="d-none d-xxxxl-table-cell" style="width: 150px;">
+                                    <div class="d-flex text-center">
+                                        <select id="creatorFilter" class="slim-select-filter sign-request-filter" data-es-check-cert="false" data-placeholder="Créateur" data-allow-deselect="true" multiple>
+                                            <option data-placeholder="true"></option>
+                                            <option value="all">Tout</option>
+                                            <th:block th:each="creator : ${creators}">
+                                                <option th:value="${creator.eppn}" th:selected="${creatorFilter == creator.eppn}" th:text="${creator.firstname} + ' ' + ${creator.name}"></option>
+                                            </th:block>
+                                        </select>
+                                        <th:block th:with="order=${signBooks.sort.getOrderFor('createBy')}">
+                                            <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                                <i th:class="${order == null || order.direction.name() == 'ASC'
+                                                    ? 'fi fi-rr-sort-amount-down'
+                                                    : 'fi fi-rr-sort-amount-up'}">
+                                                </i>
+                                            </a>
+                                        </th:block>
+                                    </div>
+                                </th>
+                                <th class="d-none d-sm-table-cell" style="width: 150px;">
+                                    <div class="d-flex text-center">
+                                        <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
+                                        <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
+                                            <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                                <i th:class="${order == null || order.direction.name() == 'ASC'
+                                                ? 'fi fi-rr-sort-amount-down'
+                                                : 'fi fi-rr-sort-amount-up'}">
+                                                </i>
+                                            </a>
+                                        </th:block>
+                                    </div>
+                                </th>
+                                <th class="d-none d-xxxl-table-cell" style="width: 150px">
+                                    <select id="recipientsFilter" class="auto-select-users sign-request-filter" data-es-check-cert="false" data-placeholder="Participants" data-allow-deselect="true">
+                                        <option data-placeholder="true"></option>
+                                        <option value="all">Tout</option>
+                                    </select>
+                                </th>
+                                <th class="d-none d-xxxl-table-cell" style="min-width:138px">
+                                    <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
+                                        <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                            Terminé le 
+                                            <i th:class="${order == null || order.direction.name() == 'ASC'
+                                                ? 'fi fi-rr-sort-amount-down'
+                                                : 'fi fi-rr-sort-amount-up'}">
+                                            </i>
+                                        </a>
+                                    </th:block>
+                                </th>
+                                <th class="text-center" style="width: 150px;">
+                                    <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
+                                        <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                            Statut 
+                                            <i th:class="${order == null || order.direction.name() == 'ASC'
+                                                ? 'fi fi-rr-sort-amount-down'
+                                                : 'fi fi-rr-sort-amount-up'}">
+                                            </i>
+                                        </a>
+                                    </th:block>
+                                </th>
+                                <th class="d-none d-xxl-table-cell">
+                                    <a class="sorted" sd:pagination-sort="archiveStatus"></a>
+                                </th>
+                                <th >Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="signRequestTable">
+                                <tr th:replace="~{user/signbooks/includes/list-elem}"></tr>
+                            </tbody>
+                            <tfoot>
+                            <tr th:if="${infiniteScrolling}">
+                                <td colspan="100%">
+                                    <a id="more-sign-request" href="javascript:void(0);">Afficher plus d’éléments</a>
+                                </td>
+                            </tr>
+                            <tr th:unless="${infiniteScrolling}">
+                                <td th:replace="~{fragments/pagination :: pagination}"></td>
+                            </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>

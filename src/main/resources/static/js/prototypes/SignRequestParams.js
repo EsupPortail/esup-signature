@@ -3,6 +3,10 @@ import {Color} from "../modules/utils/Color.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
 
+function getCssColorValue(variableName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
+}
+
 export class SignRequestParams extends EventFactory {
 
     constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType) {
@@ -600,7 +604,7 @@ export class SignRequestParams extends EventFactory {
         let div = "";
         if(this.isSign) {
             div = "<div id='" + divName + "' class='cross'>" +
-                "<canvas id='canvas_" + this.id + "' style='z-index:9 !important; position: absolute; bottom: " + (this.padMargin + 2) + "px; background-color: rgba(236,236,236,0.5);border: 1px solid black; display: none;'></canvas>" +
+                "<canvas id='canvas_" + this.id + "' style='z-index:9 !important; position: absolute; bottom: " + (this.padMargin + 2) + "px; background-color: var(--color-rgba-248-249-250-05);border: 1px solid var(--bs-black); display: none;'></canvas>" +
                 "</div>";
             $("#pdf").prepend(div);
             this.cross = $("#" + divName);
@@ -740,7 +744,7 @@ export class SignRequestParams extends EventFactory {
             drag: function(event, ui) {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
-                    self.cross.css("background-color", "rgba(236,236,236,0.9)");
+                    self.cross.css("background-color", "var(--color-rgba-248-249-250-09)");
                 }
                 self.tools.addClass("d-none");
             },
@@ -801,13 +805,13 @@ export class SignRequestParams extends EventFactory {
             return;
         }
         if (!this.inside) {
-            this.cross.css("background-color", "rgba(255, 151, 151, 0.5)");
+            this.cross.css("background-color", "var(--color-rgba-255-151-151-05)");
             return;
         }
         if(this.signSpace != null && this.signSpace.ready) {
-            this.cross.css("background-color", "rgba(220, 250, 220, 0.8)");
+            this.cross.css("background-color", "var(--color-rgba-220-250-220-08)");
         } else {
-            this.cross.css("background-color", "rgba(255, 255, 255, 0.9)");
+            this.cross.css("background-color", "var(--color-rgba-255-255-255-09)");
         }
     }
 
@@ -1196,7 +1200,7 @@ export class SignRequestParams extends EventFactory {
                     'top': (signTopOnPage + pageOffset) + 'px',
                     'left': (signLeftOnPage + pageLeft) + 'px',
                     'z-index': '1000',
-                    'border': '1px dashed rgba(0,0,0,0.2)',
+                    'border': '1px dashed var(--color-rgba-0-0-0-02)',
                     'filter': 'grayscale(100%)'
                 });
                 ghostClone.removeAttr('id');
@@ -1732,7 +1736,7 @@ export class SignRequestParams extends EventFactory {
         if (this.signImages[this.signImageNumber] != null) {
             let img = "data:image/jpeg;charset=utf-8;base64" +
                 ", " + this.signImages[this.signImageNumber];
-            Color.changeColInUri(img, "#000000", color).then(function (e) {
+            Color.changeColInUri(img, getCssColorValue('--bs-black'), color).then(function (e) {
                 cross.css("background-image", "url('" + e + "')");
             })
         }

@@ -151,17 +151,17 @@
                         <input id="spotPosX" name="commentPosX" type="hidden"/>
                         <input id="spotPosY" name="commentPosY" type="hidden"/>
                         <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
-                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 1}">
+                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${liveWorkflowStepCount > 1}">
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
-                                <th:block th:each="step, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
-                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 1}"></option>
+                                <th:block th:each="step, iterator : ${steps}">
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${liveWorkflowStepCount == 1}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 1}">
+                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${liveWorkflowStepCount > 1}">
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler
                         </button>
@@ -173,7 +173,7 @@
             </div>
         </div>
     </div>
-    <button id="end-button" th:unless="${signRequest.viewedBy.contains(user)}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">
+    <button id="end-button" th:unless="${viewedByCurrentUser}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">
         <i class="fa-solid fa-arrows-down-to-line fa-2x d-none d-sm-block"></i>
     </button>
 

@@ -237,7 +237,7 @@ export class CommentManager {
 
                     } else {
                         postitDiv.hide();
-                        postitButton.css("background-color", "#EEE");
+                        postitButton.css("background-color", "var(--color-e9ecef)");
                         postitDiv.off('mouseup' + postitNamespace);
                     }
                 }

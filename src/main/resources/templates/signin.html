@@ -35,6 +35,7 @@
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
 <script th:if="${globalProperties.enableCaptcha}">
     $(function() {
+        const captchaFillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bs-dark').trim();
         let myCaptcha = new jCaptcha({
             el: '.jCaptcha',
             canvasClass: 'jCaptchaCanvas',
@@ -45,7 +46,7 @@
                 textBaseline: 'top',
                 font: '15px Arial',
                 textAlign: 'left',
-                fillStyle: '#111'
+                fillStyle: captchaFillStyle
             },
             // set callback function for success and error messages:
             callback: ( response, $captchaInputElement, numberOfTries ) => {

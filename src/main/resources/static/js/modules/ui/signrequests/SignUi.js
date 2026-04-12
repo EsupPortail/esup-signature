@@ -10,7 +10,7 @@ export class SignUi {
 
     constructor(showDataFlowInput, csrfToken) {
         this.state = WorkspaceState.from(showDataFlowInput, csrfToken);
-        const {showDataFlow, signUiDto, csrfToken: csrf} = this.normalizeInput();
+        const {signUiDto, csrfToken: csrf} = this.normalizeInput();
         console.info("Starting sign UI for " + signUiDto.signRequestId);
         this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.wait = $('#wait');

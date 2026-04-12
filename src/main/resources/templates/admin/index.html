@@ -68,7 +68,7 @@
                         <a title="Sessions courantes" href="/admin/currentsessions" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
                             <i class="fi fi-tr-user-lock" style="font-size: 40px;"></i>
                             <br>
-                            <span>Sessions courantes</span> <span th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
+                            <span>Sessions courantes</span> <span id="admin-index-nb-sessions" th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>
                         </a>
                         <a th:if="${globalProperties.enableSu}" title="Switch user" href="/admin/su" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
                             <i class="fi fi-tr-spy" style="font-size: 40px;"></i><br><span>Switch user</span>
@@ -77,7 +77,7 @@
                             <i class="fi fi-tr-completed" style="font-size: 40px;"></i><br><span>Tâches planifiées</span>
                         </a>
                         <a title="Statut DSS" type="button" href="/admin/dss" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
-                            <i class="fi fi-tr-shield-trust" style="font-size: 40px;" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'">Statut DSS</span>
+                            <i id="admin-index-dss-icon" class="fi fi-tr-shield-trust" style="font-size: 40px;" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i><br><span id="admin-index-dss-label" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'">Statut DSS</span>
                         </a>
                         <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
                             <i class="fi fi-tr-api-cloud" style="font-size: 40px;"></i><br><span>APIs Doc</span>

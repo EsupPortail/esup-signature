@@ -210,7 +210,7 @@ export default class SelectUser {
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
-                        url: "/ws-secure/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/ws-secure/ui/temp-users/check?" + csrf.parameterName + "=" + csrf.token,
                         type: 'POST',
                         contentType: "application/json",
                         dataType: 'json',
@@ -313,9 +313,7 @@ export default class SelectUser {
         let id = data.email.replaceAll("@", "_").replaceAll(".", "_")
         let name = "#tempUsers-" + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if (data.phone == null) {
-            data.phone = "";
-        }
+        const hidedPhone = data.hidedPhone || "";
         let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
         if(this.globalProperties.smsRequired) {
             html +=
@@ -326,7 +324,7 @@ export default class SelectUser {
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
+                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + hidedPhone + "\">" +
                 "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                 "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
@@ -339,7 +337,7 @@ export default class SelectUser {
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
             if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + hidedPhone + "\">" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +
@@ -364,7 +362,7 @@ export default class SelectUser {
                 customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
                 searchPlaceholder: "Rechercher",
             });
-            if (data.phone == null || data.phone === "") {
+            if (hidedPhone === "") {
                 iti.setCountry("fr");
             }
             this.validatePhone(iti, id)
@@ -435,7 +433,7 @@ export default class SelectUser {
 
     populateWithFavorites() {
         $.ajax({
-            url: "/ws-secure/users/get-favorites",
+            url: "/ws-secure/ui/favorites/users",
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",

@@ -1,12 +1,10 @@
 import {ShowSignRequestDataFlowDto} from "./dto/ShowSignRequestDataFlowDto.js?version=@version@";
+import {SignUiFrontDto} from "./dto/SignUiFrontDto.js?version=@version@";
 
 export class WorkspaceState {
 
     constructor(showDataFlowInput, csrfToken) {
-        const showDataFlow = ShowSignRequestDataFlowDto.from(showDataFlowInput);
-        const backDto = showDataFlow.back;
-        const frontDto = showDataFlow.front;
-        const signUiDto = showDataFlow.front.signUi;
+        const {showDataFlow, backDto, frontDto, signUiDto} = this.normalizeInput(showDataFlowInput);
 
         this.showDataFlow = showDataFlow;
         this.backDto = backDto;
@@ -38,6 +36,37 @@ export class WorkspaceState {
 
     static from(showDataFlowInput, csrfToken) {
         return new WorkspaceState(showDataFlowInput, csrfToken);
+    }
+
+    normalizeInput(input) {
+        if (this.isSignUiFrontInput(input)) {
+            return {
+                showDataFlow: null,
+                backDto: null,
+                frontDto: null,
+                signUiDto: SignUiFrontDto.from(input)
+            };
+        }
+
+        const showDataFlow = ShowSignRequestDataFlowDto.from(input);
+        return {
+            showDataFlow,
+            backDto: showDataFlow.back,
+            frontDto: showDataFlow.front,
+            signUiDto: showDataFlow.front.signUi
+        };
+    }
+
+    isSignUiFrontInput(input) {
+        if (input instanceof SignUiFrontDto) {
+            return true;
+        }
+        return input != null
+            && typeof input === "object"
+            && !Object.prototype.hasOwnProperty.call(input, "back")
+            && !Object.prototype.hasOwnProperty.call(input, "front")
+            && Object.prototype.hasOwnProperty.call(input, "signRequestId")
+            && Object.prototype.hasOwnProperty.call(input, "currentSignRequestParamses");
     }
 
     toSignUiContext() {

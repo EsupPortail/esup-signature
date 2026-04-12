@@ -237,10 +237,6 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/warning-readed")
-    public void warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
-        signRequestService.warningReaded(authUserEppn);
-    }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/print-with-code/{id}")

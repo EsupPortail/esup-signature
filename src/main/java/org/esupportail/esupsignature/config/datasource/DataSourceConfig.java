@@ -21,6 +21,7 @@ public class DataSourceConfig {
             @Value("${spring.datasource.url}") String url,
             @Value("${spring.datasource.username}") String username,
             @Value("${spring.datasource.password}") String password,
+            @Value("${spring.datasource.hikari.auto-commit}") Boolean autoCommit,
             @Value("${spring.datasource.hikari.maximum-pool-size:30}") int maxPoolSize,
             @Value("${spring.datasource.hikari.minimum-idle:10}") int minIdle,
             @Value("${spring.datasource.hikari.idle-timeout:600000}") long idleTimeout,
@@ -31,6 +32,7 @@ public class DataSourceConfig {
         hikariConfig.setJdbcUrl(url);
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
+        hikariConfig.setAutoCommit(autoCommit);
         hikariConfig.setMaximumPoolSize(maxPoolSize);
         hikariConfig.setMinimumIdle(minIdle);
         hikariConfig.setIdleTimeout(idleTimeout);

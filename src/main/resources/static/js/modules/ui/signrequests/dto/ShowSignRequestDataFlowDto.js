@@ -24,19 +24,95 @@ export class FrontUserDto {
     }
 }
 
+export class CommentFrontDto {
+    constructor(raw = {}) {
+        const source = asObject(raw);
+        this.id = source.id ?? null;
+        this.pageNumber = source.pageNumber ?? null;
+        this.stepNumber = source.stepNumber ?? null;
+        this.posX = source.posX ?? null;
+        this.posY = source.posY ?? null;
+    }
+
+    static from(raw) {
+        return raw instanceof CommentFrontDto ? raw : new CommentFrontDto(raw);
+    }
+}
+
+export class SignRequestParamsFrontDto {
+    constructor(raw = {}) {
+        const source = asObject(raw);
+        this.id = source.id ?? null;
+        this.pdSignatureFieldName = source.pdSignatureFieldName ?? null;
+        this.stepNumber = source.stepNumber ?? null;
+        this.signImageNumber = source.signImageNumber ?? null;
+        this.signPageNumber = source.signPageNumber ?? null;
+        this.signDocumentNumber = source.signDocumentNumber ?? null;
+        this.signWidth = source.signWidth ?? null;
+        this.signHeight = source.signHeight ?? null;
+        this.xPos = source.xPos ?? null;
+        this.yPos = source.yPos ?? null;
+        this.extraText = source.extraText ?? "";
+        this.isExtraText = source.isExtraText ?? null;
+        this.addWatermark = source.addWatermark ?? null;
+        this.allPages = source.allPages ?? null;
+        this.addImage = source.addImage ?? null;
+        this.addExtra = source.addExtra ?? null;
+        this.extraType = source.extraType ?? null;
+        this.extraName = source.extraName ?? null;
+        this.extraDate = source.extraDate ?? null;
+        this.extraOnTop = source.extraOnTop ?? null;
+        this.textPart = source.textPart ?? null;
+        this.signScale = source.signScale ?? null;
+        this.red = source.red ?? null;
+        this.green = source.green ?? null;
+        this.blue = source.blue ?? null;
+        this.fontSize = source.fontSize ?? null;
+        this.ready = source.ready ?? null;
+    }
+
+    static from(raw) {
+        return raw instanceof SignRequestParamsFrontDto ? raw : new SignRequestParamsFrontDto(raw);
+    }
+}
+
+export class FieldFrontDto {
+    constructor(raw = {}) {
+        const source = asObject(raw);
+        this.id = source.id ?? null;
+        this.name = source.name ?? null;
+        this.description = source.description ?? null;
+        this.page = source.page ?? null;
+        this.required = Boolean(source.required);
+        this.readOnly = Boolean(source.readOnly);
+        this.editable = Boolean(source.editable);
+        this.workflowSteps = asArray(source.workflowSteps);
+        this.defaultValue = source.defaultValue ?? null;
+        this.searchServiceName = source.searchServiceName ?? null;
+        this.searchType = source.searchType ?? null;
+        this.searchReturn = source.searchReturn ?? null;
+        this.type = source.type ?? null;
+        this.favorisable = Boolean(source.favorisable);
+    }
+
+    static from(raw) {
+        return raw instanceof FieldFrontDto ? raw : new FieldFrontDto(raw);
+    }
+}
+
 export class SignUiFrontDto {
     constructor(raw = {}) {
         const source = asObject(raw);
         this.signRequestId = source.signRequestId ?? null;
         this.dataId = source.dataId ?? null;
         this.formId = source.formId ?? null;
-        this.currentSignRequestParamses = asArray(source.currentSignRequestParamses);
+        this.currentSignRequestParamses = asArray(source.currentSignRequestParamses).map(item => SignRequestParamsFrontDto.from(item));
         this.signImageNumber = source.signImageNumber ?? null;
         this.currentSignType = source.currentSignType ?? null;
         this.signable = Boolean(source.signable);
         this.editable = Boolean(source.editable);
-        this.comments = asArray(source.comments);
-        this.spots = asArray(source.spots);
+        this.comments = asArray(source.comments).map(item => CommentFrontDto.from(item));
+        this.spots = asArray(source.spots).map(item => SignRequestParamsFrontDto.from(item));
         this.pdf = Boolean(source.pdf);
         this.currentStepNumber = source.currentStepNumber ?? null;
         this.currentStepMultiSign = Boolean(source.currentStepMultiSign);
@@ -46,7 +122,7 @@ export class SignUiFrontDto {
         this.signImages = asArray(source.signImages);
         this.userName = source.userName ?? null;
         this.authUserName = source.authUserName ?? null;
-        this.fields = asArray(source.fields);
+        this.fields = asArray(source.fields).map(item => FieldFrontDto.from(item));
         this.stepRepeatable = source.stepRepeatable ?? null;
         this.status = source.status ?? null;
         this.action = source.action ?? null;

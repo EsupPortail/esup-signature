@@ -15,6 +15,7 @@ import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.view.signbook.SignBookListItemDto;
 import org.esupportail.esupsignature.dto.view.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -317,6 +318,218 @@ public class SignBookService {
             }
         }
         return signBooks;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SignBookListItemDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
+    }
+
+    private SignBookListItemDto toSignBookListItemDto(SignBook signBook, String userEppn) {
+        SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
+        String currentSignType = null;
+        if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
+            currentSignType = signBook.getLiveWorkflow().getCurrentStep().getSignType().name();
+        }
+
+        String refusedCommentTitle = null;
+        if (primarySignRequest != null && primarySignRequest.getComments() != null && !primarySignRequest.getComments().isEmpty()) {
+            refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
+        }
+
+        return new SignBookListItemDto(
+                signBook.getId(),
+                signBook.getSubject(),
+                signBook.getDescription(),
+                signBook.getWorkflowName(),
+                toDisplayName(signBook.getCreateBy()),
+                signBook.getCreateBy() != null ? signBook.getCreateBy().getEppn() : null,
+                signBook.getStatus() != null ? signBook.getStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleted()),
+                signBook.getArchiveStatus() != null ? signBook.getArchiveStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleteableByCurrentUser()),
+                Boolean.TRUE.equals(signBook.getDisplayNotif()),
+                isHiddenByCurrentUser(signBook, userEppn),
+                currentSignType,
+                toParticipantSteps(signBook, primarySignRequest),
+                formatDate(signBook.getEndDate()),
+                refusedCommentTitle,
+                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
+                toSignRequestDocumentDtos(signBook.getSignRequests()),
+                toPostitDtos(signBook.getPostits())
+        );
+    }
+
+    private SignBookListItemDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
+        if (signRequest == null) {
+            return null;
+        }
+        return new SignBookListItemDto.PrimarySignRequestDto(
+                signRequest.getId(),
+                signRequest.getTitle(),
+                signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
+                formatDate(signRequest.getCreateDate()),
+                isViewedByUser(signRequest, userEppn),
+                signRequest.getAttachments() != null && !signRequest.getAttachments().isEmpty(),
+                Boolean.TRUE.equals(signRequest.getDeleted()),
+                buildPrimaryRowTitle(signBook, signRequest),
+                canDownloadSingle(signBook, signRequest),
+                canDownloadAll(signBook, signRequest)
+        );
+    }
+
+    private List<SignBookListItemDto.SignRequestDocumentDto> toSignRequestDocumentDtos(List<SignRequest> signRequests) {
+        if (signRequests == null || signRequests.isEmpty()) {
+            return List.of();
+        }
+        return signRequests.stream().map(signRequest -> new SignBookListItemDto.SignRequestDocumentDto(
+                signRequest.getId(),
+                signRequest.getTitle(),
+                signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
+                getFirstOriginalFileName(signRequest)
+        )).toList();
+    }
+
+    private List<SignBookListItemDto.PostitDto> toPostitDtos(List<Comment> postits) {
+        if (postits == null || postits.isEmpty()) {
+            return List.of();
+        }
+        return postits.stream()
+                .filter(Objects::nonNull)
+                .map(postit -> new SignBookListItemDto.PostitDto(toDisplayName(postit.getCreateBy()), postit.getText()))
+                .toList();
+    }
+
+    private List<SignBookListItemDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest) {
+        if (signBook.getLiveWorkflow() == null
+                || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null
+                || signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()
+                || signBook.getLiveWorkflow().getCurrentStepNumber() == null
+                || signBook.getLiveWorkflow().getCurrentStepNumber() <= 0) {
+            return List.of();
+        }
+        List<SignBookListItemDto.ParticipantStepDto> participantSteps = new ArrayList<>();
+        for (int i = 0; i < signBook.getLiveWorkflow().getLiveWorkflowSteps().size(); i++) {
+            LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i);
+            List<SignBookListItemDto.ParticipantDto> recipients = liveWorkflowStep.getRecipients().stream()
+                    .map(recipient -> toParticipantDto(recipient, primarySignRequest, signBook.getSignRequests().size() == 1))
+                    .toList();
+            participantSteps.add(new SignBookListItemDto.ParticipantStepDto(i + 1, recipients));
+        }
+        return participantSteps;
+    }
+
+    private SignBookListItemDto.ParticipantDto toParticipantDto(Recipient recipient, SignRequest primarySignRequest, boolean singleDocument) {
+        String statusIconClass = null;
+        String statusTitle = null;
+        if (singleDocument && primarySignRequest != null) {
+            if (Boolean.TRUE.equals(recipient.getSigned())) {
+                if (primarySignRequest.getStatus() == SignRequestStatus.refused) {
+                    statusIconClass = "fa-solid fa-times-circle text-danger";
+                    statusTitle = "A refusé le document";
+                } else {
+                    statusIconClass = "fa-solid fa-check-circle text-success";
+                    statusTitle = "A signé le document";
+                }
+            } else if (primarySignRequest.getStatus() == SignRequestStatus.pending) {
+                statusIconClass = "fa-solid fa-clock text-warning";
+                statusTitle = "En attente de signature";
+            } else {
+                statusIconClass = "fa-solid fa-minus-circle text-secondary";
+                statusTitle = "N'a pas signé le document";
+            }
+        }
+        return new SignBookListItemDto.ParticipantDto(
+                recipient.getUser() != null ? recipient.getUser().getEmail() : null,
+                toDisplayNameOrEmail(recipient.getUser()),
+                statusIconClass,
+                statusTitle
+        );
+    }
+
+    private boolean isViewedByUser(SignRequest signRequest, String userEppn) {
+        if (userEppn == null || signRequest.getViewedBy() == null || signRequest.getViewedBy().isEmpty()) {
+            return false;
+        }
+        return signRequest.getViewedBy().stream().anyMatch(user -> user != null && userEppn.equals(user.getEppn()));
+    }
+
+    private boolean isHiddenByCurrentUser(SignBook signBook, String userEppn) {
+        if (userEppn == null || signBook.getHidedBy() == null || signBook.getHidedBy().isEmpty()) {
+            return false;
+        }
+        return signBook.getHidedBy().stream().anyMatch(user -> user != null && userEppn.equals(user.getEppn()));
+    }
+
+    private String buildPrimaryRowTitle(SignBook signBook, SignRequest signRequest) {
+        if (signBook.getSignRequests().size() <= 1) {
+            return signBook.getSubject();
+        }
+        String firstOriginalFileName = getFirstOriginalFileName(signRequest);
+        if (firstOriginalFileName == null) {
+            return signBook.getSubject();
+        }
+        if (Objects.equals(signBook.getSubject(), firstOriginalFileName)) {
+            return firstOriginalFileName + ", ...";
+        }
+        return signBook.getSubject();
+    }
+
+    private String getFirstOriginalFileName(SignRequest signRequest) {
+        if (signRequest.getOriginalDocuments() == null || signRequest.getOriginalDocuments().isEmpty()) {
+            return null;
+        }
+        return signRequest.getOriginalDocuments().get(0).getFileName();
+    }
+
+    private boolean canDownloadAll(SignBook signBook, SignRequest signRequest) {
+        if (signBook.getSignRequests().size() <= 1 || signRequest.getStatus() == null) {
+            return false;
+        }
+        return signRequest.getStatus() == SignRequestStatus.completed
+                || signRequest.getStatus() == SignRequestStatus.exported
+                || signRequest.getStatus() == SignRequestStatus.archived;
+    }
+
+    private boolean canDownloadSingle(SignBook signBook, SignRequest signRequest) {
+        if (signRequest.getStatus() == null) {
+            return false;
+        }
+        if (signRequest.getStatus() == SignRequestStatus.completed
+                || signRequest.getStatus() == SignRequestStatus.exported
+                || signRequest.getStatus() == SignRequestStatus.archived) {
+            return true;
+        }
+        boolean forbidDownloadsBeforeEnd = signBook.getLiveWorkflow() != null
+                && signBook.getLiveWorkflow().getWorkflow() != null
+                && Boolean.TRUE.equals(signBook.getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd());
+        return !forbidDownloadsBeforeEnd && signRequest.getStatus() == SignRequestStatus.pending;
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
+    }
+
+    private String toDisplayName(User user) {
+        if (user == null) {
+            return null;
+        }
+        String firstname = user.getFirstname() != null ? user.getFirstname().trim() : "";
+        String name = user.getName() != null ? user.getName().trim() : "";
+        String displayName = (firstname + " " + name).trim();
+        return displayName.isEmpty() ? null : displayName;
+    }
+
+    private String toDisplayNameOrEmail(User user) {
+        String displayName = toDisplayName(user);
+        if (displayName != null) {
+            return displayName;
+        }
+        return user != null ? user.getEmail() : null;
     }
 
     /**
@@ -702,6 +915,25 @@ public class SignBookService {
     @Transactional
     public SignBook getById(Long id) {
         return signBookRepository.findById(id).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getRedirectSignRequestId(Long signBookId) {
+        SignBook signBook = signBookRepository.findById(signBookId).orElse(null);
+        if (signBook == null || signBook.getSignRequests().isEmpty()) {
+            return null;
+        }
+
+        if (signBook.getSignRequests().size() > 1) {
+            for (SignRequest signRequest : signBook.getSignRequests()) {
+                if (signRequest != null && SignRequestStatus.pending.equals(signRequest.getStatus())) {
+                    return signRequest.getId();
+                }
+            }
+        }
+
+        SignRequest firstSignRequest = signBook.getSignRequests().get(0);
+        return firstSignRequest != null ? firstSignRequest.getId() : null;
     }
 
     /**
@@ -2102,7 +2334,8 @@ public class SignBookService {
      * @return la prochaine demande de signature en attente si elle existe, sinon null
      */
     @Transactional
-    public SignRequest getNextSignRequest(Long signRequestId, SignBook nextSignBook) {
+    public SignRequest getNextSignRequest(Long signRequestId, Long nextSignBookId) {
+        SignBook nextSignBook = getById(nextSignBookId);
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
         Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId)).findAny();
         if(nextSignRequest.isPresent()) {
