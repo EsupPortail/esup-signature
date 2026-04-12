@@ -78,22 +78,26 @@ export class GlobalUi {
 
     async refreshUiFetchData() {
         try {
-            const bootstrap = await this.fetchUiJson('/ws-secure/ui/bootstrap');
-            this.applyUiBootstrap(bootstrap);
+            const uiData = await this.fetchUiJson('/ws-secure/ui/ui-data');
+            this.applyUiData(uiData);
         } catch (error) {
-            console.debug('Unable to refresh UI bootstrap', error);
+            console.debug('Unable to refresh UI data', error);
         }
     }
 
-    applyUiBootstrap(bootstrap) {
-        if (bootstrap == null) {
+    applyUiData(uiData) {
+        if (uiData == null) {
             return;
         }
-        this.applyUiConfig(bootstrap.config ?? null);
-        this.applyUiForCurrentUser(bootstrap.currentUser ?? null);
-        this.applyUiCounters(bootstrap.counters ?? null);
-        if (bootstrap.adminStatus != null) {
-            this.applyAdminUiStatus(bootstrap.adminStatus);
+        sessionStorage.setItem('uiData', JSON.stringify(uiData));
+        if (uiData.preferences != null) {
+            sessionStorage.setItem('uiPreferences', JSON.stringify(uiData.preferences));
+        }
+        this.applyUiConfig(uiData.config ?? null);
+        this.applyUiForCurrentUser(uiData.currentUser ?? null);
+        this.applyUiCounters(uiData.counters ?? null);
+        if (uiData.adminStatus != null) {
+            this.applyAdminUiStatus(uiData.adminStatus);
         }
     }
 

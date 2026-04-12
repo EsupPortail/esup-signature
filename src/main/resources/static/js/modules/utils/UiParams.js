@@ -13,7 +13,7 @@ export class UiParams extends EventFactory {
     }
 
     getParamsFromServer() {
-        $.get("/ws-secure/ui/preferences", data => this.assignParams(data));
+        $.get("/ws-secure/ui/ui-data", data => this.assignParams(data?.preferences || {}));
     }
 
     assignParams(data) {
@@ -25,7 +25,7 @@ export class UiParams extends EventFactory {
     set(key, value) {
         return new Promise(function(resolve, reject) {
             $.get({
-                url: "/ws-secure/ui/preferences/" + key + "/" + value,
+                url: "/ws-secure/ui/ui-data/preferences/" + key + "/" + value,
                 success: function(data) {
                     resolve(data)
                 },

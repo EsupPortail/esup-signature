@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
-import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
+import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.view.UiFetchService;
@@ -43,23 +43,21 @@ public class UiFetchController {
         this.uiFetchService = uiFetchService;
     }
 
-    @GetMapping(value = "/bootstrap", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UiBootstrapDto> getBootstrap(@ModelAttribute("userEppn") String userEppn,
-                                                       @ModelAttribute("authUserEppn") String authUserEppn,
-                                                       HttpSession httpSession) {
-        return ResponseEntity.ok(uiFetchService.buildUiBootstrap(userEppn, authUserEppn, httpSession));
+    @GetMapping(value = "/ui-data", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UiDataDto> getUiData(@ModelAttribute("userEppn") String userEppn,
+                                               @ModelAttribute("authUserEppn") String authUserEppn,
+                                               HttpSession httpSession) {
+        return ResponseEntity.ok(uiFetchService.buildUiData(userEppn, authUserEppn, httpSession));
     }
 
-    @GetMapping(value = "/preferences", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> getUiPreferences(@ModelAttribute("authUserEppn") String authUserEppn) {
-        return ResponseEntity.ok(uiFetchService.getUiPreferences(authUserEppn));
-    }
-
-    @GetMapping(value = "/preferences/{key}/{value}")
-    public ResponseEntity<Void> setUiPreference(@ModelAttribute("authUserEppn") String authUserEppn,
-                                                @PathVariable String key,
-                                                @PathVariable String value) {
-        uiFetchService.setUiPreference(authUserEppn, key, value);
+    @GetMapping(value = "/ui-data/{object}/{key}/{value}")
+    public ResponseEntity<Void> setUiDataValue(@ModelAttribute("authUserEppn") String authUserEppn,
+                                               @PathVariable String object,
+                                               @PathVariable String key,
+                                               @PathVariable String value) {
+        if (!uiFetchService.setUiDataValue(authUserEppn, object, key, value)) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.ok().build();
     }
 

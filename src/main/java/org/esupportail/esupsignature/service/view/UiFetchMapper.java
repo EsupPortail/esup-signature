@@ -4,9 +4,9 @@ import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.dto.view.ui.ExternalSignatureParamsDto;
 import org.esupportail.esupsignature.dto.view.ui.SuUserDto;
-import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
+import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
 import org.esupportail.esupsignature.dto.view.ui.UserShellDto;
@@ -29,11 +29,12 @@ public class UiFetchMapper {
         return new AdminUiStatusDto(nbSessions, dssStatus);
     }
 
-    public UiBootstrapDto toUiBootstrapDto(UiConfigDto config,
-                                           UiCountersDto counters,
-                                           UiMeDto currentUser,
-                                           AdminUiStatusDto adminStatus) {
-        return new UiBootstrapDto(config, counters, currentUser, adminStatus);
+    public UiDataDto toUiDataDto(UiConfigDto config,
+                                 UiCountersDto counters,
+                                 UiMeDto currentUser,
+                                 Map<String, String> preferences,
+                                 AdminUiStatusDto adminStatus) {
+        return new UiDataDto(config, counters, currentUser, preferences, adminStatus);
     }
 
     public UiMeDto toUiMeDto(User user,

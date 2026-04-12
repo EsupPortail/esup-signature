@@ -17,9 +17,9 @@ import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto
 import org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignRequestUiCommonDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
-import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
+import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
@@ -162,14 +162,15 @@ public class UiFetchService {
         this.uiFetchMapper = uiFetchMapper;
     }
 
-    public UiBootstrapDto buildUiBootstrap(String userEppn, String authUserEppn, HttpSession httpSession) {
+    public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
         UiConfigDto config = buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null);
         UiCountersDto counters = buildUiCounters(userEppn, authUserEppn);
         UiMeDto currentUser = buildUiMe(userEppn, authUserEppn, httpSession);
+        Map<String, String> preferences = getUiPreferences(authUserEppn);
         AdminUiStatusDto adminStatus = authUserEppn != null && userService.getRoles(authUserEppn).contains("ROLE_ADMIN")
                 ? buildAdminUiStatus()
                 : null;
-        return uiFetchMapper.toUiBootstrapDto(config, counters, currentUser, adminStatus);
+        return uiFetchMapper.toUiDataDto(config, counters, currentUser, preferences, adminStatus);
     }
 
     public AdminUiStatusDto buildAdminUiStatus() {
@@ -268,6 +269,14 @@ public class UiFetchService {
 
     public void setUiPreference(String authUserEppn, String key, String value) {
         userService.setUiParams(authUserEppn, UiParams.valueOf(key), value);
+    }
+
+    public boolean setUiDataValue(String authUserEppn, String object, String key, String value) {
+        if ("preferences".equals(object)) {
+            setUiPreference(authUserEppn, key, value);
+            return true;
+        }
+        return false;
     }
 
     public List<User> checkTempUsers(List<String> recipientEmails) {
