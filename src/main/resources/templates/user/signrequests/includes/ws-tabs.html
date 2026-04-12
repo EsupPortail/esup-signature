@@ -3,11 +3,11 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="urlProfil" type="java.lang.String"*/-->
 <ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header">
-    <th:block th:each="signRequestTab, signRequestTabStat : ${signRequest.parentSignBook.signRequests}" th:if="${signRequest.id == signRequestTab.id}">
+    <th:block th:each="signRequestTab, signRequestTabStat : ${signRequestTabs}" th:if="${signRequest.id == signRequestTab.id}">
         <li class="nav-item ws-tab-nav">
             <a th:if="${signRequestTabStat.index > 0}"
                class="nav-link"
-               th:href="${urlProfil} + '/signrequests/' + ${signRequest.parentSignBook.signRequests[signRequestTabStat.index - 1].id}"
+               th:href="${urlProfil} + '/signrequests/' + ${signRequestTabs[signRequestTabStat.index - 1].id}"
                title="Document precedent">
                 <i class="fi fi-rr-angle-small-left" style="font-size: 20px;"></i>
             </a>
@@ -19,22 +19,22 @@
             <span class="d-flex p-1 flex-column nav-link current align-items-center">
                 <span class="text-uppercase text-dark d-none d-sm-flex" style="font-size: 10px">Document</span>
                 <span class="text-uppercase" style="font-size: 13px"
-                      th:text="(${signRequestTabStat.index + 1}) + '/' + (${#lists.size(signRequest.parentSignBook.signRequests)})"></span>
+                      th:text="(${signRequestTabStat.index + 1}) + '/' + (${#lists.size(signRequestTabs)})"></span>
             </span>
         </li>
         <li class="nav-item ws-tab-nav">
-            <a th:if="${signRequestTabStat.index + 1 < #lists.size(signRequest.parentSignBook.signRequests)}"
+            <a th:if="${signRequestTabStat.index + 1 < #lists.size(signRequestTabs)}"
                class="nav-link"
-               th:href="${urlProfil} + '/signrequests/' + ${signRequest.parentSignBook.signRequests[signRequestTabStat.index + 1].id}"
+               th:href="${urlProfil} + '/signrequests/' + ${signRequestTabs[signRequestTabStat.index + 1].id}"
                title="Document suivant">
                 <i class="fi fi-rr-angle-small-right" style="font-size: 20px;"></i>
             </a>
-            <span th:unless="${signRequestTabStat.index + 1 < #lists.size(signRequest.parentSignBook.signRequests)}" class="nav-link disabled" title="Dernier document">
+            <span th:unless="${signRequestTabStat.index + 1 < #lists.size(signRequestTabs)}" class="nav-link disabled" title="Dernier document">
                 <i class="fi fi-rr-angle-small-right" style="font-size: 20px;"></i>
             </span>
         </li>
     </th:block>
-    <th:block th:each="signRequestTab : ${signRequest.parentSignBook.signRequests}">
+    <th:block th:each="signRequestTab : ${signRequestTabs}">
         <li class="nav-item ws-tab file-tab d-none d-lg-flex" th:classappend="${signRequest.id == signRequestTab.id ? 'active' : ''}">
             <a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
                th:href="${urlProfil} + '/signrequests/' + ${signRequestTab.id}">

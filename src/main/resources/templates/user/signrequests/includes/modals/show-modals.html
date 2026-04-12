@@ -40,12 +40,12 @@
                 <form th:action="'/user/signbooks/pending/' + ${signBook.id}" method="post">
                     <div class="modal-body">
                         <th:block th:unless="${steps.size() > 0}">
-                            <p th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                            <p th:unless="${liveWorkflowStepCount > 0}">
                                 Après la validation, vous pourrez télécharger le document
                             </p>
                         </th:block>
-                        <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
-                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        <div th:if="${steps.size() > 0 || liveWorkflowStepCount > 0}">
+                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && liveWorkflowStepCount > 0}">
                                 <h5>
                                     Le circuit comporte <span
                                         th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
@@ -69,7 +69,7 @@
                                 </ul>
                             </th:block>
 
-                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
+                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && liveWorkflowStepCount == 0}">
                                 <h5>
                                     Le circuit comporte <span
                                         th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
@@ -119,7 +119,7 @@
                                 <p>
                                     La procédure comporte une étape
                                 </p>
-                                <th:block th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                <th:block th:each="liveWorkflowStep, iterator : ${steps}">
                                     <p>
                                         <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
                                         <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
@@ -132,7 +132,7 @@
                             <hr>
                             <th:block th:if="${isTempUsers}">
                                 <div class="alert alert-primary">
-                                    <th:block th:each="liveWorkflowStep : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                    <th:block th:each="liveWorkflowStep : ${steps}">
                                         <th:block th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
                                             <div th:if="${recipient.user.userType.name() == 'external'}">
                                                 Destinataire externe: <b th:text="${recipient.user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -175,7 +175,7 @@
                                             </div>
                                         </th:block>
                                     </th:block>
-                                    <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}" th:each="workflowStep : ${steps}">
+                                    <th:block th:if="${liveWorkflowStepCount == 0}" th:each="workflowStep : ${steps}">
                                         <th:block th:each="user, iterator : ${workflowStep.users}">
                                             <div th:if="${user.userType.name() == 'external'}">
                                                 Destinataire externe : <b th:text="${user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -246,14 +246,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
-                    <input th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" type="hidden" name="definitive" value="true">
+                    <input th:if="${!signRequest.deleted && nbSignRequestInSignBookParent > 1}" type="hidden" name="definitive" value="true">
                     <div class="modal-header">
                         <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                        <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
+                        <div th:if="${!signRequest.deleted && nbSignRequestInSignBookParent > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                        <div th:if="${!signRequest.deleted && nbSignRequestInSignBookParent == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
                         <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                     </div>
                     <div class="modal-footer">
@@ -282,7 +282,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
-                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
+                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${nbSignRequestInSignBookParent == 1 || nextSignBook == null}"
                                     class="btn btn-danger me-1" title="Refuser" autofocus>
                                 <span>Refuser</span>
                             </button>

@@ -64,6 +64,9 @@ public record ShowSignRequestBackDto(
         List<Certificat> certificats,
         String annotation,
         List<LiveWorkflowStep> steps,
+        List<SignRequestTabDto> signRequestTabs,
+        Integer liveWorkflowStepCount,
+        Boolean viewedByCurrentUser,
         List<Log> refuseLogs,
         Boolean viewRight,
         Boolean frameMode,
@@ -72,5 +75,12 @@ public record ShowSignRequestBackDto(
         String pdfaCheck,
         Boolean auditTrailChecked,
         List<RecipientWsDto> externalsRecipients
-) {}
+) {
+        public record SignRequestTabDto(
+                Long id,
+                String title,
+                SignRequestStatus status,
+                Boolean deleted
+        ) {}
+}
 

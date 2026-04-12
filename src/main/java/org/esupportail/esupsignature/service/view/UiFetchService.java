@@ -665,7 +665,9 @@ public class UiFetchService {
         List<Comment> postits = signRequestService.getPostits(signRequest.getId());
         List<Document> attachments = signRequestService.getAttachments(signRequest.getId());
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
-        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook.getId());
+        SignRequest nextSignRequest = nextSignBook != null
+                ? signBookService.getNextSignRequest(signRequest.getId(), nextSignBook.getId())
+                : null;
         List<SignWith> signWiths = new ArrayList<>();
         if (context.reports() != null) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !context.signatureIds().isEmpty());
@@ -689,9 +691,18 @@ public class UiFetchService {
         List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
         SignWith[] allSignWiths = SignWith.values();
         List<Certificat> certificats = certificatService.getCertificatByUser(userEppn);
-        List<LiveWorkflowStep> steps = signRequest.getStatus().equals(SignRequestStatus.draft)
+        List<LiveWorkflowStep> steps = context.liveWorkflow() != null
                 ? context.liveWorkflow().getLiveWorkflowSteps()
                 : new ArrayList<>();
+        List<ShowSignRequestBackDto.SignRequestTabDto> signRequestTabs = signBook.getSignRequests().stream()
+                .map(signRequestTab -> new ShowSignRequestBackDto.SignRequestTabDto(
+                        signRequestTab.getId(),
+                        signRequestTab.getTitle(),
+                        signRequestTab.getStatus(),
+                        signRequestTab.getDeleted()
+                ))
+                .toList();
+        boolean viewedByCurrentUser = isViewedByUser(signRequest, userEppn);
         List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn);
         Data data = dataService.getBySignBook(signBook);
@@ -756,6 +767,9 @@ public class UiFetchService {
                 certificats,
                 annotation,
                 steps,
+                signRequestTabs,
+                steps.size(),
+                viewedByCurrentUser,
                 refuseLogs,
                 viewRight,
                 frameMode,
