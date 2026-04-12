@@ -229,7 +229,7 @@ header {
 }
 
 .cross-tools {
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-ced4da);
     left: 0px;
     top: -48px;
     z-index: 10;

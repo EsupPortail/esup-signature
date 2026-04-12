@@ -170,7 +170,7 @@
                                                 </tr>
                                                     <!-- Modal envoyer nouveau lien -->
                                                 <th:block th:if="${isManager and recipient.user.userType.name() == 'external' and isPending}">
-                                                    <div th:id="'menu-' + ${recipient.id}" data-bs-focus="false" class="modal border-1 border-secondary" style="top:220px;--bs-modal-border-color:grey">
+                                                    <div th:id="'menu-' + ${recipient.id}" data-bs-focus="false" class="modal border-1 border-secondary" style="top:220px;--bs-modal-border-color:var(--bs-secondary)">
                                                         <div class="modal-dialog">
                                                             <div class="modal-content">
                                                                 <div class="modal-header"><h3>Envoyer un nouveau lien d'accès</h3></div>

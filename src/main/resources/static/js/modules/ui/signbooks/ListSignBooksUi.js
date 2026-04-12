@@ -481,16 +481,16 @@ export class ListSignBooksUi {
         } else if(message.type === "nextSuccess") {
             let cloneBarText = barText.clone();
             cloneBarText.attr("id", "");
-            cloneBarText.css("color", "green");
+            cloneBarText.css("color", "var(--bs-green)");
             barText.after(cloneBarText);
             cloneBarText.before("<br>");
             // barText.html("");
         } else if(message.type === "nextError") {
             let cloneBarText = barText.clone();
             cloneBarText.attr("id", "");
-            cloneBarText.css("color", "red");
+            cloneBarText.css("color", "var(--bs-red)");
             barText.after(cloneBarText);
-            barText.css("color", "red");
+            barText.css("color", "var(--bs-red)");
             cloneBarText.before("<br>");
             if(message.text !== "") {
                 cloneBarText.html(message.text);
@@ -513,7 +513,7 @@ export class ListSignBooksUi {
             console.error("sign error : system error");
             let cloneBarText = barText.clone();
             cloneBarText.attr("id", "");
-            cloneBarText.css("color", "red");
+            cloneBarText.css("color", "var(--bs-red)");
             barText.after(cloneBarText);
             cloneBarText.before("<br>");
             cloneBarText.html(message.text);

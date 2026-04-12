@@ -494,7 +494,7 @@
                         <label for="comment">
                             <b>Commentaire (obligatoire)</b>
                         </label>
-                        <textarea id="comment" name="comment" class="form-control" rows="3" style="background-color: #FFF740;" required></textarea>
+                        <textarea id="comment" name="comment" class="form-control" rows="3" style="background-color: var(--color-fff740);" required></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -514,7 +514,7 @@
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
+                        <textarea name="comment" class="form-control" rows="3" style="background-color: var(--color-fff740);"></textarea>
                         <br>
                         <input type="hidden" name="postit" value="on" />
                         <div class="form-check mb-3">
@@ -651,7 +651,7 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
-                                        color: rgba(0, 0, 0, 0.2);
+                                        color: var(--color-rgba-0-0-0-02);
                                         font-size: 48px;
                                         font-family: Arial, sans-serif;
                                         pointer-events: none;
@@ -659,7 +659,7 @@
                                     ">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>

@@ -203,7 +203,7 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
-                                        color: rgba(0, 0, 0, 0.2); /* Texte transparent */
+                                        color: var(--color-rgba-0-0-0-02); /* Texte transparent */
                                         font-size: 48px;
                                         font-family: Arial, sans-serif;
                                         pointer-events: none; /* Empêche l'interaction avec le texte */
@@ -211,7 +211,7 @@
                                     ">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>

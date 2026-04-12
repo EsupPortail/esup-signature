@@ -40,7 +40,7 @@
 
             <!-- Viewers Section -->
             <th:block th:if="${signBook.viewers.size() > 0}">
-                <div class="m-1" style="border-top: 1px solid #dee2e6;">
+                <div class="m-1" style="border-top: 1px solid var(--color-dee2e6);">
                     <p class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Suivi par</p>
                     <ul class="d-flex gap-1 list-unstyled mb-0">
                         <li th:each="user, iterator : ${signBook.viewers}">

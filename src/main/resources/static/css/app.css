@@ -1,3 +1,4 @@
+@import "colors.css?version=@version@";
 @import "flags.css?version=@version@";
 @import "fonts.css?version=@version@";
 @import "selectors.css?version=@version@";

@@ -57,8 +57,8 @@
     }
 
     .btn-primary {
-        background: #0d6efd;
-        color: white;
+        background: var(--bs-primary);
+        color: var(--bs-white);
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 6px;
@@ -70,18 +70,18 @@
     }
 
     .btn-primary:hover {
-        background: #0b5ed7;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+        background: var(--bs-primary);
+        box-shadow: 0 2px 8px var(--color-rgba-13-110-253-03);
     }
 
     .btn-primary:active {
-        background: #0a58ca;
+        background: var(--bs-primary);
         transform: translateY(1px);
     }
 
     .error-info {
-        background: #f8f9fa;
-        border-left: 4px solid #dc3545;
+        background: var(--color-f8f9fa);
+        border-left: 4px solid var(--bs-danger);
         padding: 1.25rem;
         border-radius: 6px;
         text-align: left;
@@ -89,7 +89,7 @@
 
     .error-info p {
         font-size: 0.95rem;
-        color: #495057;
+        color: var(--bs-secondary);
         margin: 0.5rem 0;
         line-height: 1.5;
     }
