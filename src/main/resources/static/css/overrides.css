@@ -247,6 +247,22 @@ body.home-page.home-loading .home-list-loading-placeholder {
     color: var(--bs-secondary);
 }
 
+body.signbooks-list-page #listSignRequestTable.signbooks-table-loading-shell {
+    min-height: calc(100vh - 190px);
+}
+
+body.signbooks-list-page .signbooks-thead-loading-row {
+    height: 54px;
+}
+
+body.signbooks-list-page .signbooks-thead-loading-shell th {
+    min-height: 54px;
+}
+
+body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
+    visibility: hidden;
+}
+
 @keyframes placeholder-shimmer {
     0% {
         background-position: 100% 0;

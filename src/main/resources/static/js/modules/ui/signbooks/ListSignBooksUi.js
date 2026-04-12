@@ -39,14 +39,27 @@ export class ListSignBooksUi {
         this.launchMassSignButtonHide = true;
         this.rowHeight = null;
         this.certTypeSelect = $("#certType");
+        this.isLoadingPage = false;
+        this.initialLoadPending = true;
         $("#password").hide();
         new Nexu(null, null, null, null, null);
-        $(document).ready(e => this.initListeners());
+        $(document).ready(() => {
+            this.initListeners();
+            if(infiniteScrolling) {
+                this.detectEndDiv();
+            } else {
+                window.requestAnimationFrame(() => this.finishInitialLoading());
+            }
+        });
         $("#sealChoose").addClass('d-none');
-        if(infiniteScrolling) {
-            this.detectEndDiv();
+    }
+
+    finishInitialLoading() {
+        if (!this.initialLoadPending) {
+            return;
         }
-        this.isLoadingPage = false;
+        this.initialLoadPending = false;
+        document.body?.classList.remove('signbooks-list-loading');
     }
 
     initListeners() {
@@ -340,32 +353,38 @@ export class ListSignBooksUi {
             sortParam = `&sort=${sort}`;
         }
         $("#loader").show();
-        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15", function (data) {
-            $("#loader").hide();
-            self.isLoadingPage = false;
-            if(typeof data === 'string' && data.trim().length > 0) {
-                self.listSignRequestTable.unbind('scroll');
-                self.listSignRequestTable.addClass("wait");
-                self.page++;
-                self.signRequestTable.append(data);
-                let clickableRows = $(".clickable-row");
-                clickableRows.off('click').on('click', function (e) {
-                    let url = $(this).closest('tr').attr('data-href');
-                    if (e.ctrlKey || e.metaKey) {
-                        window.open(url, '_blank');
-                    } else {
-                        window.location = url;
-                    }
-                });
-                $(document).trigger("refreshClickableTd");
-                self.listSignRequestTable.removeClass("wait");
-                self.refreshListeners();
-                self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
-            } else {
-                self.listSignRequestTable.unbind('scroll');
-                self.signRequestTable.parent().children('tfoot').remove();
-            }
-        });
+        $.get("/" + this.mode + "/signbooks/list-ws?statusFilter=" + this.statusFilter + sortParam + "&recipientsFilter=" + this.recipientsFilter + "&workflowFilter=" + this.workflowFilter + "&docTitleFilter=" + this.docTitleFilter + "&creatorFilter=" + this.creatorFilter + "&dateFilter=" + this.dateFilter + "&" + this.csrf.parameterName + "=" + this.csrf.token + "&page=" + this.page + "&size=15")
+            .done(function (data) {
+                if(typeof data === 'string' && data.trim().length > 0) {
+                    self.listSignRequestTable.unbind('scroll');
+                    self.listSignRequestTable.addClass("wait");
+                    self.page++;
+                    self.signRequestTable.append(data);
+                    let clickableRows = $(".clickable-row");
+                    clickableRows.off('click').on('click', function (e) {
+                        let url = $(this).closest('tr').attr('data-href');
+                        if (e.ctrlKey || e.metaKey) {
+                            window.open(url, '_blank');
+                        } else {
+                            window.location = url;
+                        }
+                    });
+                    $(document).trigger("refreshClickableTd");
+                    self.listSignRequestTable.removeClass("wait");
+                    self.refreshListeners();
+                    self.listSignRequestTable.on('scroll', e => self.detectEndDiv(e));
+                } else {
+                    self.listSignRequestTable.unbind('scroll');
+                    self.signRequestTable.parent().children('tfoot').remove();
+                }
+            })
+            .always(function () {
+                $("#loader").hide();
+                self.isLoadingPage = false;
+                if (self.initialLoadPending) {
+                    window.requestAnimationFrame(() => self.finishInitialLoading());
+                }
+            });
     }
 
     buildUrlFilter() {
