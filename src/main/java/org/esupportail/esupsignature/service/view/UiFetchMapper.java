@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
 import org.esupportail.esupsignature.dto.view.ui.UserShellDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -35,6 +36,16 @@ public class UiFetchMapper {
                                  Map<String, String> preferences,
                                  AdminUiStatusDto adminStatus) {
         return new UiDataDto(config, counters, currentUser, preferences, adminStatus);
+    }
+
+    public UiHomeBootstrapDto toUiHomeBootstrapDto(Long startFormId,
+                                                   Long startWorkflowId,
+                                                   String warningReadUrl,
+                                                   String searchUrl,
+                                                   String searchTitlesUrl,
+                                                   List<UiHomeBootstrapDto.SignBookItem> toSignSignBooks,
+                                                   List<UiHomeBootstrapDto.SignBookItem> pendingSignBooks) {
+        return new UiHomeBootstrapDto(startFormId, startWorkflowId, warningReadUrl, searchUrl, searchTitlesUrl, toSignSignBooks, pendingSignBooks);
     }
 
     public UiMeDto toUiMeDto(User user,

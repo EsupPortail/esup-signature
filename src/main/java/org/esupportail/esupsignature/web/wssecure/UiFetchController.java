@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
+import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.view.UiFetchService;
@@ -48,6 +49,14 @@ public class UiFetchController {
                                                @ModelAttribute("authUserEppn") String authUserEppn,
                                                HttpSession httpSession) {
         return ResponseEntity.ok(uiFetchService.buildUiData(userEppn, authUserEppn, httpSession));
+    }
+
+    @GetMapping(value = "/home/bootstrap", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UiHomeBootstrapDto> getHomeBootstrap(@ModelAttribute("userEppn") String userEppn,
+                                                               @ModelAttribute("authUserEppn") String authUserEppn,
+                                                               @RequestParam(value = "formId", required = false) Long formId,
+                                                               @RequestParam(value = "workflowId", required = false) Long workflowId) {
+        return ResponseEntity.ok(uiFetchService.buildUiHomeBootstrap(userEppn, authUserEppn, formId, workflowId));
     }
 
     @GetMapping(value = "/ui-data/{object}/{key}/{value}")

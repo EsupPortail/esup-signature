@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.view.UiFetchService;
@@ -68,6 +69,8 @@ public class GlobalAttributsControllerAdvice {
     @ModelAttribute
     public void globalAttributes(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model, HttpServletRequest httpServletRequest) throws JsonProcessingException {
         model.addAttribute("currentUri", httpServletRequest.getRequestURI());
+        model.addAttribute("favoriteWorkflowIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteWorkflows) : java.util.List.of());
+        model.addAttribute("favoriteFormIds", authUserEppn != null ? userService.getFavoriteIds(authUserEppn, UiParams.favoriteForms) : java.util.List.of());
         HttpSession httpSession = httpServletRequest.getSession();
         httpSession.setMaxInactiveInterval((int) sessionTimeout.toSeconds());
         if(userEppn != null) {

@@ -17,8 +17,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.data.web.SortDefault;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -71,9 +69,7 @@ public class HomeController {
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(required = false, name = "formId") Long formId,
                        @RequestParam(required = false, name = "workflowId") Long workflowId,
-                       Model model,
-                       @SortDefault(value = "createDate", direction = Sort.Direction.DESC)
-                       @PageableDefault(size = 100) Pageable pageable)
+                       Model model)
             throws EsupSignatureUserException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 
         User authUser = userService.getByEppn(authUserEppn);
@@ -90,10 +86,6 @@ public class HomeController {
                 messages.addAll(messageService.getByUserNeverRead(authUser));
             }
             model.addAttribute("messageNews", messages);
-            List<SignBook> signBooksToSign = signBookService.getSignBooks(userEppn, authUserEppn, "toSign", null, null, null, null, null, pageable).toList();
-            model.addAttribute("signBooksToSign", signBooksToSign);
-            List<SignBook> pendingSignBooks = signBookService.getSignBooks(userEppn, authUserEppn, "pending", null, null, null, null, null, pageable).toList();
-            model.addAttribute("pendingSignBooks", pendingSignBooks);
             List<Data> datas = dataRepository.findByCreateByAndStatus(authUser, SignRequestStatus.draft);
             model.addAttribute("datas", datas);
             List<Form> forms = formService.getFormsByUser(userEppn, authUserEppn);
@@ -105,8 +97,6 @@ public class HomeController {
             model.addAttribute("startFormId", formId);
             model.addAttribute("startWorkflowId", workflowId);
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
-            model.addAttribute("favoriteWorkflows", workflowService.getByIds(userEppn, authUserEppn));
-            model.addAttribute("favoriteForms", formService.getByIds(userEppn, authUserEppn));
             model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
             model.addAttribute("selectedTags", new ArrayList<>());
             return "user/home/index";

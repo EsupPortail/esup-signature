@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.view.signbook.SignBookListItemDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -113,9 +114,9 @@ public class SignBookController {
         }
         model.addAttribute("statusFilter", statusFilter);
         if(globalProperties.getInfiniteScrolling()) {
-            model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+            model.addAttribute("signBooks", new PageImpl<SignBookListItemDto>(new ArrayList<>(), pageable, 1));
         } else {
-            Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+            Page<SignBookListItemDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
             model.addAttribute("signBooks", signBooks);
         }
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
@@ -181,7 +182,7 @@ public class SignBookController {
         if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
             recipientsFilter = null;
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBookListItemDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
@@ -193,14 +194,8 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
-        SignBook signBook = signBookService.getById(id);
-        if(!signBook.getSignRequests().isEmpty()) {
-            Long signRequestId = signBook.getSignRequests().get(0).getId();
-            if (signBook.getSignRequests().size() > 1) {
-                if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
-                    signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
-                }
-            }
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if(signRequestId != null) {
             if(model.getAttribute("message") != null) {
                 redirectAttributes.addFlashAttribute("message", model.getAttribute("message"));
             }
@@ -376,7 +371,11 @@ public class SignBookController {
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException, EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "?form";
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId == null) {
+            return "redirect:/user/signbooks/" + id;
+        }
+        return "redirect:/user/signrequests/" + signRequestId + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

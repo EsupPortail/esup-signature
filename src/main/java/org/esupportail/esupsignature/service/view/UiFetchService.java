@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
+import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
@@ -68,18 +69,24 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -171,6 +178,103 @@ public class UiFetchService {
                 ? buildAdminUiStatus()
                 : null;
         return uiFetchMapper.toUiDataDto(config, counters, currentUser, preferences, adminStatus);
+    }
+
+    @Transactional(readOnly = true)
+    public UiHomeBootstrapDto buildUiHomeBootstrap(String userEppn, String authUserEppn, Long startFormId, Long startWorkflowId) {
+        return uiFetchMapper.toUiHomeBootstrapDto(
+                startFormId,
+                startWorkflowId,
+                "/ws-secure/ui/warnings/read",
+                "/user/search",
+                "/user/search-titles",
+                buildHomeSignBookItems(userEppn, authUserEppn, "toSign"),
+                buildHomeSignBookItems(userEppn, authUserEppn, "pending")
+        );
+    }
+
+    private List<UiHomeBootstrapDto.SignBookItem> buildHomeSignBookItems(String userEppn, String authUserEppn, String statusFilter) {
+        if (userEppn == null || authUserEppn == null) {
+            return List.of();
+        }
+        Pageable pageable = PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createDate"));
+        return signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, null, null, null, null, null, pageable)
+                .getContent()
+                .stream()
+                .map(signBook -> toHomeSignBookItem(signBook, userEppn))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    private UiHomeBootstrapDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn) {
+        if (signBook == null || signBook.getSignRequests() == null || signBook.getSignRequests().isEmpty()) {
+            return null;
+        }
+
+        SignRequest primarySignRequest = signBook.getSignRequests().get(0);
+        String listTitle = signBook.getSubject();
+        if (signBook.getSignRequests().size() > 1
+                && primarySignRequest.getOriginalDocuments() != null
+                && !primarySignRequest.getOriginalDocuments().isEmpty()) {
+            listTitle = primarySignRequest.getOriginalDocuments().get(0).getFileName() + ", ...";
+        }
+
+        return new UiHomeBootstrapDto.SignBookItem(
+                signBook.getId(),
+                primarySignRequest.getId(),
+                signBook.getDescription(),
+                signBook.getSubject(),
+                signBook.getWorkflowName(),
+                formatHomeDate(signBook.getCreateDate()),
+                listTitle,
+                isViewedByUser(primarySignRequest, userEppn),
+                primarySignRequest.getAttachments() != null && !primarySignRequest.getAttachments().isEmpty(),
+                toHomePostitItems(signBook.getPostits()),
+                toHomeSignRequestItems(signBook.getSignRequests())
+        );
+    }
+
+    private List<UiHomeBootstrapDto.PostitItem> toHomePostitItems(List<Comment> postits) {
+        if (postits == null || postits.isEmpty()) {
+            return List.of();
+        }
+        return postits.stream()
+                .filter(Objects::nonNull)
+                .map(postit -> new UiHomeBootstrapDto.PostitItem(
+                        toDisplayName(postit.getCreateBy()),
+                        postit.getText()
+                ))
+                .toList();
+    }
+
+    private List<UiHomeBootstrapDto.SignRequestItem> toHomeSignRequestItems(List<SignRequest> signRequests) {
+        if (signRequests == null || signRequests.isEmpty()) {
+            return List.of();
+        }
+        return signRequests.stream()
+                .filter(Objects::nonNull)
+                .map(signRequest -> new UiHomeBootstrapDto.SignRequestItem(
+                        signRequest.getId(),
+                        signRequest.getTitle(),
+                        signRequest.getStatus() != null ? signRequest.getStatus().name() : null
+                ))
+                .toList();
+    }
+
+    private boolean isViewedByUser(SignRequest signRequest, String userEppn) {
+        if (signRequest == null || userEppn == null || signRequest.getViewedBy() == null || signRequest.getViewedBy().isEmpty()) {
+            return false;
+        }
+        return signRequest.getViewedBy().stream()
+                .filter(Objects::nonNull)
+                .anyMatch(user -> userEppn.equals(user.getEppn()));
+    }
+
+    private String formatHomeDate(java.util.Date date) {
+        if (date == null) {
+            return null;
+        }
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
     }
 
     public AdminUiStatusDto buildAdminUiStatus() {
@@ -342,16 +446,19 @@ public class UiFetchService {
         signRequestService.warningReaded(authUserEppn);
     }
 
+    @Transactional(readOnly = true)
     public ShowSignRequestContext buildShowSignRequestContext(Long id,
                                                               String userEppn,
                                                               String authUserEppn,
                                                               HttpSession httpSession,
                                                               boolean isOtpView) throws IOException {
-        SignRequest signRequest = signRequestService.getById(id);
+        SignRequest signRequest = signRequestService.getByIdWithShowContext(id);
         SignBook signBook = signRequest.getParentSignBook();
         LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
         LiveWorkflowStep currentStep = liveWorkflow.getCurrentStep();
         Workflow workflow = liveWorkflow.getWorkflow();
+
+        initializeShowSignRequestGraph(signRequest, signBook, liveWorkflow, currentStep, workflow);
 
         boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
         boolean editable = signRequestService.isEditable(id, userEppn);
@@ -470,6 +577,80 @@ public class UiFetchService {
         );
     }
 
+    private void initializeShowSignRequestGraph(SignRequest signRequest,
+                                                SignBook signBook,
+                                                LiveWorkflow liveWorkflow,
+                                                LiveWorkflowStep currentStep,
+                                                Workflow workflow) {
+        initializeUser(signRequest.getCreateBy());
+        signRequest.getComments().size();
+        signRequest.getOriginalDocuments().size();
+        signRequest.getSignedDocuments().size();
+        signRequest.getAttachments().size();
+        signRequest.getSignRequestParams().size();
+        signRequest.getViewedBy().forEach(this::initializeUser);
+        signBook.getSignRequests().forEach(signRequestItem -> signRequestItem.getId());
+        signBook.getViewers().forEach(this::initializeUser);
+
+        if (workflow != null) {
+            workflow.getWorkflowSteps().forEach(workflowStep -> {
+                workflowStep.getId();
+                workflowStep.getUsers().forEach(this::initializeUser);
+            });
+        }
+
+        if (currentStep != null) {
+            currentStep.getRecipients().forEach(recipient -> {
+                if (recipient.getUser() != null) {
+                    initializeUser(recipient.getUser());
+                }
+            });
+            if (currentStep.getWorkflowStep() != null) {
+                currentStep.getWorkflowStep().getId();
+            }
+        }
+
+        liveWorkflow.getLiveWorkflowSteps().forEach(step -> {
+            step.getRecipients().forEach(recipient -> {
+                if (recipient.getUser() != null) {
+                    initializeUser(recipient.getUser());
+                }
+            });
+            if (step.getWorkflowStep() != null) {
+                step.getWorkflowStep().getId();
+            }
+        });
+
+        liveWorkflow.getTargets().forEach(target -> {
+            target.getId();
+            target.getTargetUri();
+            target.getProtectedTargetUri();
+            target.getTargetOk();
+        });
+
+        if (signRequest.getData() != null && signRequest.getData().getForm() != null) {
+            signRequest.getData().getForm().getId();
+            if (signRequest.getData().getForm().getWorkflow() != null) {
+                signRequest.getData().getForm().getWorkflow().getWorkflowSteps().forEach(workflowStep -> {
+                    workflowStep.getId();
+                    workflowStep.getUsers().forEach(this::initializeUser);
+                });
+            }
+        }
+    }
+
+    private void initializeUser(User user) {
+        if (user == null) {
+            return;
+        }
+        user.getEppn();
+        user.getName();
+        user.getFirstname();
+        user.getEmail();
+        user.getPhone();
+        user.getUserType();
+    }
+
     public ShowSignRequestBackDto buildShowSignRequestBackDto(ShowSignRequestContext context,
                                                               Boolean frameMode,
                                                               String annotation) {
@@ -484,7 +665,7 @@ public class UiFetchService {
         List<Comment> postits = signRequestService.getPostits(signRequest.getId());
         List<Document> attachments = signRequestService.getAttachments(signRequest.getId());
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
-        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook);
+        SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook.getId());
         List<SignWith> signWiths = new ArrayList<>();
         if (context.reports() != null) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !context.signatureIds().isEmpty());
