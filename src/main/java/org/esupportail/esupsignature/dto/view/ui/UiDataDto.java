@@ -5,7 +5,7 @@ import java.util.Map;
 public record UiDataDto(
         UiConfigDto config,
         UiCountersDto counters,
-        UiMeDto currentUser,
+        UiCurrentUserDto currentUser,
         Map<String, String> preferences,
         AdminUiStatusDto adminStatus
 ) {

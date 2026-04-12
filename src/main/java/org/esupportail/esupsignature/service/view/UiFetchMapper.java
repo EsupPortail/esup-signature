@@ -9,8 +9,9 @@ import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
-import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
-import org.esupportail.esupsignature.dto.view.ui.UserShellDto;
+import org.esupportail.esupsignature.dto.view.ui.UiCurrentUserDto;
+import org.esupportail.esupsignature.dto.view.ui.UiUserDto;
+import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -32,7 +33,7 @@ public class UiFetchMapper {
 
     public UiDataDto toUiDataDto(UiConfigDto config,
                                  UiCountersDto counters,
-                                 UiMeDto currentUser,
+                                 UiCurrentUserDto currentUser,
                                  Map<String, String> preferences,
                                  AdminUiStatusDto adminStatus) {
         return new UiDataDto(config, counters, currentUser, preferences, adminStatus);
@@ -48,18 +49,18 @@ public class UiFetchMapper {
         return new UiHomeBootstrapDto(startFormId, startWorkflowId, warningReadUrl, searchUrl, searchTitlesUrl, toSignSignBooks, pendingSignBooks);
     }
 
-    public UiMeDto toUiMeDto(User user,
-                             Set<String> userRoles,
-                             User authUser,
-                             Set<String> authUserRoles,
-                             List<User> suUsers,
-                             List<Long> userImagesIds,
-                             String keystoreFileName,
-                             Map<UiParams, String> uiParams,
-                             Object securityServiceName) {
-        return new UiMeDto(
-                toUserShellDto(user, userRoles),
-                toUserShellDto(authUser, authUserRoles),
+    public UiCurrentUserDto toUiMeDto(User user,
+                                      Set<String> userRoles,
+                                      User authUser,
+                                      Set<String> authUserRoles,
+                                      List<User> suUsers,
+                                      List<Long> userImagesIds,
+                                      String keystoreFileName,
+                                      Map<UiParams, String> uiParams,
+                                      Object securityServiceName) {
+        return new UiCurrentUserDto(
+                toUiUserDto(user, userRoles),
+                toUiUserDto(authUser, authUserRoles),
                 suUsers == null ? List.of() : suUsers.stream().map(this::toSuUserDto).toList(),
                 userImagesIds == null ? List.of() : List.copyOf(userImagesIds),
                 keystoreFileName,
@@ -68,14 +69,14 @@ public class UiFetchMapper {
         );
     }
 
-    public UserShellDto toUserShellDto(User user, Set<String> roles) {
+    public UiUserDto toUiUserDto(User user, Set<String> roles) {
         if (user == null) {
             return null;
         }
         List<String> sortedRoles = roles == null
                 ? List.of()
                 : roles.stream().sorted().toList();
-        return new UserShellDto(
+        return new UiUserDto(
                 user.getId(),
                 user.getEppn(),
                 user.getFirstname(),
@@ -97,6 +98,36 @@ public class UiFetchMapper {
                 user.getName(),
                 user.getUserShareId()
         );
+    }
+
+    public UiUserLookupDto toUiUserLookupDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new UiUserLookupDto(
+                user.getEmail(),
+                user.getFirstname(),
+                user.getName(),
+                user.getHidedPhone()
+        );
+    }
+
+    public List<UiUserLookupDto> toUiUserLookupDtos(List<User> users) {
+        if (users == null || users.isEmpty()) {
+            return List.of();
+        }
+        return users.stream()
+                .map(this::toUiUserLookupDto)
+                .toList();
+    }
+
+    public List<UiUserLookupDto> toUiUserLookupDtos(Set<User> users) {
+        if (users == null || users.isEmpty()) {
+            return List.of();
+        }
+        return users.stream()
+                .map(this::toUiUserLookupDto)
+                .toList();
     }
 
     public UiCountersDto toUiCountersDto(Long nbSignRequests,

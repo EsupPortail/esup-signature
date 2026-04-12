@@ -21,7 +21,8 @@ import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
-import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
+import org.esupportail.esupsignature.dto.view.ui.UiCurrentUserDto;
+import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
 import org.esupportail.esupsignature.entity.AuditTrail;
@@ -172,7 +173,7 @@ public class UiFetchService {
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
         UiConfigDto config = buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null);
         UiCountersDto counters = buildUiCounters(userEppn, authUserEppn);
-        UiMeDto currentUser = buildUiMe(userEppn, authUserEppn, httpSession);
+        UiCurrentUserDto currentUser = buildUiMe(userEppn, authUserEppn, httpSession);
         Map<String, String> preferences = getUiPreferences(authUserEppn);
         AdminUiStatusDto adminStatus = authUserEppn != null && userService.getRoles(authUserEppn).contains("ROLE_ADMIN")
                 ? buildAdminUiStatus()
@@ -289,7 +290,7 @@ public class UiFetchService {
         return uiFetchMapper.toAdminUiStatusDto(sessionRepositoryCustom.findAllSessionIds().size(), dssStatus);
     }
 
-    public UiMeDto buildUiMe(String userEppn, String authUserEppn, HttpSession httpSession) {
+    public UiCurrentUserDto buildUiMe(String userEppn, String authUserEppn, HttpSession httpSession) {
         if (userEppn == null) {
             return uiFetchMapper.toUiMeDto(null, Collections.emptySet(), null, Collections.emptySet(), Collections.emptyList(), Collections.emptyList(), null, Collections.emptyMap(), null);
         }
@@ -383,19 +384,20 @@ public class UiFetchService {
         return false;
     }
 
-    public List<User> checkTempUsers(List<String> recipientEmails) {
-        return new ArrayList<>(userService.checkTempUsers(
+    public List<UiUserLookupDto> checkTempUsers(List<String> recipientEmails) {
+        List<User> tempUsers = userService.checkTempUsers(
                 recipientService
                         .convertRecipientEmailsToStep(recipientEmails)
                         .stream()
                         .map(WorkflowStepDto::getRecipients)
                         .flatMap(List::stream)
                         .toList()
-        ));
+        );
+        return uiFetchMapper.toUiUserLookupDtos(tempUsers == null ? List.of() : tempUsers);
     }
 
-    public Set<User> getFavoriteUsers(String authUserEppn) {
-        return userPropertieService.getFavoritesEmails(authUserEppn);
+    public List<UiUserLookupDto> getFavoriteUsers(String authUserEppn) {
+        return uiFetchMapper.toUiUserLookupDtos(userPropertieService.getFavoritesEmails(authUserEppn));
     }
 
     public List<String> getFavoriteFieldValues(String authUserEppn, Long fieldId) {

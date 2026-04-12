@@ -419,11 +419,14 @@ export class HomeUi {
 
     async markWarningsRead() {
         try {
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
             await fetch(this.bootstrap?.warningReadUrl || '/ws-secure/ui/warnings/read', {
-                method: 'GET',
+                method: 'POST',
                 credentials: 'same-origin',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrfToken && csrfHeader ? {[csrfHeader]: csrfToken} : {})
                 }
             });
         } catch (error) {

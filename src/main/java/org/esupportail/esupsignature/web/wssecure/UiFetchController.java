@@ -6,7 +6,7 @@ import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
-import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.springframework.http.HttpStatus;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
@@ -31,9 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/ui")
 public class UiFetchController {
@@ -59,7 +57,7 @@ public class UiFetchController {
         return ResponseEntity.ok(uiFetchService.buildUiHomeBootstrap(userEppn, authUserEppn, formId, workflowId));
     }
 
-    @GetMapping(value = "/ui-data/{object}/{key}/{value}")
+    @PutMapping(value = "/ui-data/{object}/{key}/{value}")
     public ResponseEntity<Void> setUiDataValue(@ModelAttribute("authUserEppn") String authUserEppn,
                                                @PathVariable String object,
                                                @PathVariable String key,
@@ -71,12 +69,12 @@ public class UiFetchController {
     }
 
     @PostMapping(value = "/temp-users/check", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<User>> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+    public ResponseEntity<List<UiUserLookupDto>> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
         return ResponseEntity.ok(uiFetchService.checkTempUsers(recipientEmails));
     }
 
     @GetMapping(value = "/favorites/users", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Set<User>> getFavoriteUsers(@ModelAttribute("authUserEppn") String authUserEppn) {
+    public ResponseEntity<List<UiUserLookupDto>> getFavoriteUsers(@ModelAttribute("authUserEppn") String authUserEppn) {
         return ResponseEntity.ok(uiFetchService.getFavoriteUsers(authUserEppn));
     }
 
@@ -143,7 +141,7 @@ public class UiFetchController {
         return ResponseEntity.ok(uiFetchService.deleteSignature(userEppn, authUserEppn, id, signRequestId, httpSession));
     }
 
-    @GetMapping(value = "/warnings/read")
+    @PostMapping(value = "/warnings/read")
     public ResponseEntity<Void> warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
         uiFetchService.markWarningsRead(authUserEppn);
         return ResponseEntity.ok().build();
@@ -151,7 +149,9 @@ public class UiFetchController {
 
     private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
         response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
-        response.setHeader("Cache-Control", "public, max-age=86400");
+        response.setHeader("Cache-Control", "private, no-store, max-age=0, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
         response.setContentType(contentType);
         IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
         return new ResponseEntity<>(HttpStatus.OK);

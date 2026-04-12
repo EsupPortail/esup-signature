@@ -12,6 +12,20 @@ export class UiParams extends EventFactory {
     initListeners() {
     }
 
+    getCsrfConfig() {
+        const token = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const headerName = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        if (token && headerName) {
+            return {
+                [headerName]: token,
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+        }
+        return {
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+    }
+
     getParamsFromServer() {
         $.get("/ws-secure/ui/ui-data", data => this.assignParams(data?.preferences || {}));
     }
@@ -23,9 +37,12 @@ export class UiParams extends EventFactory {
     }
 
     set(key, value) {
+        const headers = this.getCsrfConfig();
         return new Promise(function(resolve, reject) {
-            $.get({
-                url: "/ws-secure/ui/ui-data/preferences/" + key + "/" + value,
+            $.ajax({
+                url: "/ws-secure/ui/ui-data/preferences/" + encodeURIComponent(key) + "/" + encodeURIComponent(value),
+                type: 'PUT',
+                headers,
                 success: function(data) {
                     resolve(data)
                 },
