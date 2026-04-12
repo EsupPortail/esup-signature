@@ -109,7 +109,7 @@ export class UserUi {
         const customRows = (Array.isArray(signImageIds) ? signImageIds : []).map((signImageId, index) => `
             <tr>
                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                    <img id="sign-image-${index}" class="thumbnail" src="/ws-secure/users/get-sign-image/${encodeURIComponent(signImageId)}" alt="Image de la signature ${index}"/>
+                    <img id="sign-image-${index}" class="thumbnail" src="/ws-secure/ui/signatures/${encodeURIComponent(signImageId)}" alt="Image de la signature ${index}"/>
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/${index}" role="button" class="btn btn-sm btn-transparent ${renderStarClass(index)}">
@@ -127,7 +127,7 @@ export class UserUi {
         tbody.innerHTML = `
             <tr>
                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                    <img class="thumbnail" src="/ws-secure/users/get-default-paraphe" alt="Image avec paraphe"/>
+                    <img class="thumbnail" src="/ws-secure/ui/signatures/default-paraphe" alt="Image avec paraphe"/>
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/999997" role="button" class="btn btn-sm btn-transparent ${renderStarClass(999997)}">
@@ -138,7 +138,7 @@ export class UserUi {
             </tr>
             <tr>
                 <td class="text-left w-100" style="position: relative;height: 74px;" >
-                    <img class="thumbnail" src="/ws-secure/users/get-default-image" alt="Image avec nom prénom"/>
+                    <img class="thumbnail" src="/ws-secure/ui/signatures/default-image" alt="Image avec nom prénom"/>
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/999998" role="button" class="btn btn-sm btn-transparent ${renderStarClass(999998)}">
@@ -176,7 +176,7 @@ export class UserUi {
         }
         keystoreContainer.innerHTML = `
             <div class="alert alert-secondary">
-                Keystore actuel : <a href="/ws-secure/users/get-keystore"><span>${this.escapeHtml(keystoreFileName)}</span></a>
+                Keystore actuel : <a href="/ws-secure/ui/keystore"><span>${this.escapeHtml(keystoreFileName)}</span></a>
                 <br>
                 <button type="button" class="btn btn-sm btn-primary text-left" data-bs-toggle="modal" data-bs-target="#testKeystore">
                     <i class="fa-solid fa-certificate"></i> Tester mon certificat

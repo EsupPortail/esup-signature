@@ -14,8 +14,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.view.signrequest.ShowSignRequestViewService;
-import org.esupportail.esupsignature.service.view.signrequest.ShowSignRequestViewService.ShowSignRequestContext;
+import org.esupportail.esupsignature.service.view.UiFetchService;
+import org.esupportail.esupsignature.service.view.UiFetchService.ShowSignRequestContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -33,7 +33,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,20 +48,20 @@ public class UserAndOtpSignRequestController {
     private final UserService userService;
     private final GlobalProperties globalProperties;
     private final SignBookService signBookService;
-    private final ShowSignRequestViewService showSignRequestViewService;
+    private final UiFetchService uiFetchService;
 
     private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, ShowSignRequestViewService showSignRequestViewService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
         this.globalProperties = globalProperties;
         this.signBookService = signBookService;
-        this.showSignRequestViewService = showSignRequestViewService;
+        this.uiFetchService = uiFetchService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -76,9 +75,7 @@ public class UserAndOtpSignRequestController {
         String path = httpServletRequest.getRequestURI();
         boolean isOtpView = path.startsWith("/otp");
         String favoriteSignRequestParamsJson = userService.getFavoriteSignRequestParamsJson(userEppn);
-        ShowSignRequestContext context = showSignRequestViewService.buildContext(id, userEppn, authUserEppn, httpSession, isOtpView);
-        SignRequest signRequest = context.signRequest();
-        SignBook signBook = context.signBook();
+        ShowSignRequestContext context = uiFetchService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
         Workflow workflow = context.workflow();
         LiveWorkflowStep currentStep = context.currentStep();
 
@@ -101,7 +98,7 @@ public class UserAndOtpSignRequestController {
 
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
 
-        ShowSignRequestBackDto showBack = showSignRequestViewService.buildBackDto(context, frameMode, annotation);
+        ShowSignRequestBackDto showBack = uiFetchService.buildShowSignRequestBackDto(context, frameMode, annotation);
         model.addAttribute("signRequestShowBack", showBack);
 
         return "user/signrequests/show";
@@ -117,8 +114,8 @@ public class UserAndOtpSignRequestController {
                                                    HttpServletRequest httpServletRequest) throws IOException {
         String path = httpServletRequest.getRequestURI();
         boolean isOtpView = path.startsWith("/otp");
-        ShowSignRequestContext context = showSignRequestViewService.buildContext(id, userEppn, authUserEppn, httpSession, isOtpView);
-        SignUiFrontDto frontDto = showSignRequestViewService.buildFrontDto(context);
+        ShowSignRequestContext context = uiFetchService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
+        SignUiFrontDto frontDto = uiFetchService.buildSignUiFrontDto(context);
         return ResponseEntity.ok(frontDto);
     }
 

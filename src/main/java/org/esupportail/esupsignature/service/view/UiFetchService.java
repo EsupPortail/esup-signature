@@ -1,73 +1,343 @@
-package org.esupportail.esupsignature.service.view.signrequest;
+package org.esupportail.esupsignature.service.view;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
+import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.dto.view.signrequest.CommentFrontDto;
 import org.esupportail.esupsignature.dto.view.signrequest.FieldFrontDto;
 import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignRequestUiCommonDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
-import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
+import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
+import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
+import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
+import org.esupportail.esupsignature.dss.service.DSSService;
+import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
+import org.esupportail.esupsignature.entity.AuditTrail;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.Certificat;
+import org.esupportail.esupsignature.entity.Comment;
+import org.esupportail.esupsignature.entity.Data;
+import org.esupportail.esupsignature.entity.Document;
+import org.esupportail.esupsignature.entity.Field;
+import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.entity.LiveWorkflow;
+import org.esupportail.esupsignature.entity.LiveWorkflowStep;
+import org.esupportail.esupsignature.entity.Log;
+import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.entity.SignRequestParams;
+import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.*;
+import org.esupportail.esupsignature.service.AuditTrailService;
+import org.esupportail.esupsignature.service.DataService;
+import org.esupportail.esupsignature.service.LogService;
+import org.esupportail.esupsignature.service.CertificatService;
+import org.esupportail.esupsignature.service.FieldPropertieService;
+import org.esupportail.esupsignature.service.RecipientService;
+import org.esupportail.esupsignature.service.ReportService;
+import org.esupportail.esupsignature.service.SignBookService;
+import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.SignWithService;
+import org.esupportail.esupsignature.service.UserService;
+import org.esupportail.esupsignature.service.UserPropertieService;
+import org.esupportail.esupsignature.service.UserShareService;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.esupportail.esupsignature.service.utils.sign.ValidationService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.info.BuildProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
-public class ShowSignRequestViewService {
+public class UiFetchService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UiFetchService.class);
+
+    private final GlobalProperties globalProperties;
+    private final SmsProperties smsProperties;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
     private final DataService dataService;
+    private final WorkflowService workflowService;
+    private final UserShareService userShareService;
     private final UserService userService;
+    private final UserPropertieService userPropertieService;
+    private final FieldPropertieService fieldPropertieService;
+    private final RecipientService recipientService;
     private final SignWithService signWithService;
-    private final CertificatService certificatService;
+    private final ReportService reportService;
     private final AuditTrailService auditTrailService;
     private final LogService logService;
     private final PreAuthorizeService preAuthorizeService;
     private final SignService signService;
+    private final Environment environment;
+    private final BuildProperties buildProperties;
+    private final ValidationService validationService;
+    private final CertificatService certificatService;
+    private final DSSService dssService;
+    private final SessionRepositoryCustom sessionRepositoryCustom;
+    private final UiFetchMapper uiFetchMapper;
 
-    public ShowSignRequestViewService(SignRequestService signRequestService,
-                                      SignBookService signBookService,
-                                      DataService dataService,
-                                      UserService userService,
-                                      SignWithService signWithService,
-                                      CertificatService certificatService,
-                                      AuditTrailService auditTrailService,
-                                      LogService logService,
-                                      PreAuthorizeService preAuthorizeService,
-                                      SignService signService) {
+    public UiFetchService(GlobalProperties globalProperties,
+                          SmsProperties smsProperties,
+                          SignRequestService signRequestService,
+                          SignBookService signBookService,
+                          DataService dataService,
+                          WorkflowService workflowService,
+                          UserShareService userShareService,
+                          UserService userService,
+                          UserPropertieService userPropertieService,
+                          FieldPropertieService fieldPropertieService,
+                          RecipientService recipientService,
+                          SignWithService signWithService,
+                          ReportService reportService,
+                          AuditTrailService auditTrailService,
+                          LogService logService,
+                          PreAuthorizeService preAuthorizeService,
+                          SignService signService,
+                          Environment environment,
+                          @Autowired(required = false) BuildProperties buildProperties,
+                          ValidationService validationService,
+                          CertificatService certificatService,
+                          @Autowired(required = false) DSSService dssService,
+                          SessionRepositoryCustom sessionRepositoryCustom,
+                          UiFetchMapper uiFetchMapper) {
+        this.globalProperties = globalProperties;
+        this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
         this.dataService = dataService;
+        this.workflowService = workflowService;
+        this.userShareService = userShareService;
         this.userService = userService;
+        this.userPropertieService = userPropertieService;
+        this.fieldPropertieService = fieldPropertieService;
+        this.recipientService = recipientService;
         this.signWithService = signWithService;
-        this.certificatService = certificatService;
+        this.reportService = reportService;
         this.auditTrailService = auditTrailService;
         this.logService = logService;
         this.preAuthorizeService = preAuthorizeService;
         this.signService = signService;
+        this.environment = environment;
+        this.buildProperties = buildProperties;
+        this.validationService = validationService;
+        this.certificatService = certificatService;
+        this.dssService = dssService;
+        this.sessionRepositoryCustom = sessionRepositoryCustom;
+        this.uiFetchMapper = uiFetchMapper;
     }
 
-    public ShowSignRequestContext buildContext(Long id,
-                                               String userEppn,
+    public UiBootstrapDto buildUiBootstrap(String userEppn, String authUserEppn, HttpSession httpSession) {
+        UiConfigDto config = buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null);
+        UiCountersDto counters = buildUiCounters(userEppn, authUserEppn);
+        UiMeDto currentUser = buildUiMe(userEppn, authUserEppn, httpSession);
+        AdminUiStatusDto adminStatus = authUserEppn != null && userService.getRoles(authUserEppn).contains("ROLE_ADMIN")
+                ? buildAdminUiStatus()
+                : null;
+        return uiFetchMapper.toUiBootstrapDto(config, counters, currentUser, adminStatus);
+    }
+
+    public AdminUiStatusDto buildAdminUiStatus() {
+        Boolean dssStatus = null;
+        try {
+            if (dssService != null) {
+                dssStatus = dssService.refreshIsNeeded();
+            }
+        } catch (IOException e) {
+            logger.debug("enable to get dss status");
+        }
+        return uiFetchMapper.toAdminUiStatusDto(sessionRepositoryCustom.findAllSessionIds().size(), dssStatus);
+    }
+
+    public UiMeDto buildUiMe(String userEppn, String authUserEppn, HttpSession httpSession) {
+        if (userEppn == null) {
+            return uiFetchMapper.toUiMeDto(null, Collections.emptySet(), null, Collections.emptySet(), Collections.emptyList(), Collections.emptyList(), null, Collections.emptyMap(), null);
+        }
+        User user = userService.getFullUserByEppn(userEppn);
+        User authUser = authUserEppn != null ? userService.getByEppn(authUserEppn) : null;
+        Set<String> userRoles = user != null ? userService.getRoles(userEppn) : Collections.emptySet();
+        Set<String> authUserRoles = authUser != null ? userService.getRoles(authUserEppn) : Collections.emptySet();
+        Map<org.esupportail.esupsignature.entity.enums.UiParams, String> uiParams = authUserEppn != null
+                ? userService.getUiParams(authUserEppn)
+                : Collections.emptyMap();
+        return uiFetchMapper.toUiMeDto(
+                user,
+                userRoles,
+                authUser,
+                authUserRoles,
+                authUserEppn != null ? userShareService.getSuUsers(authUserEppn) : Collections.emptyList(),
+                user != null && user.getSignImagesIds() != null ? user.getSignImagesIds() : Collections.emptyList(),
+                user != null ? user.getKeystoreFileName() : null,
+                uiParams,
+                httpSession != null ? httpSession.getAttribute("securityServiceName") : null
+        );
+    }
+
+    public UiCountersDto buildUiCounters(String userEppn, String authUserEppn) {
+        if (userEppn == null) {
+            return uiFetchMapper.toUiCountersDto(0L, 0L, 0L, 0, 0, false, false, false, false);
+        }
+        Integer reportNumber = authUserEppn != null ? reportService.countByUser(authUserEppn) : 0;
+        Integer managedWorkflowsSize = authUserEppn != null ? workflowService.getWorkflowByManagersContains(authUserEppn).size() : 0;
+        Boolean isRoleManager = authUserEppn != null && preAuthorizeService.isManager(authUserEppn);
+        Boolean isOneSignShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign);
+        Boolean isOneReadShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read);
+        Boolean certificatProblem = userService.getByEppn(userEppn) != null && certificatService.checkCertificatProblem(userService.getRoles(userEppn));
+        return uiFetchMapper.toUiCountersDto(
+                signRequestService.getNbPendingSignRequests(userEppn),
+                signBookService.nbToSignSignBooks(userEppn),
+                signBookService.nbDeleted(userEppn),
+                reportNumber,
+                managedWorkflowsSize,
+                isRoleManager,
+                isOneSignShare,
+                isOneReadShare,
+                certificatProblem
+        );
+    }
+
+    public UiConfigDto buildUiConfig(String userEppn, Integer maxInactiveInterval) {
+        FrontendGlobalProperties frontendGlobalProperties = userEppn != null ? buildFrontendGlobalProperties(userEppn) : null;
+        String profile = null;
+        if (environment.getActiveProfiles().length > 0 && "dev".equals(environment.getActiveProfiles()[0])) {
+            profile = environment.getActiveProfiles()[0];
+        }
+        String versionApp = buildProperties != null ? buildProperties.getVersion() : "dev";
+        return uiFetchMapper.toUiConfigDto(
+                frontendGlobalProperties,
+                smsProperties.getEnableSms(),
+                validationService != null,
+                globalProperties.getApplicationEmail(),
+                maxInactiveInterval,
+                globalProperties.getHoursBeforeRefreshNotif(),
+                globalProperties.getInfiniteScrolling(),
+                versionApp,
+                profile
+        );
+    }
+
+    public FrontendGlobalProperties buildFrontendGlobalProperties(String userEppn) {
+        GlobalProperties myGlobalProperties = new GlobalProperties();
+        BeanUtils.copyProperties(globalProperties, myGlobalProperties);
+        userService.parseRoles(userEppn, myGlobalProperties);
+        myGlobalProperties.newVersion = globalProperties.newVersion;
+        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
+    }
+
+    public Map<String, String> getUiPreferences(String authUserEppn) {
+        if (authUserEppn == null) {
+            return Collections.emptyMap();
+        }
+        return uiFetchMapper.toUiParamsMap(userService.getUiParams(authUserEppn));
+    }
+
+    public void setUiPreference(String authUserEppn, String key, String value) {
+        userService.setUiParams(authUserEppn, UiParams.valueOf(key), value);
+    }
+
+    public List<User> checkTempUsers(List<String> recipientEmails) {
+        return new ArrayList<>(userService.checkTempUsers(
+                recipientService
+                        .convertRecipientEmailsToStep(recipientEmails)
+                        .stream()
+                        .map(WorkflowStepDto::getRecipients)
+                        .flatMap(List::stream)
+                        .toList()
+        ));
+    }
+
+    public Set<User> getFavoriteUsers(String authUserEppn) {
+        return userPropertieService.getFavoritesEmails(authUserEppn);
+    }
+
+    public List<String> getFavoriteFieldValues(String authUserEppn, Long fieldId) {
+        return fieldPropertieService.getFavoritesValues(authUserEppn, fieldId);
+    }
+
+    public Map<String, Object> getSignatureDocument(String userEppn, Long id) throws IOException {
+        return userService.getSignatureByUserAndId(userEppn, id);
+    }
+
+    public InputStream getDefaultImage(String authUserEppn) throws IOException {
+        return userService.getDefaultImage(authUserEppn);
+    }
+
+    public InputStream getDefaultParaphe(String authUserEppn) throws IOException {
+        return userService.getDefaultParaphe(authUserEppn);
+    }
+
+    public Map<String, Object> getKeystore(String authUserEppn) throws IOException {
+        return userService.getKeystoreByUser(authUserEppn);
+    }
+
+    public UserSignatureStateDto updateProfile(String userEppn,
                                                String authUserEppn,
-                                               HttpSession httpSession,
-                                               boolean isOtpView) throws IOException {
+                                               String signImageBase64,
+                                               String name,
+                                               String firstname,
+                                               Long signRequestId,
+                                               EmailAlertFrequency emailAlertFrequency,
+                                               Integer emailAlertHour,
+                                               DayOfWeek emailAlertDay,
+                                               MultipartFile multipartKeystore,
+                                               HttpSession httpSession) throws Exception {
+        userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+        return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
+    }
+
+    public UserSignatureStateDto deleteSignature(String userEppn,
+                                                 String authUserEppn,
+                                                 long signatureId,
+                                                 Long signRequestId,
+                                                 HttpSession httpSession) {
+        userService.deleteSign(authUserEppn, signatureId);
+        return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
+    }
+
+    public void markWarningsRead(String authUserEppn) {
+        signRequestService.warningReaded(authUserEppn);
+    }
+
+    public ShowSignRequestContext buildShowSignRequestContext(Long id,
+                                                              String userEppn,
+                                                              String authUserEppn,
+                                                              HttpSession httpSession,
+                                                              boolean isOtpView) throws IOException {
         SignRequest signRequest = signRequestService.getById(id);
         SignBook signBook = signRequest.getParentSignBook();
         LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
@@ -88,13 +358,13 @@ public class ShowSignRequestViewService {
         SignLevel currentStepMaxSignLevel = SignLevel.qualified;
         Boolean stepRepeatable = null;
 
-        if(currentStep != null) {
+        if (currentStep != null) {
             currentStepMinSignLevel = currentStep.getMinSignLevel();
             currentStepMaxSignLevel = currentStep.getMaxSignLevel();
             currentStepMultiSign = currentStep.getMultiSign();
             currentStepSingleSignWithAnnotation = currentStep.getSingleSignWithAnnotation();
             stepRepeatable = currentStep.getRepeatable();
-            if(currentStep.getWorkflowStep() != null) {
+            if (currentStep.getWorkflowStep() != null) {
                 currentStepId = currentStep.getWorkflowStep().getId();
             }
         }
@@ -104,14 +374,14 @@ public class ShowSignRequestViewService {
         List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
         Document toSignDocument = toSignDocuments.size() == 1 ? toSignDocuments.get(0) : null;
         boolean pdf = toSignDocument != null && "application/pdf".equals(toSignDocument.getContentType());
-        if(toSignDocuments.stream().anyMatch(document -> !document.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
+        if (toSignDocuments.stream().anyMatch(document -> !document.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
             currentStepMinSignLevel = SignLevel.advanced;
         }
 
         Reports reports = signService.validate(id);
         List<String> signatureIds = new ArrayList<>();
         boolean signatureIssue = false;
-        if(reports != null) {
+        if (reports != null) {
             signatureIds = reports.getSimpleReport().getSignatureIdList();
             for (String signatureId : signatureIds) {
                 if (!reports.getSimpleReport().isValid(signatureId)) {
@@ -119,7 +389,7 @@ public class ShowSignRequestViewService {
                     break;
                 }
             }
-            if(!signatureIds.isEmpty() && currentStepMinSignLevel.getValue() < 3) {
+            if (!signatureIds.isEmpty() && currentStepMinSignLevel.getValue() < 3) {
                 currentStepMinSignLevel = SignLevel.advanced;
             }
         }
@@ -131,7 +401,7 @@ public class ShowSignRequestViewService {
         List<String> signImages = new ArrayList<>();
         String signImagesWarningMessage = null;
         try {
-            signImages = getSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
+            signImages = fetchSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
         } catch (EsupSignatureUserException e) {
             signImagesWarningMessage = e.getMessage();
         }
@@ -140,7 +410,7 @@ public class ShowSignRequestViewService {
         User frontAuthUser = userService.getByEppn(authUserEppn);
         String action = null;
         Set<String> supervisors = null;
-        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
+        if (signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
             action = signRequest.getData().getForm().getAction();
             supervisors = signRequest.getData().getForm().getWorkflow().getManagers();
         }
@@ -191,9 +461,9 @@ public class ShowSignRequestViewService {
         );
     }
 
-    public ShowSignRequestBackDto buildBackDto(ShowSignRequestContext context,
-                                               Boolean frameMode,
-                                               String annotation) {
+    public ShowSignRequestBackDto buildShowSignRequestBackDto(ShowSignRequestContext context,
+                                                              Boolean frameMode,
+                                                              String annotation) {
         SignRequestUiCommonDto common = buildCommonDto(context);
         SignRequest signRequest = context.signRequest();
         SignBook signBook = context.signBook();
@@ -207,20 +477,20 @@ public class ShowSignRequestViewService {
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
         SignRequest nextSignRequest = signBookService.getNextSignRequest(signRequest.getId(), nextSignBook);
         List<SignWith> signWiths = new ArrayList<>();
-        if(context.reports() != null) {
+        if (context.reports() != null) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !context.signatureIds().isEmpty());
-        } else if(context.signable()) {
+        } else if (context.signable()) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, false);
         }
 
         AuditTrail auditTrail = null;
         String size = null;
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft)
+        if (!signRequest.getStatus().equals(SignRequestStatus.draft)
                 && !signRequest.getStatus().equals(SignRequestStatus.pending)
                 && !signRequest.getStatus().equals(SignRequestStatus.refused)
                 && !signRequest.getDeleted()) {
             auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            if(auditTrail != null && auditTrail.getDocumentSize() != null) {
+            if (auditTrail != null && auditTrail.getDocumentSize() != null) {
                 size = FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize());
             }
         }
@@ -307,7 +577,7 @@ public class ShowSignRequestViewService {
         );
     }
 
-    public SignUiFrontDto buildFrontDto(ShowSignRequestContext context) {
+    public SignUiFrontDto buildSignUiFrontDto(ShowSignRequestContext context) {
         SignRequestUiCommonDto common = buildCommonDto(context);
         User frontUser = context.frontUser();
         User frontAuthUser = context.frontAuthUser();
@@ -346,6 +616,35 @@ public class ShowSignRequestViewService {
                 frontUser != null ? frontUser.getReturnToHomeAfterSign() : null,
                 common.manager()
         );
+    }
+
+    private UserSignatureStateDto buildUserSignatureState(String userEppn, String authUserEppn, Long signRequestId, HttpSession httpSession) {
+        User user = userService.getFullUserByEppn(authUserEppn);
+        return new UserSignatureStateDto(user.getFirstname(), user.getName(), user.getEmail(), user.getSignImagesIds(), getSignImages(signRequestId, userEppn, authUserEppn, httpSession));
+    }
+
+    private List<String> getSignImages(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession) {
+        if (signRequestId == null) {
+            return Collections.emptyList();
+        }
+        try {
+            return fetchSignImagesForRequest(signRequestId, userEppn, authUserEppn, httpSession);
+        } catch (EsupSignatureUserException | IOException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<String> fetchSignImagesForRequest(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession) throws IOException, EsupSignatureUserException {
+        Long userShareId = getUserShareId(httpSession);
+        return signBookService.getSignImagesForSignRequest(signRequestId, userEppn, authUserEppn, userShareId);
+    }
+
+    private Long getUserShareId(HttpSession httpSession) {
+        Object userShareString = httpSession.getAttribute("userShareId");
+        if (userShareString == null) {
+            return null;
+        }
+        return Long.valueOf(userShareString.toString());
     }
 
     private List<CommentFrontDto> toCommentFrontDtos(List<Comment> comments) {
@@ -477,23 +776,10 @@ public class ShowSignRequestViewService {
     }
 
     private String toDisplayName(User user) {
-        if(user == null) {
+        if (user == null) {
             return null;
         }
         return user.getFirstname() + " " + user.getName();
-    }
-
-    private List<String> getSignImagesForRequest(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession) throws IOException, EsupSignatureUserException {
-        Long userShareId = getUserShareId(httpSession);
-        return signBookService.getSignImagesForSignRequest(signRequestId, userEppn, authUserEppn, userShareId);
-    }
-
-    private Long getUserShareId(HttpSession httpSession) {
-        Object userShareString = httpSession.getAttribute("userShareId");
-        if(userShareString == null) {
-            return null;
-        }
-        return Long.valueOf(userShareString.toString());
     }
 
     public record ShowSignRequestContext(
@@ -539,7 +825,5 @@ public class ShowSignRequestViewService {
             boolean notSigned
     ) {}
 }
-
-
 
 

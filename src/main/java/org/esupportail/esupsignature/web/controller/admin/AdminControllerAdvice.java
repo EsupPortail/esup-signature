@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
-import org.esupportail.esupsignature.service.view.ui.AdminUiFetchService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice(basePackages = {"org.esupportail.esupsignature.web.controller.admin"})
 public class AdminControllerAdvice {
 
-    private final AdminUiFetchService adminUiFetchService;
+    private final UiFetchService uiFetchService;
 
-    public AdminControllerAdvice(AdminUiFetchService adminUiFetchService) {
-        this.adminUiFetchService = adminUiFetchService;
+    public AdminControllerAdvice(UiFetchService uiFetchService) {
+        this.uiFetchService = uiFetchService;
     }
 
     @ModelAttribute
@@ -25,7 +25,7 @@ public class AdminControllerAdvice {
             model.addAttribute("managerMenu", "active");
         }
 
-        AdminUiStatusDto adminUiStatus = adminUiFetchService.buildAdminUiStatus();
+        AdminUiStatusDto adminUiStatus = uiFetchService.buildAdminUiStatus();
         model.addAttribute("nbSessions", adminUiStatus.nbSessions());
         model.addAttribute("dssStatus", adminUiStatus.dssStatus());
     }

@@ -1,55 +1,153 @@
 package org.esupportail.esupsignature.web.wssecure;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
-import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
-import org.esupportail.esupsignature.dto.view.ui.UiMeDto;
-import org.esupportail.esupsignature.service.view.ui.AdminUiFetchService;
-import org.esupportail.esupsignature.service.view.ui.UiFetchService;
+import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
+import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
+import org.esupportail.esupsignature.entity.User;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.service.view.UiFetchService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/ws-secure/ui")
 public class UiFetchController {
 
     private final UiFetchService uiFetchService;
-    private final AdminUiFetchService adminUiFetchService;
 
-    public UiFetchController(UiFetchService uiFetchService, AdminUiFetchService adminUiFetchService) {
+    public UiFetchController(UiFetchService uiFetchService) {
         this.uiFetchService = uiFetchService;
-        this.adminUiFetchService = adminUiFetchService;
     }
 
-    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UiMeDto> getMe(@ModelAttribute("userEppn") String userEppn,
-                                         @ModelAttribute("authUserEppn") String authUserEppn,
-                                         HttpSession httpSession) {
-        return ResponseEntity.ok(uiFetchService.buildUiMe(userEppn, authUserEppn, httpSession));
+    @GetMapping(value = "/bootstrap", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UiBootstrapDto> getBootstrap(@ModelAttribute("userEppn") String userEppn,
+                                                       @ModelAttribute("authUserEppn") String authUserEppn,
+                                                       HttpSession httpSession) {
+        return ResponseEntity.ok(uiFetchService.buildUiBootstrap(userEppn, authUserEppn, httpSession));
     }
 
-    @GetMapping(value = "/counters", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UiCountersDto> getCounters(@ModelAttribute("userEppn") String userEppn,
-                                                     @ModelAttribute("authUserEppn") String authUserEppn) {
-        return ResponseEntity.ok(uiFetchService.buildUiCounters(userEppn, authUserEppn));
+    @GetMapping(value = "/preferences", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> getUiPreferences(@ModelAttribute("authUserEppn") String authUserEppn) {
+        return ResponseEntity.ok(uiFetchService.getUiPreferences(authUserEppn));
     }
 
-    @GetMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UiConfigDto> getConfig(@ModelAttribute("userEppn") String userEppn,
-                                                 HttpSession httpSession) {
-        return ResponseEntity.ok(uiFetchService.buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null));
+    @GetMapping(value = "/preferences/{key}/{value}")
+    public ResponseEntity<Void> setUiPreference(@ModelAttribute("authUserEppn") String authUserEppn,
+                                                @PathVariable String key,
+                                                @PathVariable String value) {
+        uiFetchService.setUiPreference(authUserEppn, key, value);
+        return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @GetMapping(value = "/admin-status", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AdminUiStatusDto> getAdminStatus() {
-        return ResponseEntity.ok(adminUiFetchService.buildAdminUiStatus());
+    @PostMapping(value = "/temp-users/check", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<User>> checkTempUsers(@RequestBody(required = false) List<String> recipientEmails) {
+        return ResponseEntity.ok(uiFetchService.checkTempUsers(recipientEmails));
+    }
+
+    @GetMapping(value = "/favorites/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Set<User>> getFavoriteUsers(@ModelAttribute("authUserEppn") String authUserEppn) {
+        return ResponseEntity.ok(uiFetchService.getFavoriteUsers(authUserEppn));
+    }
+
+    @GetMapping(value = "/favorites/fields/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<String>> getFavoriteFieldValues(@ModelAttribute("authUserEppn") String authUserEppn,
+                                                               @PathVariable("id") Long id) {
+        return ResponseEntity.ok(uiFetchService.getFavoriteFieldValues(authUserEppn, id));
+    }
+
+    @GetMapping(value = "/signatures/{id}")
+    public ResponseEntity<Void> getSignature(@ModelAttribute("userEppn") String userEppn,
+                                             @PathVariable("id") Long id,
+                                             HttpServletResponse response) throws IOException {
+        Map<String, Object> signature = uiFetchService.getSignatureDocument(userEppn, id);
+        if (signature == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return getDocumentResponseEntity(response, (byte[]) signature.get("bytes"), (String) signature.get("fileName"), (String) signature.get("contentType"));
+    }
+
+    @GetMapping(value = "/signatures/default-image")
+    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn,
+                                                HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultImage(authUserEppn).readAllBytes(), "default.png", "image/png");
+    }
+
+    @GetMapping(value = "/signatures/default-paraphe")
+    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("authUserEppn") String authUserEppn,
+                                                  HttpServletResponse response) throws IOException {
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultParaphe(authUserEppn).readAllBytes(), "default.png", "image/png");
+    }
+
+    @GetMapping(value = "/keystore")
+    public ResponseEntity<Void> getKeystore(@ModelAttribute("authUserEppn") String authUserEppn,
+                                            HttpServletResponse response) throws IOException {
+        Map<String, Object> keystore = uiFetchService.getKeystore(authUserEppn);
+        if (keystore == null) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return getDocumentResponseEntity(response, (byte[]) keystore.get("bytes"), keystore.get("fileName").toString(), keystore.get("contentType").toString());
+    }
+
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, value = "/profile")
+    public ResponseEntity<UserSignatureStateDto> updateProfile(@ModelAttribute("userEppn") String userEppn,
+                                                               @ModelAttribute("authUserEppn") String authUserEppn,
+                                                               @RequestParam(value = "signImageBase64", required = false) String signImageBase64,
+                                                               @RequestParam(value = "name") String name,
+                                                               @RequestParam(value = "firstname") String firstname,
+                                                               @RequestParam(value = "signRequestId", required = false) Long signRequestId,
+                                                               @RequestParam(value = "emailAlertFrequency", required = false) EmailAlertFrequency emailAlertFrequency,
+                                                               @RequestParam(value = "emailAlertHour", required = false) Integer emailAlertHour,
+                                                               @RequestParam(value = "emailAlertDay", required = false) DayOfWeek emailAlertDay,
+                                                               @RequestParam(value = "multipartKeystore", required = false) MultipartFile multipartKeystore,
+                                                               HttpSession httpSession) throws Exception {
+        return ResponseEntity.ok(uiFetchService.updateProfile(userEppn, authUserEppn, signImageBase64, name, firstname, signRequestId, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, httpSession));
+    }
+
+    @DeleteMapping(value = "/profile/signatures/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<UserSignatureStateDto> deleteSignature(@ModelAttribute("userEppn") String userEppn,
+                                                                 @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                 @PathVariable long id,
+                                                                 @RequestParam(value = "signRequestId", required = false) Long signRequestId,
+                                                                 HttpSession httpSession) {
+        return ResponseEntity.ok(uiFetchService.deleteSignature(userEppn, authUserEppn, id, signRequestId, httpSession));
+    }
+
+    @GetMapping(value = "/warnings/read")
+    public ResponseEntity<Void> warningReaded(@ModelAttribute("authUserEppn") String authUserEppn) {
+        uiFetchService.markWarningsRead(authUserEppn);
+        return ResponseEntity.ok().build();
+    }
+
+    private ResponseEntity<Void> getDocumentResponseEntity(HttpServletResponse response, byte[] bytes, String fileName, String contentType) throws IOException {
+        response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(fileName, StandardCharsets.UTF_8).replace("+", "%20"));
+        response.setHeader("Cache-Control", "public, max-age=86400");
+        response.setContentType(contentType);
+        IOUtils.copy(new ByteArrayInputStream(bytes), response.getOutputStream());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
 

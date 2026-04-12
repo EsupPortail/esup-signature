@@ -870,9 +870,9 @@
                                 : '';
                             const sizeAttr = imageHeight != null ? `height="${imageHeight}"` : `width="${imageWidth}"`;
                             if (hasActionButtons) {
-                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
+                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
                             }
-                            return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /></div>`;
+                            return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /></div>`;
                         }).join('');
 
                         const extraAttributes = imageHeight == null ? ' data-bs-ride="carousel"' : '';
@@ -988,7 +988,7 @@
                             btn.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 const signImageId = this.getAttribute('data-delete-sign-id');
-                                const deleteUrl = '/ws-secure/' + userType + '/fetch/delete-sign/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
+                                const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
 
                                 if(confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
                                     fetch(deleteUrl, {
@@ -1069,7 +1069,7 @@
                         }
 
                         const formData = new FormData(userParamsForm);
-                        const submitUrl = '/ws-secure/' + userType + '/fetch';
+                        const submitUrl = '/ws-secure/ui/profile';
                         const hasCustomImagePayload = `${formData.get('signImageBase64') || ''}`.trim() !== '';
                         if (signRequestId) {
                             formData.append('signRequestId', signRequestId);

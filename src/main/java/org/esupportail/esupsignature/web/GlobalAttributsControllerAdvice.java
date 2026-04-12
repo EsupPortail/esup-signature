@@ -16,10 +16,9 @@ import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserShareService;
-import org.esupportail.esupsignature.service.view.ui.UiFetchService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.ui.Model;
@@ -77,7 +76,7 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user {} not found", userEppn);
                 return;
             }
-            FrontendGlobalProperties myGlobalProperties = generateMyProperties(userEppn);
+            FrontendGlobalProperties myGlobalProperties = uiFetchService.buildFrontendGlobalProperties(userEppn);
             UiCountersDto uiCounters = uiFetchService.buildUiCounters(userEppn, authUserEppn);
             UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
             model.addAttribute("user", user);
@@ -111,12 +110,5 @@ public class GlobalAttributsControllerAdvice {
         model.addAttribute("applicationEmail", globalProperties.getApplicationEmail());
     }
 
-    private FrontendGlobalProperties generateMyProperties(String userEppn) {
-        GlobalProperties myGlobalProperties = new GlobalProperties();
-        BeanUtils.copyProperties(globalProperties, myGlobalProperties);
-        userService.parseRoles(userEppn, myGlobalProperties);
-        myGlobalProperties.newVersion = globalProperties.newVersion;
-        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
-    }
 
 }

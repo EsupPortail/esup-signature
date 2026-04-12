@@ -1,8 +1,10 @@
-package org.esupportail.esupsignature.service.view.ui;
+package org.esupportail.esupsignature.service.view;
 
+import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.dto.view.ui.ExternalSignatureParamsDto;
 import org.esupportail.esupsignature.dto.view.ui.SuUserDto;
+import org.esupportail.esupsignature.dto.view.ui.UiBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
 import org.esupportail.esupsignature.dto.view.ui.UiGlobalPropertiesDto;
@@ -22,6 +24,17 @@ import java.util.Set;
 
 @Component
 public class UiFetchMapper {
+
+    public AdminUiStatusDto toAdminUiStatusDto(Integer nbSessions, Boolean dssStatus) {
+        return new AdminUiStatusDto(nbSessions, dssStatus);
+    }
+
+    public UiBootstrapDto toUiBootstrapDto(UiConfigDto config,
+                                           UiCountersDto counters,
+                                           UiMeDto currentUser,
+                                           AdminUiStatusDto adminStatus) {
+        return new UiBootstrapDto(config, counters, currentUser, adminStatus);
+    }
 
     public UiMeDto toUiMeDto(User user,
                              Set<String> userRoles,
@@ -179,7 +192,7 @@ public class UiFetchMapper {
         );
     }
 
-    private Map<String, String> toUiParamsMap(Map<UiParams, String> uiParams) {
+    public Map<String, String> toUiParamsMap(Map<UiParams, String> uiParams) {
         if (uiParams == null || uiParams.isEmpty()) {
             return Collections.emptyMap();
         }

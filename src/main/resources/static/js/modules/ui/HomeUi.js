@@ -18,7 +18,7 @@ export class HomeUi {
             if(oldSignRequests.length) {
                 oldSignRequests.modal('show');
                 $("#warningReaded").on('click', function () {
-                    $.get("/ws-secure/global/warning-readed");
+                    $.get("/ws-secure/ui/warnings/read");
                 });
 
             }

@@ -77,37 +77,24 @@ export class GlobalUi {
     }
 
     async refreshUiFetchData() {
-        const fetchPromises = [
-            this.fetchUiJson('/ws-secure/ui/config')
-                .then(config => this.applyUiConfig(config))
-                .catch(error => console.debug('Unable to refresh UI config', error))
-        ];
-
-        if (this.hasUserUiTargets()) {
-            fetchPromises.push(
-                this.fetchUiJson('/ws-secure/ui/me')
-                    .then(me => this.applyUiMe(me))
-                    .catch(error => console.debug('Unable to refresh UI user shell', error))
-            );
+        try {
+            const bootstrap = await this.fetchUiJson('/ws-secure/ui/bootstrap');
+            this.applyUiBootstrap(bootstrap);
+        } catch (error) {
+            console.debug('Unable to refresh UI bootstrap', error);
         }
+    }
 
-        if (this.hasCounterUiTargets()) {
-            fetchPromises.push(
-                this.fetchUiJson('/ws-secure/ui/counters')
-                    .then(counters => this.applyUiCounters(counters))
-                    .catch(error => console.debug('Unable to refresh UI counters', error))
-            );
+    applyUiBootstrap(bootstrap) {
+        if (bootstrap == null) {
+            return;
         }
-
-        if (this.hasAdminStatusTargets()) {
-            fetchPromises.push(
-                this.fetchUiJson('/ws-secure/ui/admin-status')
-                    .then(status => this.applyAdminUiStatus(status))
-                    .catch(error => console.debug('Unable to refresh admin UI status', error))
-            );
+        this.applyUiConfig(bootstrap.config ?? null);
+        this.applyUiForCurrentUser(bootstrap.currentUser ?? null);
+        this.applyUiCounters(bootstrap.counters ?? null);
+        if (bootstrap.adminStatus != null) {
+            this.applyAdminUiStatus(bootstrap.adminStatus);
         }
-
-        await Promise.allSettled(fetchPromises);
     }
 
     setElementText(id, value) {
@@ -191,7 +178,7 @@ export class GlobalUi {
         }
         const items = signImageIds.map((signImageId, index) => `
             <div class="carousel-item${index === 0 ? ' active' : ''}">
-                <img width="250" src="/ws-secure/users/get-sign-image/${encodeURIComponent(signImageId)}" alt="sign image" />
+                <img width="250" src="/ws-secure/ui/signatures/${encodeURIComponent(signImageId)}" alt="sign image" />
             </div>
         `).join('');
         container.innerHTML = `
@@ -222,19 +209,19 @@ export class GlobalUi {
             <div class="alert alert-secondary">
                 Keystore PKCS12 :
                 <br>
-                <a href="/ws-secure/users/get-keystore">
+                <a href="/ws-secure/ui/keystore">
                     <span>${this.escapeHtml(keystoreFileName)}</span>
                 </a>
             </div>
         `;
     }
 
-    applyUiMe(me) {
-        if (me == null) {
+    applyUiForCurrentUser(currentUser) {
+        if (currentUser == null) {
             return;
         }
-        sessionStorage.setItem('uiMe', JSON.stringify(me));
-        const user = me.user || null;
+        sessionStorage.setItem('uiMe', JSON.stringify(currentUser));
+        const user = currentUser.user || null;
         const displayName = user != null
             ? ((user.firstname && user.name) ? (user.firstname + ' ' + user.name) : user.email)
             : null;
@@ -243,12 +230,12 @@ export class GlobalUi {
         this.setElementText('navbar-user-info-firstname', user?.firstname ?? null);
         this.setElementText('navbar-user-info-email', user?.email ?? null);
         this.setElementText('navbar-user-info-eppn', user?.eppn ?? null);
-        this.setElementText('navbar-security-service-name', me.securityServiceName ?? null);
+        this.setElementText('navbar-security-service-name', currentUser.securityServiceName ?? null);
         this.updateUserAvatar(user);
-        this.renderSuUsers(me.suUsers || [], me.user || null, me.authUser || null);
-        this.renderUserSignatures(me.userImagesIds || []);
-        this.renderKeystore(me.keystoreFileName ?? null);
-        document.dispatchEvent(new CustomEvent('uiMeLoaded', {detail: me}));
+        this.renderSuUsers(currentUser.suUsers || [], currentUser.user || null, currentUser.authUser || null);
+        this.renderUserSignatures(currentUser.userImagesIds || []);
+        this.renderKeystore(currentUser.keystoreFileName ?? null);
+        document.dispatchEvent(new CustomEvent('uiMeLoaded', {detail: currentUser}));
     }
 
     applyUiCounters(counters) {
