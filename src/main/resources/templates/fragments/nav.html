@@ -29,7 +29,7 @@
                 <li class="nav-item text-white" th:if="${userEppn == authUserEppn && #authorization.expression('hasRole(''ROLE_USER'')')}">
                     <a th:classappend="${activeMenu == 'signbooks'} ? 'bg-secondary bg-opacity-75'" id="link-dashboard" th:if="${userEppn == authUserEppn || isOneSignShare || isOneReadShare}"
                         href="/user/signbooks" class="btn btn-transparent text-left d-flex align-items-center gap-2">
-                        <i class="fi fi-rr-paste" style="line-height: 14px;"></i>
+                        <i class="fi fi-rr-ballot" style="line-height: 14px;"></i>
                         <span class="nav-item-label d-none d-xl-inline">Tableau de bord</span><span id="navbar-badge-to-sign" aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                     </a>
                 </li>
