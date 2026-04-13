@@ -1,23 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml"lang="fr" >
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml" lang="fr">
 <!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
 <!--/*@thymesVar id="infiniteScrolling" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
+<script th:inline="javascript">
+    (() => {
+        const storageKey = 'esup-user-signbooks-display-mode';
+        let storedMode = null;
+
+        try {
+            storedMode = window.localStorage.getItem(storageKey);
+        } catch (e) {
+            console.debug('LocalStorage indisponible pour la préférence d’affichage des signbooks', e);
+        }
+
+        const hasStoredPreference = storedMode === 'infinite' || storedMode === 'pagination';
+        if (!hasStoredPreference) {
+            return;
+        }
+
+        const resolvedInfiniteScrolling = storedMode === 'infinite';
+        const params = new URLSearchParams(window.location.search);
+        const currentInfiniteScrolling = params.get('infiniteScrolling');
+
+        if (currentInfiniteScrolling === String(resolvedInfiniteScrolling)) {
+            return;
+        }
+
+        params.set('infiniteScrolling', String(resolvedInfiniteScrolling));
+        params.delete('page');
+        const queryString = params.toString();
+        window.location.replace(window.location.pathname + (queryString !== '' ? '?' + queryString : ''));
+    })();
+</script>
 <script th:inline="javascript" type="module">
     import {ListSignBooksUi} from '/js/modules/ui/signbooks/ListSignBooksUi.js?version=@[(${versionApp})]@';
-    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user");
+    new ListSignBooksUi([[${signBooks}]], [[${statusFilter}]], [[${recipientsFilter}]], [[${workflowFilter}]], [[${creatorFilter}]], [[${docTitleFilter}]], [[${dateFilter}]], [[${infiniteScrolling}]], [[${_csrf}]], "user", {
+        preferenceStorageKey: 'esup-user-signbooks-display-mode',
+        toggleSelector: '#signbooksDisplayModeSwitch'
+    });
 </script>
 <body class="signbooks-list-page signbooks-list-loading">
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active">Tableau de bord</li>
-            </ol>
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100">
+                <ol class="breadcrumb mb-0 flex-grow-1">
+                    <li class="breadcrumb-item text-uppercase ps-2 d-none d-lg-flex m-0"><i class="fi fi-rr-paste"></i> Tableau de bord</li>
+                </ol>
+                <div class="form-check form-switch d-flex align-items-center gap-2 mb-0 me-2 ms-auto text-nowrap">
+                    <input class="form-check-input mt-0" type="checkbox" role="switch" id="signbooksDisplayModeSwitch" th:checked="${infiniteScrolling}" aria-label="Activer le défilement infini">
+                    <label class="form-check-label small mb-0 text-uppercase" for="signbooksDisplayModeSwitch" title="Basculer entre pagination et défilement infini">
+                        Défilement infini
+                    </label>
+                </div>
+            </div>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">

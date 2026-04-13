@@ -3,11 +3,14 @@ import {Nexu} from "../signrequests/Nexu.js?version=@version@";
 
 export class ListSignBooksUi {
 
-    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode) {
+    constructor(signRequests, statusFilter, recipientsFilter, workflowFilter, creatorFilter, docTitleFilter, dateFilter, infiniteScrolling, csrf, mode, options = {}) {
         console.info("Starting list sign UI");
         this.signRequests = signRequests;
         this.mode = mode;
-        this.infiniteScrolling = infiniteScrolling;
+        this.preferenceStorageKey = options.preferenceStorageKey ?? null;
+        this.toggleSelector = options.toggleSelector ?? null;
+        this.infiniteScrolling = Boolean(infiniteScrolling);
+        this.infiniteScrolling = this.resolveInfiniteScrollingPreference();
         this.statusFilter = "";
         this.recipientsFilter = "";
         this.workflowFilter = "";
@@ -45,13 +48,96 @@ export class ListSignBooksUi {
         new Nexu(null, null, null, null, null);
         $(document).ready(() => {
             this.initListeners();
-            if(infiniteScrolling) {
+            if(this.infiniteScrolling) {
                 this.detectEndDiv();
             } else {
-                window.requestAnimationFrame(() => this.finishInitialLoading());
+                this.waitForHeaderStabilization().then(() => this.finishInitialLoading());
             }
         });
         $("#sealChoose").addClass('d-none');
+    }
+
+    waitForHeaderStabilization() {
+        return new Promise(resolve => {
+            if (this.isHeaderReadyForDisplay()) {
+                this.finishInitialLoadingAfterPaint(resolve);
+                return;
+            }
+
+            let resolved = false;
+            let intervalId = null;
+            let timeoutId = null;
+
+            const cleanup = () => {
+                document.removeEventListener('globalUiReady', onGlobalUiReady);
+                if (intervalId != null) {
+                    window.clearInterval(intervalId);
+                }
+                if (timeoutId != null) {
+                    window.clearTimeout(timeoutId);
+                }
+            };
+
+            const finalize = () => {
+                if (resolved) {
+                    return;
+                }
+                resolved = true;
+                cleanup();
+                this.finishInitialLoadingAfterPaint(resolve);
+            };
+
+            const checkReadyState = () => {
+                if (this.isHeaderReadyForDisplay()) {
+                    finalize();
+                }
+            };
+
+            const onGlobalUiReady = () => checkReadyState();
+
+            document.addEventListener('globalUiReady', onGlobalUiReady);
+            intervalId = window.setInterval(checkReadyState, 50);
+            timeoutId = window.setTimeout(() => finalize(), 2500);
+            checkReadyState();
+        });
+    }
+
+    finishInitialLoadingAfterPaint(callback) {
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => callback());
+        });
+    }
+
+    isHeaderReadyForDisplay() {
+        return this.isGlobalUiReady() && this.areFilterWidgetsReady();
+    }
+
+    isGlobalUiReady() {
+        return document.documentElement?.dataset.globalUiReady === 'true';
+    }
+
+    areFilterWidgetsReady() {
+        return this.isFilterWidgetReady('#docTitleFilter')
+            && this.isFilterWidgetReady('#workflowFilter')
+            && this.isFilterWidgetReady('#creatorFilter')
+            && this.isFilterWidgetReady('#recipientsFilter');
+    }
+
+    isFilterWidgetReady(selector) {
+        const element = document.querySelector(selector);
+        if (element == null) {
+            return true;
+        }
+
+        if (element.classList.contains('auto-select-users')) {
+            return element.slim != null;
+        }
+
+        if (element.classList.contains('slim-select-filter') || element.classList.contains('slim-select-filter-search') || element.classList.contains('slim-select')) {
+            return element.slim != null || document.querySelector(selector + ' + .ss-main') != null;
+        }
+
+        return true;
     }
 
     finishInitialLoading() {
@@ -63,6 +149,7 @@ export class ListSignBooksUi {
     }
 
     initListeners() {
+        this.initDisplayModeToggle();
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#certType").on("change", e => this.checkAfterChangeSignType());
         $('#checkValidateSignButtonEnd').on('click', e => this.launchMassSign());
@@ -90,6 +177,81 @@ export class ListSignBooksUi {
         document.addEventListener("massSign", e => this.updateWaitModal(e));
         document.addEventListener("sign", e => this.updateErrorWaitModal(e));
         $("#more-sign-request").on("click", e => this.addToPage());
+    }
+
+    resolveInfiniteScrollingPreference() {
+        const storedMode = this.getStoredDisplayMode();
+        if (storedMode === 'infinite') {
+            return true;
+        }
+        if (storedMode === 'pagination') {
+            return false;
+        }
+        return this.infiniteScrolling;
+    }
+
+    getStoredDisplayMode() {
+        if (this.preferenceStorageKey == null) {
+            return null;
+        }
+
+        try {
+            const storedMode = window.localStorage.getItem(this.preferenceStorageKey);
+            if (storedMode === 'infinite' || storedMode === 'pagination') {
+                return storedMode;
+            }
+        } catch (e) {
+            console.debug('LocalStorage indisponible pour la préférence d’affichage des signbooks', e);
+        }
+
+        return null;
+    }
+
+    initDisplayModeToggle() {
+        if (this.toggleSelector == null) {
+            return;
+        }
+
+        const toggle = $(this.toggleSelector);
+        if (toggle.length === 0) {
+            return;
+        }
+
+        toggle.prop('checked', this.infiniteScrolling);
+        toggle.off('change.listSignBooksUi').on('change.listSignBooksUi', e => {
+            this.changeDisplayMode($(e.currentTarget).is(':checked'));
+        });
+    }
+
+    changeDisplayMode(infiniteScrolling) {
+        this.persistDisplayModePreference(infiniteScrolling);
+        this.navigateWithDisplayMode(infiniteScrolling);
+    }
+
+    persistDisplayModePreference(infiniteScrolling) {
+        if (this.preferenceStorageKey == null) {
+            return;
+        }
+
+        try {
+            window.localStorage.setItem(this.preferenceStorageKey, infiniteScrolling ? 'infinite' : 'pagination');
+        } catch (e) {
+            console.debug('Impossible d’enregistrer la préférence d’affichage des signbooks', e);
+        }
+    }
+
+    navigateWithDisplayMode(infiniteScrolling) {
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.set('infiniteScrolling', String(infiniteScrolling));
+        currentParams.delete('page');
+
+        const queryString = currentParams.toString();
+        const targetUrl = window.location.pathname + (queryString !== '' ? '?' + queryString : '');
+        const currentUrl = window.location.pathname + window.location.search;
+
+        if (targetUrl !== currentUrl) {
+            window.location.href = targetUrl;
+        }
     }
 
     initFilterSelect(selector, updatePlaceholder = false, remainingAttempts = 20) {

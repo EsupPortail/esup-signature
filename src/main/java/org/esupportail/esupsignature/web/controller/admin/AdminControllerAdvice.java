@@ -26,8 +26,7 @@ public class AdminControllerAdvice {
         }
 
         AdminUiStatusDto adminUiStatus = uiFetchService.buildAdminUiStatus();
-        model.addAttribute("nbSessions", adminUiStatus.nbSessions());
-        model.addAttribute("dssStatus", adminUiStatus.dssStatus());
+        model.addAttribute("adminUiStatus", adminUiStatus);
     }
 
 }

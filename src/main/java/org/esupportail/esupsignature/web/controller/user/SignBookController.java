@@ -94,11 +94,13 @@ public class SignBookController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
+                       @RequestParam(value = "infiniteScrolling", required = false) Boolean infiniteScrolling,
                        @PageableDefault(size = 15)
                            @SortDefault.SortDefaults({
                                    @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                            })
                            Pageable pageable, Model model) {
+        boolean effectiveInfiniteScrolling = infiniteScrolling != null ? infiniteScrolling : Boolean.TRUE.equals(globalProperties.getInfiniteScrolling());
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
             workflowFilter = null;
@@ -113,7 +115,8 @@ public class SignBookController {
             recipientsFilter = null;
         }
         model.addAttribute("statusFilter", statusFilter);
-        if(globalProperties.getInfiniteScrolling()) {
+        model.addAttribute("infiniteScrolling", effectiveInfiniteScrolling);
+        if(effectiveInfiniteScrolling) {
             model.addAttribute("signBooks", new PageImpl<SignBookListItemDto>(new ArrayList<>(), pageable, 1));
         } else {
             Page<SignBookListItemDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);

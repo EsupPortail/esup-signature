@@ -273,14 +273,14 @@ export class GlobalUi {
             return;
         }
         sessionStorage.setItem('adminUiStatus', JSON.stringify(status));
-        const isAlert = status.dssStatus == null || status.dssStatus === true || counters.certificatProblem === true;
+        const isAlert = status.dssStatus == null || status.dssStatus === true;
         this.setElementText('admin-side-nb-sessions', status.nbSessions);
         this.setElementText('admin-index-nb-sessions', status.nbSessions);
         this.toggleStatusClasses(document.getElementById('admin-side-dss-icon'), isAlert);
         this.toggleStatusClasses(document.getElementById('admin-side-dss-label'), isAlert, 'text-success', 'text-danger');
         this.toggleStatusClasses(document.getElementById('admin-index-dss-icon'), isAlert);
         this.toggleStatusClasses(document.getElementById('admin-index-dss-label'), isAlert, 'text-success', 'text-danger');
-        this.setElementVisibility('navbar-admin-dss-alert', isAlert, 'd-none');
+        this.setElementVisibility('navbar-admin-dss-alert', isAlert || counters.certificatProblem === true, 'd-none');
         document.dispatchEvent(new CustomEvent('adminUiStatusLoaded', {detail: status}));
     }
 
@@ -987,6 +987,8 @@ export class GlobalUi {
         this.enableSpectrum();
         this.adjustUi();
         this.sessionTimeout();
+        document.documentElement.dataset.globalUiReady = 'true';
+        document.dispatchEvent(new CustomEvent('globalUiReady'));
     }
 
     sessionTimeout() {
