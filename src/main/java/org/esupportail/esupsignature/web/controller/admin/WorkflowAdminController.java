@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,8 +58,9 @@ public class WorkflowAdminController {
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<ExternalAuth> externalAuths;
     private final TagService tagService;
+	private final UiFetchService uiFetchService;
 
-	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, TagService tagService) {
+	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, TagService tagService, UiFetchService uiFetchService) {
 		this.targetService = targetService;
 		this.userService = userService;
 		this.recipientService = recipientService;
@@ -69,6 +71,7 @@ public class WorkflowAdminController {
 		this.preAuthorizeService = preAuthorizeService;
         this.externalAuths = externalAuths;
         this.tagService = tagService;
+						this.uiFetchService = uiFetchService;
     }
 
 	@GetMapping
@@ -76,22 +79,15 @@ public class WorkflowAdminController {
                        @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType,
                        @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
                        Model model, HttpServletRequest httpServletRequest) {
-		if (displayWorkflowType == null) {
-			displayWorkflowType = DisplayWorkflowType.system;
-		}
-		model.addAttribute("displayWorkflowType", displayWorkflowType);
 		String path = httpServletRequest.getRequestURI();
-		if (path.startsWith("/admin")) {
-			model.addAttribute("workflows", workflowService.getWorkflowsByDisplayWorkflowTypeAndSelectedTags(displayWorkflowType, selectedTags));
-			model.addAttribute("workflowRole", "admin");
-		} else {
-			model.addAttribute("workflows", workflowService.getManagerWorkflows(authUserEppn));
-			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
-			model.addAttribute("workflowRole", "manager");
-		}
-        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
-        if(selectedTags == null) selectedTags = new ArrayList<>();
-        model.addAttribute("selectedTags", selectedTags);
+		String workflowRole = path.startsWith("/admin") ? "admin" : "manager";
+		var view = uiFetchService.buildAdminWorkflowListView(authUserEppn, workflowRole, displayWorkflowType, selectedTags);
+		model.addAttribute("displayWorkflowType", view.displayWorkflowType());
+		model.addAttribute("workflowRole", view.workflowRole());
+		model.addAttribute("workflows", view.workflows());
+		model.addAttribute("roles", view.roles());
+		model.addAttribute("allTags", view.allTags());
+		model.addAttribute("selectedTagIds", view.selectedTagIds());
         return "admin/workflows/list";
 	}
 
@@ -106,8 +102,7 @@ public class WorkflowAdminController {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
             return "redirect:/admin/workflows";
         }
-        Workflow workflow = workflowService.getById(id);
-        model.addAttribute("workflow", workflow);
+		model.addAttribute("workflow", uiFetchService.buildAdminWorkflowTargetsWorkflowView(id));
         return "admin/workflows/targets";
     }
 
@@ -124,10 +119,10 @@ public class WorkflowAdminController {
 			return "redirect:/admin/workflows";
 		}
 		model.addAttribute("fromAdmin", true);
-		Workflow workflow = workflowService.getById(id);
+		var workflow = uiFetchService.buildAdminWorkflowTargetsWorkflowView(id);
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("certificats", certificatService.getAllCertificats());
-        model.addAttribute("allSteps", workflow.getWorkflowSteps());
+	        model.addAttribute("allSteps", workflow.getWorkflowSteps());
 		return "admin/workflows/steps";
 	}
 
@@ -160,24 +155,26 @@ public class WorkflowAdminController {
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         String path = httpServletRequest.getRequestURI();
+		String workflowRole;
 		if (!path.startsWith("/admin")) {
-			model.addAttribute("workflowRole", "manager");
-			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
+			workflowRole = "manager";
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			model.addAttribute("workflowRole", "admin");
-			model.addAttribute("roles", userService.getAllRoles());
+			workflowRole = "admin";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
-		Workflow workflow = workflowService.getById(id);
-		model.addAttribute("workflow", workflow);
+		var view = uiFetchService.buildAdminWorkflowUpdateView(authUserEppn, workflowRole, id);
+		model.addAttribute("workflowRole", view.getWorkflowRole());
+		model.addAttribute("workflow", view.getWorkflow());
 		model.addAttribute("externalAuths", externalAuths);
-		model.addAttribute("nbWorkflowSignRequests", signBookService.countSignBooksByWorkflow(id));
+		model.addAttribute("nbWorkflowSignRequests", view.getNbWorkflowSignRequests());
 		model.addAttribute("sourceTypes", DocumentIOType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
-        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+		model.addAttribute("roles", view.getRoles());
+		model.addAttribute("allTags", view.getAllTags());
+		model.addAttribute("selectedTagIds", view.getSelectedTagIds());
         return "admin/workflows/update";
     }
 

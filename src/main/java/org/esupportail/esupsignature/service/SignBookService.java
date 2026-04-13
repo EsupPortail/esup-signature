@@ -354,11 +354,25 @@ public class SignBookService {
                 currentSignType,
                 toParticipantSteps(signBook, primarySignRequest),
                 formatDate(signBook.getEndDate()),
+                Boolean.TRUE.equals(signBook.getDeleted()) ? "Supprimé le : " + formatDate(signBook.getUpdateDate()) : null,
+                toLastSignedDocumentDateLabel(signBook, primarySignRequest),
                 refusedCommentTitle,
                 toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
                 toSignRequestDocumentDtos(signBook.getSignRequests()),
                 toPostitDtos(signBook.getPostits())
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SignBookListItemDto> getAllSignBookListItems(String userEppn,
+                                                             String statusFilter,
+                                                             String workflowFilter,
+                                                             String docTitleFilter,
+                                                             String creatorFilter,
+                                                             String dateFilter,
+                                                             Pageable pageable) {
+        Page<SignBook> signBooks = getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
     }
 
     private SignBookListItemDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
@@ -481,6 +495,20 @@ public class SignBookService {
             return null;
         }
         return signRequest.getOriginalDocuments().get(0).getFileName();
+    }
+
+    private String toLastSignedDocumentDateLabel(SignBook signBook, SignRequest primarySignRequest) {
+        if (primarySignRequest == null) {
+            return null;
+        }
+        if (!(!(Boolean.TRUE.equals(signBook.getDeleted()) || signBook.getEndDate() != null) || signBook.getSignRequests().size() != 1)) {
+            return null;
+        }
+        Document lastSignedDocument = primarySignRequest.getLastSignedDocument();
+        if (lastSignedDocument == null || lastSignedDocument.getCreateDate() == null) {
+            return null;
+        }
+        return formatDate(lastSignedDocument.getCreateDate());
     }
 
     private boolean canDownloadAll(SignBook signBook, SignRequest signRequest) {
@@ -2330,7 +2358,7 @@ public class SignBookService {
      * Retourne la prochaine demande de signature en attente dans le même SignBook ou dans un SignBook supplémentaire si fourni.
      *
      * @param signRequestId l'identifiant de la demande de signature actuelle
-     * @param nextSignBook un SignBook supplémentaire contenant des demandes de signature
+     * @param nextSignBookId l'identifiant d'un SignBook supplémentaire contenant des demandes de signature
      * @return la prochaine demande de signature en attente si elle existe, sinon null
      */
     @Transactional

@@ -28,7 +28,7 @@
                 <span class="input-group-text">Filtrer</span>
                 <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
                     <th:block th:each="tag : ${allTags}">
-                        <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                        <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                     </th:block>
                 </select>
                 <span class="input-group-text">Actifs</span>
@@ -65,8 +65,8 @@
                             </th:block>
                         </td>
                         <td class="clickable-td">
-                            <i th:if="${form.isFeatured}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
+                            <i th:if="${form.featured}" class="fa-solid fa-check text-success"></i>
+                            <i th:unless="${form.featured}" class="fi fi-rr-cross-small text-danger"></i>
                         </td>
                         <td>
                             <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>

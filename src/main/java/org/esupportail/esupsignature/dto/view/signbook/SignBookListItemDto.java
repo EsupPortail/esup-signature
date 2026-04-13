@@ -18,6 +18,8 @@ public record SignBookListItemDto(
         String currentSignType,
         List<ParticipantStepDto> participantSteps,
         String endDateLabel,
+        String deletedDateLabel,
+        String lastSignedDocumentDateLabel,
         String refusedCommentTitle,
         PrimarySignRequestDto primarySignRequest,
         List<SignRequestDocumentDto> signRequests,

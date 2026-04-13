@@ -192,7 +192,7 @@
                                             <label><strong>Authentification des externes</strong></label>
                                             <select id="externalAuth" class="form-select" data-placeholder="Choisir des modes" type="text" th:field="*{externalAuths}" multiple>
                                                 <th:block th:each="externalAuth : ${externalAuths}">
-                                                    <option th:text="${externalAuth}" th:value="${externalAuth}" th:selected="${#sets.contains(workflow.externalAuths, externalAuth)}"></option>
+                                                    <option th:text="${externalAuth}" th:value="${externalAuth}" th:selected="${#lists.contains(workflow.externalAuths, externalAuth)}"></option>
                                                 </th:block>
                                             </select>
                                         </div>
@@ -388,7 +388,7 @@
                                         <div class="d-inline-flex justify-content-around w-100">
                                             <select id="tags" name="tags" class="slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple>
                                                 <th:block th:each="tag : ${allTags}">
-                                                    <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${workflow.tags.contains(tag)}"></option>
+                                                    <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${#lists.contains(selectedTagIds, tag.id)}"></option>
                                                 </th:block>
                                             </select>
                                         </div>

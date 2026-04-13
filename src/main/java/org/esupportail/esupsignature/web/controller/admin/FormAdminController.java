@@ -19,6 +19,7 @@ import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
@@ -58,8 +59,9 @@ public class FormAdminController {
 	private final ObjectMapper objectMapper;
 	private final PreAuthorizeService preAuthorizeService;
     private final TagService tagService;
+	private final UiFetchService uiFetchService;
 
-	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService) {
+	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService, UiFetchService uiFetchService) {
 		this.formService = formService;
 		this.workflowService = workflowService;
 		this.userService = userService;
@@ -69,6 +71,7 @@ public class FormAdminController {
 		this.objectMapper = objectMapper;
 		this.preAuthorizeService = preAuthorizeService;
         this.tagService = tagService;
+						this.uiFetchService = uiFetchService;
     }
 
 	@GetMapping()
@@ -77,25 +80,16 @@ public class FormAdminController {
                        @RequestParam(name = "activeVersion", required = false) Boolean activeVersion,
                        Model model, HttpServletRequest httpServletRequest) {
 		String path = httpServletRequest.getRequestURI();
-		Set<Form> forms = new HashSet<>();
-		if (path.startsWith("/admin")) {
-			forms.addAll(formService.getAllForms(selectedTags, activeVersion));
-			model.addAttribute("roles", userService.getAllRoles());
-			model.addAttribute("workflowTypes", workflowService.getSystemWorkflows());
-			model.addAttribute("workflowRole", "admin");
-		} else {
-			forms.addAll(formService.getManagerForms(selectedTags, activeVersion, authUserEppn));
-			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
-			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
-			model.addAttribute("workflowRole", "manager");
-		}
-		model.addAttribute("forms", forms.stream().sorted(Comparator.comparing(f -> f.getTitle().toLowerCase(), Comparator.nullsFirst(String::compareTo))).collect(Collectors.toList()));
-		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("preFillTypes", preFillService.getPreFillValues());
-        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
-        model.addAttribute("activeVersion", activeVersion);
-        if(selectedTags == null) selectedTags = new ArrayList<>();
-        model.addAttribute("selectedTags", selectedTags);
+		String workflowRole = path.startsWith("/admin") ? "admin" : "manager";
+		var view = uiFetchService.buildAdminFormListView(authUserEppn, workflowRole, selectedTags, activeVersion);
+		model.addAttribute("forms", view.forms());
+		model.addAttribute("roles", view.roles());
+		model.addAttribute("workflowTypes", view.workflowTypes());
+		model.addAttribute("workflowRole", view.workflowRole());
+		model.addAttribute("preFillTypes", view.preFillTypes());
+        model.addAttribute("allTags", view.allTags());
+		model.addAttribute("activeVersion", view.activeVersion());
+        model.addAttribute("selectedTagIds", view.selectedTagIds());
 		return "admin/forms/list";
 	}
 
@@ -151,49 +145,44 @@ public class FormAdminController {
 	@GetMapping("{id}/fields")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String fields(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
+		String workflowRole;
 		if(preAuthorizeService.formManager(id, authUserEppn)) {
-			model.addAttribute("workflowRole", "manager");
+			workflowRole = "manager";
 		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			model.addAttribute("workflowRole", "admin");
+			workflowRole = "admin";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
-		Form form = formService.getById(id);
-		model.addAttribute("form", form);
-		model.addAttribute("workflow", form.getWorkflow());
-		PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
-		if (preFill != null) {
-			model.addAttribute("preFillTypes", preFill.getTypes());
-		} else {
-			model.addAttribute("preFillTypes", new HashMap<>());
-		}
-		model.addAttribute("document", form.getDocument());
+		var view = uiFetchService.buildAdminFormFieldsView(authUserEppn, workflowRole, id);
+		model.addAttribute("workflowRole", view.getWorkflowRole());
+		model.addAttribute("form", view.getForm());
+		model.addAttribute("workflow", view.getWorkflow());
+		model.addAttribute("preFillTypes", view.getPreFillTypeOptions());
+		model.addAttribute("document", view.getDocument());
 		return "admin/forms/fields";
 	}
 
 	@GetMapping("{id}/signs")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addSigns(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) throws EsupSignatureIOException {
+		String workflowRole;
 		if(preAuthorizeService.formManager(id, authUserEppn)) {
-			model.addAttribute("workflowRole", "manager");
+			workflowRole = "manager";
 		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			model.addAttribute("workflowRole", "admin");
+			workflowRole = "admin";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
-		Form form = formService.getById(id);
-		if (form.getWorkflow() != null) {
-			model.addAttribute("spots", formService.getSpots(id));
-			model.addAttribute("srpMap", formService.getSrpMap(form));
-		}
-		if (form.getDocument() != null) {
-			form.setTotalPageCount(formService.getTotalPagesCount(id));
-		}
-		model.addAttribute("form", form);
-		model.addAttribute("workflow", form.getWorkflow());
-		model.addAttribute("document", form.getDocument());
+		var view = uiFetchService.buildAdminFormSignsView(authUserEppn, workflowRole, id);
+		model.addAttribute("workflowRole", view.getWorkflowRole());
+		model.addAttribute("form", view.getForm());
+		model.addAttribute("workflow", view.getWorkflow());
+		model.addAttribute("document", view.getDocument());
+		model.addAttribute("spots", view.getSpots());
+		model.addAttribute("srpMap", view.getSrpMap());
+		model.addAttribute("defaultSignImageNumber", view.getDefaultSignImageNumber());
 		return "admin/forms/signs";
 	}
 
@@ -246,36 +235,27 @@ public class FormAdminController {
 	@GetMapping("/update/{id}")
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") long id, Model model, RedirectAttributes redirectAttributes) {
+		String workflowRole;
 		if(preAuthorizeService.formManager(id, authUserEppn)) {
-			model.addAttribute("workflowRole", "manager");
+			workflowRole = "manager";
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			model.addAttribute("workflowRole", "admin");
+			workflowRole = "admin";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
-		Form form = formService.getById(id);
-		model.addAttribute("form", form);
-		model.addAttribute("fields", form.getFields());
-		model.addAttribute("roles", userService.getAllRoles());
-		model.addAttribute("document", form.getDocument());
-		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			model.addAttribute("roles", userService.getAllRoles());
-			List<Workflow> workflows = workflowService.getSystemWorkflows();
-			workflows.add(form.getWorkflow());
-			model.addAttribute("workflowTypes", workflows);
-			model.addAttribute("workflowRole", "admin");
-		} else {
-			model.addAttribute("roles", userService.getManagersRoles(authUserEppn));
-			model.addAttribute("workflowTypes", workflowService.getManagerWorkflows(authUserEppn));
-			model.addAttribute("workflowRole", "manager");
-		}
-		List<PreFill> preFillTypes = preFillService.getPreFillValues();
-		model.addAttribute("preFillTypes", preFillTypes);
+		var view = uiFetchService.buildAdminFormUpdateView(authUserEppn, workflowRole, id);
+		model.addAttribute("workflowRole", view.getWorkflowRole());
+		model.addAttribute("form", view.getForm());
+		model.addAttribute("roles", view.getRoles());
+		model.addAttribute("document", view.getDocument());
+		model.addAttribute("workflowTypes", view.getWorkflowTypes());
+		model.addAttribute("preFillTypes", view.getPreFillTypes());
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("targetTypes", DocumentIOType.values());
-		model.addAttribute("model", form.getDocument());
-        model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
+		model.addAttribute("model", view.getDocument());
+	        model.addAttribute("allTags", view.getAllTags());
+	        model.addAttribute("selectedTagIds", view.getSelectedTagIds());
         return "admin/forms/update";
 	}
 

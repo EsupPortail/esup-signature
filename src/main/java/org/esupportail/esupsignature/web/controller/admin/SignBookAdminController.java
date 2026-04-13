@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.js.JsSlimSelect;
 import org.esupportail.esupsignature.dto.view.UserDto;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.dto.view.signbook.SignBookListItemDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -97,9 +97,9 @@ public class SignBookAdminController {
 			docTitleFilter = "";
 		}
 		if(globalProperties.getInfiniteScrolling()) {
-			model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+			model.addAttribute("signBooks", new PageImpl<SignBookListItemDto>(new ArrayList<>(), pageable, 1));
 		} else {
-			Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+			Page<SignBookListItemDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 			model.addAttribute("signBooks", signBooks);
 		}
         model.addAttribute("statusFilter", statusFilter);
@@ -152,10 +152,12 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
 			docTitleFilter = "";
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+		Page<SignBookListItemDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariables(model.asMap());
+        ctx.setVariable("userEppn", userEppn);
+        ctx.setVariable("statusFilter", statusFilter);
         CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         ctx.setVariable("_csrf", token);
 		return templateEngine.process("admin/signbooks/includes/list-elem.html", ctx);

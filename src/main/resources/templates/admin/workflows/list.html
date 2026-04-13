@@ -23,14 +23,14 @@
                 <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
                     <select name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
-                        <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
-                        <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
-                        <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
+                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
+                        <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
+                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
+                        <option value="users" th:selected="${displayWorkflowType == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
                     </select>
                     <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
                         <th:block th:each="tag : ${allTags}">
-                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                         </th:block>
                     </select>
                 </div>
@@ -62,8 +62,8 @@
                                     </th:block>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${workflow.isFeatured}" class="fa-solid fa-check text-success"></i>
-                                    <i th:unless="${workflow.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
+                                    <i th:if="${workflow.featured}" class="fa-solid fa-check text-success"></i>
+                                    <i th:unless="${workflow.featured}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
@@ -71,7 +71,7 @@
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.roles}"></td>
                                 <td th:class="${workflow.id != null} ? 'clickable-td' : ''" >
-                                    <span th:if="${workflow.createBy != null}" th:text="${workflow.createBy.eppn}"></span>
+                                    <span th:if="${workflow.createByEppn != null}" th:text="${workflow.createByEppn}"></span>
 
                                 </td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
@@ -120,12 +120,12 @@
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUriPresent}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
                                                     <i class="fa-solid fa-binoculars pr-2"></i> Scanner la source
                                                 </a>
                                             </li>
                                             <li>
-                                                <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
+                                                <a th:if="${!workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
                                                     <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
                                                 </a>

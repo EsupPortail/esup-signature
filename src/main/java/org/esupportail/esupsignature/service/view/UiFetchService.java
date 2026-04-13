@@ -3,6 +3,10 @@ package org.esupportail.esupsignature.service.view;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
+import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
+import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
+import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
+import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -24,45 +28,28 @@ import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiCurrentUserDto;
 import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
+import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
-import org.esupportail.esupsignature.entity.AuditTrail;
-import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.Certificat;
-import org.esupportail.esupsignature.entity.Comment;
-import org.esupportail.esupsignature.entity.Data;
-import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Field;
-import org.esupportail.esupsignature.entity.Form;
-import org.esupportail.esupsignature.entity.LiveWorkflow;
-import org.esupportail.esupsignature.entity.LiveWorkflowStep;
-import org.esupportail.esupsignature.entity.Log;
-import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
-import org.esupportail.esupsignature.entity.SignRequestParams;
-import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.WorkflowStep;
-import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.ShareType;
-import org.esupportail.esupsignature.entity.enums.SignLevel;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
-import org.esupportail.esupsignature.entity.enums.SignType;
-import org.esupportail.esupsignature.entity.enums.SignWith;
-import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.AuditTrailService;
 import org.esupportail.esupsignature.service.DataService;
 import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.FieldPropertieService;
+import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.ReportService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.SignWithService;
+import org.esupportail.esupsignature.service.TagService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.UserPropertieService;
 import org.esupportail.esupsignature.service.UserShareService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
+import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
@@ -85,6 +72,7 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -101,11 +89,14 @@ public class UiFetchService {
     private final SignBookService signBookService;
     private final DataService dataService;
     private final WorkflowService workflowService;
+    private final FormService formService;
     private final UserShareService userShareService;
     private final UserService userService;
     private final UserPropertieService userPropertieService;
     private final FieldPropertieService fieldPropertieService;
     private final RecipientService recipientService;
+    private final TagService tagService;
+    private final PreFillService preFillService;
     private final SignWithService signWithService;
     private final ReportService reportService;
     private final AuditTrailService auditTrailService;
@@ -126,11 +117,14 @@ public class UiFetchService {
                           SignBookService signBookService,
                           DataService dataService,
                           WorkflowService workflowService,
+                          FormService formService,
                           UserShareService userShareService,
                           UserService userService,
                           UserPropertieService userPropertieService,
                           FieldPropertieService fieldPropertieService,
                           RecipientService recipientService,
+                          TagService tagService,
+                          PreFillService preFillService,
                           SignWithService signWithService,
                           ReportService reportService,
                           AuditTrailService auditTrailService,
@@ -150,11 +144,14 @@ public class UiFetchService {
         this.signBookService = signBookService;
         this.dataService = dataService;
         this.workflowService = workflowService;
+        this.formService = formService;
         this.userShareService = userShareService;
         this.userService = userService;
         this.userPropertieService = userPropertieService;
         this.fieldPropertieService = fieldPropertieService;
         this.recipientService = recipientService;
+        this.tagService = tagService;
+        this.preFillService = preFillService;
         this.signWithService = signWithService;
         this.reportService = reportService;
         this.auditTrailService = auditTrailService;
@@ -192,6 +189,183 @@ public class UiFetchService {
                 buildHomeSignBookItems(userEppn, authUserEppn, "toSign"),
                 buildHomeSignBookItems(userEppn, authUserEppn, "pending")
         );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminWorkflowListViewDto buildAdminWorkflowListView(String authUserEppn,
+                                                               String workflowRole,
+                                                               DisplayWorkflowType displayWorkflowType,
+                                                               List<Tag> selectedTags) {
+        DisplayWorkflowType effectiveDisplayWorkflowType = displayWorkflowType != null ? displayWorkflowType : DisplayWorkflowType.system;
+        List<Tag> effectiveSelectedTags = selectedTags != null ? selectedTags : List.of();
+        List<Workflow> workflows = "admin".equals(workflowRole)
+                ? workflowService.getWorkflowsByDisplayWorkflowTypeAndSelectedTags(effectiveDisplayWorkflowType, effectiveSelectedTags)
+                : workflowService.getManagerWorkflows(authUserEppn);
+        List<String> roles = "manager".equals(workflowRole)
+                ? userService.getManagersRoles(authUserEppn)
+                : List.of();
+        return uiFetchMapper.toAdminWorkflowListViewDto(
+                workflowRole,
+                effectiveDisplayWorkflowType.name(),
+                effectiveSelectedTags.stream().map(Tag::getId).filter(Objects::nonNull).toList(),
+                tagService.getAllTags(Pageable.unpaged()).getContent().stream().map(uiFetchMapper::toAdminWorkflowTagDto).toList(),
+                roles,
+                workflows.stream().map(uiFetchMapper::toAdminWorkflowRowDto).toList()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminFormListViewDto buildAdminFormListView(String authUserEppn,
+                                                       String workflowRole,
+                                                       List<Tag> selectedTags,
+                                                       Boolean activeVersion) {
+        List<Tag> effectiveSelectedTags = selectedTags != null ? selectedTags : List.of();
+        List<Form> forms = ("admin".equals(workflowRole)
+                ? formService.getAllForms(effectiveSelectedTags, activeVersion)
+                : formService.getManagerForms(effectiveSelectedTags, activeVersion, authUserEppn))
+                .stream()
+                .sorted(java.util.Comparator.comparing(form -> form.getTitle() != null ? form.getTitle().toLowerCase() : ""))
+                .toList();
+        List<String> roles = "admin".equals(workflowRole)
+                ? userService.getAllRoles()
+                : userService.getManagersRoles(authUserEppn);
+        List<Workflow> workflowTypes = "admin".equals(workflowRole)
+                ? workflowService.getSystemWorkflows()
+                : workflowService.getManagerWorkflows(authUserEppn);
+        List<PreFill> preFillTypes = preFillService.getPreFillValues();
+        return uiFetchMapper.toAdminFormListViewDto(
+                workflowRole,
+                activeVersion,
+                effectiveSelectedTags.stream().map(Tag::getId).filter(Objects::nonNull).toList(),
+                tagService.getAllTags(Pageable.unpaged()).getContent().stream().map(uiFetchMapper::toAdminFormTagDto).toList(),
+                roles,
+                workflowTypes.stream().map(uiFetchMapper::toAdminFormWorkflowOptionDto).toList(),
+                preFillTypes.stream().map(uiFetchMapper::toAdminFormPreFillOptionDto).toList(),
+                forms.stream().map(uiFetchMapper::toAdminFormRowDto).toList()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminWorkflowUpdateViewDto buildAdminWorkflowUpdateView(String authUserEppn,
+                                                                  String workflowRole,
+                                                                  Long workflowId) {
+        Workflow workflow = workflowService.getById(workflowId);
+        List<String> roles = "admin".equals(workflowRole)
+                ? userService.getAllRoles()
+                : userService.getManagersRoles(authUserEppn);
+        List<AdminWorkflowUpdateViewDto.TagDto> allTags = tagService.getAllTags(Pageable.unpaged())
+                .getContent()
+                .stream()
+                .map(uiFetchMapper::toAdminWorkflowUpdateTagDto)
+                .toList();
+        List<Long> selectedTagIds = workflow.getTags() == null
+                ? List.of()
+                : workflow.getTags().stream().map(Tag::getId).filter(Objects::nonNull).toList();
+        return uiFetchMapper.toAdminWorkflowUpdateViewDto(
+                workflowRole,
+                workflow,
+                (long) signBookService.countSignBooksByWorkflow(workflowId),
+                roles,
+                allTags,
+                selectedTagIds
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminWorkflowUpdateViewDto.WorkflowDto buildAdminWorkflowTargetsWorkflowView(Long workflowId) {
+        return uiFetchMapper.toAdminWorkflowUpdateWorkflowDto(workflowService.getById(workflowId));
+    }
+
+    @Transactional(readOnly = true)
+    public AdminFormDetailViewDto buildAdminFormUpdateView(String authUserEppn,
+                                                           String workflowRole,
+                                                           Long formId) {
+        Form form = formService.getById(formId);
+        List<String> roles = "admin".equals(workflowRole)
+                ? userService.getAllRoles()
+                : userService.getManagersRoles(authUserEppn);
+        List<Workflow> availableWorkflows = "admin".equals(workflowRole)
+                ? mergeWorkflowOptions(workflowService.getSystemWorkflows(), form.getWorkflow())
+                : workflowService.getManagerWorkflows(authUserEppn);
+        List<PreFill> preFillTypes = preFillService.getPreFillValues();
+        return uiFetchMapper.toAdminFormDetailViewDto(
+                workflowRole,
+                form,
+                roles,
+                availableWorkflows.stream().map(uiFetchMapper::toAdminFormDetailWorkflowOptionDto).toList(),
+                preFillTypes.stream().map(uiFetchMapper::toAdminFormDetailPreFillOptionDto).toList(),
+                tagService.getAllTags(Pageable.unpaged()).getContent().stream().map(uiFetchMapper::toAdminFormDetailTagDto).toList(),
+                form.getTags() == null ? List.of() : form.getTags().stream().map(Tag::getId).filter(Objects::nonNull).toList(),
+                Collections.emptyMap(),
+                List.of(),
+                Collections.emptyMap(),
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminFormDetailViewDto buildAdminFormFieldsView(String authUserEppn,
+                                                           String workflowRole,
+                                                           Long formId) {
+        Form form = formService.getById(formId);
+        PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
+        Map<String, List<String>> preFillTypeOptions = preFill != null ? preFill.getTypes() : Collections.emptyMap();
+        return uiFetchMapper.toAdminFormDetailViewDto(
+                workflowRole,
+                form,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                preFillTypeOptions,
+                List.of(),
+                Collections.emptyMap(),
+                null
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public AdminFormDetailViewDto buildAdminFormSignsView(String authUserEppn,
+                                                          String workflowRole,
+                                                          Long formId) {
+        Form form = formService.getById(formId);
+        List<org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto> spots = form.getWorkflow() != null
+                ? uiFetchMapper.toSignRequestParamsFrontDtos(formService.getSpots(formId))
+                : List.of();
+        Map<Integer, Long> srpMap = form.getWorkflow() != null
+                ? formService.getSrpMap(form)
+                : Collections.emptyMap();
+        Integer defaultSignImageNumber = userService.getFullUserByEppn(authUserEppn) != null
+                ? userService.getFullUserByEppn(authUserEppn).getDefaultSignImageNumber()
+                : null;
+        return uiFetchMapper.toAdminFormDetailViewDto(
+                workflowRole,
+                form,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                Collections.emptyMap(),
+                spots,
+                srpMap,
+                defaultSignImageNumber
+        );
+    }
+
+    private List<Workflow> mergeWorkflowOptions(List<Workflow> workflows, Workflow currentWorkflow) {
+        Map<Long, Workflow> workflowMap = new LinkedHashMap<>();
+        if (workflows != null) {
+            workflows.stream()
+                    .filter(Objects::nonNull)
+                    .filter(workflow -> workflow.getId() != null)
+                    .forEach(workflow -> workflowMap.put(workflow.getId(), workflow));
+        }
+        if (currentWorkflow != null && currentWorkflow.getId() != null) {
+            workflowMap.put(currentWorkflow.getId(), currentWorkflow);
+        }
+        return new ArrayList<>(workflowMap.values());
     }
 
     private List<UiHomeBootstrapDto.SignBookItem> buildHomeSignBookItems(String userEppn, String authUserEppn, String statusFilter) {

@@ -10,7 +10,7 @@
                     <div class="step-vertical-icon bg-primary border-primary text-white fw-bold" th:text="${iterator.index + 1}"></div>
                     <div class="step-vertical-content bg-light p-2 rounded">
                         <div class="d-flex justify-content-between align-items-start gap-2">
-                            <span class="step-type" th:text="#{'signbook.signtype.' + ${workflowStep.getSignType()}}"></span>
+                            <span class="step-type" th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
                             <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fa-solid fa-users"></i></span>
                             <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fa-solid fa-user"></i></span>
                         </div>
