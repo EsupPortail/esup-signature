@@ -41,6 +41,7 @@ export class SignPlacementController extends EventFactory {
         //     this.currentScale = localStorage.getItem("scale");
         // }
         this.initListeners();
+        this.refreshSteps();
     }
 
     getScrollContainer() {
@@ -150,8 +151,8 @@ export class SignPlacementController extends EventFactory {
             $("#addSignButton").removeAttr("disabled");
             $(window).off("beforeunload" + this.beforeUnloadNamespace);
             this.enableForwardButton();
-            this.goStep1();
         }
+        this.refreshSteps();
     }
 
     onSpotSaved(spotData) {
@@ -318,7 +319,7 @@ export class SignPlacementController extends EventFactory {
         let srp = this.signRequestParamses.get(id);
         this.id++;
         if (!isSpot) {
-            this.goStep2();
+            this.refreshSteps();
         }
         return srp;
     }
@@ -388,6 +389,66 @@ export class SignPlacementController extends EventFactory {
             && !selectedOption.is("[unavailable]");
     }
 
+    hasPendingSignaturePlacement() {
+        const activeSigns = Array.from(this.signRequestParamses.values()).filter(signRequestParams =>
+            signRequestParams != null
+            && signRequestParams.isSign
+            && signRequestParams.signImageNumber != null
+            && signRequestParams.signImageNumber >= 0
+            && signRequestParams.signImageNumber !== 999999
+        );
+
+        if (activeSigns.length === 0) {
+            return false;
+        }
+
+        const hasInvalidPlacement = activeSigns.some(signRequestParams => signRequestParams.inside === false);
+        if (hasInvalidPlacement) {
+            return false;
+        }
+
+        const currentSignRequestParamses = Array.isArray(this.currentSignRequestParamses)
+            ? this.currentSignRequestParamses
+            : [];
+
+        if (currentSignRequestParamses.length > 0) {
+            return currentSignRequestParamses.every(signRequestParams => signRequestParams?.ready === true);
+        }
+
+        return true;
+    }
+
+    refreshSteps() {
+        const selectCertType = $("#certType");
+        if (!selectCertType.length) {
+            return;
+        }
+
+        const selectableOptions = this.getSelectableCertTypeOptions();
+        if (selectableOptions.length === 1 && !this.hasValidSelectedCertType()) {
+            selectableOptions.prop("selected", true);
+            selectCertType.trigger("change");
+        }
+
+        const countVisible = selectCertType.find("option:not([unavailable])").length;
+        if (countVisible > 0) {
+            selectCertType.removeAttr("disabled");
+        }
+
+        if (!this.hasValidSelectedCertType()) {
+            this.goStep1();
+            selectCertType.trigger("focus");
+            return;
+        }
+
+        if (this.hasPendingSignaturePlacement()) {
+            this.goStep3();
+            return;
+        }
+
+        this.goStep2();
+    }
+
     goStep1() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
@@ -397,25 +458,28 @@ export class SignPlacementController extends EventFactory {
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
+        let selectCertType = $("#certType");
 
-        addSignButton.removeAttr("disabled");
+        selectCertType.removeAttr("disabled");
+        addSignButton.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
-        this.setButtonVariant(addSignButton, "btn-success");
+        this.setButtonVariant(addSignButton, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
         this.setButtonVariant(signLaunchButton, "btn-secondary");
-        this.setCertTypeHighlight(false);
+        this.setCertTypeHighlight(true);
 
         this.setStepState(step1, true, false, false);
-        this.setStepState(step2, true, false, false);
+        this.setStepState(step2, false, false, true);
         this.setStepState(step3, false, false, true);
 
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
+        step3.find(".step-horizontal-v2-icon").html("3");
     }
 
     goStep2() {
@@ -425,19 +489,20 @@ export class SignPlacementController extends EventFactory {
         let addSignButton = $("#addSignButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
-        let selectCertType = $("#certType");
         let signLaunchButton = $("#signLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
+        let selectCertType = $("#certType");
 
-        addSignButton.attr("disabled", "disabled");
-        refuseLaunchButton.attr("disabled", "disabled");
+        selectCertType.removeAttr("disabled");
+        addSignButton.removeAttr("disabled");
+        refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
-        refuseLaunchDiv.addClass("d-none");
+        refuseLaunchDiv.removeClass("d-none");
 
-        this.setButtonVariant(addSignButton, "btn-secondary");
+        this.setButtonVariant(addSignButton, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-secondary");
+        this.setButtonVariant(refuseLaunchButton, "btn-danger");
         this.setButtonVariant(signLaunchButton, "btn-secondary");
 
         this.setStepState(step1, false, true, false);
@@ -447,40 +512,41 @@ export class SignPlacementController extends EventFactory {
         this.setCertTypeHighlight(false);
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
-        const selectableOptions = this.getSelectableCertTypeOptions();
-        let countEnable = selectableOptions.length;
-        if(countEnable === 1) {
-            selectableOptions.prop("selected", true);
-            selectCertType.trigger("change");
-            this.goStep3();
-        } else if (this.hasValidSelectedCertType()) {
-            this.goStep3();
-        } else {
-            selectCertType.trigger("focus");
-        }
-        let countVisible = selectCertType.find("option:not([unavailable])").length;
-        if(countVisible > 1) {
-            selectCertType.removeAttr("disabled");
-        }
+        step3.find(".step-horizontal-v2-icon").html("3");
+
     }
 
     goStep3() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
         let step3 = $("#step-3");
+        let addSignButton = $("#addSignButton2");
+        let insertBtn = $("#insert-btn");
+        let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
+        let refuseLaunchDiv = $("#refuseLaunchDiv");
+        let selectCertType = $("#certType");
 
         this.setStepState(step1, false, true, false);
         this.setStepState(step2, false, true, false);
         this.setStepState(step3, true, false, false);
 
+        selectCertType.removeAttr("disabled");
+        addSignButton.attr("disabled", "disabled");
+        insertBtn.removeAttr("disabled");
+        refuseLaunchButton.attr("disabled", "disabled");
         signLaunchButton.removeAttr("disabled");
-        signLaunchButton.removeClass("btn-secondary");
-        signLaunchButton.addClass("btn-success");
+        refuseLaunchDiv.addClass("d-none");
+
+        this.setButtonVariant(addSignButton, "btn-secondary");
+        this.setButtonVariant(insertBtn, "btn-success");
+        this.setButtonVariant(refuseLaunchButton, "btn-secondary");
+        this.setButtonVariant(signLaunchButton, "btn-success");
         this.setCertTypeHighlight(false);
 
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
+        step3.find(".step-horizontal-v2-icon").html("3");
     }
 
     destroy() {

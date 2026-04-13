@@ -496,10 +496,6 @@ dd {
     text-overflow: ellipsis;
 }
 
-.es-signrequest-workspace-list {
-    margin-top: 128px;
-}
-
 .postitarea {
     /*overflow-y: scroll;*/
     margin-bottom: 36px;

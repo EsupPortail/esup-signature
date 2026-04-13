@@ -323,7 +323,7 @@ public class UiFetchService {
         Boolean isRoleManager = authUserEppn != null && preAuthorizeService.isManager(authUserEppn);
         Boolean isOneSignShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.sign);
         Boolean isOneReadShare = authUserEppn != null && userShareService.isOneShareByType(userEppn, authUserEppn, ShareType.read);
-        Boolean certificatProblem = userService.getByEppn(userEppn) != null && certificatService.checkCertificatProblem(userService.getRoles(userEppn));
+        Boolean certificatProblem = certificatService.checkCertificatProblem(userService.getRoles(userEppn));
         return uiFetchMapper.toUiCountersDto(
                 signRequestService.getNbPendingSignRequests(userEppn),
                 signBookService.nbToSignSignBooks(userEppn),

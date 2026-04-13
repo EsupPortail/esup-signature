@@ -9,8 +9,8 @@
 					<footer class="footer bg-secondary fixed-bottom text-center text-white">
 					  <span th:text="#{application.footer}"></span> - <span th:text="${#dates.year(#dates.createNow())}"></span> - <span id="footer-version-app" th:text="${versionApp}"></span><span id="footer-profile" th:if="${profile != null}" th:text="' - ' + ${profile}"></span> | <a class="text-white" href="/user">Accueil</a> | <a class="text-white" href="/rgpd">Données personnelles</a> | <a class="text-white" href="/rgaa" th:text="#{rgaa.title}"></a>
             <span th:if="${user.roles.contains('ROLE_ADMIN')}"  class="w-100 bg-danger text-center">
-																				<span id="footer-certificat-problem" th:classappend="${certificatProblem == true} ? '' : 'd-none'">Au moins un des certificats serveur va, ou est expiré, merci vérifier les certificats concernés.</span>
-								<a id="footer-new-version-link" target="_blank" class="text-white" th:href="'https://github.com/EsupPortail/esup-signature/releases/tag/' + ${globalProperties.newVersion}" th:if="${globalProperties.newVersion != null}" th:text="'Nouvelle version diponible : ' + ${globalProperties.newVersion}"></a>
+			<span id="footer-certificat-problem" th:classappend="${certificatProblem == true} ? '' : 'd-none'">Au moins un certificat cachet pose problème (non présent ou expire bientôt).</span>
+			<a id="footer-new-version-link" target="_blank" class="text-white" th:href="'https://github.com/EsupPortail/esup-signature/releases/tag/' + ${globalProperties.newVersion}" th:if="${globalProperties.newVersion != null}" th:text="'Nouvelle version diponible : ' + ${globalProperties.newVersion}"></a>
             </span>
 		</footer>
 	</div>

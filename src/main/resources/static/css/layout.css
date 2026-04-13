@@ -164,6 +164,11 @@ header {
     overflow-y: auto;
 }
 
+
+.es-signrequest-workspace-list {
+    margin-top: 42px;
+}
+
 .workspace,
 .es-workspace {
     margin-left: 0;

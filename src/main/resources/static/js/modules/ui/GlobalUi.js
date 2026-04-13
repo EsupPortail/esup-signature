@@ -59,23 +59,6 @@ export class GlobalUi {
         return response.json();
     }
 
-    hasUserUiTargets() {
-        return document.getElementById('navbar-user-display-name') != null
-            || document.getElementById('navbar-user-info-name') != null
-            || document.getElementById('navbar-security-service-name') != null;
-    }
-
-    hasCounterUiTargets() {
-        return document.getElementById('navbar-badge-to-sign') != null
-            || document.getElementById('footer-certificat-problem') != null;
-    }
-
-    hasAdminStatusTargets() {
-        return document.getElementById('admin-side-nb-sessions') != null
-            || document.getElementById('admin-index-nb-sessions') != null
-            || document.getElementById('navbar-admin-dss-alert') != null;
-    }
-
     async refreshUiFetchData() {
         try {
             const uiData = await this.fetchUiJson('/ws-secure/ui/ui-data');
@@ -97,7 +80,7 @@ export class GlobalUi {
         this.applyUiForCurrentUser(uiData.currentUser ?? null);
         this.applyUiCounters(uiData.counters ?? null);
         if (uiData.adminStatus != null) {
-            this.applyAdminUiStatus(uiData.adminStatus);
+            this.applyAdminUiStatus(uiData.adminStatus, uiData.counters);
         }
     }
 
@@ -285,12 +268,12 @@ export class GlobalUi {
         document.dispatchEvent(new CustomEvent('uiConfigLoaded', {detail: config}));
     }
 
-    applyAdminUiStatus(status) {
+    applyAdminUiStatus(status, counters) {
         if (status == null) {
             return;
         }
         sessionStorage.setItem('adminUiStatus', JSON.stringify(status));
-        const isAlert = status.dssStatus == null || status.dssStatus === true;
+        const isAlert = status.dssStatus == null || status.dssStatus === true || counters.certificatProblem === true;
         this.setElementText('admin-side-nb-sessions', status.nbSessions);
         this.setElementText('admin-index-nb-sessions', status.nbSessions);
         this.toggleStatusClasses(document.getElementById('admin-side-dss-icon'), isAlert);

@@ -52,7 +52,7 @@
         </a>
         <a th:classappend="${activeMenu == 'certificats'} ? 'btn-secondary' : 'btn-light'" th:if="${validationToolsEnabled}"
             title="Gestion des certificats" type="button" href="/admin/certificats" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
-            <i class="fi fi-rr-diploma" th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${expiredCertificat == true} ? 'text-danger' : ''" class="sidebar-label">Gestion des certificats</span>
+            <i class="fi fi-rr-diploma" th:classappend="${certificatProblem == true} ? 'text-danger' : 'text-success'"></i> <span th:classappend="${certificatProblem == true} ? 'text-danger' : ''" class="sidebar-label">Gestion des certificats</span>
         </a>
         <a th:classappend="${activeMenu == 'tokensApi'} ? 'btn-secondary' : 'btn-light'"
             title="Tokens API" href="/admin/ws-access-token" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">

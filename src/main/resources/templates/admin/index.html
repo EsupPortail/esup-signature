@@ -56,7 +56,7 @@
                             <i class="fi fi-tr-employee-man-alt" style="font-size: 40px;"></i><br><span>Gestionnaires de rôles</span>
                         </a>
                         <a title="Gestion des certificats" type="button" href="/admin/certificats" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
-                            <i class="fi fi-tr-diploma" style="font-size: 40px;" th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${expiredCertificat == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
+                            <i class="fi fi-tr-diploma" style="font-size: 40px;" th:classappend="${certificatProblem == true} ? 'text-danger' : 'text-success'"></i><br><span th:classappend="${certificatProblem == true} ? 'text-danger' : 'text-success'">Gestion des certificats</span>
                         </a>
                         <a title="Tokens API" type="button" href="/admin/ws-access-token" class="btn btn-light border-secondary-subtle py-4 text-center col-2">
                             <i class="fi fi-tr-digital-key" style="font-size: 40px;"></i><br>Tokens API

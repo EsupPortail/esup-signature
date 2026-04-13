@@ -43,7 +43,7 @@
                         <option value="" disabled selected hidden>Type de signature</option>
                         <th:block th:each="signWith : ${signWiths}">
                             <th:block th:if="${signWith.name != 'sealCert'}">
-                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
+                                <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}" th:unavailable="${signWith.name == 'nexuCert'} ? 'unavailable'"></option>
                             </th:block>
                             <th:block th:if="${signWith.name == 'sealCert'}">
                                 <option th:if="${sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>

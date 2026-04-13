@@ -228,7 +228,13 @@ export class SignUi {
 
     hasPendingSignaturePlacement() {
         const signPlacementController = this.workspace?.signPlacementController;
-        if (signPlacementController == null || signPlacementController.signRequestParamses == null) {
+        if (signPlacementController == null) {
+            return false;
+        }
+        if (typeof signPlacementController.hasPendingSignaturePlacement === "function") {
+            return signPlacementController.hasPendingSignaturePlacement();
+        }
+        if (signPlacementController.signRequestParamses == null) {
             return false;
         }
         return Array.from(signPlacementController.signRequestParamses.values()).some(signRequestParams =>
@@ -255,14 +261,22 @@ export class SignUi {
 
     syncSignatureStepUi() {
         const signPlacementController = this.workspace?.signPlacementController;
-        if (signPlacementController == null || !this.hasPendingSignaturePlacement()) {
+        if (signPlacementController == null) {
+            return;
+        }
+        if (typeof signPlacementController.refreshSteps === "function") {
+            signPlacementController.refreshSteps();
+            return;
+        }
+        if (this.hasValidSelectedCertType() && this.hasPendingSignaturePlacement()) {
+            signPlacementController.goStep3();
             return;
         }
         if (this.hasValidSelectedCertType()) {
-            signPlacementController.goStep3();
-        } else {
             signPlacementController.goStep2();
+            return;
         }
+        signPlacementController.goStep1();
     }
 
     initMobileCertTypeVisibility() {
@@ -290,6 +304,7 @@ export class SignUi {
         let self = this;
         if($("#certType").val() == null) {
             this.checkSignOptions();
+            this.syncSignatureStepUi();
             this.updateMobileCertTypeVisibility();
             return;
         }

@@ -252,11 +252,13 @@ export class SignSpaceManager {
 						cross.css("background-size", signRequestParams.signWidth * pdfViewer.scale);
 						cross.css("height", signRequestParams.signHeight * pdfViewer.scale);
 						signRequestParams.dropped = true;
-						signPlacementController.goStep2();
 						console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos);
 					}
 				}
 				signPlacementController.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
+				if (typeof signPlacementController.refreshSteps === "function") {
+					signPlacementController.refreshSteps();
+				}
 			},
 			out: function (event, ui) {
 				if ($(this).data("locked") != null && $(this).data("locked") !== ui.draggable.attr("id")) {
@@ -274,7 +276,9 @@ export class SignSpaceManager {
 					if (cross.attr("id") === ui.draggable.attr("id")) {
 						cross.resizable("enable");
 						signRequestParams.signSpace = null;
-						signPlacementController.goStep1();
+						if (typeof signPlacementController.refreshSteps === "function") {
+							signPlacementController.refreshSteps();
+						}
 					}
 				}
 			}

@@ -41,6 +41,7 @@ export class Nexu {
                     $("#signLaunchButton").show();
                 }
                 self.updateSignModal();
+                $("#certType > option[value='nexuCert']").removeAttr('unavailable');
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();

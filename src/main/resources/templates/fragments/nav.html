@@ -96,7 +96,7 @@
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary bg-opacity-75' : ''">
                         <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
-                        <span id="navbar-admin-dss-alert" title="Statut DSS" class="badge rounded-pill bg-danger ms-1" th:classappend="${dssStatus == null || dssStatus == true || expiredCertificat == true} ? '' : 'd-none'">!</span>
+                        <span id="navbar-admin-dss-alert" title="Statut DSS" class="badge rounded-pill bg-danger ms-1" th:classappend="${dssStatus == null || dssStatus == true || certificatProblem == true} ? '' : 'd-none'">!</span>
                     </a>
                 </li>
             </ul>
