@@ -19,8 +19,8 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card mb-1 mx-auto">
-                <div class="card-body">
+            <div class="">
+                <div class="alert alert-light m-2">
                     <h5 class="text-center"><b>Tags</b></h5>
                     <div class="alert alert-secondary mb-2">
                         Ici, vous pouvez créer des tags (mot + couleur) afin de catégoriser vos circuits et vos formulaires.
@@ -88,15 +88,13 @@
                         </tbody>
                         <tfoot>
                         <tr>
-                            <td colspan="100%">
-                                <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                            <td colspan="100%" th:replace="~{fragments/pagination :: pagination}">
                             </td>
                         </tr>
                         </tfoot>
                     </table>
                 </div>
-            </div>
-                </div>
+            </div>                </div>
             <div class="es-sign-buttons es-fixed-action-btns active">
                 <ul class="list-unstyled">
                     <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">

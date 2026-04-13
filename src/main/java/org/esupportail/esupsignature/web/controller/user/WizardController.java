@@ -17,6 +17,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -45,6 +46,9 @@ public class WizardController {
     private WorkflowService workflowService;
 
     @Resource
+    private UiFetchService uiFetchService;
+
+    @Resource
     private FormService formService;
 
     @Resource
@@ -62,8 +66,7 @@ public class WizardController {
                                @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         String modalTile = "Création d'une nouvelle demande personnalisée";
         if(workflowId != null) {
-            Workflow workflow = workflowService.getById(workflowId);
-            workflow.setMessageToDisplay(workflowService.getHelpMessage(userEppn, workflow));
+            var workflow = uiFetchService.buildWorkflowWizardView(workflowId, userEppn);
             modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription();
             model.addAttribute("workflow", workflow);
         }
@@ -246,12 +249,12 @@ public class WizardController {
         JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
         IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
         final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
-        Workflow workflow;
-        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
-        model.addAttribute("workflow", workflow);
+        Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
+        var workflowView = uiFetchService.buildWorkflowView(workflow.getId());
+        model.addAttribute("workflow", workflowView);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {
-            if(workflow!=null && !workflow.getWorkflowSteps().isEmpty()) {
+            if(workflowView != null && !workflowView.getWorkflowSteps().isEmpty()) {
                 return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-save-workflow", context));
             }else {
                 return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-end", context));

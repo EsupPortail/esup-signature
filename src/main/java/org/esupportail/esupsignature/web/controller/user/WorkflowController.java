@@ -11,6 +11,7 @@ import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
+import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,19 +30,21 @@ public class WorkflowController {
     private final WorkflowStepService workflowStepService;
     private final CertificatService certificatService;
     private final RecipientService recipientService;
+    private final UiFetchService uiFetchService;
 
-    public WorkflowController(WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, RecipientService recipientService) {
+    public WorkflowController(WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, RecipientService recipientService, UiFetchService uiFetchService) {
         this.workflowService = workflowService;
         this.workflowStepService = workflowStepService;
         this.certificatService = certificatService;
         this.recipientService = recipientService;
+        this.uiFetchService = uiFetchService;
     }
 
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/{id}", produces = "text/html")
     public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         model.addAttribute("fromAdmin", false);
-        Workflow workflow = workflowService.getById(id);
+        var workflow = uiFetchService.buildWorkflowView(id);
         model.addAttribute("workflow", workflow);
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("workflowRole", "user");

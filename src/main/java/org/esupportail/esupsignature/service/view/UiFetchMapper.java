@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
 import org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto;
@@ -436,6 +437,73 @@ public class UiFetchMapper {
             return null;
         }
         return new AdminWorkflowUpdateViewDto.ViewerDto(user.getEmail(), user.getFirstname(), user.getName());
+    }
+
+    public WorkflowViewDto toWorkflowViewDto(Workflow workflow, String messageToDisplay) {
+        if (workflow == null) {
+            return null;
+        }
+        return new WorkflowViewDto(
+                workflow.getId(),
+                workflow.getDescription(),
+                workflow.getDocumentsSourceUri(),
+                workflow.getSendAlertToAllRecipients(),
+                workflow.getFromCode(),
+                messageToDisplay,
+                workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toWorkflowViewerDto).toList(),
+                workflow.getWorkflowSteps() == null ? List.of() : workflow.getWorkflowSteps().stream().map(this::toWorkflowStepViewDto).toList()
+        );
+    }
+
+    public WorkflowViewDto.ViewerDto toWorkflowViewerDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new WorkflowViewDto.ViewerDto(user.getEmail(), user.getFirstname(), user.getName());
+    }
+
+    public WorkflowViewDto.WorkflowStepDto toWorkflowStepViewDto(WorkflowStep workflowStep) {
+        if (workflowStep == null) {
+            return null;
+        }
+        return new WorkflowViewDto.WorkflowStepDto(
+                workflowStep.getId(),
+                workflowStep.getDescription(),
+                workflowStep.getAutoSign(),
+                workflowStep.getSignType(),
+                workflowStep.getMinSignLevel(),
+                workflowStep.getMaxSignLevel(),
+                workflowStep.getSealVisa(),
+                workflowStep.getMaxRecipients(),
+                workflowStep.getChangeable(),
+                workflowStep.getRepeatable(),
+                workflowStep.getMultiSign(),
+                workflowStep.getSingleSignWithAnnotation(),
+                workflowStep.getAllSignToComplete(),
+                workflowStep.getAttachmentAlert(),
+                workflowStep.getAttachmentRequire(),
+                workflowStep.getUsers() == null ? List.of() : workflowStep.getUsers().stream().map(this::toWorkflowStepUserViewDto).toList(),
+                toWorkflowStepCertificatViewDto(workflowStep.getCertificat())
+        );
+    }
+
+    public WorkflowViewDto.UserDto toWorkflowStepUserViewDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new WorkflowViewDto.UserDto(
+                user.getEppn(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getName()
+        );
+    }
+
+    public WorkflowViewDto.CertificatDto toWorkflowStepCertificatViewDto(Certificat certificat) {
+        if (certificat == null) {
+            return null;
+        }
+        return new WorkflowViewDto.CertificatDto(certificat.getId());
     }
 
     public AdminWorkflowUpdateViewDto.TagDto toAdminWorkflowUpdateTagDto(Tag tag) {

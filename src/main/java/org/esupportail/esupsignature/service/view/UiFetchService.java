@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -274,6 +275,17 @@ public class UiFetchService {
     @Transactional(readOnly = true)
     public AdminWorkflowUpdateViewDto.WorkflowDto buildAdminWorkflowTargetsWorkflowView(Long workflowId) {
         return uiFetchMapper.toAdminWorkflowUpdateWorkflowDto(workflowService.getById(workflowId));
+    }
+
+    @Transactional(readOnly = true)
+    public WorkflowViewDto buildWorkflowView(Long workflowId) {
+        return uiFetchMapper.toWorkflowViewDto(workflowService.getById(workflowId), null);
+    }
+
+    @Transactional(readOnly = true)
+    public WorkflowViewDto buildWorkflowWizardView(Long workflowId, String userEppn) {
+        Workflow workflow = workflowService.getById(workflowId);
+        return uiFetchMapper.toWorkflowViewDto(workflow, workflowService.getHelpMessage(userEppn, workflow));
     }
 
     @Transactional(readOnly = true)
