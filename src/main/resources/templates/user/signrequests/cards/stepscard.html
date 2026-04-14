@@ -77,7 +77,6 @@
                         <div th:id="'liveStep-' + ${stepNumber}"
                             th:class="'step-vertical'
                                 + ${(isCompleted or (isCurrent and not isPending and not isRefused and not isDraft)) ? ' complete' : ''}
-                                + ${(isCompleted and isRefused) ? ' refused' : ''}
                                 + ${(isCurrent and isPending and not isRefused and not isDraft) ? ' active' : ''}
                                 + ${(isCurrent and isRefused) ? ' refused' : ''}">
 
@@ -98,9 +97,9 @@
 
                                 <!-- Étape complétée -->
                                 <th:block th:if="${isCompleted or (isCurrent and isWorkflowFinished)}">
-                                    <i th:if="${not isRefused and not isAutoSign}" class="fi fi-rr-check"></i>
+                                    <i th:if="${(not isRefused and not isAutoSign) or isCompleted}" class="fi fi-rr-check"></i>
                                     <i th:if="${not isRefused and isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
-                                    <i th:if="${isRefused}" class="fi fi-rr-cross-small"></i>
+                                    <i th:if="${isRefused && !isCompleted}" class="fi fi-rr-cross-small"></i>
                                 </th:block>
                             </div>
 
