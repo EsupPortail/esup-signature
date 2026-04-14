@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dto.json;
+package org.esupportail.esupsignature.dto.api;
 
 import java.util.List;
 

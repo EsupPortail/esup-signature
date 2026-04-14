@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.web.wssecure;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.json.UserSignatureStateDto;
+import org.esupportail.esupsignature.dto.api.UserSignatureStateDto;
 import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
 import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;

@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.dto.view.signrequest;
 
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.api.RecipientWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;

@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.api.RecipientWsDto;
+import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;

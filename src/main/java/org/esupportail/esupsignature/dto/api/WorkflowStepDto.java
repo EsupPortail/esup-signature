@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.dto.json;
+package org.esupportail.esupsignature.dto.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.esupportail.esupsignature.entity.enums.SignLevel;

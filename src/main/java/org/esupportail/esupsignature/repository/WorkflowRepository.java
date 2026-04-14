@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
 import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
-import org.esupportail.esupsignature.dto.json.WorkflowDto;
+import org.esupportail.esupsignature.dto.api.WorkflowDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

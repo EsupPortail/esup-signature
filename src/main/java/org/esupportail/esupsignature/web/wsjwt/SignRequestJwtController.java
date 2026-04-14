@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;

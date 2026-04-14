@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.js.JsSlimSelect;
-import org.esupportail.esupsignature.dto.json.SearchRequest;
-import org.esupportail.esupsignature.dto.json.SearchResult;
+import org.esupportail.esupsignature.dto.api.SearchRequest;
+import org.esupportail.esupsignature.dto.api.SearchResult;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;

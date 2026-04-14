@@ -7,7 +7,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto;
 import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
