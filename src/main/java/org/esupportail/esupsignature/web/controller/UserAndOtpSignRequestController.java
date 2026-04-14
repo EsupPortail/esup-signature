@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestBackDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
@@ -69,8 +69,6 @@ public class UserAndOtpSignRequestController {
     public String show(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @PathVariable("id") Long id,
-                       @RequestParam(required = false) Boolean frameMode,
-                       @RequestParam(required = false) String annotation,
                        Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
         String path = httpServletRequest.getRequestURI();
         boolean isOtpView = path.startsWith("/otp");
@@ -83,24 +81,15 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("message", new UiMessageDto("warn", context.signImagesWarningMessage()));
         }
 
-        if(annotation != null && !context.editable()) {
-            return "redirect:/user/signrequests/" + id;
-        }
-
         if(context.signable()
                 && workflow != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(workflow.getId().toString()))
                 && currentStep != null && currentStep.getSignType().equals(SignType.hiddenVisa)) {
             model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, workflow.getId().toString() + ",");
-
         }
-
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
-
-        ShowSignRequestBackDto showBack = uiFetchService.buildShowSignRequestBackDto(context, frameMode, annotation);
-        model.addAttribute("signRequestShowBack", showBack);
-
+        model.addAttribute("showSignRequest", uiFetchService.buildShowSignRequestBackDto(context));
         return "user/signrequests/show";
     }
 

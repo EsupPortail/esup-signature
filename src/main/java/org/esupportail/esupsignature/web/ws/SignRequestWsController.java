@@ -157,7 +157,7 @@ public class SignRequestWsController {
             createByEppn = eppn;
         }
         if(createByEppn == null) {
-            throw new EsupSignatureRuntimeException("Required request parameter 'createByEppn' for method parameter type String is not present");
+            throw new EsupSignatureRuntimeException("Required signRequestLigth parameter 'createByEppn' for method parameter type String is not present");
         }
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;

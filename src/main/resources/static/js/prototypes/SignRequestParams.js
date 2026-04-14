@@ -439,9 +439,9 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
         this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale) - 1  + "px");
-        const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge bg-light border-1 border-secondary-subtle position-absolute d-flex justify-content-between gap-1' style='width: 100%;z-index: 4; top: -38px; left: 0;'>" +
-            "<button id='delete-add-spot' type='button' class='btn btn-sm btn-danger' title='Annuler'><i class='fi fi-rr-trash'></i></button>" +
-            "<button id='submit-add-spot' type='button' class='btn btn-sm btn-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
+        const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge bg-light border border-1 border-secondary-subtle position-absolute d-flex justify-content-start gap-2' style='padding: 4px; z-index: 4; top: -46px; left: 0;'>" +
+            "<button id='delete-add-spot' type='button' class='btn btn-sm btn-transparent text-danger' title='Annuler'><i class='fi fi-rr-trash'></i></button>" +
+            "<button id='submit-add-spot' type='button' class='btn btn-sm btn-transparent text-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
             "</div>";
         this.cross.prepend(spotToolsHtml);
         this.border.remove();

@@ -18,9 +18,9 @@ import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.CommentFrontDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.FieldFrontDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestBackDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestUiCommonDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
@@ -845,21 +845,19 @@ public class UiFetchService {
         user.getUserType();
     }
 
-    public ShowSignRequestBackDto buildShowSignRequestBackDto(ShowSignRequestContext context,
-                                                              Boolean frameMode,
-                                                              String annotation) {
-        SignRequestUiCommonDto common = buildCommonDto(context);
+    public ShowSignRequestDto buildShowSignRequestBackDto(ShowSignRequestContext context) {
+        SignRequestFullDto common = buildCommonDto(context);
         SignRequest signRequest = context.signRequest();
         SignBook signBook = context.signBook();
         String userEppn = context.userEppn();
         String authUserEppn = context.authUserEppn();
-        ShowSignRequestBackDto.RequestMetaDto request = new ShowSignRequestBackDto.RequestMetaDto(
+        ShowSignRequestDto.SignRequestLigthDto request = new ShowSignRequestDto.SignRequestLigthDto(
                 signRequest.getId(),
                 signRequest.getStatus(),
                 signRequest.getDeleted(),
                 signRequest.getToken(),
                 signRequest.getCreateBy() != null
-                        ? new ShowSignRequestBackDto.RequestUserDto(
+                        ? new ShowSignRequestDto.SignRequestUserDto(
                         signRequest.getCreateBy().getId(),
                         signRequest.getCreateBy().getEppn(),
                         signRequest.getCreateBy().getFirstname(),
@@ -869,7 +867,7 @@ public class UiFetchService {
                 signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>()
         );
         Workflow workflow = context.workflow();
-        ShowSignRequestBackDto.SignBookMetaDto signBookMeta = new ShowSignRequestBackDto.SignBookMetaDto(
+        ShowSignRequestDto.SignBookMetaDto signBookMeta = new ShowSignRequestDto.SignBookMetaDto(
                 signBook.getId(),
                 signBook.getWorkflowName(),
                 signBook.getDescription(),
@@ -879,7 +877,7 @@ public class UiFetchService {
                 signBook.getCreateDate(),
                 signBook.getViewers() != null
                         ? signBook.getViewers().stream()
-                        .map(viewer -> new ShowSignRequestBackDto.SignBookViewerDto(
+                        .map(viewer -> new ShowSignRequestDto.SignBookViewerDto(
                                 viewer.getId(),
                                 viewer.getFirstname(),
                                 viewer.getName(),
@@ -888,7 +886,7 @@ public class UiFetchService {
                         .toList()
                         : List.of()
         );
-        ShowSignRequestBackDto.WorkflowMetaDto workflowMeta = new ShowSignRequestBackDto.WorkflowMetaDto(
+        ShowSignRequestDto.WorkflowMetaDto workflowMeta = new ShowSignRequestDto.WorkflowMetaDto(
                 workflow != null,
                 workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAnnotations()),
                 workflow != null && Boolean.TRUE.equals(workflow.getDisableSidebarForExternal()),
@@ -906,12 +904,12 @@ public class UiFetchService {
         boolean tempUsers = !context.isOtpView() && signBookService.isTempUsers(signBook.getId());
         String toSignDocumentContentType = context.toSignDocument() != null ? context.toSignDocument().getContentType() : null;
         List<Comment> postits = signRequestService.getPostits(signRequest.getId());
-        List<ShowSignRequestBackDto.AttachmentDto> attachments = signRequestService.getAttachments(signRequest.getId()).stream()
-                .map(attachment -> new ShowSignRequestBackDto.AttachmentDto(
+        List<ShowSignRequestDto.AttachmentDto> attachments = signRequestService.getAttachments(signRequest.getId()).stream()
+                .map(attachment -> new ShowSignRequestDto.AttachmentDto(
                         attachment.getId(),
                         attachment.getFileName(),
                         attachment.getCreateBy() != null
-                                ? new ShowSignRequestBackDto.AttachmentUserDto(
+                                ? new ShowSignRequestDto.AttachmentUserDto(
                                 attachment.getCreateBy().getEppn(),
                                 attachment.getCreateBy().getFirstname(),
                                 attachment.getCreateBy().getName()
@@ -919,10 +917,10 @@ public class UiFetchService {
                                 : null
                 ))
                 .toList();
-        List<ShowSignRequestBackDto.DocumentDto> originalDocuments = signRequest.getOriginalDocuments().stream()
+        List<ShowSignRequestDto.DocumentDto> originalDocuments = signRequest.getOriginalDocuments().stream()
                 .map(this::toDocumentDto)
                 .toList();
-        List<ShowSignRequestBackDto.DocumentDto> signedDocuments = signRequest.getSignedDocuments().stream()
+        List<ShowSignRequestDto.DocumentDto> signedDocuments = signRequest.getSignedDocuments().stream()
                 .map(this::toDocumentDto)
                 .toList();
         String exportedDocumentURI = signRequest.getExportedDocumentURI();
@@ -956,9 +954,9 @@ public class UiFetchService {
 
         boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
         List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
-        List<ShowSignRequestBackDto.StepDto> steps = context.liveWorkflow() != null
+        List<ShowSignRequestDto.StepDto> steps = context.liveWorkflow() != null
                 ? context.liveWorkflow().getLiveWorkflowSteps().stream()
-                .map(step -> new ShowSignRequestBackDto.StepDto(
+                .map(step -> new ShowSignRequestDto.StepDto(
                         step.getId(),
                         step.getDescription(),
                         step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
@@ -970,7 +968,7 @@ public class UiFetchService {
                                 .map(this::toStepUserDto)
                                 .toList(),
                         step.getRecipients().stream()
-                                .map(recipient -> new ShowSignRequestBackDto.StepRecipientDto(
+                                .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
                                         recipient.getId(),
                                         recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null
                                 ))
@@ -978,22 +976,22 @@ public class UiFetchService {
                 ))
                 .toList()
                 : new ArrayList<>();
-        List<ShowSignRequestBackDto.TargetDto> targets = context.liveWorkflow() != null
+        List<ShowSignRequestDto.TargetDto> targets = context.liveWorkflow() != null
                 ? context.liveWorkflow().getTargets().stream()
-                .map(target -> new ShowSignRequestBackDto.TargetDto(
+                .map(target -> new ShowSignRequestDto.TargetDto(
                         target.getTargetUri(),
                         target.getProtectedTargetUri(),
                         target.getTargetOk()
                 ))
                 .toList()
                 : new ArrayList<>();
-        Map<Long, ShowSignRequestBackDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
+        Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
         if (signRequest.getRecipientHasSigned() != null) {
             signRequest.getRecipientHasSigned().forEach((recipient, action) -> {
                 if (recipient != null && recipient.getId() != null && action != null) {
                     recipientActions.put(
                             recipient.getId(),
-                            new ShowSignRequestBackDto.RecipientActionDto(
+                            new ShowSignRequestDto.RecipientActionDto(
                                     action.getActionType(),
                                     action.getDate()
                             )
@@ -1001,8 +999,8 @@ public class UiFetchService {
                 }
             });
         }
-        List<ShowSignRequestBackDto.SignRequestTabDto> signRequestTabs = signBook.getSignRequests().stream()
-                .map(signRequestTab -> new ShowSignRequestBackDto.SignRequestTabDto(
+        List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signBook.getSignRequests().stream()
+                .map(signRequestTab -> new ShowSignRequestDto.SignRequestTabDto(
                         signRequestTab.getId(),
                         signRequestTab.getTitle(),
                         signRequestTab.getStatus(),
@@ -1010,7 +1008,7 @@ public class UiFetchService {
                 ))
                 .toList();
         boolean viewedByCurrentUser = isViewedByUser(signRequest, userEppn);
-        boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn);
+        boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest.getId(), userEppn, authUserEppn);
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         String pdfaCheck = !context.toSignDocuments().isEmpty() ? context.toSignDocuments().get(0).getPdfaCheck() : null;
         boolean auditTrailChecked = signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported);
@@ -1018,7 +1016,7 @@ public class UiFetchService {
                 ? signRequestService.getExternalRecipients(signRequest.getId())
                 : new ArrayList<>();
 
-        return new ShowSignRequestBackDto(
+        return new ShowSignRequestDto(
                 signBookMeta,
                 request,
                 common,
@@ -1045,7 +1043,6 @@ public class UiFetchService {
                 size,
                 sealCertOK,
                 sealCertificatPropertieses,
-                annotation,
                 steps,
                 targets,
                 recipientActions,
@@ -1053,7 +1050,6 @@ public class UiFetchService {
                 steps.size(),
                 viewedByCurrentUser,
                 viewRight,
-                frameMode,
                 logs,
                 pdfaCheck,
                 auditTrailChecked,
@@ -1061,8 +1057,8 @@ public class UiFetchService {
         );
     }
 
-    private ShowSignRequestBackDto.StepUserDto toStepUserDto(User user) {
-        return new ShowSignRequestBackDto.StepUserDto(
+    private ShowSignRequestDto.StepUserDto toStepUserDto(User user) {
+        return new ShowSignRequestDto.StepUserDto(
                 user.getId(),
                 user.getFirstname(),
                 user.getName(),
@@ -1073,8 +1069,8 @@ public class UiFetchService {
         );
     }
 
-    private ShowSignRequestBackDto.DocumentDto toDocumentDto(Document document) {
-        return new ShowSignRequestBackDto.DocumentDto(
+    private ShowSignRequestDto.DocumentDto toDocumentDto(Document document) {
+        return new ShowSignRequestDto.DocumentDto(
                 document.getId(),
                 document.getFileName(),
                 document.getSize(),
@@ -1083,7 +1079,7 @@ public class UiFetchService {
     }
 
     public SignUiFrontDto buildSignUiFrontDto(ShowSignRequestContext context) {
-        SignRequestUiCommonDto common = buildCommonDto(context);
+        SignRequestFullDto common = buildCommonDto(context);
         User frontUser = context.frontUser();
         User frontAuthUser = context.frontAuthUser();
 
@@ -1250,9 +1246,9 @@ public class UiFetchService {
         return stepNumbers;
     }
 
-    private SignRequestUiCommonDto buildCommonDto(ShowSignRequestContext context) {
+    private SignRequestFullDto buildCommonDto(ShowSignRequestContext context) {
         SignRequest signRequest = context.signRequest();
-        return new SignRequestUiCommonDto(
+        return new SignRequestFullDto(
                 signRequest.getId(),
                 signRequest.getData() != null ? signRequest.getData().getId() : null,
                 signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,

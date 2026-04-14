@@ -163,7 +163,7 @@ spring:
 #        multipart:
 #            enabled: true
 #            max-file-size: 1280KB
-#            max-request-size: 1280KB
+#            max-signRequestLigth-size: 1280KB
 #            resolve-lazily: true
     thymeleaf:
         cache: false
@@ -268,9 +268,9 @@ security:
         title: Compte Université (CAS)
         url: https://cas.univ-ville.fr
 #    shib:
-#        credentials-request-header: MEMBER
+#        credentials-signRequestLigth-header: MEMBER
 #        idp-url: https://idp.univ-ville.fr
-#        principal-request-header: REMOTE_USER
+#        principal-signRequestLigth-header: REMOTE_USER
 #        title: Compte d’un autre établissement (Shibboleth)
 #        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
     web:

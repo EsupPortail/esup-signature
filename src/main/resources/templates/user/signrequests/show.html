@@ -9,10 +9,10 @@
 <!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
 <body class="es-signrequest-page"
-      th:with="back=${signRequestShowBack},
-               common=${back.common},
+      th:with="back=${showSignRequest},
+               common=${back.signRequestFull},
                id=${common.signRequestId},
-               request=${back.request},
+               request=${back.signRequestLigth},
                 workflow=${back.workflow},
                 signRequest=${request},
                 signBook=${back.signBook},
@@ -55,7 +55,6 @@
                size=${back.size},
                sealCertOK=${back.sealCertOK},
                sealCertificatPropertieses=${back.sealCertificatPropertieses},
-               annotation=${back.annotation},
                steps=${back.steps},
                 targets=${back.targets},
                recipientActions=${back.recipientActions},
@@ -64,7 +63,6 @@
                hasDocumentsHistory=${common.hasDocumentsHistory},
                viewedByCurrentUser=${back.viewedByCurrentUser},
                viewRight=${back.viewRight},
-               frameMode=${back.frameMode},
                supervisors=${back.supervisors},
                logs=${back.logs},
                pdfaCheck=${back.pdfaCheck},
@@ -100,7 +98,7 @@
         }, {once: true});
     }
 </script>
-<header th:unless="${frameMode}" th:replace="~{fragments/nav :: nav}"></header>
+<header th:replace="~{fragments/nav :: nav}"></header>
 <script>
     // Include model attributs for online forms javascript
     /*<![CDATA[*/

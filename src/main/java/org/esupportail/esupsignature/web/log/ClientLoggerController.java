@@ -23,7 +23,7 @@ public class ClientLoggerController {
     public ResponseEntity<Boolean> log(@RequestBody UiErrorDto jsonClientSideError, HttpServletRequest httpServletRequest) {
         long contentLength = httpServletRequest.getContentLengthLong();
         if (contentLength > Long.parseLong("1000")) {
-            logger.warn("This request is too big and its content will not be logged. Headers");
+            logger.warn("This signRequestLigth is too big and its content will not be logged. Headers");
         } else {
             logger.warn("Client-side error occurred : " + jsonClientSideError);
         }

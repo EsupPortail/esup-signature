@@ -106,7 +106,7 @@ textarea:invalid {
 }
 
 .ss-main {
-    border: 1px solid var(--color-ced4da);
+    border: 1px solid var(--bs-secondary-bg-subtle);
     border-radius: .375rem;
     min-height: 38px;
 }
@@ -398,7 +398,7 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
     margin: 2px 0 0 0;
     list-style: none;
     background-color: var(--bs-white);
-    border-color: var(--color-ced4da);
+    border-color: var(--bs-secondary-bg-subtle);
     border-color: var(--color-rgba-0-0-0-02);
     border-style: solid;
     border-width: 1px;
@@ -589,7 +589,7 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
 }
 
 .form-select {
-    --bs-border-color: var(--color-ced4da);
+    --bs-border-color: var(--bs-secondary-bg-subtle);
 }
 
 .theme-explorer-fa6 .file-actions-cell {

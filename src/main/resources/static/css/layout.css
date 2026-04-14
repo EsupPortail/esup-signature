@@ -241,9 +241,9 @@ header {
 }
 
 .cross-tools {
-    border: 1px solid var(--color-ced4da);
+    border: 1px solid var(--bs-secondary-bg-subtle);
     left: 0px;
-    top: -48px;
+    top: -46px;
     z-index: 10;
     user-select: none;
     -moz-user-select: none;

@@ -9,7 +9,7 @@ import org.esupportail.esupsignature.entity.enums.SignType;
 
 import java.util.List;
 
-public record SignRequestUiCommonDto(
+public record SignRequestFullDto(
         Long signRequestId,
         Long dataId,
         Long formId,

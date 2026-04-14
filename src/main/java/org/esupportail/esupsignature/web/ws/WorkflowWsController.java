@@ -159,7 +159,7 @@ public class WorkflowWsController {
             json = false;
         }
         if(createByEppn == null) {
-            return ResponseEntity.badRequest().body("Required request parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required signRequestLigth parameter 'createByEppn' for method parameter type String is not present");
         }
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;

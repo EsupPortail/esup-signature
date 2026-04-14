@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public record ShowSignRequestBackDto(
+public record ShowSignRequestDto(
         SignBookMetaDto signBook,
-        RequestMetaDto request,
-        SignRequestUiCommonDto common,
+        SignRequestLigthDto signRequestLigth,
+        SignRequestFullDto signRequestFull,
         WorkflowMetaDto workflow,
         String urlProfil,
         Boolean displayNotif,
@@ -42,7 +42,6 @@ public record ShowSignRequestBackDto(
         String size,
         Boolean sealCertOK,
         List<SealCertificatProperties> sealCertificatPropertieses,
-        String annotation,
         List<StepDto> steps,
         List<TargetDto> targets,
         Map<Long, RecipientActionDto> recipientActions,
@@ -50,7 +49,6 @@ public record ShowSignRequestBackDto(
         Integer liveWorkflowStepCount,
         Boolean viewedByCurrentUser,
         Boolean viewRight,
-        Boolean frameMode,
         List<Log> logs,
         String pdfaCheck,
         Boolean auditTrailChecked,
@@ -88,16 +86,16 @@ public record ShowSignRequestBackDto(
                 String mailFrom
         ) {}
 
-        public record RequestMetaDto(
+        public record SignRequestLigthDto(
                 Long id,
                 SignRequestStatus status,
                 Boolean deleted,
                 String token,
-                RequestUserDto createBy,
+                SignRequestUserDto createBy,
                 List<String> links
         ) {}
 
-        public record RequestUserDto(
+        public record SignRequestUserDto(
                 Long id,
                 String eppn,
                 String firstname,
