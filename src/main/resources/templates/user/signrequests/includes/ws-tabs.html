@@ -39,32 +39,33 @@
             <a tabindex="0" class="nav-link" th:classappend="${(id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
                th:href="${urlProfil} + '/signrequests/' + ${signRequestTab.id}">
                 <div class="truncate">
-                    <span title="À signer" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                        <i class="fi fi-rr-document" style="font-size: 18px;"></i> 
-                        <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                    </span>
-                    <span title="Document signé" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
-                        <i class="fi fi-rr-memo-circle-check"></i> 
-                        <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                    </span>
-                    <span title="Document refusé" class="d-flex align-items-center"  th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                        <i class="fi fi-rr-document-circle-wrong"></i> 
-                        <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                    </span>
-                    <span title="Document supprimé" class="d-flex align-items-center"  th:if="${signRequestTab.deleted}"
-                          th:classappend="${(id == signRequestTab.id ? 'text-danger' : 'text-light')}">
-                        <i class="fa-solid fa-stop-circle"></i> 
-                        <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
-                    </span>
-                    <span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                        <i class="fa-solid fa-file"></i>
+                    <th:block th:unless="${signRequestTab.deleted}">
+                        <span title="À signer" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                            <i class="fi fi-rr-memo" style="font-size: 18px;"></i> 
+                            <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                        </span>
+                        <span title="Document signé" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                            <i class="fi fi-rr-memo-circle-check"></i> 
+                            <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                        </span>
+                        <span title="Document refusé" class="d-flex align-items-center"  th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                            <i class="fi fi-rr-document-circle-wrong"></i> 
+                            <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                        </span>
+                        <span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
+                            <i class="fa-solid fa-file"></i>
+                            <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                        </span>
+                    </th:block>
+                    <span title="Document supprimé" class="d-flex align-items-center text-white"  th:if="${signRequestTab.deleted}">
+                        <i class="fi fi-rr-trash"></i> 
                         <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                     </span>
                 </div>
             </a>
         </li>
     </th:block>
-    <li class="nav-item dropdown d-none">
+    <li class="nav-item dropdown d-none" th:if="${#lists.size(signRequestTabs) > 1}">
         <a class="nav-link dropdown-toggle" href="#" id="DropdownMenu" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-diplay="static">
             Suite des documents
         </a>

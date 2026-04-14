@@ -8,7 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
-import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -79,7 +79,7 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user {} not found", userEppn);
                 return;
             }
-            FrontendGlobalPropertiesDto myGlobalProperties = uiFetchService.buildFrontendGlobalProperties(userEppn);
+            UiGlobalPropertiesDto myGlobalProperties = uiFetchService.buildUiGlobalProperties(userEppn);
             UiCountersDto uiCounters = uiFetchService.buildUiCounters(userEppn, authUserEppn);
             UiDataDto.UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
             model.addAttribute("user", user);

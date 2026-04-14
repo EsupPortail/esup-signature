@@ -7,7 +7,6 @@ import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
-import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
@@ -165,7 +164,7 @@ public class UiFetchMapper {
         );
     }
 
-    public UiDataDto.UiConfigDto toUiConfigDto(FrontendGlobalPropertiesDto globalProperties,
+    public UiDataDto.UiConfigDto toUiConfigDto(UiGlobalPropertiesDto globalProperties,
                                                Boolean enableSms,
                                                Boolean validationToolsEnabled,
                                                String applicationEmail,
@@ -175,7 +174,7 @@ public class UiFetchMapper {
                                                String versionApp,
                                                String profile) {
         return new UiDataDto.UiConfigDto(
-                toUiGlobalPropertiesDto(globalProperties),
+                globalProperties,
                 enableSms,
                 validationToolsEnabled,
                 applicationEmail,
@@ -187,66 +186,6 @@ public class UiFetchMapper {
         );
     }
 
-    public UiGlobalPropertiesDto toUiGlobalPropertiesDto(FrontendGlobalPropertiesDto props) {
-        if (props == null) {
-            return null;
-        }
-        return new UiGlobalPropertiesDto(
-                props.getRootUrl(),
-                props.getDomain(),
-                props.getHideWizard(),
-                props.getHideWizardWorkflow(),
-                props.getHideAutoSign(),
-                props.getHideSendSignRequest(),
-                props.getApplicationEmail(),
-                props.getInfiniteScrolling(),
-                props.getReturnToHomeAfterSign(),
-                props.getNamingTemplate(),
-                props.getSignedSuffix(),
-                props.getMaxUploadSize(),
-                props.getPdfOnly(),
-                props.getExportAttachements(),
-                props.getNexuUrl(),
-                props.getAuthorizedSignTypes() == null ? List.of() : List.copyOf(props.getAuthorizedSignTypes()),
-                props.getSignatureImageDpi(),
-                props.getFixFactor(),
-                props.getExternalCanEdit(),
-                props.getHideHiddenVisa(),
-                props.getDisablePdfFontAlert(),
-                props.getDefaultFontSize(),
-                props.getEnableHelp(),
-                props.getOtpValidity(),
-                props.getSmsRequired(),
-                props.getNbSignOtpTries(),
-                props.getNbViewOtpTries(),
-                props.getEnableTransfertForUsers(),
-                props.getEnableCaptcha(),
-                props.getEnableSu(),
-                props.getShareMode(),
-                toExternalSignatureParamsDto(props.getExternalSignatureParams()),
-                props.getNbDaysBeforeWarning(),
-                props.getNbDaysBeforeDeleting(),
-                props.getNewVersion(),
-                props.getDisableCertStorage(),
-                props.getSealCertificatConfigured(),
-                props.getSealDriverConfigured()
-        );
-    }
-
-    public UiGlobalPropertiesDto.ExternalSignatureParamsDto toExternalSignatureParamsDto(SignRequestParams params) {
-        if (params == null) {
-            return null;
-        }
-        return new UiGlobalPropertiesDto.ExternalSignatureParamsDto(
-                params.getAddWatermark(),
-                params.getExtraDate(),
-                params.getExtraType(),
-                params.getExtraName(),
-                params.getAddExtra(),
-                params.getExtraText(),
-                params.getExtraOnTop()
-        );
-    }
 
     public Map<String, String> toUiParamsMap(Map<UiParams, String> uiParams) {
         if (uiParams == null || uiParams.isEmpty()) {

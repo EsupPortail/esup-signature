@@ -174,9 +174,11 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null && workflowId != 0) {
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
+                var workflow = uiFetchService.buildWorkflowView(workflowId);
+                model.addAttribute("workflow", workflow);
                 model.addAttribute("isTempUsers", signBookService.isTempUsers(signBook.getId()));
                 model.addAttribute("workflowId", workflowId);
-                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getDescription());
+                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription());
                 return "user/wizard/wiz-setup-workflow";
             }
         }

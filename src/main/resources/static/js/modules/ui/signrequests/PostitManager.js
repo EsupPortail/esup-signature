@@ -61,9 +61,6 @@ export class PostitManager {
 			});
 
 			const postitArea = postit.find(".postitarea").first();
-			postitArea.off("mousedown" + postitNamespace).on("mousedown" + postitNamespace, function () {
-				$(this).parent().toggleClass("postitarea-auto");
-			});
 			postitArea.off("scroll" + postitNamespace).on("scroll" + postitNamespace, function () {
 				$(this).addClass("postitarea-basic");
 			});

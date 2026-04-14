@@ -143,10 +143,10 @@
                         <div th:id="'postit-' + ${postit.id}" class="postit-global d-none overflow-hidden"
                              th:style="'width: 215px; height:215px; z-index: 1000; cursor: move;background-color: ' + ${postit.postitColor} + ';position: fixed; left: ' + ${310 + (iterate.index * 15)} + 'px; top : ' + ${210 + (iterate.index * 70)} + 'px;'">
                             <button type="button" class="postit-global-close close">
-                                <i class="fa-solid fa-eye"></i>
+                                <i class="fi fi-rr-eye-crossed"></i>
                             </button>
-                            <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b>
-                            <span th:text="'le ' + ${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            <b th:text="${postit.createBy.firstname + ' ' + postit.createBy.name}"></b><br>
+                            <span th:text="${#dates.format(postit.createDate, 'dd/MM/yyyy HH:mm')}" style="    font-size: 12px; width: fit-content;"></span>
                             <button th:es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
                                 <i th:es-postit-id="${postit.id}" class="fa-regular fa-copy"></i>
                             </button>

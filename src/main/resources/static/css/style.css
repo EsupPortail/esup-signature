@@ -274,18 +274,22 @@ td {
     position: relative;
 }
 
-.nav-item.ws-tab::after {
+.nav-item.ws-tab:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 8px;          /* distance depuis le haut */
-    bottom: 8px;       /* distance depuis le bas */
-    right: -1px;
-    width: 3px;
+    top: 12px;
+    bottom: 12px;
+    right: 0;
+    width: 2px;
     background-color: var(--color-adb5bd);
 }
 
 .nav-item.ws-tab a {
     opacity: 0.5;
+    font-size: small;
+    margin-top: 2px;
+    padding-left: 8px;
+    padding-right: 10px;
 }
 
 .nav-item.ws-tab.active a {
@@ -321,9 +325,13 @@ option[unavailable="unavailable"] {
     color: var(--bs-secondary);
 }
 
-.nav-item:is(.active) > .nav-link {
+.nav-item > .nav-link {
     border-top-left-radius: 10px !important;
     border-top-right-radius: 10px !important;
+}
+
+.nav-item:is(.active) > .nav-link {
+    border: 1px solid var(--color-rgba-0-0-0-01) ;
 }
 
 .nav-item.ws-tab a:hover {
@@ -495,11 +503,6 @@ dd {
 .postitarea {
     /*overflow-y: scroll;*/
     margin-bottom: 36px;
-}
-
-.postitarea-auto {
-    width: 84%;
-    height: auto;
 }
 
 .postitarea-basic {

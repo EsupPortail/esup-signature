@@ -16,7 +16,6 @@ import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.dto.ui.global.UserSignatureStateDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.CommentFrontDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.FieldFrontDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestBackDto;
@@ -25,6 +24,7 @@ import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestUiComm
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiHomeBootstrapDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
@@ -530,14 +530,14 @@ public class UiFetchService {
     }
 
     public UiDataDto.UiConfigDto buildUiConfig(String userEppn, Integer maxInactiveInterval) {
-        FrontendGlobalPropertiesDto frontendGlobalProperties = userEppn != null ? buildFrontendGlobalProperties(userEppn) : null;
+        UiGlobalPropertiesDto uiGlobalProperties = userEppn != null ? buildUiGlobalProperties(userEppn) : null;
         String profile = null;
         if (environment.getActiveProfiles().length > 0 && "dev".equals(environment.getActiveProfiles()[0])) {
             profile = environment.getActiveProfiles()[0];
         }
         String versionApp = buildProperties != null ? buildProperties.getVersion() : "dev";
         return uiFetchMapper.toUiConfigDto(
-                frontendGlobalProperties,
+                uiGlobalProperties,
                 smsProperties.getEnableSms(),
                 validationService != null,
                 globalProperties.getApplicationEmail(),
@@ -549,12 +549,12 @@ public class UiFetchService {
         );
     }
 
-    public FrontendGlobalPropertiesDto buildFrontendGlobalProperties(String userEppn) {
+    public UiGlobalPropertiesDto buildUiGlobalProperties(String userEppn) {
         GlobalProperties myGlobalProperties = new GlobalProperties();
         BeanUtils.copyProperties(globalProperties, myGlobalProperties);
         userService.parseRoles(userEppn, myGlobalProperties);
         myGlobalProperties.newVersion = globalProperties.newVersion;
-        return FrontendGlobalPropertiesDto.fromGlobalProperties(myGlobalProperties);
+        return UiGlobalPropertiesDto.fromGlobalProperties(myGlobalProperties);
     }
 
     public Map<String, String> getUiPreferences(String authUserEppn) {

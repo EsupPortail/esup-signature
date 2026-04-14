@@ -21,8 +21,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
-import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -103,7 +103,7 @@ public class IndexController {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices.stream().filter(s -> !(s instanceof OidcOtpSecurityService)).toList());
-				model.addAttribute("globalProperties", FrontendGlobalPropertiesDto.fromGlobalProperties(globalProperties));
+				model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
 				if(StringUtils.hasText(savedQueryString)) {
 					model.addAttribute("redirect", savedQueryString);
 					if(!savedQueryString.contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
