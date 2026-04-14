@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.dto.js.JsMessage;
 import org.esupportail.esupsignature.dto.json.RecipientWsDto;
 import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -84,9 +83,7 @@ public class WizardController {
     @GetMapping(value = "/wiz-start-form/{formId}", produces = "text/html")
     public String wizStartForm(@PathVariable("formId") Long formId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         if(formService.isFormAuthorized(userEppn, authUserEppn, formId)) {
-            Form form = formService.getById(formId);
-            form.setMessageToDisplay(formService.getHelpMessage(userEppn, form));
-            model.addAttribute("form", form);
+            model.addAttribute("form", uiFetchService.buildStartFormWizardView(formId, userEppn));
             return "user/wizard/wiz-start-form";
         } else {
             return "user/wizard/wiz-not-autorized";

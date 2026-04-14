@@ -39,6 +39,7 @@ import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.pdf.PdfService;
 import org.esupportail.esupsignature.service.utils.sign.SignService;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -799,6 +800,7 @@ public class SignBookService {
     public SignBook updateSignBookWithStep(Long signBookId, List<WorkflowStepDto> steps) {
         SignBook signBook = updateSignBook(signBookId, steps.get(0).getTitle(), steps.get(0).getDescription(), steps.get(0).getRecipientsCCEmails());
         signBook.setForceAllDocsSign(steps.get(0).getForceAllSign());
+        String description = signBook.getLiveWorkflow().getWorkflow().getDescription();
         return signBook;
     }
 
@@ -1865,7 +1867,7 @@ public class SignBookService {
                 TypeReference<Map<String, String>> type = new TypeReference<>(){};
                 formDataMap = objectMapper.readValue(formData, type);
                 formDataMap.remove("_csrf");
-                data = dataService.getBySignBook(signRequest.getParentSignBook());
+                data = dataService.getBySignBookForUpdate(signRequest.getParentSignBook());
                 if(data != null && data.getForm() != null) {
                     List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getByEppn(userEppn), signRequest);
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
@@ -3352,4 +3354,10 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.countByCreateByEppnAndDeleted(user);
     }
+
+    @Transactional
+    public List<SignRequest> getSignRequestsToReplace(String authUserEppn) {
+        return getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
+    }
+
 }

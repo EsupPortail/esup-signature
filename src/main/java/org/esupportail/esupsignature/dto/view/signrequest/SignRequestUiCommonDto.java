@@ -27,12 +27,14 @@ public record SignRequestUiCommonDto(
         List<String> signImages,
         List<Field> fields,
         Boolean stepRepeatable,
+        SignType currentStepRepeatableSignType,
         SignRequestStatus status,
         String action,
         Integer nbSignRequests,
         Boolean notSigned,
         Boolean attachmentAlert,
         Boolean attachmentRequire,
-        Boolean manager
+        Boolean manager,
+        Boolean hasDocumentsHistory
 ) {}
 

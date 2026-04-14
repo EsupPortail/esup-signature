@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.dto.view;
 
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
+import org.esupportail.esupsignature.entity.enums.UserType;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class WorkflowViewDto {
     private final Boolean sendAlertToAllRecipients;
     private final Boolean fromCode;
     private final String messageToDisplay;
+    private final List<TargetDto> targets;
     private final List<ViewerDto> viewers;
     private final List<WorkflowStepDto> workflowSteps;
 
@@ -22,6 +24,7 @@ public class WorkflowViewDto {
                            Boolean sendAlertToAllRecipients,
                            Boolean fromCode,
                            String messageToDisplay,
+                           List<TargetDto> targets,
                            List<ViewerDto> viewers,
                            List<WorkflowStepDto> workflowSteps) {
         this.id = id;
@@ -30,6 +33,7 @@ public class WorkflowViewDto {
         this.sendAlertToAllRecipients = sendAlertToAllRecipients;
         this.fromCode = fromCode;
         this.messageToDisplay = messageToDisplay;
+        this.targets = targets;
         this.viewers = viewers;
         this.workflowSteps = workflowSteps;
     }
@@ -58,8 +62,30 @@ public class WorkflowViewDto {
         return messageToDisplay;
     }
 
+    public List<TargetDto> getTargets() {
+        return targets;
+    }
+
     public List<ViewerDto> getViewers() {
         return viewers;
+    }
+
+    public static class TargetDto {
+        private final Long id;
+        private final String targetUri;
+
+        public TargetDto(Long id, String targetUri) {
+            this.id = id;
+            this.targetUri = targetUri;
+        }
+
+        public Long getId() {
+            return id;
+        }
+
+        public String getTargetUri() {
+            return targetUri;
+        }
     }
 
     public List<WorkflowStepDto> getWorkflowSteps() {
@@ -219,12 +245,24 @@ public class WorkflowViewDto {
         private final String email;
         private final String firstname;
         private final String name;
+        private final String hidedPhone;
+        private final UserType userType;
+        private final UserDto currentReplaceByUser;
 
-        public UserDto(String eppn, String email, String firstname, String name) {
+        public UserDto(String eppn,
+                       String email,
+                       String firstname,
+                       String name,
+                       String hidedPhone,
+                       UserType userType,
+                       UserDto currentReplaceByUser) {
             this.eppn = eppn;
             this.email = email;
             this.firstname = firstname;
             this.name = name;
+            this.hidedPhone = hidedPhone;
+            this.userType = userType;
+            this.currentReplaceByUser = currentReplaceByUser;
         }
 
         public String getEppn() {
@@ -241,6 +279,18 @@ public class WorkflowViewDto {
 
         public String getName() {
             return name;
+        }
+
+        public String getHidedPhone() {
+            return hidedPhone;
+        }
+
+        public UserType getUserType() {
+            return userType;
+        }
+
+        public UserDto getCurrentReplaceByUser() {
+            return currentReplaceByUser;
         }
     }
 

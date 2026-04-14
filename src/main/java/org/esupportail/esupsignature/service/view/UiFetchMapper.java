@@ -4,6 +4,7 @@ import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.view.StartFormViewDto;
 import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
@@ -450,9 +451,29 @@ public class UiFetchMapper {
                 workflow.getSendAlertToAllRecipients(),
                 workflow.getFromCode(),
                 messageToDisplay,
+                workflow.getTargets() == null ? List.of() : workflow.getTargets().stream().map(this::toWorkflowTargetViewDto).toList(),
                 workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toWorkflowViewerDto).toList(),
                 workflow.getWorkflowSteps() == null ? List.of() : workflow.getWorkflowSteps().stream().map(this::toWorkflowStepViewDto).toList()
         );
+    }
+
+    public StartFormViewDto toStartFormViewDto(Form form, String messageToDisplay) {
+        if (form == null) {
+            return null;
+        }
+        return new StartFormViewDto(
+                form.getId(),
+                form.getTitle(),
+                messageToDisplay,
+                toWorkflowViewDto(form.getWorkflow(), null)
+        );
+    }
+
+    public WorkflowViewDto.TargetDto toWorkflowTargetViewDto(Target target) {
+        if (target == null) {
+            return null;
+        }
+        return new WorkflowViewDto.TargetDto(target.getId(), target.getTargetUri());
     }
 
     public WorkflowViewDto.ViewerDto toWorkflowViewerDto(User user) {
@@ -495,7 +516,25 @@ public class UiFetchMapper {
                 user.getEppn(),
                 user.getEmail(),
                 user.getFirstname(),
-                user.getName()
+                user.getName(),
+                user.getHidedPhone(),
+                user.getUserType(),
+                toWorkflowReplacementUserViewDto(user.getCurrentReplaceByUser())
+        );
+    }
+
+    public WorkflowViewDto.UserDto toWorkflowReplacementUserViewDto(User user) {
+        if (user == null) {
+            return null;
+        }
+        return new WorkflowViewDto.UserDto(
+                user.getEppn(),
+                user.getEmail(),
+                user.getFirstname(),
+                user.getName(),
+                user.getHidedPhone(),
+                user.getUserType(),
+                null
         );
     }
 

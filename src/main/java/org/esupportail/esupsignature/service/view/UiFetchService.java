@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
 import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.view.StartFormViewDto;
 import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
@@ -286,6 +287,12 @@ public class UiFetchService {
     public WorkflowViewDto buildWorkflowWizardView(Long workflowId, String userEppn) {
         Workflow workflow = workflowService.getById(workflowId);
         return uiFetchMapper.toWorkflowViewDto(workflow, workflowService.getHelpMessage(userEppn, workflow));
+    }
+
+    @Transactional(readOnly = true)
+    public StartFormViewDto buildStartFormWizardView(Long formId, String userEppn) {
+        Form form = formService.getById(formId);
+        return uiFetchMapper.toStartFormViewDto(form, formService.getHelpMessage(userEppn, form));
     }
 
     @Transactional(readOnly = true)
@@ -847,15 +854,88 @@ public class UiFetchService {
         SignBook signBook = context.signBook();
         String userEppn = context.userEppn();
         String authUserEppn = context.authUserEppn();
+        ShowSignRequestBackDto.RequestMetaDto request = new ShowSignRequestBackDto.RequestMetaDto(
+                signRequest.getId(),
+                signRequest.getStatus(),
+                signRequest.getDeleted(),
+                signRequest.getToken(),
+                signRequest.getCreateBy() != null
+                        ? new ShowSignRequestBackDto.RequestUserDto(
+                        signRequest.getCreateBy().getId(),
+                        signRequest.getCreateBy().getEppn(),
+                        signRequest.getCreateBy().getFirstname(),
+                        signRequest.getCreateBy().getName()
+                )
+                        : null,
+                signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>()
+        );
+        Workflow workflow = context.workflow();
+        ShowSignRequestBackDto.SignBookMetaDto signBookMeta = new ShowSignRequestBackDto.SignBookMetaDto(
+                signBook.getId(),
+                signBook.getWorkflowName(),
+                signBook.getDescription(),
+                signBook.getStatus(),
+                signBook.getDeleted(),
+                signBook.getArchiveStatus(),
+                signBook.getCreateDate(),
+                signBook.getViewers() != null
+                        ? signBook.getViewers().stream()
+                        .map(viewer -> new ShowSignRequestBackDto.SignBookViewerDto(
+                                viewer.getId(),
+                                viewer.getFirstname(),
+                                viewer.getName(),
+                                viewer.getEmail()
+                        ))
+                        .toList()
+                        : List.of()
+        );
+        ShowSignRequestBackDto.WorkflowMetaDto workflowMeta = new ShowSignRequestBackDto.WorkflowMetaDto(
+                workflow != null,
+                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAnnotations()),
+                workflow != null && Boolean.TRUE.equals(workflow.getDisableSidebarForExternal()),
+                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAttachments()),
+                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanEdit()),
+                workflow != null && Boolean.TRUE.equals(workflow.getExternalCanEditAttachments()),
+                workflow == null || Boolean.TRUE.equals(workflow.getAuthorizeClone()),
+                workflow != null && Boolean.TRUE.equals(workflow.getForbidDownloadsBeforeEnd()),
+                workflow != null && Boolean.TRUE.equals(workflow.getSendAlertToAllRecipients()),
+                workflow != null && workflow.getWorkflowSteps() != null ? workflow.getWorkflowSteps().size() : 0,
+                workflow != null && workflow.getMailFrom() != null ? workflow.getMailFrom() : ""
+        );
 
         boolean displayNotif = !context.isOtpView() && signRequestService.isDisplayNotif(signRequest, userEppn);
         boolean tempUsers = !context.isOtpView() && signBookService.isTempUsers(signBook.getId());
+        String toSignDocumentContentType = context.toSignDocument() != null ? context.toSignDocument().getContentType() : null;
         List<Comment> postits = signRequestService.getPostits(signRequest.getId());
-        List<Document> attachments = signRequestService.getAttachments(signRequest.getId());
+        List<ShowSignRequestBackDto.AttachmentDto> attachments = signRequestService.getAttachments(signRequest.getId()).stream()
+                .map(attachment -> new ShowSignRequestBackDto.AttachmentDto(
+                        attachment.getId(),
+                        attachment.getFileName(),
+                        attachment.getCreateBy() != null
+                                ? new ShowSignRequestBackDto.AttachmentUserDto(
+                                attachment.getCreateBy().getEppn(),
+                                attachment.getCreateBy().getFirstname(),
+                                attachment.getCreateBy().getName()
+                        )
+                                : null
+                ))
+                .toList();
+        List<ShowSignRequestBackDto.DocumentDto> originalDocuments = signRequest.getOriginalDocuments().stream()
+                .map(this::toDocumentDto)
+                .toList();
+        List<ShowSignRequestBackDto.DocumentDto> signedDocuments = signRequest.getSignedDocuments().stream()
+                .map(this::toDocumentDto)
+                .toList();
+        String exportedDocumentURI = signRequest.getExportedDocumentURI();
+        String lastSignedDocumentContentType = signRequest.getLastSignedDocument() != null
+                ? signRequest.getLastSignedDocument().getContentType()
+                : null;
         SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
         SignRequest nextSignRequest = nextSignBook != null
                 ? signBookService.getNextSignRequest(signRequest.getId(), nextSignBook.getId())
                 : null;
+        boolean hasNextSignBook = nextSignBook != null;
+        Long nextSignRequestId = nextSignRequest != null ? nextSignRequest.getId() : null;
         List<SignWith> signWiths = new ArrayList<>();
         if (context.reports() != null) {
             signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !context.signatureIds().isEmpty());
@@ -877,11 +957,51 @@ public class UiFetchService {
 
         boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
         List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
-        SignWith[] allSignWiths = SignWith.values();
-        List<Certificat> certificats = certificatService.getCertificatByUser(userEppn);
-        List<LiveWorkflowStep> steps = context.liveWorkflow() != null
-                ? context.liveWorkflow().getLiveWorkflowSteps()
+        List<ShowSignRequestBackDto.StepDto> steps = context.liveWorkflow() != null
+                ? context.liveWorkflow().getLiveWorkflowSteps().stream()
+                .map(step -> new ShowSignRequestBackDto.StepDto(
+                        step.getId(),
+                        step.getDescription(),
+                        step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
+                        step.getSignType(),
+                        step.getAutoSign(),
+                        step.getAllSignToComplete(),
+                        step.getRepeatable(),
+                        step.getUsers().stream()
+                                .map(this::toStepUserDto)
+                                .toList(),
+                        step.getRecipients().stream()
+                                .map(recipient -> new ShowSignRequestBackDto.StepRecipientDto(
+                                        recipient.getId(),
+                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null
+                                ))
+                                .toList()
+                ))
+                .toList()
                 : new ArrayList<>();
+        List<ShowSignRequestBackDto.TargetDto> targets = context.liveWorkflow() != null
+                ? context.liveWorkflow().getTargets().stream()
+                .map(target -> new ShowSignRequestBackDto.TargetDto(
+                        target.getTargetUri(),
+                        target.getProtectedTargetUri(),
+                        target.getTargetOk()
+                ))
+                .toList()
+                : new ArrayList<>();
+        Map<Long, ShowSignRequestBackDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
+        if (signRequest.getRecipientHasSigned() != null) {
+            signRequest.getRecipientHasSigned().forEach((recipient, action) -> {
+                if (recipient != null && recipient.getId() != null && action != null) {
+                    recipientActions.put(
+                            recipient.getId(),
+                            new ShowSignRequestBackDto.RecipientActionDto(
+                                    action.getActionType(),
+                                    action.getDate()
+                            )
+                    );
+                }
+            });
+        }
         List<ShowSignRequestBackDto.SignRequestTabDto> signRequestTabs = signBook.getSignRequests().stream()
                 .map(signRequestTab -> new ShowSignRequestBackDto.SignRequestTabDto(
                         signRequestTab.getId(),
@@ -891,10 +1011,7 @@ public class UiFetchService {
                 ))
                 .toList();
         boolean viewedByCurrentUser = isViewedByUser(signRequest, userEppn);
-        List<Log> refuseLogs = logService.getRefuseLogs(signRequest.getId());
         boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn);
-        Data data = dataService.getBySignBook(signBook);
-        Form form = data != null ? data.getForm() : null;
         List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
         String pdfaCheck = !context.toSignDocuments().isEmpty() ? context.toSignDocuments().get(0).getPdfaCheck() : null;
         boolean auditTrailChecked = signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported);
@@ -903,69 +1020,66 @@ public class UiFetchService {
                 : new ArrayList<>();
 
         return new ShowSignRequestBackDto(
-                signRequest,
-                signBook,
-                context.workflow(),
-                common.signRequestId(),
-                signBook.getId(),
-                common.dataId(),
-                common.formId(),
+                signBookMeta,
+                request,
+                common,
+                workflowMeta,
                 context.isOtpView() ? "otp" : "user",
                 displayNotif,
                 tempUsers,
-                common.signable(),
-                common.editable(),
-                common.manager(),
-                common.status(),
-                common.currentSignType(),
-                common.currentStepNumber(),
-                context.currentStepId(),
-                common.currentStepMultiSign(),
-                common.currentStepSingleSignWithAnnotation(),
-                common.currentStepMinSignLevel(),
-                context.currentStepMaxSignLevel(),
-                common.stepRepeatable(),
                 context.lastStep(),
-                common.pdf(),
-                common.attachmentAlert(),
-                common.attachmentRequire(),
-                common.notSigned(),
                 signRequestService.isCurrentUserAsSigned(signRequest, userEppn),
                 context.signatureIds(),
                 context.signatureIssue(),
-                common.nbSignRequests(),
-                common.action(),
                 context.supervisors(),
-                context.toSignDocument(),
+                toSignDocumentContentType,
                 postits,
-                common.comments(),
-                common.spots(),
                 attachments,
-                nextSignBook,
-                nextSignRequest,
-                common.fields(),
-                common.signRequestParams(),
-                common.signImages(),
+                originalDocuments,
+                signedDocuments,
+                exportedDocumentURI,
+                lastSignedDocumentContentType,
+                hasNextSignBook,
+                nextSignRequestId,
                 signWiths,
                 auditTrail,
                 size,
                 sealCertOK,
                 sealCertificatPropertieses,
-                allSignWiths,
-                certificats,
                 annotation,
                 steps,
+                targets,
+                recipientActions,
                 signRequestTabs,
                 steps.size(),
                 viewedByCurrentUser,
-                refuseLogs,
                 viewRight,
                 frameMode,
-                form,
                 logs,
                 pdfaCheck,
                 auditTrailChecked,
                 externalsRecipients
+        );
+    }
+
+    private ShowSignRequestBackDto.StepUserDto toStepUserDto(User user) {
+        return new ShowSignRequestBackDto.StepUserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getHidedPhone(),
+                user.getUserType()
+        );
+    }
+
+    private ShowSignRequestBackDto.DocumentDto toDocumentDto(Document document) {
+        return new ShowSignRequestBackDto.DocumentDto(
+                document.getId(),
+                document.getFileName(),
+                document.getSize(),
+                document.getContentType()
         );
     }
 
@@ -1157,13 +1271,15 @@ public class UiFetchService {
                 context.signImages(),
                 context.fields(),
                 context.stepRepeatable(),
+                context.currentStep() != null ? context.currentStep().getRepeatableSignType() : null,
                 signRequest.getStatus(),
                 context.action(),
                 context.nbSignRequestInSignBookParent(),
                 context.notSigned(),
                 context.attachmentAlert(),
                 context.attachmentRequire(),
-                context.manager()
+                context.manager(),
+                signRequest.getDocumentsHistory() != null
         );
     }
 

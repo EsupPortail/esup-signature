@@ -13,6 +13,13 @@ body {
     margin-left: 80px;
 }
 
+body.es-signrequest-page #tools.es-tools {
+    position: sticky !important;
+    width: 100%;
+    max-width: 100%;
+    margin-top: -2px;
+}
+
 body.es-signrequest-page {
     overflow-x: clip;
 }
@@ -402,8 +409,9 @@ header {
 }
 
 .pdf-alerts-btn {
+    height: 34px;
     left: 304px;
-    top: 96px;
+    top: 94px;
     position: fixed;
     z-index: 9999;
 }

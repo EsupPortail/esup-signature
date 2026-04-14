@@ -14,12 +14,14 @@ import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValueService;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -226,7 +228,7 @@ public class UserController {
 
 	@GetMapping("/replace")
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
+		List<SignRequest> signRequests = signBookService.getSignRequestsToReplace(authUserEppn);
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("activeMenu", "shares");
         model.addAttribute("paramMenu", "replace");

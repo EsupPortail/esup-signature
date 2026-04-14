@@ -7,22 +7,22 @@
             <h5 class="ms-4"><b>Circuit de signature</b></h5>
         </div>
         <div class="card-body">
-            <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps != null}">
+            <th:block th:if="${liveWorkflowSteps != null}">
                 <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
-                    <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}"
+                    <th:block th:each="liveWorkflowStep, iterator : ${liveWorkflowSteps}"
                               th:with="stepNumber=${iterator.index + 1},
-                                       isCompleted=${stepNumber lt signBook.liveWorkflow.currentStepNumber},
-                                       isCurrent=${stepNumber eq signBook.liveWorkflow.currentStepNumber},
+                                       isCompleted=${stepNumber lt liveWorkflowCurrentStepNumber},
+                                       isCurrent=${stepNumber eq liveWorkflowCurrentStepNumber},
                                        isPending=${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending},
                                        isRefused=${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                         <div th:id="'step-' + ${stepNumber}"
                              th:class="'step-horizontal-v2 d-flex gap-2 align-items-start'
                                 + ${(isCompleted or (isCurrent and not isPending and not isRefused)) ? ' complete' : ''}
                                 + ${(isCurrent and isPending) ? ' active' : ''}
-                                + ${(stepNumber gt signBook.liveWorkflow.currentStepNumber) ? ' disabled' : ''}">
+                                + ${(stepNumber gt liveWorkflowCurrentStepNumber) ? ' disabled' : ''}">
                             <div class="step-horizontal-v2-icon mt-1">
                                 <i th:if="${isCurrent and isPending}" class="fi fi-rr-duration-alt" title="Etape en cours"></i>
-                                <i th:if="${stepNumber gt signBook.liveWorkflow.currentStepNumber}" class="fi fi-rr-pause" title="Etape a venir"></i>
+                                <i th:if="${stepNumber gt liveWorkflowCurrentStepNumber}" class="fi fi-rr-pause" title="Etape a venir"></i>
                                 <i th:if="${isCurrent and isRefused}" class="fi fi-rr-cross-small" title="Etape refusee"></i>
                                 <i th:if="${isCompleted or (isCurrent and not isPending and not isRefused)}" class="fi fi-rr-check" title="Etape terminee"></i>
                             </div>
@@ -33,7 +33,7 @@
                                         <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                             <td th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
-                                            <td th:if="${stepNumber >= signBook.liveWorkflow.currentStepNumber and signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
+                                            <td th:if="${stepNumber >= liveWorkflowCurrentStepNumber and signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" th:switch="${recipient.signed}">
                                                 <i title="a signe le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
                                                 <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
                                             </td>
@@ -41,13 +41,13 @@
                                     </th:block>
                                 </table>
                                 <div class="bs-stepper-bottom">
-                                    <form th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 1 && signBook.liveWorkflow.liveWorkflowSteps.size() > signBook.liveWorkflow.currentStepNumber && stepNumber >= signBook.liveWorkflow.currentStepNumber}"
+                                    <form th:if="${liveWorkflowSteps.size() > 1 && liveWorkflowSteps.size() > liveWorkflowCurrentStepNumber && stepNumber >= liveWorkflowCurrentStepNumber}"
                                           th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${id} + '/' + ${iterator.index}" th:method="delete">
                                         <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
                                             <i class="fa-solid fa-trash-alt"></i>
                                         </button>
                                     </form>
-                                    <button th:if="${stepNumber >= signBook.liveWorkflow.currentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${stepNumber}" class="btn btn-sm float-end">
+                                    <button th:if="${stepNumber >= liveWorkflowCurrentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${stepNumber}" class="btn btn-sm float-end">
                                         <i class="fa-solid fa-pencil-alt"></i>
                                     </button>
                                 </div>
@@ -83,8 +83,8 @@
                     </th:block>
                 </div>
                 <div class="steps-horizontal-v2 d-flex justify-content-center mt-4" style="width: 100%;">
-                    <th:block th:if="${signBook.liveWorkflow.workflow != null}">
-                        <th:block th:each="target : ${signBook.liveWorkflow.workflow.targets}">
+                    <th:block th:if="${liveWorkflowTargets != null}">
+                        <th:block th:each="target : ${liveWorkflowTargets}">
                             <div class="step-horizontal-v2 d-flex gap-2 align-items-center" th:classappend="${target.targetOk} ? ' complete' : ' disabled'">
                                 <div class="step-horizontal-v2-icon">
                                     <i class="fa-solid fa-file-export"></i>

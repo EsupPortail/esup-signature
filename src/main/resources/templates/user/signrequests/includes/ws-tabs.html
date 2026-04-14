@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="urlProfil" type="java.lang.String"*/-->
 <ul th:fragment="ws-tabs" id="ws-tabs" class="nav nav-tabs es-signrequest-workspace-header">
-    <th:block th:each="signRequestTab, signRequestTabStat : ${signRequestTabs}" th:if="${signRequest.id == signRequestTab.id}">
+    <th:block th:each="signRequestTab, signRequestTabStat : ${signRequestTabs}" th:if="${id == signRequestTab.id}">
         <li class="nav-item ws-tab-nav">
             <a th:if="${signRequestTabStat.index > 0}"
                class="nav-link"
@@ -35,8 +35,8 @@
         </li>
     </th:block>
     <th:block th:each="signRequestTab : ${signRequestTabs}">
-        <li class="nav-item ws-tab file-tab d-none d-lg-flex" th:classappend="${signRequest.id == signRequestTab.id ? 'active' : ''}">
-            <a tabindex="0" class="nav-link" th:classappend="${(signRequest.id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
+        <li class="nav-item ws-tab file-tab d-none d-lg-flex" th:classappend="${id == signRequestTab.id ? 'active' : ''}">
+            <a tabindex="0" class="nav-link" th:classappend="${(id == signRequestTab.id ? 'current alert-secondary' : '') + ' ' + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).checked ? 'bg-success-subtle text-dark' : '') + (signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed || (signRequestTab.deleted || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused) ? 'bg-danger text-light' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) ? 'bg-warning-subtle text-dark' : '') + ((signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft) ? 'bg-secondary-subtle text-dark' : '')}"
                th:href="${urlProfil} + '/signrequests/' + ${signRequestTab.id}">
                 <div class="truncate">
                     <span title="À signer" class="d-flex align-items-center" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
@@ -52,7 +52,7 @@
                         <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                     </span>
                     <span title="Document supprimé" class="d-flex align-items-center"  th:if="${signRequestTab.deleted}"
-                          th:classappend="${(signRequest.id == signRequestTab.id ? 'text-danger' : 'text-light')}">
+                          th:classappend="${(id == signRequestTab.id ? 'text-danger' : 'text-light')}">
                         <i class="fa-solid fa-stop-circle"></i> 
                         <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                     </span>

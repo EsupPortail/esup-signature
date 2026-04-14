@@ -276,6 +276,9 @@ public class SignBookController {
             model.addAttribute("signBook", signBook);
             model.addAttribute("logs", signBookService.getLogsFromSignBook(id));
             model.addAttribute("allSteps", signBookService.getAllSteps(id));
+            model.addAttribute("liveWorkflowSteps", signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getLiveWorkflowSteps() : null);
+            model.addAttribute("liveWorkflowCurrentStepNumber", signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null);
+            model.addAttribute("liveWorkflowTargets", signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow().getTargets() : List.of());
             return "user/signbooks/update";
         } else {
             redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));

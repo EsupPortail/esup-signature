@@ -70,11 +70,6 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public List<Log> getLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
-        return setUsers(logs);
-    }
-
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
             log.setUser(userService.getByEppn(log.getEppn()));

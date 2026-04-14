@@ -2,13 +2,13 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="details">
     <div class="col-12 text-center">
-        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-last-file-report/' + ${signRequest.id}" target="_blank" title="Télécharger le dossier">
+        <a th:if="${status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-last-file-report/' + ${id}" target="_blank" title="Télécharger le dossier">
             <i class="fa-solid fa-file-contract"></i> Télécharger le dossier
         </a>
-        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="Export SEDA" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-seda/' + ${signRequest.id}">
+        <a th:if="${status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="Export SEDA" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-seda/' + ${id}">
             <i class="fa-solid fa-archive"></i> Export SEDA
         </a>
-        <a th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-primary m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
+        <a th:if="${status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-primary m-1" th:href="'/user/validation/document/' + ${id}" title="Contrôler le document">
             <i class="fa-solid fa-shield-alt"></i> Contrôler le document
         </a>
     </div>

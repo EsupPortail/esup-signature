@@ -186,11 +186,8 @@ public class WebSecurityConfig {
 						.logoutUrl("/logout"
 						).logoutSuccessUrl("/logged-out"));
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(("/resources/**"))
-				.ignoringRequestMatchers("/webjars/**")
 				.ignoringRequestMatchers("/ws/**")
 				.ignoringRequestMatchers("/nexu-sign/**")
-				.ignoringRequestMatchers("/log/**")
-				.ignoringRequestMatchers("/actuator/**")
 				.ignoringRequestMatchers("/h2-console/**"));
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);

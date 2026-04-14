@@ -49,6 +49,12 @@ main {
 
  #sidebar {
      background-color: var(--bs-secondary-bg);
+     font-size: clamp(0.8rem, 1vw, 0.95rem);
+ }
+
+ #sidebar a {
+     font-size: clamp(0.8rem, 1vw, 0.95rem);
+     margin-right: 4px;
  }
 
  .es-nav-tools {
@@ -69,16 +75,6 @@ body.es-signrequest-page .es-nav-tools > div {
     align-items: center;
     min-width: 0;
     justify-content: center;
-}
-
-/* Keep #tools visible without hiding the document area on signrequest page. */
-body.es-signrequest-page #tools.es-tools {
-    position: sticky !important;
-    top: 126px;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
 }
 
 body.es-signrequest-page #tools .steps-horizontal-v2 {
