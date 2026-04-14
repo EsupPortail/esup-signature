@@ -21,8 +21,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.SignRequestService;
@@ -103,7 +103,7 @@ public class IndexController {
 			if("anonymousUser".equals(auth.getName())) {
 				logger.trace("auth user : " + auth.getName());
 				model.addAttribute("securityServices", securityServices.stream().filter(s -> !(s instanceof OidcOtpSecurityService)).toList());
-				model.addAttribute("globalProperties", FrontendGlobalProperties.fromGlobalProperties(globalProperties));
+				model.addAttribute("globalProperties", FrontendGlobalPropertiesDto.fromGlobalProperties(globalProperties));
 				if(StringUtils.hasText(savedQueryString)) {
 					model.addAttribute("redirect", savedQueryString);
 					if(!savedQueryString.contains("/casentry") && securityServices.size() == 1 && securityServices.get(0) instanceof CasSecurityServiceImpl) {
@@ -111,7 +111,7 @@ public class IndexController {
 					}
 				}
 				if(httpServletRequest.getSession().getAttribute("errorMsg") != null) {
-					model.addAttribute("message", new JsMessage("error", httpServletRequest.getSession().getAttribute("errorMsg").toString()));
+					model.addAttribute("message", new UiMessageDto("error", httpServletRequest.getSession().getAttribute("errorMsg").toString()));
 				}
 				return "signin";
 			} else {
@@ -141,11 +141,11 @@ public class IndexController {
 						User suUser = preAuthorizeService.checkShareForSignRequest(signRequest, authUser.getEppn());
 						if (suUser != null) {
 							httpSession.setAttribute("suEppn", suUser.getEppn());
-							redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Délégation activée : " + suUser.getEppn()));
+							redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Délégation activée : " + suUser.getEppn()));
 							return "redirect:" + forwardUri;
 						}
 					} else {
-						redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
+						redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
 						return "redirect:/user";
 					}
 				} catch (Exception e) {

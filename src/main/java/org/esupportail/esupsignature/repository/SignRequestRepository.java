@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.api.SignRequestWsDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestDto;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.WsAccessToken;
@@ -42,10 +42,10 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             join w.wsAccessTokens as t
             where :token in (t) 
             """)
-    List<SignRequestWsDto> findAllByToken(WsAccessToken token);
+    List<SignRequestDto> findAllByToken(WsAccessToken token);
 
     @Query("select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate from SignRequest s join SignBook as sb on sb.id = s.parentSignBook.id")
-    List<SignRequestWsDto> findAllForWs();
+    List<SignRequestDto> findAllForWs();
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 

@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
@@ -226,14 +226,14 @@ public class GlobalWsSecureController {
                            @PathVariable("id") Long id,
                            RedirectAttributes redirectAttributes) {
         signRequestService.deleteSpot(id, spotId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Le commentaire a bien été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Le commentaire a bien été supprimé"));
         return ResponseEntity.ok().build();
     }
 

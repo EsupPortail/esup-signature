@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.export;
 
-import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
+import org.esupportail.esupsignature.dto.projection.export.WorkflowDatasCsvDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.WorkflowRepository;
 import org.esupportail.esupsignature.service.WorkflowService;

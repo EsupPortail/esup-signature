@@ -3,32 +3,31 @@ package org.esupportail.esupsignature.service.view;
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.io.FileUtils;
-import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
-import org.esupportail.esupsignature.dto.view.StartFormViewDto;
-import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
-import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminFormListViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowListViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.dto.api.UserSignatureStateDto;
-import org.esupportail.esupsignature.dto.api.RecipientWsDto;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
-import org.esupportail.esupsignature.dto.view.signrequest.CommentFrontDto;
-import org.esupportail.esupsignature.dto.view.signrequest.FieldFrontDto;
-import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto;
-import org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto;
-import org.esupportail.esupsignature.dto.view.signrequest.SignRequestUiCommonDto;
-import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
-import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
-import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
-import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCurrentUserDto;
-import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
+import org.esupportail.esupsignature.dto.ui.global.UserSignatureStateDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.CommentFrontDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.FieldFrontDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestBackDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestUiCommonDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
+import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
+import org.esupportail.esupsignature.dto.ui.global.UiHomeBootstrapDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
+import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -170,7 +169,7 @@ public class UiFetchService {
     }
 
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
-        UiConfigDto config = buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null);
+        UiDataDto.UiConfigDto config = buildUiConfig(userEppn, httpSession != null ? httpSession.getMaxInactiveInterval() : null);
         UiCountersDto counters = buildUiCounters(userEppn, authUserEppn);
         UiCurrentUserDto currentUser = buildUiMe(userEppn, authUserEppn, httpSession);
         Map<String, String> preferences = getUiPreferences(authUserEppn);
@@ -349,7 +348,7 @@ public class UiFetchService {
                                                           String workflowRole,
                                                           Long formId) {
         Form form = formService.getById(formId);
-        List<org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto> spots = form.getWorkflow() != null
+        List<SignRequestParamsFrontDto> spots = form.getWorkflow() != null
                 ? uiFetchMapper.toSignRequestParamsFrontDtos(formService.getSpots(formId))
                 : List.of();
         Map<Integer, Long> srpMap = form.getWorkflow() != null
@@ -530,8 +529,8 @@ public class UiFetchService {
         );
     }
 
-    public UiConfigDto buildUiConfig(String userEppn, Integer maxInactiveInterval) {
-        FrontendGlobalProperties frontendGlobalProperties = userEppn != null ? buildFrontendGlobalProperties(userEppn) : null;
+    public UiDataDto.UiConfigDto buildUiConfig(String userEppn, Integer maxInactiveInterval) {
+        FrontendGlobalPropertiesDto frontendGlobalProperties = userEppn != null ? buildFrontendGlobalProperties(userEppn) : null;
         String profile = null;
         if (environment.getActiveProfiles().length > 0 && "dev".equals(environment.getActiveProfiles()[0])) {
             profile = environment.getActiveProfiles()[0];
@@ -550,12 +549,12 @@ public class UiFetchService {
         );
     }
 
-    public FrontendGlobalProperties buildFrontendGlobalProperties(String userEppn) {
+    public FrontendGlobalPropertiesDto buildFrontendGlobalProperties(String userEppn) {
         GlobalProperties myGlobalProperties = new GlobalProperties();
         BeanUtils.copyProperties(globalProperties, myGlobalProperties);
         userService.parseRoles(userEppn, myGlobalProperties);
         myGlobalProperties.newVersion = globalProperties.newVersion;
-        return FrontendGlobalProperties.fromGlobalProperties(myGlobalProperties);
+        return FrontendGlobalPropertiesDto.fromGlobalProperties(myGlobalProperties);
     }
 
     public Map<String, String> getUiPreferences(String authUserEppn) {

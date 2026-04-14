@@ -2,14 +2,13 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,12 +67,12 @@ public class SignRequestController {
             result = signRequestService.delete(id, authUserEppn);
         }
         if(result == 0L) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression définitive effectuée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression définitive effectuée"));
         } else if(result > 0L) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
             return "redirect:/user/signbooks/" + result;
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Suppression impossible car la demande à démarrée et contient encore des documents en cours de signature"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Suppression impossible car la demande à démarrée et contient encore des documents en cours de signature"));
             return "redirect:/user/signrequests/" + id;
         }
         return "redirect:/user/signbooks";
@@ -110,9 +109,9 @@ public class SignRequestController {
                           @RequestParam(value = "phone", required = false) String phone,
                           RedirectAttributes redirectAttributes) {
         if(otpService.generateOtpForSignRequest(id, recipientId, phone, false) != null){
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande OTP envoyée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Demande OTP envoyée"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Problème d'envoi OTP"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Problème d'envoi OTP"));
         }
         return "redirect:/user/signbooks/" + id;
     }
@@ -121,9 +120,9 @@ public class SignRequestController {
     @PostMapping(value = "/replay-notif/{id}")
     public String replayNotif(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureMailException {
         if(signRequestService.replayNotif(id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Votre relance a bien été envoyée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Votre relance a bien été envoyée"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Votre relance n'a pas été envoyée car une autre relance a déjà été émise"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Votre relance n'a pas été envoyée car une autre relance a déjà été émise"));
         }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }

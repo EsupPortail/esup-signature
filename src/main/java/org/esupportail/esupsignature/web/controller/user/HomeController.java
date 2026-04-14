@@ -1,9 +1,9 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsSlimSelect;
-import org.esupportail.esupsignature.dto.api.SearchRequest;
-import org.esupportail.esupsignature.dto.api.SearchResult;
+import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
+import org.esupportail.esupsignature.dto.ui.global.UiSearchRequest;
+import org.esupportail.esupsignature.dto.ui.global.UiSearchResult;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -129,15 +129,15 @@ public class HomeController {
 
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public List<SearchResult> search(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<SearchRequest> searchRequests) {
-        List<SearchResult> searchResults = new ArrayList<>();
+    public List<UiSearchResult> search(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<UiSearchRequest> searchRequests) {
+        List<UiSearchResult> searchResults = new ArrayList<>();
         if(!searchRequests.isEmpty()) {
             List<String> words = new ArrayList<>();
             List<String> types = new ArrayList<>();
             List<Tag> tags = new ArrayList<>();
             List<Workflow> workflows = new ArrayList<>();
             List<Form> forms = new ArrayList<>();
-            for (SearchRequest searchRequest : searchRequests) {
+            for (UiSearchRequest searchRequest : searchRequests) {
                 if (searchRequest.getValue().startsWith("tag:")) {
                     tags.add(tagService.getById(Long.valueOf(searchRequest.getValue().split(":")[1])));
                 } else if (searchRequest.getValue().startsWith("type:")) {
@@ -150,7 +150,7 @@ public class HomeController {
                 workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
                         .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
-                    SearchResult searchResult = new SearchResult();
+                    UiSearchResult searchResult = new UiSearchResult();
                     searchResult.setIcon("fi fi-rr-diagram-project project-diagram-color");
                     searchResult.setTitle(workflow.getDescription());
                     searchResult.setUrl("/user/start-workflow/" + workflow.getId());
@@ -165,7 +165,7 @@ public class HomeController {
                 forms = formService.getFormsByUser(authUserEppn, authUserEppn)
                         .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
-                    SearchResult searchResult = new SearchResult();
+                    UiSearchResult searchResult = new UiSearchResult();
                     searchResult.setIcon("fi fi-rr-poll-h file-alt-color");
                     searchResult.setTitle(form.getTitle());
                     searchResult.setUrl("/user/start-form/" + form.getId());
@@ -197,7 +197,7 @@ public class HomeController {
                     signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && new HashSet<>(s.getLiveWorkflow().getWorkflow().getTags()).containsAll(tags)).toList();
                 }
                 for (SignBook signBook : signBooks) {
-                    SearchResult searchResult = new SearchResult();
+                    UiSearchResult searchResult = new UiSearchResult();
                     searchResult.setIcon("fi fi-rr-file");
                     searchResult.setTitle(signBook.getSubject());
                     searchResult.setUrl("/user/signbooks/" + signBook.getId());
@@ -222,19 +222,19 @@ public class HomeController {
 
     @GetMapping(value = "/search-titles")
     @ResponseBody
-    public List<JsSlimSelect> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
-                                              @RequestParam(value = "searchString", required = false) String searchString) {
-        List<JsSlimSelect> results = new ArrayList<>();
+    public List<UiSlimSelectDto> searchDocTitles(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                 @RequestParam(value = "searchString", required = false) String searchString) {
+        List<UiSlimSelectDto> results = new ArrayList<>();
         if(!StringUtils.hasText(searchString)) return results;
         for(String docTitle : signBookService.getAllDocTitles(userEppn, searchString)) {
-            results.add(new JsSlimSelect(docTitle, docTitle, "<i class=\"fi fi-rr-file \"></i> " + docTitle));
+            results.add(new UiSlimSelectDto(docTitle, docTitle, "<i class=\"fi fi-rr-file \"></i> " + docTitle));
 
         }
         for(String workflowTile : workflowService.getWorkflowsByUser(userEppn, authUserEppn).stream().map(Workflow::getDescription).filter(s -> s !=null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(workflowTile, workflowTile, "<i class=\"fi fi-rr-diagram-project project-diagram-color\"></i> " + workflowTile));
+            results.add(new UiSlimSelectDto(workflowTile, workflowTile, "<i class=\"fi fi-rr-diagram-project project-diagram-color\"></i> " + workflowTile));
         }
         for(String formTitle : formService.getFormsByUser(userEppn, authUserEppn).stream().map(Form::getTitle).filter(s -> s != null && s.toLowerCase().contains(searchString.toLowerCase())).toList()) {
-            results.add(new JsSlimSelect(formTitle, formTitle, "<i class=\"fi fi-rr-poll-h file-alt-color\"></i> " + formTitle));
+            results.add(new UiSlimSelectDto(formTitle, formTitle, "<i class=\"fi fi-rr-poll-h file-alt-color\"></i> " + formTitle));
         }
         return results;
     }

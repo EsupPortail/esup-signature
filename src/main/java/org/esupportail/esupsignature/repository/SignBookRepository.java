@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.view.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;

@@ -4,7 +4,7 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -111,7 +111,7 @@ public class SignRequestAdminController {
 			model.addAttribute("isManager", true);
 			return "admin/signrequests/show";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "La demande de signature n'existe pas"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "La demande de signature n'existe pas"));
 			return "redirect:/admin/signrequests";
 		}
 	}
@@ -128,9 +128,9 @@ public class SignRequestAdminController {
 	@DeleteMapping(value = "delete-definitive/{id}", produces = "text/html")
 	public String deleteDefinitive(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		if(signBookService.deleteDefinitive(id, authUserEppn)) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été supprimé définitivement"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document ne peut pas être supprimé définitivement"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document ne peut pas être supprimé définitivement"));
 		}
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}

@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -96,7 +96,7 @@ public class WorkflowController {
         try {
             workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, false, null, minSignLevel, maxSignLevel, sealVisa);
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Type de signature impossible pour une étape infinie"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Type de signature impossible pour une étape infinie"));
         }
         return "redirect:/user/workflows/" + id;
     }
@@ -107,7 +107,7 @@ public class WorkflowController {
                                       @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn,
                                       @PathVariable("workflowStepId") Long workflowStepId, RedirectAttributes redirectAttributes) {
         WorkflowStep workflowStep = workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Participant supprimé"));
         return "redirect:/user/workflows/" + id + "#" + workflowStep.getId();
     }
 
@@ -121,9 +121,9 @@ public class WorkflowController {
         WorkflowStep workflowStep = null;
         try {
             workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Arrays.stream(recipientsEmails.split(",")).toList()));
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Participant ajouté"));
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Participant non ajouté"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Participant non ajouté"));
         }
         return "redirect:/user/workflows/" + workflow.getId() + "#" + workflowStep.getId();
     }
@@ -143,9 +143,9 @@ public class WorkflowController {
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         try {
             workflowService.delete(id);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le circuit a bien été supprimé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le circuit a bien été supprimé"));
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         return "redirect:/";
     }

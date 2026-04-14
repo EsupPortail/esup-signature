@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
-import org.esupportail.esupsignature.dto.view.admin.AdminConfigViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminConfigViewDto;
 import org.esupportail.esupsignature.entity.Config;
 import org.esupportail.esupsignature.repository.ConfigRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;

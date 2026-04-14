@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -84,7 +84,7 @@ public class OtpAccessController {
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
-            model.addAttribute("globalProperties", FrontendGlobalProperties.fromGlobalProperties(globalProperties));
+            model.addAttribute("globalProperties", FrontendGlobalPropertiesDto.fromGlobalProperties(globalProperties));
             return "otp/signin";
         }
         otp = otpService.getOtpFromDatabase(urlId);
@@ -190,7 +190,7 @@ public class OtpAccessController {
             } catch (Exception e) {
                 logger.error(e.getMessage());
             }
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
             return "redirect:/otp-access/first/" + urlId;
         }
     }

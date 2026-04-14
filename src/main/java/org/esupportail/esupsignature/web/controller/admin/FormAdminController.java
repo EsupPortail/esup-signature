@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Tag;
-import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
 import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.ShareType;
@@ -16,13 +15,11 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
-import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.view.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -115,7 +112,7 @@ public class FormAdminController {
 			}
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
 	}
@@ -137,7 +134,7 @@ public class FormAdminController {
 			return "redirect:/admin/forms/" + form.getId() + "/fields";
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
 	}
@@ -151,7 +148,7 @@ public class FormAdminController {
 		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			workflowRole = "admin";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
 		var view = uiFetchService.buildAdminFormFieldsView(authUserEppn, workflowRole, id);
@@ -172,7 +169,7 @@ public class FormAdminController {
 		}else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			workflowRole = "admin";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
 		var view = uiFetchService.buildAdminFormSignsView(authUserEppn, workflowRole, id);
@@ -209,7 +206,7 @@ public class FormAdminController {
 									   @PathVariable("signRequestParamsId") Long signRequestParamsId,
 									   RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, signRequestParamsId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
 		return "redirect:/admin/forms/" + formId + "/signs";
 	}
 
@@ -220,7 +217,7 @@ public class FormAdminController {
 										  @PathVariable("id") Long id,
 										  RedirectAttributes redirectAttributes) {
 		formService.removeSignRequestParamsSteps(formId, id);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Champ signature supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
 	}
 
 	@PostMapping("/add-field/{id}")
@@ -241,7 +238,7 @@ public class FormAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			workflowRole = "admin";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
 		var view = uiFetchService.buildAdminFormUpdateView(authUserEppn, workflowRole, id);
@@ -265,7 +262,7 @@ public class FormAdminController {
 							 @RequestParam(value = "types", required = false) String[] types,
 							 RedirectAttributes redirectAttributes) {
 
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modifications enregistrées"));
 		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			formService.updateForm(updateForm.getId(), updateForm, types, true, authUserEppn);
 			return "redirect:/admin/forms/update/" + updateForm.getId();
@@ -273,7 +270,7 @@ public class FormAdminController {
 			formService.updateForm(updateForm.getId(), updateForm, types, true, authUserEppn);
 			return "redirect:/manager/forms/update/" + updateForm.getId();
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Accès non autorisé"));
 			return "redirect:/";
 		}
 	}
@@ -288,10 +285,10 @@ public class FormAdminController {
 			}
 		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 			return "redirect:/admin/forms";
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modifications enregistrées"));
 		return "redirect:/admin/forms/update/" + id;
 	}
 
@@ -299,7 +296,7 @@ public class FormAdminController {
 	@PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le formulaire a bien été supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le formulaire a bien été supprimé"));
 		return "redirect:/admin/forms";
 	}
 
@@ -376,7 +373,7 @@ public class FormAdminController {
 	public void getFile(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse, RedirectAttributes redirectAttributes) throws IOException {
 		try {
 			if (!formService.getModel(id, httpServletResponse)) {
-				redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Modèle non trouvée ..."));
+				redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Modèle non trouvée ..."));
 				httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
 			}
 		} catch (Exception e) {
@@ -410,7 +407,7 @@ public class FormAdminController {
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
 		return "redirect:/admin/forms/update/" + id;
 	}

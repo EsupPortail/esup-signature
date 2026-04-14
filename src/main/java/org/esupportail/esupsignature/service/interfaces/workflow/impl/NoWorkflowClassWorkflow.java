@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.service.interfaces.workflow.impl;
 
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.service.interfaces.workflow.ClassWorkflow;
 import org.esupportail.esupsignature.service.interfaces.workflow.ModelClassWorkflow;

@@ -4,9 +4,9 @@ import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.api.RecipientWsDto;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -312,12 +312,12 @@ public class WizardController {
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Non autorisé"));
 		} else {
             try {
                 workflowService.delete(id);
             } catch (EsupSignatureRuntimeException e) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
             }
         }
         return "redirect:/user";

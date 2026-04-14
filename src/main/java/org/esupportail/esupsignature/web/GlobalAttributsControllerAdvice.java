@@ -7,9 +7,9 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
-import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
+import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
+import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
@@ -79,9 +79,9 @@ public class GlobalAttributsControllerAdvice {
                 logger.error("user {} not found", userEppn);
                 return;
             }
-            FrontendGlobalProperties myGlobalProperties = uiFetchService.buildFrontendGlobalProperties(userEppn);
+            FrontendGlobalPropertiesDto myGlobalProperties = uiFetchService.buildFrontendGlobalProperties(userEppn);
             UiCountersDto uiCounters = uiFetchService.buildUiCounters(userEppn, authUserEppn);
-            UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
+            UiDataDto.UiConfigDto uiConfig = uiFetchService.buildUiConfig(userEppn, httpSession.getMaxInactiveInterval());
             model.addAttribute("user", user);
             model.addAttribute("authUser", userService.getByEppn(authUserEppn));
             model.addAttribute("keystoreFileName", user.getKeystoreFileName());

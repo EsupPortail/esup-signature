@@ -1,24 +1,20 @@
 package org.esupportail.esupsignature.service.view;
 
-import org.esupportail.esupsignature.dto.view.admin.AdminFormListViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminFormDetailViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowListViewDto;
-import org.esupportail.esupsignature.dto.view.admin.AdminWorkflowUpdateViewDto;
-import org.esupportail.esupsignature.dto.view.StartFormViewDto;
-import org.esupportail.esupsignature.dto.view.WorkflowViewDto;
-import org.esupportail.esupsignature.dto.view.ui.AdminUiStatusDto;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
-import org.esupportail.esupsignature.dto.view.signrequest.SignRequestParamsFrontDto;
-import org.esupportail.esupsignature.dto.view.ui.ExternalSignatureParamsDto;
-import org.esupportail.esupsignature.dto.view.ui.SuUserDto;
-import org.esupportail.esupsignature.dto.view.ui.UiConfigDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCountersDto;
-import org.esupportail.esupsignature.dto.view.ui.UiDataDto;
-import org.esupportail.esupsignature.dto.view.ui.UiGlobalPropertiesDto;
-import org.esupportail.esupsignature.dto.view.ui.UiHomeBootstrapDto;
-import org.esupportail.esupsignature.dto.view.ui.UiCurrentUserDto;
-import org.esupportail.esupsignature.dto.view.ui.UiUserDto;
-import org.esupportail.esupsignature.dto.view.ui.UiUserLookupDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminFormListViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowListViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
+import org.esupportail.esupsignature.dto.ui.global.FrontendGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
+import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiHomeBootstrapDto;
+import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
+import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
@@ -48,7 +44,7 @@ public class UiFetchMapper {
         return new AdminUiStatusDto(nbSessions, dssStatus);
     }
 
-    public UiDataDto toUiDataDto(UiConfigDto config,
+    public UiDataDto toUiDataDto(UiDataDto.UiConfigDto config,
                                  UiCountersDto counters,
                                  UiCurrentUserDto currentUser,
                                  Map<String, String> preferences,
@@ -86,14 +82,14 @@ public class UiFetchMapper {
         );
     }
 
-    public UiUserDto toUiUserDto(User user, Set<String> roles) {
+    public UiCurrentUserDto.UiUserDto toUiUserDto(User user, Set<String> roles) {
         if (user == null) {
             return null;
         }
         List<String> sortedRoles = roles == null
                 ? List.of()
                 : roles.stream().sorted().toList();
-        return new UiUserDto(
+        return new UiCurrentUserDto.UiUserDto(
                 user.getId(),
                 user.getEppn(),
                 user.getFirstname(),
@@ -105,11 +101,11 @@ public class UiFetchMapper {
         );
     }
 
-    public SuUserDto toSuUserDto(User user) {
+    public UiCurrentUserDto.SuUserDto toSuUserDto(User user) {
         if (user == null) {
             return null;
         }
-        return new SuUserDto(
+        return new UiCurrentUserDto.SuUserDto(
                 user.getEppn(),
                 user.getFirstname(),
                 user.getName(),
@@ -169,16 +165,16 @@ public class UiFetchMapper {
         );
     }
 
-    public UiConfigDto toUiConfigDto(FrontendGlobalProperties globalProperties,
-                                     Boolean enableSms,
-                                     Boolean validationToolsEnabled,
-                                     String applicationEmail,
-                                     Integer maxInactiveInterval,
-                                     Integer hoursBeforeRefreshNotif,
-                                     Boolean infiniteScrolling,
-                                     String versionApp,
-                                     String profile) {
-        return new UiConfigDto(
+    public UiDataDto.UiConfigDto toUiConfigDto(FrontendGlobalPropertiesDto globalProperties,
+                                               Boolean enableSms,
+                                               Boolean validationToolsEnabled,
+                                               String applicationEmail,
+                                               Integer maxInactiveInterval,
+                                               Integer hoursBeforeRefreshNotif,
+                                               Boolean infiniteScrolling,
+                                               String versionApp,
+                                               String profile) {
+        return new UiDataDto.UiConfigDto(
                 toUiGlobalPropertiesDto(globalProperties),
                 enableSms,
                 validationToolsEnabled,
@@ -191,7 +187,7 @@ public class UiFetchMapper {
         );
     }
 
-    public UiGlobalPropertiesDto toUiGlobalPropertiesDto(FrontendGlobalProperties props) {
+    public UiGlobalPropertiesDto toUiGlobalPropertiesDto(FrontendGlobalPropertiesDto props) {
         if (props == null) {
             return null;
         }
@@ -237,11 +233,11 @@ public class UiFetchMapper {
         );
     }
 
-    public ExternalSignatureParamsDto toExternalSignatureParamsDto(SignRequestParams params) {
+    public UiGlobalPropertiesDto.ExternalSignatureParamsDto toExternalSignatureParamsDto(SignRequestParams params) {
         if (params == null) {
             return null;
         }
-        return new ExternalSignatureParamsDto(
+        return new UiGlobalPropertiesDto.ExternalSignatureParamsDto(
                 params.getAddWatermark(),
                 params.getExtraDate(),
                 params.getExtraType(),

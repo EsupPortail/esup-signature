@@ -4,9 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.api.RecipientWsDto;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -98,7 +98,7 @@ public class WorkflowAdminController {
         } else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
             model.addAttribute("workflowRole", "admin");
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
             return "redirect:/admin/workflows";
         }
 		model.addAttribute("workflow", uiFetchService.buildAdminWorkflowTargetsWorkflowView(id));
@@ -114,7 +114,7 @@ public class WorkflowAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			model.addAttribute("workflowRole", "admin");
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/workflows";
 		}
 		model.addAttribute("fromAdmin", true);
@@ -144,9 +144,9 @@ public class WorkflowAdminController {
 				return "redirect:/manager/workflows/update/" + workflow.getId();
 			}
 		} catch (DataIntegrityViolationException dive) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Un circuit possède déjà ce préfixe"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Un circuit possède déjà ce préfixe"));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         return "redirect:/admin/workflows";
     }
@@ -160,7 +160,7 @@ public class WorkflowAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			workflowRole = "admin";
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
 		var view = uiFetchService.buildAdminWorkflowUpdateView(authUserEppn, workflowRole, id);
@@ -193,7 +193,7 @@ public class WorkflowAdminController {
 				return "redirect:/admin/workflows/update/" + updateWorkflow.getId();
 			}
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 		return "redirect:/user";
     }
 
@@ -203,7 +203,7 @@ public class WorkflowAdminController {
 		try {
 			workflowService.delete(id);
 		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows";
     }
@@ -231,7 +231,7 @@ public class WorkflowAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			return "redirect:/admin/workflows/steps/" + id;
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
 	}
@@ -271,7 +271,7 @@ public class WorkflowAdminController {
 		try {
 			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel, sealVisa);
 		} catch (EsupSignatureRuntimeException e) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
         String path = httpServletRequest.getRequestURI();
 		if (!path.startsWith("/admin")) {
@@ -279,7 +279,7 @@ public class WorkflowAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			return "redirect:/admin/workflows/steps/" + id;
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 		return "redirect:/user";
 	}
 
@@ -289,14 +289,14 @@ public class WorkflowAdminController {
 									  @PathVariable("workflowStepId") Long workflowStepId,
 									  @RequestParam(value = "userToRemoveEppn") String userToRemoveEppn, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		workflowStepService.removeStepRecipient(workflowStepId, userToRemoveEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Participant supprimé"));
         String path = httpServletRequest.getRequestURI();
 		if (!path.startsWith("/admin")) {
 			return "redirect:/manager/workflows/steps/" + id;
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			return "redirect:/admin/workflows/steps/" + id;
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/user";
 		}
 	}
@@ -308,7 +308,7 @@ public class WorkflowAdminController {
 								   @PathVariable("workflowStepId") Long workflowStepId,
 								   @RequestParam String recipientsEmails, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		WorkflowStep workflowStep = workflowStepService.addStepRecipients(workflowStepId, recipientService.convertRecipientEmailsToRecipientDto(Arrays.stream(recipientsEmails.split(",")).toList()));
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Participant ajouté"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Participant ajouté"));
 		return "redirect:/admin/workflows/steps/" + id + "#" + workflowStep.getId();
 	}
 
@@ -325,7 +325,7 @@ public class WorkflowAdminController {
 		} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			return "redirect:/admin/workflows/steps/" + id;
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Accès non autorisé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 		return "redirect:/user";
 	}
 
@@ -338,12 +338,12 @@ public class WorkflowAdminController {
             nbImportedFiles = signBookService.importFilesFromSource(id, user, user);
         } catch (EsupSignatureException e) {
 			logger.debug(e.getMessage(), e);
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         if (nbImportedFiles == 0) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucun fichier à importer"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Aucun fichier à importer"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("info", nbImportedFiles + " ficher(s) importé(s)"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
 		return "redirect:/admin/workflows";
 	}
@@ -359,9 +359,9 @@ public class WorkflowAdminController {
                             @RequestParam(value = "cascade", required = false) String cascade,
                             RedirectAttributes redirectAttributes) throws EsupSignatureFsException {
 		if (workflowService.addTarget(id, documentsTargetUri, BooleanUtils.toBoolean(sendDocument), BooleanUtils.toBoolean(sendReport), BooleanUtils.toBoolean(sendAttachment), BooleanUtils.toBoolean(sendZip), BooleanUtils.toBoolean(cascade))) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination ajoutée"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Destination ajoutée"));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Une destination mail existe déjà"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", "Une destination mail existe déjà"));
 		}
 		return "redirect:/admin/workflows/targets/" + id;
 	}
@@ -373,7 +373,7 @@ public class WorkflowAdminController {
                                @RequestParam(value = "cascade", required = false) String cascade,
 							   RedirectAttributes redirectAttributes) {
 		workflowService.deleteTarget(id, targetId, BooleanUtils.toBoolean(cascade));
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Destination supprimée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Destination supprimée"));
 		return "redirect:/admin/workflows/targets/" + id;
 
 	}
@@ -383,7 +383,7 @@ public class WorkflowAdminController {
     public String restartTargets(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                RedirectAttributes redirectAttributes) {
         workflowService.restartTargets(id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Exports relancés"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Exports relancés"));
         return "redirect:/admin/workflows/targets/" + id;
 
     }
@@ -414,7 +414,7 @@ public class WorkflowAdminController {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows/update/" + id;
 	}
@@ -423,7 +423,7 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendDocument(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendDocument(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des documents modifié"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Envoi des documents modifié"));
 		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
@@ -431,7 +431,7 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendReport(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendReport(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi du rapport modifié"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Envoi du rapport modifié"));
 		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
@@ -439,7 +439,7 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendAttachment(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendAttachment(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi des pièces jointes modifié"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Envoi des pièces jointes modifié"));
 		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 
@@ -447,7 +447,7 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String toggleSendZip(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("targetId") Long targetId, RedirectAttributes redirectAttributes) {
 		targetService.toggleSendZip(targetId);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Envoi par ZIP"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Envoi par ZIP"));
 		return "redirect:/admin/workflows/targets/" + id + "#targets";
 	}
 }

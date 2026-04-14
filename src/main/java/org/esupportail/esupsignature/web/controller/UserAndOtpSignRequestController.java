@@ -4,10 +4,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.view.signrequest.ShowSignRequestBackDto;
-import org.esupportail.esupsignature.dto.view.signrequest.SignUiFrontDto;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestBackDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -80,7 +80,7 @@ public class UserAndOtpSignRequestController {
         LiveWorkflowStep currentStep = context.currentStep();
 
         if(context.signImagesWarningMessage() != null) {
-            model.addAttribute("message", new JsMessage("warn", context.signImagesWarningMessage()));
+            model.addAttribute("message", new UiMessageDto("warn", context.signImagesWarningMessage()));
         }
 
         if(annotation != null && !context.editable()) {
@@ -91,7 +91,7 @@ public class UserAndOtpSignRequestController {
                 && workflow != null && userService.getUiParams(authUserEppn) != null
                 && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(workflow.getId().toString()))
                 && currentStep != null && currentStep.getSignType().equals(SignType.hiddenVisa)) {
-            model.addAttribute("message", new JsMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, workflow.getId().toString() + ",");
 
         }
@@ -129,12 +129,12 @@ public class UserAndOtpSignRequestController {
         try {
             commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
         } catch (EsupSignatureException e) {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+            model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         if(commentId != null) {
-            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
+            model.addAttribute("message", new UiMessageDto("success", "Post-it ajouté"));
         } else {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+            model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
@@ -149,10 +149,10 @@ public class UserAndOtpSignRequestController {
                                 @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.updateComment(signRequestId, postitId, comment);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit modifiée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit modifiée"));
 
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
@@ -166,10 +166,10 @@ public class UserAndOtpSignRequestController {
                                 @PathVariable("postitId") Long postitId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.deletePostit(signRequestId, postitId);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit supprimé"));
 
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
@@ -188,12 +188,12 @@ public class UserAndOtpSignRequestController {
                 new URI(link);
             }
             if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La piece jointe a bien été ajoutée"));
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
             }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Le lien fourni n'est pas valide"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Le lien fourni n'est pas valide"));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
@@ -205,7 +205,7 @@ public class UserAndOtpSignRequestController {
     public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove attachment");
         signRequestService.removeAttachement(id, attachementId, redirectAttributes);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La pieces jointe a été supprimée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La pieces jointe a été supprimée"));
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + id + "?attachment=true";
@@ -216,7 +216,7 @@ public class UserAndOtpSignRequestController {
     public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove link");
         signRequestService.removeLink(id, linkId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le lien a été supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le lien a été supprimé"));
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + id + "?attachment=true";
@@ -228,7 +228,7 @@ public class UserAndOtpSignRequestController {
         synchronized (getLock(authUserEppn)) {
             try {
                 if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
-                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
                     httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
                 }
             } catch (Exception e) {
@@ -244,7 +244,7 @@ public class UserAndOtpSignRequestController {
             try {
                 logger.info("get file attachment");
                 if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
-                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
                     httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
                 }
             } catch (Exception e) {
@@ -325,13 +325,13 @@ public class UserAndOtpSignRequestController {
                            @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
                            RedirectAttributes redirectAttributes) {
         if(!globalProperties.getEnableTransfertForUsers()) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Opération interdite"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Opération interdite"));
             return "redirect:/user/signrequests/" + signRequestId;
         }
         if(keepFollow == null) keepFollow = false;
         try {
             signBookService.transfertSignRequest(signRequestId, authUserEppn, transfertRecipientsEmails, phones, names, firstnames, keepFollow);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Demande transférée"));
             if(keepFollow) {
                 return "redirect:/user/signrequests/" + signRequestId;
             } else {
@@ -340,7 +340,7 @@ public class UserAndOtpSignRequestController {
                 return "redirect:" + basePath;
             }
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée : " + e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non transférée : " + e.getMessage()));
             return "redirect:/user/signrequests/" + signRequestId;
         }
     }

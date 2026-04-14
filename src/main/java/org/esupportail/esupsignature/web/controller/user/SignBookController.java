@@ -7,10 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.api.RecipientWsDto;
-import org.esupportail.esupsignature.dto.api.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.view.signbook.SignBookListItemDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookListItemDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -204,7 +204,7 @@ public class SignBookController {
             }
             return "redirect:/user/signrequests/" + signRequestId;
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
     }
@@ -221,7 +221,7 @@ public class SignBookController {
     @GetMapping(value = "/restore/{id}", produces = "text/html")
     public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         signBookService.restore(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Restauration effectuée"));
         return "redirect:/user/signbooks/" + id;
     }
 
@@ -231,18 +231,18 @@ public class SignBookController {
         Boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive != null) {
             if (isDefinitive) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été supprimé définitivement"));
                 if (httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
                     return "redirect:/user/signbooks";
                 } else {
                     return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
                 }
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été placé dans la corbeille"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été placé dans la corbeille"));
                 return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
             }
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Ce document ne pas être supprimé de la corbeille"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", "Ce document ne pas être supprimé de la corbeille"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
     }
@@ -251,11 +251,11 @@ public class SignBookController {
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         if(signBookService.deleteDefinitive(id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été supprimé définitivement"));
             return "redirect:/user/signbooks";
 
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Le document ne peut pas être supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", "Le document ne peut pas être supprimé définitivement"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 
         }
@@ -264,7 +264,7 @@ public class SignBookController {
     @DeleteMapping(value = "/empty-trash", produces = "text/html")
     public String emptyTrash(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         signBookService.emptyTrash(authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La corbeille a été vidée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La corbeille a été vidée"));
         return "redirect:/user/signbooks?statusFilter=deleted";
     }
 
@@ -281,7 +281,7 @@ public class SignBookController {
             model.addAttribute("liveWorkflowTargets", signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow().getTargets() : List.of());
             return "user/signbooks/update";
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
             return "redirect:/user/signbooks";
         }
     }
@@ -294,7 +294,7 @@ public class SignBookController {
                          @RequestParam(required = false) List<String> viewers,
                          RedirectAttributes redirectAttributes) {
         signBookService.updateSignBook(id, subject, description, viewers);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modifications enregistrées"));
         return "redirect:/user/signbooks/update/" + id;
     }
 
@@ -304,7 +304,7 @@ public class SignBookController {
                          @RequestParam(required = false) List<String> viewers,
                          RedirectAttributes redirectAttributes) {
         signBookService.addViewers(id, viewers);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Observateurs ajoutés"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Observateurs ajoutés"));
         return "redirect:/user/signbooks/" + id;
     }
 
@@ -350,10 +350,10 @@ public class SignBookController {
             workflowStepDto.setAllSignToComplete(allSignToComplete);
             workflowStepDto.setSignType(signType);
             signBookService.addLiveStep(id, workflowStepDto , stepNumber, authUserEppn);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Étape ajoutée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Étape ajoutée"));
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
 
         return "redirect:/user/signbooks/update/" + id;
@@ -364,9 +364,9 @@ public class SignBookController {
     public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
         String result = signBookService.removeStep(id, step);
         if (result == null) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "L'étape a été supprimés"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "L'étape a été supprimés"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", result));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", result));
         }
         return "redirect:/user/signbooks/update/" + id;
     }
@@ -390,9 +390,9 @@ public class SignBookController {
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
         try {
             signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Ajout effectuée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Ajout effectuée"));
         } catch(Exception e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         return "redirect:/user/signbooks/update/" + id;
     }
@@ -423,9 +423,9 @@ public class SignBookController {
     public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
                          @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         if(signBookService.toggleHideSignBook(id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande à été masquée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La demande à été masquée"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande est de nouveau visible"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La demande est de nouveau visible"));
         }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
@@ -448,7 +448,7 @@ public class SignBookController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new JsMessage("error", e.getMessage()));
+                    .body(new UiMessageDto("error", e.getMessage()));
         }
     }
 
@@ -496,7 +496,7 @@ public class SignBookController {
 
             }
         }
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -533,7 +533,7 @@ public class SignBookController {
         try {
             liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         return "redirect:/user/signbooks/update/" + id;
     }

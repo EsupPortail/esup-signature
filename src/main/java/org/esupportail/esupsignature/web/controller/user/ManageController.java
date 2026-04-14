@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -171,7 +171,7 @@ public class ManageController {
         } catch (EsupSignatureException e) {
             logger.error("error on create form instance", e);
         }
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Nouveau formulaire envoyé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Nouveau formulaire envoyé"));
         return "redirect:/user/manage";
     }
 
