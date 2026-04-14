@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.dto.ui.global;
 
 import java.util.List;
 
-public record UiHomeBootstrapDto(
+public record UiHomeDto(
         Long startFormId,
         Long startWorkflowId,
         String warningReadUrl,

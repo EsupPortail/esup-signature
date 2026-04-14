@@ -16,7 +16,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.WorkflowService;
-import org.esupportail.esupsignature.service.view.UiFetchService;
+import org.esupportail.esupsignature.dto.mapper.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;

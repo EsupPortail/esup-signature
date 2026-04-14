@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.view;
+package org.esupportail.esupsignature.dto.mapper;
 
 import org.esupportail.esupsignature.dto.page.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParams
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
-import org.esupportail.esupsignature.dto.ui.global.UiHomeBootstrapDto;
+import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.Document;
@@ -51,14 +51,14 @@ public class UiFetchMapper {
         return new UiDataDto(config, counters, currentUser, preferences, adminStatus);
     }
 
-    public UiHomeBootstrapDto toUiHomeBootstrapDto(Long startFormId,
-                                                   Long startWorkflowId,
-                                                   String warningReadUrl,
-                                                   String searchUrl,
-                                                   String searchTitlesUrl,
-                                                   List<UiHomeBootstrapDto.SignBookItem> toSignSignBooks,
-                                                   List<UiHomeBootstrapDto.SignBookItem> pendingSignBooks) {
-        return new UiHomeBootstrapDto(startFormId, startWorkflowId, warningReadUrl, searchUrl, searchTitlesUrl, toSignSignBooks, pendingSignBooks);
+    public UiHomeDto toUiHomeBootstrapDto(Long startFormId,
+                                          Long startWorkflowId,
+                                          String warningReadUrl,
+                                          String searchUrl,
+                                          String searchTitlesUrl,
+                                          List<UiHomeDto.SignBookItem> toSignSignBooks,
+                                          List<UiHomeDto.SignBookItem> pendingSignBooks) {
+        return new UiHomeDto(startFormId, startWorkflowId, warningReadUrl, searchUrl, searchTitlesUrl, toSignSignBooks, pendingSignBooks);
     }
 
     public UiCurrentUserDto toUiMeDto(User user,

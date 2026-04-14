@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.service.view.UiFetchService;
+import org.esupportail.esupsignature.dto.mapper.UiFetchService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

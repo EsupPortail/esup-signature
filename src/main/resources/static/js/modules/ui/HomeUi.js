@@ -1,6 +1,6 @@
 export class HomeUi {
 
-    constructor(bootstrapUrl = '/ws-secure/ui/home/bootstrap') {
+    constructor(bootstrapUrl = '/ws-secure/ui/home') {
         this.bootstrapUrl = bootstrapUrl;
         this.bootstrap = null;
         this.slimselect = null;

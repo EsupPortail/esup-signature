@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.view.UiFetchService;
+import org.esupportail.esupsignature.dto.mapper.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

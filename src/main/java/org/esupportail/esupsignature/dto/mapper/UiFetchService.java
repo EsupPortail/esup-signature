@@ -1,4 +1,4 @@
-package org.esupportail.esupsignature.service.view;
+package org.esupportail.esupsignature.dto.mapper;
 
 import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
@@ -25,7 +25,7 @@ import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
 import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
-import org.esupportail.esupsignature.dto.ui.global.UiHomeBootstrapDto;
+import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
 import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
@@ -180,7 +180,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public UiHomeBootstrapDto buildUiHomeBootstrap(String userEppn, String authUserEppn, Long startFormId, Long startWorkflowId) {
+    public UiHomeDto buildUiHomeBootstrap(String userEppn, String authUserEppn, Long startFormId, Long startWorkflowId) {
         return uiFetchMapper.toUiHomeBootstrapDto(
                 startFormId,
                 startWorkflowId,
@@ -386,7 +386,7 @@ public class UiFetchService {
         return new ArrayList<>(workflowMap.values());
     }
 
-    private List<UiHomeBootstrapDto.SignBookItem> buildHomeSignBookItems(String userEppn, String authUserEppn, String statusFilter) {
+    private List<UiHomeDto.SignBookItem> buildHomeSignBookItems(String userEppn, String authUserEppn, String statusFilter) {
         if (userEppn == null || authUserEppn == null) {
             return List.of();
         }
@@ -399,7 +399,7 @@ public class UiFetchService {
                 .toList();
     }
 
-    private UiHomeBootstrapDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn) {
+    private UiHomeDto.SignBookItem toHomeSignBookItem(SignBook signBook, String userEppn) {
         if (signBook == null || signBook.getSignRequests() == null || signBook.getSignRequests().isEmpty()) {
             return null;
         }
@@ -412,7 +412,7 @@ public class UiFetchService {
             listTitle = primarySignRequest.getOriginalDocuments().get(0).getFileName() + ", ...";
         }
 
-        return new UiHomeBootstrapDto.SignBookItem(
+        return new UiHomeDto.SignBookItem(
                 signBook.getId(),
                 primarySignRequest.getId(),
                 signBook.getDescription(),
@@ -427,26 +427,26 @@ public class UiFetchService {
         );
     }
 
-    private List<UiHomeBootstrapDto.PostitItem> toHomePostitItems(List<Comment> postits) {
+    private List<UiHomeDto.PostitItem> toHomePostitItems(List<Comment> postits) {
         if (postits == null || postits.isEmpty()) {
             return List.of();
         }
         return postits.stream()
                 .filter(Objects::nonNull)
-                .map(postit -> new UiHomeBootstrapDto.PostitItem(
+                .map(postit -> new UiHomeDto.PostitItem(
                         toDisplayName(postit.getCreateBy()),
                         postit.getText()
                 ))
                 .toList();
     }
 
-    private List<UiHomeBootstrapDto.SignRequestItem> toHomeSignRequestItems(List<SignRequest> signRequests) {
+    private List<UiHomeDto.SignRequestItem> toHomeSignRequestItems(List<SignRequest> signRequests) {
         if (signRequests == null || signRequests.isEmpty()) {
             return List.of();
         }
         return signRequests.stream()
                 .filter(Objects::nonNull)
-                .map(signRequest -> new UiHomeBootstrapDto.SignRequestItem(
+                .map(signRequest -> new UiHomeDto.SignRequestItem(
                         signRequest.getId(),
                         signRequest.getTitle(),
                         signRequest.getStatus() != null ? signRequest.getStatus().name() : null
