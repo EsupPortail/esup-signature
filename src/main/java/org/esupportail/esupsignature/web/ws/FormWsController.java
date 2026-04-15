@@ -156,7 +156,7 @@ public class FormWsController {
             createByEppn = eppn;
         }
         if(createByEppn == null) {
-            return ResponseEntity.badRequest().body("Required signRequestLigth parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required signRequestLight parameter 'createByEppn' for method parameter type String is not present");
         }
         Data data = dataService.addData(id, createByEppn);
         TypeReference<Map<String, String>> type = new TypeReference<>(){};

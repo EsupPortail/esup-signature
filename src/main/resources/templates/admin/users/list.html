@@ -54,10 +54,10 @@
                                             <i class="fa-solid fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${user.id}">
-                                                <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${!signBookLight.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBookLight.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fa-solid fa-eye-slash pr-2"></i> Masquer-->
                                                 <!--                        </a>-->
-                                                <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${signBookLight.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBookLight.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fa-solid fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
                                             <li>

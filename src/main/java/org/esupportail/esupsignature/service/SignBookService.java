@@ -15,7 +15,7 @@ import org.esupportail.esupsignature.dss.model.DssMultipartFile;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.page.user.signbook.SignBookListItemDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -321,12 +321,12 @@ public class SignBookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SignBookListItemDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+    public Page<SignBookFullDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
         Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
     }
 
-    private SignBookListItemDto toSignBookListItemDto(SignBook signBook, String userEppn) {
+    private SignBookFullDto toSignBookListItemDto(SignBook signBook, String userEppn) {
         SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
         String currentSignType = null;
         if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
@@ -338,7 +338,7 @@ public class SignBookService {
             refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
         }
 
-        return new SignBookListItemDto(
+        return new SignBookFullDto(
                 signBook.getId(),
                 signBook.getSubject(),
                 signBook.getDescription(),
@@ -364,22 +364,22 @@ public class SignBookService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SignBookListItemDto> getAllSignBookListItems(String userEppn,
-                                                             String statusFilter,
-                                                             String workflowFilter,
-                                                             String docTitleFilter,
-                                                             String creatorFilter,
-                                                             String dateFilter,
-                                                             Pageable pageable) {
+    public Page<SignBookFullDto> getAllSignBookListItems(String userEppn,
+                                                         String statusFilter,
+                                                         String workflowFilter,
+                                                         String docTitleFilter,
+                                                         String creatorFilter,
+                                                         String dateFilter,
+                                                         Pageable pageable) {
         Page<SignBook> signBooks = getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
     }
 
-    private SignBookListItemDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
+    private SignBookFullDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
         if (signRequest == null) {
             return null;
         }
-        return new SignBookListItemDto.PrimarySignRequestDto(
+        return new SignBookFullDto.PrimarySignRequestDto(
                 signRequest.getId(),
                 signRequest.getTitle(),
                 signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
@@ -393,11 +393,11 @@ public class SignBookService {
         );
     }
 
-    private List<SignBookListItemDto.SignRequestDocumentDto> toSignRequestDocumentDtos(List<SignRequest> signRequests) {
+    private List<SignBookFullDto.SignRequestDocumentDto> toSignRequestDocumentDtos(List<SignRequest> signRequests) {
         if (signRequests == null || signRequests.isEmpty()) {
             return List.of();
         }
-        return signRequests.stream().map(signRequest -> new SignBookListItemDto.SignRequestDocumentDto(
+        return signRequests.stream().map(signRequest -> new SignBookFullDto.SignRequestDocumentDto(
                 signRequest.getId(),
                 signRequest.getTitle(),
                 signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
@@ -405,17 +405,17 @@ public class SignBookService {
         )).toList();
     }
 
-    private List<SignBookListItemDto.PostitDto> toPostitDtos(List<Comment> postits) {
+    private List<SignBookFullDto.PostitDto> toPostitDtos(List<Comment> postits) {
         if (postits == null || postits.isEmpty()) {
             return List.of();
         }
         return postits.stream()
                 .filter(Objects::nonNull)
-                .map(postit -> new SignBookListItemDto.PostitDto(toDisplayName(postit.getCreateBy()), postit.getText()))
+                .map(postit -> new SignBookFullDto.PostitDto(toDisplayName(postit.getCreateBy()), postit.getText()))
                 .toList();
     }
 
-    private List<SignBookListItemDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest) {
+    private List<SignBookFullDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest) {
         if (signBook.getLiveWorkflow() == null
                 || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null
                 || signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()
@@ -423,18 +423,18 @@ public class SignBookService {
                 || signBook.getLiveWorkflow().getCurrentStepNumber() <= 0) {
             return List.of();
         }
-        List<SignBookListItemDto.ParticipantStepDto> participantSteps = new ArrayList<>();
+        List<SignBookFullDto.ParticipantStepDto> participantSteps = new ArrayList<>();
         for (int i = 0; i < signBook.getLiveWorkflow().getLiveWorkflowSteps().size(); i++) {
             LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i);
-            List<SignBookListItemDto.ParticipantDto> recipients = liveWorkflowStep.getRecipients().stream()
+            List<SignBookFullDto.ParticipantDto> recipients = liveWorkflowStep.getRecipients().stream()
                     .map(recipient -> toParticipantDto(recipient, primarySignRequest, signBook.getSignRequests().size() == 1))
                     .toList();
-            participantSteps.add(new SignBookListItemDto.ParticipantStepDto(i + 1, recipients));
+            participantSteps.add(new SignBookFullDto.ParticipantStepDto(i + 1, recipients));
         }
         return participantSteps;
     }
 
-    private SignBookListItemDto.ParticipantDto toParticipantDto(Recipient recipient, SignRequest primarySignRequest, boolean singleDocument) {
+    private SignBookFullDto.ParticipantDto toParticipantDto(Recipient recipient, SignRequest primarySignRequest, boolean singleDocument) {
         String statusIconClass = null;
         String statusTitle = null;
         if (singleDocument && primarySignRequest != null) {
@@ -454,7 +454,7 @@ public class SignBookService {
                 statusTitle = "N'a pas signé le document";
             }
         }
-        return new SignBookListItemDto.ParticipantDto(
+        return new SignBookFullDto.ParticipantDto(
                 recipient.getUser() != null ? recipient.getUser().getEmail() : null,
                 toDisplayNameOrEmail(recipient.getUser()),
                 statusIconClass,
@@ -895,7 +895,7 @@ public class SignBookService {
     @Transactional
     public void importWorkflowFromWorkflowStepDto(Long signBookId, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
-        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.info("import workflow steps in signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
             addUserSignFirstStep(signBookId, userEppn);
         }
@@ -929,7 +929,7 @@ public class SignBookService {
     @Transactional
     public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) throws EsupSignatureRuntimeException, EsupSignatureException {
         SignBook signBook = signBookRepository.findById(signBookId).get();
-        logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.info("add new workflow step to signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, steps.get(0));
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
@@ -1190,10 +1190,10 @@ public class SignBookService {
     }
 
     /**
-     * Récupère l'ensemble des étapes d'un workflow en fonction de l'identifiant du signBook donné.
+     * Récupère l'ensemble des étapes d'un workflow en fonction de l'identifiant du signBookLight donné.
      *
-     * @param signBookId l'identifiant unique du signBook pour lequel les étapes doivent être récupérées
-     * @return une liste contenant toutes les étapes du workflow associées au signBook, sauf la première étape
+     * @param signBookId l'identifiant unique du signBookLight pour lequel les étapes doivent être récupérées
+     * @return une liste contenant toutes les étapes du workflow associées au signBookLight, sauf la première étape
      */
     @Transactional
     public List<LiveWorkflowStep> getAllSteps(Long signBookId) {
@@ -1640,7 +1640,7 @@ public class SignBookService {
     }
 
     /**
-     * Initialise le workflow d'un carnet de signatures (signBook).
+     * Initialise le workflow d'un carnet de signatures (signBookLight).
      *
      * @param signBookId L'identifiant du carnet de signatures à initialiser.
      * @param steps La liste des étapes du workflow à appliquer.
@@ -1663,7 +1663,7 @@ public class SignBookService {
                 workflowService.importWorkflow(signBook, workflow, steps, userEppn);
                 signRequestService.nextWorkFlowStep(signBook);
             }
-//            dispatchSignRequestParams(signBook);
+//            dispatchSignRequestParams(signBookLight);
             targetService.copyTargets(targets, signBook, targetEmails);
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
             if (pending != null && pending) {
@@ -3148,11 +3148,11 @@ public class SignBookService {
     }
 
     /**
-     * Vérifie si un utilisateur a les droits de visualisation d'un signBook spécifique.
+     * Vérifie si un utilisateur a les droits de visualisation d'un signBookLight spécifique.
      *
      * @param userEppn l'identifiant unique de l'utilisateur concerné par la vérification des droits
      * @param authUserEppn l'identifiant unique de l'utilisateur authentifié effectuant la demande
-     * @param signBookId l'identifiant unique du signBook à vérifier
+     * @param signBookId l'identifiant unique du signBookLight à vérifier
      * @return true si l'utilisateur possède les droits de visualisation, false sinon
      */
     @Transactional

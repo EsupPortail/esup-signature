@@ -828,7 +828,7 @@ public class WorkflowService {
 
     @Transactional
     public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
-        logger.debug("importing workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.debug("importing workflow steps in signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         Workflow dataBaseWorkflow;
         if(BooleanUtils.isTrue(workflow.getFromCode())) {
             dataBaseWorkflow = getWorkflowByName(workflow.getName());

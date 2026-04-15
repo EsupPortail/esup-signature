@@ -176,7 +176,7 @@ public class HomeController {
                     searchResults.add(searchResult);
                 }
             }
-            if(types.isEmpty() || types.contains("signBook")) {
+            if(types.isEmpty() || types.contains("signBookLight")) {
                 List<SignBook> signBooks = new ArrayList<>();
                 Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "createDate"));
                 List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, pageable).getContent();

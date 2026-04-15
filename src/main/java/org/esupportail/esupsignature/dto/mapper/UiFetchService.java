@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.dto.page.admin.AdminFormListViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowListViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
 import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
 import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
@@ -851,7 +852,7 @@ public class UiFetchService {
         SignBook signBook = context.signBook();
         String userEppn = context.userEppn();
         String authUserEppn = context.authUserEppn();
-        ShowSignRequestDto.SignRequestLigthDto request = new ShowSignRequestDto.SignRequestLigthDto(
+        ShowSignRequestDto.SignRequestLightDto request = new ShowSignRequestDto.SignRequestLightDto(
                 signRequest.getId(),
                 signRequest.getStatus(),
                 signRequest.getDeleted(),
@@ -867,7 +868,7 @@ public class UiFetchService {
                 signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>()
         );
         Workflow workflow = context.workflow();
-        ShowSignRequestDto.SignBookMetaDto signBookMeta = new ShowSignRequestDto.SignBookMetaDto(
+        SignBookLightDto signBookLight = new SignBookLightDto(
                 signBook.getId(),
                 signBook.getWorkflowName(),
                 signBook.getDescription(),
@@ -1017,7 +1018,7 @@ public class UiFetchService {
                 : new ArrayList<>();
 
         return new ShowSignRequestDto(
-                signBookMeta,
+                signBookLight,
                 request,
                 common,
                 workflowMeta,

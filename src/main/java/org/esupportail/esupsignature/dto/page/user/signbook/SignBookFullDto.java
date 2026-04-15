@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.dto.page.user.signbook;
 
 import java.util.List;
 
-public record SignBookListItemDto(
+public record SignBookFullDto(
         Long id,
         String subject,
         String description,

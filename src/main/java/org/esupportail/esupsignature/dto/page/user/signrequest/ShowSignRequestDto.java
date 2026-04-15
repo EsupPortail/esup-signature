@@ -1,10 +1,10 @@
 package org.esupportail.esupsignature.dto.page.user.signrequest;
 
 import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
-import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 
 public record ShowSignRequestDto(
-        SignBookMetaDto signBook,
-        SignRequestLigthDto signRequestLigth,
+        SignBookLightDto signBookLight,
+        SignRequestLightDto signRequestLight,
         SignRequestFullDto signRequestFull,
         WorkflowMetaDto workflow,
         String urlProfil,
@@ -54,16 +54,6 @@ public record ShowSignRequestDto(
         Boolean auditTrailChecked,
         List<RecipientWsDto> externalsRecipients
 ) {
-        public record SignBookMetaDto(
-                Long id,
-                String workflowName,
-                String description,
-                SignRequestStatus status,
-                Boolean deleted,
-                ArchiveStatus archiveStatus,
-                Date createDate,
-                List<SignBookViewerDto> viewers
-        ) {}
 
         public record SignBookViewerDto(
                 Long id,
@@ -86,7 +76,7 @@ public record ShowSignRequestDto(
                 String mailFrom
         ) {}
 
-        public record SignRequestLigthDto(
+        public record SignRequestLightDto(
                 Long id,
                 SignRequestStatus status,
                 Boolean deleted,

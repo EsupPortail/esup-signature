@@ -122,7 +122,7 @@ public class LogService {
                 log.setFinalStatus(signRequest.get().getStatus().name());
             }
         } else  {
-            action = "signBook : " + action;
+            action = "signBookLight : " + action;
             SignBook signBook = signBookRepository.findById(id).get();
             log.setInitialStatus(signBook.getStatus().name());
         }

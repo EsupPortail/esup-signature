@@ -88,8 +88,11 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, workflow.getId().toString() + ",");
         }
+        ShowSignRequestDto showSignRequest = uiFetchService.buildShowSignRequestBackDto(context);
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
-        model.addAttribute("showSignRequest", uiFetchService.buildShowSignRequestBackDto(context));
+        model.addAttribute("showSignRequest", showSignRequest);
+        model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
+        model.addAttribute("signRequestLight", showSignRequest.signRequestLight());
         return "user/signrequests/show";
     }
 

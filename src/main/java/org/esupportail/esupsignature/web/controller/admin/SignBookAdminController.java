@@ -6,7 +6,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
-import org.esupportail.esupsignature.dto.page.user.signbook.SignBookListItemDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -97,9 +97,9 @@ public class SignBookAdminController {
 			docTitleFilter = "";
 		}
 		if(globalProperties.getInfiniteScrolling()) {
-			model.addAttribute("signBooks", new PageImpl<SignBookListItemDto>(new ArrayList<>(), pageable, 1));
+			model.addAttribute("signBooks", new PageImpl<SignBookFullDto>(new ArrayList<>(), pageable, 1));
 		} else {
-			Page<SignBookListItemDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+			Page<SignBookFullDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 			model.addAttribute("signBooks", signBooks);
 		}
         model.addAttribute("statusFilter", statusFilter);
@@ -152,7 +152,7 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
 			docTitleFilter = "";
 		}
-		Page<SignBookListItemDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+		Page<SignBookFullDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariables(model.asMap());

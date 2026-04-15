@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="signRequestParams" type="org.esupportail.esupsignature.entity.SignRequestParams"*/-->
-<!--/*@thymesVar id="spots" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
-<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
-<!--/*@thymesVar id="signable" type="java.lang.Boolean"*/-->
-<div id="workspace" tabindex="1" th:fragment="workspace" th:if="${toSignDocumentContentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-1 border-0 justify-content-center" th:classappend="(${nbSignRequestInSignBookParent > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signable && status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<div id="workspace" tabindex="1" th:fragment="workspace" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="alert rounded-bottom-0 light pt-1 border-0 justify-content-center" th:classappend="(${signRequestFull.nbSignRequests > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signRequestFull.signable && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '') + ' ' + (${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}? 'alert-danger' : '')">
     <form id="signForm" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf">
-            <th:block th:each="comment : ${comments}"
-                      th:with="canDelete=${isManager && (status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+            <th:block th:each="comment : ${signRequestFull.comments}">
                 <div class="circle"
                      th:id="'inDocComment_' + ${comment.id}"
                      th:onmouseover="'$(\'#annotation_' + ${comment.id} + '\').addClass(\'circle-border\');'"
@@ -18,7 +15,7 @@
                      th:title="${comment.text}"
                      th:es-comment-text="${comment.text}"
                      th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                     th:es-comment-delete="${canDelete}">
+                     th:es-comment-delete="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                     <i class="fi fi-sr-comment" style="font-size: 30px; color: var(--bs-warning)"></i>
                 </div>
             </th:block>
@@ -125,7 +122,7 @@
                     style="z-index: 3;">
                 <i class="fi fi-rr-arrows-retweet"></i> <span>Au dessus</span>
             </button>
-            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && isNotSigned && currentStepMultiSign}" type="button" id="allPages_x"
+            <button th:if="${#authorization.expression('!hasRole(''ROLE_OTP'')') && signRequestFull.notSigned && signRequestFull.currentStepMultiSign}" type="button" id="allPages_x"
                     title="Répéter sur toutes les pages"
                     class="btn btn-sm btn-light text-start"
                     style="z-index: 3;">
@@ -151,21 +148,21 @@
                         <input id="spotPosX" name="commentPosX" type="hidden"/>
                         <input id="spotPosY" name="commentPosY" type="hidden"/>
                         <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
-                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${liveWorkflowStepCount > 1}">
+                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${showSignRequest.liveWorkflowStepCount > 1}">
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
-                                <th:block th:each="step, iterator : ${steps}">
-                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${liveWorkflowStepCount == 1}"></option>
+                                <th:block th:each="step, iterator : ${showSignRequest.steps}">
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${showSignRequest.liveWorkflowStepCount == 1}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${liveWorkflowStepCount > 1}">
+                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${showSignRequest.liveWorkflowStepCount > 1}">
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler
                         </button>
-                        <button id="save-spot-button" th:data-es-signrequest-id="${id}" type="button" class="btn btn-sm btn-success float-end">
+                        <button id="save-spot-button" th:data-es-signrequest-id="${signRequestLight.id}" type="button" class="btn btn-sm btn-success float-end">
                             <i class="fi fi-rr-disk"></i> Enregistrer
                         </button>
                     </form>
@@ -173,7 +170,7 @@
             </div>
         </div>
     </div>
-    <button id="end-button" th:unless="${viewedByCurrentUser}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">
+    <button id="end-button" th:unless="${showSignRequest.viewedByCurrentUser}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">
         <i class="fa-solid fa-arrows-down-to-line fa-2x d-none d-sm-block"></i>
     </button>
 

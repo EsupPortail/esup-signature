@@ -10,7 +10,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.page.user.signbook.SignBookListItemDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -117,9 +117,9 @@ public class SignBookController {
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("infiniteScrolling", effectiveInfiniteScrolling);
         if(effectiveInfiniteScrolling) {
-            model.addAttribute("signBooks", new PageImpl<SignBookListItemDto>(new ArrayList<>(), pageable, 1));
+            model.addAttribute("signBooks", new PageImpl<SignBookFullDto>(new ArrayList<>(), pageable, 1));
         } else {
-            Page<SignBookListItemDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+            Page<SignBookFullDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
             model.addAttribute("signBooks", signBooks);
         }
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
@@ -185,7 +185,7 @@ public class SignBookController {
         if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
             recipientsFilter = null;
         }
-        Page<SignBookListItemDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBookFullDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
@@ -491,7 +491,7 @@ public class SignBookController {
                 try {
                     signBookService.delete(id, authUserEppn);
                 } catch (EsupSignatureRuntimeException e) {
-                    logger.warn("error while deleting signBook : " + id, e);
+                    logger.warn("error while deleting signBookLight : " + id, e);
                 }
 
             }

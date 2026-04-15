@@ -898,7 +898,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		SignBook signBook = signRequest.getParentSignBook();
 //		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
-//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		int step = signBookLight.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBookLight.getLiveWorkflow().getCurrentStep());
 //		if(testAllNone && !signRequest.getDeleted() && step > 0) {
 //			return -1L;
 //		}

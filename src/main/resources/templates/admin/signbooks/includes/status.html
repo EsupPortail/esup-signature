@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <div th:fragment="status(signBook)">
 	<div th:if="${!signBook.deleted}" th:switch="${signBook.status}" class="text-center mb-1 mt-1">
 		<div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">

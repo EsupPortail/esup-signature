@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="all-modals">
     <div id="wait" data-bs-focus="false" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog" role="document">
@@ -27,7 +31,7 @@
 
     <div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
 
-    <div th:if="${status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+    <div th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
         data-bs-focus="false" class="modal fade" id="sendModal" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -37,23 +41,23 @@
                             aria-label="Close">
                     </button>
                 </div>
-                <form th:action="'/user/signbooks/pending/' + ${signBook.id}" method="post">
+                <form th:action="'/user/signbooks/pending/' + ${showSignRequest.signBookLight.id}" method="post">
                     <div class="modal-body">
-                        <th:block th:unless="${steps.size() > 0}">
-                            <p th:unless="${liveWorkflowStepCount > 0}">
+                        <th:block th:unless="${showSignRequest.steps.size() > 0}">
+                            <p th:unless="${showSignRequest.liveWorkflowStepCount > 0}">
                                 Après la validation, vous pourrez télécharger le document
                             </p>
                         </th:block>
-                        <div th:if="${steps.size() > 0 || liveWorkflowStepCount > 0}">
-                            <th:block th:if="${workflow.hasWorkflow && liveWorkflowStepCount > 0}">
+                        <div th:if="${showSignRequest.steps.size() > 0 || showSignRequest.liveWorkflowStepCount > 0}">
+                            <th:block th:if="${showSignRequest.workflow.hasWorkflow && showSignRequest.liveWorkflowStepCount > 0}">
                                 <h5>
                                     Le circuit comporte <span
-                                        th:text="${workflow.workflowStepCount}"></span>
+                                        th:text="${showSignRequest.workflow.workflowStepCount}"></span>
                                     étape<span
-                                        th:if="${workflow.workflowStepCount > 1}">s</span>
+                                        th:if="${showSignRequest.workflow.workflowStepCount > 1}">s</span>
                                 </h5>
                                 <ul class="list-group striped-list">
-                                    <th:block th:each="step, iterator : ${steps}">
+                                    <th:block th:each="step, iterator : ${showSignRequest.steps}">
                                         <li class="list-group-item border-secondary">
                                             <div class="form-group d-inline mb-1">
                                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
@@ -69,16 +73,16 @@
                                 </ul>
                             </th:block>
 
-                            <th:block th:if="${workflow.hasWorkflow && liveWorkflowStepCount == 0}">
+                            <th:block th:if="${showSignRequest.workflow.hasWorkflow && showSignRequest.liveWorkflowStepCount == 0}">
                                 <h5>
                                     Le circuit comporte <span
-                                        th:text="${workflow.workflowStepCount}"></span>
+                                        th:text="${showSignRequest.workflow.workflowStepCount}"></span>
                                     étape<span
-                                        th:if="${workflow.workflowStepCount > 1}">s</span>
+                                        th:if="${showSignRequest.workflow.workflowStepCount > 1}">s</span>
                                 </h5>
                                 <br>
                                 <ul class="list-group">
-                                    <th:block th:each="step, iterator : ${steps}">
+                                    <th:block th:each="step, iterator : ${showSignRequest.steps}">
                                         <li class="list-group-item">
                                             <div th:if="${step.changeable == true}" class="form-group mb-1">
                                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
@@ -96,7 +100,7 @@
                                             <div th:if="${step.changeable == true}" class="form-group mb-1">
                                                 <label><span th:text="'Vous pouvez modifier ou saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                                 <select class="auto-select-users"
-                                                        th:data-signrequest-id="${id}"
+                                                        th:data-signrequest-id="${signRequestLight.id}"
                                                         th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                                         multiple="multiple" name="recipientEmails" required="required">
                                                     <option data-placeholder="true"></option>
@@ -115,11 +119,11 @@
                                     </th:block>
                                 </ul>
                             </th:block>
-                            <th:block th:unless="${workflow.hasWorkflow}">
+                            <th:block th:unless="${showSignRequest.workflow.hasWorkflow}">
                                 <p>
                                     La procédure comporte une étape
                                 </p>
-                                <th:block th:each="liveWorkflowStep, iterator : ${steps}">
+                                <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                                     <p>
                                         <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
                                         <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
@@ -130,9 +134,9 @@
                                 </th:block>
                             </th:block>
                             <hr>
-                            <th:block th:if="${isTempUsers}">
+                            <th:block th:if="${showSignRequest.tempUsers}">
                                 <div class="alert alert-primary">
-                                    <th:block th:each="liveWorkflowStep : ${steps}">
+                                    <th:block th:each="liveWorkflowStep : ${showSignRequest.steps}">
                                         <th:block th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
                                             <div th:if="${recipient.user.userType.name() == 'external'}">
                                                 Destinataire externe: <b th:text="${recipient.user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -175,7 +179,7 @@
                                             </div>
                                         </th:block>
                                     </th:block>
-                                    <th:block th:if="${liveWorkflowStepCount == 0}" th:each="workflowStep : ${steps}">
+                                    <th:block th:if="${showSignRequest.liveWorkflowStepCount == 0}" th:each="workflowStep : ${showSignRequest.steps}">
                                         <th:block th:each="user, iterator : ${workflowStep.users}">
                                             <div th:if="${user.userType.name() == 'external'}">
                                                 Destinataire externe : <b th:text="${user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -220,7 +224,7 @@
                                     </th:block>
                                 </div>
                             </th:block>
-                            <th:block th:each="target : ${targets}">
+                            <th:block th:each="target : ${showSignRequest.targets}">
                                 <div th:if="${target != null && target.targetUri != null && target.targetUri.contains('mailto:')}" class="form-group mb-3">
                                     <label>Etape finale : Envoi par mail à </label>
                                     <select class="auto-select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
@@ -242,25 +246,25 @@
         </div>
     </div>
 
-    <div th:if="${@preAuthorizeService.signRequestOwner(id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${id}">
+    <div th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id="command" th:action="'/user/signrequests/'+ ${id}" th:method="delete">
-                    <input th:if="${!deleted && nbSignRequestInSignBookParent > 1}" type="hidden" name="definitive" value="true">
+                <form id="command" th:action="'/user/signrequests/'+ ${signRequestLight.id}" th:method="delete">
+                    <input th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" type="hidden" name="definitive" value="true">
                     <div class="modal-header">
                         <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div th:if="${!deleted && nbSignRequestInSignBookParent > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                        <div th:if="${!deleted && nbSignRequestInSignBookParent == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
-                        <div th:if="${deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
+                        <div th:if="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-danger">
-                            <span th:if="${deleted}">Supprimer définitivement</span>
-                            <span th:unless="${deleted}">Mettre à la corbeille</span>
+                            <span th:if="${signRequestLight.deleted}">Supprimer définitivement</span>
+                            <span th:unless="${signRequestLight.deleted}">Mettre à la corbeille</span>
                         </button>
                     </div>
                 </form>
@@ -271,7 +275,7 @@
     <div data-bs-focus="false" class="modal fade" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/' + ${urlProfil} + '/signrequests/refuse/' + ${id}" method="post">
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/refuse/' + ${signRequestLight.id}" method="post">
                     <div class="modal-header">
                         <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -282,11 +286,11 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                         <div>
-                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${nbSignRequestInSignBookParent == 1 || !hasNextSignBook}"
+                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signRequestFull.nbSignRequests == 1 || !showSignRequest.hasNextSignBook}"
                                     class="btn btn-danger me-1" title="Refuser" autofocus>
                                 <span>Refuser</span>
                             </button>
-                            <button type="submit" id="refuseNext" th:if="${nextSignRequestId != null && otp == null}" name="redirect" th:value="${nextSignRequestId}"
+                            <button type="submit" id="refuseNext" th:if="${showSignRequest.nextSignRequestId != null && otp == null}" name="redirect" th:value="${showSignRequest.nextSignRequestId}"
                                     class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                                 <span>Refuser et aller à la suivante </span>
                                 <i class="fa-solid fa-arrow-alt-circle-right"></i>
@@ -328,11 +332,11 @@
                             <th>Email</th>
                             <th>Actions</th>
                         </tr>
-                        <th:block th:each="extrenalRecipient : ${externalsRecipients}">
+                        <th:block th:each="extrenalRecipient : ${showSignRequest.externalsRecipients}">
                             <tr>
                                 <td th:text="${extrenalRecipient.email}"></td>
                                 <td>
-                                    <form th:action="'/user/signrequests/send-otp-download/' + ${signBook.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
+                                    <form th:action="'/user/signrequests/send-otp-download/' + ${showSignRequest.signBookLight.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
                                         <input type="text" name="phone" class="form-control me-1" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
                                         <button type="submit" class="btn btn-success" title="Envoyer un nouveau lien d'accès">Envoyer</button>
                                     </form>
@@ -358,7 +362,7 @@
                 <div class="modal-body">
                     <div class="form-group mb-3">
                         <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                            <form id="send-sign-form" method="post" th:action="'/' + ${urlProfil} + '/signrequests/transfert/' + ${id}">
+                            <form id="send-sign-form" method="post" th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/transfert/' + ${signRequestLight.id}">
                             <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                             <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" required="required">
                                 <option data-placeholder="true"></option>
@@ -388,7 +392,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${signBook.id}">
+                        <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${showSignRequest.signBookLight.id}">
                             <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
                             <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
                                 <option data-placeholder="true"></option>
@@ -402,10 +406,10 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="cloneModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${workflow.authorizeClone && status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && requestCreator.eppn == userEppn}">
+    <div data-bs-focus="false" class="modal fade" id="cloneModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${showSignRequest.workflow.authorizeClone && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/user/signrequests/clone/' + ${id}" method="post" enctype="multipart/form-data">
+                <form th:action="'/user/signrequests/clone/' + ${signRequestLight.id}" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
                         <h3 class="modal-title" id="cloneLabel">Redémarrer cette demande</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -508,7 +512,7 @@
     <div data-bs-focus="false" class="modal fade" id="addCommentModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/' + ${urlProfil} + '/signrequests/postit/' + ${id}" method="post">
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/postit/' + ${signRequestLight.id}" method="post">
                     <div class="modal-header">
                         <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -565,7 +569,7 @@
         document.addEventListener('DOMContentLoaded', openAttachmentModalIfRequested);
     </script>
 
-    <div id="add-sign-image" class="modal" th:if="${user.userType.name() == 'external'}" th:data-sign-request-id="${id}">
+    <div id="add-sign-image" class="modal" th:if="${user.userType.name() == 'external'}" th:data-sign-request-id="${signRequestLight.id}">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -575,7 +579,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-light mb-2" th:if="${signImages == null || signImages.size() <= 2}">
+                    <div class="alert alert-light mb-2" th:if="${signRequestFull.signImages == null || signRequestFull.signImages.size() <= 2}">
                         Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
                     </div>
                     <div class="alert alert-light mb-2">
@@ -717,7 +721,7 @@
                     const signRequestId = addSignImageModal?.dataset.signRequestId || null;
                     const modalSignaturesContainer = document.getElementById('modal-signatures-container');
                     const navbarUserSignaturesContent = document.getElementById('navbar-user-signatures-content');
-                    const initialSignImages = /*[[${signImages}]]*/ [];
+                    const initialSignImages = /*[[${signRequestFull.signImages}]]*/ [];
                     let currentUserSignatureState = null;
 
                     function readUiMe() {
