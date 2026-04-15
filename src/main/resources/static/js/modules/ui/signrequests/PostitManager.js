@@ -1,3 +1,5 @@
+import Toast from "../Toast.js?version=@version@";
+
 export class PostitManager {
 
 	constructor(state, options = {}) {
@@ -114,10 +116,6 @@ export class PostitManager {
 	}
 
 	async copyPostitText(e) {
-		const snackbar = document.querySelector(this.options.snackbarSelector);
-		if (snackbar != null) {
-			snackbar.className = "show";
-		}
 		const postitId = $(e.currentTarget).attr("es-postit-id") ?? $(e.target).attr("es-postit-id");
 		const postitTextNode = $("#postit-text-" + postitId);
 		const text = postitTextNode.val() ?? postitTextNode.text();
@@ -132,19 +130,10 @@ export class PostitManager {
 			console.warn("Erreur clipboard, utilisation du fallback :", err);
 			this.copyWithFallback(text);
 		}
-
-		if (snackbar != null) {
-			setTimeout(() => {
-				snackbar.className = snackbar.className.replace("show", "");
-			}, 3000);
-		}
 	}
 
 	showSnackbarMessage(message) {
-		const snackbar = document.querySelector(this.options.snackbarSelector);
-		if (snackbar != null) {
-			snackbar.innerText = message;
-		}
+		Toast.showSnackbar(message, "success");
 	}
 
 	setVisibility(visible) {

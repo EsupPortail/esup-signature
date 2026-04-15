@@ -42,7 +42,9 @@
             <!-- Viewers Section -->
             <th:block th:if="${showSignRequest.signBookLight.viewers.size() > 0}">
                 <div class="m-1" style="border-top: 1px solid var(--color-dee2e6);">
-                    <p class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Suivi par</p>
+                    <a class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;"
+                       data-bs-toggle="collapse" href="#followed-by" role="button" aria-expanded="false" aria-controls="followed-by">Suivi par :</a>
+                    <div id="followed-by" class="collapse">
                     <ul class="d-flex gap-1 list-unstyled mb-0">
                         <li th:each="user, iterator : ${showSignRequest.signBookLight.viewers}">
                             <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
@@ -61,6 +63,7 @@
 <!--                            <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>-->
                         </li>
                     </ul>
+                    </div>
                 </div>
             </th:block>
         </th:block>

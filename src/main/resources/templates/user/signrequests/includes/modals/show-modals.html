@@ -383,29 +383,6 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="addViewersModal" role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="addViewersLabel">Ajouter des observateurs</h3>
-                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${showSignRequest.signBookLight.id}">
-                            <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
-                            <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
-                                <option data-placeholder="true"></option>
-                            </select>
-                            <button type="submit" class="btn btn-success float-end">Valider</button>
-                            <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div data-bs-focus="false" class="modal fade" id="cloneModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${showSignRequest.workflow.authorizeClone && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -537,6 +514,7 @@
 
     <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
     <div th:replace="~{user/signrequests/includes/modals/add-doc :: add-doc}"></div>
+    <div th:replace="~{user/signrequests/includes/modals/update-signbook :: update-signbook}"></div>
     <script>
         function openAttachmentModalIfRequested() {
             const urlParams = new URLSearchParams(window.location.search);

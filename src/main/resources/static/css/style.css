@@ -463,8 +463,8 @@ dd {
     cursor: move;
     background-color: var(--color-fff740);
     position: fixed;
-    left: 278px;
-    top: 178px;
+    left: 310px;
+    top: 210px;
     z-index: 1000;
 }
 
@@ -591,17 +591,42 @@ dd {
 
 #snackbar {
     visibility: hidden;
-    min-width: 250px;
-    margin-left: -125px;
     background-color: var(--bs-dark);
     color: var(--bs-white);
-    text-align: center;
-    border-radius: 5px;
-    padding: 16px;
+    text-align: left;
+    border-radius: 14px;
+    padding: 14px 18px;
     position: fixed;
-    z-index: 1;
+    z-index: 10020;
     left: 50%;
-    bottom: 100px;
+    bottom: 32px;
+    width: min(92vw, 640px);
+    box-shadow: 0 1rem 3rem var(--color-rgba-0-0-0-05);
+    transform: translate(-50%, 24px);
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+    pointer-events: none;
+}
+
+#snackbar.snackbar-error {
+    background-color: var(--bs-danger);
+}
+
+#snackbar.snackbar-warning {
+    background-color: var(--bs-warning);
+    color: var(--bs-dark);
+}
+
+#snackbar.snackbar-success {
+    background-color: var(--bs-success);
+}
+
+#snackbar.snackbar-info {
+    background-color: var(--bs-dark);
+}
+
+#snackbar.snackbar-custom {
+    background-color: var(--bs-primary);
 }
 
 progress {

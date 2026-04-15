@@ -292,8 +292,8 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
 }
 
 .backdrop {
-    position: absolute;
-    z-index: 2000;
+    position: fixed;
+    z-index: 10010;
     left: 0;
     right: 0;
     top: 0;
@@ -513,6 +513,32 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
     pointer-events: auto !important;
 }
 
+.toast-es {
+    top: auto;
+    bottom: 32px;
+    width: min(92vw, 640px);
+    max-width: min(92vw, 640px);
+    min-height: auto;
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 1rem 3rem var(--color-rgba-0-0-0-05);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 24px);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+    pointer-events: none !important;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.toast-es .toast-header {
+    background: var(--color-rgba-255-255-255-08);
+}
+
+.toast-es .toast-body {
+    padding: 1rem 1.25rem;
+}
+
 .toast-body-news {
     min-height: 60vh;
 }
@@ -525,18 +551,20 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
 }
 
 .toast-sm {
-    min-width: 400px;
+    width: min(92vw, 640px);
+    max-width: min(92vw, 640px);
 }
 
 .toast-md {
-    min-width: 800px;
+    width: min(92vw, 860px);
+    max-width: min(92vw, 860px);
 }
 
 .toast-xl {
-    min-width: 80vw;
-    min-height: 70vh;
-    max-width: 100%;
-    max-height: 80%;
+    width: min(92vw, 1100px);
+    max-width: min(92vw, 1100px);
+    min-height: min(70vh, 700px);
+    max-height: 80vh;
 }
 
 .card {

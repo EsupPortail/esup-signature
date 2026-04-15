@@ -429,6 +429,7 @@ public class SignBookService {
         return new SignBookLightDto(
                 signBook.getId(),
                 signBook.getWorkflowName(),
+                signBook.getSubject(),
                 signBook.getDescription(),
                 signBook.getStatus(),
                 signBook.getDeleted(),

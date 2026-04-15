@@ -270,39 +270,20 @@ public class SignBookController {
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @GetMapping(value = "/update/{id}")
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        SignBookFullDto signBook = signBookService.getSignBookUpdateView(id, authUserEppn);
-        if(signBook != null && ("draft".equals(signBook.status()) || "pending".equals(signBook.status()))) {
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("showSignRequest", Map.of("signBookLight", signBookService.getSignBookUpdateLight(id)));
-            return "user/signbooks/update";
-        } else {
-            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
-            return "redirect:/user/signbooks";
-        }
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PutMapping(value = "/update/{id}")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam String subject,
                          @RequestParam String description,
                          @RequestParam(required = false) List<String> viewers,
+                         HttpServletRequest httpServletRequest,
                          RedirectAttributes redirectAttributes) {
         signBookService.updateSignBook(id, subject, description, viewers);
         redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modifications enregistrées"));
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
         return "redirect:/user/signbooks/update/" + id;
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @PostMapping(value = "/add-viewers/{id}")
-    public String addViewers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                         @RequestParam(required = false) List<String> viewers,
-                         RedirectAttributes redirectAttributes) {
-        signBookService.addViewers(id, viewers);
-        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Observateurs ajoutés"));
-        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

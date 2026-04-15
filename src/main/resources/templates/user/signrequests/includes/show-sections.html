@@ -53,12 +53,9 @@
         <button th:if="${user.userType.name() != 'external' && showSignRequest.externalsRecipients != null && showSignRequest.externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-transparent text-dark" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
             <i class="fi fi-rr-share"></i>
         </button>
-        <a th:if="${signRequestFull.manager}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
-            <i class="fi fi-rr-overview"></i>
-        </a>
-        <a th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" class="d-flex align-items-center btn btn-transparent text-dark  d-none d-md-flex" role="button" title="Modifier le parapheur" th:href="'/user/signbooks/update/' + ${showSignRequest.signBookLight.id}">
+        <button th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Modifier le parapheur" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
             <i class="fi fi-rr-settings-sliders"></i>
-        </a>
+        </button>
         <a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fi fi-rr-info"></i>
         </a>

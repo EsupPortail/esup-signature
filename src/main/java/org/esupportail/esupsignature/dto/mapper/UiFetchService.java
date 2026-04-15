@@ -871,6 +871,7 @@ public class UiFetchService {
         SignBookLightDto signBookLight = new SignBookLightDto(
                 signBook.getId(),
                 signBook.getWorkflowName(),
+                signBook.getSubject(),
                 signBook.getDescription(),
                 signBook.getStatus(),
                 signBook.getDeleted(),

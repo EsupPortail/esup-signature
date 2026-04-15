@@ -57,20 +57,17 @@
                         <span class="nav-item-label d-none d-lg-inline">Autorisations</span>
                     </a>
                     <div class="dropdown-menu bg-dark border-secondary align-items-center" aria-labelledby="link-rigths" >
-                        <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-delegate" aria-label="Paramètres utilisateur " title="Paramètres" href="/user/users/shares">
-                            <i class="fi fi-rr-refer" style="line-height: 14px;"></i>
-                            <span class="nav-item-label">Délégations</span>
+                        <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-delegate" aria-label="Paramètres utilisateur " href="/user/users/shares">
+                            <i class="fi fi-rr-refer"></i><span class="nav-item-label">Délégations</span>
                         </a>
-                        <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-replace" aria-label="Paramètres utilisateur " title="Remplacement" href="/user/users/replace">
-                            <i class="fi fi-rr-people-arrows-left-right" style="line-height: 14px;"></i>
-                            <span class="nav-item-label">Remplacement</span>
+                        <a class="btn text-white btn-transparent text-left m-1 d-flex align-items-center gap-2" style="width: 250px;" id="link-replace" aria-label="Paramètres utilisateur " href="/user/users/replace">
+                            <i class="fi fi-rr-people-arrows-left-right"></i><span class="nav-item-label">Remplacement</span>
                         </a>
                         <div id="navbar-su-users-divider" th:if="${suUsers != null && suUsers.size() > 0 && userEppn == authUserEppn}" class="dropdown-divider"></div>
                         <div id="navbar-su-users-list">
                             <th:block th:each="suUser : ${suUsers}">
-                                <a th:unless="${suUser == user}" role="button" th:href="'/user/users/shares/change?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
-                                    <i class="fi fi-rr-users" style="line-height: 14px;"></i>
-                                    <span class="nav-item-label" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
+                                <a th:title="'Entrer en mode délégation pour ' + ${suUser.firstname} + ' ' + ${suUser.name}"  th:unless="${suUser == user}" role="button" th:href="'/user/users/shares/change?eppn=' + ${suUser.eppn} + '&userShareId=' + ${suUser.userShareId}"  class="btn d-flex text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
+                                    <i class="fi fi-rr-users"></i><span class="nav-item-label" th:text="${suUser.firstname} + ' ' + ${suUser.name} "></span>
                                 </a>
                             </th:block>
                         </div>
@@ -79,7 +76,7 @@
                 <li class="nav-item dropdown" th:if="${userEppn != authUserEppn  && globalProperties.shareMode > 0}">
                     <a th:if="${userEppn != authUserEppn}" id="link-undelegate" th:href="'/user/users/shares/change'" class="btn text-white btn-transparent btn-outline-light d-flex align-items-center gap-2">
                         <i class="fi fi-rr-user-slash"></i>
-                        <span class="nav-item-label d-none d-xl-inline"> Sortir de la délégation en cours</span>
+                        <span class="nav-item-label d-none d-xl-inline"> Sortir de la délégation en cours</span>
                     </a>
                 </li>
                 <li class="nav-item text-white" th:if="${isRoleManager && userEppn == authUserEppn}" title="Menu gestionnaire">

@@ -10,6 +10,7 @@ import java.util.List;
 public record SignBookLightDto(
         Long id,
         String workflowName,
+        String subject,
         String description,
         SignRequestStatus status,
         Boolean deleted,
