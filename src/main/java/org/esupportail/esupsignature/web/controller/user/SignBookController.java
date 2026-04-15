@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -95,7 +96,7 @@ public class SignBookController {
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
                        @RequestParam(value = "infiniteScrolling", required = false) Boolean infiniteScrolling,
-                       @PageableDefault(size = 15)
+                       @PageableDefault(size = 10)
                            @SortDefault.SortDefaults({
                                    @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                            })
@@ -167,7 +168,7 @@ public class SignBookController {
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                          @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                         @PageableDefault(size = 15)
+                         @PageableDefault(size = 10)
                              @SortDefault.SortDefaults({
                                      @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                              })
@@ -271,14 +272,10 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @GetMapping(value = "/update/{id}")
     public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getById(id);
-        if(signBook != null && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
+        SignBookFullDto signBook = signBookService.getSignBookUpdateView(id, authUserEppn);
+        if(signBook != null && ("draft".equals(signBook.status()) || "pending".equals(signBook.status()))) {
             model.addAttribute("signBook", signBook);
-            model.addAttribute("logs", signBookService.getLogsFromSignBook(id));
-            model.addAttribute("allSteps", signBookService.getAllSteps(id));
-            model.addAttribute("liveWorkflowSteps", signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getLiveWorkflowSteps() : null);
-            model.addAttribute("liveWorkflowCurrentStepNumber", signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null);
-            model.addAttribute("liveWorkflowTargets", signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow().getTargets() : List.of());
+            model.addAttribute("showSignRequest", Map.of("signBookLight", signBookService.getSignBookUpdateLight(id)));
             return "user/signbooks/update";
         } else {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
@@ -320,6 +317,7 @@ public class SignBookController {
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam(name="autoSign", required = false) Boolean autoSign,
                           @RequestParam("signType") SignType signType,
+                          HttpServletRequest httpServletRequest,
                           RedirectAttributes redirectAttributes) {
         try {
             List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
@@ -354,6 +352,16 @@ public class SignBookController {
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
         }
 
         return "redirect:/user/signbooks/update/" + id;

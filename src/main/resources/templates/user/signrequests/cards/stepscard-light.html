@@ -5,8 +5,6 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div id="stepscard" th:fragment="stepscard-light">
     <div class="m-1">
-        <p th:if="${showSignRequest.signBookLight.workflowName != null}">Circuit : <b th:text="${showSignRequest.signBookLight.workflowName}"></b></p>
-
         <th:block th:if="${showSignRequest.steps != null}">
             <div class="steps-vertical">
                 <!-- Message si circuit non démarré -->

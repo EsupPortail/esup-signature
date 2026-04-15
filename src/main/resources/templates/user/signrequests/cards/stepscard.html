@@ -6,8 +6,6 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div id="stepscard" th:fragment="stepscard">
     <div class="m-1">
-        <p th:if="${showSignRequest.signBookLight.workflowName != null}">Circuit : <b th:text="${showSignRequest.signBookLight.workflowName}"></b></p>
-
         <th:block th:if="${showSignRequest.steps != null}">
             <div class="steps-vertical">
                 <!-- Document original -->
@@ -22,15 +20,17 @@
                                 <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
                                         type="button"
                                         data-bs-toggle="dropdown"
+                                        data-bs-popper="static"
+                                        aria-haspopup="true"
                                         aria-expanded="false">
                                     <i class="fi fi-rr-menu-dots"></i>
                                 </button>
 
-                                <ul class="dropdown-menu dropdown-menu-end">
+                                <ul class="dropdown-menu dropdown-menu-end p-1"  style="width:300px; text-wrap: auto; overflow: clip;">
                                     <!-- Bouton visualisation document -->
                                     <th:block th:if="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
-                                            <button class="dropdown-item toggle-layer-btn"
+                                            <button class="btn btn-transparent text-dark w-100 text-left"
                                                     data-step="0"
                                                     title="Afficher l'état du document à cette étape">
                                                 <i class="fi fi-rr-eye"></i> Afficher
@@ -41,13 +41,23 @@
                                     <!-- Lien téléchargement historique -->
                                     <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
-                                            <a class="dropdown-item"
+                                            <a class="btn btn-transparent text-dark w-100 text-left"
                                                th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
                                                title="Récupérer le document signé à cette étape">
                                                 <i class="fi fi-rr-download"></i> Télécharger
                                             </a>
                                         </li>
                                     </th:block>
+                                    <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                        <button class="btn btn-transparent text-dark w-100 text-left"
+                                                type="button"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#addStep"
+                                                data-step-number="0"
+                                                title="Ajouter une étape au début du circuit">
+                                            <i class="fi fi-rr-plus-small"></i> Ajouter une étape au début
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -59,6 +69,15 @@
                     <div class="step-vertical">
                         <div class="step-vertical-content bg-light p-1 rounded">
                             <p class="text-muted">Le circuit n’est pas démarré</p>
+                            <button th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                                    class="btn btn-sm btn-outline-primary"
+                                    type="button"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#addStep"
+                                    data-step-number="0"
+                                    title="Ajouter la première étape">
+                                <i class="fi fi-rr-plus-small"></i> Ajouter la première étape
+                            </button>
                         </div>
                     </div>
                 </th:block>
@@ -134,7 +153,7 @@
 
                                     <!-- Destinataires (si pas automatique) -->
                                     <th:block th:if="${not isAutoSign}">
-                                        <table class="table table-sm table-hover table-borderless step-recipients">
+                                        <table class="table table-sm table-borderless step-recipients">
                                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
                                                 <tr>
                                                     <td class="recipient-name bg-light">
@@ -160,14 +179,6 @@
                                                         <i th:if="${recipientAction != null and recipientAction.actionType.name() == 'refused'}"
                                                             class="fa-solid fa-times-circle text-danger"
                                                             title="A refusé le document"></i>
-                                                    </td>
-                                                    <td class="bg-light">
-                                                        <button class="btn btn-sm"
-                                                                title="Envoyer un nouveau lien d'accès"
-                                                                th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                                th:if="${isCurrent and signRequestFull.manager and recipient.user.userType.name() == 'external' and isPending}">
-                                                            <i class="fa-solid fa-key"></i>
-                                                        </button>
                                                     </td>
                                                 </tr>
                                                     <!-- Modal envoyer nouveau lien -->
@@ -271,20 +282,30 @@
                                         </table>
                                     </th:block>
                                 </div>
-
-                                <div class="wv-100 dropdown float-end">
+                                <div class="wv-100 dropdown dropdown-center float-end">
                                     <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
                                             type="button"
                                             data-bs-toggle="dropdown"
+                                            data-bs-popper="static"
+                                            aria-haspopup="true"
                                             aria-expanded="false">
                                         <i class="fi fi-rr-menu-dots"></i>
                                     </button>
-
-                                    <ul class="dropdown-menu dropdown-menu-end">
+                                    <ul class="dropdown-menu dropdown-menu-end p-1" style="width:300px; text-wrap: auto; overflow: clip;">
+                                        <li>
+                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
+                                            <button class="btn btn-transparent text-dark w-100 text-left"
+                                                    title="Envoyer un nouveau lien d'accès"
+                                                    th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
+                                                    th:if="${isCurrent and signRequestFull.manager and recipient.user.userType.name() == 'external' and isPending}">
+                                                <i class="fi fi-rr-link"></i> Renvoyer un lien d'accès à <span th:text="${recipient.user.email}"></span>
+                                            </button>
+                                            </th:block>
+                                        </li>
                                         <!-- Bouton visualisation document -->
                                         <th:block th:if="${!signRequestFull.hasDocumentsHistory}">
                                             <li>
-                                                <button class="dropdown-item toggle-layer-btn"
+                                                <button class="btn btn-transparent text-dark w-100 text-left"
                                                         th:if="${isCurrent or isCompleted}"
                                                         th:data-step="${stepNumber}"
                                                         title="Afficher l'état du document à cette étape">
@@ -296,13 +317,23 @@
                                         <!-- Lien téléchargement historique -->
                                         <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                             <li>
-                                                <a class="dropdown-item"
+                                                <a class="btn btn-transparent text-dark w-100 text-left"
                                                    th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
                                                    title="Récupérer le document signé à cette étape">
                                                     <i class="fi fi-rr-download"></i> Télécharger
                                                 </a>
                                             </li>
                                         </th:block>
+                                         <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                             <button class="btn btn-transparent text-dark w-100 text-left"
+                                                     type="button"
+                                                     data-bs-toggle="modal"
+                                                     data-bs-target="#addStep"
+                                                     th:attr="data-step-number=${stepNumber}"
+                                                     title="Ajouter une étape après cette étape">
+                                                 <i class="fi fi-rr-plus-small"></i> Ajouter une étape après
+                                             </button>
+                                         </li>
                                     </ul>
                                 </div>
                             </div>

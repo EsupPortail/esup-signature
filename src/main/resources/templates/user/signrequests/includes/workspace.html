@@ -15,7 +15,7 @@
                      th:title="${comment.text}"
                      th:es-comment-text="${comment.text}"
                      th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                     th:es-comment-delete="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                     th:es-comment-delete="${signRequestFull.commentDeleteAllowed}">
                     <i class="fi fi-sr-comment" style="font-size: 30px; color: var(--bs-warning)"></i>
                 </div>
             </th:block>

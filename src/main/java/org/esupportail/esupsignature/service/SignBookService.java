@@ -16,6 +16,8 @@ import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
@@ -359,7 +361,80 @@ public class SignBookService {
                 refusedCommentTitle,
                 toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
                 toSignRequestDocumentDtos(signBook.getSignRequests()),
-                toPostitDtos(signBook.getPostits())
+                toPostitDtos(signBook.getPostits()),
+                false,
+                null,
+                List.of(),
+                List.of(),
+                List.of()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public SignBookFullDto getSignBookUpdateView(Long id, String userEppn) {
+        SignBook signBook = getById(id);
+        if (signBook == null) {
+            return null;
+        }
+
+        SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
+        String currentSignType = null;
+        if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
+            currentSignType = signBook.getLiveWorkflow().getCurrentStep().getSignType().name();
+        }
+
+        String refusedCommentTitle = null;
+        if (primarySignRequest != null && primarySignRequest.getComments() != null && !primarySignRequest.getComments().isEmpty()) {
+            refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
+        }
+
+        boolean editable = signBook.getLiveWorkflow() != null && signBook.isEditable();
+
+        return new SignBookFullDto(
+                signBook.getId(),
+                signBook.getSubject(),
+                signBook.getDescription(),
+                signBook.getWorkflowName(),
+                toDisplayName(signBook.getCreateBy()),
+                signBook.getCreateBy() != null ? signBook.getCreateBy().getEppn() : null,
+                signBook.getStatus() != null ? signBook.getStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleted()),
+                signBook.getArchiveStatus() != null ? signBook.getArchiveStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleteableByCurrentUser()),
+                Boolean.TRUE.equals(signBook.getDisplayNotif()),
+                isHiddenByCurrentUser(signBook, userEppn),
+                currentSignType,
+                toParticipantSteps(signBook, primarySignRequest),
+                formatDate(signBook.getEndDate()),
+                Boolean.TRUE.equals(signBook.getDeleted()) ? "Supprimé le : " + formatDate(signBook.getUpdateDate()) : null,
+                toLastSignedDocumentDateLabel(signBook, primarySignRequest),
+                refusedCommentTitle,
+                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
+                toSignRequestDocumentDtos(signBook.getSignRequests()),
+                toPostitDtos(signBook.getPostits()),
+                editable,
+                signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null,
+                toSignBookViewerDtos(signBook.getViewers()),
+                toLiveWorkflowStepDtos(signBook),
+                toLiveWorkflowTargetDtos(signBook)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public SignBookLightDto getSignBookUpdateLight(Long id) {
+        SignBook signBook = getById(id);
+        if (signBook == null) {
+            return null;
+        }
+        return new SignBookLightDto(
+                signBook.getId(),
+                signBook.getWorkflowName(),
+                signBook.getDescription(),
+                signBook.getStatus(),
+                signBook.getDeleted(),
+                signBook.getArchiveStatus(),
+                signBook.getCreateDate(),
+                toSignBookViewerDtos(signBook.getViewers())
         );
     }
 
@@ -401,8 +476,75 @@ public class SignBookService {
                 signRequest.getId(),
                 signRequest.getTitle(),
                 signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
-                getFirstOriginalFileName(signRequest)
+                getFirstOriginalFileName(signRequest),
+                formatDate(signRequest.getCreateDate()),
+                toDisplayName(signRequest.getCreateBy()),
+                signRequest.getCreateBy() != null ? signRequest.getCreateBy().getEppn() : null
         )).toList();
+    }
+
+    private List<ShowSignRequestDto.SignBookViewerDto> toSignBookViewerDtos(Set<User> viewers) {
+        if (viewers == null || viewers.isEmpty()) {
+            return List.of();
+        }
+        return viewers.stream()
+                .map(viewer -> new ShowSignRequestDto.SignBookViewerDto(
+                        viewer.getId(),
+                        viewer.getFirstname(),
+                        viewer.getName(),
+                        viewer.getEmail()
+                ))
+                .toList();
+    }
+
+    private List<ShowSignRequestDto.StepDto> toLiveWorkflowStepDtos(SignBook signBook) {
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null) {
+            return List.of();
+        }
+        return signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                .map(step -> new ShowSignRequestDto.StepDto(
+                        step.getId(),
+                        step.getDescription(),
+                        step.getWorkflowStep() != null && Boolean.TRUE.equals(step.getWorkflowStep().getChangeable()),
+                        step.getSignType(),
+                        step.getAutoSign(),
+                        step.getAllSignToComplete(),
+                        step.getRepeatable(),
+                        step.getUsers().stream().map(this::toStepUserDto).toList(),
+                        step.getRecipients().stream()
+                                .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
+                                        recipient.getId(),
+                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
+                                        recipient.getSigned()
+                                ))
+                                .toList()
+                ))
+                .toList();
+    }
+
+    private List<ShowSignRequestDto.TargetDto> toLiveWorkflowTargetDtos(SignBook signBook) {
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getTargets() == null) {
+            return List.of();
+        }
+        return signBook.getLiveWorkflow().getTargets().stream()
+                .map(target -> new ShowSignRequestDto.TargetDto(
+                        target.getTargetUri(),
+                        target.getProtectedTargetUri(),
+                        target.getTargetOk()
+                ))
+                .toList();
+    }
+
+    private ShowSignRequestDto.StepUserDto toStepUserDto(User user) {
+        return new ShowSignRequestDto.StepUserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getHidedPhone(),
+                user.getUserType()
+        );
     }
 
     private List<SignBookFullDto.PostitDto> toPostitDtos(List<Comment> postits) {

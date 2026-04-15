@@ -662,7 +662,7 @@ export class SignWorkspaceController {
         $('#refuseLaunchButton').addClass('d-none');
         $("#commentHelp").addClass("d-none");
         $('#commentsTools').hide();
-        $('#commentsBar').hide();
+        // $('#commentsBar').hide();
         $('#sign-tools').addClass("d-none");
         $('#signTools').addClass("d-none");
         $('#infos').hide();

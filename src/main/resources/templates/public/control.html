@@ -12,8 +12,8 @@
             <li th:if="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
         </ol>
     </nav>
-    <div class="content es-content-full">
-        <div class="col-10 mx-auto" style="" th:fragment="control">
+    <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
+        <div class="col-10 mx-auto p-2 vh-100" th:fragment="control">
             <div class="alert alert-primary mb-1 text-center">
                 <h5>Vérification de la conformité du document <span th:if="${token != null && token != 'null'}" th:text="' : ' + ${token}"></span></h5>
             </div>

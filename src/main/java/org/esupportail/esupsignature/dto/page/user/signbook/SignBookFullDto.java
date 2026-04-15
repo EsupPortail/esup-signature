@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.dto.page.user.signbook;
 
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
+
 import java.util.List;
 
 public record SignBookFullDto(
@@ -23,7 +25,12 @@ public record SignBookFullDto(
         String refusedCommentTitle,
         PrimarySignRequestDto primarySignRequest,
         List<SignRequestDocumentDto> signRequests,
-        List<PostitDto> postits
+        List<PostitDto> postits,
+        boolean editable,
+        Integer liveWorkflowCurrentStepNumber,
+        List<ShowSignRequestDto.SignBookViewerDto> viewers,
+        List<ShowSignRequestDto.StepDto> liveWorkflowSteps,
+        List<ShowSignRequestDto.TargetDto> liveWorkflowTargets
 ) {
 
     public boolean isEmpty() {
@@ -60,7 +67,10 @@ public record SignBookFullDto(
             Long id,
             String title,
             String status,
-            String fileName
+            String fileName,
+            String createDateLabel,
+            String createByDisplayName,
+            String createByEppn
     ) {
     }
 

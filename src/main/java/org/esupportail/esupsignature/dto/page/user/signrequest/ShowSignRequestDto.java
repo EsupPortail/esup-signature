@@ -132,7 +132,8 @@ public record ShowSignRequestDto(
 
         public record StepRecipientDto(
                 Long id,
-                StepUserDto user
+                StepUserDto user,
+                Boolean signed
         ) {}
 
         public record StepUserDto(

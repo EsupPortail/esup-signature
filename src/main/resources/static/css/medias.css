@@ -223,7 +223,7 @@
         position: fixed !important;
         top: auto !important;
         bottom: 0;
-        width: auto;
+        /*width: auto;*/
         max-width: none;
         z-index: 1031;
     }

@@ -35,6 +35,7 @@ public record SignRequestFullDto(
         Boolean attachmentAlert,
         Boolean attachmentRequire,
         Boolean manager,
+        Boolean commentDeleteAllowed,
         Boolean hasDocumentsHistory
 ) {}
 

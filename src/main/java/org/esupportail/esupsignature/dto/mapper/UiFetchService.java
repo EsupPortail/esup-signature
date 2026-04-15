@@ -971,7 +971,8 @@ public class UiFetchService {
                         step.getRecipients().stream()
                                 .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
                                         recipient.getId(),
-                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null
+                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
+                                        recipient.getSigned()
                                 ))
                                 .toList()
                 ))
@@ -1275,6 +1276,7 @@ public class UiFetchService {
                 context.attachmentAlert(),
                 context.attachmentRequire(),
                 context.manager(),
+                context.manager() && (signRequest.getStatus() == SignRequestStatus.draft || signRequest.getStatus() == SignRequestStatus.pending),
                 signRequest.getDocumentsHistory() != null
         );
     }
