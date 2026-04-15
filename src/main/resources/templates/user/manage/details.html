@@ -207,17 +207,17 @@
                 <div id="signButtons" class="es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
                         <li th:if="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes non masquées">
                                 <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
                             </a>
                         </li>
                         <li th:unless="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes masquées">
                                 <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
                             </a>
                         </li>
                         <li>
-                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-floating btn-lg bg-primary">
+                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
                             </a>
                         </li>

@@ -158,7 +158,7 @@ public class UserAndOtpSignRequestController {
                                 @PathVariable("postitId") Long postitId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.deletePostit(signRequestId, postitId);
-            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit supprimé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Postit supprimé"));
 
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));

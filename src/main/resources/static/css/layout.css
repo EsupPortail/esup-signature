@@ -103,6 +103,10 @@ header {
     min-width: 0;
 }
 
+.es-main-content-user-settings {
+    height: calc(100vh - 34px);
+}
+
 .content-full,
 .es-content-full {
     height: calc(100vh - 40px) !important

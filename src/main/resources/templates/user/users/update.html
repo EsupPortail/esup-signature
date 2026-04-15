@@ -40,15 +40,18 @@
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-            <ol id="breadcrumb-ol" class="breadcrumb">
+            <ol id="breadcrumb-ol" class="breadcrumb col-12">
                 <li class="breadcrumb-item active">Paramètres :
                     <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
-            <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
-                <div class="flex-grow-1">
+            <div class="es-main-content es-main-content-user-settings d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
+                </div>
+                <div class="flex-grow-1 overflow-scroll">
+                    <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
@@ -320,12 +323,17 @@
                     </div>
                 </div>
             </form>
+                    </div>
                 </div>
-            <div id="floatButtons" class="bg-light fixed-action-simple-btn">
-                <a id="saveButton" class="btn btn-floating btn-lg bg-success">
-                    <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
-                </a>
-            </div>
+                <div id="floatButtons" class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a id="saveButton" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
