@@ -369,13 +369,24 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
-    public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
+    public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         String result = signBookService.removeStep(id, step);
         if (result == null) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "L'étape a été supprimés"));
         } else {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", result));
         }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
+        }
+
         return "redirect:/user/signbooks/update/" + id;
     }
 
@@ -402,22 +413,12 @@ public class SignBookController {
         } catch(Exception e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
-        return "redirect:/user/signbooks/update/" + id;
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId == null) {
+            return "redirect:/user/signbooks/" + id;
+        }
+        return "redirect:/user/signrequests/" + signRequestId + "?form";
     }
-//
-//    @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
-//    @PostMapping(value = "/add-step/{id}")
-//    public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-//                                @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-//                                @RequestParam(name = "signType") SignType signType,
-//                                @RequestParam("stepNumber") int stepNumber,
-//                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
-//        WorkflowStepDto step = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
-//        step.setSignType(signType);
-//        step.setAllSignToComplete(allSignToComplete);
-//        signBookService.addLiveStep(id, step, null, authUserEppn);
-//        return "redirect:/user/signrequests/" + id + "?form";
-//    }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/pending/{id}")
@@ -519,7 +520,9 @@ public class SignBookController {
                                    @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                    @RequestParam(value = "phones", required = false) List<String> phones,
                                    @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
-                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) {
+                                   @RequestParam Integer stepNumber,
+                                   HttpServletRequest httpServletRequest,
+                                   RedirectAttributes redirectAttributes) {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
             RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
@@ -543,6 +546,17 @@ public class SignBookController {
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
+        }
+
         return "redirect:/user/signbooks/update/" + id;
     }
 }

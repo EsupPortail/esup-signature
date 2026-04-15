@@ -874,6 +874,7 @@ public class UiFetchService {
                 signBook.getDescription(),
                 signBook.getStatus(),
                 signBook.getDeleted(),
+                signBook.isEditable(),
                 signBook.getArchiveStatus(),
                 signBook.getCreateDate(),
                 signBook.getViewers() != null

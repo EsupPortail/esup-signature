@@ -432,6 +432,7 @@ public class SignBookService {
                 signBook.getDescription(),
                 signBook.getStatus(),
                 signBook.getDeleted(),
+                signBook.isEditable(),
                 signBook.getArchiveStatus(),
                 signBook.getCreateDate(),
                 toSignBookViewerDtos(signBook.getViewers())

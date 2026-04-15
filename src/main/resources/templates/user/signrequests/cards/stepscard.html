@@ -334,7 +334,62 @@
                                                  <i class="fi fi-rr-plus-small"></i> Ajouter une étape après
                                              </button>
                                          </li>
+                                         <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and stepNumber >= signRequestFull.currentStepNumber}">
+                                             <button class="btn btn-transparent text-dark w-100 text-left"
+                                                     type="button"
+                                                     data-bs-toggle="modal"
+                                                     th:data-bs-target="'#modal-update-' + ${stepNumber}"
+                                                     title="Modifier l'étape">
+                                                 <i class="fa-solid fa-pencil-alt"></i> Modifier l'étape
+                                             </button>
+                                         </li>
+                                         <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and showSignRequest.steps.size() > 1 and showSignRequest.steps.size() > signRequestFull.currentStepNumber and stepNumber >= signRequestFull.currentStepNumber}">
+                                             <form th:id="'del_' + ${iterator.index}"
+                                                   th:action="'/user/signbooks/remove-live-step/' + ${showSignRequest.signBookLight.id} + '/' + ${iterator.index}"
+                                                   th:method="delete">
+                                                 <button type="submit"
+                                                         onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');"
+                                                         class="btn btn-transparent text-danger w-100 text-left"
+                                                         title="Supprimer l'étape">
+                                                     <i class="fa-solid fa-trash-alt"></i> Supprimer l'étape
+                                                 </button>
+                                             </form>
+                                         </li>
                                     </ul>
+                                </div>
+                            </div>
+                            <div th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and stepNumber >= signRequestFull.currentStepNumber}"
+                                 data-bs-focus="false"
+                                 role="dialog"
+                                 class="modal modal-lg fade"
+                                 th:id="'modal-update-' + ${stepNumber}"
+                                 tabindex="-1"
+                                 th:attr="aria-labelledby='modal-update-label-' + ${stepNumber}"
+                                 aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form th:action="'/user/signbooks/update-recipients/' + ${showSignRequest.signBookLight.id}" th:method="post" enctype="multipart/form-data">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title fs-5" th:id="'modal-update-label-' + ${stepNumber}" th:text="'Modifier l’etape : ' + ${stepNumber}"></h1>
+                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <input type="hidden" name="stepNumber" th:value="${stepNumber}">
+                                                <div class="alert alert-warning">Tous les participants n'ayant pas encore signe seront remplaces a cette etape</div>
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label" th:for="'recipientsEmails-' + ${stepNumber}">Choisir les participants *</label>
+                                                    <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${stepNumber}" multiple="multiple" required="required">
+                                                        <option data-placeholder="true"></option>
+                                                    </select>
+                                                    <div th:id="'tempUsers-recipientsEmails-' + ${stepNumber}"></div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <button type="submit" class="btn btn-primary">Valider</button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>

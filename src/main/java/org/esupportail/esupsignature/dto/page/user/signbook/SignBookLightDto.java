@@ -13,6 +13,7 @@ public record SignBookLightDto(
         String description,
         SignRequestStatus status,
         Boolean deleted,
+        Boolean editable,
         ArchiveStatus archiveStatus,
         Date createDate,
         List<ShowSignRequestDto.SignBookViewerDto> viewers

@@ -40,44 +40,6 @@
                                         </tr>
                                     </th:block>
                                 </table>
-                                <div class="bs-stepper-bottom">
-                                    <form th:if="${signBook.liveWorkflowSteps.size() > 1 && signBook.liveWorkflowSteps.size() > signBook.liveWorkflowCurrentStepNumber && stepNumber >= signBook.liveWorkflowCurrentStepNumber}"
-                                          th:id="'del_' + ${iterator.index}" th:action="'/user/signbooks/remove-live-step/' + ${signBook.id} + '/' + ${iterator.index}" th:method="delete">
-                                        <button onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');" class="btn btn-sm float-end">
-                                            <i class="fa-solid fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                    <button th:if="${stepNumber >= signBook.liveWorkflowCurrentStepNumber}" type="button" data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${stepNumber}" class="btn btn-sm float-end">
-                                        <i class="fa-solid fa-pencil-alt"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div data-bs-focus="false" role="dialog" class="modal modal-lg fade" th:id="'modal-update-' + ${stepNumber}" tabindex="-1" aria-labelledby="modal-update-label" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form th:action="'/user/signbooks/update-recipients/' + ${signBook.id}" th:method="post" enctype="multipart/form-data">
-                                            <div class="modal-header">
-                                                <h1 class="modal-title fs-5" id="modal-update-label" th:text="'Modifier l’etape : ' + ${stepNumber}"></h1>
-                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <input type="hidden" name="stepNumber" th:value="${stepNumber}">
-                                                <div class="alert alert-warning">Tous les participants n'ayant pas encore signe seront remplaces a cette etape</div>
-                                                <div class="form-group mb-3">
-                                                    <label class="form-label" th:for="'recipientsEmails-' + ${stepNumber}">Choisir les participants *</label>
-                                                    <select class="auto-select-users" data-es-check-cert="true" name="recipientsEmails" th:id="'recipientsEmails-' + ${stepNumber}" multiple="multiple" required="required">
-                                                        <option data-placeholder="true"></option>
-                                                    </select>
-                                                    <div th:id="'tempUsers-recipientsEmails-' + ${stepNumber}"></div>
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                <button type="submit" class="btn btn-primary">Valider</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </th:block>
