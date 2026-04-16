@@ -1606,6 +1606,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 }
 
 .step-vertical.active .step-vertical-content {
+    box-shadow:
+            -1px 0 6px rgba(var(--neon-warning), 0.6),
+            0 0 10px rgba(var(--neon-warning), 0.35),
+            0 0 20px rgba(var(--neon-warning), 0.15);
     border-left: 4px solid var(--bs-warning);
 }
 
@@ -1642,8 +1646,11 @@ tr[aria-expanded="true"] .caret-toggle::before {
     color: var(--bs-success);
 }
 
-/* Fin de procédure signée (complete + signed) */
 .step-vertical.complete.signed .step-vertical-content {
+    box-shadow:
+            -1px 0 6px rgba(var(--neon-success), 0.6),
+            0 0 10px rgba(var(--neon-success), 0.35),
+            0 0 20px rgba(var(--neon-success), 0.15);
     border-left: 4px solid var(--bs-success);
 }
 

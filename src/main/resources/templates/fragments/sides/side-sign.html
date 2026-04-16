@@ -89,7 +89,7 @@
     <span th:if="${signRequestLight != null}" class="text-uppercase ms-1">Étapes du circuit</span>
     <div th:if="${signRequestLight != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
 
-    <div th:if="${signRequestLight != null and signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+    <div th:if="${signRequestLight != null  && signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
          data-bs-focus="false"
          class="modal fade"
          id="addStep"

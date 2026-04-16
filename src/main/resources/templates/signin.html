@@ -48,7 +48,7 @@
                 textAlign: 'left',
                 fillStyle: captchaFillStyle
             },
-            // set callback function for success and error messages:
+            // set callback function for success  && error messages:
             callback: ( response, $captchaInputElement, numberOfTries ) => {
                 if ( response == 'success' ) {
                     $("#loginBlock").removeClass('d-none');

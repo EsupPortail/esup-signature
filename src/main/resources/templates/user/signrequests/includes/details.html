@@ -3,16 +3,8 @@
 <!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="details">
-    <div class="col-12 text-center">
-        <a th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-last-file-report/' + ${signRequestLight.id}" target="_blank" title="Télécharger le dossier">
-            <i class="fa-solid fa-file-contract"></i> Télécharger le dossier
-        </a>
-        <a th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="Export SEDA" class="btn btn-primary m-1" th:href="'/ws-secure/global/get-seda/' + ${signRequestLight.id}">
-            <i class="fa-solid fa-archive"></i> Export SEDA
-        </a>
-        <a th:unless="${user.userType.name() == 'external'}" th:if="${signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="btn btn-primary m-1" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
-            <i class="fa-solid fa-shield-alt"></i> Contrôler le document
-        </a>
+    <div th:unless="${user.userType.name() == 'external'}" class="col-12 text-center">
+
     </div>
     <div th:insert="~{public/control :: control(signRequest=${signRequestLight}, logs=${showSignRequest.logs}, auditTrail=${showSignRequest.auditTrail}, size=${showSignRequest.size}, auditTrailChecked=${showSignRequest.auditTrailChecked}, viewAccess=${showSignRequest.viewRight})}"></div>
 </div>

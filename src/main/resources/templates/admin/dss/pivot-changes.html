@@ -35,7 +35,7 @@
                 <!-- LOTL Info -->
                 <div class="current-lotl text-break">
                     <h2>
-                        <span th:if="${lotl.parsingCacheInfo != null and lotl.parsingCacheInfo.resultExist and lotl.parsingCacheInfo.territory != null}"
+                        <span th:if="${lotl.parsingCacheInfo != null  && lotl.parsingCacheInfo.resultExist  && lotl.parsingCacheInfo.territory != null}"
                               th:class="${'lotl-flag small_flag mt-2 flag_' + lotl.parsingCacheInfo.territory}" th:title="${lotl.parsingCacheInfo.territory}"></span>
                         <span th:text="#{label.summary.lotl}"></span>
                         <a class="h4" th:if="${lotl.parsingCacheInfo.TSLType != null}" th:text="'(' + (${lotl.parsingCacheInfo.TSLType.label != null ? lotl.parsingCacheInfo.TSLType.label : lotl.parsingCacheInfo.TSLType.uri}) + ')'" th:href="${lotl.parsingCacheInfo.TSLType.uri}" target="_blank"></a>
@@ -44,7 +44,7 @@
                 </div>
 
                 <!-- Original certificates -->
-                <div class="certificates-container original-certificates" th:if="${not #lists.isEmpty(potentialSigners)}">
+                <div class="certificates-container original-certificates" th:if="${!#lists.isEmpty(potentialSigners)}">
                     <div class="card bg-primary mb-3">
                         <div class="card-header text-white" th:text="#{label.summary.lotl.potential.signers}"></div>
                         <div class="card-body bg-white rounded-bottom">
@@ -65,7 +65,7 @@
                 </div>
 
                 <!-- Pivot certificate source changes -->
-                <div th:if="${not #lists.isEmpty(lotl.pivotInfos)}" class="certificates-container original-certificates" th:each="pivot,iterPivot : ${lotl.pivotInfos}"
+                <div th:if="${!#lists.isEmpty(lotl.pivotInfos)}" class="certificates-container original-certificates" th:each="pivot,iterPivot : ${lotl.pivotInfos}"
                     th:with="pivotId=${pivot.getDSSId().asXmlId()}, pivotUrl=${pivot.url}, pivotCerts=${pivot.getCertificateStatusMap()},
                         lotlLocation=${pivot.getLOTLLocation()}">
 

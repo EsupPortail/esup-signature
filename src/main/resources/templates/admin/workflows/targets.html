@@ -74,7 +74,7 @@
                                     </td>
                                     <td class="text-left w-100">
                                         <form th:id="'toggle-send-zip-' + ${target.id}" th:action="'/' + ${workflowRole} + '/workflows/toggle-send-zip/' + ${workflow.id} + '/' + ${target.id}" th:method="'put'">
-                                            <input type="checkbox" th:disabled="${!target.sendDocument and !target.sendReport and !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
+                                            <input type="checkbox" th:disabled="${!target.sendDocument  && !target.sendReport  && !target.sendAttachment}" th:checked="${target.sendZip}" th:onclick="'$(\'#toggle-send-zip-' + ${target.id} + '\').submit()'"/>
                                         </form>
                                     </td>
                                     <td>

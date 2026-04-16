@@ -48,7 +48,7 @@
                                 <!-- LOTL -->
                                 <h2>
                                     <a th:href="@{/admin/dss/lotl/} + ${lotl.getDSSId().asXmlId()}">
-                                        <span th:if="${parsingResult != null and parsingResult.resultExist and parsingResult.territory != null}" th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
+                                        <span th:if="${parsingResult != null  && parsingResult.resultExist  && parsingResult.territory != null}" th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}" th:title="${parsingResult.territory}"></span>
                                     </a>
                                     <span th:text="#{label.summary.lotl.number(${iterLOTL.count})}"></span>
                                     <a class="h4" th:if="${parsingResult.TSLType != null}" th:text="'(' + (${parsingResult.TSLType.label != null ? parsingResult.TSLType.label : parsingResult.TSLType.uri}) + ')'" th:href="${parsingResult.TSLType.uri}" target="_blank"></a>
@@ -58,7 +58,7 @@
                                 <div th:replace="~{fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></div>
                                 <!-- Pivots -->
                                 <div class="alert alert-light mb-2">
-                                    <div class="table-container row" th:if="${not #lists.isEmpty(lotl.pivotInfos)}">
+                                    <div class="table-container row" th:if="${!#lists.isEmpty(lotl.pivotInfos)}">
                                     <h4>
                                         <span th:text=#{label.summary.pivot.loaded.header}></span>&nbsp;
                                         <a class="h6 font-weight-bold" th:href="@{'/admin/dss/pivot-changes/' + ${lotl.getDSSId().asXmlId()}}"
@@ -85,7 +85,7 @@
                                             </td>
                                             <!-- Last Download Attempt date -->
                                             <td>
-                                                <span th:text="${downloadResult != null and downloadResult.lastDownloadAttemptTime != null} ?
+                                                <span th:text="${downloadResult != null  && downloadResult.lastDownloadAttemptTime != null} ?
                                                     ${#dates.format(downloadResult.lastDownloadAttemptTime, 'dd-MMM-yyyy HH:mm:ss')} : '-'"></span>
                                             </td>
 
@@ -110,7 +110,7 @@
                                 </div>
                                 <!-- TL summary -->
                                 <div class="alert alert-light mb-2">
-                                    <div class="table-container row" th:if="${not #lists.isEmpty(lotl.getTLInfos())}">
+                                    <div class="table-container row" th:if="${!#lists.isEmpty(lotl.getTLInfos())}">
                                     <h4 th:text="#{label.summary.tl.info.header}"></h4>
                                     <table class="tl-summary summary-table table accordion">
                                         <thead th:replace="~{fragments/tl-info :: tl-info-header()}"></thead>
@@ -134,7 +134,7 @@
                             </div>
 
                             <!-- Other TLs -->
-                            <div class="table-container row" th:if="${not #lists.isEmpty(summary.otherTLInfos)}">
+                            <div class="table-container row" th:if="${!#lists.isEmpty(summary.otherTLInfos)}">
                                 <h2 th:text=#{label.summary.tl.info.other.header}></h2>
                                 <table class="tl-summary summary-table table accordion">
                                     <thead th:replace="~{fragments/tl-info :: tl-info-header()}parsingResult=${parsingResult}, validationResult=${validationResult})}"></thead>

@@ -47,7 +47,8 @@
                                             </a>
                                         </li>
                                     </th:block>
-                                    <li th:if="${signRequestFull.manager and signRequestFull.currentStepNumber == 1 && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                    <th:block th:if="${signRequestFull.manager  && signRequestFull.currentStepNumber == 1 && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                    <li>
                                         <button class="btn btn-transparent text-dark w-100 text-left"
                                                 type="button"
                                                 data-bs-toggle="modal"
@@ -57,6 +58,7 @@
                                             <i class="fi fi-rr-plus-small"></i> Ajouter une étape au début
                                         </button>
                                     </li>
+                                    </th:block>
                                 </ul>
                             </div>
                         </div>
@@ -68,7 +70,7 @@
                     <div class="step-vertical">
                         <div class="step-vertical-content bg-light p-1 rounded">
                             <p class="text-muted">Le circuit n’est pas démarré</p>
-                            <button th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                            <button th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                                     class="btn btn-sm btn-outline-primary"
                                     type="button"
                                     data-bs-toggle="modal"
@@ -84,30 +86,30 @@
                 <!-- Étapes du workflow -->
                 <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                     <th:block th:with="stepNumber=${iterator.index + 1},
-                                    isNextCompleted=${stepNumber + 1 lt signRequestFull.currentStepNumber},
-                                    isCompleted=${stepNumber lt signRequestFull.currentStepNumber},
-                                    isCurrent=${stepNumber eq signRequestFull.currentStepNumber},
+                                    isNextCompleted=${stepNumber + 1 < signRequestFull.currentStepNumber},
+                                    isCompleted=${stepNumber <= signRequestFull.currentStepNumber},
+                                    isCurrent=${stepNumber == signRequestFull.currentStepNumber},
                                     isPending=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending},
                                     isRefused=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused},
                                     isDraft=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft},
                                     isWorkflowFinished=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed
-                                        or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
-                                        or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
-                                        or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived},
+                                         || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
+                                         || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
+                                         || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived},
                                     isAutoSign=${liveWorkflowStep.autoSign}">
 
                         <div th:id="'liveStep-' + ${stepNumber}"
                             class="toggle-layer-div"
                             th:data-step="${stepNumber}"
                             th:classappend="'step-vertical'
-                                + ${(isCompleted or (isCurrent and not isPending and not isRefused and not isDraft)) ? ' complete' : ''}
-                                + ${(isCurrent and isPending and not isRefused and not isDraft) ? ' active' : ''}
-                                + ${(isCurrent and isRefused) ? ' refused' : ''}">
+                                + ${(isCompleted  || (isCurrent  && !isPending  && !isRefused  && !isDraft)) ? ' complete' : ''}
+                                + ${(isCurrent  && isPending  && !isRefused  && !isDraft) ? ' active' : ''}
+                                + ${(isCurrent  && isRefused) ? ' refused' : ''}">
 
                             <!-- Icône -->
                             <div class="step-vertical-icon">
                                 <!-- Étape à venir -->
-                                <th:block th:if="${stepNumber gt signRequestFull.currentStepNumber or isDraft}">
+                                <th:block th:if="${stepNumber > signRequestFull.currentStepNumber  || isDraft}">
                                     <i th:class="${isAutoSign ? 'fi fi-rr-cloud-gear-automation' : 'fi fi-rr-pending'}"></i>
                                 </th:block>
 
@@ -115,14 +117,14 @@
                                 <th:block th:if="${isCurrent}">
                                     <i th:if="${isPending}" class="fi fi-rr-duration-alt"></i>
                                     <i th:if="${isRefused}" class="fi fi-rr-cross-small"></i>
-                                    <i th:if="${not isPending and not isRefused and not isDraft and not isWorkflowFinished and not isAutoSign}" class="fi fi-rr-attribution-pencil"></i>
-                                    <i th:if="${not isPending and not isRefused and not isDraft and not isWorkflowFinished and isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
+                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && !isAutoSign}" class="fi fi-rr-attribution-pencil"></i>
+                                    <i th:if="${!isPending  && !isRefused  && !isDraft  && !isWorkflowFinished  && isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
                                 </th:block>
 
                                 <!-- Étape complétée -->
-                                <th:block th:if="${isCompleted or (isCurrent and isWorkflowFinished)}">
-                                    <i th:if="${(not isRefused and not isAutoSign) or isCompleted}" class="fi fi-rr-check"></i>
-                                    <i th:if="${not isRefused and isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
+                                <th:block th:if="${isCompleted  || (isCurrent  && isWorkflowFinished)}">
+                                    <i th:if="${(!isRefused  && !isAutoSign)  || isCompleted}" class="fi fi-rr-check"></i>
+                                    <i th:if="${!isRefused  && isAutoSign}" class="fi fi-rr-cloud-gear-automation"></i>
                                     <i th:if="${isRefused && !isCompleted}" class="fi fi-rr-cross-small"></i>
                                 </th:block>
                             </div>
@@ -154,37 +156,37 @@
                                     </th:block>
 
                                     <!-- Destinataires (si pas automatique) -->
-                                    <th:block th:if="${not isAutoSign}">
+                                    <th:block th:if="${!isAutoSign}">
                                         <table class="table table-sm table-borderless step-recipients">
                                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
                                                 <tr>
                                                     <td class="recipient-name bg-light w-100">
-                                                        <span th:if="${not #strings.isEmpty(recipient.user.firstname) and not #strings.isEmpty(recipient.user.name)}"
+                                                        <span th:if="${!#strings.isEmpty(recipient.user.firstname)  && !#strings.isEmpty(recipient.user.name)}"
                                                             th:text="${recipient.user.firstname + ' ' + recipient.user.name}"
                                                             th:title="${recipient.user.email}"></span>
-                                                        <span th:if="${#strings.isEmpty(recipient.user.firstname) and #strings.isEmpty(recipient.user.name)}"
+                                                        <span th:if="${#strings.isEmpty(recipient.user.firstname)  && #strings.isEmpty(recipient.user.name)}"
                                                             th:text="${recipient.user.email}"
                                                             th:title="${recipient.user.email}"></span>
                                                         <br/>
-                                                        <span class="small bg-primary-subtle pe-1 ps-1" th:if="${recipientAction != null and recipientAction.actionType.name() == 'signed'}"
+                                                        <span class="small bg-primary-subtle pe-1 ps-1" th:if="${recipientAction != null  && recipientAction.actionType.name() == 'signed'}"
                                                             th:text="${#dates.format(recipientAction.date, 'dd/MM/YYYY HH:mm')}"></span>
                                                     </td>
                                                     <td class="recipient-status bg-light">
-                                                        <i th:if="${recipientAction != null and recipientAction.actionType.name() == 'signed'}"
+                                                        <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'signed'}"
                                                             class="fa-solid fa-check-circle text-success"
                                                             th:title="|A signé le ${#dates.format(recipientAction.date, 'dd/MM/YYYY HH:mm')}|"></i>
-                                                        <i th:if="${recipientAction != null and recipientAction.actionType.name() == 'none' and isPending}"
+                                                        <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'none'  && isPending}"
                                                             class="fa-solid fa-clock text-warning"
                                                             title="En attente de signature"></i>
-                                                        <i th:if="${recipientAction != null and recipientAction.actionType.name() == 'none' and not isPending}"
+                                                        <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'none'  && !isPending}"
                                                             class="fa-solid fa-minus-circle text-secondary"></i>
-                                                        <i th:if="${recipientAction != null and recipientAction.actionType.name() == 'refused'}"
+                                                        <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'refused'}"
                                                             class="fa-solid fa-times-circle text-danger"
                                                             title="A refusé le document"></i>
                                                     </td>
                                                 </tr>
                                                     <!-- Modal envoyer nouveau lien -->
-                                                <th:block th:if="${signRequestFull.manager and recipient.user.userType.name() == 'external' and isPending}">
+                                                <th:block th:if="${signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
                                                     <div th:id="'menu-' + ${recipient.id}" data-bs-focus="false" class="modal border-1 border-secondary" style="top:220px;--bs-modal-border-color:var(--bs-secondary)">
                                                         <div class="modal-dialog">
                                                             <div class="modal-content">
@@ -296,12 +298,12 @@
                                     <ul class="dropdown-menu dropdown-menu-end p-1" style="width:300px; text-wrap: auto; overflow: clip;">
                                         <li>
                                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
-                                            <button class="btn btn-transparent text-dark w-100 text-left"
-                                                    title="Envoyer un nouveau lien d'accès"
-                                                    th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                    th:if="${isCurrent and signRequestFull.manager and recipient.user.userType.name() == 'external' and isPending}">
-                                                <i class="fi fi-rr-link"></i> Renvoyer un lien d'accès à <span th:text="${recipient.user.email}"></span>
-                                            </button>
+                                                <button class="btn btn-transparent text-dark w-100 text-left"
+                                                        title="Envoyer un nouveau lien d'accès"
+                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
+                                                        th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
+                                                    <i class="fi fi-rr-link"></i> Renvoyer un lien d'accès à <span th:text="${recipient.user.email}"></span>
+                                                </button>
                                             </th:block>
                                         </li>
                                         <!-- Bouton visualisation document -->
@@ -330,7 +332,7 @@
                                                 </a>
                                             </li>
                                         </th:block>
-                                         <li th:if="${signRequestFull.manager && !isNextCompleted and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                         <li th:if="${signRequestFull.manager && !isNextCompleted  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                                              <button class="btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
@@ -340,7 +342,7 @@
                                                  <i class="fi fi-rr-plus-small"></i> Ajouter une étape après
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}">
                                              <button class="btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
@@ -349,7 +351,7 @@
                                                  <i class="fi fi-rr-pencil"></i> Modifier l'étape
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and showSignRequest.steps.size() > 1 and showSignRequest.steps.size() > signRequestFull.currentStepNumber and stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && showSignRequest.steps.size() > 1  && showSignRequest.steps.size() > signRequestFull.currentStepNumber  && stepNumber >= signRequestFull.currentStepNumber}">
                                              <form th:id="'del_' + ${iterator.index}"
                                                    th:action="'/user/signbooks/remove-live-step/' + ${showSignRequest.signBookLight.id} + '/' + ${iterator.index}"
                                                    th:method="delete">
@@ -364,7 +366,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div th:if="${signRequestFull.manager and (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft or signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) and stepNumber >= signRequestFull.currentStepNumber}"
+                            <div th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}"
                                  data-bs-focus="false"
                                  role="dialog"
                                  class="modal modal-lg fade"
@@ -409,10 +411,10 @@
                 <!-- Cibles d'export -->
                 <th:block th:each="target : ${showSignRequest.targets}">
                     <th:block th:with="canShowTarget=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
-                        or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
-                        or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
+                         || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
+                         || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
                         <div class="step-vertical"
-                            th:class="'step-vertical' + ${(target.targetOk or canShowTarget) ? ' complete' : ''}">
+                            th:class="'step-vertical' + ${(target.targetOk  || canShowTarget) ? ' complete' : ''}">
                             <div class="step-vertical-icon">
                                 <i class="fi fi-rr-file-export"></i>
                             </div>
@@ -426,9 +428,9 @@
 
                 <!-- Fin de procédure (complétée) -->
                 <th:block th:if="${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed
-                                or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
-                                or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
-                                or showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
+                                 || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
+                                 || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
+                                 || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived}">
                     <div class="step-vertical complete signed">
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-flag"></i>

@@ -11,20 +11,20 @@
                 <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
                     <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflowSteps}"
                               th:with="stepNumber=${iterator.index + 1},
-                                       isCompleted=${stepNumber lt signBook.liveWorkflowCurrentStepNumber},
-                                       isCurrent=${stepNumber eq signBook.liveWorkflowCurrentStepNumber},
+                                       isCompleted=${stepNumber < signBook.liveWorkflowCurrentStepNumber},
+                                       isCurrent=${stepNumber == signBook.liveWorkflowCurrentStepNumber},
                                        isPending=${signBook.status == 'pending'},
                                        isRefused=${signBook.status == 'refused'}">
                         <div th:id="'step-' + ${stepNumber}"
                              th:class="'step-horizontal-v2 d-flex gap-2 align-items-start'
-                                + ${(isCompleted or (isCurrent and not isPending and not isRefused)) ? ' complete' : ''}
-                                + ${(isCurrent and isPending) ? ' active' : ''}
-                                + ${(stepNumber gt signBook.liveWorkflowCurrentStepNumber) ? ' disabled' : ''}">
+                                + ${(isCompleted  || (isCurrent  && !isPending  && !isRefused)) ? ' complete' : ''}
+                                + ${(isCurrent  && isPending) ? ' active' : ''}
+                                + ${(stepNumber > signBook.liveWorkflowCurrentStepNumber) ? ' disabled' : ''}">
                             <div class="step-horizontal-v2-icon mt-1">
-                                <i th:if="${isCurrent and isPending}" class="fi fi-rr-duration-alt" title="Etape en cours"></i>
-                                <i th:if="${stepNumber gt signBook.liveWorkflowCurrentStepNumber}" class="fi fi-rr-pause" title="Etape a venir"></i>
-                                <i th:if="${isCurrent and isRefused}" class="fi fi-rr-cross-small" title="Etape refusee"></i>
-                                <i th:if="${isCompleted or (isCurrent and not isPending and not isRefused)}" class="fi fi-rr-check" title="Etape terminee"></i>
+                                <i th:if="${isCurrent  && isPending}" class="fi fi-rr-duration-alt" title="Etape en cours"></i>
+                                <i th:if="${stepNumber > signBook.liveWorkflowCurrentStepNumber}" class="fi fi-rr-pause" title="Etape a venir"></i>
+                                <i th:if="${isCurrent  && isRefused}" class="fi fi-rr-cross-small" title="Etape refusee"></i>
+                                <i th:if="${isCompleted  || (isCurrent  && !isPending  && !isRefused)}" class="fi fi-rr-check" title="Etape terminee"></i>
                             </div>
                             <div class="step-horizontal-v2-content bg-white border p-1 rounded w-100">
                                 <span th:text="'Etape ' + ${stepNumber}"></span>
@@ -33,7 +33,7 @@
                                         <tr onmouseover="this.style.cursor = 'pointer'" th:onclick="'$(\'#menu-' + ${recipient.id} + '\').show();'">
                                             <td th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
-                                            <td th:if="${stepNumber >= signBook.liveWorkflowCurrentStepNumber and signBook.status == 'pending'}" th:switch="${recipient.signed}">
+                                            <td th:if="${stepNumber >= signBook.liveWorkflowCurrentStepNumber  && signBook.status == 'pending'}" th:switch="${recipient.signed}">
                                                 <i title="a signe le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
                                                 <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
                                             </td>

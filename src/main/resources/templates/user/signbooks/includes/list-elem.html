@@ -1,5 +1,5 @@
 <th:block th:each="signBook : ${signBooks}">
-    <tr th:if="${statusFilter != 'empty' and signBook.primarySignRequest != null}" th:with="signRequest = ${signBook.primarySignRequest}" th:id="'signbook-' + ${signBook.id}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.subject}">
+    <tr th:if="${statusFilter != 'empty'  && signBook.primarySignRequest != null}" th:with="signRequest = ${signBook.primarySignRequest}" th:id="'signbook-' + ${signBook.id}" th:data-href="'/user/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.subject}">
         <td class="d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}"
                 th:id="'checkbox-signrequest-' + ${signRequest.id}"
