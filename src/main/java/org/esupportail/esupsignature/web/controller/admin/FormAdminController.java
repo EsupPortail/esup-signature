@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.entity.enums.DocumentIOType;
@@ -57,8 +59,9 @@ public class FormAdminController {
 	private final PreAuthorizeService preAuthorizeService;
     private final TagService tagService;
 	private final UiFetchService uiFetchService;
+	private final GlobalProperties globalProperties;
 
-	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService, UiFetchService uiFetchService) {
+	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
 		this.formService = formService;
 		this.workflowService = workflowService;
 		this.userService = userService;
@@ -69,6 +72,7 @@ public class FormAdminController {
 		this.preAuthorizeService = preAuthorizeService;
         this.tagService = tagService;
 						this.uiFetchService = uiFetchService;
+		this.globalProperties = globalProperties;
     }
 
 	@GetMapping()
@@ -180,6 +184,7 @@ public class FormAdminController {
 		model.addAttribute("spots", view.getSpots());
 		model.addAttribute("srpMap", view.getSrpMap());
 		model.addAttribute("defaultSignImageNumber", view.getDefaultSignImageNumber());
+		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
 		return "admin/forms/signs";
 	}
 

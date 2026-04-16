@@ -7,7 +7,6 @@ export default class SelectUser {
         if(selectName.split("-").length > 0) {
             this.stepNumber = selectName.split("-")[1];
         }
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.enableSms = JSON.parse(sessionStorage.getItem("enableSms"));
         this.slimSelect = null;
         this.checkList = this.selectField.attr("data-es-check-list");
@@ -16,10 +15,6 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        // let selectNameSplit = selectName.split("_");
-        // if(selectNameSplit.length === 2) {
-        //     this.valuePrefix = selectNameSplit[1] + "*";
-        // }
         let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
@@ -28,7 +23,6 @@ export default class SelectUser {
                     value: $(this).attr("value"),
                     selected: true
                 });
-                // $(this).remove();
             }
         });
         this.favorites = defaultValues;
@@ -36,9 +30,7 @@ export default class SelectUser {
             this.limit = limit;
         }
         this.createUserSelect(selectName,  this.valuePrefix);
-        // this.selectField.addClass("slim-select-hack");
         $("." + this.slimSelect.settings.id).each(function() {
-        // $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
         this.selectField.slim = this.slimSelect;
@@ -77,10 +69,6 @@ export default class SelectUser {
             placeHolder = "Choisir une personne";
         }
         let self = this;
-        let position = "absolute";
-        if(this.selectField.attr("data-es-relative")) {
-            position = "relative";
-        }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             settings: {
@@ -315,7 +303,7 @@ export default class SelectUser {
         let tempUsersDiv = $(name);
         const hidedPhone = data.hidedPhone || "";
         let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
-        if(this.globalProperties.smsRequired) {
+        if (this.enableSms) {
             html +=
                 "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
@@ -420,15 +408,6 @@ export default class SelectUser {
             }
         }
         this.bindEnterKeyPress();
-        // if(this.favorites.length > 0) {
-        //     this.slimSelect.setData(this.favorites);
-        //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);
-        //     // if (selectedFavorites.length > 0) {
-        //     //     this.slimSelect.set(selectedFavorites);
-        //     // } else {
-        //     //     this.slimSelect.set();
-        //     // }
-        // }
     }
 
     populateWithFavorites() {

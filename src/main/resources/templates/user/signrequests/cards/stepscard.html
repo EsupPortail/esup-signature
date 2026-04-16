@@ -87,7 +87,7 @@
                 <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                     <th:block th:with="stepNumber=${iterator.index + 1},
                                     isNextCompleted=${stepNumber + 1 < signRequestFull.currentStepNumber},
-                                    isCompleted=${stepNumber <= signRequestFull.currentStepNumber},
+                                    isCompleted=${stepNumber < signRequestFull.currentStepNumber},
                                     isCurrent=${stepNumber == signRequestFull.currentStepNumber},
                                     isPending=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending},
                                     isRefused=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused},
@@ -307,7 +307,7 @@
                                             </th:block>
                                         </li>
                                         <!-- Bouton visualisation document -->
-                                        <th:block th:if="${!signRequestFull.hasDocumentsHistory && isCompleted}">
+                                        <th:block th:if="${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)}">
                                             <li>
                                                 <button class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
                                                         th:data-step="${stepNumber}">

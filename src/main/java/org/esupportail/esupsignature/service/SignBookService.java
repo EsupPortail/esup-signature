@@ -3220,6 +3220,7 @@ public class SignBookService {
         }
         SignRequest signRequest = signRequestService.getById(signRequestId);
         transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);
+        logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Transfert de la demande de signature à " + replacedByUser.getFirstname() + " " + replacedByUser.getName(), "", "SUCCESS", null, null, null, null, userEppn, userEppn);
     }
 
     /**

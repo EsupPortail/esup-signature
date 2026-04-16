@@ -415,6 +415,7 @@
     const signRequestProfilePath = /*[[${showSignRequest.urlProfil}]]*/ 'user';
     const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
     const favoriteSignRequestParamsJson = /*[[${favoriteSignRequestParamsJson}]]*/ '{}';
+    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
     const csrf = /*[[${_csrf}]]*/ {};
     const signRequestFrontUrl = '/' + signRequestProfilePath + '/signrequests/' + signRequestId + '/front';
     sessionStorage.setItem("favoriteSignRequestParams", favoriteSignRequestParamsJson);
@@ -429,7 +430,7 @@
             }
             return response.json();
         })
-        .then(data => new SignUi(SignUiFrontDto.from(data), csrf))
+        .then(data => new SignUi(SignUiFrontDto.from(data), csrf, signatureUiConfig))
         .catch(error => {
             console.error('Impossible de charger le bootstrap front de signature', error);
             bootbox.alert("Impossible de charger l’interface de signature.");

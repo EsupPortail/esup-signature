@@ -33,7 +33,8 @@
 </script>
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
-    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]]);
+    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
+    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]], signatureUiConfig);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>

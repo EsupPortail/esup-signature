@@ -66,6 +66,7 @@
 <script th:inline="javascript" type="module" th:if="${workflow != null}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
     import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
+    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
     const rawSpots = [[${spots}]];
     const rawSrpMap = [[${srpMap}]];
     const idToStepMap = {};
@@ -122,7 +123,7 @@
         returnToHomeAfterSign: false,
         manager: true
     });
-    new SignUi(formSignsFrontDto, [[${_csrf}]]);
+    new SignUi(formSignsFrontDto, [[${_csrf}]], signatureUiConfig);
 </script>
 <div th:if="${workflow != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">

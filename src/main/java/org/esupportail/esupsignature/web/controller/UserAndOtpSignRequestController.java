@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
+import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
@@ -90,6 +91,7 @@ public class UserAndOtpSignRequestController {
         }
         ShowSignRequestDto showSignRequest = uiFetchService.buildShowSignRequestBackDto(context);
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
+        model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
         model.addAttribute("showSignRequest", showSignRequest);
         model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
         model.addAttribute("signRequestLight", showSignRequest.signRequestLight());

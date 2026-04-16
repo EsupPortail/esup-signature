@@ -9,7 +9,7 @@
         <div class="modal-content">
             <form th:action="'/user/signbooks/add-docs/' + ${showSignRequest.signBookLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
-                    <h3 class="modal-title" id="fastSignRequestLabel">Ajouter un document</h3>
+                    <h3 class="modal-title d-flex align-items-center" id="fastSignRequestLabel"><i class="fi fi-rr-add-document"></i> Ajouter un document</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>

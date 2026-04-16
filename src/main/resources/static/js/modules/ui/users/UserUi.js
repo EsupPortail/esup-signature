@@ -4,12 +4,13 @@ import {SignRequestParams} from '../../../prototypes/SignRequestParams.js?versio
 
 export class UserUi {
 
-    constructor(userName, signRequestParams, signImages, userType, defaultSignImageNumber) {
+    constructor(userName, signRequestParams, signImages, userType, defaultSignImageNumber, signatureUiConfig = null) {
         console.log('Starting user UI');
         this.userName = userName;
         this.signImages = signImages;
         this.userType = userType;
         this.defaultSignImageNumber = defaultSignImageNumber;
+        this.signatureUiConfig = signatureUiConfig;
         this.emailAlertFrequencySelect = $("#emailAlertFrequency_id");
         this.emailAlertDay = $("#emailAlertDayDiv");
         this.emailAlertHour = $("#emailAlertHourDiv");
@@ -189,7 +190,7 @@ export class UserUi {
     }
 
     enableSignRequestParams() {
-        this.signRequestParams = new SignRequestParams(false, this.signRequestParamsDefault, 0, 1, 1, this.userName, this.userName, false, true, false, false, null, true, this.signImages);
+        this.signRequestParams = new SignRequestParams(false, this.signRequestParamsDefault, 0, 1, 1, this.userName, this.userName, false, true, false, false, null, true, this.signImages, undefined, undefined, undefined, this.signatureUiConfig);
     }
 
     clearLocalStorage() {

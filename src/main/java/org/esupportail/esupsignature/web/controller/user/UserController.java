@@ -1,6 +1,8 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -46,8 +48,9 @@ public class UserController {
     private final UserListService userListService;
     private final ExtValueService extValueService;
     private final RecipientService recipientService;
+	private final GlobalProperties globalProperties;
 
-    public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties) {
 		this.userKeystoreService = userKeystoreService;
         this.formService = formService;
         this.userService = userService;
@@ -58,6 +61,7 @@ public class UserController {
         this.userListService = userListService;
         this.extValueService = extValueService;
         this.recipientService = recipientService;
+		this.globalProperties = globalProperties;
     }
 
     @GetMapping
@@ -70,6 +74,7 @@ public class UserController {
         model.addAttribute("activeMenu", "user");
 		model.addAttribute("paramMenu", "settings");
 		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
+		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
 		return "user/users/update";
     }
 

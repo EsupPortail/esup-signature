@@ -91,7 +91,7 @@ public class LogService {
                 log.setUserFor(userService.getByEppn(log.getEppnFor()));
             }
         }
-        return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
+        return logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
     }
 
     @Transactional

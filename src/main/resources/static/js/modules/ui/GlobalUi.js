@@ -524,6 +524,12 @@ export class GlobalUi {
     }
 
     initTooltips() {
+        $("button").tooltip({
+            placement: 'left',
+            disabled: false,
+            show: { effect: "fade", duration: 500 },
+            hide: { effect: "fade", duration: 500 }
+        });
         $("#new-scroll").tooltip({
             disabled: false,
             show: { effect: "fade", duration: 500 },

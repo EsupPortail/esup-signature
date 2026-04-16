@@ -61,7 +61,7 @@
                 <div class="step-horizontal-v2-content">
                     <span class="text-xs font-bold d-flex align-items-center gap-1">
                         <div class="d-flex flex-nowrap" th:if="${signRequestFull.signable && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.toSignDocumentContentType == 'application/pdf'}" style="flex: 1 1 0;">
-                            <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success" title="Insérer une signature">
+                            <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success">
                                 <i class="fi fi-rr-file-signature"></i> Insérer une signature
                             </button>
                         </div>
@@ -84,7 +84,7 @@
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
                     <th:block th:if="${signRequestFull.signable && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none" title="Enregistrer la signature et passer à l'étape suivante disabled">
+                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none">
                             <i class="fi fi-rr-signature-lock " style="margin-top: 0; border: 0"></i> Signer
                         </button>
                     </th:block>

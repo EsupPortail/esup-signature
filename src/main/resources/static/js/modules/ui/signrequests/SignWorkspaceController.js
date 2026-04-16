@@ -10,7 +10,7 @@ import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
 
 export class SignWorkspaceController {
 
-    constructor(workspaceStateInput, csrf) {
+    constructor(workspaceStateInput, csrf, signatureUiConfig = null) {
         const workspaceState = workspaceStateInput instanceof WorkspaceState
             ? workspaceStateInput
             : WorkspaceState.from(workspaceStateInput, null);
@@ -68,6 +68,7 @@ export class SignWorkspaceController {
         this.stepRepeatable = stepRepeatable;
         this.status = status;
         this.csrf = csrf;
+        this.signatureUiConfig = signatureUiConfig;
         this.currentStepMultiSign = currentStepMultiSign;
         this.forcePageNum = null;
         this.pointItEnable = true;
@@ -114,7 +115,7 @@ export class SignWorkspaceController {
             currentStepSingleSignWithAnnotation,
             signImageNumber,
             signImages,
-            userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf);
+            userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf, this.signatureUiConfig);
         this.signPlacementController.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
         this.signPlacementController.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
         this.currentSignRequestParamses = currentSignRequestParamses;

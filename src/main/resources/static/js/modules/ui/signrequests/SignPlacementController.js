@@ -4,7 +4,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class SignPlacementController extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf) {
+    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf, signatureUiConfig = null) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
@@ -15,6 +15,7 @@ export class SignPlacementController extends EventFactory {
         this.isOtp = isOtp;
         this.phone = phone;
         this.csrf = csrf;
+        this.signatureUiConfig = signatureUiConfig;
         this.currentSignRequestParamses = currentSignRequestParamses;
         if(currentSignRequestParamses != null) {
             this.currentSignRequestParamses.sort((a, b) => (a.xPos > b.xPos) ? 1 : ((b.xPos > a.xPos) ? -1 : 0))
@@ -191,7 +192,7 @@ export class SignPlacementController extends EventFactory {
 
     popUserUi() {
         if (this.userUI == null) {
-            this.userUI = new UserUi();
+            this.userUI = new UserUi(undefined, undefined, undefined, undefined, undefined, this.signatureUiConfig);
         }
         $("#add-sign-image").modal("show");
     }
@@ -258,7 +259,7 @@ export class SignPlacementController extends EventFactory {
             let favoriteSignRequestParams = currentSignRequestParams;
             if (signImageNumber === 999999) {
                 id = 999999;
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                     this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
                 this.signRequestParamses.get(id).changeSignSize(null);
@@ -275,7 +276,7 @@ export class SignPlacementController extends EventFactory {
                         favoriteSignRequestParams.yPos = currentSignRequestParams.yPos;
                     }
                 }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 this.signsList.push(id);
                 if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
@@ -290,7 +291,7 @@ export class SignPlacementController extends EventFactory {
                     alert("Impossible d'ajouter des annotations sur cette étape");
                     return;
                 }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
             }
             if(signImageNumber !== 999999) {
@@ -303,7 +304,7 @@ export class SignPlacementController extends EventFactory {
                 alert("Impossible d'ajouter des annotations sur cette étape");
                 return;
             }
-            this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop));
+            this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
             this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));

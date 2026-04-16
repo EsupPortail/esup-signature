@@ -10,11 +10,15 @@ function getCssColorValue(variableName) {
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType) {
+    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null) {
         super();
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        console.warn(this.globalProperties);
-        this.fontSize = this.globalProperties.defaultFontSize;
+        Object.defineProperty(this, "signatureUiConfig", {
+            value: signatureUiConfig,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+        });
+        this.fontSize = this.#getDefaultFontSize();
         this.signWidth = 200;
         this.signHeight = 100;
         this.addWatermark = null;
@@ -124,6 +128,15 @@ export class SignRequestParams extends EventFactory {
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         this.#initEventListeners();
+    }
+
+    #getDefaultFontSize() {
+        const parsedFontSize = Number.parseInt(this.signatureUiConfig?.defaultFontSize, 10);
+        return Number.isFinite(parsedFontSize) ? parsedFontSize : 16;
+    }
+
+    #getExternalSignatureParams() {
+        return this.signatureUiConfig?.externalSignatureParams ?? null;
     }
 
     #initEventListeners() {
@@ -374,24 +387,25 @@ export class SignRequestParams extends EventFactory {
             }
             // $("#extraTools_" + this.id).remove();
             $("#crossTools_" + this.id).css("top", "-45px");
-            if(this.globalProperties.externalSignatureParams != null) {
-                this.addWatermark = !this.globalProperties.externalSignatureParams.addWatermark;
+            const externalSignatureParams = this.#getExternalSignatureParams();
+            if(externalSignatureParams != null) {
+                this.addWatermark = !externalSignatureParams.addWatermark;
                 this.#toggleWatermark();
-                this.extraDate = !this.globalProperties.externalSignatureParams.extraDate;
+                this.extraDate = !externalSignatureParams.extraDate;
                 this.#toggleDate();
-                this.extraType = !this.globalProperties.externalSignatureParams.extraType;
+                this.extraType = !externalSignatureParams.extraType;
                 this.#toggleType();
-                this.extraName = !this.globalProperties.externalSignatureParams.extraName;
+                this.extraName = !externalSignatureParams.extraName;
                 this.#toggleName();
-                this.addExtra = !this.globalProperties.externalSignatureParams.addExtra;
+                this.addExtra = !externalSignatureParams.addExtra;
                 this.#toggleExtra();
-                this.isExtraText = (this.globalProperties.externalSignatureParams.extraText === null);
+                this.isExtraText = (externalSignatureParams.extraText === null);
                 this.#toggleText();
-                if(this.globalProperties.externalSignatureParams.extraText != null) {
-                    this.extraText = this.globalProperties.externalSignatureParams.extraText;
-                    this.textareaExtra.val(this.globalProperties.externalSignatureParams.extraText);
+                if(externalSignatureParams.extraText != null) {
+                    this.extraText = externalSignatureParams.extraText;
+                    this.textareaExtra.val(externalSignatureParams.extraText);
                 }
-                this.extraOnTop = !this.globalProperties.externalSignatureParams.extraOnTop;
+                this.extraOnTop = !externalSignatureParams.extraOnTop;
                 this.#toggleExtraOnTop();
                 $("#extraTools_" + this.id).remove();
                 $("#displayMoreTools_" + this.id).remove();
@@ -439,7 +453,7 @@ export class SignRequestParams extends EventFactory {
         this.cross.append("<div class='text-black overflow-hidden' style='font-weight: bold; width: 100%; height: 100%;font-size: "+ 8 * this.currentScale +"px;'>Positionner le champ de signature et cliquer sur enregistrer</div>");
         this.cross.css("width", Math.round(this.signWidth * this.signScale * this.currentScale) + "px");
         this.cross.css("height", Math.round(this.signHeight * this.signScale * this.currentScale) + "px");
-        this.cross.css("font-size", Math.round(this.globalProperties.defaultFontSize * this.signScale * this.currentScale) - 1  + "px");
+        this.cross.css("font-size", Math.round(this.#getDefaultFontSize() * this.signScale * this.currentScale) - 1  + "px");
         const spotToolsHtml = "<div id='spot-tools_" + this.id + "' class='badge bg-light border border-1 border-secondary-subtle position-absolute d-flex justify-content-start gap-2' style='padding: 4px; z-index: 4; top: -46px; left: 0;'>" +
             "<button id='delete-add-spot' type='button' class='btn btn-sm btn-transparent text-danger' title='Annuler'><i class='fi fi-rr-trash'></i></button>" +
             "<button id='submit-add-spot' type='button' class='btn btn-sm btn-transparent text-success' title='Enregistrer'><i class='fi fi-rr-floppy-disk-pen'></i></button>" +
@@ -1756,7 +1770,7 @@ export class SignRequestParams extends EventFactory {
 
     #toggleSignModal(e) {
         if (this.userUI == null) {
-            this.userUI = new UserUi();
+            this.userUI = new UserUi(undefined, undefined, undefined, undefined, undefined, this.signatureUiConfig);
         }
         $("#add-sign-image").modal("show");
     }
@@ -1889,7 +1903,7 @@ export class SignRequestParams extends EventFactory {
         this.textareaPart = $("#textPart_" + this.id);
         this.textareaPart.css('width', '100%');
         this.border.remove();
-        this.fontSize = this.globalProperties.defaultFontSize;
+        this.fontSize = this.#getDefaultFontSize();
         this.textareaPart.on("input", function () {
             self.textPart = $(this).val();
             self.#resizeText();

@@ -264,7 +264,7 @@ export class SignatureFlowController {
                     red: signUi.normalizeInteger(originalParams.red, 0, 0),
                     green: signUi.normalizeInteger(originalParams.green, 0, 0),
                     blue: signUi.normalizeInteger(originalParams.blue, 0, 0),
-                    fontSize: signUi.normalizeInteger(originalParams.fontSize, signUi.globalProperties?.defaultFontSize ?? 16, 1),
+                    fontSize: signUi.normalizeInteger(originalParams.fontSize, signUi.signatureUiConfig?.defaultFontSize ?? 16, 1),
                 };
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
@@ -317,7 +317,7 @@ export class SignatureFlowController {
                     } else {
                         if(signUi.isOtp== null || !signUi.isOtp) {
                             if(signUi.returnToHome == null) {
-                                if (signUi.nbSignRequests > 1 || !signUi.globalProperties.returnToHomeAfterSign) {
+                                if (signUi.nbSignRequests > 1 || !signUi.signatureUiConfig?.returnToHomeAfterSign) {
                                     document.location.href = "/user/signrequests/" + signUi.signRequestId;
                                 } else {
                                     document.location.href = "/user";

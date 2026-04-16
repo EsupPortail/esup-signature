@@ -8,15 +8,15 @@ import {SignatureFlowController} from "./SignatureFlowController.js?version=@ver
 
 export class SignUi {
 
-    constructor(showDataFlowInput, csrfToken) {
+    constructor(showDataFlowInput, csrfToken, signatureUiConfig = null) {
         this.state = WorkspaceState.from(showDataFlowInput, csrfToken);
         const {signUiDto, csrfToken: csrf} = this.normalizeInput();
         console.info("Starting sign UI for " + signUiDto.signRequestId);
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
+        this.signatureUiConfig = signatureUiConfig;
         this.wait = $('#wait');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
-        this.workspace = new SignWorkspaceController(this.state, this.csrf);
+        this.workspace = new SignWorkspaceController(this.state, this.csrf, this.signatureUiConfig);
         this.signComment = $('#signComment');
         this.signModal = $('#signModal');
         this.certTypeSelect = $("#certType");

@@ -29,6 +29,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -55,20 +56,22 @@ public class OtpAccessController {
     private final UserService userService;
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
         this.securityServices = securityServices;
         this.smsService = smsService;
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
         model.addAttribute("urlId", urlId);
-        List<OidcOtpSecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).map(s -> (OidcOtpSecurityService) s).toList();
+        List<OidcOtpSecurityService> oidcOtpSecurityServices = getActiveOidcSecurityServices();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null && ((otp.isSignature() && otp.getTries() < globalProperties.getNbSignOtpTries()) || (!otp.isSignature() && otp.getTries() < globalProperties.getNbViewOtpTries()))) {
             if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
@@ -99,6 +102,18 @@ public class OtpAccessController {
                     """);
             return "redirect:/otp-access/error";
         }
+    }
+
+    private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
+        return securityServices.stream()
+                .filter(OidcOtpSecurityService.class::isInstance)
+                .map(OidcOtpSecurityService.class::cast)
+                .filter(this::hasClientRegistration)
+                .toList();
+    }
+
+    private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+        return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
     }
 
     @GetMapping(value = "/completed")
