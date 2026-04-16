@@ -1109,6 +1109,22 @@ public class SignBookService {
         return firstSignRequest != null ? firstSignRequest.getId() : null;
     }
 
+    @Transactional(readOnly = true)
+    public boolean isUserEmailInCurrentStepRecipients(Long signBookId, String email) {
+        if (signBookId == null || email == null || email.isEmpty()) {
+            return false;
+        }
+
+        SignBook signBook = signBookRepository.findById(signBookId).orElse(null);
+        if (signBook == null || signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getCurrentStep() == null) {
+            return false;
+        }
+
+        return signBook.getLiveWorkflow().getCurrentStep().getRecipients().stream()
+                .filter(recipient -> recipient != null && recipient.getUser() != null)
+                .anyMatch(recipient -> Objects.equals(recipient.getUser().getEmail(), email));
+    }
+
     /**
      * Recherche et retourne un objet SignRequest en fonction de l'identifiant fourni.
      * Si aucun SignRequest direct n'est trouvé, l'identifiant est utilisé pour chercher un SignBook

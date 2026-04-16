@@ -56,7 +56,7 @@
         <button th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Modifier le parapheur" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
             <i class="fi fi-rr-settings-sliders"></i>
         </button>
-        <a tabindex="0" th:unless="${user.userType.name() == 'external'}" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
+        <a tabindex="0" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Détails"data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fi fi-rr-info"></i>
         </a>
         <a th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
