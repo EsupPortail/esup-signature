@@ -147,6 +147,7 @@ public class OtpAccessController {
                         try {
                             smsService.sendSms(phone, "Votre code de connexion esup_signature " + password);
                             otpService.setSmsSended(urlId);
+                            userService.updatePhone(user.getEppn(), phone);
                             return ResponseEntity.ok().build();
                         } catch (EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
@@ -176,9 +177,6 @@ public class OtpAccessController {
             otp.setSmsSended(true);
             logger.info("otp success for : " + urlId);
             User user = otp.getUser();
-            if(StringUtils.hasText(otp.getPhoneNumber())) {
-                userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
-            }
             authOtp(model, httpServletRequest, user);
             return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
         } else {
