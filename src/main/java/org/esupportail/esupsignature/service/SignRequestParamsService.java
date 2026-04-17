@@ -210,7 +210,7 @@ public class SignRequestParamsService {
                                 }
                             }
                             if (!isOverlapping) {
-                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, false);
+                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, true);
                                 signRequestParamsList.add(signRequestParams);
                             } else {
                                 logger.warn("Signature field " + signFieldName + " is overlapping with another annotation");

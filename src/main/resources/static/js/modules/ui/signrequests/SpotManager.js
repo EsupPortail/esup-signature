@@ -2,6 +2,7 @@ export class SpotManager {
 
     constructor(state, options = {}) {
         this.state = state;
+        this.spotAddEnabled = false;
         this.options = {
             signSpaceNamespace: options.signSpaceNamespace ?? ".spotManagerSignSpace",
             spotAddNamespace: options.spotAddNamespace ?? ".spotManagerAdd",
@@ -27,6 +28,56 @@ export class SpotManager {
             lockSigns: options.lockSigns ?? (() => {}),
             getEditable: options.getEditable ?? (() => false)
         };
+    }
+
+    activateSpotAddMode() {
+        this.spotAddEnabled = true;
+        const pdfViewer = this.options.getPdfViewer();
+        $("body").addClass("es-spot-add-mode");
+        $('body *').css('pointer-events', 'none');
+        if (pdfViewer?.pdfDiv != null) {
+            pdfViewer.pdfDiv.css({
+                'pointer-events': 'auto',
+                'cursor': 'crosshair'
+            });
+        }
+        $("#cross_999999, #cross_999999 *").css('pointer-events', 'auto');
+        $("#spot-modal, #spot-modal *").css('pointer-events', 'auto');
+        $(".textLayer").each(function () {
+            $(this).addClass("text-disable-selection");
+        });
+    }
+
+    deactivateSpotAddMode() {
+        this.spotAddEnabled = false;
+        const pdfViewer = this.options.getPdfViewer();
+        $("body").removeClass("es-spot-add-mode");
+        if (pdfViewer?.pdfDiv != null) {
+            pdfViewer.pdfDiv.css('cursor', 'default');
+        }
+        $('body *').css('pointer-events', 'auto');
+        $(".textLayer").each(function () {
+            $(this).removeClass("text-disable-selection");
+        });
+    }
+
+    exitSpotAddMode() {
+        $(document).off("click" + this.options.spotAddNamespace);
+        $(document).off("keydown" + this.options.spotAddNamespace);
+        $("#spot-modal").off("hidden.bs.modal" + this.options.spotAddNamespace);
+        this.options.setToolsDisabled(false);
+        this.options.setSignSpacesDroppableEnabled(true);
+        this.options.setSpotActionButtonsDisabled(false);
+        this.deactivateSpotAddMode();
+    }
+
+    cancelSpotAddMode() {
+        const deleteBtn = $("#delete-add-spot");
+        if (deleteBtn.length) {
+            deleteBtn.trigger("click");
+            return;
+        }
+        this.exitSpotAddMode();
     }
 
     changeSpotStep() {
@@ -89,9 +140,7 @@ export class SpotManager {
         $(".step-vertical-content")
             .removeClass("bg-success bg-secondary-subtle")
             .addClass("bg-light");
-        this.options.setToolsDisabled(false);
-        this.options.setSignSpacesDroppableEnabled(true);
-        this.options.setSpotActionButtonsDisabled(false);
+        this.exitSpotAddMode();
 
         const spotId = parseInt(spotData.id, 10);
         const spotStep = parseInt(spotData.stepNumber, 10);
@@ -174,14 +223,28 @@ export class SpotManager {
 
     enableSpotAdd() {
         this.options.exitCommentAddMode();
+        this.exitSpotAddMode();
         this.options.setToolsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
+        this.activateSpotAddMode();
         $(document).off("click" + this.options.spotAddNamespace);
-        $(document).on("click" + this.options.spotAddNamespace, "#delete-add-spot, #submit-add-spot", () => {
-            this.options.setToolsDisabled(false);
-            this.options.setSignSpacesDroppableEnabled(true);
-            $(document).off("click" + this.options.spotAddNamespace);
+        $(document).on("click" + this.options.spotAddNamespace, "#delete-add-spot", () => {
+            this.exitSpotAddMode();
         });
+        $(document).off("keydown" + this.options.spotAddNamespace);
+        $(document).on("keydown" + this.options.spotAddNamespace, e => {
+            if (e.key === "Escape") {
+                e.preventDefault();
+                this.cancelSpotAddMode();
+            }
+        });
+        $("#spot-modal")
+            .off("hidden.bs.modal" + this.options.spotAddNamespace)
+            .on("hidden.bs.modal" + this.options.spotAddNamespace, () => {
+                if (this.spotAddEnabled) {
+                    this.cancelSpotAddMode();
+                }
+            });
         $("#commentHelp").remove();
         this.options.setSpotActionButtonsDisabled(true);
         this.options.startSpotPlacement();
@@ -189,6 +252,9 @@ export class SpotManager {
 
     destroy() {
         $(document).off("click" + this.options.spotAddNamespace);
+        $(document).off("keydown" + this.options.spotAddNamespace);
+        $("#spot-modal").off("hidden.bs.modal" + this.options.spotAddNamespace);
+        this.deactivateSpotAddMode();
     }
 
 }

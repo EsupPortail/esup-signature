@@ -126,6 +126,35 @@ body.es-signrequest-page #tools #signLaunchButton {
     pointer-events: none !important;
 }
 
+body.es-spot-add-mode #content > *:not(#workspace) {
+    opacity: 0.35;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode #workspace > *:not(form):not(#pdf):not([id^="cross_"]):not([id^="crossTools_"]):not(#spot-modal) {
+    opacity: 0.35;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode #workspace > form:not(#pdf),
+body.es-spot-add-mode #workspace > form:not(#pdf) > *:not(#pdf) {
+    opacity: 0.35;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode #pdf,
+body.es-spot-add-mode #pdf *,
+body.es-spot-add-mode #cross_999999,
+body.es-spot-add-mode #cross_999999 *,
+body.es-spot-add-mode #spot-modal,
+body.es-spot-add-mode #spot-modal * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
 @media (max-width: 1199.98px) {
     /* Under 1200px, show only the current step in tools bar. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
