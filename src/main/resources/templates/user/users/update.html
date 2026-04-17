@@ -40,10 +40,10 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-            <ol id="breadcrumb-ol" class="breadcrumb col-12">
-                <li class="breadcrumb-item active">Paramètres :
-                    <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item">Profil <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
+                <li class="breadcrumb-item active">Paramètres</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">

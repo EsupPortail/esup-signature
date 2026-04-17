@@ -13,7 +13,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
@@ -38,7 +38,7 @@
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
                 </li>
             </ul>
-            <div class="card text-bg-light col-lg-12 m-2">
+            <div class="card text-bg-light m-2">
                 <div class="card-body">
                     <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
@@ -421,6 +421,12 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
+                            <a id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
+                               onclick="document.getElementById('updateSignBook').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </a>
+                        </li>
+                        <li>
                             <a class="btn btn-transparent text-dark" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
                                 <i class="fi fi-rr-file-export"></i>
                             </a>
@@ -428,12 +434,6 @@
                         <li>
                             <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
                                 <i class="fi fi-rr-file-import"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
-                               onclick="document.getElementById('updateSignBook').submit();">
-                                <i class="fi fi-rr-disk"></i>
                             </a>
                         </li>
                     </ul>

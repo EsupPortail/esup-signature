@@ -3,6 +3,39 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
+<style>
+    #saveButton {
+        position: relative;
+    }
+
+    #saveButton.form-dirty-indicator::after {
+        content: '';
+        position: absolute;
+        top: 0.1rem;
+        right: 0.1rem;
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        background: #dc3545;
+        box-shadow: 0 0 0 2px #fff;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.4);
+            opacity: 0.6;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/ace.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/ext-language_tools.js}"></script>
@@ -17,7 +50,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms?activeVersion=true">Liste des formulaires</a></li>
@@ -42,7 +75,7 @@
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
                 </li>
             </ul>
-            <div class="card text-bg-light col-lg-12 m-2">
+            <div class="card text-bg-light m-2">
                 <div class="card-body">
                     <h5 th:text="'Formulaire : ' + ${form.title}"></h5>
                     <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
@@ -186,6 +219,7 @@
                                                 editor.getSession().setValue(textarea.val());
                                                 editor.getSession().on('change', function(){
                                                     textarea.val(editor.getSession().getValue());
+                                                    textarea.trigger('change');
                                                 });
                                             </script>
                                         </div>
@@ -234,25 +268,25 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
-                            <a role="button" title="Modifier le modèle" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#updateModel">
-                                <i class="fi fi-rr-cloud-upload"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
-                                <i class="fi fi-rr-file-export"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                                <i class="fi fi-rr-file-import"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="saveButton" title="Enregistrer" role="button" class="btn btn-transparent text-dark"
+                            <button id="saveButton" title="Enregistrer" role="button" class="btn btn-transparent text-dark"
                                onclick="$('#formUpdate').submit();">
                                 <i class="fi fi-rr-disk"></i>
-                            </a>
+                            </button>
+                        </li>
+                        <li>
+                            <button role="button" title="Modifier le modèle" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#updateModel">
+                                <i class="fi fi-rr-form"></i>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                                <i class="fi fi-rr-file-export"></i>
+                            </button>
+                        </li>
+                        <li>
+                            <button role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
+                                <i class="fi fi-rr-file-import"></i>
+                            </button>
                         </li>
                     </ul>
                 </div>

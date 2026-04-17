@@ -540,4 +540,14 @@ public class SignBookController {
 
         return "redirect:/user/signbooks/update/" + id;
     }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PostMapping(value = "/add-viewers/{id}")
+    public String addViewers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                             @RequestParam(required = false) List<String> viewers,
+                             RedirectAttributes redirectAttributes) {
+        signBookService.addViewers(id, viewers);
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Observateurs ajoutés"));
+        return "redirect:/user/signbooks/" + id;
+    }
 }

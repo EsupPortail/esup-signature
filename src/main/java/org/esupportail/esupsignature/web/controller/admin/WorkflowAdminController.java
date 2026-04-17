@@ -409,7 +409,7 @@ public class WorkflowAdminController {
 	public String importWorkflowSetup(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 								  @RequestParam(value = "multipartFormSetup", required=false) MultipartFile multipartFormSetup, RedirectAttributes redirectAttributes) {
 		try {
-			if (multipartFormSetup.getSize() > 0) {
+			if (multipartFormSetup != null && !multipartFormSetup.isEmpty()) {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream(), authUserEppn);
 			}
 		} catch (Exception e) {

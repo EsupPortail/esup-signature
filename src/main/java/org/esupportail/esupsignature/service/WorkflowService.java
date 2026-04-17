@@ -559,7 +559,9 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            if (StringUtils.hasText(workflow.getToken())) {
+              workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            }
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
@@ -742,7 +744,14 @@ public class WorkflowService {
             }
         }
         workflow.getTargets().clear();
-        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers(), authUserEppn);
+        User updateUser = userService.getByEppn(authUserEppn);
+        if (updateUser == null) {
+          updateUser = workflow.getCreateBy();
+        }
+        if (updateUser == null) {
+          updateUser = userService.getSystemUser();
+        }
+        update(workflowSetup, updateUser, null, workflowSetup.getManagers(), authUserEppn);
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);

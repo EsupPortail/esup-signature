@@ -10,8 +10,8 @@
         <a tabindex="0" id="link-accueil" type="button"
             href="/user" class="btn btn-transparent text-left d-flex d-sm-none align-items-center">
             <i class="fi fi-rr-home"  style="line-height: 14px;"></i></a>
-        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand d-flex flex-row justify-content-start ms-1" aria-label="Esup-Signature">
-            <img id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
+        <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand d-flex flex-row justify-content-start ms-2 pe-2" aria-label="Esup-Signature">
+            <img id="logo" alt="Logo Esup-Signature" src="/images/logo2.svg"/>
         </a>
         <img th:if="${user.userType.name() == 'external'}" id="logo" alt="Logo Esup-Signature" src="/images/logo.svg"/>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar_toggle" aria-controls="navbar_toggle" aria-expanded="false" aria-label="Ouvrir le menu">

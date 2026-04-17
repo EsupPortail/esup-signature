@@ -118,11 +118,11 @@ export class HomeUi {
                 <td>
                     <div class="d-flex flex-row align-items-center justify-content-between gap-1">
                         ${signBook.viewedByCurrentUser
-                            ? '<i class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu\'à la dernière page"></i>'
-                            : '<i class="fa-solid fa-circle fa-2xs text-danger" title="Le document n\'a pas été lu jusqu\'à la dernière page"></i>'}
+                            ? '<i class="fi fi-rr-circle text-transparent" title="Le document a été lu jusqu\'à la dernière page"></i>'
+                            : '<i class="fi fi-rr-circle text-danger" title="Le document n\'a pas été lu jusqu\'à la dernière page"></i>'}
                         ${signBook.hasAttachments
-                            ? '<i class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>'
-                            : '<i class="fa-solid fa-paperclip fa-xs text-light opacity-0"></i>'}
+                            ? '<i class="fi fi-rr-clip text-dark" title="La demande contient des pièces jointes"></i>'
+                            : '<i class="fi fi-rr-clip text-transparent"></i>'}
                         ${this.renderPostitButton(signBook, dropdownId)}
                         ${this.renderPostitDropdown(signBook, dropdownId)}
                     </div>
@@ -175,7 +175,7 @@ export class HomeUi {
         const postits = Array.isArray(signBook.postits) ? signBook.postits : [];
         const badgeCount = postits.length + (description !== '' ? 1 : 0);
         if (badgeCount === 0) {
-            return '<button type="button" class="badge bg-light text-light border-0 opacity-0">0</button>';
+            return '<button type="button" class="badge bg-postit border-0 opacity-0">0</button>';
         }
         return `
             <button type="button"

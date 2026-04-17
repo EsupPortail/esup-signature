@@ -386,6 +386,10 @@ dd {
     color: var(--color-rgba-0-0-0-03) !important
 }
 
+.text-transparent {
+    color: transparent !important;
+}
+
 .truncate {
     white-space: nowrap;
     overflow: hidden;
@@ -444,6 +448,7 @@ dd {
 }
 
 .bg-postit {
+    padding: 2px;
     --bs-bg-opacity: 1;
     background-color: var(--color-fff740) !important;
     color: var(--bs-black);

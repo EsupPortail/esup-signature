@@ -524,6 +524,12 @@ export class GlobalUi {
     }
 
     initTooltips() {
+        $(".rounded-circle").tooltip({
+            placement: 'left',
+            disabled: false,
+            show: { effect: "fade", duration: 500 },
+            hide: { effect: "fade", duration: 500 }
+        });
         $("button").tooltip({
             placement: 'left',
             disabled: false,
