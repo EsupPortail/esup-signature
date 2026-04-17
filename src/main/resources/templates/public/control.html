@@ -17,7 +17,7 @@
             <div th:fragment="control">
             <div class="alert alert-light es-status-card es-status-card--primary mb-2" th:if="${token != null && token != 'null'}">
                 <div class="es-status-card__icon">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <i class="fi fi-rr-search"></i>
                 </div>
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Vérification de la conformité du document <span th:text="' : ' + ${token}"></span></h5>
@@ -26,7 +26,7 @@
             </div>
             <div th:if="${error}" class="alert alert-light es-status-card es-status-card--warning mb-2">
                 <div class="es-status-card__icon">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <i class="fi fi-rr-triangle-warning"></i>
                 </div>
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Validation incomplète sur cette plateforme</h5>
@@ -41,7 +41,7 @@
                 <th:block th:if="${auditTrail != null}">
                     <div class="alert alert-light es-status-card es-status-card--success mx-auto mt-1 mb-2">
                         <div class="es-status-card__icon">
-                            <i class="fa-solid fa-circle-check"></i>
+                            <i class="fi fi-rr-check-circle"></i>
                         </div>
                         <div class="es-status-card__body">
                             <h5 class="es-status-card__title mb-2">Le document est bien référencé comme signé sur cette plateforme.</h5>
@@ -67,7 +67,7 @@
                     <div class="row" th:if="${(auditTrailChecked != null && auditTrailChecked) || (signRequest != null && viewAccess != null && viewAccess)}">
                         <div class="alert alert-light es-status-card es-status-card--success mx-auto mb-2">
                             <div class="es-status-card__icon">
-                                <i class="fa-solid fa-shield"></i>
+                                <i class="fi fi-rr-shield-trust"></i>
                             </div>
                             <div class="es-status-card__body">
                                 <h5 class="es-status-card__title mb-1">Intégrité confirmée</h5>
@@ -76,7 +76,7 @@
                         </div>
                         <div class="alert alert-light es-status-card es-status-card--neutral mx-auto mb-1" style="page-break-after: always;">
                             <div class="es-status-card__icon">
-                                <i class="fa-solid fa-signature"></i>
+                                <i class="fi fi-rr-file-signature"></i>
                             </div>
                             <div class="es-status-card__body">
                                 <h5 class="es-status-card__title mb-2">Signatures</h5>
@@ -94,7 +94,8 @@
                                 <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
                                     <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
                                         <td>
-                                            <i class="fa-solid caret-toggle"></i>
+                                            <i class="fi fi-rr-angle-small-right caret-toggle caret-toggle-collapsed"></i>
+                                            <i class="fi fi-rr-angle-small-down caret-toggle caret-toggle-expanded"></i>
                                         </td>
                                         <td class="text-left"><span
                                                 th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
@@ -147,7 +148,7 @@
                 <th:block th:if="${auditTrail != null && auditTrail.getDocumentCheckSum() == null && usersHasRefused != null && !usersHasRefused.isEmpty()}">
                     <div class="alert alert-light es-status-card es-status-card--danger mb-2 mt-1">
                         <div class="es-status-card__icon">
-                            <i class="fa-solid fa-circle-xmark"></i>
+                            <i class="fi fi-rr-cross-circle"></i>
                         </div>
                         <div class="es-status-card__body">
                             <h5 class="es-status-card__title mb-1">Le document a été refusé</h5>
@@ -161,7 +162,7 @@
                 <th:block th:if="${auditTrail == null}">
                     <div class="alert alert-light es-status-card es-status-card--warning mb-2">
                         <div class="es-status-card__icon">
-                            <i class="fa-solid fa-hourglass-half"></i>
+                            <i class="fi fi-rr-pending"></i>
                         </div>
                         <div class="es-status-card__body">
                             <h5 class="es-status-card__title mb-1">Le document est en cours de signature</h5>
@@ -171,7 +172,7 @@
                 </th:block>
                 <div th:if="${signRequest != null || (auditTrailChecked != null && auditTrailChecked)}" class="alert alert-light es-status-card es-status-card--neutral mx-auto mb-1" style="page-break-after: auto;">
                     <div class="es-status-card__icon">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <i class="fi fi-rr-clock"></i>
                     </div>
                     <div class="es-status-card__body">
                         <h5 class="es-status-card__title mb-2">Journal des actions</h5>
@@ -211,7 +212,7 @@
             <th:block th:if="${(auditTrailChecked == null || !auditTrailChecked) && (error == null || !error) && signRequest == null}">
                 <div class="alert alert-light es-status-card es-status-card--neutral">
                     <div class="es-status-card__icon">
-                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <i class="fi fi-rr-cloud-upload-alt"></i>
                     </div>
                     <div class="es-status-card__body">
                         <h5 class="es-status-card__title mb-1">Déposer un document pour contrôle</h5>
@@ -225,7 +226,7 @@
             </th:block>
             <div class="alert alert-light es-status-card es-status-card--primary mb-1" th:if="${simpleReport != null}">
                 <div class="es-status-card__icon">
-                    <i class="fa-solid fa-file-signature"></i>
+                    <i class="fi fi-rr-file-signature"></i>
                 </div>
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Signatures électroniques détectées</h5>

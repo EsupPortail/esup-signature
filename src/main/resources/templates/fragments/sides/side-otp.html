@@ -10,7 +10,7 @@
             <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${showSignRequest.signBookLight})}"></div>
         </div>
     </div>
-    <div class="alert bg-light m-1">
+    <div class="alert bg-light p-1">
         <th:block th:if="${signRequestLight != null}">
             <!-- Archive Status Badge -->
             <div class="text-center" th:if="${showSignRequest.signBookLight.archiveStatus != null && showSignRequest.signBookLight.archiveStatus.name != 'none'}">

@@ -229,7 +229,8 @@ export class SignPlacementController extends EventFactory {
             signImageNumber = selectedSignImageNumber;
         }
         const isSpot = signImageNumber === 999999;
-        if (!isSpot) {
+        const isParaph = signImageNumber === 999997;
+        if (!isSpot && !isParaph) {
             this.disableForwardButton();
             $(window)
                 .off("beforeunload" + this.beforeUnloadNamespace)
@@ -243,7 +244,7 @@ export class SignPlacementController extends EventFactory {
         }
         let id = this.id;
         let currentSignRequestParams = null;
-        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999) {
+        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999 && !isParaph) {
             if(forceSignNumber != null) {
                 currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
             } else {
@@ -265,21 +266,23 @@ export class SignPlacementController extends EventFactory {
                 this.signRequestParamses.get(id).changeSignSize(null);
 
             } else if(signImageNumber >= 0) {
-                if(this.currentStepMultiSign === false && this.signsList.length > 0) {
+                if(!isParaph && this.currentStepMultiSign === false && this.signsList.length > 0) {
                     alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                     return;
                 }
-                if(JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
+                if(!isParaph && JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
                     favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
                     if(currentSignRequestParams != null) {
                         favoriteSignRequestParams.xPos = currentSignRequestParams.xPos;
                         favoriteSignRequestParams.yPos = currentSignRequestParams.yPos;
                     }
                 }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : favoriteSignRequestParams, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
-                this.signsList.push(id);
-                if(this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
+                if(!isParaph) {
+                    this.signsList.push(id);
+                }
+                if(!isParaph && this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
                     if(this.currentStepSingleSignWithAnnotation === false) {
                         $('#insert-btn').attr('disabled', 'disabled');
                     } else {
@@ -310,16 +313,18 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
         this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
         this.signRequestParamses.get(id).addEventListener("spotDeleted", e => this.onSpotDeleted(e));
-        if (signImageNumber != null && signImageNumber >= 0) {
+        if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
             this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
         if (signImageNumber < 0) {
             $("#signImage_" + id).addClass("d-none");
         }
-        this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+        if (!isParaph) {
+            this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+        }
         let srp = this.signRequestParamses.get(id);
         this.id++;
-        if (!isSpot) {
+        if (!isSpot && !isParaph) {
             this.refreshSteps();
         }
         return srp;
@@ -396,6 +401,7 @@ export class SignPlacementController extends EventFactory {
             && signRequestParams.isSign
             && signRequestParams.signImageNumber != null
             && signRequestParams.signImageNumber >= 0
+            && signRequestParams.signImageNumber !== 999997
             && signRequestParams.signImageNumber !== 999999
         );
 
@@ -502,7 +508,7 @@ export class SignPlacementController extends EventFactory {
         addSignButton.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
-        signLaunchButton.attr("disabled", "disabled");
+        // signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
         this.setButtonVariant(addSignButton, "btn-success");

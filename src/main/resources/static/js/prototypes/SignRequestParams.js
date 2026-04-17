@@ -1106,7 +1106,43 @@ export class SignRequestParams extends EventFactory {
         this.addExtra = true;
         this.#toggleExtra();
         this.#toggleMinimalTools();
-        this.#toggleAllPages();
+        this.#deleteAllPagesSigns();
+        const placeBottomRight = () => {
+            clearTimeout(this.paraphAutoPlacementTimeout);
+            this.paraphAutoPlacementTimeout = setTimeout(() => {
+                this.removeEventListener("sizeChanged", placeBottomRight);
+                this.positionBottomRightFirstPage();
+                if (!this.allPages) {
+                    this.#toggleAllPages();
+                } else {
+                    this.#refreshAllPagesSigns();
+                }
+            }, 100);
+        };
+        this.addEventListener("sizeChanged", placeBottomRight);
+        this.positionBottomRightFirstPage();
+        if (!this.allPages) {
+            this.#toggleAllPages();
+        }
+        placeBottomRight();
+    }
+
+    positionBottomRightFirstPage() {
+        const targetPageNumber = 1;
+        const pageLayout = this.#getPageLayout(targetPageNumber);
+        const scaleFactor = this.currentScale * this.getBrowserZoom();
+        const pageWidth = Math.round((pageLayout.width || 0) / scaleFactor);
+        const pageHeight = Math.round((pageLayout.height || 0) / scaleFactor);
+        this.signPageNumber = targetPageNumber;
+        this.cross.attr("page", targetPageNumber);
+        this.xPos = Math.max(0, pageWidth - this.signWidth - 1);
+        this.yPos = Math.max(0, pageHeight - this.signHeight - 1);
+        this.applyCurrentSignRequestParams();
+        const dragRect = this.cross[0]?.getBoundingClientRect?.();
+        if (dragRect != null) {
+            this.#checkInside(dragRect, this);
+        }
+        this.#refreshAllPagesSigns();
     }
 
     changeSignSize(result) {
@@ -1334,7 +1370,7 @@ export class SignRequestParams extends EventFactory {
                     self.#refreshDate();
                 }, 1000);
                 this.#addTextArea();
-                this.changeSignImage(0);
+                this.changeSignImage(this.signImageNumber ?? 0);
             } else {
                 this.divExtra.removeClass("d-none");
             }

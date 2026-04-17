@@ -517,7 +517,7 @@ export class SignWorkspaceController {
 
     checkSignsPositions() {
         let testSign = Array.from(this.signPlacementController.signRequestParamses.values());
-        if(testSign.filter(s => s.signImageNumber >= 0 && s.isSign).length > 0) {
+        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999997 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
                     return i;

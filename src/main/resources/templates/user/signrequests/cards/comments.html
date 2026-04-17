@@ -9,7 +9,7 @@
             <i class="fi fi-rr-caret-down"></i></button>
     </a>
     <div id="commentsBar" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
-        <div th:if="${signRequestFull.comments.size() > 0}" class="alert alert-light m-1">
+        <div th:if="${signRequestFull.comments.size() > 0}" class="alert alert-light p-2">
             <ul class="list-group gap-1">
                 <th:block th:each="comment : ${signRequestFull.comments}">
                     <li th:id="'annotation_' + ${comment.id}" class="list-group-item" style="border: 2px solid transparent; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">

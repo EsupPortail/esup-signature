@@ -6,7 +6,7 @@
 	<div th:with="status=${(parsingResult.resultExist  && validationResult.resultExist  && validationResult.isValid())?
 				((downloadResult.isSynchronized()  && parsingResult.isSynchronized()  && validationResult.isSynchronized())?'success':'warning'):
 				'danger'}" 
-				 th:class="${'lotl-card border rounded border-' + status}">
+				 th:class="${'lotl-card border rounded'}">
 		<div class="p-2">
 			
 			<!-- LOTL indication -->

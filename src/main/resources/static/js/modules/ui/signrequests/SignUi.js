@@ -255,6 +255,7 @@ export class SignUi {
             && signRequestParams.isSign
             && signRequestParams.signImageNumber != null
             && signRequestParams.signImageNumber >= 0
+            && signRequestParams.signImageNumber !== 999997
             && signRequestParams.signImageNumber !== 999999
         );
     }

@@ -16,7 +16,6 @@ export class SignatureFlowController {
                 if (result === "ok") {
                     let signId = signUi.workspace.checkSignsPositions();
                     if (signId != null) {
-                        $("#certType > option[value='imageStamp']").remove();
                         if(signUi.workspace.currentSignRequestParamses.length > 0 || signUi.stepRepeatable) {
                             bootbox.alert("Merci de placer la signature", function () {
                                 let signSpace = $("#signSpace_" + signId);
@@ -41,6 +40,7 @@ export class SignatureFlowController {
                                     callback: result => {
                                         if (result) {
                                             if(this.checkAttachement()) {
+                                                $("#certType > option[value='imageStamp']").remove();
                                                 this.confirmLaunchSignModal();
                                             }
                                         } else {

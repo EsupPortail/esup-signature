@@ -84,7 +84,7 @@
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
                     <th:block th:if="${signRequestFull.signable && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                        <button disabled tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none">
+                        <button tabindex="1" id="signLaunchButton" role="button" class="btn p-3 btn-secondary d-none">
                             <i class="fi fi-rr-signature-lock " style="margin-top: 0; border: 0"></i> Signer
                         </button>
                     </th:block>
