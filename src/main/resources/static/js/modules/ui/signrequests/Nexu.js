@@ -52,12 +52,11 @@ export class Nexu {
 
     updateSignModal() {
         $("#certType").children().each(function (e) {
-            let nbOptions = $("#certType option:not([disabled])").length;
+            let nbOptions = $("#certType option:not(:disabled):not([unavailable])").length;
             if (nbOptions === 0) {
                 // $("#nexuCheck").removeClass("d-none");
                 $("#no-options").show();
                 $("#no-options-alert").show();
-                $('#display-pdf-alerts-btn').append('1 <i class="fa-solid fa-triangle-exclamation text-danger"></i>');
                 $("#signCommentDiv").hide();
                 // $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();

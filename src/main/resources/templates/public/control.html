@@ -58,7 +58,7 @@
                                     <dt class="col-3">Taille : </dt>
                                     <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
                                 </dl>
-                                <div class="es-status-note es-status-note--info" th:if="${signRequest != null && viewAccess != null && viewAccess}">
+                                <div class="es-status-note es-status-note--secondary" th:if="${signRequest != null && viewAccess != null && viewAccess}">
                                     Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
                                 </div>
                             </div>

@@ -1284,12 +1284,6 @@ tr[aria-expanded="true"] .caret-toggle::before {
     box-shadow: 0 0 0 0.25rem var(--color-rgba-33-37-41-05);
 }
 
-.warning {
-    cursor: pointer;
-    width: 100%; padding-right: 40px;
-    position: relative;
-}
-
 .warning-close {
     position: absolute;
     right: 10px;
@@ -1426,9 +1420,9 @@ tr[aria-expanded="true"] .caret-toggle::before {
     --es-status-note-accent: var(--bs-info);
     margin-top: 1rem;
     padding: 0.9rem 1rem;
-    border-radius: 0.85rem;
+    border-radius: 6px;
     border-left: 4px solid var(--es-status-note-accent);
-    background: var(--bs-light);
+    background: var(--bs-white);
     color: var(--bs-dark);
 }
 
@@ -1438,6 +1432,10 @@ tr[aria-expanded="true"] .caret-toggle::before {
 
 .es-status-note--info {
     --es-status-note-accent: var(--bs-info);
+}
+
+.es-status-note--secondary {
+    --es-status-note-accent: var(--bs-secondary);
 }
 
 @media (max-width: 767.98px) {
@@ -1995,4 +1993,36 @@ tr[aria-expanded="true"] .caret-toggle::before {
     background: var(--bs-white);
     border-color: var(--bs-success);
     color: var(--bs-success);
+}
+
+button.form-dirty-indicator {
+    position: relative;
+}
+
+button.form-dirty-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0.1rem;
+    right: 0.1rem;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 50%;
+    background: #dc3545;
+    box-shadow: 0 0 0 2px #fff;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.4);
+        opacity: 0.6;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }

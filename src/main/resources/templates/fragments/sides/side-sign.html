@@ -41,12 +41,19 @@
 
             <!-- Viewers Section -->
             <div class="d-flex justify-content-between align-items-center">
-            <th:block th:if="${showSignRequest.signBookLight.viewers.size() > 0}">
+            <th:block>
                 <div class="m-1" style="border-top: 1px solid var(--color-dee2e6);">
                     <a class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;"
                        data-bs-toggle="collapse" href="#followed-by" role="button" aria-expanded="false" aria-controls="followed-by">Suivi par <i class="fi fi-rr-angle-down"></i></a>
                     <div id="followed-by" class="collapse show">
                     <ul class="d-flex gap-1 list-unstyled mb-0">
+                        <li>
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold" style="background-color: var(--bs-secondary); width: 2rem; height: 2rem;">
+                            <button class="btn btn-transparent text-white" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal" >
+                                <i class="fi fi-rr-plus"></i>
+                            </button>
+                            </div>
+                        </li>
                         <li th:each="user, iterator : ${showSignRequest.signBookLight.viewers}">
                             <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
                                  style="width: 2rem; height: 2rem; font-size: 0.75rem;"
@@ -67,9 +74,6 @@
                     </div>
                 </div>
             </th:block>
-                <a class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal">
-                    <i class="fi fi-rr-overview"></i>
-                </a>
             </div>
         </th:block>
 

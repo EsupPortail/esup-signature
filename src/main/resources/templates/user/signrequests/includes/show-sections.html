@@ -22,7 +22,7 @@
         <button id="display-side-btn" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-flex d-xl-none" title="Afficher l'état du circuit">
             <i class="fi fi-rr-sidebar"></i>
         </button>
-        <button tabindex="0" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Informations" data-bs-toggle="modal" data-bs-target="#detailsModal">
+        <button id="infos-btn" tabindex="0" class="d-flex align-items-center btn btn-transparent text-dark d-none d-lg-flex" title="Informations" data-bs-toggle="modal" data-bs-target="#detailsModal">
             <i class="fi fi-rr-info"></i>
         </button>
         <button th:if="${signRequestFull.signable && globalProperties.enableTransfertForUsers}" tabindex="1" id="forward-btn" class="d-flex align-items-center btn btn-transparent text-dark d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
@@ -54,7 +54,7 @@
         <button th:if="${user.userType.name() != 'external' && showSignRequest.externalsRecipients != null && showSignRequest.externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-transparent text-dark" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
             <i class="fi fi-rr-share"></i>
         </button>
-        <button th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Modifier le parapheur" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
+        <button th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
             <i class="fi fi-rr-settings-sliders"></i>
         </button>
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex align-items-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
@@ -112,7 +112,7 @@
         </div>
         <div  th:if="${showSignRequest.lastSignedDocumentContentType == 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
             <a tabindex="1" title="Export SEDA" class="d-flex align-items-center btn btn-transparent text-dark me-1 d-none d-sm-flex" th:href="'/ws-secure/global/get-seda/' + ${signRequestLight.id}">
-                <i class="fi fi-rr-file-export"></i>
+                <i class="fi fi-rr-folder-download"></i>
             </a>
         </div>
         <div th:if="${showSignRequest.lastSignedDocumentContentType == 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}">
@@ -122,10 +122,10 @@
                title="Imprimer avec un code datamatrix">
                 <i class="fi fi-rr-print " style="margin-top: 0;"></i></a>
         </div>
-        <a tabindex="0" th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
+        <button tabindex="0" th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}"
            class="d-flex align-items-center btn btn-transparent text-dark  d-none d-lg-flex"
            onclick="printIt()" target="_blank"
-           title="Imprimer le document"><i class="fi fi-rr-print"></i></a>
+           title="Imprimer le document"><i class="fi fi-rr-print"></i></button>
         <script th:inline="javascript">
             function printIt() {
                 let win = window.open('/ws-secure/global/get-last-file-inline/[[${signRequestLight.id}]]', '', '');

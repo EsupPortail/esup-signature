@@ -3,39 +3,6 @@
 <!--/*@thymesVar id="preFillTypes" type="java.util.List<org.esupportail.esupsignature.service.interfaces.prefill.PreFill>"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
-<style>
-    #saveButton {
-        position: relative;
-    }
-
-    #saveButton.form-dirty-indicator::after {
-        content: '';
-        position: absolute;
-        top: 0.1rem;
-        right: 0.1rem;
-        width: 0.65rem;
-        height: 0.65rem;
-        border-radius: 50%;
-        background: #dc3545;
-        box-shadow: 0 0 0 2px #fff;
-        animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            opacity: 1;
-        }
-        50% {
-            transform: scale(1.4);
-            opacity: 0.6;
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-</style>
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/ace.js}"></script>
 <script th:src="@{/webjars/ace-builds/src-noconflict/ext-language_tools.js}"></script>

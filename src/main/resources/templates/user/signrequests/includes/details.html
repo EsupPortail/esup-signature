@@ -4,68 +4,78 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="details">
     <script>
-        const displayPdfAlertsDropdown = $('#display-pdf-alerts-dropdown');
-        const displayPdfAlertsBtn = $('#display-pdf-alerts-btn');
+        const displayPdfAlertsDropdown = () => $('#display-pdf-alerts-dropdown');
+        $("#infos-btn").on("click", function (e) {
+            $(this).removeClass("form-dirty-indicator");
+        })
     </script>
-    <div id="alert alert-light display-pdf-alerts-dropdown d-none"k>
-        <div id="pdf-alerts">
+    <div id="display-pdf-alerts-dropdown" class="display-pdf-alerts-dropdown d-none">
+        <div id="pdf-alerts" class="pdf-alerts">
             <div class="d-flex flex-column gap-1">
                 <th:block th:if="${signRequestFull.comments.size() > 0 && (showSignRequest.workflow.externalCanReaderAnnotations || user.userType.name() != 'external')}">
                     <script>
-                        const commentCount = '[[${signRequestFull.comments.size()}]]';
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning" title="' + commentCount + ' annotations"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
-                        // displayPdfAlertsBtn.click();
+                        displayPdfAlertsDropdown().removeClass("d-none");
+                        $("#infos-btn").addClass("form-dirty-indicator");
                     </script>
-                    <div id="postitHelp" class="alert bg-light text-dark d-inline-flex justify-content-between gap-1" style="width: 100%">
-                        <div class="pdf-warning-bar bg-warning"></div>
-                        <div class="d-flex gap-2 align-items-center"><i class="fa-solid fa-circle-info text-warning"></i>Cette demande comporte des annotations</div>
-                        <div><button class="toggleComments btn btn-sm btn-warning" >Voir/Masquer les annotations</button></div>
+                    <div id="postitHelp" class="alert alert-light es-status-card es-status-card--warning">
+                        <div class="es-status-card__icon">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </div>
+                        <div class="es-status-card__body">
+                            <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-2">
+                                <div>
+                                    <h6 class="es-status-card__title mb-1">Annotations disponibles</h6>
+                                    <p class="es-status-card__description">Cette demande comporte des annotations.</p>
+                                </div>
+                                <div class="es-status-card__actions mt-0">
+                                    <button class="toggleComments btn btn-sm btn-warning">Voir/Masquer les annotations</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </th:block>
-                <div id="warningSelectDiv" class="alert bg-light text-dark border-secondary warning" th:if="${signRequestFull.signable && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.signWiths.size() == 0}">
-                    <script>
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-warning"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click();
-                    </script>
-                    <div class="pdf-warning-bar bg-success"></div>
-                    <div class="d-flex gap-2 align-items-center">
-                        En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.
+                <div id="warningSelectDiv" class="alert alert-light es-status-card es-status-card--danger warning-select-signwith-unavailable" th:if="${signRequestFull.signable && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" style="display: none;">
+                    <div class="es-status-card__icon">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="es-status-card__body">
+                        <h6 class="es-status-card__title mb-1">Aucun mode de signature disponible</h6>
+                        <p class="es-status-card__description">En raison de la configuration des prochaines étapes, aucun mode de signature n’est disponible pour garantir l’intégrité du document ou de la signature. Merci de contacter le gestionnaire du circuit si besoin.</p>
                     </div>
                 </div>
-                <div class="alert bg-light text-dark warning border-secondary" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signRequestFull.signable}">
+                <div class="alert alert-light es-status-card es-status-card--success" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && !signRequestFull.signable}">
                     <script>
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-success" title="Document déjà signé"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
+                        displayPdfAlertsDropdown().removeClass("d-none");
+                        $("#infos-btn").addClass("form-dirty-indicator");
                     </script>
-                    <div class="pdf-warning-bar bg-success"></div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <i class="fa-solid fa-circle-info  text-success"></i> Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".
+                    <div class="es-status-card__icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="es-status-card__body">
+                        <h6 class="es-status-card__title mb-1">Document déjà signé</h6>
+                        <p class="es-status-card__description">Vous avez déjà signé ce document. Vous pourrez télécharger le document final quand le statut du circuit sera passé à "Terminé".</p>
                     </div>
                 </div>
-                <div class="alert bg-light text-dark warning" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
-                    <script>
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info  text-success" title="Document déjà signé"></i>');
-                        // displayPdfAlertsDropdown.removeClass("d-none");
-                    </script>
-                    <div class="pdf-warning-bar bg-success"></div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <i class="fa-solid fa-circle-info  text-success"></i> Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.
+                <div class="alert alert-light es-status-card es-status-card--success" th:if="${showSignRequest.currentUserAsSigned && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed}">
+                    <div class="es-status-card__icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="es-status-card__body">
+                        <h6 class="es-status-card__title mb-1">Processus terminé</h6>
+                        <p class="es-status-card__description">Vous avez déjà signé ce document. Le processus de signature est terminé. Vous pouvez maintenant télécharger le document final.</p>
                     </div>
 
                 </div>
-                <div id="no-options-alert" class="alert bg-light text-dark warning" th:if="${signRequestFull.signable}" style="display: none;">
-                    <div class="pdf-warning-bar bg-danger"></div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <div><i class="fa-solid fa-triangle-exclamation text-danger"></i></div><div>Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</div>
+                <div id="no-options-alert" class="alert alert-light es-status-card es-status-card--warning" th:if="${signRequestFull.signable}" style="display: none;">
+                    <div class="es-status-card__icon">
+                        <i class="fa-solid fa-circle-info"></i>
                     </div>
                     <div class="es-status-card__body">
                         <h6 class="es-status-card__title mb-1">Environnement de signature incompatible</h6>
                         <p class="es-status-card__description">Votre environnement ne remplit pas les conditions nécessaires pour signer cette demande. Si possible, lancez Esup-DSS-Client ou <a href="https://github.com/EsupPortail/esup-dss-client/releases/latest" target="_blank">téléchargez-le ici</a> pour utiliser un certificat personnel.</p>
                     </div>
                 </div>
-                <!--                <div id="signBookDesc" class="alert bg-light text-dark warning" th:if="${showSignRequest.signBookLight.description != null && showSignRequest.signBookLight.description != ''}"-->
+                <!--                <div id="signBookDesc" class="alert bg-light text-dark" th:if="${showSignRequest.signBookLight.description != null && showSignRequest.signBookLight.description != ''}"-->
                 <!--                    style="width: 100%;">-->
                 <!--                    <script>-->
                 <!--                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-info text-black" title="Commentaire"></i>');-->
@@ -90,25 +100,22 @@
                             <div id="reportSpinner" class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
                                 <span class="sr-only">En cours...</span>
                             </div>
-                            <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${!showSignRequest.signatureIssue && showSignRequest.signatureIds.size() > 1}">Voir les signatures</button>
-                            <button es-modal-style="bg-success" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${!showSignRequest.signatureIssue && showSignRequest.signatureIds.size() == 1}">Voir la signature</button>
-                            <button es-modal-style="bg-warning" id="reportModalBtn" class="btn btn-sm btn-dark d-none" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${showSignRequest.signatureIssue}">Voir la/les signature(s)</button>
+                            <button es-modal-style="bg-success" class="btn btn-sm btn-dark d-none reportModalBtn" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${!showSignRequest.signatureIssue && showSignRequest.signatureIds.size() > 1}">Voir les signatures</button>
+                            <button es-modal-style="bg-success" class="btn btn-sm btn-dark d-none reportModalBtn" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${!showSignRequest.signatureIssue && showSignRequest.signatureIds.size() == 1}">Voir la signature</button>
+                            <button es-modal-style="bg-warning" class="btn btn-sm btn-dark d-none reportModalBtn" data-bs-toggle="collapse" data-bs-target="#reportModal" th:if="${showSignRequest.signatureIssue}">Voir la/les signature(s)</button>
                         </div>
                     </div>
                     <script th:if="${showSignRequest.signatureIds.size() >= 1}">
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-circle-exclamation text-secondary" title="Signature électronique présente sur le document"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click();
+                        displayPdfAlertsDropdown().removeClass("d-none");
+                        $("#infos-btn").addClass("form-dirty-indicator");
                     </script>
                 </div>
                 <div id="warningPdfA"
-                     class="alert alert-light es-status-card es-status-card--danger warning"
+                     class="alert alert-light es-status-card es-status-card--danger"
                      th:if="${showSignRequest.pdfaCheck != null && showSignRequest.pdfaCheck.contains('6.3.5') && !globalProperties.disablePdfFontAlert}">
                     <script>
-                        displayPdfAlertsBtn.append('<i class="fa-solid fa-triangle-exclamation text-danger"></i>');
-                        displayPdfAlertsDropdown.removeClass("d-none");
-                        displayPdfAlertsBtn.click()
-
+                        displayPdfAlertsDropdown().removeClass("d-none");
+                        $("#infos-btn").addClass("form-dirty-indicator");
                     </script>
                     <div class="es-status-card__icon">
                         <i class="fa-solid fa-triangle-exclamation"></i>

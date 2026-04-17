@@ -420,15 +420,6 @@ header {
     z-index: 9999;
 }
 
-.pdf-alerts {
-    z-index: 999;
-    margin-left: 0px !important;
-    margin-top: 0px !important;
-    padding: 10px;
-    gap: 1rem;
-    width: 500px !important;
-}
-
 .bs-stepper-bottom {
     clear: both;
     display: block;

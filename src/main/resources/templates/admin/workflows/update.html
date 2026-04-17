@@ -4,39 +4,6 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
-<style>
-    #saveButton {
-        position: relative;
-    }
-
-    #saveButton.form-dirty-indicator::after {
-        content: '';
-        position: absolute;
-        top: 0.1rem;
-        right: 0.1rem;
-        width: 0.65rem;
-        height: 0.65rem;
-        border-radius: 50%;
-        background: #dc3545;
-        box-shadow: 0 0 0 2px #fff;
-        animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-        0% {
-            transform: scale(1);
-            opacity: 1;
-        }
-        50% {
-            transform: scale(1.4);
-            opacity: 0.6;
-        }
-        100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-    }
-</style>
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
 <script th:inline="javascript" type="module">
     import {WorkflowUi} from '/js/modules/ui/workflows/WorkflowUi.js?version=@[(${versionApp})]@';
@@ -454,10 +421,10 @@
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li>
-                            <a id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
+                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
                                onclick="return window.workflowUi ? window.workflowUi.submitForm() : document.getElementById('updateSignBook').submit();">
                                 <i class="fi fi-rr-disk"></i>
-                            </a>
+                            </button>
                         </li>
                         <li>
                             <a class="btn btn-transparent text-dark" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">

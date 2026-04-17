@@ -190,7 +190,7 @@ export class SignUi {
                     "</div></div>";
                 $("#alertSign").append(modal);
                 $("#reportSpinner").hide();
-                $("#reportModalBtn").removeClass("d-none");
+                $(".reportModalBtn").removeClass("d-none");
             }
         });
     }
@@ -213,11 +213,30 @@ export class SignUi {
         return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
     }
 
+    updateSelectableSignAlerts() {
+        if (!this.certTypeSelect.length) {
+            return;
+        }
+
+        const hasSelectableSignWith = this.getSelectableCertTypeCount() > 0;
+        const warningSelectDivs = $(".warning-select-signwith-unavailable");
+        const noOptionsAlert = $("#no-options-alert");
+        const pdfAlertsDropdown = $("#display-pdf-alerts-dropdown");
+
+        warningSelectDivs.toggle(!hasSelectableSignWith);
+        noOptionsAlert.toggle(!hasSelectableSignWith);
+
+        if (!hasSelectableSignWith) {
+            pdfAlertsDropdown.removeClass("d-none");
+        }
+    }
+
     updateMobileCertTypeVisibility() {
         if (!this.toolsBar.length || !this.certTypeSelect.length) {
             return;
         }
         this.toolsBar.toggleClass("es-tools-single-cert-type-mobile", this.getSelectableCertTypeCount() === 1);
+        this.updateSelectableSignAlerts();
     }
 
     hasPendingSignaturePlacement() {
@@ -292,6 +311,8 @@ export class SignUi {
         $(window)
             .off("resize.signUiCertTypeVisibility")
             .on("resize.signUiCertTypeVisibility", () => this.updateMobileCertTypeVisibility());
+
+        this.updateSelectableSignAlerts();
     }
 
     checkAfterChangeSignType() {

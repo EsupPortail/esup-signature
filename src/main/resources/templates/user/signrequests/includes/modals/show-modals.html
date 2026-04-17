@@ -306,7 +306,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title" id="detailsModalLabel">Informations complémentaire</h3>
+                    <h3 class="modal-title" id="detailsModalLabel">Informations complémentaires</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -330,7 +330,7 @@
                     <div class="form-group mb-3">
                         <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${showSignRequest.signBookLight.id}">
                             <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
-                            <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
+                            <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple">
                                 <option data-placeholder="true"></option>
                                 <th:block th:each="viewer : ${showSignRequest.signBookLight.viewers}">
                                     <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname + ' ' + viewer.name + ' (' + viewer.email + ')'}"></option>
