@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <script th:inline="javascript" type="module">
@@ -11,7 +11,7 @@
 <main role="main">
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
-            <ol class="breadcrumb col-12">
+            <ol class="breadcrumb">
                 <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
@@ -66,6 +66,7 @@
                     <button title="Enregistrer" type="submit" class="btn btn-success mt-2"><i class="fi fi-rr-disk"></i></button>
                 </form>
             </div>
+
             <div class="alert alert-light col-lg-12 mb-1">
                 <h5 class="text-center"><b>Étapes</b></h5>
                 <dl class="row border-bottom m-0">

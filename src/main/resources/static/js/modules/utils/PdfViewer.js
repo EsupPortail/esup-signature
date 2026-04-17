@@ -78,24 +78,16 @@ export class PdfViewer extends EventFactory {
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
         $('#autototate').on('click', e => this.autoRotate());
+        $(document).on('click', '.display-layer-btn', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            self.showLayerByStep(stepNumber, false);
+        });
+
         $(document).on('click', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-
-            $('.toggle-layer-btn').each(function() {
-                const btnStep = parseInt($(this).data('step'));
-                const $icon = $(this).find('i');
-
-                if (btnStep <= stepNumber) {
-                    $(this).css('opacity', '1');
-                    $icon.removeClass('fi-rr-eye-crossed').addClass('fi-rr-eye');
-                } else {
-                    $(this).css('opacity', '0.5');
-                    $icon.removeClass('fi-rr-eye').addClass('fi-rr-eye-crossed');
-                }
-            });
-
-            self.showLayerByStep(stepNumber);
+            self.showLayerByStep(stepNumber, true);
         });
+
         $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
             self.highlightStep(stepNumber);
@@ -104,6 +96,16 @@ export class PdfViewer extends EventFactory {
         $(document).on('mouseleave', '.toggle-layer-btn', (e) => {
             self.clearHighlight();
         });
+
+        $(document).on('mouseenter', '.toggle-layer-div', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            self.highlightStep(stepNumber);
+        });
+
+        $(document).on('mouseleave', '.toggle-layer-div', (e) => {
+            self.clearHighlight();
+        });
+
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
@@ -277,7 +279,7 @@ export class PdfViewer extends EventFactory {
                         controller = new AbortController()
                         signal = controller.signal;
                         $.ajax({
-                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/user/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             signal: signal,
                             data: {
@@ -822,7 +824,7 @@ export class PdfViewer extends EventFactory {
                     let sendField = inputField;
                     $.ajax({
                         type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
                         success: response => this.autocomplete(response, sendField)
                     });
                 }
@@ -1026,7 +1028,7 @@ export class PdfViewer extends EventFactory {
                 if (dataField.favorisable) {
                     $.ajax({
                         type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
                         success: response => this.autocomplete(response, sendField)
                     });
                 }
@@ -1341,7 +1343,7 @@ export class PdfViewer extends EventFactory {
         return window.devicePixelRatio || 1;
     }
 
-    async showLayerByStep(stepNumber) {
+    async showLayerByStep(stepNumber, solo) {
         if (!this.pdfDoc) {
             return;
         }
@@ -1354,11 +1356,17 @@ export class PdfViewer extends EventFactory {
             for (const [id, group] of config) {
                 allGroups.push({ id, name: group.name });
             }
-
-            allGroups.forEach((group, index) => {
-                const shouldBeVisible = (index + 1) <= stepNumber;
-                config.setVisibility(group.id, shouldBeVisible);
-            });
+            if(solo) {
+                allGroups.forEach((group, index) => {
+                    const shouldBeVisible = (index + 1) === stepNumber;
+                    config.setVisibility(group.id, shouldBeVisible);
+                });
+            } else {
+                allGroups.forEach((group, index) => {
+                    const shouldBeVisible = (index + 1) <= stepNumber;
+                    config.setVisibility(group.id, shouldBeVisible);
+                });
+            }
             this.optionalContentConfigPromise = Promise.resolve(config);
         } catch(err) {
             console.error('Erreur showLayerByStep:', err);

@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
 <div id="comments" th:fragment="comments">
-    <a type="button" class="toggleComments d-flex justify-content-between align-content-center text-decoration-none text-dark">
-        <div class="text-uppercase ms-1">Annotations </div>
-        <span class="badge rounded-pill bg-dark" th:text="${comments.size()}" style="height: 20px; margin-top: 5px;"></span>
+    <a type="button" class="toggleComments d-flex justify-content-between align-items-center text-decoration-none text-dark">
+        <div class="text-uppercase ms-1">Annotations <span class="badge rounded-pill bg-warning text-dark" th:text="${signRequestFull.comments.size()}"></span></div>
         <button class="btn btn-sm btn-transparent text-dark">
             <i class="fi fi-rr-caret-down"></i></button>
     </a>
-    <div id="commentsBar" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}" style="display: none;">
-        <div th:if="${comments.size() > 0}" class="alert alert-light m-1">
+    <div id="commentsBar" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
+        <div th:if="${signRequestFull.comments.size() > 0}" class="alert alert-light p-2">
             <ul class="list-group gap-1">
-                <th:block th:each="comment : ${comments}">
+                <th:block th:each="comment : ${signRequestFull.comments}">
                     <li th:id="'annotation_' + ${comment.id}" class="list-group-item" style="border: 2px solid transparent; position: relative;user-select: none;-moz-user-select: none;-khtms-user-select: none;-webkit-user-select: none;-o-user-select: none;cursor: pointer">
                         <div class="d-flex align-items-center"><span th:text="${comment.createBy.firstname + ' ' + comment.createBy.name}" class="step-type"></span></div>
                         <div class="d-flex align-items-center"><small th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></small></div>

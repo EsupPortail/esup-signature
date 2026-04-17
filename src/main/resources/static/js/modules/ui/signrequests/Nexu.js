@@ -1,16 +1,13 @@
 export class Nexu {
 
-    constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId) {
+    constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId, rootUrl) {
         Nexu.urlProfil = urlProfil;
         if(massSignReportId != null) {
             Nexu.massSignReportId = massSignReportId;
         } else {
             Nexu.massSignReportId = "";
         }
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
-        this.nexuUrl = this.globalProperties.nexuUrl;
-        this.nexuVersion = this.globalProperties.nexuVersion;
-        Nexu.rootUrl = this.globalProperties.rootUrl;
+        Nexu.rootUrl = rootUrl ?? window.location.origin;
         Nexu.addExtra = addExtra;
         Nexu.ids = ids;
         Nexu.i = 0;
@@ -41,6 +38,7 @@ export class Nexu {
                     $("#signLaunchButton").show();
                 }
                 self.updateSignModal();
+                $("#certType > option[value='nexuCert']").removeAttr('unavailable');
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();
@@ -54,12 +52,11 @@ export class Nexu {
 
     updateSignModal() {
         $("#certType").children().each(function (e) {
-            let nbOptions = $("#certType option:not([disabled])").length;
+            let nbOptions = $("#certType option:not(:disabled):not([unavailable])").length;
             if (nbOptions === 0) {
                 // $("#nexuCheck").removeClass("d-none");
                 $("#no-options").show();
                 $("#no-options-alert").show();
-                $('#display-pdf-alerts-btn').append('1 <i class="fa-solid fa-triangle-exclamation text-danger"></i>');
                 $("#signCommentDiv").hide();
                 // $("#selectTypeDiv").hide();
                 $("#checkValidateSignButtonEnd").hide();

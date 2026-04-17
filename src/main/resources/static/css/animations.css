@@ -3,7 +3,7 @@
     100% { transform: rotate(360deg); }
 }
 
-@keyframes blink { 50% { border-color:#fff !important; }  }
+@keyframes blink { 50% { border-color: var(--bs-white) !important; }  }
 
 .flash {
     animation: flash 1s linear infinite;
@@ -49,10 +49,10 @@
 }
 
 .loader {
-    border: 5px solid #f3f3f3;
+    border: 5px solid var(--color-f8f9fa);
     -webkit-animation: spin 1s linear infinite;
     animation: spin 1s linear infinite;
-    border-top: 5px solid #555;
+    border-top: 5px solid var(--bs-secondary);
     border-radius: 50%;
     width: 50px;
     height: 50px;
@@ -60,8 +60,15 @@
 
 #snackbar.show {
     visibility: visible;
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.toast-es.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
 }
 
 @keyframes jump {
@@ -85,33 +92,33 @@
 
 @-webkit-keyframes pulse-success {
     0% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(25, 135, 84, .8);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-25-135-84-08);
     }
     70% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(255, 255, 255, .8);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-255-255-255-08);
     }
     100% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(25, 135, 84, .8);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-25-135-84-08);
     }
 }
 
 .pulse-primary {
-    box-shadow: 0px 0px 20px 5px rgba(13, 110, 253, .8);
+    box-shadow: 0px 0px 20px 5px var(--color-rgba-13-110-253-08);
     animation: pulse-primary 2s infinite !important;
 }
 
 .pulse-primary:hover {
-    color: rgba(255, 255, 255, 1) !important;
+    color: var(--bs-white) !important;
 }
 
 @-webkit-keyframes pulse-primary {
     0% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .8);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-13-110-253-08);
     }
     70% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, 0);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-13-110-253-0);
     }
     100% {
-        -webkit-box-shadow: 0px 0px 1px 5px rgba(13, 110, 253, .8);
+        -webkit-box-shadow: 0px 0px 1px 5px var(--color-rgba-13-110-253-08);
     }
 }

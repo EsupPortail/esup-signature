@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

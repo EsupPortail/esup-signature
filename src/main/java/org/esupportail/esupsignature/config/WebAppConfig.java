@@ -67,25 +67,10 @@ public class WebAppConfig implements WebMvcConfigurer {
 		return factory.createMultipartConfig();
 	}
 
-	@Bean
-	public FilterRegistrationBean<OpenEntityManagerInViewFilter> registerOpenEntityManagerInViewFilterBean() {
-		FilterRegistrationBean<OpenEntityManagerInViewFilter> registrationBean = new FilterRegistrationBean<>();
-		OpenEntityManagerInViewFilter filter = new OpenEntityManagerInViewFilter();
-		registrationBean.setFilter(filter);
-		registrationBean.setOrder(5);
-		registrationBean.addUrlPatterns(
-				"/user/", "/user/*",
-				"/nexu-sign/", "/nexu-sign/*",
-				"/otp/", "/otp/*",
-				"/error", "/error/*",
-				"/admin/", "/admin/*",
-				"/manager/", "/manager/*",
-				"/public/", "/public/*");
-		return registrationBean;
-	}
+
 
 	@Bean
-	public OpenAPI springShopOpenAPI() {
+	public OpenAPI springDocOpenAPI() {
 		return new OpenAPI()
 				.info(new Info().title("Esup Signature")
 						.description("Esup Signature REST API")

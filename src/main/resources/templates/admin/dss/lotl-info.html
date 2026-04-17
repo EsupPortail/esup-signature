@@ -5,7 +5,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
@@ -23,7 +23,7 @@
                         th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
                         <h2>
                             <a th:href="@{'/admin/dss/lotl/' + ${lotlInfo.getDSSId().asXmlId()}}">
-                                <span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
+                                <span th:if="${parsingResult.resultExist  && parsingResult.territory != null}"
                                 th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
                                 th:title="${parsingResult.territory}"></span>
                             </a>

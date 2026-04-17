@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.view.FrontendGlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -29,6 +29,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -55,20 +56,22 @@ public class OtpAccessController {
     private final UserService userService;
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
+    private final ClientRegistrationRepository clientRegistrationRepository;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
         this.securityServices = securityServices;
         this.smsService = smsService;
+        this.clientRegistrationRepository = clientRegistrationRepository;
     }
 
     @GetMapping(value = "/first/{urlId}")
     public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
         model.addAttribute("urlId", urlId);
-        List<OidcOtpSecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).map(s -> (OidcOtpSecurityService) s).toList();
+        List<OidcOtpSecurityService> oidcOtpSecurityServices = getActiveOidcSecurityServices();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null && ((otp.isSignature() && otp.getTries() < globalProperties.getNbSignOtpTries()) || (!otp.isSignature() && otp.getTries() < globalProperties.getNbViewOtpTries()))) {
             if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
@@ -84,7 +87,7 @@ public class OtpAccessController {
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
-            model.addAttribute("globalProperties", FrontendGlobalProperties.fromGlobalProperties(globalProperties));
+            model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
             return "otp/signin";
         }
         otp = otpService.getOtpFromDatabase(urlId);
@@ -99,6 +102,18 @@ public class OtpAccessController {
                     """);
             return "redirect:/otp-access/error";
         }
+    }
+
+    private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
+        return securityServices.stream()
+                .filter(OidcOtpSecurityService.class::isInstance)
+                .map(OidcOtpSecurityService.class::cast)
+                .filter(this::hasClientRegistration)
+                .toList();
+    }
+
+    private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+        return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
     }
 
     @GetMapping(value = "/completed")
@@ -147,6 +162,7 @@ public class OtpAccessController {
                         try {
                             smsService.sendSms(phone, "Votre code de connexion esup_signature " + password);
                             otpService.setSmsSended(urlId);
+                            userService.updatePhone(user.getEppn(), phone);
                             return ResponseEntity.ok().build();
                         } catch (EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
@@ -176,9 +192,6 @@ public class OtpAccessController {
             otp.setSmsSended(true);
             logger.info("otp success for : " + urlId);
             User user = otp.getUser();
-            if(StringUtils.hasText(otp.getPhoneNumber())) {
-                userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
-            }
             authOtp(model, httpServletRequest, user);
             return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
         } else {
@@ -190,7 +203,7 @@ public class OtpAccessController {
             } catch (Exception e) {
                 logger.error(e.getMessage());
             }
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
             return "redirect:/otp-access/first/" + urlId;
         }
     }

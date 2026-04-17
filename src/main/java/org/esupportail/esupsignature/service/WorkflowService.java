@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.BooleanUtils;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -560,7 +559,9 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            if (StringUtils.hasText(workflow.getToken())) {
+              workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            }
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
@@ -730,20 +731,26 @@ public class WorkflowService {
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
-                WorkflowStep workflowStep = optionalWorkflowStep.get();
-                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
+                workflowStepService.updateStep(id, workflow.getWorkflowSteps().indexOf(optionalWorkflowStep.get()), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
             } else {
                 List<RecipientWsDto> recipients = new ArrayList<>();
                 for(User user : workflowStepSetup.getUsers()) {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
-                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
+                workflowStepService.updateStep(id, workflow.getWorkflowSteps().indexOf(newWorkflowStep), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
                 workflow.getWorkflowSteps().add(newWorkflowStep);
             }
         }
         workflow.getTargets().clear();
-        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers(), authUserEppn);
+        User updateUser = userService.getByEppn(authUserEppn);
+        if (updateUser == null) {
+          updateUser = workflow.getCreateBy();
+        }
+        if (updateUser == null) {
+          updateUser = userService.getSystemUser();
+        }
+        update(workflowSetup, updateUser, null, workflowSetup.getManagers(), authUserEppn);
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);
@@ -829,7 +836,7 @@ public class WorkflowService {
 
     @Transactional
     public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
-        logger.debug("importing workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.debug("importing workflow steps in signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         Workflow dataBaseWorkflow;
         if(BooleanUtils.isTrue(workflow.getFromCode())) {
             dataBaseWorkflow = getWorkflowByName(workflow.getName());

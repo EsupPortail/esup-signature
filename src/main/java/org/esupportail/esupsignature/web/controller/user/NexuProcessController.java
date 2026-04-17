@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.validation.Valid;
+import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.*;
 import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.Report;
@@ -26,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -39,32 +41,28 @@ public class NexuProcessController implements Serializable {
 
 	private static final Logger logger = LoggerFactory.getLogger(NexuProcessController.class);
 
-    public NexuProcessController(PreAuthorizeService preAuthorizeService, NexuService nexuService, UserService userService, SignBookService signBookService, SignRequestService signRequestService, ReportService reportService) {
+	@ModelAttribute("activeMenu")
+	public String getActiveMenu() {
+		return "signrequests";
+	}
+
+	private final PreAuthorizeService preAuthorizeService;
+	private final NexuService nexuService;
+	private final UserService userService;
+	private final SignBookService signBookService;
+	private final SignRequestService signRequestService;
+	private final ReportService reportService;
+	private final GlobalProperties globalProperties;
+
+    public NexuProcessController(PreAuthorizeService preAuthorizeService, NexuService nexuService, UserService userService, SignBookService signBookService, SignRequestService signRequestService, ReportService reportService, GlobalProperties globalProperties) {
         this.preAuthorizeService = preAuthorizeService;
         this.nexuService = nexuService;
         this.userService = userService;
         this.signBookService = signBookService;
         this.signRequestService = signRequestService;
         this.reportService = reportService;
+        this.globalProperties = globalProperties;
     }
-
-    @ModelAttribute("activeMenu")
-	public String getActiveMenu() {
-		return "signrequests";
-	}
-
-	private final PreAuthorizeService preAuthorizeService;
-
-	private final NexuService nexuService;
-
-	private final UserService userService;
-
-	private final SignBookService signBookService;
-
-	private final SignRequestService signRequestService;
-
-	private final ReportService reportService;
-
 
 	@GetMapping(value = "/start", produces = "text/html")
 	public String startNexuProcess(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
@@ -88,6 +86,7 @@ public class NexuProcessController implements Serializable {
 		} else {
 			model.addAttribute("urlProfil", "user");
 		}
+		model.addAttribute("rootUrl", globalProperties.getRootUrl());
 		return "user/signrequests/nexu-signature-process";
 	}
 

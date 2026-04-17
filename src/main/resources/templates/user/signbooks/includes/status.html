@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
-<div th:fragment="status(signBook)">
-    <div th:if="${!signBook.deleted}" th:switch="${signBook.status}" class="text-center mb-1 mt-1">
-        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).uploading}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-            <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-            <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignBookMetaDto"*/-->
+<div th:fragment="status(signBookLight)">
+    <div th:if="${!signBookLight.deleted}" th:switch="${signBookLight.status}" class="text-center mb-1 mt-1">
+        <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).uploading}" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBookLight.status}}">
+            <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBookLight.status}}"></i>
+            <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBookLight.status}}"></span>
         </div>
         <div th:case="${T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status bg-danger"
-            th:title="${signRequest != null && signRequest.comments.size() > 0 ? signRequest.comments.get(signRequest.comments.size() - 1).text : ''}">
+            th:title="${comments != null && comments.size() > 0 ? comments.get(comments.size() - 1).text : ''}">
             <i class="fi fi-rr-cross-circle"></i>
-                <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+                <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBookLight.status}}"></span>
         </div>
         <div th:case="*">
-            <div class="badge rounded-pill badge-status" th:classappend="'text-bg-' + #{'signbook.status.color.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}">
-                <i class="fi" th:classappend="#{'signbook.status.icon.' + ${signBook.status}}"  th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
+            <div class="badge rounded-pill badge-status" th:classappend="'text-bg-' + #{'signbook.status.color.' + ${signBookLight.status}}" th:title="#{'signbook.status.' + ${signBookLight.status}}">
+                <i class="fi" th:classappend="#{'signbook.status.icon.' + ${signBookLight.status}}" th:title="#{'signbook.status.' + ${signBookLight.status}}"></i>
+                <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBookLight.status}}"></span>
             </div>
         </div>
     </div>
-    <div th:if="${signBook.deleted}" class="text-center mb-1 mt-1">
-        <div class="badge rounded-pill badge-status bg-danger" th:title="'Avant suppression : ' + #{'signbook.status.' + ${signBook.status}}">
+    <div th:if="${signBookLight.deleted}" class="text-center mb-1 mt-1">
+        <div class="badge rounded-pill badge-status bg-danger" th:title="'Avant suppression : ' + #{'signbook.status.' + ${signBookLight.status}}">
             <i class="fi fi-rr-trash"></i> 
             <span class="d-md-inline-flex">Supprimé</span>
         </div>

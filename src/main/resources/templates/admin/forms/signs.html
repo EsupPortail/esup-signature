@@ -11,7 +11,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
@@ -65,6 +65,8 @@
 </main>
 <script th:inline="javascript" type="module" th:if="${workflow != null}">
     import {SignUi} from '/js/modules/ui/signrequests/SignUi.js?version=@[(${versionApp})]@';
+    import {SignUiFrontDto} from '/js/modules/ui/signrequests/dto/SignUiFrontDto.js?version=@[(${versionApp})]@';
+    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
     const rawSpots = [[${spots}]];
     const rawSrpMap = [[${srpMap}]];
     const idToStepMap = {};
@@ -87,41 +89,41 @@
             };
         })
         : [];
-    new SignUi(
-        [[${form.id}]],
-        null,
-        [[${form.id}]],
-        spotsWithStepNumber,
-        [[${user.defaultSignImageNumber}]],
-        'form',
-        false,
-        true,
-        [],
-        spotsWithStepNumber,
-        [[${document != null && document.contentType == 'application/pdf'}]],
-        1,
-        false,
-        false,
-        null,
-        null,
-        null,
-        [[${workflowRole}]],
-        "forms",
-        [[${_csrf}]],
-        null,
-        null,
-        'pending',
-        null,
-        1,
-        true,
-        false,
-        false,
-        false,
-        true,
-        null,
-        false,
-        true
-    );
+    const formSignsFrontDto = SignUiFrontDto.from({
+        signRequestId: [[${form.id}]],
+        dataId: null,
+        formId: [[${form.id}]],
+        currentSignRequestParamses: spotsWithStepNumber,
+        signImageNumber: [[${defaultSignImageNumber}]],
+        currentSignType: 'form',
+        signable: false,
+        editable: true,
+        comments: [],
+        spots: spotsWithStepNumber,
+        pdf: [[${document != null && document.contentType == 'application/pdf'}]],
+        currentStepNumber: 1,
+        currentStepMultiSign: false,
+        currentStepSingleSignWithAnnotation: false,
+        currentStepMinSignLevel: null,
+        workflowAvailable: false,
+        signImages: [],
+        userName: [[${workflowRole}]],
+        authUserName: 'forms',
+        fields: [],
+        stepRepeatable: null,
+        status: 'pending',
+        action: null,
+        nbSignRequests: 1,
+        notSigned: true,
+        attachmentAlert: false,
+        attachmentRequire: false,
+        otp: false,
+        restore: true,
+        phone: null,
+        returnToHomeAfterSign: false,
+        manager: true
+    });
+    new SignUi(formSignsFrontDto, [[${_csrf}]], signatureUiConfig);
 </script>
 <div th:if="${workflow != null && form.signRequestParams != null}" data-bs-focus="false" class="modal fade" id="updateSignsModal" tabindex="-1" aria-labelledby="updateSignsModalTitle"  aria-hidden="true">
     <div class="modal-dialog">

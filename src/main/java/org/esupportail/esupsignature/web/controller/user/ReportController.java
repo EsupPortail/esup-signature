@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
 import org.esupportail.esupsignature.service.ReportService;
@@ -53,14 +53,14 @@ public class ReportController {
     @DeleteMapping(value = "/{id}", produces = "text/html")
     public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         reportService.delete(id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
         return "redirect:/user/reports";
     }
 
     @DeleteMapping(value = "/all/", produces = "text/html")
     public String deleteAll(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         reportService.deleteAll(authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
         return "redirect:/user/reports";
     }
 }

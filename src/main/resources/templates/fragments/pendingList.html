@@ -59,7 +59,7 @@
                         </td>
                         <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-xxl-table-cell" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" th:text="${signBook.workflowName}">
                         </td>
-                        <!--                    <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-md-table-cell" style="width: 300px;" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}">-->
+                        <!--                    <td th:classappend="${!signBookLight.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break d-none d-md-table-cell" style="width: 300px;" th:text="${signBookLight.createBy.firstname} + ' ' + ${signBookLight.createBy.name}">-->
                         <!--                    </td>-->
                         <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break text-nowrap" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 120px;"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                         </td>

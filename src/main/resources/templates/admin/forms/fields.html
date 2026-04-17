@@ -12,7 +12,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/forms">Liste des formulaires</a></li>
@@ -43,7 +43,7 @@
             <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
                 Ce formulaire ne contient pas de modèle
             </div>
-            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2" style="height: calc(100vh - 200px);">
+            <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: calc(100vh - 200px);">
                 <table class="table table-borderless table-striped table-hover table-light">
                 <thead class="table-secondary">
                     <tr>
@@ -112,7 +112,7 @@
                         <td>
                             <select th:if="${workflow != null}" th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple slim-select-no-hack" multiple size="3" data-placeholder="Choisir des étapes">
                                 <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                                    <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}" th:selected="${field.workflowSteps.contains(workflowStep)}"></option>
+                                    <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}" th:selected="${#lists.contains(field.workflowStepIds, workflowStep.id)}"></option>
                                 </th:block>
                             </select>
                         </td>

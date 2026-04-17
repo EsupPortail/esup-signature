@@ -6,7 +6,7 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" class="main-selectable">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Utilisateurs</li>
@@ -54,10 +54,10 @@
                                             <i class="fa-solid fa-ellipsis-v"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${user.id}">
-                                                <!--                        <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${!signBookLight.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBookLight.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fa-solid fa-eye-slash pr-2"></i> Masquer-->
                                                 <!--                        </a>-->
-                                                <!--                        <a th:if="${signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">-->
+                                                <!--                        <a th:if="${signBookLight.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBookLight.id} + '?statusFilter=' + ${statusFilter}">-->
                                                 <!--                            <i class="fa-solid fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
                                             <li>

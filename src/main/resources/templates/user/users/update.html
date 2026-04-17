@@ -2,29 +2,90 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
+<style>
+    #saveButton {
+        position: relative;
+    }
+
+    #saveButton.form-dirty-indicator::after {
+        content: '';
+        position: absolute;
+        top: 0.1rem;
+        right: 0.1rem;
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        background: #dc3545;
+        box-shadow: 0 0 0 2px #fff;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.4);
+            opacity: 0.6;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
-    let help = new UserParamsHelp([[${myUiParams.get(T(org.esupportail.esupsignature.entity.enums.UiParams).userParamsHelp)}]], [[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]);
-    help.autoStart();
+
+    const isOtpUserHelp = /*[[${#authorization.expression('hasRole(''ROLE_OTP'')')}]]*/ false;
+
+    function readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function startHelp(setting) {
+        const help = new UserParamsHelp(setting, isOtpUserHelp);
+        help.autoStart();
+    }
+
+    const initialUiMe = readUiMe();
+    if (initialUiMe?.uiParams != null) {
+        startHelp(initialUiMe.uiParams.userParamsHelp ?? null);
+    } else {
+        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            startHelp(event.detail?.uiParams?.userParamsHelp ?? null);
+        }, {once: true});
+    }
 </script>
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
-    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]]);
+    const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
+    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]], signatureUiConfig);
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item active">Paramètres :
-                    <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
+                <li class="breadcrumb-item">Profil <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
+                <li class="breadcrumb-item active">Paramètres</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
-            <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
-                <div class="flex-grow-1">
+            <div class="es-main-content es-main-content-user-settings d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
+                </div>
+                <div class="flex-grow-1 overflow-scroll">
+                    <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
             <form id="userParamsForm" th:object="${authUser}" th:action="'/' + ${user.userType.name() == 'external' ? 'otp' : 'user'} + '/users?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" enctype="multipart/form-data" th:method="'put'">
                 <input type="hidden" name="id" th:value="${authUser.id}"/>
                 <input type="hidden" id="sign-request-params" name="signRequestParamsJsonString" />
@@ -92,24 +153,23 @@
                     <h5>Images de ma signature</h5>
                     <div id="signImageForm">
                         <div class="row">
-                            <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
-                                <label>Mes signatures</label>
-                                <table class="table table-borderless table-striped">
+                            <div id="mySigns" class="rounded-3 col-12 col-xxl-4 mb-2 text-center">
+                                <table class="table table-sm table-borderless table-striped table-hover table-light mb-0">
                                     <thead class="table-secondary">
                                     <tr>
                                         <th class="text-left">Aperçu</th>
                                         <th class="text-left">Préférée</th>
-                                        <th>Supprimer</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody id="user-settings-signatures-body">
                                     <tr>
                                         <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                            <img class="thumbnail" th:src="'/ws-secure/users/get-default-paraphe'"  alt="Image avec paraphe"/>
+                                            <img class="thumbnail" th:src="'/ws-secure/ui/signatures/default-paraphe'"  alt="Image avec paraphe"/>
                                         </td>
                                         <td>
                                             <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999997'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999997} ? 'text-warning' : 'text-secondary'">
-                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fi fi-rr-star"></i>
                                             </a>
                                         </td>
                                         <td>
@@ -117,11 +177,11 @@
                                     </tr>
                                     <tr>
                                         <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                            <img class="thumbnail" th:src="'/ws-secure/users/get-default-image'"  alt="Image avec nom prénom"/>
+                                            <img class="thumbnail" th:src="'/ws-secure/ui/signatures/default-image'"  alt="Image avec nom prénom"/>
                                         </td>
                                         <td>
                                             <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
-                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fi fi-rr-star"></i>
                                             </a>
                                         </td>
                                         <td>
@@ -130,16 +190,16 @@
                                     <th:block th:each="signImageId, iterator : ${userImagesIds}">
                                         <tr>
                                             <td class="text-left w-100" style="position: relative;height: 74px;" >
-                                                <img th:id="'sign-image-' + ${iterator.index}" class="thumbnail" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}"  th:alt="'Image de la signature ' + ${iterator.index}"/>
+                                                <img th:id="'sign-image-' + ${iterator.index}" class="thumbnail" th:src="'/ws-secure/ui/signatures/' + ${signImageId}"  th:alt="'Image de la signature ' + ${iterator.index}"/>
                                             </td>
                                             <td>
                                                 <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
-                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fi fi-rr-star"></i>
                                                 </a>
                                             </td>
                                             <td>
                                                 <button th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
-                                                    <i class="fa-solid fa-trash-alt"></i>
+                                                    <i class="fi fi-rr-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -179,7 +239,7 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
-                                        color: rgba(0, 0, 0, 0.2); /* Texte transparent */
+                                        color: var(--color-rgba-0-0-0-02); /* Texte transparent */
                                         font-size: 48px;
                                         font-family: Arial, sans-serif;
                                         pointer-events: none; /* Empêche l'interaction avec le texte */
@@ -187,12 +247,9 @@
                                     ">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
-                                    </button>
-                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                        <i class="fa-solid fa-trash"></i>
                                     </button>
                                     <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Réinitialiser
@@ -217,6 +274,9 @@
                                     <div id="vanilla-crop" class="mt-2"></div>
                                 </div>
                                 </div>
+                                <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                    <i class="fi fi-rr-eraser"></i> Réinitialiser la signature
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -265,21 +325,23 @@
                                 </div>
                             </div>
                         </label>
-                        <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
-                            Keystore actuel : <a
-                                href="/ws-secure/users/get-keystore"><span
-                                th:text="${keystoreFileName}"></span></a>
-                            <br>
-                            <button type="button"
-                                    class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
-                                    data-bs-target="#testKeystore">
-                                <i class="fa-solid fa-certificate"></i> Tester mon certificat
-                            </button>
-                            <button type="button"
-                                    class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
-                                    data-bs-target="#removeKeystore">
-                                <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
-                            </button>
+                        <div id="user-settings-current-keystore">
+                            <div th:if="${keystoreFileName != null}" class="alert alert-secondary">
+                                Keystore actuel : <a
+                                    href="/ws-secure/ui/keystore"><span
+                                    th:text="${keystoreFileName}"></span></a>
+                                <br>
+                                <button type="button"
+                                        class="btn btn-sm btn-primary text-left" data-bs-toggle="modal"
+                                        data-bs-target="#testKeystore">
+                                    <i class="fa-solid fa-certificate"></i> Tester mon certificat
+                                </button>
+                                <button type="button"
+                                        class="btn btn-sm btn-danger text-left" data-bs-toggle="modal"
+                                        data-bs-target="#removeKeystore">
+                                    <i class="fa-solid fa-trash-alt"></i> Supprimer mon certificat
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group mb-3">
                             <div class="custom-file">
@@ -294,19 +356,26 @@
                     </div>
                 </div>
             </form>
+                    </div>
                 </div>
-            <div id="floatButtons" class="bg-light fixed-action-simple-btn">
-                <a id="saveButton" class="btn btn-floating btn-lg bg-success">
-                    <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
-                </a>
-            </div>
+                <div id="floatButtons" class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a id="saveButton" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
-    <th:block th:each="signImageId, iterator : ${userImagesIds}">
-        <form th:id="'deleteForm-' + ${signImageId}" th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" th:method="'delete'">
-        </form>
-    </th:block>
+    <div id="user-settings-delete-sign-forms">
+        <th:block th:each="signImageId, iterator : ${userImagesIds}">
+            <form th:id="'deleteForm-' + ${signImageId}" th:action="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/delete-sign/' + ${signImageId}" th:method="'delete'">
+            </form>
+        </th:block>
+    </div>
 </main>
 
 <div data-bs-focus="false" class="modal fade" id="accessTokenModal"  role="dialog" aria-labelledby="accessTokenModal" aria-hidden="true">

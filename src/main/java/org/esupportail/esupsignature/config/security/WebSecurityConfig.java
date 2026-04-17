@@ -150,6 +150,8 @@ public class WebSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		List<SecurityService> activeSecurityServices = getActiveSecurityServices();
+		List<OidcOtpSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy).maximumSessions(5).sessionRegistry(sessionRegistry));
 		if(devShibRequestFilter != null) {
 			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
@@ -158,14 +160,14 @@ public class WebSecurityConfig {
 		AccessDeniedHandlerImpl accessDeniedHandlerImpl = new AccessDeniedHandlerImpl();
 		accessDeniedHandlerImpl.setErrorPage("/denied");
 		http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(accessDeniedHandlerImpl));
-		if(securityServices.stream().anyMatch(s -> s instanceof OidcOtpSecurityService)) {
+		if(!activeOidcSecurityServices.isEmpty()) {
 			http.oauth2Login(oauth2Login -> oauth2Login.loginPage("/")
 				.successHandler(oAuthAuthenticationSuccessHandler)
 				.failureHandler(new OAuth2FailureHandler())
 				.userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(validatingOAuth2UserService()))
 				.authorizationEndpoint(authorizationEndpoint -> authorizationEndpoint.authorizationRequestResolver(customAuthorizationRequestResolver())));
 		}
-		for(SecurityService securityService : securityServices) {
+		for(SecurityService securityService : activeSecurityServices) {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(securityService.getLoginUrl()).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), PathPatternRequestMatcher.withDefaults().matcher(securityService.getLoginUrl())));
 			if(securityService.getAuthenticationProcessingFilter() != null) {
@@ -186,11 +188,8 @@ public class WebSecurityConfig {
 						.logoutUrl("/logout"
 						).logoutSuccessUrl("/logged-out"));
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(("/resources/**"))
-				.ignoringRequestMatchers("/webjars/**")
 				.ignoringRequestMatchers("/ws/**")
 				.ignoringRequestMatchers("/nexu-sign/**")
-				.ignoringRequestMatchers("/log/**")
-				.ignoringRequestMatchers("/actuator/**")
 				.ignoringRequestMatchers("/h2-console/**"));
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);
@@ -199,13 +198,33 @@ public class WebSecurityConfig {
 
 	@Bean
 	public ValidatingOAuth2UserService validatingOAuth2UserService() {
-		return new ValidatingOAuth2UserService(securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList(), clientRegistrationRepository);
+		return new ValidatingOAuth2UserService(getActiveOidcSecurityServices(), clientRegistrationRepository);
 	}
 
 	@Bean
 	@ConditionalOnOAuth2ClientRegistrationProperties
 	public CustomAuthorizationRequestResolver customAuthorizationRequestResolver() {
-		return new CustomAuthorizationRequestResolver(clientRegistrationRepository, securityServices.stream().filter(s -> s instanceof OidcOtpSecurityService).map(s -> (OidcOtpSecurityService)s).toList());
+		return new CustomAuthorizationRequestResolver(clientRegistrationRepository, getActiveOidcSecurityServices());
+	}
+
+	private List<SecurityService> getActiveSecurityServices() {
+		return securityServices.stream().filter(this::isActiveSecurityService).toList();
+	}
+
+	private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
+		return securityServices.stream()
+				.filter(OidcOtpSecurityService.class::isInstance)
+				.map(OidcOtpSecurityService.class::cast)
+				.filter(this::hasClientRegistration)
+				.toList();
+	}
+
+	private boolean isActiveSecurityService(SecurityService securityService) {
+		return !(securityService instanceof OidcOtpSecurityService) || hasClientRegistration((OidcOtpSecurityService) securityService);
+	}
+
+	private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+		return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
 	}
 
 	private void setAuthorizeRequests(HttpSecurity http) throws Exception {
@@ -278,10 +297,11 @@ public class WebSecurityConfig {
 
 	@Bean
 	public List<ExternalAuth> getExternalAuths(List<OidcOtpSecurityService> securityServices, SmsProperties smsProperties) {
+		List<OidcOtpSecurityService> activeOidcSecurityServices = securityServices.stream().filter(this::hasClientRegistration).toList();
 		List<ExternalAuth> externalAuths = new ArrayList<>(List.of(ExternalAuth.values()));
 		if(globalProperties.getSmsRequired()) externalAuths.remove(ExternalAuth.open);
-		if(securityServices.stream().noneMatch(s -> s instanceof ProConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.proconnect);
-		if(securityServices.stream().noneMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.franceconnect);
+		if(activeOidcSecurityServices.stream().noneMatch(s -> s instanceof ProConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.proconnect);
+		if(activeOidcSecurityServices.stream().noneMatch(s -> s instanceof FranceConnectSecurityServiceImpl)) externalAuths.remove(ExternalAuth.franceconnect);
 		if(BooleanUtils.isFalse(smsProperties.getEnableSms())) externalAuths.remove(ExternalAuth.sms);
 		return externalAuths;
 	}

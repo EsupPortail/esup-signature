@@ -10,9 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
+import org.esupportail.esupsignature.dto.projection.jpa.WorkflowDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -159,7 +159,7 @@ public class WorkflowWsController {
             json = false;
         }
         if(createByEppn == null) {
-            return ResponseEntity.badRequest().body("Required request parameter 'createByEppn' for method parameter type String is not present");
+            return ResponseEntity.badRequest().body("Required signRequestLight parameter 'createByEppn' for method parameter type String is not present");
         }
         if(recipientEmails == null && recipientsEmails != null && !recipientsEmails.isEmpty()) {
             recipientEmails = recipientsEmails;

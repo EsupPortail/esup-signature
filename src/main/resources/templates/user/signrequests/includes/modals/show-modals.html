@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <div th:fragment="all-modals">
     <div id="wait" data-bs-focus="false" class="modal fade" role="dialog" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog" role="document">
@@ -27,7 +31,7 @@
 
     <div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
 
-    <div th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
+    <div th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
         data-bs-focus="false" class="modal fade" id="sendModal" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -37,23 +41,23 @@
                             aria-label="Close">
                     </button>
                 </div>
-                <form th:action="'/user/signbooks/pending/' + ${signBook.id}" method="post">
+                <form th:action="'/user/signbooks/pending/' + ${showSignRequest.signBookLight.id}" method="post">
                     <div class="modal-body">
-                        <th:block th:unless="${steps.size() > 0}">
-                            <p th:unless="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        <th:block th:unless="${showSignRequest.steps.size() > 0}">
+                            <p th:unless="${showSignRequest.liveWorkflowStepCount > 0}">
                                 Après la validation, vous pourrez télécharger le document
                             </p>
                         </th:block>
-                        <div th:if="${steps.size() > 0 || signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
-                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() > 0}">
+                        <div th:if="${showSignRequest.steps.size() > 0 || showSignRequest.liveWorkflowStepCount > 0}">
+                            <th:block th:if="${showSignRequest.workflow.hasWorkflow && showSignRequest.liveWorkflowStepCount > 0}">
                                 <h5>
                                     Le circuit comporte <span
-                                        th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
+                                        th:text="${showSignRequest.workflow.workflowStepCount}"></span>
                                     étape<span
-                                        th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
+                                        th:if="${showSignRequest.workflow.workflowStepCount > 1}">s</span>
                                 </h5>
                                 <ul class="list-group striped-list">
-                                    <th:block th:each="step, iterator : ${steps}">
+                                    <th:block th:each="step, iterator : ${showSignRequest.steps}">
                                         <li class="list-group-item border-secondary">
                                             <div class="form-group d-inline mb-1">
                                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
@@ -69,16 +73,16 @@
                                 </ul>
                             </th:block>
 
-                            <th:block th:if="${signRequest.parentSignBook.liveWorkflow.workflow != null && signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}">
+                            <th:block th:if="${showSignRequest.workflow.hasWorkflow && showSignRequest.liveWorkflowStepCount == 0}">
                                 <h5>
                                     Le circuit comporte <span
-                                        th:text="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size()}"></span>
+                                        th:text="${showSignRequest.workflow.workflowStepCount}"></span>
                                     étape<span
-                                        th:if="${signRequest.parentSignBook.liveWorkflow.workflow.workflowSteps.size() > 1}">s</span>
+                                        th:if="${showSignRequest.workflow.workflowStepCount > 1}">s</span>
                                 </h5>
                                 <br>
                                 <ul class="list-group">
-                                    <th:block th:each="step, iterator : ${steps}">
+                                    <th:block th:each="step, iterator : ${showSignRequest.steps}">
                                         <li class="list-group-item">
                                             <div th:if="${step.changeable == true}" class="form-group mb-1">
                                                 <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span><span
@@ -96,7 +100,7 @@
                                             <div th:if="${step.changeable == true}" class="form-group mb-1">
                                                 <label><span th:text="'Vous pouvez modifier ou saisir le(s) participant(s) pour l\'étape ' + ${iterator.index + 1}"></span></label>
                                                 <select class="auto-select-users"
-                                                        th:data-signrequest-id="${signRequest.id}"
+                                                        th:data-signrequest-id="${signRequestLight.id}"
                                                         th:id="'recipientEmailsSelect_' + ${iterator.index + 1}"
                                                         multiple="multiple" name="recipientEmails" required="required">
                                                     <option data-placeholder="true"></option>
@@ -115,11 +119,11 @@
                                     </th:block>
                                 </ul>
                             </th:block>
-                            <th:block th:unless="${signRequest.parentSignBook.liveWorkflow.workflow != null}">
+                            <th:block th:unless="${showSignRequest.workflow.hasWorkflow}">
                                 <p>
                                     La procédure comporte une étape
                                 </p>
-                                <th:block th:each="liveWorkflowStep, iterator : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                                     <p>
                                         <span th:text="'Etape ' + ${iterator.index + 1} + ' : '"></span>
                                         <th:block th:if="${liveWorkflowStep.recipients.size() > 0}" th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
@@ -130,9 +134,9 @@
                                 </th:block>
                             </th:block>
                             <hr>
-                            <th:block th:if="${isTempUsers}">
+                            <th:block th:if="${showSignRequest.tempUsers}">
                                 <div class="alert alert-primary">
-                                    <th:block th:each="liveWorkflowStep : ${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps}">
+                                    <th:block th:each="liveWorkflowStep : ${showSignRequest.steps}">
                                         <th:block th:each="recipient, iterator : ${liveWorkflowStep.recipients}">
                                             <div th:if="${recipient.user.userType.name() == 'external'}">
                                                 Destinataire externe: <b th:text="${recipient.user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -175,7 +179,7 @@
                                             </div>
                                         </th:block>
                                     </th:block>
-                                    <th:block th:if="${signRequest.parentSignBook.liveWorkflow.liveWorkflowSteps.size() == 0}" th:each="workflowStep : ${steps}">
+                                    <th:block th:if="${showSignRequest.liveWorkflowStepCount == 0}" th:each="workflowStep : ${showSignRequest.steps}">
                                         <th:block th:each="user, iterator : ${workflowStep.users}">
                                             <div th:if="${user.userType.name() == 'external'}">
                                                 Destinataire externe : <b th:text="${user.email}"></b>, merci de saisir/vérifier les informations complémentaires si besoin
@@ -220,7 +224,7 @@
                                     </th:block>
                                 </div>
                             </th:block>
-                            <th:block th:each="target : ${signRequest.parentSignBook.liveWorkflow.targets}">
+                            <th:block th:each="target : ${showSignRequest.targets}">
                                 <div th:if="${target != null && target.targetUri != null && target.targetUri.contains('mailto:')}" class="form-group mb-3">
                                     <label>Etape finale : Envoi par mail à </label>
                                     <select class="auto-select-users" id="targetEmailsSelect" multiple="multiple" name="targetEmails" required>
@@ -242,25 +246,25 @@
         </div>
     </div>
 
-    <div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+    <div th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id="command" th:action="'/user/signrequests/'+ ${signRequest.id}" th:method="delete">
-                    <input th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" type="hidden" name="definitive" value="true">
+                <form id="command" th:action="'/user/signrequests/'+ ${signRequestLight.id}" th:method="delete">
+                    <input th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" type="hidden" name="definitive" value="true">
                     <div class="modal-header">
                         <h4 class="d-flex align-items-center"><i class="fi fi-rr-trash"></i>Attention</h4>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <div th:if="${!signRequest.deleted && signBook.signRequests.size() > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
-                        <div th:if="${!signRequest.deleted && signBook.signRequests.size() == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
-                        <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests > 1}" class="alert alert-danger">Confirmez-vous la suppression définitive de ce document ? (les autres documents de la demande sont conservés)</div>
+                        <div th:if="${!signRequestLight.deleted && signRequestFull.nbSignRequests == 1}" class="alert alert-danger">Confirmez-vous la mise à la corbeille de cette demande ?</div>
+                        <div th:if="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Annuler</button>
                         <button type="submit" class="btn btn-danger">
-                            <span th:if="${signRequest.deleted}">Supprimer définitivement</span>
-                            <span th:unless="${signRequest.deleted}">Mettre à la corbeille</span>
+                            <span th:if="${signRequestLight.deleted}">Supprimer définitivement</span>
+                            <span th:unless="${signRequestLight.deleted}">Mettre à la corbeille</span>
                         </button>
                     </div>
                 </form>
@@ -271,7 +275,7 @@
     <div data-bs-focus="false" class="modal fade" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/' + ${urlProfil} + '/signrequests/refuse/' + ${signRequest.id}" method="post">
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/refuse/' + ${signRequestLight.id}" method="post">
                     <div class="modal-header">
                         <h3 class="modal-title" id="refuseModalLabel">Refuser la demande de signature</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -281,12 +285,12 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <div th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}">
-                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signBook.signRequests.size() == 1 || nextSignBook == null}"
+                        <div>
+                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signRequestFull.nbSignRequests == 1 || !showSignRequest.hasNextSignBook}"
                                     class="btn btn-danger me-1" title="Refuser" autofocus>
                                 <span>Refuser</span>
                             </button>
-                            <button type="submit" id="refuseNext" th:if="${nextSignRequest != null && otp == null}" name="redirect" th:value="${nextSignRequest.id}"
+                            <button type="submit" id="refuseNext" th:if="${showSignRequest.nextSignRequestId != null && otp == null}" name="redirect" th:value="${showSignRequest.nextSignRequestId}"
                                     class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
                                 <span>Refuser et aller à la suivante </span>
                                 <i class="fa-solid fa-arrow-alt-circle-right"></i>
@@ -302,7 +306,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title" id="detailsModalLabel">Details de la demande</h3>
+                    <h3 class="modal-title" id="detailsModalLabel">Informations complémentaires</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -310,6 +314,32 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-bs-focus="false" class="modal fade" id="addViewersModal"  role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="addViewersLabel">Ajouter des observateurs</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${showSignRequest.signBookLight.id}">
+                            <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
+                            <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple">
+                                <option data-placeholder="true"></option>
+                                <th:block th:each="viewer : ${showSignRequest.signBookLight.viewers}">
+                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname + ' ' + viewer.name + ' (' + viewer.email + ')'}"></option>
+                                </th:block>
+                            </select>
+                            <button type="submit" class="btn btn-success float-end">Valider</button>
+                            <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -328,11 +358,11 @@
                             <th>Email</th>
                             <th>Actions</th>
                         </tr>
-                        <th:block th:each="extrenalRecipient : ${externalsRecipients}">
+                        <th:block th:each="extrenalRecipient : ${showSignRequest.externalsRecipients}">
                             <tr>
                                 <td th:text="${extrenalRecipient.email}"></td>
                                 <td>
-                                    <form th:action="'/user/signrequests/send-otp-download/' + ${signRequest.parentSignBook.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
+                                    <form th:action="'/user/signrequests/send-otp-download/' + ${showSignRequest.signBookLight.id} + '/' + ${extrenalRecipient.id}" method="post" class="d-inline-flex">
                                         <input type="text" name="phone" class="form-control me-1" placeholder="Numéro de mobile" th:value="${extrenalRecipient.phone}" th:if="${globalProperties.smsRequired}">
                                         <button type="submit" class="btn btn-success" title="Envoyer un nouveau lien d'accès">Envoyer</button>
                                     </form>
@@ -358,7 +388,7 @@
                 <div class="modal-body">
                     <div class="form-group mb-3">
                         <p>Vous allez réaffecter la demande à une autre personne que vous.</p>
-                        <form id="send-sign-form" method="post" th:action="'/' + ${urlProfil} + '/signrequests/transfert/' + ${signRequest.id}">
+                            <form id="send-sign-form" method="post" th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/transfert/' + ${signRequestLight.id}">
                             <label class="form-label" for="transfertRecipientsEmails">Choisir la personne qui vous remplacera dans cette demande</label>
                             <select class="auto-select-users" name="transfertRecipientsEmails" id="transfertRecipientsEmails" size="1" required="required">
                                 <option data-placeholder="true"></option>
@@ -379,33 +409,10 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="addViewersModal" role="dialog" aria-labelledby="viewersModalLabel" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade" id="cloneModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${showSignRequest.workflow.authorizeClone && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="addViewersLabel">Ajouter des observateurs</h3>
-                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <form id="add-viewers-form" th:method="post" th:action="'/user/signbooks/add-viewers/' + ${signBook.id}">
-                            <label class="form-label" for="transfertRecipientsEmails">Choisir la/les personne(s) à ajouter</label>
-                            <select class="auto-select-users mb-4" name="viewers" id="viewers" size="1" multiple="multiple" required="required">
-                                <option data-placeholder="true"></option>
-                            </select>
-                            <button type="submit" class="btn btn-success float-end">Valider</button>
-                            <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div data-bs-focus="false" class="modal fade" id="cloneModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true" th:if="${(signRequest.parentSignBook.liveWorkflow.workflow == null || signRequest.parentSignBook.liveWorkflow.workflow.authorizeClone) && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequest.createBy.eppn == userEppn}">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <form th:action="'/user/signrequests/clone/' + ${signRequest.id}" method="post" enctype="multipart/form-data">
+                <form th:action="'/user/signrequests/clone/' + ${signRequestLight.id}" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
                         <h3 class="modal-title" id="cloneLabel">Redémarrer cette demande</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -494,7 +501,7 @@
                         <label for="comment">
                             <b>Commentaire (obligatoire)</b>
                         </label>
-                        <textarea id="comment" name="comment" class="form-control" rows="3" style="background-color: #FFF740;" required></textarea>
+                        <textarea id="comment" name="comment" class="form-control" rows="3" style="background-color: var(--color-fff740);" required></textarea>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
@@ -508,13 +515,13 @@
     <div data-bs-focus="false" class="modal fade" id="addCommentModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/' + ${urlProfil} + '/signrequests/postit/' + ${signRequest.id}" method="post">
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/postit/' + ${signRequestLight.id}" method="post">
                     <div class="modal-header">
                         <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <textarea name="comment" class="form-control" rows="3" style="background-color: #FFF740;"></textarea>
+                        <textarea name="comment" class="form-control" rows="3" style="background-color: var(--color-fff740);"></textarea>
                         <br>
                         <input type="hidden" name="postit" value="on" />
                         <div class="form-check mb-3">
@@ -532,7 +539,8 @@
     </div>
 
     <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
-
+    <div th:replace="~{user/signrequests/includes/modals/add-doc :: add-doc}"></div>
+    <div th:replace="~{user/signrequests/includes/modals/update-signbook :: update-signbook}"></div>
     <script>
         function openAttachmentModalIfRequested() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -565,7 +573,7 @@
         document.addEventListener('DOMContentLoaded', openAttachmentModalIfRequested);
     </script>
 
-    <div id="add-sign-image" class="modal" th:if="${user.userType.name() == 'external'}" th:data-sign-request-id="${signRequest.id}">
+    <div id="add-sign-image" class="modal" th:if="${user.userType.name() == 'external'}" th:data-sign-request-id="${signRequestLight.id}">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -575,14 +583,14 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-light mb-2" th:if="${signImages == null || signImages.size() <= 2}">
+                    <div class="alert alert-light mb-2" th:if="${signRequestFull.signImages == null || signRequestFull.signImages.size() <= 2}">
                         Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
                     </div>
                     <div class="alert alert-light mb-2">
                         Le visuel ci-dessous correspond à l’image générée côté serveur à partir de vos informations de profil.
                     </div>
-                    <form id="userParamsForm" th:object="${authUser}" enctype="multipart/form-data">
-                        <input type="hidden" name="id" th:value="${authUser.id}"/>
+                    <form id="userParamsForm" enctype="multipart/form-data">
+                        <input type="hidden" id="user-params-id" name="id" value=""/>
                         <input type="submit" class="d-none" id="submitUserParamsForm" />
                         <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
 
@@ -591,11 +599,11 @@
                                 <label class="col-form-label" for="name">
                                     <strong>Nom</strong>
                                 </label>
-                                <input type="text" class="form-control" id="name" name="name" th:value="${authUser.name}" required="required"/>
+                                <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
                                 <label class="col-form-label mt-2" for="firstname">
                                     <strong>Prénom</strong>
                                 </label>
-                                <input type="text" class="form-control" id="firstname" name="firstname" th:value="${authUser.firstname}" required="required"/>
+                                <input type="text" class="form-control" id="firstname" name="firstname" value="" required="required"/>
                             </div>
                             <div class="col-12 col-lg-6">
                                 <div class="col-form-label d-block">
@@ -613,39 +621,7 @@
                             </div>
                         </div>
 
-                        <div id="modal-signatures-container" class="alert alert-light mt-3 mb-2" th:classappend="${signImages == null || signImages.size() <= 2} ? 'd-none'">
-                            <h4 class="text-start"><strong>Mes Signatures</strong></h4>
-                            <div style="height: 210px;" th:if="${userImagesIds.size() > 0 && userImagesIds.get(0) != null}" id="carouselSign2" class="carousel slide border rounded border-secondary overflow-hidden bg-white">
-                                <div class="carousel-inner">
-                                    <th:block th:each="signImageId, iterator : ${userImagesIds}">
-                                        <div class="carousel-item h-100" th:classappend="${iterator.index == 0} ? 'active'">
-                                            <div class="h-100 bg-white">
-                                                <div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden">
-                                                    <img height="145" class="img-fluid" style="max-height: 145px; width: auto; object-fit: contain;" th:src="'/ws-secure/users/get-sign-image/' + ${signImageId}" alt="sign image" />
-                                                    <div class="d-flex justify-content-center gap-2"
-                                                         style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">
-                                                        <button type="button" th:data-delete-sign-id="${signImageId}" class="btn btn-sm btn-danger text-white delete-sign-btn">
-                                                            <i class="fi fi-rr-trash"></i>
-                                                        </button>
-                                                        <button type="button" th:data-sign-image-number="${iterator.index}" class="btn btn-primary sign-with-image-btn">
-                                                            <i class="fi fi-rr-check"></i> Signer avec cette image
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </th:block>
-                                </div>
-                                <button title="Signature précédente" class="carousel-control-prev" href="#carouselSign2" role="button" data-bs-slide="prev">
-                                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
-                                    <span class="sr-only">Previous</span>
-                                </button>
-                                <button title="Signature suivante" class="carousel-control-next" href="#carouselSign2" role="button" data-bs-slide="next">
-                                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
-                                    <span class="sr-only">Next</span>
-                                </button>
-                            </div>
-                        </div>
+                        <div id="modal-signatures-container" class="alert alert-light mt-3 mb-2 d-none"></div>
 
                         <h4 class="border border-1 mt-2 p-3 d-flex align-items-center" data-bs-toggle="collapse" href="#sign-div" role="button" aria-expanded="false" aria-controls="sign-div">
                             <strong>Ajouter une signature</strong> <i class="fi fi-rr-plus"></i>
@@ -683,7 +659,7 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
-                                        color: rgba(0, 0, 0, 0.2);
+                                        color: var(--color-rgba-0-0-0-02);
                                         font-size: 48px;
                                         font-family: Arial, sans-serif;
                                         pointer-events: none;
@@ -691,7 +667,7 @@
                                     ">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" style="border: 1px solid black;"></canvas>
+                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>
@@ -736,6 +712,7 @@
                     const signWithGeneratedButton = document.getElementById('signWithGeneratedButton');
                     const nameInput = document.getElementById('name');
                     const firstnameInput = document.getElementById('firstname');
+                    const userParamsIdInput = document.getElementById('user-params-id');
                     const generatedSignaturePreviewImage = document.getElementById('generated-signature-preview-image');
                     const generatedSignaturePreviewEmpty = document.getElementById('generated-signature-preview-empty');
                     const signDivElement = document.getElementById('sign-div');
@@ -748,9 +725,45 @@
                     const signRequestId = addSignImageModal?.dataset.signRequestId || null;
                     const modalSignaturesContainer = document.getElementById('modal-signatures-container');
                     const navbarUserSignaturesContent = document.getElementById('navbar-user-signatures-content');
-                    const initialSignImages = /*[[${signImages}]]*/ [];
-                    const initialSignImageIds = /*[[${userImagesIds}]]*/ [];
+                    const initialSignImages = /*[[${signRequestFull.signImages}]]*/ [];
                     let currentUserSignatureState = null;
+
+                    function readUiMe() {
+                        try {
+                            const rawUiMe = sessionStorage.getItem('uiMe');
+                            return rawUiMe ? JSON.parse(rawUiMe) : null;
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+
+                    function getUiProfile(uiMe) {
+                        return uiMe?.authUser || uiMe?.user || null;
+                    }
+
+                    function hydrateModalFromUiMe(uiMe) {
+                        const profile = getUiProfile(uiMe);
+                        if (!profile) {
+                            return;
+                        }
+                        if (userParamsIdInput && profile.id != null) {
+                            userParamsIdInput.value = profile.id;
+                        }
+                        if (nameInput && !nameInput.value) {
+                            nameInput.value = profile.name || '';
+                        }
+                        if (firstnameInput && !firstnameInput.value) {
+                            firstnameInput.value = profile.firstname || '';
+                        }
+                        updateLiveUserState({
+                            ...currentUserSignatureState,
+                            firstname: firstnameInput?.value || profile.firstname || '',
+                            name: nameInput?.value || profile.name || '',
+                            email: profile.email || currentUserSignatureState?.email || '',
+                            signImageIds: Array.isArray(uiMe?.userImagesIds) ? uiMe.userImagesIds : (currentUserSignatureState?.signImageIds || []),
+                            signImages: currentUserSignatureState?.signImages || initialSignImages
+                        });
+                    }
 
                     function enrichUserState(userState) {
                         if (!userState) {
@@ -865,9 +878,9 @@
                                 : '';
                             const sizeAttr = imageHeight != null ? `height="${imageHeight}"` : `width="${imageWidth}"`;
                             if (hasActionButtons) {
-                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
+                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
                             }
-                            return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/users/get-sign-image/${signImageId}" alt="sign image" /></div>`;
+                            return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /></div>`;
                         }).join('');
 
                         const extraAttributes = imageHeight == null ? ' data-bs-ride="carousel"' : '';
@@ -983,7 +996,7 @@
                             btn.addEventListener('click', function(e) {
                                 e.preventDefault();
                                 const signImageId = this.getAttribute('data-delete-sign-id');
-                                const deleteUrl = '/ws-secure/' + userType + '/fetch/delete-sign/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
+                                const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
 
                                 if(confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
                                     fetch(deleteUrl, {
@@ -1028,14 +1041,19 @@
                         firstname: firstnameInput?.value || '',
                         name: nameInput?.value || '',
                         email: '',
-                        signImageIds: initialSignImageIds,
+                        signImageIds: [],
                         signImages: initialSignImages
                     });
 
-                    renderModalSignatures(currentUserSignatureState);
-                    bindDeleteSignButtons();
-                    bindSignWithButtons();
-                    updateGeneratedSignaturePreview(currentUserSignatureState);
+                    updateLiveUserState(currentUserSignatureState);
+
+                    const initialUiMe = readUiMe();
+                    if (initialUiMe != null) {
+                        hydrateModalFromUiMe(initialUiMe);
+                    }
+                    document.addEventListener('uiMeLoaded', function(event) {
+                        hydrateModalFromUiMe(event.detail);
+                    });
 
                     addSignImageModal?.addEventListener('shown.bs.modal', function() {
                         updateGeneratedSignaturePreview(currentUserSignatureState);
@@ -1059,7 +1077,7 @@
                         }
 
                         const formData = new FormData(userParamsForm);
-                        const submitUrl = '/ws-secure/' + userType + '/fetch';
+                        const submitUrl = '/ws-secure/ui/profile';
                         const hasCustomImagePayload = `${formData.get('signImageBase64') || ''}`.trim() !== '';
                         if (signRequestId) {
                             formData.append('signRequestId', signRequestId);

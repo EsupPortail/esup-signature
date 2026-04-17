@@ -1,49 +1,60 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="toSignDocument" type="org.esupportail.esupsignature.entity.Document"*/-->
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <nav th:fragment="side-sign" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-1" style="z-index: 1000;">
-    <div class="d-flex justify-content-between align-items-center" th:if="${signRequest != null}">
-        <span class="text-uppercase ms-1">STATUT</span>
+    <div class="d-flex justify-content-between align-items-center" th:if="${signRequestLight != null}">
+        <span class="text-uppercase ms-1">Statut</span>
         <div class="pe-2">
-            <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+            <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${showSignRequest.signBookLight})}"></div>
         </div>
     </div>
-    <div class="alert bg-light m-1">
-        <th:block th:if="${signRequest != null}">
+    <div class="alert bg-light p-2">
+        <th:block th:if="${signRequestLight != null}">
             <!-- Archive Status Badge -->
-            <div class="text-center" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
+            <div class="text-center" th:if="${showSignRequest.signBookLight.archiveStatus != null && showSignRequest.signBookLight.archiveStatus.name != 'none'}">
             <span class="badge rounded-pill bg-secondary">
                 <i class="fi fi-rr-box"></i>
-                <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+                <span th:text="#{'signbook.archivestatus.' + ${showSignRequest.signBookLight.archiveStatus}}"></span>
             </span>
             </div>
 
             <!-- Creator Info -->
-            <div class="d-flex align-items-start gap-1" th:if="${signRequest != null}">
+            <div class="d-flex align-items-start gap-1" th:if="${signRequestLight != null}">
                 <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
                      style="width: 2rem; height: 2rem; flex-shrink: 0; font-size: 0.75rem;"
-                     th:with="firstInitial=${signRequest.createBy.firstname != null && !#strings.isEmpty(signRequest.createBy.firstname) ? #strings.substring(signRequest.createBy.firstname, 0, 1) : ''},
-                              lastInitial=${signRequest.createBy.name != null && !#strings.isEmpty(signRequest.createBy.name) ? #strings.substring(signRequest.createBy.name, 0, 1) : ''},
+                     th:with="firstInitial=${signRequestLight.createBy.firstname != null && !#strings.isEmpty(signRequestLight.createBy.firstname) ? #strings.substring(signRequestLight.createBy.firstname, 0, 1) : ''},
+                              lastInitial=${signRequestLight.createBy.name != null && !#strings.isEmpty(signRequestLight.createBy.name) ? #strings.substring(signRequestLight.createBy.name, 0, 1) : ''},
                               initials=${#strings.toUpperCase(firstInitial + lastInitial)},
-                              userId=${signRequest.createBy.id != null ? signRequest.createBy.id : 0},
+                              userId=${signRequestLight.createBy.id != null ? signRequestLight.createBy.id : 0},
                               hue=${T(java.lang.Math).abs(userId) % 360}"
                      th:styleappend="'background-color: hsl(' + ${hue} + ', 70%, 60%);'"
                      th:text="${!#strings.isEmpty(initials) ? initials : '?'}">
                     ??
                 </div>
                 <div class="d-flex flex-column">
-                    <span class="mb-1 fw-semibold" th:text="${signRequest.createBy.firstname + ' ' + signRequest.createBy.name}"></span>
-                    <span class="small bg-primary-subtle pe-1 ps-1" style="font-size: 12px; width: fit-content;" th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                    <span class="mb-1 fw-semibold" th:text="${signRequestLight.createBy.firstname + ' ' + signRequestLight.createBy.name}"></span>
+                    <span class="small bg-primary-subtle pe-1 ps-1" style="font-size: 12px; width: fit-content;" th:text="${#dates.format(showSignRequest.signBookLight.createDate, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
             </div>
 
             <!-- Viewers Section -->
-            <th:block th:if="${signBook.viewers.size() > 0}">
-                <div class="m-1" style="border-top: 1px solid #dee2e6;">
-                    <p class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">Suivi par</p>
+            <div class="d-flex justify-content-between align-items-center">
+            <th:block>
+                <div class="m-1" style="border-top: 1px solid var(--color-dee2e6);">
+                    <a class="mb-2" style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;"
+                       data-bs-toggle="collapse" href="#followed-by" role="button" aria-expanded="false" aria-controls="followed-by">Suivi par <i class="fi fi-rr-angle-down"></i></a>
+                    <div id="followed-by" class="collapse show">
                     <ul class="d-flex gap-1 list-unstyled mb-0">
-                        <li th:each="user, iterator : ${signBook.viewers}">
+                        <li>
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold" style="background-color: var(--bs-secondary); width: 2rem; height: 2rem;">
+                            <button class="btn btn-transparent text-white" title="Ajouter des observateurs" data-bs-toggle="modal" data-bs-target="#addViewersModal" >
+                                <i class="fi fi-rr-plus"></i>
+                            </button>
+                            </div>
+                        </li>
+                        <li th:each="user, iterator : ${showSignRequest.signBookLight.viewers}">
                             <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-semibold"
                                  style="width: 2rem; height: 2rem; font-size: 0.75rem;"
                                  th:with="firstInitial=${user.firstname != null && !#strings.isEmpty(user.firstname) ? #strings.substring(user.firstname, 0, 1) : ''},
@@ -60,12 +71,14 @@
 <!--                            <span th:unless="${user.firstname != '' && user.name != ''}" th:text="${user.email}"></span>-->
                         </li>
                     </ul>
+                    </div>
                 </div>
             </th:block>
+            </div>
         </th:block>
 
-        <th:block th:unless="${signRequest != null}">
-            <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+        <th:block th:unless="${signRequestLight != null}">
+            <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${showSignRequest.signBookLight})}"></div>
         </th:block>
     </div>
 <!--        <div class="hr sidebar-label" th:if="${toSignDocument != null && toSignDocument.contentType == 'application/pdf'}">Changer de mode</div>-->
@@ -81,8 +94,129 @@
 <!--            <i class="ms-1 fa-solid fa-comment"></i><i class="me-2"></i> <span class="sidebar-label">Annoter</span>-->
 <!--            <span th:if="${signRequest.comments.size() > 0}" class="float-end badge rounded-pill bg-warning mt-1" ><span th:text="${signRequest.comments.size()}"></span></span>-->
 <!--        </button>-->
-    <div th:if="${signRequest != null && comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
-    <span th:if="${signRequest != null}" class="text-uppercase ms-1">Étapes du circuit</span>
-    <div th:if="${signRequest != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
+    <div th:if="${signRequestLight != null && signRequestFull.comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
+    <span th:if="${signRequestLight != null}" class="text-uppercase ms-1">Étapes du circuit</span>
+    <div th:if="${signRequestLight != null}" th:insert="~{user/signrequests/cards/stepscard :: stepscard}"></div>
+
+    <div th:if="${signRequestLight != null  && signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+         data-bs-focus="false"
+         class="modal fade"
+         id="addStep"
+         role="dialog"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form th:action="'/user/signbooks/add-live-step/' + ${showSignRequest.signBookLight.id}" method="post">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Ajouter une étape</h3>
+                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="stepNumber" id="stepNumber" value="-1">
+                        <div id="addStepPositionLabel" class="alert alert-secondary py-2 mb-3">L’étape sera ajoutée à la fin du circuit.</div>
+                        <div class="form-group mb-3" id="_signType_div_id">
+                            <div class="form-check form-switch form-switch-md mb-3">
+                                <input type="checkbox" class="form-check-input" id="autoSign" name="autoSign" />
+                                <label for="autoSign" class="form-check-label">
+                                    L'étape est en cachet d’établissement automatique
+                                </label>
+                            </div>
+                            <div class="form-group mb-3" id="recipients-div">
+                                <label for="recipientsEmails2">Choisir les participants *</label>
+                                <div class="form-group mb-3">
+                                    <select data-es-check-list="true" name="recipientsEmails" id="recipientsEmails2" multiple="multiple" required="required"></select>
+                                    <div id="tempUsers-recipientsEmails2"></div>
+                                </div>
+                            </div>
+                            <div class="form-group mb-3" id="all-sign-to-complete-div">
+                                <div class="form-check form-switch form-switch-md">
+                                    <label class="form-check-label" for="all-sign-to-complete">Tous les participants doivent signer pour valider l'étape</label>
+                                    <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
+                                </div>
+                            </div>
+                            <div class="form-group mb-3" id="sign-type-div">
+                                <label for="signType_id">Type de signature</label>
+                                <select class="slim-select-simple" id="signType_id" name="signType" size="1">
+                                    <th:block th:each="signType : ${signTypes}">
+                                        <option th:value="${signType}" th:text="#{'signbook.signtype.' + ${signType}}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-success">Enregistrer</button>
+                    </div>
+                </form>
+                <script th:inline="javascript" type="module">
+                    import {default as SelectUser} from '/js/modules/utils/SelectUser.js?version=@[(${versionApp})]@';
+
+                    const csrf = /*[[${_csrf}]]*/ {};
+                    new SelectUser("recipientsEmails2", null, null, csrf);
+
+                    const addStepModal = document.getElementById('addStep');
+                    const autoSignCheckbox = document.getElementById('autoSign');
+                    const stepNumberInput = document.getElementById('stepNumber');
+                    const positionLabel = document.getElementById('addStepPositionLabel');
+                    const recipientsDiv = $('#recipients-div');
+                    const recipientsSelect = $('#recipientsEmails2');
+                    const allSignDiv = $('#all-sign-to-complete-div');
+                    const signTypeDiv = $('#sign-type-div');
+
+                    function updateAddStepPositionLabel(stepNumber) {
+                        if (!positionLabel) {
+                            return;
+                        }
+                        if (stepNumber === 0) {
+                            positionLabel.textContent = 'L’étape sera ajoutée au début du circuit.';
+                        } else if (stepNumber === -1) {
+                            positionLabel.textContent = 'L’étape sera ajoutée à la fin du circuit.';
+                        } else {
+                            positionLabel.textContent = 'L’étape sera ajoutée après l’étape ' + stepNumber + '.';
+                        }
+                    }
+
+                    function toggleAddStepAutoSign(isChecked) {
+                        allSignDiv.toggleClass('d-none', isChecked);
+                        signTypeDiv.toggleClass('d-none', isChecked);
+                        recipientsDiv.toggleClass('d-none', isChecked);
+                        if (isChecked) {
+                            recipientsSelect.removeAttr('required');
+                        } else {
+                            recipientsSelect.attr('required', 'required');
+                        }
+                    }
+
+                    autoSignCheckbox?.addEventListener('change', function() {
+                        if (this.checked) {
+                            bootbox.confirm('Attention tous les paramètres de cette étape seront perdus après la validation', function(result) {
+                                if (result) {
+                                    toggleAddStepAutoSign(true);
+                                } else {
+                                    autoSignCheckbox.checked = false;
+                                    toggleAddStepAutoSign(false);
+                                }
+                            });
+                        } else {
+                            toggleAddStepAutoSign(false);
+                        }
+                    });
+
+                    addStepModal?.addEventListener('show.bs.modal', function(event) {
+                        const trigger = event.relatedTarget;
+                        const requestedStepNumber = Number.parseInt(trigger?.getAttribute('data-step-number') ?? '-1', 10);
+                        const normalizedStepNumber = Number.isNaN(requestedStepNumber) ? -1 : requestedStepNumber;
+                        stepNumberInput.value = normalizedStepNumber;
+                        updateAddStepPositionLabel(normalizedStepNumber);
+                        toggleAddStepAutoSign(autoSignCheckbox?.checked === true);
+                    });
+
+                    updateAddStepPositionLabel(Number.parseInt(stepNumberInput?.value ?? '-1', 10));
+                    toggleAddStepAutoSign(autoSignCheckbox?.checked === true);
+                </script>
+            </div>
+        </div>
+    </div>
 </nav>
 </html>

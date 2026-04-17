@@ -17,25 +17,6 @@
     }
 }
 
-@media (min-width: 1620px) {
-    .d-xxxl-table-cell {
-        display: table-cell !important;
-    }
-
-    .d-xxxl-block { display: block !important; }
-
-    .d-xxxl-none { display: none !important; }
-
-    .d-xxxl-inline {
-        display: inline !important;
-    }
-    .d-xxxl-inline-flex {
-        display: inline-flex !important;
-        flex-direction: row;
-        align-items: center;
-    }
-}
-
 @media (min-width: 1800px) {
     .d-xxxl-table-cell {
         display: table-cell !important;
@@ -54,17 +35,34 @@
     }
 }
 
-@media (min-width: 1400px) {
-    .d-xxl-flex {
-        display: flex !important;
+@media (min-width: 1600px) {
+    .d-xxxl-table-cell {
+        display: table-cell !important;
+    }
+
+    .d-xxxl-block { display: block !important; }
+
+    .d-xxxl-none { display: none !important; }
+
+    .d-xxxl-inline {
+        display: inline !important;
+    }
+    .d-xxxl-inline-flex {
+        display: inline-flex !important;
+        flex-direction: row;
+        align-items: center;
     }
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1400px) {
+    .d-xxl-flex {
+        display: flex !important;
+    }
+
     th.col-nom { min-width: 130px; }
 }
 
-@media (max-width: 1199.98px) {
+@media (max-width: 1200px) {
     body.es-signrequest-page #breadcrumb {
         display: flex !important;
     }
@@ -167,7 +165,12 @@
 
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 992px) {
+
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+
     th.col-nom {
         min-width: 110px;
     }
@@ -211,7 +214,7 @@
     }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 768px) {
     body.es-signrequest-page #breadcrumb {
         display: none !important;
     }
@@ -220,7 +223,7 @@
         position: fixed !important;
         top: auto !important;
         bottom: 0;
-        width: auto;
+        /*width: auto;*/
         max-width: none;
         z-index: 1031;
     }
@@ -327,16 +330,12 @@
 
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 576px) {
     body.es-signrequest-page #breadcrumb {
         display: none !important;
     }
 
     body.es-signrequest-page #signButtons {
-        display: none !important;
-    }
-
-    .step-horizontal-v2-icon {
         display: none !important;
     }
 
@@ -353,7 +352,7 @@
         position: absolute;
         width: 100%;
         top: 50px;
-        background-color: #343a40 !important;
+        background-color: var(--bs-dark) !important;
     }
 
     #breadcrumb {

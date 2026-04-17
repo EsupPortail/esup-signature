@@ -3,10 +3,10 @@ package org.esupportail.esupsignature.web.controller.admin;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.js.JsSlimSelect;
-import org.esupportail.esupsignature.dto.view.UserDto;
-import org.esupportail.esupsignature.entity.SignBook;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -14,6 +14,7 @@ import org.esupportail.esupsignature.service.FormService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -96,9 +97,9 @@ public class SignBookAdminController {
 			docTitleFilter = "";
 		}
 		if(globalProperties.getInfiniteScrolling()) {
-			model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+			model.addAttribute("signBooks", new PageImpl<SignBookFullDto>(new ArrayList<>(), pageable, 1));
 		} else {
-			Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+			Page<SignBookFullDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 			model.addAttribute("signBooks", signBooks);
 		}
         model.addAttribute("statusFilter", statusFilter);
@@ -116,16 +117,16 @@ public class SignBookAdminController {
 	@GetMapping("/workflowNames")
 	@ResponseBody
 	public List<String> workflows(@RequestParam(value = "searchString", required = false) String searchString) {
-		return signBookRepository.findAllWorkflowNamesByName("%"+searchString+"%");
+		return signBookRepository.findAllWorkflowNamesByName(searchString == null ? null : LikePatternUtils.containsPattern(searchString.toLowerCase(Locale.ROOT)));
 	}
 
 	@GetMapping("/creators")
 	@ResponseBody
 	public Object[] creators() {
-		List<JsSlimSelect> slimSelectDtos = new ArrayList<>();
-		slimSelectDtos.add(new JsSlimSelect("Tout", ""));
+		List<UiSlimSelectDto> slimSelectDtos = new ArrayList<>();
+		slimSelectDtos.add(new UiSlimSelectDto("Tout", ""));
 		for(UserDto userDto : userService.getAllUsersDto()) {
-			slimSelectDtos.add(new JsSlimSelect(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
+			slimSelectDtos.add(new UiSlimSelectDto(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
 		}
 		return slimSelectDtos.toArray();
 	}
@@ -151,10 +152,12 @@ public class SignBookAdminController {
 		if(docTitleFilter == null || docTitleFilter.isEmpty() || docTitleFilter.equals("all")) {
 			docTitleFilter = "";
 		}
-		Page<SignBook> signBooks = signBookService.getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+		Page<SignBookFullDto> signBooks = signBookService.getAllSignBookListItems(userEppn, statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
 		model.addAttribute("signBooks", signBooks);
 		final Context ctx = new Context(Locale.FRENCH);
 		ctx.setVariables(model.asMap());
+        ctx.setVariable("userEppn", userEppn);
+        ctx.setVariable("statusFilter", statusFilter);
         CsrfToken token = (CsrfToken) httpServletRequest.getAttribute(CsrfToken.class.getName());
         ctx.setVariable("_csrf", token);
 		return templateEngine.process("admin/signbooks/includes/list-elem.html", ctx);
@@ -166,7 +169,7 @@ public class SignBookAdminController {
 		if(signRequest != null) {
 			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
@@ -176,7 +179,7 @@ public class SignBookAdminController {
 		if(signRequest != null) {
 			return "redirect:/admin/signrequests/" + signRequest.getId();
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non trouvée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
@@ -186,21 +189,21 @@ public class SignBookAdminController {
 		for(Long id : ids) {
 				signBookService.delete(id, authUserEppn);
 		}
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
 		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		signBookService.delete(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
 		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@GetMapping(value = "/restore/{id}", produces = "text/html")
 	public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		signBookService.restore(id, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Restauration effectuée"));
 		return "redirect:/admin/signbooks/" + id;
 	}
 

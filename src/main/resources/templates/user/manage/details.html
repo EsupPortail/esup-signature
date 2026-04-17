@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
@@ -80,8 +80,8 @@
                         <tr th:data-href="'/user/signbooks/' + ${signBook.id}">
 <!--                                    <td class="w-20 d-none d-lg-table-cell">-->
 <!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"-->
-<!--                                               th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
-<!--                                               th:data-es-signbook-id="${signBook.id}">-->
+<!--                                               th:data-es-sign-type="${signBookLight.liveWorkflow.currentStep != null ? signBookLight.liveWorkflow.currentStep.signType : ''}"-->
+<!--                                               th:data-es-signbook-id="${signBookLight.id}">-->
 <!--                                    </td>-->
                             <td class="clickable-td text-break"><i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span></td>
                             <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
@@ -122,7 +122,7 @@
                             </td>
                             <td class="clickable-td d-none d-md-table-cell"
                                 style="width: 150px;">
-                                <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+                                <div th:replace="~{user/signbooks/includes/status :: status(signBookLight=${signBook})}"></div>
                             </td>
                             <td>
                                 <div class="dropdown position-relative">
@@ -207,17 +207,17 @@
                 <div id="signButtons" class="es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
                         <li th:if="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes non masquées">
                                 <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
                             </a>
                         </li>
                         <li th:unless="${hided}">
-                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes masquées">
                                 <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
                             </a>
                         </li>
                         <li>
-                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-floating btn-lg bg-primary">
+                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
                             </a>
                         </li>

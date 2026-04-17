@@ -7,7 +7,6 @@ export default class SelectUser {
         if(selectName.split("-").length > 0) {
             this.stepNumber = selectName.split("-")[1];
         }
-        this.globalProperties = JSON.parse(sessionStorage.getItem("globalProperties"));
         this.enableSms = JSON.parse(sessionStorage.getItem("enableSms"));
         this.slimSelect = null;
         this.checkList = this.selectField.attr("data-es-check-list");
@@ -16,10 +15,6 @@ export default class SelectUser {
         this.valuePrefix = "";
         this.limit = 99;
         this.flag = false;
-        // let selectNameSplit = selectName.split("_");
-        // if(selectNameSplit.length === 2) {
-        //     this.valuePrefix = selectNameSplit[1] + "*";
-        // }
         let defaultValues = [];
         $("#" + selectName + " > option").each(function() {
             if($(this).text() !== "") {
@@ -28,7 +23,6 @@ export default class SelectUser {
                     value: $(this).attr("value"),
                     selected: true
                 });
-                // $(this).remove();
             }
         });
         this.favorites = defaultValues;
@@ -36,9 +30,7 @@ export default class SelectUser {
             this.limit = limit;
         }
         this.createUserSelect(selectName,  this.valuePrefix);
-        // this.selectField.addClass("slim-select-hack");
         $("." + this.slimSelect.settings.id).each(function() {
-        // $("." + this.slimSelect.config.id).each(function() {
            $(this).removeAttr("style");
         });
         this.selectField.slim = this.slimSelect;
@@ -77,10 +69,6 @@ export default class SelectUser {
             placeHolder = "Choisir une personne";
         }
         let self = this;
-        let position = "absolute";
-        if(this.selectField.attr("data-es-relative")) {
-            position = "relative";
-        }
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,
             settings: {
@@ -210,7 +198,7 @@ export default class SelectUser {
                 if (this.csrf) {
                     let csrf = this.csrf;
                     $.ajax({
-                        url: "/ws-secure/users/check-temp-users?" + csrf.parameterName + "=" + csrf.token,
+                        url: "/ws-secure/ui/temp-users/check?" + csrf.parameterName + "=" + csrf.token,
                         type: 'POST',
                         contentType: "application/json",
                         dataType: 'json',
@@ -313,11 +301,9 @@ export default class SelectUser {
         let id = data.email.replaceAll("@", "_").replaceAll(".", "_")
         let name = "#tempUsers-" + this.selectField.attr("id");
         let tempUsersDiv = $(name);
-        if (data.phone == null) {
-            data.phone = "";
-        }
+        const hidedPhone = data.hidedPhone || "";
         let html = "<div class='alert alert-primary' id='recipient_" + id + "'>";
-        if(this.globalProperties.smsRequired) {
+        if (this.enableSms) {
             html +=
                 "<p>Destinataire externe : <span><b>" + data.email + "</b>, merci de saisir/vérifier les informations complémentaires si besoin</span></p>" +
                 "<input id=\"email\" class=\"form-control \" type=\"hidden\" name=\"emails\" value=\"" + id + "\">" +
@@ -326,7 +312,7 @@ export default class SelectUser {
                 "<div class=\"d-flex col-12\"><label for=\"firstname\" class='col-3'>Prénom</label>" +
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>" +
                 "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
+                "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + hidedPhone + "\">" +
                 "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                 "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>";
         } else {
@@ -339,7 +325,7 @@ export default class SelectUser {
                 "<input id=\"firstname_" + id + "\" class=\"form-control \" type=\"text\" name=\"firstnames\" value=\"" + data.firstname + "\" required></div>";
             if (this.enableSms) {
                 html += "<div class=\"d-flex col-12\"><label for=\"phones\" class='col-3'>Mobile</label>" +
-                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + data.hidedPhone + "\">" +
+                    "<input id=\"phone_" + id + "\" class=\"form-control \" type=\"text\" name=\"phones\" value=\"" + hidedPhone + "\">" +
                     "<span id=\"valid-msg_" + id + "\" class=\"text-success my-auto d-none\">✓ Ok</span>\n" +
                     "<span id=\"error-msg_" + id + "\" class=\"text-danger my-auto d-none\"></span>" +
                     "</div>" +
@@ -364,7 +350,7 @@ export default class SelectUser {
                 customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
                 searchPlaceholder: "Rechercher",
             });
-            if (data.phone == null || data.phone === "") {
+            if (hidedPhone === "") {
                 iti.setCountry("fr");
             }
             this.validatePhone(iti, id)
@@ -422,20 +408,11 @@ export default class SelectUser {
             }
         }
         this.bindEnterKeyPress();
-        // if(this.favorites.length > 0) {
-        //     this.slimSelect.setData(this.favorites);
-        //     let selectedFavorites = this.favorites.filter(f => f.selected).map(f => f.value);
-        //     // if (selectedFavorites.length > 0) {
-        //     //     this.slimSelect.set(selectedFavorites);
-        //     // } else {
-        //     //     this.slimSelect.set();
-        //     // }
-        // }
     }
 
     populateWithFavorites() {
         $.ajax({
-            url: "/ws-secure/users/get-favorites",
+            url: "/ws-secure/ui/favorites/users",
             type: 'GET',
             dataType: 'json',
             contentType: "application/json",

@@ -11,10 +11,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.RecipientsActionsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -145,6 +145,18 @@ public class SignRequestService {
      */
     public SignRequest getById(long id) {
 		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
+		}
+		return null;
+	}
+
+    public SignRequest getByIdWithShowContext(long id) {
+		Optional<SignRequest> signRequest = signRequestRepository.findByIdWithShowContext(id);
 		if(signRequest.isPresent()) {
 			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
 			if (data != null) {
@@ -886,7 +898,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		SignBook signBook = signRequest.getParentSignBook();
 //		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
-//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		int step = signBookLight.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBookLight.getLiveWorkflow().getCurrentStep());
 //		if(testAllNone && !signRequest.getDeleted() && step > 0) {
 //			return -1L;
 //		}
@@ -1192,7 +1204,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
 		} else {
 			signRequest.getAttachments().remove(attachement);
 			documentService.delete(attachement);
@@ -1935,17 +1947,17 @@ public class SignRequestService {
      *         avec les informations sur les actions des destinataires et les métadonnées associées.
      */
     @Transactional
-	public List<SignRequestStepsDto> getStepsDto(Long id) {
-		List<SignRequestStepsDto> signRequestStepsDtos = new ArrayList<>();
+	public List<SignRequestStepsWsDto> getStepsDto(Long id) {
+		List<SignRequestStepsWsDto> signRequestStepsWsDtos = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int i = 1;
 		for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-			SignRequestStepsDto signRequestStepsDto = new SignRequestStepsDto();
-			signRequestStepsDto.setStepNumber(i);
-			signRequestStepsDto.setSignType(liveWorkflowStep.getSignType().name());
-			signRequestStepsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
+			SignRequestStepsWsDto signRequestStepsWsDto = new SignRequestStepsWsDto();
+			signRequestStepsWsDto.setStepNumber(i);
+			signRequestStepsWsDto.setSignType(liveWorkflowStep.getSignType().name());
+			signRequestStepsWsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
 			for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-				RecipientsActionsDto recipientsActionsDto = new RecipientsActionsDto();
+				RecipientsActionsWsDto recipientsActionsDto = new RecipientsActionsWsDto();
 				recipientsActionsDto.setStepNumber(i);
 				Action action = signRequest.getRecipientHasSigned().get(recipient);
 				if(action != null) {
@@ -1968,12 +1980,12 @@ public class SignRequestService {
 					recipientsActionsDto.setSignPosX(auditStep.getPosX());
 					recipientsActionsDto.setSignPosY(auditStep.getPosY());
 				}
-				signRequestStepsDto.getRecipientsActions().add(recipientsActionsDto);
+				signRequestStepsWsDto.getRecipientsActions().add(recipientsActionsDto);
 			}
-			signRequestStepsDtos.add(signRequestStepsDto);
+			signRequestStepsWsDtos.add(signRequestStepsWsDto);
 			i++;
 		}
-		return signRequestStepsDtos;
+		return signRequestStepsWsDtos;
 	}
 
 	/**

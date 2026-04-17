@@ -149,7 +149,7 @@ public class PublicController {
             model.addAttribute("usersHasSigned", auditTrailService.checkUserResponseSigned(signRequest.get()));
             model.addAttribute("usersHasRefused", auditTrailService.checkUserResponseRefused(signRequest.get()));
             if (eppn != null) {
-                model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest.get(), eppn, eppn));
+                model.addAttribute("viewAccess", preAuthorizeService.checkUserViewRights(signRequest.get().getId(), eppn, eppn));
             }
             if(auditTrail.getAuditSteps().stream().anyMatch(as -> as.getSignCertificat() != null && !as.getSignCertificat().isEmpty())) {
                 Reports reports = signService.validate(signRequest.get().getId());

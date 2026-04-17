@@ -7,9 +7,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -45,6 +46,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -93,11 +95,13 @@ public class SignBookController {
                        @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                        @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                        @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                       @PageableDefault(size = 15)
+                       @RequestParam(value = "infiniteScrolling", required = false) Boolean infiniteScrolling,
+                       @PageableDefault(size = 10)
                            @SortDefault.SortDefaults({
                                    @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                            })
                            Pageable pageable, Model model) {
+        boolean effectiveInfiniteScrolling = infiniteScrolling != null ? infiniteScrolling : Boolean.TRUE.equals(globalProperties.getInfiniteScrolling());
         if(statusFilter == null || statusFilter.equals("all")) statusFilter = "";
         if(workflowFilter != null && (workflowFilter.isEmpty() || workflowFilter.equals("all"))) {
             workflowFilter = null;
@@ -112,10 +116,11 @@ public class SignBookController {
             recipientsFilter = null;
         }
         model.addAttribute("statusFilter", statusFilter);
-        if(globalProperties.getInfiniteScrolling()) {
-            model.addAttribute("signBooks", new PageImpl<SignBook>(new ArrayList<>(), pageable, 1));
+        model.addAttribute("infiniteScrolling", effectiveInfiniteScrolling);
+        if(effectiveInfiniteScrolling) {
+            model.addAttribute("signBooks", new PageImpl<SignBookFullDto>(new ArrayList<>(), pageable, 1));
         } else {
-            Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+            Page<SignBookFullDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
             model.addAttribute("signBooks", signBooks);
         }
         model.addAttribute("nbEmpty", signBookService.countEmpty(userEppn));
@@ -163,7 +168,7 @@ public class SignBookController {
                          @RequestParam(value = "docTitleFilter", required = false) String docTitleFilter,
                          @RequestParam(value = "creatorFilter", required = false) String creatorFilter,
                          @RequestParam(value = "dateFilter", required = false) String dateFilter,
-                         @PageableDefault(size = 15)
+                         @PageableDefault(size = 10)
                              @SortDefault.SortDefaults({
                                      @SortDefault(sort = "createDate", direction = Sort.Direction.DESC)
                              })
@@ -181,7 +186,7 @@ public class SignBookController {
         if(recipientsFilter != null && (recipientsFilter.isEmpty() || recipientsFilter.equals("all"))) {
             recipientsFilter = null;
         }
-        Page<SignBook> signBooks = signBookService.getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        Page<SignBookFullDto> signBooks = signBookService.getSignBookListItems(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
         model.addAttribute("signBooks", signBooks);
         final Context ctx = new Context(Locale.FRENCH);
         ctx.setVariables(model.asMap());
@@ -193,20 +198,14 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookView(#id, #userEppn, #authUserEppn)")
     @GetMapping(value = "/{id}")
     public String show(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes, Model model) {
-        SignBook signBook = signBookService.getById(id);
-        if(!signBook.getSignRequests().isEmpty()) {
-            Long signRequestId = signBook.getSignRequests().get(0).getId();
-            if (signBook.getSignRequests().size() > 1) {
-                if (signBook.getSignRequests().stream().anyMatch(s -> s.getStatus().equals(SignRequestStatus.pending))) {
-                    signRequestId = signBook.getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending)).findFirst().get().getId();
-                }
-            }
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if(signRequestId != null) {
             if(model.getAttribute("message") != null) {
                 redirectAttributes.addFlashAttribute("message", model.getAttribute("message"));
             }
             return "redirect:/user/signrequests/" + signRequestId;
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Cette demande de signature n'est pas conforme car elle est vide, elle peut être supprimée"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
     }
@@ -223,7 +222,7 @@ public class SignBookController {
     @GetMapping(value = "/restore/{id}", produces = "text/html")
     public String restore(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         signBookService.restore(id, authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Restauration effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Restauration effectuée"));
         return "redirect:/user/signbooks/" + id;
     }
 
@@ -233,18 +232,18 @@ public class SignBookController {
         Boolean isDefinitive = signBookService.delete(id, authUserEppn);
         if(isDefinitive != null) {
             if (isDefinitive) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été supprimé définitivement"));
                 if (httpServletRequest.getHeader(HttpHeaders.REFERER).contains("signrequests")) {
                     return "redirect:/user/signbooks";
                 } else {
                     return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
                 }
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été placé dans la corbeille"));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été placé dans la corbeille"));
                 return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
             }
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Ce document ne pas être supprimé de la corbeille"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", "Ce document ne pas être supprimé de la corbeille"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
         }
     }
@@ -253,11 +252,11 @@ public class SignBookController {
     @DeleteMapping(value = "/force-delete/{id}", produces = "text/html")
     public String forceDelete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         if(signBookService.deleteDefinitive(id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le document a été supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le document a été supprimé définitivement"));
             return "redirect:/user/signbooks";
 
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", "Le document ne peut pas être supprimé définitivement"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", "Le document ne peut pas être supprimé définitivement"));
             return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 
         }
@@ -266,23 +265,8 @@ public class SignBookController {
     @DeleteMapping(value = "/empty-trash", produces = "text/html")
     public String emptyTrash(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         signBookService.emptyTrash(authUserEppn);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La corbeille a été vidée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La corbeille a été vidée"));
         return "redirect:/user/signbooks?statusFilter=deleted";
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @GetMapping(value = "/update/{id}")
-    public String updateForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-        SignBook signBook = signBookService.getById(id);
-        if(signBook != null && (signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.pending))) {
-            model.addAttribute("signBook", signBook);
-            model.addAttribute("logs", signBookService.getLogsFromSignBook(id));
-            model.addAttribute("allSteps", signBookService.getAllSteps(id));
-            return "user/signbooks/update";
-        } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non trouvée"));
-            return "redirect:/user/signbooks";
-        }
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -291,20 +275,15 @@ public class SignBookController {
                          @RequestParam String subject,
                          @RequestParam String description,
                          @RequestParam(required = false) List<String> viewers,
+                         HttpServletRequest httpServletRequest,
                          RedirectAttributes redirectAttributes) {
         signBookService.updateSignBook(id, subject, description, viewers);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modifications enregistrées"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modifications enregistrées"));
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
         return "redirect:/user/signbooks/update/" + id;
-    }
-
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
-    @PostMapping(value = "/add-viewers/{id}")
-    public String addViewers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                         @RequestParam(required = false) List<String> viewers,
-                         RedirectAttributes redirectAttributes) {
-        signBookService.addViewers(id, viewers);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Observateurs ajoutés"));
-        return "redirect:/user/signbooks/" + id;
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -319,6 +298,7 @@ public class SignBookController {
                           @RequestParam(name="allSignToComplete", required = false) Boolean allSignToComplete,
                           @RequestParam(name="autoSign", required = false) Boolean autoSign,
                           @RequestParam("signType") SignType signType,
+                          HttpServletRequest httpServletRequest,
                           RedirectAttributes redirectAttributes) {
         try {
             List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
@@ -349,10 +329,20 @@ public class SignBookController {
             workflowStepDto.setAllSignToComplete(allSignToComplete);
             workflowStepDto.setSignType(signType);
             signBookService.addLiveStep(id, workflowStepDto , stepNumber, authUserEppn);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Étape ajoutée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Étape ajoutée"));
         } catch (Exception e) {
             logger.debug(e.getMessage(), e);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
         }
 
         return "redirect:/user/signbooks/update/" + id;
@@ -360,13 +350,24 @@ public class SignBookController {
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @DeleteMapping(value = "/remove-live-step/{id}/{step}")
-    public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, RedirectAttributes redirectAttributes) {
+    public String removeStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         String result = signBookService.removeStep(id, step);
         if (result == null) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "L'étape a été supprimés"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "L'étape a été supprimés"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("warn", result));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("warn", result));
         }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
+        }
+
         return "redirect:/user/signbooks/update/" + id;
     }
 
@@ -376,7 +377,11 @@ public class SignBookController {
                           @RequestParam(value = "workflowSignBookId") Long workflowSignBookId) throws EsupSignatureRuntimeException, EsupSignatureException {
         SignBook signBook = signBookService.getById(id);
         signBookService.addWorkflowToSignBook(signBook, authUserEppn, workflowSignBookId);
-        return "redirect:/user/signrequests/" + signBook.getSignRequests().get(0).getId() + "?form";
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId == null) {
+            return "redirect:/user/signbooks/" + id;
+        }
+        return "redirect:/user/signrequests/" + signRequestId + "?form";
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
@@ -385,26 +390,16 @@ public class SignBookController {
                                               @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
         try {
             signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Ajout effectuée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Ajout effectuée"));
         } catch(Exception e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
-        return "redirect:/user/signbooks/update/" + id;
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId == null) {
+            return "redirect:/user/signbooks/" + id;
+        }
+        return "redirect:/user/signrequests/" + signRequestId + "?form";
     }
-//
-//    @PreAuthorize("@preAuthorizeService.signBookOwner(#id, #authUserEppn)")
-//    @PostMapping(value = "/add-step/{id}")
-//    public String addRecipients(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-//                                @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
-//                                @RequestParam(name = "signType") SignType signType,
-//                                @RequestParam("stepNumber") int stepNumber,
-//                                @RequestParam(name = "allSignToComplete", required = false) Boolean allSignToComplete) throws EsupSignatureRuntimeException {
-//        WorkflowStepDto step = recipientService.convertRecipientEmailsToStep(recipientsEmails).get(0);
-//        step.setSignType(signType);
-//        step.setAllSignToComplete(allSignToComplete);
-//        signBookService.addLiveStep(id, step, null, authUserEppn);
-//        return "redirect:/user/signrequests/" + id + "?form";
-//    }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/pending/{id}")
@@ -418,9 +413,9 @@ public class SignBookController {
     public String toggle(@ModelAttribute("authUserEppn") String authUserEppn,
                          @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         if(signBookService.toggleHideSignBook(id, authUserEppn)) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande à été masquée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La demande à été masquée"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La demande est de nouveau visible"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La demande est de nouveau visible"));
         }
         return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
     }
@@ -443,7 +438,7 @@ public class SignBookController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new JsMessage("error", e.getMessage()));
+                    .body(new UiMessageDto("error", e.getMessage()));
         }
     }
 
@@ -486,12 +481,12 @@ public class SignBookController {
                 try {
                     signBookService.delete(id, authUserEppn);
                 } catch (EsupSignatureRuntimeException e) {
-                    logger.warn("error while deleting signBook : " + id, e);
+                    logger.warn("error while deleting signBookLight : " + id, e);
                 }
 
             }
         }
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Suppression effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Suppression effectuée"));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -506,7 +501,9 @@ public class SignBookController {
                                    @RequestParam(value = "firstnames", required = false) List<String> firstnames,
                                    @RequestParam(value = "phones", required = false) List<String> phones,
                                    @RequestParam(value = "forcesmses", required = false) List<String> forcesmses,
-                                   @RequestParam Integer stepNumber, RedirectAttributes redirectAttributes) {
+                                   @RequestParam Integer stepNumber,
+                                   HttpServletRequest httpServletRequest,
+                                   RedirectAttributes redirectAttributes) {
         List<RecipientWsDto> recipientWsDtos = new ArrayList<>();
         for(String recipientsEmail: recipientsEmails) {
             RecipientWsDto recipientWsDto = new RecipientWsDto(recipientsEmail);
@@ -528,8 +525,29 @@ public class SignBookController {
         try {
             liveWorkflowStepService.replaceRecipientsToWorkflowStep(id, stepNumber, recipientWsDtos);
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
+
+        String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
+        if (StringUtils.hasText(referer)) {
+            return "redirect:" + referer;
+        }
+
+        Long signRequestId = signBookService.getRedirectSignRequestId(id);
+        if (signRequestId != null) {
+            return "redirect:/user/signrequests/" + signRequestId;
+        }
+
         return "redirect:/user/signbooks/update/" + id;
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PostMapping(value = "/add-viewers/{id}")
+    public String addViewers(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+                             @RequestParam(required = false) List<String> viewers,
+                             RedirectAttributes redirectAttributes) {
+        signBookService.addViewers(id, viewers);
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Observateurs ajoutés"));
+        return "redirect:/user/signbooks/" + id;
     }
 }
