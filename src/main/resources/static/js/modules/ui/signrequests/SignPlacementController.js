@@ -454,7 +454,9 @@ export class SignPlacementController extends EventFactory {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
         let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton2");
+        let addSignButton2 = $("#addSignButton2");
+        let addSignButton = $("#addSignButton");
+        let addParaphButton2 = $("#addParaphButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
@@ -462,13 +464,15 @@ export class SignPlacementController extends EventFactory {
         let selectCertType = $("#certType");
 
         selectCertType.removeAttr("disabled");
+        addSignButton2.attr("disabled", "disabled");
         addSignButton.attr("disabled", "disabled");
+        addParaphButton2.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
-        this.setButtonVariant(addSignButton, "btn-secondary");
+        this.setButtonVariant(addSignButton2, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
         this.setButtonVariant(signLaunchButton, "btn-secondary");

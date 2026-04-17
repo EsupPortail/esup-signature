@@ -183,20 +183,14 @@ export class SignUi {
             url: "/ws-secure/validation/short/" + self.signRequestId,
             type: 'GET',
             success: function (data, textStatus, xhr) {
-                let modal = "<div class=\"modal fade\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
-                    "<div class=\"modal-dialog modal-lg\">" +
-                    "<div class=\"modal-content\">" +
-                    "<div class=\"modal-header\">" +
-                    "<h5 class=\"modal-title\" id=\"exampleModalLabel\">Validation de la signature</h5>\n" +
-                    "<button class=\"btn btn-sm btn-close text-dark float-end position-relative\" style='z-index: 2' onclick=\"$('#reportModal').modal('toggle');\"></button>" +
-                    "</div>" +
-                    "<div class=\"modal-body\">" +
+                let modal = "<div class=\"alert collapse\" data-bs-focus=\"false\" id=\"reportModal\" tabindex=\"-1\" role=\"dialog\" aria-hidden=\"true\">" +
+                    "<h5>Validation de la signature</h5>\n" +
+                    "<div>" +
                     data +
-                    "</div></div></div></div>";
-                $("body").append(modal);
+                    "</div></div>";
+                $("#alertSign").append(modal);
                 $("#reportSpinner").hide();
-                let reportModalBtn = $("#reportModalBtn");
-                reportModalBtn.removeClass("d-none");
+                $("#reportModalBtn").removeClass("d-none");
             }
         });
     }

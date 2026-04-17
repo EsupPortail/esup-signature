@@ -1306,6 +1306,154 @@ tr[aria-expanded="true"] .caret-toggle::before {
     border-radius: 4px 0px 0px 4px;
 }
 
+.es-status-card {
+    --es-status-accent: var(--bs-primary);
+    --es-status-icon-bg: var(--bs-primary-bg-subtle);
+    --es-status-icon-color: var(--bs-primary);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+    border: 0;
+    padding: 1rem 1.25rem 1rem 1rem;
+    border-left: 4px solid var(--es-status-accent);
+    border-radius: 6px;
+    background: var(--bs-light) !important;
+    color: var(--bs-dark);
+    overflow: hidden;
+}
+
+.es-status-card__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 3rem;
+    background: var(--es-status-icon-bg);
+    color: var(--es-status-icon-color);
+    font-size: 1.1rem;
+}
+
+.es-status-card__body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.es-status-card__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--bs-dark);
+}
+
+.es-status-card__description {
+    margin: 0;
+    color: var(--bs-secondary);
+    line-height: 1.5;
+}
+
+.es-status-card__content,
+.es-status-card__actions {
+    margin-top: 0.75rem;
+}
+
+.es-status-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.es-status-card__content > :last-child,
+.es-status-card__body > :last-child,
+.es-status-card__actions > :last-child,
+.es-status-card dl:last-child,
+.es-status-card p:last-child,
+.es-status-card ul:last-child,
+.es-status-card table:last-child {
+    margin-bottom: 0;
+}
+
+.es-status-card .table {
+    margin-bottom: 0 !important;
+}
+
+.es-status-card .table-secondary {
+    --bs-table-bg: var(--bs-secondary-bg-subtle);
+}
+
+.es-status-card--primary {
+    --es-status-accent: var(--bs-primary);
+    --es-status-icon-bg: var(--bs-primary-bg-subtle);
+    --es-status-icon-color: var(--bs-primary);
+}
+
+.es-status-card--info {
+    --es-status-accent: var(--bs-info);
+    --es-status-icon-bg: var(--bs-info-bg-subtle);
+    --es-status-icon-color: var(--bs-info);
+}
+
+.es-status-card--success {
+    --es-status-accent: var(--bs-success);
+    --es-status-icon-bg: var(--bs-success-bg-subtle);
+    --es-status-icon-color: var(--bs-success);
+}
+
+.es-status-card--warning {
+    --es-status-accent: var(--bs-warning);
+    --es-status-icon-bg: var(--bs-warning-bg-subtle);
+    --es-status-icon-color: var(--bs-warning);
+}
+
+.es-status-card--danger {
+    --es-status-accent: var(--bs-danger);
+    --es-status-icon-bg: var(--bs-danger-bg-subtle);
+    --es-status-icon-color: var(--bs-danger);
+}
+
+.es-status-card--secondary,
+.es-status-card--neutral {
+    --es-status-accent: var(--bs-secondary);
+    --es-status-icon-bg: var(--bs-secondary-bg-subtle);
+    --es-status-icon-color: var(--bs-secondary);
+}
+
+.es-status-note {
+    --es-status-note-accent: var(--bs-info);
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.85rem;
+    border-left: 4px solid var(--es-status-note-accent);
+    background: var(--bs-light);
+    color: var(--bs-dark);
+}
+
+.es-status-note--success {
+    --es-status-note-accent: var(--bs-success);
+}
+
+.es-status-note--info {
+    --es-status-note-accent: var(--bs-info);
+}
+
+@media (max-width: 767.98px) {
+    .es-status-card {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .es-status-card__icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-basis: 2.5rem;
+        font-size: 1rem;
+    }
+}
+
 /* ========== COINS (Boules) ========== */
 .cross .ui-resizable-se, .cross .ui-resizable-sw, .cross .ui-resizable-ne, .cross .ui-resizable-nw {
     width: 10px !important;
