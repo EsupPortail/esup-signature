@@ -24,7 +24,7 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1">
-                    <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+                    <div class="p-0 m-2">
                     <div class="input-group mb-3">
                         <span class="input-group-text">Filtrer</span>
                         <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">

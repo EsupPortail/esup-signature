@@ -4,7 +4,7 @@
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <nav th:fragment="side-admin" id="sidebar" th:if="${adminMenu == 'active'}">
     <div class="d-flex flex-column gap-1 ms-1 mt-2">
-        <div class="hr"><span class="sidebar-label"> Supervision</span></div>
+        <div class="text-uppercase ms-1"><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'btn-secondary' : 'btn-light'"
             title="Toutes les demandes" type="button" href="/admin/signbooks" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-ballot"></i> <span class="sidebar-label">Demandes</span>
@@ -25,7 +25,7 @@
             title="Exports" type="button" href="/admin/export" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-file-export"></i> <span class="sidebar-label">Exports</span>
         </a>
-        <div class="hr"><span class="sidebar-label"> Configuration</span></div>
+        <div class="text-uppercase ms-1"><span class="sidebar-label"> Configuration</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'btn-secondary' : 'btn-light'"
             title="Circuits de signature" href="/admin/workflows" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-diagram-project project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
@@ -58,7 +58,7 @@
             title="Tokens API" href="/admin/ws-access-token" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-key"></i> <span class="sidebar-label">Tokens API</span>
         </a>
-        <div class="hr"><span class="sidebar-label"> Outils</span></div>
+        <div class="text-uppercase ms-1"><span class="sidebar-label"> Outils</span></div>
         <a th:classappend="${activeMenu == 'currentSessions'} ? 'btn-secondary' : 'btn-light'"
             title="Sessions courantes" href="/admin/currentsessions" class="btn text-left rounded-5 border-secondary-subtle d-flex align-items-center gap-2">
             <i class="fi fi-rr-user-lock"></i> <span class="sidebar-label">Sessions courantes</span> <span id="admin-side-nb-sessions" th:text="${nbSessions}" class="badge rounded-pill bg-primary"></span>

@@ -1,6 +1,7 @@
 import {UserSignaturePad} from "./UserSignaturePad.js?version=@version@";
 import {UserSignatureCrop} from "./UserSignatureCrop.js?version=@version@";
 import {SignRequestParams} from '../../../prototypes/SignRequestParams.js?version=@version@';
+import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
 
 export class UserUi {
 
@@ -17,6 +18,7 @@ export class UserUi {
         this.userSignaturePad = new UserSignaturePad("canvas", 1, 4);
         this.userSignatureCrop = new UserSignatureCrop();
         this.saveSignRequestParams = false;
+        this.dirtyIndicator = null;
         this.checkAlertFrequency();
         this.signRequestParamsDefault = signRequestParams;
         if(signRequestParams != null) {
@@ -39,11 +41,12 @@ export class UserUi {
     }
 
     initListeners() {
-        $("#saveButton").on('click', e => this.save());
+        $("#saveButton").on('click', () => this.save());
         document.addEventListener('resetUserSignatureModal', e => this.resetSignatureModal(e));
         document.addEventListener('uiMeLoaded', e => this.applyUiMe(e.detail));
+        this.initDirtyIndicatorWhenReady();
 
-        this.userSignatureCrop.addEventListener("started", e => this.userSignaturePad.clear());
+        this.userSignatureCrop.addEventListener("started", () => this.userSignaturePad.clear());
         $("#sign-div, #sign-pad").on('shown.bs.collapse', () => this.refreshSignaturePadLayout());
         $("#add-sign-image").on('shown.bs.modal', () => this.refreshSignaturePadLayout());
         if(this.emailAlertFrequencySelect != null) {
@@ -51,8 +54,42 @@ export class UserUi {
         }
         this.bindDeleteSignButtons();
         $("input[name='saveSignRequestParams']").on("change", e => this.toggleSaveSignRequest(e));
-        $("#signRequestParamsClean").on("click", e => this.clearLocalStorage())
+        $("#signRequestParamsClean").on("click", () => this.clearLocalStorage())
         this.applyUiMe(this.readSessionJson('uiMe'));
+    }
+
+    initDirtyIndicatorWhenReady() {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            queueMicrotask(() => this.initDirtyIndicator());
+            return;
+        }
+
+        document.addEventListener('globalUiReady', () => this.initDirtyIndicator(), {once: true});
+    }
+
+    initDirtyIndicator() {
+        if (this.dirtyIndicator != null) {
+            return;
+        }
+
+        const form = document.getElementById('userParamsForm');
+        const saveButton = document.getElementById('saveButton');
+
+        if (!form || !saveButton) {
+            return;
+        }
+
+        this.dirtyIndicator = attachDirtyIndicator({
+            form,
+            saveButton,
+            extraInputs: [
+                document.getElementById('signImageBase64'),
+                document.getElementById('sign-request-params')
+            ].filter(Boolean),
+            extraStateProviders: [
+                () => this.userSignaturePad.hasPendingDirtyState()
+            ]
+        });
     }
 
     readSessionJson(key) {
@@ -114,12 +151,12 @@ export class UserUi {
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/${index}" role="button" class="btn btn-sm btn-transparent ${renderStarClass(index)}">
-                        <i class="fa-solid fa-star"></i>
+                        <i class="fi fi-rr-star"></i>
                     </a>
                 </td>
                 <td>
                     <button id="deleteSign_${signImageId}" data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
-                        <i class="fa-solid fa-trash-alt"></i>
+                        <i class="fi fi-rr-trash"></i>
                     </button>
                 </td>
             </tr>
@@ -132,7 +169,7 @@ export class UserUi {
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/999997" role="button" class="btn btn-sm btn-transparent ${renderStarClass(999997)}">
-                        <i class="fa-solid fa-star"></i>
+                        <i class="fi fi-rr-star"></i>
                     </a>
                 </td>
                 <td></td>
@@ -143,7 +180,7 @@ export class UserUi {
                 </td>
                 <td>
                     <a href="/${resolvedUserType}/users/set-default-sign-image/999998" role="button" class="btn btn-sm btn-transparent ${renderStarClass(999998)}">
-                        <i class="fa-solid fa-star"></i>
+                        <i class="fi fi-rr-star"></i>
                     </a>
                 </td>
                 <td></td>

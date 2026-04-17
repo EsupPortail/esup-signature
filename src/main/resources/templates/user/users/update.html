@@ -2,6 +2,39 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="user" type="org.esupportail.esupsignature.entity.User"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
+<style>
+    #saveButton {
+        position: relative;
+    }
+
+    #saveButton.form-dirty-indicator::after {
+        content: '';
+        position: absolute;
+        top: 0.1rem;
+        right: 0.1rem;
+        width: 0.65rem;
+        height: 0.65rem;
+        border-radius: 50%;
+        background: #dc3545;
+        box-shadow: 0 0 0 2px #fff;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.4);
+            opacity: 0.6;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {UserParamsHelp} from '/js/modules/help/UserParamsHelp.js?version=@[(${versionApp})]@';
 
@@ -120,14 +153,13 @@
                     <h5>Images de ma signature</h5>
                     <div id="signImageForm">
                         <div class="row">
-                            <div id="mySigns" class="col-12 col-xxl-4 mb-2 text-center">
-                                <label>Mes signatures</label>
-                                <table class="table table-borderless table-striped">
+                            <div id="mySigns" class="rounded-3 col-12 col-xxl-4 mb-2 text-center">
+                                <table class="table table-sm table-borderless table-striped table-hover table-light mb-0">
                                     <thead class="table-secondary">
                                     <tr>
                                         <th class="text-left">Aperçu</th>
                                         <th class="text-left">Préférée</th>
-                                        <th>Supprimer</th>
+                                        <th></th>
                                     </tr>
                                     </thead>
                                     <tbody id="user-settings-signatures-body">
@@ -137,7 +169,7 @@
                                         </td>
                                         <td>
                                             <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999997'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999997} ? 'text-warning' : 'text-secondary'">
-                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fi fi-rr-star"></i>
                                             </a>
                                         </td>
                                         <td>
@@ -149,7 +181,7 @@
                                         </td>
                                         <td>
                                             <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/999998'" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == 999998} ? 'text-warning' : 'text-secondary'">
-                                                <i class="fa-solid fa-star"></i>
+                                                <i class="fi fi-rr-star"></i>
                                             </a>
                                         </td>
                                         <td>
@@ -162,12 +194,12 @@
                                             </td>
                                             <td>
                                                 <a th:href="'/'+${user.userType.name() == 'external' ? 'otp' : 'user'}+'/users/set-default-sign-image/' + ${iterator.index}" role="button" class="btn btn-sm btn-transparent" th:classappend="${user.defaultSignImageNumber == iterator.index} ? 'text-warning' : 'text-secondary'">
-                                                    <i class="fa-solid fa-star"></i>
+                                                    <i class="fi fi-rr-star"></i>
                                                 </a>
                                             </td>
                                             <td>
                                                 <button th:id="'deleteSign_' + ${signImageId}" th:data-es-id="${signImageId}" role="button" class="btn btn-sm btn-danger text-white">
-                                                    <i class="fa-solid fa-trash-alt"></i>
+                                                    <i class="fi fi-rr-trash"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -219,9 +251,6 @@
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>
-                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
                                     <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Réinitialiser
                                     </button>
@@ -245,6 +274,9 @@
                                     <div id="vanilla-crop" class="mt-2"></div>
                                 </div>
                                 </div>
+                                <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
+                                    <i class="fi fi-rr-eraser"></i> Réinitialiser la signature
+                                </button>
                             </div>
                         </div>
                     </div>

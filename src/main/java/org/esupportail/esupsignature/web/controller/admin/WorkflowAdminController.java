@@ -267,9 +267,8 @@ public class WorkflowAdminController {
 							 @RequestParam(name="maxSignLevel", required = false) SignLevel maxSignLevel,
 							 @RequestParam(name="sealVisa", required = false) Boolean sealVisa,
 							 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
-		Workflow workflow = workflowService.getById(id);
 		try {
-			workflowStepService.updateStep(workflow.getWorkflowSteps().get(step).getId(), signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel, sealVisa);
+			workflowStepService.updateStep(id, step, signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel, sealVisa);
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
