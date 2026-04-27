@@ -25,7 +25,6 @@ public class Action {
     @Enumerated(EnumType.STRING)
     private ActionType actionType = ActionType.none;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date date;
 

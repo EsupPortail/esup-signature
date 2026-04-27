@@ -125,6 +125,28 @@ export class UserUi {
             .replaceAll("'", '&#39;');
     }
 
+    getCsrfToken() {
+        return document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+    }
+
+    getCsrfParameterName() {
+        const userParamsForm = document.getElementById('userParamsForm');
+        if (userParamsForm?.action) {
+            try {
+                const actionUrl = new URL(userParamsForm.action, window.location.origin);
+                const csrfToken = this.getCsrfToken();
+                for (const [parameterName, parameterValue] of actionUrl.searchParams.entries()) {
+                    if (parameterValue === csrfToken || parameterName.toLowerCase().includes('csrf')) {
+                        return parameterName;
+                    }
+                }
+            } catch (e) {
+                console.debug('Unable to resolve CSRF parameter name from userParamsForm action', e);
+            }
+        }
+        return '_csrf';
+    }
+
     applyUiMe(me) {
         if (me?.user == null) {
             return;
@@ -196,9 +218,15 @@ export class UserUi {
             return;
         }
         const resolvedUserType = this.userType === 'otp' ? 'otp' : 'user';
+        const csrfToken = this.escapeHtml(this.getCsrfToken());
+        const csrfParameterName = this.escapeHtml(this.getCsrfParameterName());
+        const csrfInput = csrfToken !== ''
+            ? `<input type="hidden" name="${csrfParameterName}" value="${csrfToken}" />`
+            : '';
         formsContainer.innerHTML = (Array.isArray(signImageIds) ? signImageIds : []).map(signImageId => `
             <form id="deleteForm-${signImageId}" action="/${resolvedUserType}/users/delete-sign/${encodeURIComponent(signImageId)}" method="post">
                 <input type="hidden" name="_method" value="delete" />
+                ${csrfInput}
             </form>
         `).join('');
     }

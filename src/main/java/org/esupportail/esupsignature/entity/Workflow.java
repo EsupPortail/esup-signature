@@ -35,14 +35,12 @@ public class Workflow {
 
     private Integer counter;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
     @ManyToOne
     private User createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -114,7 +112,6 @@ public class Workflow {
 
     private Boolean authorizeClone = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private Date startArchiveDate;
 

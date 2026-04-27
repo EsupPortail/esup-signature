@@ -33,7 +33,6 @@ public class SignRequest {
 
 	private String title;
 	
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -103,7 +102,6 @@ public class SignRequest {
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date cleanDocumentsHistoryDate;
 

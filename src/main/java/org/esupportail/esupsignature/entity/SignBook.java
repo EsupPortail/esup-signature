@@ -46,7 +46,6 @@ public class SignBook {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -58,7 +57,6 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private ArchiveStatus archiveStatus;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -104,7 +102,6 @@ public class SignBook {
 
     private Boolean forceAllDocsSign = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
 
