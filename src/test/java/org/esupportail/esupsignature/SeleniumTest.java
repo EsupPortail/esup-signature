@@ -214,7 +214,7 @@ public class SeleniumTest {
             }
 
             int countBefore = currentButtons.size();
-            safeClick(currentButtons.get(0));
+            safeClick(deleteButtons);
             safeClick(By.cssSelector(".bootbox-accept"));
             waitForUiToSettle();
             wait.until(webDriver -> webDriver.findElements(deleteButtons).size() < countBefore);
@@ -361,6 +361,56 @@ public class SeleniumTest {
         waitForUiToSettle();
     }
 
+    private void selectUserInSlimSelect(String selectId, String email) {
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id(selectId)));
+        wait.until(webDriver -> Boolean.TRUE.equals(js.executeScript(
+                "const select = document.getElementById(arguments[0]);" +
+                        "return !!(select && select.slim);",
+                selectId
+        )));
+
+        String result = (String) js.executeAsyncScript(
+                "const selectId = arguments[0];" +
+                        "const email = arguments[1];" +
+                        "const callback = arguments[arguments.length - 1];" +
+                        "const select = document.getElementById(selectId);" +
+                        "if (!select || !select.slim) { callback('ERROR|SlimSelect introuvable pour ' + selectId); return; }" +
+                        "fetch('/user/users/search-user?searchString=' + encodeURIComponent(email), { credentials: 'same-origin' })" +
+                        "  .then(response => response.ok ? response.json() : Promise.reject(new Error('HTTP ' + response.status)))" +
+                        "  .then(json => {" +
+                        "      const options = (json || []).map(user => {" +
+                        "          const mail = user.mail;" +
+                        "          const displayName = user.displayName;" +
+                        "          let text = mail;" +
+                        "          if (displayName) {" +
+                        "              text = displayName !== mail ? displayName + ' (' + mail + ')' : displayName;" +
+                        "          }" +
+                        "          return { text: text, value: mail };" +
+                        "      });" +
+                        "      const matchingOption = options.find(option => option.value === email);" +
+                        "      if (!matchingOption) { callback('ERROR|Utilisateur introuvable pour ' + email); return; }" +
+                        "      select.slim.setData(options);" +
+                        "      select.slim.setSelected(email);" +
+                        "      callback('OK|' + select.slim.getSelected().join(','));" +
+                        "  })" +
+                        "  .catch(error => callback('ERROR|' + (error && error.message ? error.message : String(error))));",
+                selectId,
+                email
+        );
+
+        if (result == null || !result.startsWith("OK|")) {
+            Assertions.fail("La sélection du destinataire a échoué pour " + email + " : " + result);
+        }
+
+        wait.until(webDriver -> Boolean.TRUE.equals(js.executeScript(
+                "const select = document.getElementById(arguments[0]);" +
+                        "return !!(select && select.slim && select.slim.getSelected().includes(arguments[1]));",
+                selectId,
+                email
+        )));
+        waitForUiToSettle();
+    }
+
     private void drawSignatureOnCanvas() {
         WebElement canvas = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("canvas")));
         wait.until(webDriver -> canvas.getSize().getWidth() > 0 && canvas.getSize().getHeight() > 0);
@@ -424,6 +474,7 @@ public class SeleniumTest {
         String previousUrl = driver.getCurrentUrl();
         safeClick(By.id("fast-sign-button"));
         waitForWizardResult(previousUrl);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("page_1")));
 
         safeClick(By.id("addSignButton2"));
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
@@ -454,26 +505,12 @@ public class SeleniumTest {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
 
-        String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
-        WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
-        safeClick(selectContainer);
-        WebElement searchInput = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
-                )
-        );
-        safeClick(searchInput);
-        searchInput.sendKeys(PRIMARY_EMAIL);
-        WebElement option = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-list .ss-option")
-                )
-        );
-        safeClick(option);
+        selectUserInSlimSelect("recipientsEmails-1", PRIMARY_EMAIL);
 
         String previousUrl = driver.getCurrentUrl();
         safeClick(By.id("send-pending-button"));
         waitForWizardResult(previousUrl);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("page_1")));
 
         safeClick(By.id("addSignButton2"));
         String signRequestId = (String) js.executeScript("return window.location.href.substring(window.location.href.lastIndexOf('/') + 1);");
@@ -534,22 +571,7 @@ public class SeleniumTest {
         WebElement fileInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.id("multipartFiles")));
         fileInput.sendKeys(new ClassPathResource("/dummy.pdf").getFile().getAbsolutePath());
 
-        String dataId = driver.findElement(By.id("recipientsEmails-1")).getDomAttribute("data-id");
-        WebElement selectContainer = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("div[data-id='" + dataId + "']")));
-        safeClick(selectContainer);
-        WebElement searchInput = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-search > input")
-                )
-        );
-        safeClick(searchInput);
-        searchInput.sendKeys(SECONDARY_EMAIL);
-        WebElement option = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.cssSelector("div.ss-content[data-id='" + dataId + "'] .ss-list .ss-option")
-                )
-        );
-        safeClick(option);
+        selectUserInSlimSelect("recipientsEmails-1", SECONDARY_EMAIL);
 
         String previousUrl = driver.getCurrentUrl();
         WebElement sendPendingButton = wait.until(ExpectedConditions.elementToBeClickable(By.id("send-pending-button")));
@@ -567,6 +589,7 @@ public class SeleniumTest {
         loginAs(SECONDARY_USERNAME, DEFAULT_TEST_PASSWORD, SECONDARY_DISPLAY_NAME);
         openUrl(APP_URL + "/user/signrequests/" + signRequestId);
         wait.until(ExpectedConditions.elementToBeClickable(By.id("addSignButton2")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("page_1")));
 
         safeClick(By.id("addSignButton2"));
         waitForSignLaunchReady();
