@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.page.admin.FormFieldUpdateDto;
 import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.Tag;
@@ -363,6 +364,16 @@ public class FormAdminController {
 			searchReturn = valueReturn;
 		}
 		fieldService.updateField(id, description, fieldType, favorisable, required, readOnly, extValueServiceName, extValueType, extValueReturn, searchServiceName, searchType, searchReturn, stepZero, workflowStepsIds);
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@ResponseBody
+	@PutMapping("{formId}/fields/update-all")
+	@PreAuthorize("@preAuthorizeService.formManager(#formId, #authUserEppn) || hasRole('ROLE_ADMIN')")
+	public ResponseEntity<String> updateAllFields(@ModelAttribute("authUserEppn") String authUserEppn,
+										@PathVariable("formId") Long formId,
+										@RequestBody(required = false) List<FormFieldUpdateDto> fieldUpdates) {
+		fieldService.updateFields(formId, fieldUpdates == null ? List.of() : fieldUpdates);
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
