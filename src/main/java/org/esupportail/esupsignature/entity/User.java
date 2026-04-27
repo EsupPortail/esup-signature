@@ -93,7 +93,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private DayOfWeek emailAlertDay;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
     @JsonIgnore
@@ -112,10 +111,8 @@ public class User {
     @ManyToOne
     private User replaceByUser;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceBeginDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
 
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)

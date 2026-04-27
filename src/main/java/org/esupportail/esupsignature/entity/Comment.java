@@ -16,7 +16,6 @@ public class Comment {
     @ManyToOne
     private User createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 

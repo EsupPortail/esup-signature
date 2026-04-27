@@ -42,7 +42,6 @@ public class AuditStep {
     @Column(columnDefinition = "TEXT")
     private String timeStampCertificat;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date timeStampDate;
 

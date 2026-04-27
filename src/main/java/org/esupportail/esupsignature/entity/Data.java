@@ -38,10 +38,8 @@ public class Data {
 	@ManyToOne
 	private User updateBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
 
     @ElementCollection(fetch = FetchType.LAZY)
