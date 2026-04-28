@@ -37,7 +37,7 @@ public class SMSUSmsService implements SmsService {
     }
 
     @Override
-    public void sendSms(String phoneNumber, String message) throws EsupSignatureRuntimeException {
+    public void sendSms(String userEmail, String phoneNumber, String message) throws EsupSignatureRuntimeException {
         try {
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getInterceptors().add(
