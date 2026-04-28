@@ -43,8 +43,7 @@ export class PdfViewer extends EventFactory {
         this.dataFields = jsFields;
         this.savedFields = new Map();
         this.events = {};
-        this.rotation = null;
-        this.pageRotation = 0;
+        this.rotationOverride = null;
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
@@ -77,7 +76,7 @@ export class PdfViewer extends EventFactory {
         $('#zoomout').on('click', e => this.zoomOut());
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
-        $('#autototate').on('click', e => this.autoRotate());
+        $('#autoRotate').on('click', e => this.autoRotate());
         $(document).on('click', '.display-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
             self.showLayerByStep(stepNumber, false);
@@ -461,6 +460,13 @@ export class PdfViewer extends EventFactory {
         }
     }
 
+    getPageRotation(page) {
+        if (this.rotationOverride == null) {
+            return page.rotate;
+        }
+        return this.rotationOverride;
+    }
+
     async renderTask(page, i, configPromise) {
         return new Promise((resolve, reject) => {
             let container = document.getElementById(`page_${i}`);
@@ -480,15 +486,11 @@ export class PdfViewer extends EventFactory {
             });
 
             const browserZoom = this.getBrowserZoom();
-            this.pageRotation = page.rotate;
-
-            if(this.rotation == null) {
-                this.rotation = this.pageRotation;
-            }
+            const pageRotation = this.getPageRotation(page);
 
             const viewport = page.getViewport({
                 scale: this.scale,
-                rotation: this.rotation
+                rotation: pageRotation
             });
 
             const dispatchToDOM = false;
@@ -538,14 +540,15 @@ export class PdfViewer extends EventFactory {
                 container.style.width = `${Math.floor(viewport.width)}px`;
                 container.style.height = `${Math.floor(viewport.height)}px`;
                 container.style.overflow = 'hidden';
-                const isPortrait = viewport.width < viewport.height;
-                const layerWidth = Math.floor(isPortrait ? viewport.width : viewport.height);
-                const layerHeight = Math.floor(isPortrait ? viewport.height : viewport.width);
+                const layerWidth = Math.floor(viewport.width);
+                const layerHeight = Math.floor(viewport.height);
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    annotationLayer.setAttribute("data-main-rotation", this.rotation);
+                    annotationLayer.setAttribute("data-main-rotation", pageRotation);
                     annotationLayer.style.width = `${layerWidth}px`;
                     annotationLayer.style.height = `${layerHeight}px`;
+                    annotationLayer.style.setProperty('--scale-factor', this.scale);
+                    annotationLayer.style.setProperty('--total-scale-factor', this.scale);
                 }
                 const textLayer = container.querySelector('.textLayer');
                 if (textLayer) {
@@ -1186,12 +1189,8 @@ export class PdfViewer extends EventFactory {
 
     autoRotate() {
         console.info('rotate left');
-        if (this.rotation === 0) {
-            this.rotation = this.pageRotation;
-        } else {
-            this.rotation = 0;
-        }
-        let autorotatebtn = $("#autototate");
+        this.rotationOverride = this.rotationOverride === 0 ? null : 0;
+        let autorotatebtn = $("#autoRotate");
         autorotatebtn.toggleClass("btn-light btn-dark");
         autorotatebtn.toggleClass("btn-outline-dark border-dark");
         autorotatebtn.children().toggleClass("fi-rr-navigation fi-rr-compass-north")
