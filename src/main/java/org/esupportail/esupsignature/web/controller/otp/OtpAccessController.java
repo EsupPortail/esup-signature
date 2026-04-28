@@ -152,31 +152,39 @@ public class OtpAccessController {
             User user = otp.getUser();
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
-                if(userTest == null && !globalProperties.getUserCanChangePhone()) {
-                    return ResponseEntity.internalServerError().body("Numéro de mobile incorrect");
-                }
-                Phonenumber.PhoneNumber number;
-                try {
-                    number = phoneUtil.parse(phone, null);
-                } catch (Exception e) {
-                    return ResponseEntity.internalServerError().body("Merci de saisir correctement votre numéro de mobile");
+                Phonenumber.PhoneNumber number = null;
+                if(!smsProperties.getServiceName().equals("EMAIL")) {
+                    if(userTest == null && !globalProperties.getUserCanChangePhone()) {
+                        return ResponseEntity.internalServerError().body("Numéro de mobile incorrect");
+                    }
+                    try {
+                        number = phoneUtil.parse(phone, null);
+                    } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body("Merci de saisir correctement votre numéro de mobile");
+                    }
                 }
                 if ((!otp.getSmsSended() || otpService.getOtpFromCache(urlId) == null) && smsService != null) {
+                    String password = otpService.generateOtpPassword(urlId, phone);
+                    if(smsProperties.getServiceName().equals("EMAIL")) {
+                        smsService.sendSms(user.getEmail(), null, password);
+                        otpService.setSmsSended(urlId);
+                        return ResponseEntity.ok().body("Code transmit sur votre boite mail");
+
+                    }
                     if (phoneUtil.isValidNumber(number)) {
-                        String password = otpService.generateOtpPassword(urlId, phone);
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
                             smsService.sendSms(user.getEmail(), phone, "Votre code de connexion esup_signature : " + password);
                             otpService.setSmsSended(urlId);
                             userService.updatePhone(user.getEppn(), phone);
-                            return ResponseEntity.ok().build();
+                            return ResponseEntity.ok().body("Code transmit sur votre mobile");
                         } catch (EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
                             return ResponseEntity.internalServerError().body(e.getMessage());
                         }
                     }
                 } else {
-                    return ResponseEntity.ok().body("Merci d'utiliser le code du dernier SMS reçu.");
+                    return ResponseEntity.ok().body("Merci d'utiliser le dernier code reçu");
                 }
             } else {
                 return ResponseEntity.internalServerError().body("Numéro de mobile déjà attribué, merci de prendre contact avec l'émetteur via le mail ci-dessus");
