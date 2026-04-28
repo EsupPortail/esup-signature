@@ -20,86 +20,107 @@ public class GlobalProperties {
      * Chemin d’accès à l’application
      */
     private String rootUrl;
+
     /**
      * Nom de domaine ex : univ-ville.fr
      */
     private String domain;
+
     /**
      * Activer ou non l’archivage et le nettoyage automatique. false par défaut
      */
     private Boolean enableScheduledCleanup = false;
+
     /**
      * Chemin d’écoute d’Esup-DSS-Client
      */
     private String nexuUrl = "http://localhost:9795";
+
     /**
      * Masquer la tuile Créer une demande personnalisée
      */
     private Boolean hideWizard;
+
     /**
      * Masquer la tuile Créer une demande personnalisée
      */
     private Boolean hideWizardWorkflow = true;
+
     /**
      * Masquer la tuile Auto-signature
      */
     private Boolean hideAutoSign;
+
     /**
      * Masquer la tuile Demander une signature
      */
     private Boolean hideSendSignRequest;
+
     /**
      * Liste des roles faisant exception à la valeur de hideWizard
      */
     private List<String> hideWizardExceptRoles = new ArrayList<>();
+
     /**
      * Liste des roles faisant exception à la valeur de hideAutoSign
      */
     private List<String> hideAutoSignExceptRoles = new ArrayList<>();
+
     /**
      * Liste des roles faisant exception à la valeur de hideSendSignRequest
      */
     private List<String> hideSendSignExceptRoles = new ArrayList<>();
+
     /**
      * Les documents des demandes terminées seront archivées vers ce dossier
      */
     private String archiveUri;
+
     /**
      * Délai en nombre de jours avant que les documents des demandes archivées ne soient effacés de la base (-1 non actif)
      */
     private Integer delayBeforeCleaning = -1;
+
     /**
      * Délai de conservation dans la corbeille en jours (-1 conservation infinie)
      */
     private Integer trashKeepDelay = -1;
+
     /**
      * Durée de conservation des documents originaux et des documents intermediates (-1 conservation infinie)
      */
     private Integer documentsHistoryDelay= -1;
+
     /**
      * Activer la fonction Switch User pour les administrateurs
      */
     private Boolean enableSu = false;
+
     /**
      * Activer le message d’accueil pour les nouveaux utilisateurs
      */
     private Boolean enableSplash = false;
+
     /**
      * Géré automatiquement, ne pas modifier !
      */
     private String version = "";
+
     /**
      * Adresse email du contact technique de l’application
      */
     private String applicationEmail = "esup.signature@univ-ville.fr";
+
     /**
      * Nombre d'heure minimum entre deux relances manuelles
      */
     private Integer hoursBeforeRefreshNotif = 24;
+
     /**
      * Activer le scrolling infini sur le tableau de bord (sinon pagination)
      */
     private Boolean infiniteScrolling = true;
+
     /**
      * Redirection après signature. true : retour à l'accueil, false : on reste sur la demande
      */
@@ -149,6 +170,7 @@ public class GlobalProperties {
      * Suffix ajouté aux documents signés
      */
     private String signedSuffix = "_signed";
+
     /**
      * Choisir le fonctionnement des délégations :
      *  <ul>
@@ -159,22 +181,27 @@ public class GlobalProperties {
      *  </ul>
      */
     private Integer shareMode = 0;
+
     /**
      * Activer/Désactiver la possibilité de stocker des certificats utilisateurs
      */
     private Boolean disableCertStorage = false;
+
     /**
      * Activer/Désactiver la detection de robot à la connexion
      */
     private Boolean enableCaptcha = false;
+
     /**
      * Taille maximum des uploads de fichiers en bytes
      */
     private Integer maxUploadSize = 52428800;
+
     /**
      * Nombre de jours avant alerte de suppression pour les demandes en attente (-1 non actif)
      */
     private Integer nbDaysBeforeWarning = -1;
+
     /**
      * Nombre de jours après alerte pour suppression des demandes en attente (-1 non actif)
      */
@@ -278,6 +305,11 @@ public class GlobalProperties {
      *  Imposer la double authentification par SMS pour les externes
      */
     private Boolean smsRequired = true;
+
+    /**
+     * Les utilisateurs externes peuvent modifier leur numéro de mobile
+     */
+    private Boolean userCanChangePhone = true;
 
     /**
      * The org.bouncycastle.rsa.max_mr_tests property check has been added to allow capping of MR tests done on RSA moduli.
@@ -799,6 +831,14 @@ public class GlobalProperties {
 
     public void setSmsRequired(Boolean smsRequired) {
         this.smsRequired = smsRequired;
+    }
+
+    public Boolean getUserCanChangePhone() {
+        return userCanChangePhone;
+    }
+
+    public void setUserCanChangePhone(Boolean userCanChangePhone) {
+        this.userCanChangePhone = userCanChangePhone;
     }
 
     public Integer getBouncycastelMaxMrTests() {

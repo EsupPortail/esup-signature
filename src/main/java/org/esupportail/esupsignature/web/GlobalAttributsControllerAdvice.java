@@ -96,6 +96,7 @@ public class GlobalAttributsControllerAdvice {
             model.addAttribute("globalProperties", myGlobalProperties);
             model.addAttribute("globalPropertiesJson", objectMapper.writer().writeValueAsString(myGlobalProperties));
             model.addAttribute("enableSms", uiConfig.enableSms());
+            model.addAttribute("smsRequired", uiConfig.smsRequired());
             model.addAttribute("reportNumber", uiCounters.reportNumber());
             if (uiConfig.profile() != null) {
                 model.addAttribute("profile", uiConfig.profile());

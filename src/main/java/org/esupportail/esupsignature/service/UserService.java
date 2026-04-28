@@ -69,7 +69,6 @@ public class UserService {
     private final LdapAliasService ldapAliasService;
     private final LdapGroupService ldapGroupService;
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
-    private final SmsService smsService;
     private final ShibProperties shibProperties;
     private final UserRepository userRepository;
     private final FileService fileService;
@@ -85,7 +84,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService, ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository) {
+                       ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -93,7 +92,6 @@ public class UserService {
         this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
-        this.smsService = smsService;
         this.shibProperties = shibProperties;
         this.userRepository = userRepository;
         this.fileService = fileService;

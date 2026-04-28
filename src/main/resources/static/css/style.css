@@ -306,8 +306,8 @@ td {
 .nav-item.ws-tab:not(:last-child)::after {
     content: '';
     position: absolute;
-    top: 12px;
-    bottom: 12px;
+    top: 16px;
+    bottom: 8px;
     right: 0;
     width: 2px;
     background-color: var(--color-adb5bd);

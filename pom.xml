@@ -20,6 +20,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.4</dss.framework.version>
         <pdfbox.version>3.0.6</pdfbox.version>
+		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>
 	</properties>
@@ -734,9 +735,10 @@
             </exclusions>
         </dependency>
 		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>4.35.0</version>
+			<groupId>com.microsoft.playwright</groupId>
+			<artifactId>playwright</artifactId>
+			<version>${playwright.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>software.xdev</groupId>
@@ -800,7 +802,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>${startClass}</mainClass>
-					<executable>true</executable>
 				</configuration>
 				<executions>
 					<execution>
@@ -816,6 +817,8 @@
 				<version>3.0.0</version>
 				<configuration>
 					<excludes>
+						<exclude>**/*IT.java</exclude>
+						<exclude>**/PlaywrightTest.java</exclude>
 						<exclude>**/Selenium*.java</exclude>
 					</excludes>
 					<skip>${skipSurefire}</skip>
@@ -862,10 +865,12 @@
 				<version>3.0.0</version>
 				<configuration>
 					<includes>
-						<include>**/Selenium*.java</include>
+						<include>**/*IT.java</include>
+						<include>**/PlaywrightTest.java</include>
 					</includes>
 					<systemPropertyVariables>
 						<spring.config.location>src/test/resources/application-test.yml</spring.config.location>
+						<playwright.artifacts.dir>${project.build.directory}/playwright-artifacts</playwright.artifacts.dir>
 					</systemPropertyVariables>
 					<testFailureIgnore>false</testFailureIgnore>
 				</configuration>

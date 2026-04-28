@@ -14,7 +14,8 @@ public record UiDataDto(
 
     public record UiConfigDto(
             UiGlobalPropertiesDto globalProperties,
-            Boolean enableSms,
+            String enableSms,
+            Boolean smsRequired,
             Boolean validationToolsEnabled,
             String applicationEmail,
             Integer maxInactiveInterval,

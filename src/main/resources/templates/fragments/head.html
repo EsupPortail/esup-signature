@@ -41,7 +41,10 @@
 		<script type="module" th:src="@{/webjars/intl-tel-input/build/js/intlTelInputWithUtils.js}"></script>
 
 		<script th:inline="javascript" type="module" th:if="${versionApp != null}">
-			sessionStorage.setItem("enableSms", [[${enableSms}]]);
+			const enableSms = /*[[${enableSms}]]*/ null;
+			const smsRequired = /*[[${smsRequired}]]*/ null;
+			sessionStorage.setItem("enableSms", JSON.stringify(enableSms));
+			sessionStorage.setItem("smsRequired", JSON.stringify(smsRequired));
 			import {GlobalUi} from '/js/modules/ui/GlobalUi.js?version=@[(${versionApp})]@';
 			new GlobalUi([[${authUserEppn}]], [[${_csrf}]], [[${applicationEmail}]], [[${globalProperties.maxUploadSize}]], [[${maxInactiveInterval}]]);
 		</script>

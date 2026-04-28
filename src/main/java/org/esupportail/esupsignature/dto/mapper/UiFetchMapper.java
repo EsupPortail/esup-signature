@@ -165,7 +165,8 @@ public class UiFetchMapper {
     }
 
     public UiDataDto.UiConfigDto toUiConfigDto(UiGlobalPropertiesDto globalProperties,
-                                               Boolean enableSms,
+                                               String enableSms,
+                                               Boolean smsRequired,
                                                Boolean validationToolsEnabled,
                                                String applicationEmail,
                                                Integer maxInactiveInterval,
@@ -176,6 +177,7 @@ public class UiFetchMapper {
         return new UiDataDto.UiConfigDto(
                 globalProperties,
                 enableSms,
+                smsRequired,
                 validationToolsEnabled,
                 applicationEmail,
                 maxInactiveInterval,
