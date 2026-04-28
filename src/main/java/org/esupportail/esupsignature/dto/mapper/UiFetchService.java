@@ -539,7 +539,8 @@ public class UiFetchService {
         String versionApp = buildProperties != null ? buildProperties.getVersion() : "dev";
         return uiFetchMapper.toUiConfigDto(
                 uiGlobalProperties,
-                smsProperties.getEnableSms(),
+                smsProperties.getEnableSms() ? smsProperties.getServiceName() : null,
+                globalProperties.getSmsRequired(),
                 validationService != null,
                 globalProperties.getApplicationEmail(),
                 maxInactiveInterval,

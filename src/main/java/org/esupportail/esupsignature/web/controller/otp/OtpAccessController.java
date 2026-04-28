@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Otp;
@@ -57,8 +58,9 @@ public class OtpAccessController {
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
     private final ClientRegistrationRepository clientRegistrationRepository;
+    private final SmsProperties smsProperties;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, SmsProperties smsProperties) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
@@ -66,6 +68,7 @@ public class OtpAccessController {
         this.securityServices = securityServices;
         this.smsService = smsService;
         this.clientRegistrationRepository = clientRegistrationRepository;
+        this.smsProperties = smsProperties;
     }
 
     @GetMapping(value = "/first/{urlId}")
@@ -82,8 +85,8 @@ public class OtpAccessController {
                 return "redirect:/otp-access/completed";
             }
             model.addAttribute("otp", otp);
-            model.addAttribute("smsService", smsService);
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
+            model.addAttribute("enableSms", smsProperties.getServiceName());
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
@@ -149,6 +152,9 @@ public class OtpAccessController {
             User user = otp.getUser();
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
+                if(userTest == null && !globalProperties.getUserCanChangePhone()) {
+                    return ResponseEntity.internalServerError().body("Numéro de mobile incorrect");
+                }
                 Phonenumber.PhoneNumber number;
                 try {
                     number = phoneUtil.parse(phone, null);
@@ -160,7 +166,7 @@ public class OtpAccessController {
                         String password = otpService.generateOtpPassword(urlId, phone);
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
-                            smsService.sendSms(user.getEmail(), phone, "Votre code de connexion esup_signature " + password);
+                            smsService.sendSms(user.getEmail(), phone, "Votre code de connexion esup_signature : " + password);
                             otpService.setSmsSended(urlId);
                             userService.updatePhone(user.getEppn(), phone);
                             return ResponseEntity.ok().build();
@@ -198,7 +204,7 @@ public class OtpAccessController {
             String newPassword = otpService.generateOtpPassword(urlId, otp.getPhoneNumber());
             logger.info("sending password by sms : " + newPassword + " to " + otp.getPhoneNumber());
             try {
-                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), "Votre code de connexion esup_signature " + newPassword);
+                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), "Votre code de connexion esup_signature : " + newPassword);
                 otpService.setSmsSended(urlId);
             } catch (Exception e) {
                 logger.error(e.getMessage());

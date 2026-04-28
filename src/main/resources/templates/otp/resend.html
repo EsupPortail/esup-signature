@@ -15,6 +15,8 @@
                     <h4>Lien envoyé avec succès</h4>
                     <p class="success-description">
                         Un nouveau lien de signature vous a été envoyé par email.
+                        <br>
+                        En cas de non récéption (> 5 minutes), retentez en cliquant ci-dessous :
                     </p>
 
                     <form th:action="@{/otp-access/resend}" method="post" th:object="${otp}" class="expired-form">

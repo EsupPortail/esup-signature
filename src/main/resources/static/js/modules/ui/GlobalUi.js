@@ -247,6 +247,9 @@ export class GlobalUi {
         if (config.enableSms != null) {
             sessionStorage.setItem('enableSms', JSON.stringify(config.enableSms));
         }
+        if (config.smsRequired != null) {
+            sessionStorage.setItem('smsRequired', JSON.stringify(config.smsRequired));
+        }
         if (config.applicationEmail != null) {
             this.applicationEmail = config.applicationEmail;
         }

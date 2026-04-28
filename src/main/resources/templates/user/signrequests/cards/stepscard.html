@@ -193,7 +193,7 @@
                                                                 <div class="modal-header"><h3>Envoyer un nouveau lien d'accès</h3></div>
                                                                 <div class="modal-body">
                                                                     <p>Confirmer l'envoi d'un nouveau lien d'accès</p>
-                                                                    <div>
+                                                                    <div th:if="${enableSms != 'EMAIL'}">
                                                                         <span th:if="${globalProperties.smsRequired}">Mobile obligatoire</span>
                                                                         <span th:unless="${globalProperties.smsRequired}">Mobile facultatif</span>
                                                                         <br>
@@ -203,14 +203,14 @@
                                                                             class="form-control"
                                                                             th:value="${recipient.user.hidedPhone}">
                                                                         <br><br>
-                                                                        <button type="button"
-                                                                                th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
-                                                                                class="btn btn-success float-end mb-2"
-                                                                                title="Envoyer un nouveau lien d'accès"
-                                                                                style="right: 17px; bottom: 7px !important; position: absolute;">
-                                                                            Confirmer
-                                                                        </button>
                                                                     </div>
+                                                                    <button type="button"
+                                                                            th:id="'confirmBtn_' + ${liveWorkflowStep.id}"
+                                                                            class="btn btn-success float-end mb-2"
+                                                                            title="Envoyer un nouveau lien d'accès"
+                                                                            style="right: 17px; bottom: 7px !important; position: absolute;">
+                                                                        Confirmer
+                                                                    </button>
                                                                     <script th:inline="javascript">
                                                                         $(document).ready(function() {
                                                                             const phoneInputSelector = '#phone_' + /*[[${liveWorkflowStep.id}]]*/ 0;
@@ -302,7 +302,7 @@
                                                         title="Envoyer un nouveau lien d'accès"
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
                                                         th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
-                                                    <i class="fi fi-rr-link"></i> Renvoyer un lien d'accès à <span th:text="${recipient.user.email}"></span>
+                                                    <i class="fi fi-rr-link"></i> Renvoyer un lien d’accès à <span th:text="${recipient.user.email}"></span>
                                                 </button>
                                             </th:block>
                                         </li>
