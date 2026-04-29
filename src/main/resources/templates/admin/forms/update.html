@@ -246,9 +246,9 @@
                             </button>
                         </li>
                         <li>
-                            <button class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                            <a class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
                                 <i class="fi fi-rr-file-export"></i>
-                            </button>
+                            </a>
                         </li>
                         <li>
                             <button role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">

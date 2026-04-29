@@ -26,7 +26,6 @@ export class SignUi {
         this.certTypeObserver = null;
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         this.signatureFlowController = new SignatureFlowController(this);
-        $("#password").hide();
         this.initListeners();
         this.initMobileCertTypeVisibility();
         if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
@@ -143,17 +142,6 @@ export class SignUi {
         $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(e));
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#refresh-certType2").on('click', e => this.checkSignOptions());
-        let self = this;
-        $("#password").on('keyup', function (e) {
-            if (e.keyCode === 13) {
-                let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
-                if (checkValidateSignButtonNext.length > 0) {
-                    self.launchSign(true);
-                } else {
-                    self.launchSign(false);
-                }
-            }
-        });
         $("#certType").on("change", e => this.checkAfterChangeSignType());
         $("#copyButton").on('click', e => this.copy());
         $("#send").on('submit', function (e) {
@@ -365,10 +353,8 @@ export class SignUi {
         }
         let value = this.certTypeSelect.val();
         $("#alert-sign-present").hide();
-        if (value === "userCert") {
-            $("#password").show();
-        } else {
-            $("#password").hide();
+        if (value !== "userCert") {
+            this.signatureFlowController.setContextualPassword("");
         }
         if (value === "nexuCert") {
             $("#nexuCheck").removeClass('d-none');
@@ -455,7 +441,7 @@ export class SignUi {
             contentType: "application/json",
             data: JSON.stringify(step),
             success: function() {
-                $("#password").val($("#passwordInfinite").val());
+                self.signatureFlowController.setContextualPassword("");
                 self.launchSign();
             }
         });

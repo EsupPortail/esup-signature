@@ -305,10 +305,11 @@ td {
 
 .nav-item.ws-tab:not(:last-child)::after {
     content: '';
+    z-index: 1000;
     position: absolute;
-    top: 16px;
-    bottom: 8px;
-    right: 0;
+    top: 14px;
+    bottom: 10px;
+    right: -1px;
     width: 2px;
     background-color: var(--color-adb5bd);
 }
@@ -327,7 +328,7 @@ td {
 }
 
 .nav-item.ws-tab.active {
-    border-bottom : 1px solid var(--bs-white);
+    border-bottom : 0px solid var(--bs-white);
 }
 
 .nav-tabs .nav-link {
