@@ -318,11 +318,6 @@ public class User {
         return roles;
     }
 
-    @JsonIgnore
-    public List<String> getRolesCopy() {
-        return new ArrayList<>(roles);
-    }
-
     public void setRoles(Set<String> roles) {
         this.roles = roles;
     }

@@ -51,28 +51,22 @@ public class FormAdminController {
 	}
 
 	private final FormService formService;
-	private final WorkflowService workflowService;
 	private final UserService userService;
-	private final PreFillService preFillService;
 	private final DataExportService dataExportService;
 	private final FieldService fieldService;
 	private final ObjectMapper objectMapper;
 	private final PreAuthorizeService preAuthorizeService;
-    private final TagService tagService;
 	private final UiFetchService uiFetchService;
 	private final GlobalProperties globalProperties;
 
-	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
+	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
 		this.formService = formService;
-		this.workflowService = workflowService;
 		this.userService = userService;
-		this.preFillService = preFillService;
 		this.dataExportService = dataExportService;
 		this.fieldService = fieldService;
 		this.objectMapper = objectMapper;
 		this.preAuthorizeService = preAuthorizeService;
-        this.tagService = tagService;
-						this.uiFetchService = uiFetchService;
+		this.uiFetchService = uiFetchService;
 		this.globalProperties = globalProperties;
     }
 
@@ -403,7 +397,7 @@ public class FormAdminController {
 		Form form = formService.getById(id);
 		try {
 			response.setContentType("text/json; charset=utf-8");
-			response.setHeader("Content-Disposition", "attachment; filename=" + form.getName() + ".json");
+			response.setHeader("Content-Disposition", "attachment; filename=form_" + form.getName() + ".json");
 			InputStream csvInputStream = formService.getJsonFormSetup(id);
 			IOUtils.copy(csvInputStream, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);

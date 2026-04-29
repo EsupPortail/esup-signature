@@ -44,6 +44,7 @@ public class Form {
 
 	private String managerRole;
 
+	@JsonIgnore
 	@OneToOne
 	private Workflow workflow;
 	
