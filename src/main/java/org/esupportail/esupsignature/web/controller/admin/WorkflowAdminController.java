@@ -393,7 +393,7 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowService.getById(id);
 		try {
 			response.setContentType("text/json; charset=utf-8");
-			response.setHeader("Content-Disposition", "attachment; filename=" + workflow.getName() + ".json");
+			response.setHeader("Content-Disposition", "attachment; filename=workflow_" + workflow.getDescription() + ".json");
 			InputStream csvInputStream = workflowService.getJsonWorkflowSetup(id);
 			IOUtils.copy(csvInputStream, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -412,7 +412,7 @@ public class WorkflowAdminController {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream(), authUserEppn);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(), e);
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows/update/" + id;

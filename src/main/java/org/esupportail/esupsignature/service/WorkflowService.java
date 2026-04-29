@@ -728,6 +728,7 @@ public class WorkflowService {
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
         workflowSetup.setId(id);
         workflow.getWorkflowSteps().clear();
+        int i = 0;
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
@@ -738,9 +739,13 @@ public class WorkflowService {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
-                workflowStepService.updateStep(id, workflow.getWorkflowSteps().indexOf(newWorkflowStep), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
-                workflow.getWorkflowSteps().add(newWorkflowStep);
+                if(workflow.getWorkflowSteps().size() > i) {
+                    workflowStepService.updateStep(id, i, workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
+                } else {
+                    workflow.getWorkflowSteps().add(newWorkflowStep);
+                }
             }
+            i++;
         }
         workflow.getTargets().clear();
         User updateUser = userService.getByEppn(authUserEppn);
