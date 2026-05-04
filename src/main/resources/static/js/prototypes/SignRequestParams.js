@@ -476,7 +476,7 @@ export class SignRequestParams extends EventFactory {
 
     #saveSpot() {
         $(window).off("beforeunload.signPositionPendingChanges");
-        this.spotStepNumber = $("#spotStepNumber").val();
+        this.spotStepNumber = $("[name='spotStepNumber']").first().val();
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {

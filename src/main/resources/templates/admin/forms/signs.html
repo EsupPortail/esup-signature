@@ -24,7 +24,7 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1 d-flex flex-column">
+                <div class="flex-grow-1 d-flex flex-column es-spot-add-admin-scope">
             <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
@@ -37,9 +37,11 @@
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-            <div class="d-flex gap-2 flex-grow-1 overflow-hidden workspace-margin-top-admin" th:if="${workflow != null}">
+            <div class="d-flex gap-2 flex-grow-1 overflow-hidden workspace-margin-top-admin es-spot-workspace-row" th:if="${workflow != null}">
                 <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
-                <div class="flex-grow-1 overflow-hidden" th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
+                <div class="flex-grow-1 overflow-hidden es-spot-workspace-host">
+                    <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
+                </div>
             </div>
             <div th:if="${workflow == null}" class="alert alert-warning">
                 Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire

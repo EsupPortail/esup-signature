@@ -258,7 +258,7 @@ export class SignWorkspaceController {
             $('#prev').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.prevPage());
             $('#next').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
             $('#end-button').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
-            $("#spotStepNumber").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
+            $("[name='spotStepNumber']").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
             // this.signPlacementController.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPlacementController.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initSignWorkspace());

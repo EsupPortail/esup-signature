@@ -126,25 +126,47 @@ body.es-signrequest-page #tools #signLaunchButton {
     pointer-events: none !important;
 }
 
-body.es-spot-add-mode #content > *:not(#workspace) {
+body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
-body.es-spot-add-mode #workspace > *:not(form):not(#pdf):not([id^="cross_"]):not([id^="crossTools_"]):not(#spot-modal) {
+body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
-body.es-spot-add-mode #workspace > form:not(#pdf),
-body.es-spot-add-mode #workspace > form:not(#pdf) > *:not(#pdf) {
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row {
+    opacity: 1;
+    filter: none;
+}
+
+body.es-spot-add-mode .es-spot-add-admin-scope > *:not(.es-spot-workspace-row) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host),
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host) {
+    opacity: 0.35;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host *,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+body.es-spot-add-mode #workspace,
+body.es-spot-add-mode #workspace *,
 body.es-spot-add-mode #pdf,
 body.es-spot-add-mode #pdf *,
 body.es-spot-add-mode #cross_999999,

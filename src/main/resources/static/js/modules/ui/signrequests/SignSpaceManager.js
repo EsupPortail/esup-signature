@@ -46,7 +46,7 @@ export class SignSpaceManager {
 					signSpaceDiv.remove();
 				}
 				const spotId = this.options.findSpotIdForSignParams(currentSignRequestParams);
-				const deleteBtnHtml = (this.options.isSignable() && this.options.isEditable()) && spotId != null
+				const deleteBtnHtml = this.options.isEditable() && spotId != null
 					? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
 					: "";
 				let cssClasses = "sign-space";

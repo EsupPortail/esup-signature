@@ -107,11 +107,14 @@
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true" value="">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${workflow.workflowSteps}">
-                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:unless="${srpMap.containsKey(iterator.index + 1)}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}"></option>
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
+                                            th:text="'Etape ' + ${iterator.index + 1}"
+                                            th:value="${iterator.index + 1}"
+                                            th:disabled="${srpMap.containsKey(iterator.index + 1)}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${workflow.workflowSteps.size() > 1}">
+                        <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:unless="${workflow.workflowSteps.size() > 1}">
                         <input id="spotComment" name="comment" type="hidden">
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler

@@ -3,6 +3,8 @@ export class SpotManager {
     constructor(state, options = {}) {
         this.state = state;
         this.spotAddEnabled = false;
+        this.activeWorkspaceScope = $();
+        this.preservedWorkspaceVisualScope = $();
         this.options = {
             signSpaceNamespace: options.signSpaceNamespace ?? ".spotManagerSignSpace",
             spotAddNamespace: options.spotAddNamespace ?? ".spotManagerAdd",
@@ -33,8 +35,21 @@ export class SpotManager {
     activateSpotAddMode() {
         this.spotAddEnabled = true;
         const pdfViewer = this.options.getPdfViewer();
+        const workspace = $("#workspace");
+        const mainContent = workspace.closest(".es-main-content");
+        const workspaceElement = workspace.get(0);
+        this.activeWorkspaceScope = mainContent.length && workspaceElement != null ? mainContent.children().has(workspaceElement) : $();
+        this.preservedWorkspaceVisualScope = workspace.length
+            ? workspace.parentsUntil(".es-main-content").addBack()
+            : $();
+        this.activeWorkspaceScope.addClass("es-spot-add-scope");
         $("body").addClass("es-spot-add-mode");
         $('body *').css('pointer-events', 'none');
+        $('#workspace, #workspace *').css('pointer-events', 'auto');
+        this.preservedWorkspaceVisualScope.css({
+            opacity: 1,
+            filter: 'none'
+        });
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css({
                 'pointer-events': 'auto',
@@ -52,6 +67,13 @@ export class SpotManager {
         this.spotAddEnabled = false;
         const pdfViewer = this.options.getPdfViewer();
         $("body").removeClass("es-spot-add-mode");
+        this.activeWorkspaceScope.removeClass("es-spot-add-scope");
+        this.activeWorkspaceScope = $();
+        this.preservedWorkspaceVisualScope.css({
+            opacity: '',
+            filter: ''
+        });
+        this.preservedWorkspaceVisualScope = $();
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css('cursor', 'default');
         }
@@ -81,7 +103,7 @@ export class SpotManager {
     }
 
     changeSpotStep() {
-        let stepNumber = $("#spotStepNumber").val();
+        let stepNumber = $("[name='spotStepNumber']").first().val();
         $('[id^="liveStep-"]').each(function () {
             $(this).find(".step-vertical-content")
                 .removeClass("bg-success bg-secondary-subtle")
@@ -91,6 +113,56 @@ export class SpotManager {
         liveStep.find(".step-vertical-content")
             .removeClass("bg-light bg-secondary-subtle")
             .addClass("bg-secondary");
+    }
+
+    refreshSpotStepOptions() {
+        const spotStepNumber = $("[name='spotStepNumber']").first();
+        if (!spotStepNumber.length || spotStepNumber.attr("type") === "hidden") {
+            return;
+        }
+
+        const occupiedSteps = new Set();
+        const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
+        spots.forEach(spot => {
+            const step = parseInt(spot?.stepNumber, 10);
+            if (Number.isFinite(step)) {
+                occupiedSteps.add(String(step));
+            }
+        });
+
+        let nextValue = spotStepNumber.val() ?? "";
+        const slimData = [];
+
+        spotStepNumber.find("option").each((_, optionElement) => {
+            const option = $(optionElement);
+            const value = option.attr("value") ?? "";
+            const isPlaceholder = option.is("[data-placeholder='true']");
+            const shouldDisable = !isPlaceholder && value !== "" && occupiedSteps.has(value);
+            option.prop("disabled", shouldDisable);
+            slimData.push({
+                text: option.text(),
+                value: value,
+                disabled: shouldDisable,
+                placeholder: isPlaceholder,
+                selected: false
+            });
+            if (value === nextValue && shouldDisable) {
+                nextValue = "";
+            }
+        });
+
+        spotStepNumber.val(nextValue);
+
+        const slim = spotStepNumber.get(0)?.slim;
+        if (slim != null && typeof slim.setData === "function") {
+            slimData.forEach(item => {
+                item.selected = item.value === nextValue;
+            });
+            slim.setData(slimData);
+            if (typeof slim.setSelected === "function") {
+                slim.setSelected(nextValue === "" ? "" : nextValue);
+            }
+        }
     }
 
     filterSpotsNotCurrentStep(spots) {
@@ -162,6 +234,7 @@ export class SpotManager {
             spots.push(normalizedSpot);
         }
         this.options.setSpots(spots);
+        this.refreshSpotStepOptions();
 
         if (this.options.isSignable() && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
             this.options.removeSignSpaceBySpotId(spotId);
@@ -190,6 +263,7 @@ export class SpotManager {
             : [];
         this.options.setSpots(spots);
         this.options.setCurrentSignRequestParamses(currentParams);
+        this.refreshSpotStepOptions();
     }
 
     bindSignSpaceDelete(signSpaceDiv) {
@@ -224,6 +298,7 @@ export class SpotManager {
     enableSpotAdd() {
         this.options.exitCommentAddMode();
         this.exitSpotAddMode();
+        this.refreshSpotStepOptions();
         this.options.setToolsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
         this.activateSpotAddMode();

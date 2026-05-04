@@ -86,7 +86,7 @@ export class CommentManager {
     saveComment() {
         this.positionLocked = true;
         const addSpotEnabled = this.options.isAddSpotEnabled();
-        let spotStepNumberVal = $("#spotStepNumber");
+        let spotStepNumberVal = $("[name='spotStepNumber']").first();
         if (addSpotEnabled && spotStepNumberVal.val() === "") {
             spotStepNumberVal.attr("required", true);
             $("#submitPostit").click();
@@ -284,7 +284,7 @@ export class CommentManager {
         comment.css('left', cssPos.left + "px");
         comment.css('top', cssPos.top + "px");
         $("#postitComment").removeAttr("disabled");
-        $("#spotStepNumber").removeAttr("disabled");
+        $("[name='spotStepNumber']").first().removeAttr("disabled");
         comment.show();
         this.options.lockSigns();
     }
