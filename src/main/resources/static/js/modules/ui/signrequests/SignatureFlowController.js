@@ -365,6 +365,7 @@ export class SignatureFlowController {
                     }
                 }
                 let paramToSend = {
+                    id: signUi.normalizeInteger(originalParams.id, null),
                     signPageNumber: signPageNumber,
                     signDocumentNumber: signUi.normalizeInteger(originalParams.signDocumentNumber, 0, 0),
                     signWidth: signUi.normalizeInteger(originalParams.signWidth / signScale, 200, 1),
@@ -390,6 +391,7 @@ export class SignatureFlowController {
                     green: signUi.normalizeInteger(originalParams.green, 0, 0),
                     blue: signUi.normalizeInteger(originalParams.blue, 0, 0),
                     fontSize: signUi.normalizeInteger(originalParams.fontSize, signUi.signatureUiConfig?.defaultFontSize ?? 16, 1),
+                    recipientId: signUi.normalizeInteger(originalParams.recipientId, null),
                 };
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {

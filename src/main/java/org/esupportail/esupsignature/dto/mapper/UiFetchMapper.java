@@ -709,7 +709,8 @@ public class UiFetchMapper {
                         signRequestParams.getRed(),
                         signRequestParams.getGreen(),
                         signRequestParams.getBlue(),
-                        signRequestParams.getFontSize()
+                        signRequestParams.getFontSize(),
+                        signRequestParams.getRecipient() != null ? signRequestParams.getRecipient().getId() : null
                 ))
                 .toList();
     }

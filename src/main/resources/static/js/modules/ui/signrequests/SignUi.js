@@ -18,7 +18,6 @@ export class SignUi {
         this.csrf = new CsrfToken(csrf);
         this.workspace = new SignWorkspaceController(this.state, this.csrf, this.signatureUiConfig);
         this.signComment = $('#signComment');
-        this.signModal = $('#signModal');
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
         this.signLaunchButton = $("#signLaunchButton");
@@ -238,14 +237,16 @@ export class SignUi {
         if (signPlacementController.signRequestParamses == null) {
             return false;
         }
-        return Array.from(signPlacementController.signRequestParamses.values()).some(signRequestParams =>
-            signRequestParams != null
-            && signRequestParams.isSign
-            && signRequestParams.signImageNumber != null
-            && signRequestParams.signImageNumber >= 0
-            && signRequestParams.signImageNumber !== 999997
-            && signRequestParams.signImageNumber !== 999999
-        );
+        return Array.from(signPlacementController.signRequestParamses.values()).some(signRequestParams => {
+            const signImageNumber = signRequestParams?.signImageNumber == null
+                ? null
+                : Number.parseInt(signRequestParams.signImageNumber, 10);
+            return signRequestParams != null
+                && signRequestParams.isSign
+                && signImageNumber != null
+                && signImageNumber >= 0
+                && signImageNumber !== 999999;
+        });
     }
 
     hasValidSelectedCertType() {

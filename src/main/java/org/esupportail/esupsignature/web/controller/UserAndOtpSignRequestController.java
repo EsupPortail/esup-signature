@@ -280,10 +280,11 @@ public class UserAndOtpSignRequestController {
                                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                                          @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale) {
+                                          @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale,
+                                          @RequestParam(value = "recipientId", required = false) Long recipientId) {
         Long spotId;
         try {
-            spotId = signRequestService.addSpot(id, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), spotStepNumber);
+            spotId = signRequestService.addSpot(id, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), spotStepNumber, recipientId);
         } catch (EsupSignatureException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }

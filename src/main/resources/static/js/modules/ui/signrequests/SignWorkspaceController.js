@@ -374,8 +374,9 @@ export class SignWorkspaceController {
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
         }
-        if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
-            this.signImageNumber = localStorage.getItem('signNumber');
+        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+        if(Number.isFinite(storedSignNumber) && this.restore) {
+            this.signImageNumber = storedSignNumber;
         }
         this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
     }
@@ -517,7 +518,7 @@ export class SignWorkspaceController {
 
     checkSignsPositions() {
         let testSign = Array.from(this.signPlacementController.signRequestParamses.values());
-        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999997 && s.isSign).length > 0) {
+        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999999 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
                     return i;

@@ -67,6 +67,7 @@ export class SignRequestParams extends EventFactory {
         this.textPart = null;
         this.signRequestId = null;
         this.spotStepNumber = null;
+        this.spotRecipientId = null;
         this.signColorPicker = null;
         this.restoreExtraOnTop = false;
         this.allPages = false;
@@ -334,8 +335,9 @@ export class SignRequestParams extends EventFactory {
             }
         }
         if(this.restore && this.isSign) {
-            if (JSON.parse(localStorage.getItem('signNumber')) != null) {
-                this.fireEvent("nextSign", localStorage.getItem('signNumber'));
+            const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+            if (Number.isFinite(storedSignNumber)) {
+                this.fireEvent("nextSign", storedSignNumber);
             }
             if (!this.isVisa && localStorage.getItem('addExtra') != null) {
                 if (localStorage.getItem('addExtra') === "true") {
@@ -476,10 +478,28 @@ export class SignRequestParams extends EventFactory {
 
     #saveSpot() {
         $(window).off("beforeunload.signPositionPendingChanges");
-        this.spotStepNumber = $("[name='spotStepNumber']").first().val();
+        const stepField = $("[name='spotStepNumber']").first();
+        const recipientField = $("[name='recipientId']").first();
+        const stepSlim = stepField.get(0)?.slim;
+        const recipientSlim = recipientField.get(0)?.slim;
+
+        this.spotStepNumber = stepField.val();
+        if ((this.spotStepNumber == null || this.spotStepNumber === "") && stepSlim != null && typeof stepSlim.getSelected === "function") {
+            const slimValue = stepSlim.getSelected();
+            this.spotStepNumber = Array.isArray(slimValue) ? (slimValue[0] ?? "") : (slimValue ?? "");
+        }
+
+        this.spotRecipientId = recipientField.val();
+        if ((this.spotRecipientId == null || this.spotRecipientId === "") && recipientSlim != null && typeof recipientSlim.getSelected === "function") {
+            const slimValue = recipientSlim.getSelected();
+            this.spotRecipientId = Array.isArray(slimValue) ? (slimValue[0] ?? "") : (slimValue ?? "");
+        }
         if(this.spotStepNumber == null || this.spotStepNumber === "") {
             alert("Merci de selectionner une étape");
         } else {
+            if(this.spotRecipientId === "") {
+                this.spotRecipientId = null;
+            }
             const saveSpotButton = $("#save-spot-button");
             const initialBtnHtml = saveSpotButton.html();
             saveSpotButton.prop("disabled", true);
@@ -489,6 +509,7 @@ export class SignRequestParams extends EventFactory {
                 "&commentScale=" + this.signScale / this.getBrowserZoom() +
                 "&commentPageNumber=" + this.signPageNumber +
                 "&spotStepNumber=" + this.spotStepNumber +
+                (this.spotRecipientId != null ? "&recipientId=" + this.spotRecipientId : "") +
                 "&" + this.csrf.parameterName + "=" + this.csrf.token;
             this.signRequestId = saveSpotButton.attr("data-es-signrequest-id");
             let url = "/user/signrequests/add-spot/" + this.signRequestId + "?" + commentUrlParams;
@@ -548,7 +569,7 @@ export class SignRequestParams extends EventFactory {
         const pdfWidth = parseInt(cssWidth / (this.currentScale * zoom), 10) || 0;
         const pdfHeight = parseInt(cssHeight / (this.currentScale * zoom), 10) || 0;
 
-        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + pdfWidth + "' data-es-sign-height='" + pdfHeight + "'><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
+        const spotHtml = "<div id='" + spotDomId + "' title='Emplacement de signature' class='sign-space' data-es-spot-id='" + parsedSpotId + "' data-es-pos-page='" + this.signPageNumber + "' data-es-pos-x='" + this.xPos + "' data-es-pos-y='" + this.yPos + "' data-es-sign-width='" + pdfWidth + "' data-es-sign-height='" + pdfHeight + "'" + (this.spotRecipientId != null ? " data-es-recipient-id='" + this.spotRecipientId + "'" : "") + "><button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button><div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature</span></div></div>";
         $("#pdf").append(spotHtml);
 
         const spotDiv = $("#" + spotDomId);
@@ -584,7 +605,8 @@ export class SignRequestParams extends EventFactory {
             yPos: this.yPos,
             signWidth: pdfWidth,
             signHeight: pdfHeight,
-            stepNumber: parseInt(this.spotStepNumber, 10)
+            stepNumber: parseInt(this.spotStepNumber, 10),
+            recipientId: this.spotRecipientId
         }]);
 
         this.#deleteSign();
@@ -1974,6 +1996,10 @@ export class SignRequestParams extends EventFactory {
     changeSignImage(imageNum) {
         this.#disableCanvas();
         return new Promise((resolve, reject) => {
+            const normalizedImageNum = imageNum == null ? null : Number.parseInt(imageNum, 10);
+            if (imageNum != null && !Number.isNaN(normalizedImageNum)) {
+                imageNum = normalizedImageNum;
+            }
             if(imageNum != null && imageNum >= 0) {
                 if(this.signImages != null) {
                     const requestedImageNum = imageNum;

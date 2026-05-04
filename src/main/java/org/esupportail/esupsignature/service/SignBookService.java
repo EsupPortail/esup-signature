@@ -2055,7 +2055,7 @@ public class SignBookService {
         }
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
-            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+            signRequestParamses = signRequestService.getCurrentStepSignRequestParams(signRequest, userEppn);
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
                 signRequestParamse.setAddExtra(true);
@@ -2144,7 +2144,7 @@ public class SignBookService {
         List<StepStatus> stepStatuses = new ArrayList<>();
         for (Long id : idsLong) {
             SignRequest selectedSignRequest = signRequestService.getById(id);
-            selectedSignRequest.getSignRequestParams().addAll(selectedSignRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams());
+            selectedSignRequest.getSignRequestParams().addAll(signRequestService.getCurrentStepSignRequestParams(selectedSignRequest, userEppn));
             StepStatus stepStatus = StepStatus.not_completed;
             for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
                 if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {

@@ -194,7 +194,7 @@ public class PdfService {
                 signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
@@ -206,7 +206,7 @@ public class PdfService {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);

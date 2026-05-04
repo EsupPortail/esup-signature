@@ -68,6 +68,7 @@ export class SignRequestParamsFrontDto {
         this.green = source.green ?? null;
         this.blue = source.blue ?? null;
         this.fontSize = source.fontSize ?? null;
+        this.recipientId = source.recipientId ?? null;
         this.ready = source.ready ?? null;
     }
 
@@ -106,6 +107,7 @@ export class SignUiFrontDto {
         this.signRequestId = source.signRequestId ?? null;
         this.dataId = source.dataId ?? null;
         this.formId = source.formId ?? null;
+        this.steps = asArray(source.steps);
         this.currentSignRequestParamses = asArray(source.currentSignRequestParamses).map(item => SignRequestParamsFrontDto.from(item));
         this.signImageNumber = source.signImageNumber ?? null;
         this.currentSignType = source.currentSignType ?? null;

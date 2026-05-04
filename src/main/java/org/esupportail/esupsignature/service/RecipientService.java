@@ -50,6 +50,10 @@ public class RecipientService {
         return recipient;
     }
 
+    public Recipient getById(Long id) {
+        return recipientRepository.findById(id).orElse(null);
+    }
+
     public boolean needSign(List<Recipient> recipients, String userEppn) {
         List<Recipient> recipients1 = recipients.stream().filter(recipient -> recipient.getUser().getEppn().equals(userEppn)).toList();
         if(!recipients1.isEmpty() && !recipients1.get(0).getSigned()) {
@@ -59,7 +63,34 @@ public class RecipientService {
     }
 
     public boolean validateRecipient(SignRequest signRequest, String userEppn) {
+        return validateRecipient(signRequest, userEppn, signRequest.getSignRequestParams());
+    }
+
+    public boolean validateRecipient(SignRequest signRequest, String userEppn, List<SignRequestParams> signRequestParamses) {
         User user = userService.getByEppn(userEppn);
+        Set<Long> targetedRecipientIds = signRequestParamses == null ? Set.of() : signRequestParamses.stream()
+                .map(SignRequestParams::getRecipientId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if(!targetedRecipientIds.isEmpty()) {
+            List<Recipient> recipientsToValidate = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream()
+                    .filter(recipient1 -> targetedRecipientIds.contains(recipient1.getId()))
+                    .toList();
+            if(recipientsToValidate.isEmpty()) {
+                logger.error("validateRecipient : no targeted recipient found for user " + userEppn + " in signRequest " + signRequest.getId());
+                return false;
+            }
+            for (Recipient recipientToValidate : recipientsToValidate) {
+                if(signRequest.getRecipientHasSigned().get(recipientToValidate) != null) {
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setActionType(ActionType.signed);
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setUserIp(webUtilsService.getClientIp());
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setDate(new Date());
+                }
+                allSigned(signRequest, recipientToValidate);
+            }
+            return true;
+        }
+
         Recipient recipient;
         Optional<Recipient> validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
         if(validateRecipient.isEmpty()) {

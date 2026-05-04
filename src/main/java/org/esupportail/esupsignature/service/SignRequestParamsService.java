@@ -540,6 +540,7 @@ public class SignRequestParamsService {
             signRequestParams.setAllPages(requestParams.getAllPages());
             signRequestParams.setExtraOnTop(requestParams.getExtraOnTop());
             signRequestParams.setFontSize(requestParams.getFontSize());
+            signRequestParams.setRecipient(requestParams.getRecipient());
             signRequest.getSignRequestParams().add(signRequestParams);
         }
     }

@@ -10,6 +10,7 @@ public record SignUiFrontDto(
         Long signRequestId,
         Long dataId,
         Long formId,
+        List<ShowSignRequestDto.StepDto> steps,
         List<SignRequestParamsFrontDto> currentSignRequestParamses,
         Integer signImageNumber,
         SignType currentSignType,

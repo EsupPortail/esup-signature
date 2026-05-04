@@ -1092,6 +1092,29 @@ public class UiFetchService {
                 common.signRequestId(),
                 common.dataId(),
                 common.formId(),
+                context.liveWorkflow() != null
+                        ? context.liveWorkflow().getLiveWorkflowSteps().stream()
+                        .map(step -> new ShowSignRequestDto.StepDto(
+                                step.getId(),
+                                step.getDescription(),
+                                step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
+                                step.getSignType(),
+                                step.getAutoSign(),
+                                step.getAllSignToComplete(),
+                                step.getRepeatable(),
+                                step.getUsers().stream()
+                                        .map(this::toStepUserDto)
+                                        .toList(),
+                                step.getRecipients().stream()
+                                        .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
+                                                recipient.getId(),
+                                                recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
+                                                recipient.getSigned()
+                                        ))
+                                        .toList()
+                        ))
+                        .toList()
+                        : List.of(),
                 toSignRequestParamsFrontDtos(common.signRequestParams()),
                 frontUser != null ? frontUser.getDefaultSignImageNumber() : null,
                 common.currentSignType(),
@@ -1199,7 +1222,8 @@ public class UiFetchService {
                         signRequestParams.getRed(),
                         signRequestParams.getGreen(),
                         signRequestParams.getBlue(),
-                        signRequestParams.getFontSize()
+                        signRequestParams.getFontSize(),
+                        signRequestParams.getRecipient() != null ? signRequestParams.getRecipient().getId() : null
                 ))
                 .toList();
     }
