@@ -75,6 +75,7 @@ export class SignWorkspaceController {
         this.first = true;
         this.actionInitialyzed = false;
         this.saveAlert = false;
+        this.missingCertTypeAlertShown = false;
         this.scrollTop = 0;
         this.nextCommand = "none";
         this.hoverLiveStepState = null;
@@ -354,6 +355,27 @@ export class SignWorkspaceController {
     addSign(forceSignNumber) {
         if(!this.notSigned && this.signPlacementController.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
+            return;
+        }
+        const certTypeSelect = $("#certType");
+        const hasValidSelectedCertType = !certTypeSelect.length
+            || (typeof this.signPlacementController?.hasValidSelectedCertType === "function"
+                ? this.signPlacementController.hasValidSelectedCertType()
+                : (certTypeSelect.val() != null && certTypeSelect.val() !== ""));
+        if (!hasValidSelectedCertType) {
+            if (!this.missingCertTypeAlertShown) {
+                this.missingCertTypeAlertShown = true;
+                bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", function() {
+                    setTimeout(() => {
+                        $("#certType").focus();
+                        }, 50);
+                });
+            }
+            if (typeof this.signPlacementController?.refreshSteps === "function") {
+                this.signPlacementController.refreshSteps();
+            } else {
+                certTypeSelect.trigger("focus");
+            }
             return;
         }
         this.pdfViewer.annotationLinkRemove();

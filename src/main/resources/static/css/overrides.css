@@ -644,7 +644,7 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
 }
 
 .fi {
-    line-height: 1;
+    line-height: 0;
 }
 
 .fi:before {

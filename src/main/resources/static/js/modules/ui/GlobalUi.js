@@ -147,7 +147,7 @@ export class GlobalUi {
             .filter(suUser => suUser != null && suUser.eppn != null && suUser.eppn !== user?.eppn)
             .map(suUser => `
                 <a role="button" href="/user/users/shares/change?eppn=${encodeURIComponent(suUser.eppn)}&userShareId=${encodeURIComponent(suUser.userShareId ?? '')}" class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
-                    <i class="fi fi-rr-users" style="line-height: 14px;"></i>
+                    <i class="fi fi-rr-users"></i>
                     <span class="nav-item-label">${this.escapeHtml(((suUser.firstname ?? '') + ' ' + (suUser.name ?? '')).trim())}</span>
                 </a>
             `)

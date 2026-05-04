@@ -971,6 +971,25 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
+    #updateSignSpaceFontSize(signSpaceDiv) {
+        const renderedHeight = parseInt(signSpaceDiv.css("height"), 10);
+        if (!Number.isFinite(renderedHeight)) {
+            return;
+        }
+        signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
+        signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
+    }
+
+    #restoreSignSpacePlaceholder() {
+        if (this.signSpace == null) {
+            return;
+        }
+        this.signSpace.children(".sign-content").remove();
+        this.signSpace.children(".slot-delete-btn").show();
+        this.signSpace.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
+        this.#updateSignSpaceFontSize(this.signSpace);
+    }
+
     #deleteSign() {
         let self = this;
         this.#deleteAllPagesSigns();
@@ -989,7 +1008,7 @@ export class SignRequestParams extends EventFactory {
             self.signSpace.addClass("sign-field");
             self.signSpace.removeClass("sign-field-dropped");
             self.ready = false;
-            self.signSpace.html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
+            self.#restoreSignSpacePlaceholder();
             self.signSpace.css("pointer-events", "auto");
             self.signSpace = null;
         }

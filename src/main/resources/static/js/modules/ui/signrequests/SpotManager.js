@@ -70,6 +70,7 @@ export class SpotManager {
         }
         $("#cross_999999, #cross_999999 *").css('pointer-events', 'auto');
         $("#spot-modal, #spot-modal *").css('pointer-events', 'auto');
+        $("#spot-modal .ss-main, #spot-modal .ss-main *, .ss-content, .ss-content *").css('pointer-events', 'auto');
         $(".textLayer").each(function () {
             $(this).addClass("text-disable-selection");
         });
