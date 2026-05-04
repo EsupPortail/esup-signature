@@ -126,10 +126,18 @@ body.es-signrequest-page #tools #signLaunchButton {
     pointer-events: none !important;
 }
 
-body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope) {
+body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope):not(#sidebar):not(.es-sidebar) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode .es-signrequest-main-content > #sidebar,
+body.es-spot-add-mode .es-signrequest-main-content > #sidebar *,
+body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar,
+body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar * {
+    opacity: 1 !important;
+    filter: none !important;
 }
 
 body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace) {

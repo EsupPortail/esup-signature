@@ -5,6 +5,7 @@ export class SpotManager {
         this.spotAddEnabled = false;
         this.activeWorkspaceScope = $();
         this.preservedWorkspaceVisualScope = $();
+        this.preservedSidebarScope = $();
         this.options = {
             signSpaceNamespace: options.signSpaceNamespace ?? ".spotManagerSignSpace",
             spotAddNamespace: options.spotAddNamespace ?? ".spotManagerAdd",
@@ -36,6 +37,10 @@ export class SpotManager {
         this.spotAddEnabled = true;
         const pdfViewer = this.options.getPdfViewer();
         const workspace = $("#workspace");
+        const sidebarRoots = $(".es-signrequest-main-content #sidebar, .es-signrequest-main-content > .es-sidebar");
+        this.preservedSidebarScope = sidebarRoots.length
+            ? sidebarRoots.parentsUntil(".es-signrequest-main-content").addBack()
+            : $();
         const mainContent = workspace.closest(".es-main-content");
         const workspaceElement = workspace.get(0);
         this.activeWorkspaceScope = mainContent.length && workspaceElement != null ? mainContent.children().has(workspaceElement) : $();
@@ -46,6 +51,12 @@ export class SpotManager {
         $("body").addClass("es-spot-add-mode");
         $('body *').css('pointer-events', 'none');
         $('#workspace, #workspace *').css('pointer-events', 'auto');
+        this.preservedSidebarScope.css({
+            opacity: 1,
+            filter: 'none',
+            'pointer-events': 'auto'
+        });
+        this.preservedSidebarScope.find('*').css('pointer-events', 'auto');
         this.preservedWorkspaceVisualScope.css({
             opacity: 1,
             filter: 'none'
@@ -74,6 +85,13 @@ export class SpotManager {
             filter: ''
         });
         this.preservedWorkspaceVisualScope = $();
+        this.preservedSidebarScope.css({
+            opacity: '',
+            filter: '',
+            'pointer-events': ''
+        });
+        this.preservedSidebarScope.find('*').css('pointer-events', '');
+        this.preservedSidebarScope = $();
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css('cursor', 'default');
         }
