@@ -120,7 +120,7 @@ public class WorkflowService {
             logger.debug("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
-                Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser());
+                Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser(), classWorkflow.getManagerRole());
                 newWorkflow.setFromCode(true);
             } else {
                 logger.debug("update " + classWorkflow.getName() + " on database");
@@ -212,7 +212,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureRuntimeException {
+    public Workflow createWorkflow(String title, String description, User user, String manageRole) throws EsupSignatureRuntimeException {
         String name = user.getEppn() + description;
         if(StringUtils.hasText(title)) {
             if (userService.getSystemUser().equals(user)) {
@@ -230,6 +230,9 @@ public class WorkflowService {
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
+            if(manageRole != null) {
+                workflow.setManagerRole(manageRole);
+            }
             workflowRepository.save(workflow);
             return workflow;
         } else {

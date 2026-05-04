@@ -130,7 +130,7 @@ export class HomeUi {
                 <td class="text-break d-none d-md-table-cell">
                     <i class="${multiple ? 'fi fi-rr-folder-open' : 'fi fi-rr-file'}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                 </td>
-                <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                     ${multiple
                         ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fa-solid fa-caret-down"></i></span>'
                         : '<span>' + this.escapeHtml(subject) + '</span>'}

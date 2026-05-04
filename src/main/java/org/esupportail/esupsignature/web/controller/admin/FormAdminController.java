@@ -100,10 +100,7 @@ public class FormAdminController {
 						 @RequestParam(required = false) List<String> roleNames,
 						 @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes, authUserEppn);
-			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				form.setManagerRole(managerRole);
-			}
+			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes, authUserEppn, managerRole);
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				return "redirect:/admin/forms/" + form.getId() + "/fields";
 			} else {
@@ -126,12 +123,12 @@ public class FormAdminController {
 						   @RequestParam(required = false) List<String> roleNames,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn);
-			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				form.setManagerRole(managerRole);
-			}
-			return "redirect:/admin/forms/" + form.getId() + "/fields";
-		} catch (EsupSignatureRuntimeException e) {
+			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn, managerRole);
+			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+				return "redirect:/admin/forms/" + form.getId() + "/fields";
+			} else {
+				return "redirect:/manager/forms/" + form.getId() + "/fields";
+			}		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 			return "redirect:/admin/forms";
@@ -297,8 +294,11 @@ public class FormAdminController {
 	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le formulaire a bien été supprimé"));
-		return "redirect:/admin/forms";
-	}
+		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			return "redirect:/admin/forms/";
+		} else {
+			return "redirect:/manager/forms/";
+		}	}
 
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {

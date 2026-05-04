@@ -117,10 +117,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn, managerRole);
 		updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		return form;
 	}
@@ -269,7 +269,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
@@ -310,6 +310,9 @@ public class FormService {
 		}
 		if(fieldTypes != null) {
 			form.setPdfDisplay(false);
+		}
+		if(managerRole != null) {
+			form.setManagerRole(managerRole);
 		}
 		formRepository.save(form);
 		return form;

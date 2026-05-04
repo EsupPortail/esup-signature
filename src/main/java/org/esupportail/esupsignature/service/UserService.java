@@ -10,6 +10,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
+import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
 import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
@@ -22,7 +23,6 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -925,6 +925,30 @@ public class UserService {
         return userRepository.findByManagersRolesNotNull();
     }
 
+    @Transactional(readOnly = true)
+    public Map<String, List<User>> getRoleManagersMap() {
+        return groupRoleManagers(userRepository.findAllRoleManagers());
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, List<User>> getRoleManagersMap(List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return new LinkedHashMap<>();
+        }
+        return groupRoleManagers(userRepository.findRoleManagersByRoles(roles));
+    }
+
+    private Map<String, List<User>> groupRoleManagers(List<RoleManagerDto> roleManagers) {
+        return roleManagers.stream()
+                .sorted(Comparator.comparing(RoleManagerDto::role)
+                        .thenComparing(dto -> dto.user().getEmail(), Comparator.nullsLast(String::compareToIgnoreCase)))
+                .collect(Collectors.groupingBy(
+                RoleManagerDto::role,
+                LinkedHashMap::new,
+                Collectors.mapping(RoleManagerDto::user, Collectors.toList())
+        ));
+    }
+
     @Transactional
     public void updateReplaceUserBy(String eppn, String[] byEmail, String beginDate, String endDate) {
         User user = getByEppn(eppn);
@@ -1031,8 +1055,9 @@ public class UserService {
 
     @Transactional
     public List<String> getManagersRoles(String authUserEppn) {
-        User user = getByEppn(authUserEppn);
-        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return userRepository.findManagersRolesByEppn(authUserEppn).stream()
+                .sorted(Comparator.naturalOrder())
+                .toList();
     }
 
     @Transactional

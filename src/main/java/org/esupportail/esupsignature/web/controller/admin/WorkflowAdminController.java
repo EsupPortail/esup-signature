@@ -136,10 +136,10 @@ public class WorkflowAdminController {
 		Workflow workflow;
 		try {
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
+				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(), managerRole);
 				return "redirect:/admin/workflows/update/" + workflow.getId();
 			} else {
-				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
+				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn), managerRole);
 				workflow.setManagerRole(managerRole);
 				return "redirect:/manager/workflows/update/" + workflow.getId();
 			}
