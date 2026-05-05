@@ -302,8 +302,7 @@ header {
     z-index: 1 !important;
 }
 
-.fixed-action-btns,
-.es-fixed-action-btns {
+.fixed-action-btns, .es-fixed-action-btns {
     padding: 10px;
     height: calc(100vh - 134px);
     overflow-y: auto;

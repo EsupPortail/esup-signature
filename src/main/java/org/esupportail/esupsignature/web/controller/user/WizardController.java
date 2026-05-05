@@ -181,6 +181,7 @@ public class WizardController {
                 model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription());
                 return "user/wizard/wiz-setup-workflow";
             }
+            model.addAttribute("signBook", signBookService.getByIdWithWizardContext(signBookId));
         }
         return "user/wizard/wiz-new-step";
     }
@@ -207,7 +208,8 @@ public class WizardController {
                 }
                 signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
             }
-            model.addAttribute("signBook", signBook);
+            SignBook signBookForView = end ? signBookService.getById(signBookId) : signBookService.getByIdWithWizardContext(signBookId);
+            model.addAttribute("signBook", signBookForView);
             model.addAttribute("close", close);
             model.asMap().forEach(context::setVariable);
             if(end) {

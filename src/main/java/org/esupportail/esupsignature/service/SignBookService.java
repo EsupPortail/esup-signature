@@ -946,7 +946,6 @@ public class SignBookService {
     public SignBook updateSignBookWithStep(Long signBookId, List<WorkflowStepDto> steps) {
         SignBook signBook = updateSignBook(signBookId, steps.get(0).getTitle(), steps.get(0).getDescription(), steps.get(0).getRecipientsCCEmails());
         signBook.setForceAllDocsSign(steps.get(0).getForceAllSign());
-        String description = signBook.getLiveWorkflow().getWorkflow().getDescription();
         return signBook;
     }
 
@@ -1091,6 +1090,11 @@ public class SignBookService {
     @Transactional
     public SignBook getById(Long id) {
         return signBookRepository.findById(id).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public SignBook getByIdWithWizardContext(Long id) {
+        return signBookRepository.findByIdWithWizardContext(id).orElse(null);
     }
 
     @Transactional(readOnly = true)

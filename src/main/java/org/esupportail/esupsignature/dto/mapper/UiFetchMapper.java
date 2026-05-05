@@ -385,6 +385,7 @@ public class UiFetchMapper {
         return new WorkflowViewDto(
                 workflow.getId(),
                 workflow.getDescription(),
+                workflow.getMailFrom(),
                 workflow.getDocumentsSourceUri(),
                 workflow.getSendAlertToAllRecipients(),
                 workflow.getFromCode(),

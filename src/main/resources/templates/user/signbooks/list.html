@@ -195,14 +195,14 @@
                         </table>
                     </div>
                 </div>
-                <div id="signButtons" class="es-fixed-action-btns active">
+                <div id="signButtons" class="es-fixed-action-btns active" style="width: 72px;">
                     <ul id="buttonList" class="list-unstyled">
                         <li th:if="${statusFilter == 'deleted'}">
                             <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
                                   onsubmit="return confirm('Voulez-vous vraiment vider la corbeille ?');">
                                 <button type="submit" tabindex="1" id="trashLaunchButton" class="btn btn-floating btn-lg bg-danger"
                                         title="Vider la corbeille" style="border: 0;">
-                                    <i class="fi fi-rr-dumpster-fire " style="margin-top: 0;"></i>
+                                    <i class="fi fi-rr-dumpster-fire" style="margin-top: 0;"></i>
                                 </button>
                             </form>
                         </li>
@@ -210,29 +210,29 @@
                             <a type="button" id="massSignModalButton"
                                data-bs-toggle="modal" data-bs-target="#signModal"
                                title="Signer en masse les demandes sélectionnées"
-                               class="btn btn-floating btn-lg bg-success d-none">
-                                <i class="fi fi-rr-signature-lock " style="margin-top: 10px;"></i>
+                               class="btn btn-transparent btn-lg text-success d-none">
+                                <i class="fi fi-rr-signature-lock" ></i>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="deleteMultipleButton"
                                title="Supprimer en masse les demandes sélectionnées"
-                               class="btn btn-floating btn-lg bg-danger d-none">
-                                <i class="fi fi-rr-trash " style="margin-top: 10px;"></i>
+                               class="btn btn-transparent btn-lg text-danger d-none">
+                                <i class="fi fi-rr-trash" ></i>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="downloadMultipleButton"
                                title="Télécharger la selection"
                                class="btn btn-transparent text-dark d-none">
-                                <i class="fi fi-rr-download " style="margin-top: 10px;"></i>
+                                <i class="fi fi-rr-download" ></i>
                             </a>
                         </li>
                         <li>
                             <a type="button" id="downloadMultipleButtonWithReport"
                                title="Télécharger la selection avec les rapports"
                                class="btn btn-transparent text-dark d-none">
-                                <i class="fi fi-rr-folder-download " style="margin-top: 10px;"></i>
+                                <i class="fi fi-rr-folder-download " ></i>
                             </a>
                         </li>
                     </ul>

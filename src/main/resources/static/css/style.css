@@ -1885,6 +1885,118 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     color: var(--bs-white);
 }
 
+.wizard-steps-preview {
+    background-color: var(--bs-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.wizard-steps-preview .step-vertical {
+    padding-bottom: 1rem;
+}
+
+.wizard-steps-preview .step-vertical:last-child {
+    padding-bottom: 0;
+}
+
+.wizard-steps-preview .step-vertical:not(:last-child)::after {
+    background: var(--color-dee2e6);
+}
+
+.wizard-steps-preview .step-vertical-content {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--bs-white) !important;
+}
+
+.wizard-steps-preview .step-vertical.configured .step-vertical-content {
+    border-left-color: var(--bs-primary);
+}
+
+.wizard-steps-preview .step-vertical.configured .step-vertical-icon {
+    background: var(--bs-white);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.wizard-step-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-step-card-body {
+    min-width: 0;
+}
+
+.wizard-step-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-step-card-badge i {
+    font-size: 0.85rem;
+}
+
+.wizard-step-card-indicators {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.wizard-step-card-table {
+    margin-bottom: 0;
+}
+
+.wizard-steps-preview--horizontal {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    max-width: none;
+}
+
+.wizard-steps-preview--horizontal .step-vertical {
+    flex: 1 1 320px;
+    max-width: 420px;
+    padding-bottom: 0;
+}
+
+.wizard-steps-preview--horizontal .step-vertical:not(:last-child)::after {
+    display: none;
+}
+
+.wizard-steps-preview--horizontal .step-vertical-content {
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .wizard-steps-preview--horizontal .step-vertical {
+        max-width: none;
+        flex-basis: 100%;
+    }
+
+    .wizard-step-card-header {
+        flex-direction: column;
+    }
+
+    .wizard-step-card-indicators {
+        justify-content: flex-start;
+    }
+}
+
 /* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */
 #admin-workflow-stepscard .admin-workflow-steps .step-vertical:not(:last-child)::after {
     background: var(--bs-dark);
