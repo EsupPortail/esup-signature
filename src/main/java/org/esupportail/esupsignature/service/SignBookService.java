@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,6 +57,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -68,6 +70,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -1665,7 +1668,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du carnet de signatures dans lequel ajouter les documents
      * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields) {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields, boolean unzip) {
         SignBook signBook = getById(signBookId);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         if(workflow != null) {
@@ -1675,7 +1678,8 @@ public class SignBookService {
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
         }
-        for (MultipartFile multipartFile : multipartFiles) {
+        List<MultipartFile> filesToAdd = expandMultipartFiles(multipartFiles, unzip);
+        for (MultipartFile multipartFile : filesToAdd) {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
@@ -1694,6 +1698,84 @@ public class SignBookService {
         if(!StringUtils.hasText(signBook.getSubject())) {
             signBook.setSubject(generateName(null, null, signBook.getCreateBy(), false, false, signBookId));
         }
+    }
+
+    private List<MultipartFile> expandMultipartFiles(MultipartFile[] multipartFiles, boolean unzip) {
+        List<MultipartFile> expandedMultipartFiles = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles) {
+            if (shouldUnzip(multipartFile, unzip)) {
+                expandedMultipartFiles.addAll(unzipMultipartFile(multipartFile));
+            } else {
+                expandedMultipartFiles.add(multipartFile);
+            }
+        }
+        return expandedMultipartFiles;
+    }
+
+    private boolean shouldUnzip(MultipartFile multipartFile, boolean unzip) {
+        if (!unzip) {
+            return false;
+        }
+        if (StringUtils.hasText(multipartFile.getContentType()) && multipartFile.getContentType().toLowerCase(Locale.ROOT).contains("zip")) {
+            return true;
+        }
+        return StringUtils.hasText(multipartFile.getOriginalFilename()) && "zip".equalsIgnoreCase(fileService.getExtension(multipartFile.getOriginalFilename()));
+    }
+
+    private List<MultipartFile> unzipMultipartFile(MultipartFile multipartFile) {
+        List<MultipartFile> unzippedMultipartFiles = new ArrayList<>();
+        try (ZipInputStream zipInputStream = new ZipInputStream(multipartFile.getInputStream())) {
+            ZipEntry zipEntry = zipInputStream.getNextEntry();
+            int index = 0;
+            while (zipEntry != null) {
+                if (!zipEntry.isDirectory()) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    IOUtils.copy(zipInputStream, outputStream);
+                    byte[] bytes = outputStream.toByteArray();
+                    if (bytes.length > 0) {
+                        String fileName = sanitizeZipEntryFileName(zipEntry.getName(), multipartFile.getOriginalFilename(), index);
+                        String contentType = resolveMultipartContentType(fileName, bytes);
+                        unzippedMultipartFiles.add(new DssMultipartFile(fileName, fileName, contentType, bytes));
+                        index++;
+                    }
+                }
+                zipInputStream.closeEntry();
+                zipEntry = zipInputStream.getNextEntry();
+            }
+        } catch (IOException e) {
+            throw new EsupSignatureIOException("Erreur lors de la décompression du fichier", e);
+        }
+        if (unzippedMultipartFiles.isEmpty()) {
+            throw new EsupSignatureIOException("Aucun fichier exploitable dans l'archive ZIP");
+        }
+        return unzippedMultipartFiles;
+    }
+
+    private String sanitizeZipEntryFileName(String zipEntryName, String originalFilename, int index) {
+        if (StringUtils.hasText(zipEntryName)) {
+            String normalizedName = zipEntryName.replace('\\', '/');
+            int lastSlashIndex = normalizedName.lastIndexOf('/');
+            String fileName = lastSlashIndex >= 0 ? normalizedName.substring(lastSlashIndex + 1) : normalizedName;
+            if (StringUtils.hasText(fileName)) {
+                return fileName;
+            }
+        }
+        String baseName = StringUtils.hasText(originalFilename) ? fileService.getNameOnly(originalFilename) : "document";
+        return baseName + "-" + (index + 1);
+    }
+
+    private String resolveMultipartContentType(String fileName, byte[] bytes) {
+        try {
+            String guessedContentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(bytes));
+            if (StringUtils.hasText(guessedContentType)) {
+                return guessedContentType;
+            }
+        } catch (IOException e) {
+            logger.debug("unable to detect content type from stream for {}", fileName, e);
+        }
+        return MediaTypeFactory.getMediaType(fileName)
+                .map(Object::toString)
+                .orElse("application/octet-stream");
     }
 
     /**
@@ -1718,7 +1800,7 @@ public class SignBookService {
             }
         }
         SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true, null);
-        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields);
+        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields, true);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
         if(targetUrl != null && !targetUrl.isEmpty()) {

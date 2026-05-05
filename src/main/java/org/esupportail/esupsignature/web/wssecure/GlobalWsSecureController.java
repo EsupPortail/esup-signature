@@ -252,17 +252,29 @@ public class GlobalWsSecureController {
 
     @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
     @PostMapping(value = "/add-docs/{signBookId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles) throws EsupSignatureIOException {
+    public ResponseEntity<String> addDocumentToNewSignRequest(@PathVariable("signBookId") Long signBookId,  @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam("multipartFiles") MultipartFile[] multipartFiles, @RequestParam(value = "unzip", defaultValue = "false") boolean unzip) throws EsupSignatureIOException {
         logger.info("start add documents");
-        if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !Objects.equals(m.getContentType(), "application/pdf"))) {
+        if(globalProperties.getPdfOnly() && Arrays.stream(multipartFiles).anyMatch(m -> !isAuthorizedPdfOnlyUpload(m, unzip))) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Seul les fichiers PDF sont autorisés");
         }
         try {
-            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false);
+            signBookService.addDocumentsToSignBook(signBookId, multipartFiles, authUserEppn, null, false, unzip);
         } catch(Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
         return ResponseEntity.ok().body(signBookId.toString());
+    }
+
+    private boolean isAuthorizedPdfOnlyUpload(MultipartFile multipartFile, boolean unzip) {
+        if (Objects.equals(multipartFile.getContentType(), "application/pdf")) {
+            return true;
+        }
+        if (!unzip) {
+            return false;
+        }
+        String originalFilename = multipartFile.getOriginalFilename();
+        return (multipartFile.getContentType() != null && multipartFile.getContentType().toLowerCase().contains("zip"))
+                || (originalFilename != null && originalFilename.toLowerCase().endsWith(".zip"));
     }
 
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")

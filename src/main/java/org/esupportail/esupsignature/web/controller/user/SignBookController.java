@@ -387,9 +387,11 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                                              @RequestParam(value = "unzip", defaultValue = "false") boolean unzip,
+                                              RedirectAttributes redirectAttributes) {
         try {
-            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false);
+            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false, unzip);
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Ajout effectuée"));
         } catch(Exception e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
