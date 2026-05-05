@@ -2482,28 +2482,35 @@ public class SignBookService {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
                         ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
-                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                        MultipartFile sourceMultipartFile = new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray());
+                        List<MultipartFile> multipartFilesToImport = expandMultipartFiles(new MultipartFile[]{sourceMultipartFile}, Boolean.TRUE.equals(workflow.getUnzip()));
+                        Map<String, String> metadatas = readMetadatas(multipartFilesToImport.get(0));
                         String documentName = fsFile.getName();
                         if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
                             documentName = metadatas.get("Title");
+                        } else if (multipartFilesToImport.size() == 1) {
+                            documentName = multipartFilesToImport.get(0).getOriginalFilename();
                         }
                         SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn(), true, null);
                         signBook.getLiveWorkflow().setWorkflow(workflow);
-                        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, false, new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
+                        for (MultipartFile multipartFile : multipartFilesToImport) {
+                            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, user.getEppn(), authUser.getEppn());
+                            signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, false, multipartFile);
+                            j++;
+                        }
                         if (workflow.getScanPdfMetadatas()) {
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
                             if (creator != null) {
-                                signRequest.setCreateBy(creator);
+                                signBook.getSignRequests().forEach(signRequest -> signRequest.setCreateBy(creator));
                                 signBook.setCreateBy(creator);
                                 addToTeam(signBook, creator.getEppn());
                             } else {
                                 User systemUser = userService.getSystemUser();
-                                signRequest.setCreateBy(systemUser);
+                                signBook.getSignRequests().forEach(signRequest -> signRequest.setCreateBy(systemUser));
                                 signBook.setCreateBy(systemUser);
                                 addToTeam(signBook, systemUser.getEppn());
                             }
@@ -2537,7 +2544,6 @@ public class SignBookService {
                                     logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
                             }
-                            j++;
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
                             workflowService.importWorkflow(signBook, workflow, new ArrayList<>(), authUser.getEppn());
@@ -2556,6 +2562,14 @@ public class SignBookService {
             }
         }
         return nbImportedFiles;
+    }
+
+    private Map<String, String> readMetadatas(MultipartFile multipartFile) {
+        try {
+            return pdfService.readMetadatas(new ByteArrayInputStream(multipartFile.getBytes()));
+        } catch (IOException e) {
+            throw new EsupSignatureIOException("Erreur lors de la lecture des métadonnées", e);
+        }
     }
 
     /**

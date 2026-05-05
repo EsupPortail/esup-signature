@@ -64,13 +64,13 @@
                                     <div class="dropdown position-relative" th:if="${wsAccessToken.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${wsAccessToken.id}" class="btn text-dark" th:title="'Actions ' + ${wsAccessToken.id}"
                                                 th:data-bs-target="'#menu-' + ${wsAccessToken.id}" th:aria-controls="'menu-' + ${wsAccessToken.id}" data-bs-toggle="dropdown">
-                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${wsAccessToken.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${wsAccessToken.id}">
-                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
+                                                    <i class="fi fi-rr-pencil"></i> Modifier les paramètres
                                                 </a>
                                             </li>
                                             <li>
@@ -82,7 +82,7 @@
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${wsAccessToken.id}">
-                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                    <i class="fi fi-rr-trash pr-2"></i> Supprimer
                                                 </a>
                                             </li>
                                         </ul>

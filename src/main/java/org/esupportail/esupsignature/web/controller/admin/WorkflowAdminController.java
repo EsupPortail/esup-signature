@@ -21,6 +21,7 @@ import org.esupportail.esupsignature.dto.mapper.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -330,7 +331,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/get-files-from-source/{id}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(authUserEppn);
         int nbImportedFiles = 0;
         try {
@@ -344,7 +345,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
-		return "redirect:/admin/workflows";
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@PostMapping(value = "/add-target/{id}")

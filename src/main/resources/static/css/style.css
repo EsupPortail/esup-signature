@@ -61,7 +61,6 @@ main {
      font-size: 16px;
  }
 
-/* Keep signrequest toolbar responsive and prevent horizontal page overflow. */
 body.es-signrequest-page .es-nav-tools {
     width: 100%;
     min-width: 0;
@@ -408,10 +407,6 @@ option[unavailable="unavailable"] {
     pointer-events: none;
     color: var(--bs-black);
     font-weight: bold;
-}
-
-.nav-tab-admin {
-    background-color: var(--bs-white);
 }
 
 .breadcrumb-nav,

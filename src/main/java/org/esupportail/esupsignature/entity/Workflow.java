@@ -65,6 +65,8 @@ public class Workflow {
 
     private String documentsSourceUri;
 
+    private Boolean unzip;
+
     private Boolean forbidDownloadsBeforeEnd = false;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
@@ -254,6 +256,14 @@ public class Workflow {
 
     public void setDocumentsSourceUri(String documentsSourceUri) {
         this.documentsSourceUri = documentsSourceUri;
+    }
+
+    public Boolean getUnzip() {
+        return unzip;
+    }
+
+    public void setUnzip(Boolean unzip) {
+        this.unzip = unzip;
     }
 
     public List<Target> getTargets() {

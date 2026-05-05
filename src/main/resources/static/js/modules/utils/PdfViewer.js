@@ -13,7 +13,6 @@ export class PdfViewer extends EventFactory {
         this.viewed = false;
         this.url = url;
         this.interval = null;
-        this.initialOffset = 0;
         this.pages = [];
         this.signable = signable;
         this.editable = editable;
@@ -48,6 +47,10 @@ export class PdfViewer extends EventFactory {
         this.renderQueue = [];
         this.activeRenders = 0;
         this.maxConcurrentRenders = 5;
+        this.renderCycleId = 0;
+        this.isRendering = false;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
         this.renderedPagesMap = new Map();
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
@@ -362,10 +365,23 @@ export class PdfViewer extends EventFactory {
     }
 
     startRender(pdf) {
-        this.pdfDiv.css('opacity', 0);
-        if(this.pdfDoc == null) {
+        if (pdf != null && this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
+        if (this.pdfDoc == null) {
+            return;
+        }
+        if (this.isRendering || this.activeRenders > 0 || this.renderQueue.length > 0) {
+            this.pendingRender = true;
+            this.pendingRenderPdf = pdf ?? this.pdfDoc;
+            return;
+        }
+
+        this.isRendering = true;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
+        const currentRenderCycleId = ++this.renderCycleId;
+        this.pdfDiv.css('opacity', 0);
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
@@ -382,30 +398,47 @@ export class PdfViewer extends EventFactory {
         for (let i = 1; i <= this.numPages; i++) {
             this.renderQueue.push(i);
         }
-        this.processRenderQueue();
+        this.processRenderQueue(currentRenderCycleId);
 
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
     }
 
-    processRenderQueue() {
+    processRenderQueue(renderCycleId = this.renderCycleId) {
         while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
             const pageNum = this.renderQueue.shift();
             this.activeRenders++;
 
             let self = this;
             this.pdfDoc.getPage(pageNum).then(page => {
-                return self.renderTask(page, pageNum, self._optionalContentConfigPromise);
+                return self.renderTask(page, pageNum, self._optionalContentConfigPromise, renderCycleId);
             }).then(function() {
                 self.activeRenders--;
+                if (renderCycleId !== self.renderCycleId) {
+                    if (self.activeRenders === 0 && self.pendingRender) {
+                        self.isRendering = false;
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        self.startRender(pendingPdf);
+                    }
+                    return;
+                }
                 self.renderedPages++;
 
                 if(self.renderQueue.length === 0 && self.activeRenders === 0) {
+                    self.isRendering = false;
+                    if (self.pendingRender) {
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        self.startRender(pendingPdf);
+                        return;
+                    }
                     // Si c'est un refresh OCG, ne pas lancer postRenderAll
                     if (self._isRefreshingOCG) {
                         self._isRefreshingOCG = false;
                     } else {
-                        self.initialOffset = self.getPageRelativeTop(1);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
                         if(self.pages.length === self.numPages) {
@@ -416,14 +449,33 @@ export class PdfViewer extends EventFactory {
                         }
                     }
                 } else {
-                    self.processRenderQueue();
+                    self.processRenderQueue(renderCycleId);
                 }
             })
                 .catch(err => {
+                    if (renderCycleId !== self.renderCycleId) {
+                        self.activeRenders--;
+                        if (self.activeRenders === 0 && self.pendingRender) {
+                            self.isRendering = false;
+                            const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                            self.pendingRender = false;
+                            self.pendingRenderPdf = null;
+                            self.startRender(pendingPdf);
+                        }
+                        return;
+                    }
                     console.error(`Erreur rendu page ${pageNum}:`, err);
                     self.activeRenders--;
+                    self.isRendering = false;
                     self._isRefreshingOCG = false;
-                    self.processRenderQueue();
+                    if (self.pendingRender && self.activeRenders === 0) {
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        self.startRender(pendingPdf);
+                        return;
+                    }
+                    self.processRenderQueue(renderCycleId);
                 });
         }
     }
@@ -467,7 +519,7 @@ export class PdfViewer extends EventFactory {
         return this.rotationOverride;
     }
 
-    async renderTask(page, i, configPromise) {
+    async renderTask(page, i, configPromise, renderCycleId = this.renderCycleId) {
         return new Promise((resolve, reject) => {
             let container = document.getElementById(`page_${i}`);
             if (!container) {
@@ -497,7 +549,7 @@ export class PdfViewer extends EventFactory {
             const pdfPageView = new pdfjsViewer.PDFPageView({
                 eventBus: this.eventBus,
                 container: container,
-                id: this.pageNum,
+                id: i,
                 scale: this.scale,
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
@@ -510,13 +562,25 @@ export class PdfViewer extends EventFactory {
             pdfPageView.setPdfPage(page);
 
             pdfPageView.draw().then(() => {
+                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                    resolve("obsolete");
+                    return;
+                }
                 const container = document.getElementById(`page_${i}`);
                 if (!container) {
+                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                        resolve("obsolete");
+                        return;
+                    }
                     reject(new Error("Container disparu"));
                     return;
                 }
                 const canvas = container.querySelector('canvas');
                 if (!canvas) {
+                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                        resolve("obsolete");
+                        return;
+                    }
                     reject(new Error("Pas de canvas"));
                     return;
                 }
@@ -559,9 +623,13 @@ export class PdfViewer extends EventFactory {
                     textLayer.style.setProperty('--scale-factor', this.scale);
                     textLayer.style.setProperty('--total-scale-factor', this.scale);
                 }
-                this.pages.push(page);
+                this.pages[i - 1] = page;
                 resolve("ok");
             }).catch(err => {
+                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                    resolve("obsolete");
+                    return;
+                }
                 console.error("Erreur dans pdfPageView.draw() page", i, ":", err);
                 reject(err);
             });

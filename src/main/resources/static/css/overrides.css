@@ -659,3 +659,15 @@ body.signbooks-list-page.signbooks-list-loading .signbooks-thead-loading-shell {
 .bs-stepper-circle {
     padding-top: 6px;
 }
+
+.accordion-button.collapsed {
+    background-color: var(--bs-white);
+}
+
+.accordion-button.collapsed:hover {
+    background-color: revert;
+}
+
+.step-vertical-content {
+    background-color: var(--bs-white) !important;
+}

@@ -17,7 +17,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
+                <li aria-current="page" class="breadcrumb-item active">Modifier le circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -26,21 +26,20 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
+                    <a class="nav-link active" href="#" onclick="return false;"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}"><i class="fi fi-rr-location-crosshairs"></i> Destinations</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}"><i class="fi fi-rr-shoe-prints"></i> Étapes</a>
                 </li>
             </ul>
-            <div class="card text-bg-light m-2">
-                <div class="card-body">
-                    <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
+            <div class="es-main-content-admin overflow-scroll p-2">
+                <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
                         <input type="hidden" th:field="*{id}">
                         <div class="accordion" id="accordionExample">
                             <div class="accordion-item">
@@ -365,6 +364,10 @@
                                                 </div>
                                             </div>
                                             <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
+                                            <div class="form-check mt-3">
+                                                <label class="form-check-label" for="unzip">En cas de zip, dézipper le contenu pour recréer une demande par fichier</label>
+                                                <input id="unzip" type="checkbox" class="form-check-input" th:field="*{unzip}">
+                                            </div>
                                         </div>
                                         <div class="form-group mb-3">
                                             <strong>Paramètre d'archivage (indépendant de l'export)</strong>
@@ -415,7 +418,6 @@
 
 
                     </form>
-                </div>
             </div>
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
@@ -434,6 +436,11 @@
                         <li>
                             <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
                                 <i class="fi fi-rr-file-import"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
+                                <i class="fi fi-rr-folder-times"></i>
                             </a>
                         </li>
                     </ul>

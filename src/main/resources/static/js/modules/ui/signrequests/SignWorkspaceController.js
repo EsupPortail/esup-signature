@@ -77,6 +77,7 @@ export class SignWorkspaceController {
         this.saveAlert = false;
         this.missingCertTypeAlertShown = false;
         this.scrollTop = 0;
+        this.refreshWorkspaceTimer = null;
         this.nextCommand = "none";
         this.hoverLiveStepState = null;
         this.state = workspaceState;
@@ -576,8 +577,11 @@ export class SignWorkspaceController {
 
     refreshWorkspace() {
         console.info("refresh workspace");
-        this.pdfViewer.startRender();
-        localStorage.setItem("scale", this.pdfViewer.scale);
+        clearTimeout(this.refreshWorkspaceTimer);
+        this.refreshWorkspaceTimer = setTimeout(() => {
+            this.pdfViewer.startRender();
+            localStorage.setItem("scale", this.pdfViewer.scale);
+        }, 75);
     }
 
     refreshAfterPageChange() {

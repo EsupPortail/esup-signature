@@ -298,6 +298,7 @@ public class UiFetchMapper {
                 workflow.getSignRequestParamsDetectionPattern(),
                 workflow.getScanPdfMetadatas(),
                 workflow.getDocumentsSourceUri(),
+                workflow.getUnzip(),
                 workflow.getTargetNamingTemplate(),
                 workflow.getStartArchiveDate(),
                 workflow.getArchiveTarget(),

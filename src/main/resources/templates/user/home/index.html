@@ -117,7 +117,7 @@
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=followByMe" title="Afficher les demandes que je suis"
                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
-                    <i class="fi fi fi-rr-binoculars text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
+                    <i class="fi fi-rr-binoculars text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
                     <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Demandes suivies</span>
                     <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Suivies</span>
                     <span title="Demandes suivie" th:if="${nbFollowByMe > 0  && userEppn == authUserEppn}" class="badge rounded-pill bg-primary d-none d-md-inline" th:text="${nbFollowByMe}"></span>
@@ -202,7 +202,7 @@
                                 data-bs-toggle="modal"
                                 data-bs-target="#workflowsModal"
                                 title="Ajouter un circuit à vos favoris">
-                                <i class="d-flex align-items-center fi fi fi-rr-plus"></i>
+                                <i class="d-flex align-items-center fi fi-rr-plus"></i>
                             </a>
                         </div>
                     </div>
@@ -231,14 +231,14 @@
                                     </button>
                                 </div>
                                 <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                                    <div class="inline-flex">
+                                    <div class="d-flex align-items-center justify-content-start">
                                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                                         </form>
                                         <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
-                                            <i class="fa-solid fa-trash-alt"></i>
+                                            <i class="fi fi-rr-trash"></i>
                                         </button>
                                         <button class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
-                                            <i class="fa-solid fa-cog"></i>
+                                            <i class="fi fi-rr-settings-sliders"></i>
                                         </button>
                                     </div>
                                 </div>

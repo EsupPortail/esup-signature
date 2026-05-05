@@ -84,6 +84,7 @@ public class AdminWorkflowUpdateViewDto {
         private final String signRequestParamsDetectionPattern;
         private final Boolean scanPdfMetadatas;
         private final String documentsSourceUri;
+        private final Boolean unzip;
         private final String targetNamingTemplate;
         private final Date startArchiveDate;
         private final String archiveTarget;
@@ -121,6 +122,7 @@ public class AdminWorkflowUpdateViewDto {
                            String signRequestParamsDetectionPattern,
                            Boolean scanPdfMetadatas,
                            String documentsSourceUri,
+                           Boolean unzip,
                            String targetNamingTemplate,
                            Date startArchiveDate,
                            String archiveTarget,
@@ -157,6 +159,7 @@ public class AdminWorkflowUpdateViewDto {
             this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
             this.scanPdfMetadatas = scanPdfMetadatas;
             this.documentsSourceUri = documentsSourceUri;
+            this.unzip = unzip;
             this.targetNamingTemplate = targetNamingTemplate;
             this.startArchiveDate = startArchiveDate;
             this.archiveTarget = archiveTarget;
@@ -277,6 +280,10 @@ public class AdminWorkflowUpdateViewDto {
 
         public String getDocumentsSourceUri() {
             return documentsSourceUri;
+        }
+
+        public Boolean getUnzip() {
+            return unzip;
         }
 
         public String getTargetNamingTemplate() {

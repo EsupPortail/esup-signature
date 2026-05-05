@@ -566,6 +566,7 @@ public class WorkflowService {
               workflowToUpdate.setToken(generateToken(workflow.getToken()));
             }
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+        workflowToUpdate.setUnzip(workflow.getUnzip());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());

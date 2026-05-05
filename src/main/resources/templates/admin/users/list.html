@@ -50,8 +50,8 @@
                                 <td><span th:text="${user.userType}"></span></td>
                                 <td>
                                     <div class="dropdown position-relative">
-                                        <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark" th:title="'Actions ' + ${user.eppn}" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="dropdown">
-                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                        <button type="button" th:id="'menu-toggle_' + ${user.id}" class="btn text-dark" th:data-bs-target="'#menu-' + ${user.id}" th:aria-controls="'menu-' + ${user.id}" data-bs-toggle="dropdown">
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${user.id}">
                                                 <!--                        <a th:if="${!signBookLight.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBookLight.id} + '?statusFilter=' + ${statusFilter}">-->
@@ -61,8 +61,8 @@
                                                 <!--                            <i class="fa-solid fa-eye-slash pr-2"></i> Afficher dans la liste-->
                                                 <!--                        </a>-->
                                             <li>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-delete-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-delete-' + ${user.id}">
-                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer définitivement l’utilisateur <span th:text="${user.firstname} + ' ' + ${user.name}"></span>
+                                                <a class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-delete-' + ${user.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-delete-' + ${user.id}">
+                                                    <i class="fi fi-rr-delete-user"></i> Supprimer définitivement cet utilisateur
                                                 </a>
                                             </li>
                                         </ul>

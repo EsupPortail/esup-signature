@@ -71,22 +71,22 @@
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signRequest.title}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-ellipsis-v"></i>
+                    <i class="fi fi-rr-menu-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:unless="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/admin/signrequests/' + ${signRequest.id}">
-                            <i class="fa-solid fa-eye pr-2"></i> Consulter
+                            <i class="fi fi-rr-eye"></i> Consulter
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signRequest.deleted && signBook.createByEppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
-                            <i class="fa-solid fa-trash-restore pr-2"></i> Restaurer
+                        <a th:if="${signRequest.deleted && signBook.createByEppn == userEppn}" class="btn btn-transparent text-primary text-left col-12" th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
+                            <i class="fi fi-rr-trash-restore-alt "></i> Restaurer
                         </a>
                     </li>
                     <li>
-                        <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fa-solid fa-trash-alt text-danger pr-2"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                        <a class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                            <i class="fi fi-rr-trash"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>
@@ -178,12 +178,12 @@
         <td>
             <div class="dropdown position-relative">
                 <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-ellipsis-v"></i>
+                    <i class="fi fi-rr-menu-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fa-solid fa-trash-alt pr-2"></i> <span th:text="${!signBook.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signBook.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>

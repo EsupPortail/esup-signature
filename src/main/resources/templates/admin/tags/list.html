@@ -44,19 +44,19 @@
                                     <div class="dropdown position-relative" th:if="${tag.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${tag.id}" class="btn text-dark" th:title="'Actions ' + ${tag.id}"
                                                 th:data-bs-target="'#menu-' + ${tag.id}" th:aria-controls="'menu-' + ${tag.id}" data-bs-toggle="dropdown">
-                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${tag.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${tag.id}">
-                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier
+                                                    <i class="fi fi-rr-pencil"></i> Modifier
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${tag.id}">
-                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                    <i class="fi fi-rr-trash pr-2"></i> Supprimer
                                                 </a>
                                             </li>
                                         </ul>

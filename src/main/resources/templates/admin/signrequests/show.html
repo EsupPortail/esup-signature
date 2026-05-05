@@ -140,7 +140,7 @@
                             th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
                             <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>
-                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt "></i>
+                            <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash "></i>
                         </a>
                     </li>
                 </ul>
