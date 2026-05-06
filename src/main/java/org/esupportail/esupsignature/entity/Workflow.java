@@ -95,6 +95,8 @@ public class Workflow {
 
     private Boolean disableDeleteByCreator = false;
 
+    private Boolean disableUpdateByCreator = false;
+
     private Boolean sealAtEnd = false;
 
     private String signRequestParamsDetectionPattern;
@@ -384,6 +386,14 @@ public class Workflow {
 
     public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) {
         this.disableDeleteByCreator = disableDeleteByCreator;
+    }
+
+    public Boolean getDisableUpdateByCreator() {
+        return disableUpdateByCreator;
+    }
+
+    public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
+        this.disableUpdateByCreator = disableUpdateByCreator;
     }
 
     public List<User> getViewers() {

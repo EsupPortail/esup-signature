@@ -1267,8 +1267,39 @@ public class SignBookService {
     public boolean checkUserManageRights(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook == null) return false;
+        User user = userService.getByEppn(userEppn);
+        if(user == null) return false;
+        if(isWorkflowManagerForSignBook(signBook, user)) {
+            return true;
+        }
+        return signBook.getCreateBy().getEppn().equals(userEppn);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkUserUpdateRights(Long signBookId, String userEppn) {
+        if (userEppn == null) {
+            return false;
+        }
+        SignBook signBook = getById(signBookId);
+        if (signBook == null) {
+            return false;
+        }
+        User user = userService.getByEppn(userEppn);
+        if (user == null) {
+            return false;
+        }
+        if (user.getRoles().contains("ROLE_ADMIN") || isWorkflowManagerForSignBook(signBook, user)) {
+            return true;
+        }
+        if (!signBook.getCreateBy().getEppn().equals(userEppn)) {
+            return false;
+        }
+        Workflow workflow = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow() : null;
+        return workflow == null || !Boolean.TRUE.equals(workflow.getDisableUpdateByCreator());
+    }
+
+    private boolean isWorkflowManagerForSignBook(SignBook signBook, User user) {
         if(signBook.getSignRequests().size() == 1) {
-            User user = userService.getByEppn(userEppn);
             Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
             if(workflow != null) {
                 if ((!signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty() && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
@@ -1279,7 +1310,7 @@ public class SignBookService {
                 }
             }
         }
-        return signBook.getCreateBy().getEppn().equals(userEppn);
+        return false;
     }
 
     /**

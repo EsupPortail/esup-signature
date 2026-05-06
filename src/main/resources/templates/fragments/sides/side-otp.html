@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <nav th:fragment="side-otp" id="sidebar" class="scrollbar-lite scrollbar-style p-1 d-flex flex-column gap-1" style="z-index: 1000;">
     <div class="d-flex justify-content-between align-items-center" th:if="${signRequestLight != null}">
-        <span class="text-uppercase ms-1">Statut</span>
+        <span class="hr">Statut</span>
         <div class="pe-2">
             <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${showSignRequest.signBookLight})}"></div>
         </div>
@@ -68,7 +68,7 @@
         </th:block>
     </div>
     <div th:if="${signRequestLight != null && signRequestFull.comments.size() > 0}" th:insert="~{user/signrequests/cards/comments :: comments}"></div>
-    <span th:if="${signRequestLight != null}" class="text-uppercase ms-1">Étapes du circuit</span>
+    <span th:if="${signRequestLight != null}" class="hr">Étapes du circuit</span>
     <div th:if="${signRequestLight != null}" th:insert="~{user/signrequests/cards/stepscard-light :: stepscard-light}"></div>
 </nav>
 </html>

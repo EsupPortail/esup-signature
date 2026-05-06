@@ -574,24 +574,12 @@ dd {
 .hr {
     align-items: center;
     display: flex;
-    font-weight: bold;
+    /*font-weight: bold;*/
+    text-transform: uppercase !important;
 }
 
 .hr::after {
-    border-top: 1px solid;
-    content: "";
-    flex: 1;
-    margin: 5px;
-}
-
-.hr {
-    align-items: center;
-    display: flex;
-    font-weight: bold;
-}
-
-.hr::after {
-    border-top: 1px solid;
+    border-top: 1px solid var(--color-rgba-0-0-0-03);
     content: "";
     flex: 1;
     margin: 5px;

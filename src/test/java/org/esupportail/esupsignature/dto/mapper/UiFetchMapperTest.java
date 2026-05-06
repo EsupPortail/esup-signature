@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.dto.mapper;
 
 import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
+import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +39,23 @@ class UiFetchMapperTest {
         assertTrue(dto.getTargets().isEmpty());
         assertTrue(dto.getViewers().isEmpty());
         assertTrue(dto.getWorkflowSteps().isEmpty());
+    }
+
+    @Test
+    void toAdminWorkflowUpdateWorkflowDtoShouldMapDisableUpdateByCreator() {
+        Workflow workflow = new Workflow();
+        workflow.setId(7L);
+        workflow.setDescription("Circuit administrable");
+        workflow.setDisableDeleteByCreator(Boolean.TRUE);
+        workflow.setDisableUpdateByCreator(Boolean.TRUE);
+
+        AdminWorkflowUpdateViewDto.WorkflowDto dto = uiFetchMapper.toAdminWorkflowUpdateWorkflowDto(workflow);
+
+        assertNotNull(dto);
+        assertEquals(7L, dto.getId());
+        assertEquals("Circuit administrable", dto.getDescription());
+        assertEquals(Boolean.TRUE, dto.getDisableDeleteByCreator());
+        assertEquals(Boolean.TRUE, dto.getDisableUpdateByCreator());
     }
 }
 

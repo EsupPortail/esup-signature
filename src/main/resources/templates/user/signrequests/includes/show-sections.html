@@ -54,7 +54,7 @@
         <button th:if="${user.userType.name() != 'external' && showSignRequest.externalsRecipients != null && showSignRequest.externalsRecipients.size() > 0}" class="d-flex align-items-center btn btn-transparent text-dark" title="Transmettre un lien d'accès" data-bs-toggle="modal" data-bs-target="#sendLinkModal">
             <i class="fi fi-rr-share"></i>
         </button>
-        <button th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
+        <button th:if="${signRequestFull.updateAllowed && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}" type="button" class="d-flex align-items-center btn btn-transparent text-dark d-none d-md-flex" title="Paramètres généraux" data-bs-toggle="modal" data-bs-target="#updateSignbookModal">
             <i class="fi fi-rr-settings-sliders"></i>
         </button>
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex align-items-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">

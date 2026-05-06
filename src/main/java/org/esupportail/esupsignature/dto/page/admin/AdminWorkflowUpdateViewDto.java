@@ -73,6 +73,7 @@ public class AdminWorkflowUpdateViewDto {
         private final Boolean sendAlertToAllRecipients;
         private final Boolean ownerSystem;
         private final Boolean disableDeleteByCreator;
+        private final Boolean disableUpdateByCreator;
         private final Boolean disableEmailAlerts;
         private final Boolean forbidDownloadsBeforeEnd;
         private final Boolean authorizeClone;
@@ -111,6 +112,7 @@ public class AdminWorkflowUpdateViewDto {
                            Boolean sendAlertToAllRecipients,
                            Boolean ownerSystem,
                            Boolean disableDeleteByCreator,
+                           Boolean disableUpdateByCreator,
                            Boolean disableEmailAlerts,
                            Boolean forbidDownloadsBeforeEnd,
                            Boolean authorizeClone,
@@ -148,6 +150,7 @@ public class AdminWorkflowUpdateViewDto {
             this.sendAlertToAllRecipients = sendAlertToAllRecipients;
             this.ownerSystem = ownerSystem;
             this.disableDeleteByCreator = disableDeleteByCreator;
+            this.disableUpdateByCreator = disableUpdateByCreator;
             this.disableEmailAlerts = disableEmailAlerts;
             this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
             this.authorizeClone = authorizeClone;
@@ -236,6 +239,10 @@ public class AdminWorkflowUpdateViewDto {
 
         public Boolean getDisableDeleteByCreator() {
             return disableDeleteByCreator;
+        }
+
+        public Boolean getDisableUpdateByCreator() {
+            return disableUpdateByCreator;
         }
 
         public Boolean getDisableEmailAlerts() {

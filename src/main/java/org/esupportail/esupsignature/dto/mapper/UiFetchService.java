@@ -1277,6 +1277,7 @@ public class UiFetchService {
 
     private SignRequestFullDto buildCommonDto(ShowSignRequestContext context) {
         SignRequest signRequest = context.signRequest();
+        boolean updateAllowed = preAuthorizeService.signBookUpdate(context.signBook().getId(), context.authUserEppn());
         return new SignRequestFullDto(
                 signRequest.getId(),
                 signRequest.getData() != null ? signRequest.getData().getId() : null,
@@ -1303,6 +1304,7 @@ public class UiFetchService {
                 context.attachmentAlert(),
                 context.attachmentRequire(),
                 context.manager(),
+                updateAllowed,
                 context.manager() && (signRequest.getStatus() == SignRequestStatus.draft || signRequest.getStatus() == SignRequestStatus.pending),
                 signRequest.getDocumentsHistory() != null
         );

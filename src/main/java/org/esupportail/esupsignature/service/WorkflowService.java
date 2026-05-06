@@ -573,6 +573,7 @@ public class WorkflowService {
         workflowToUpdate.setSealAtEnd(workflow.getSealAtEnd());
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
+        workflowToUpdate.setDisableUpdateByCreator(workflow.getDisableUpdateByCreator());
         workflowToUpdate.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());

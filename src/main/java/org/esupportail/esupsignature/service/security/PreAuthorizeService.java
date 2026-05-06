@@ -101,6 +101,13 @@ public class PreAuthorizeService {
         return false;
     }
 
+    public boolean signBookUpdate(Long id, String userEppn) {
+        if (userEppn != null) {
+            return signBookService.checkUserUpdateRights(id, userEppn);
+        }
+        return false;
+    }
+
     public boolean signRequestCreator(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);

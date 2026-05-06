@@ -287,6 +287,7 @@ public class UiFetchMapper {
                 workflow.getSendAlertToAllRecipients(),
                 workflow.getOwnerSystem(),
                 workflow.getDisableDeleteByCreator(),
+                workflow.getDisableUpdateByCreator(),
                 workflow.getDisableEmailAlerts(),
                 workflow.getForbidDownloadsBeforeEnd(),
                 workflow.getAuthorizeClone(),

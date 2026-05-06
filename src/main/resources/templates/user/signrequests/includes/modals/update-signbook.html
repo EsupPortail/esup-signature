@@ -10,7 +10,7 @@
      role="dialog"
      aria-labelledby="updateSignbookLabel"
      aria-hidden="true"
-     th:if="${signRequestFull.manager && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
+     th:if="${signRequestFull.updateAllowed && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)}">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <form id="params" th:action="'/user/signbooks/update/' + ${showSignRequest.signBookLight.id}" th:method="put">

@@ -44,9 +44,9 @@
                         <div class="accordion" id="accordionExample">
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                    <button class="accordion-button d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                                         <h5>Généralités</h5>
-                                        <div class="alert alert-secondary ms-2 p-2">Nombre de demandes dans ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
+                                        <div class="alert alert-secondary m-0 p-2">Nombre de demandes dans ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
                                     </button>
                                 </h2>
                                 <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
@@ -233,6 +233,10 @@
                                             <div class="form-check mb-2">
                                                 <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
                                                 <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
+                                            </div>
+                                            <div class="form-check mb-2">
+                                                <input id="disableUpdateByCreator" type="checkbox" class="form-check-input" th:field="*{disableUpdateByCreator}"/>
+                                                <label for="disableUpdateByCreator" class="form-check-label">Le propriétaire ne peut pas modifier la demande</label>
                                             </div>
                                             <div class="form-check mb-2">
                                                 <input id="disableEmailAlerts" type="checkbox" class="form-check-input" th:field="*{disableEmailAlerts}"/>
