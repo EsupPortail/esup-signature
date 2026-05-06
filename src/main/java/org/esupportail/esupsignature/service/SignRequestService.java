@@ -1639,7 +1639,7 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		boolean displayNotif = false;
 		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
-				(signRequest.getCreateBy().getEppn().equals(userEppn)
+				(userEppn.equals("system") || signRequest.getCreateBy().getEppn().equals(userEppn)
 						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&
 						(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
 						|| !Collections.disjoint(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDashboardRoles(), user.getRoles())))

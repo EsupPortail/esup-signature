@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
@@ -23,10 +24,12 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
+import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +37,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
@@ -202,6 +206,15 @@ public class SignRequestWsController {
     public String get(@Parameter(description = "Identifiant de la demande", required = true) @PathVariable Long id,
                       @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws JsonProcessingException {
         return signRequestService.getJson(id);
+    }
+
+    @CrossOrigin
+    @PostMapping(value = "/replay-notif/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Relance une demande de signature",
+            responses = @ApiResponse(description = "SignRequest", content = @Content(schema = @Schema(implementation = SignRequest.class))))
+    @PreAuthorize("@wsAccessTokenService.readWorkflowAccess(#id, #xApiKey)")
+    public Boolean replayNotif(@PathVariable("id") Long id, @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey) throws EsupSignatureMailException {
+        return signRequestService.replayNotif(id, "system");
     }
 
     @CrossOrigin
