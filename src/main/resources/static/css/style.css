@@ -1936,6 +1936,29 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     min-width: 0;
 }
 
+.wizard-step-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 40px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.wizard-step-actions .step-vertical-icon {
+    margin-right: 0;
+}
+
+.wizard-step-delete-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .wizard-step-card-badge {
     display: inline-flex;
     align-items: center;
