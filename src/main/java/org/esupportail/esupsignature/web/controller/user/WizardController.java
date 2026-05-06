@@ -46,29 +46,25 @@ public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
+    private final UiFetchService uiFetchService;
+    private final FormService formService;
+    private final SignBookService signBookService;
+    private final SignRequestService signRequestService;
+    private final TemplateEngine templateEngine;
+    private final WorkflowStepService workflowStepService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
 
-    @Resource
-    private UiFetchService uiFetchService;
-
-    @Resource
-    private FormService formService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private TemplateEngine templateEngine;
-
-    @Resource
-    private WorkflowStepService workflowStepService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
+    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService) {
+        this.workflowService = workflowService;
+        this.uiFetchService = uiFetchService;
+        this.formService = formService;
+        this.signBookService = signBookService;
+        this.signRequestService = signRequestService;
+        this.templateEngine = templateEngine;
+        this.workflowStepService = workflowStepService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+    }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-sign/{type}", produces = "text/html")

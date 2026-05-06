@@ -19,36 +19,32 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <div class="flex-grow-1 overflow-scroll">
-                    <div class="card text-bg-light m-2">
-                        <div class="card-body">
-                            <h5 class="card-title">Paramètres généraux</h5>
-                            <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
-                                <div class="form-group">
-                                    <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
-                                    <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label" for="viewersSelect">Observateurs</label>
-                                    <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
-                                        <option data-placeholder="true"></option>
-                                        <th:block th:each="viewer : ${workflow.viewers}">
-                                            <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
-                                        </th:block>
-                                    </select>
-                                </div>
-                                <strong>Options</strong>
-                                <div class="form-check mb-2">
-                                    <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
-                                    <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
-                                </div>
-                                <button title="Enregistrer" type="submit" class="btn btn-success mt-2"><i class="fi fi-rr-disk"></i></button>
-                            </form>
-                        </div>
+                <div class="flex-grow-1 overflow-scroll p-2">
+                    <div class="alert alert-light">
+                        <h5 class="card-title">Paramètres généraux</h5>
+                        <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
+                            <div class="form-group">
+                                <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
+                                <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="viewersSelect">Observateurs</label>
+                                <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="viewer : ${workflow.viewers}">
+                                        <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <strong>Options</strong>
+                            <div class="form-check mb-2">
+                                <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
+                                <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="card text-bg-light m-2">
-                        <div class="card-body text-center">
+                    <div class="alert alert-light">
                             <h5 class="card-title"><b>Étapes</b></h5>
                             <dl class="row border-bottom m-0 text-start">
                                 <dd>
@@ -58,11 +54,15 @@
                                     </div>
                                 </dd>
                             </dl>
-                        </div>
                     </div>
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul id="buttonList" class="list-unstyled">
+                        <li>
+                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark" onclick="document.getElementById('params').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </button>
+                        </li>
                         <li>
                             <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-folder-times"></i>

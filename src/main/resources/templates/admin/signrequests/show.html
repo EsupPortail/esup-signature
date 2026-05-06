@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
-<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="adminSignRequestView" type="org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
@@ -10,7 +11,7 @@
     new FilesInput($("#signedFiles"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${signedDocuments}]], true, null);
     new FilesInput($("#documentsHistory"), [[${globalProperties.maxUploadSize}]], [[${_csrf}]], [[${documentsHistory}]], true, null);
 </script>
-<body th:with="signBook=${signRequest.parentSignBook}">
+<body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
@@ -20,7 +21,7 @@
                 <li class="breadcrumb-item"><a href="/admin/signrequests">Liste
                     des demandes</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande
-                    de signature : <span th:text="${signRequest.token}"></span>
+                    de signature : <span th:text="${signRequestLight.token}"></span>
                 </li>
             </ol>
         </nav>
@@ -35,10 +36,10 @@
                     <h5 class="ms-4">Statut</h5>
                 </div>
                 <div class="card-body">
-                    <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signBook})}" class="mb-1"></div>
+                    <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${signBookLight})}" class="mb-1"></div>
                     <div class="text-center mb-1">
-                        <div class="badge rounded-pill badge-status bg-secondary" th:if="${signBook.archiveStatus != null && signBook.archiveStatus.name != 'none'}">
-                            <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}"></span>
+                        <div class="badge rounded-pill badge-status bg-secondary" th:if="${signBookLight.archiveStatus != null && signBookLight.archiveStatus.name != 'none'}">
+                            <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signBookLight.archiveStatus}}"></span>
                         </div>
                     </div>
                 </div>
@@ -80,17 +81,15 @@
                 </div>
                 <div class="card-body">
                     <ul class="list-group">
-                        <th:block th:each="comment : ${signRequest.comments}">
-                            <div class="d-flex w-100 justify-content-between">
-                                <li href="#" class="list-group-item list-group-item-action">
-                                    De : <span class="mb-1" th:text="${comment.createBy.eppn}"></span> -
-                                    <small>
-                                        le : <span
-                                            th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </small>
-                                    <p th:if="${comment.text != null}" th:text="${comment.text}"></p>
-                                </li>
-                            </div>
+                        <th:block th:each="comment : ${comments}">
+                            <li class="list-group-item list-group-item-action">
+                                De : <span class="mb-1" th:text="${comment.createBy != null ? comment.createBy.eppn : ''}"></span> -
+                                <small>
+                                    le : <span
+                                        th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                </small>
+                                <p th:if="${comment.text != null}" th:text="${comment.text}"></p>
+                            </li>
                         </th:block>
                     </ul>
                 </div>
@@ -130,17 +129,17 @@
                 </div>
             <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signBook.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
+                    <li th:if="${signRequestLight.createBy != null && signRequestLight.createBy.eppn == userEppn && signRequestLight.deleted}">
+                        <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
                             <i class="fa-solid fa-trash-restore "></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
+                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
-                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire "></i>
-                            <i th:if="${!signRequest.deleted}" class="fi fi-rr-trash "></i>
+                            th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
+                            <i th:if="${signRequestLight.deleted}" class="fa-solid fa-dumpster-fire "></i>
+                            <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
                         </a>
                     </li>
                 </ul>
@@ -149,11 +148,11 @@
         </div>
     </div>
 </main>
-<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
-     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+<div th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}"
+     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="command" th:action="'/admin/signbooks/'+ ${signBook.id}" th:method="delete">
+            <form id="command" th:action="'/admin/signbooks/'+ ${signBookLight.id}" th:method="delete">
                 <div class="modal-header">
                     <h2>Attention</h2>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
@@ -161,8 +160,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:unless="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:unless="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:if="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>

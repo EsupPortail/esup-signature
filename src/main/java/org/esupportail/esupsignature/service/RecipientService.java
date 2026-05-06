@@ -24,24 +24,23 @@ import java.util.stream.Collectors;
 @Service
 public class RecipientService {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecipientService.class);
+    private final static Logger logger = LoggerFactory.getLogger(RecipientService.class);
 
-    @Resource
-    private RecipientRepository recipientRepository;
+    private final RecipientRepository recipientRepository;
+    private final WebUtilsService webUtilsService;
+    private final UserListService userListService;
+    private final UserService userService;
+    private final ObjectMapper objectMapper;
+    private final UserShareService userShareService;
 
-    @Resource
-    private WebUtilsService webUtilsService;
-
-    @Resource
-    private UserListService userListService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private ObjectMapper objectMapper;
-    @Autowired
-    private UserShareService userShareService;
+    public RecipientService(RecipientRepository recipientRepository, WebUtilsService webUtilsService, UserListService userListService, UserService userService, ObjectMapper objectMapper, UserShareService userShareService) {
+        this.recipientRepository = recipientRepository;
+        this.webUtilsService = webUtilsService;
+        this.userListService = userListService;
+        this.userService = userService;
+        this.objectMapper = objectMapper;
+        this.userShareService = userShareService;
+    }
 
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
