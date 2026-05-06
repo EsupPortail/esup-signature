@@ -181,7 +181,7 @@ public class WizardController {
             model.addAttribute("signBook", signBook);
             if (workflowId != null && workflowId != 0) {
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
-                var workflow = uiFetchService.buildWorkflowView(workflowId);
+                var workflow = uiFetchService.buildWorkflowView(workflowId, userEppn);
                 model.addAttribute("workflow", workflow);
                 model.addAttribute("isTempUsers", signBookService.isTempUsers(signBook.getId()));
                 model.addAttribute("workflowId", workflowId);
@@ -290,7 +290,7 @@ public class WizardController {
         IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
         final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
         Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
-        var workflowView = uiFetchService.buildWorkflowView(workflow.getId());
+        var workflowView = uiFetchService.buildWorkflowView(workflow.getId(), userEppn);
         model.addAttribute("workflow", workflowView);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {
@@ -326,7 +326,7 @@ public class WizardController {
                 workflow.getWorkflowSteps().remove(workflowStep);
                 workflowStepService.delete(workflowStep);
             }
-            model.addAttribute("workflow", uiFetchService.buildWorkflowView(workflowId));
+            model.addAttribute("workflow", uiFetchService.buildWorkflowView(workflowId, userEppn));
             model.asMap().forEach(context::setVariable);
         }
         return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-workflow-step", context));

@@ -280,20 +280,25 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public WorkflowViewDto buildWorkflowView(Long workflowId) {
-        return uiFetchMapper.toWorkflowViewDto(workflowService.getById(workflowId), null);
+    public WorkflowViewDto buildWorkflowView(Long workflowId, String userEppn) {
+        Workflow workflow = workflowService.getById(workflowId);
+        if(workflow.getFromCode()) {
+            workflow = workflowService.computeWorkflow(workflow, null, userEppn, true);
+            return uiFetchMapper.toWorkflowViewDto(workflow, workflowService.getHelpMessage(userEppn, workflow), userEppn);
+        }
+        return uiFetchMapper.toWorkflowViewDto(workflowService.getById(workflowId), null, userEppn);
     }
 
     @Transactional(readOnly = true)
     public WorkflowViewDto buildWorkflowWizardView(Long workflowId, String userEppn) {
         Workflow workflow = workflowService.getById(workflowId);
-        return uiFetchMapper.toWorkflowViewDto(workflow, workflowService.getHelpMessage(userEppn, workflow));
+        return uiFetchMapper.toWorkflowViewDto(workflow, workflowService.getHelpMessage(userEppn, workflow), userEppn);
     }
 
     @Transactional(readOnly = true)
     public StartFormViewDto buildStartFormWizardView(Long formId, String userEppn) {
         Form form = formService.getById(formId);
-        return uiFetchMapper.toStartFormViewDto(form, formService.getHelpMessage(userEppn, form));
+        return uiFetchMapper.toStartFormViewDto(form, formService.getHelpMessage(userEppn, form), userEppn);
     }
 
     @Transactional(readOnly = true)

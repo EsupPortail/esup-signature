@@ -42,6 +42,7 @@ public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
     private final TagService tagService;
+    private final FormService formService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -63,7 +64,7 @@ public class WorkflowService {
     private final  ObjectMapper objectMapper;
     private final  RecipientService recipientService;
 
-    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService) {
+    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService, FormService formService) {
         this.workflows = workflows;
         this.workflowRepository = workflowRepository;
         this.workflowStepService = workflowStepService;
@@ -81,6 +82,7 @@ public class WorkflowService {
         this.objectMapper = objectMapper;
         this.recipientService = recipientService;
         this.tagService = tagService;
+        this.formService = formService;
     }
 
     @PostConstruct
@@ -158,6 +160,11 @@ public class WorkflowService {
                         i++;
                     }
                 } else {
+                    formRepository.findByWorkflowIdEquals(workflow.getId()).forEach(form -> {
+                        form.setWorkflow(null);
+                        form.setPublicUsage(false);
+                        form.getRoles().clear();
+                    });
                     toRemoveWorkflows.add(workflow);
                 }
             } catch(EsupSignatureUserException e){
@@ -409,6 +416,7 @@ public class WorkflowService {
                 }
                 stepNumber++;
             }
+            modelWorkflow.setWorkflowSteps(workflowSteps);
             if(modelWorkflow.getFromCode() == null || !modelWorkflow.getFromCode()) {
                 entityManager.detach(modelWorkflow);
             }
