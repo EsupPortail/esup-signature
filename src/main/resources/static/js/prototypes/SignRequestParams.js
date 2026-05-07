@@ -2,7 +2,7 @@ import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {Color} from "../modules/utils/Color.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
-import Toast from "../modules/ui/Toast.js?version=@version@";
+import NotificationCenter from "../modules/ui/NotificationCenter.js?version=@version@";
 
 function getCssColorValue(variableName) {
     return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
@@ -526,7 +526,7 @@ export class SignRequestParams extends EventFactory {
 
                     this.transformToDisplayedSpot(data);
 
-                    Toast.showSnackbar("Emplacement enregistré", "success", {delay: 2500});
+                    NotificationCenter.showSnackbar("Emplacement enregistré", "success", {delay: 2500});
 
                     setTimeout(() => {
                         saveSpotButton.removeClass("btn-outline-success").addClass("btn-success");

@@ -1,11 +1,11 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
-import Toast from "../Toast.js?version=@version@";
+import NotificationCenter from "../NotificationCenter.js?version=@version@";
 
 export default class FormSignsUi {
 
     constructor(domain, formId, csrf) {
         console.info("Starting Form Signs UI");
-        this.toast = new Toast();
+        this.notificationCenter = new NotificationCenter();
         this.domain = domain;
         this.formId = formId;
         this.csrf = csrf;
@@ -41,7 +41,7 @@ export default class FormSignsUi {
                 message.type = "error";
                 message.text = "Problème lors de l'enregistrement";
                 message.object = null;
-                self.toast.launch(message);
+                self.notificationCenter.launch(message);
             },
         });
     }

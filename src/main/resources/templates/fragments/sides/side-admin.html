@@ -75,7 +75,7 @@
             title="Statut DSS" type="button" href="/admin/dss" class="btn text-left rounded-2 d-flex align-items-center gap-2">
             <i id="admin-side-dss-icon" class="fi fi-rr-shield-trust" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : 'text-success'"></i> <span id="admin-side-dss-label" th:classappend="${dssStatus == null || dssStatus == true} ? 'text-danger' : ''" class="sidebar-label">Statut DSS</span>
         </a>
-        <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2">
+        <a title="Doc des APIs" target="_blank" type="button" href="/swagger-ui.html" class="btn border-secondary-subtle text-left rounded-2 d-flex align-items-center gap-2">
             <i class="fi fi-rr-api-cloud"></i> <span class="sidebar-label">APIs Doc</span>
         </a>
     </div>

@@ -1,4 +1,4 @@
-import Toast from "../Toast.js?version=@version@";
+import NotificationCenter from "../NotificationCenter.js?version=@version@";
 
 export class PostitManager {
 
@@ -133,7 +133,7 @@ export class PostitManager {
 	}
 
 	showSnackbarMessage(message) {
-		Toast.showSnackbar(message, "success");
+		NotificationCenter.showSnackbar(message, "success");
 	}
 
 	setVisibility(visible) {
