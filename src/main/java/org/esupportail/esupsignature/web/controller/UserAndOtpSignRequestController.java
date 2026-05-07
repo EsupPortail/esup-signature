@@ -272,7 +272,7 @@ public class UserAndOtpSignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #userEppn)")
     @PostMapping(value = "/add-spot/{id}")
     @ResponseBody
     public ResponseEntity<String> addSpot(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,

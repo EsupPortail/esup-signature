@@ -134,7 +134,7 @@
                             <i class="fa-solid fa-trash-restore "></i>
                         </a>
                     </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}">
+                    <li th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}">
                         <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
                             th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
@@ -148,7 +148,7 @@
         </div>
     </div>
 </main>
-<div th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}"
+<div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}"
      data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
     <div class="modal-dialog">
         <div class="modal-content">

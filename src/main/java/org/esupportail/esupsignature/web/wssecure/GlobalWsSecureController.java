@@ -114,7 +114,7 @@ public class GlobalWsSecureController {
         return ResponseEntity.notFound().build();
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @GetMapping(value = "/get-original-file/{id}")
     public ResponseEntity<Void> getOriginalFile(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletResponse httpServletResponse) {
         try {
@@ -221,7 +221,7 @@ public class GlobalWsSecureController {
     }
 
     @DeleteMapping("/delete-spot/{id}/{spotId}")
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     public void deleteSpot(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("spotId") Long spotId,
                            @PathVariable("id") Long id,
                            RedirectAttributes redirectAttributes) {
@@ -229,7 +229,7 @@ public class GlobalWsSecureController {
         redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Champ signature supprimé"));
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @DeleteMapping(value = "/delete-comment/{id}/{commentId}")
     public ResponseEntity<Void> deleteComments(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("commentId") Long commentId,  RedirectAttributes redirectAttributes) {
         commentService.deleteComment(commentId, null);
