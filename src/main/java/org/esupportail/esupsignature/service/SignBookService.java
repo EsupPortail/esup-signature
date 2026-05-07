@@ -295,9 +295,9 @@ public class SignBookService {
         } else if(statusFilter.equals("toSign"))  {
             signBooks = signBookRepository.findToSign(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.signed, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findSignedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.refused, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findRefusedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(user, pageable);
         } else if(statusFilter.equals("sharedSign")) {

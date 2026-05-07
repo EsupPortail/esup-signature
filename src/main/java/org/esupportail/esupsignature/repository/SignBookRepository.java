@@ -4,7 +4,6 @@ import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
@@ -261,10 +260,34 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                   join sr.recipientHasSigned rhs
                   where sr.parentSignBook = sb
                     and key(rhs).user = :user
-                    and rhs.actionType = :actionType
+                    and rhs.actionType = 'signed'
+              )
+              and not exists (
+                  select 1 from SignRequest sr
+                  join sr.recipientHasSigned rhs
+                  where sr.parentSignBook = sb
+                    and key(rhs).user = :user
+                    and rhs.actionType = 'refused'
               )
             """)
-    Page<SignBook> findByRecipientAndActionTypeNotDeleted(User user, ActionType actionType, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
+    Page<SignBook> findSignedByRecipientNotDeleted(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
+
+    @Query("""
+            select sb from SignBook sb
+            where :user not member of sb.hidedBy
+              and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and exists (
+                  select 1 from SignRequest sr
+                  join sr.recipientHasSigned rhs
+                  where sr.parentSignBook = sb
+                    and key(rhs).user = :user
+                    and rhs.actionType = 'refused'
+              )
+            """)
+    Page<SignBook> findRefusedByRecipientNotDeleted(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb = :hidedBy")
     Page<SignBook> findByHidedById(User hidedBy, Pageable pageable);

@@ -79,3 +79,11 @@
     height: 1em;
     background: url('/images/icons/rr-task-checklist.svg') no-repeat center;
 }
+
+.fi-rr-mouse-scroll::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background: url('/images/icons/rr-mouse-scroll.svg') no-repeat center;
+}
