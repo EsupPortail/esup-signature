@@ -58,7 +58,11 @@ main {
      font-weight: 500;
  }
 
- .es-nav-tools {
+#breadcrumb {
+    background-color: var(--bs-light-bg-subtle);
+}
+
+.es-nav-tools {
      font-size: 16px;
  }
 
@@ -457,6 +461,7 @@ dd {
 .form-switch.form-switch-md .form-check-input {
     height: 20px;
     width: 40px;
+    border-radius: .375em;
 }
 
 .form-switch.form-switch-md .form-check-label {
