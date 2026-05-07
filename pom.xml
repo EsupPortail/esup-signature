@@ -17,6 +17,7 @@
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
+		<bouncycastle.version>1.83</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.4</dss.framework.version>
         <pdfbox.version>3.0.6</pdfbox.version>
@@ -440,6 +441,11 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-pdfa</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-utils-google-guava</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
@@ -542,27 +548,27 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15to18</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

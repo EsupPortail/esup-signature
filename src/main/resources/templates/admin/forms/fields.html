@@ -112,13 +112,13 @@
                 <div class="flex-grow-1">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
                 </li>
             </ul>
             <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">

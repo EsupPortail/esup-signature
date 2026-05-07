@@ -30,22 +30,20 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1 overflow-scroll">
+                <div class="flex-grow-1">
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
-                            <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
+                            <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
                         </li>
                     </ul>
-                    <div class="card text-bg-light m-2">
-                        <div class="card-body">
-                            <h5 th:text="'Formulaire : ' + ${form.title}"></h5>
-                            <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
+                    <div class="es-main-content-admin overflow-auto p-2">
+                        <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
                                 <input type="hidden" th:field="*{id}">
                                 <div class="accordion" id="accordionExample">
                                     <div class="accordion-item">
@@ -229,7 +227,6 @@
                                     </div>
                                 </div>
                             </form>
-                        </div>
                     </div>
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
@@ -246,9 +243,9 @@
                             </button>
                         </li>
                         <li>
-                            <button class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                            <a class="btn btn-transparent text-dark" title="Exporter le formulaire" role="button" th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
                                 <i class="fi fi-rr-file-export"></i>
-                            </button>
+                            </a>
                         </li>
                         <li>
                             <button role="button" title="Importer la configuration d'un formulaire" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">

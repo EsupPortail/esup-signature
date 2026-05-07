@@ -3,10 +3,13 @@ export class SignatureFlowController {
     constructor(signUi) {
         this.signUi = signUi;
         this.state = signUi.state;
+        this.contextualPassword = "";
+        this.contextualSignAll = false;
     }
 
     launchSignModal() {
         const signUi = this.signUi;
+        this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
         console.info("launch sign modal");
         window.onbeforeunload = null;
         signUi.workspace.signPlacementController.lockSigns();
@@ -59,7 +62,7 @@ export class SignatureFlowController {
                             signUi.checkSignOptions();
                         }
                     } else {
-                        if(signUi.notSigned && (signUi.currentSignType === "signature" || signUi.currentSignType === "visa") && (signUi.currentStepMinSignLevel === "simple")) {
+                        if(signUi.notSigned && (signUi.currentSignType === "signature" || signUi.currentSignType === "visa") && (signUi.currentStepMinSignLevel === "simple") && $("#certType > option[value='imageStamp']").length === 0) {
                             $('#certType').prepend($('<option>', {
                                 value: 'imageStamp',
                                 text: signUi.saveOptionText
@@ -153,18 +156,136 @@ export class SignatureFlowController {
         this.launchSign(next);
     }
 
+    setLaunchButtonsDisabled(disabled) {
+        $("#checkValidateSignButtonNext").prop("disabled", disabled);
+        $("#checkValidateSignButtonEnd").prop("disabled", disabled);
+    }
+
+    setContextualPassword(password) {
+        this.contextualPassword = typeof password === "string" ? password : "";
+    }
+
+    getContextualPassword() {
+        return this.contextualPassword;
+    }
+
+    setContextualSignAll(signAll) {
+        if (signAll == null) {
+            this.contextualSignAll = null;
+            return;
+        }
+        this.contextualSignAll = Boolean(signAll);
+    }
+
+    getContextualSignAll() {
+        return Boolean(this.contextualSignAll);
+    }
+
+    requestContextualInfo() {
+        const signUi = this.signUi;
+        const needsPassword = signUi.certTypeSelect.val() === "userCert" && this.getContextualPassword().trim() === "";
+        const needsSignAll = signUi.nbSignRequests > 1 && this.contextualSignAll == null;
+
+        if (signUi.certTypeSelect.val() !== "userCert") {
+            this.setContextualPassword("");
+        }
+
+        if (!needsPassword && !needsSignAll) {
+            return Promise.resolve(true);
+        }
+
+        return new Promise(resolve => {
+            let resolved = false;
+            const dialog = bootbox.dialog({
+                title: needsPassword ? "Informations requises" : "Option de signature",
+                message: `
+                    <div>
+                        ${needsPassword ? `
+                            <p>La signature avec votre certificat utilisateur nécessite le mot de passe de votre magasin de certificats.</p>
+                            <input type="password" id="bootbox-user-cert-password" class="form-control" autocomplete="current-password" placeholder="Saisir votre mot de passe">
+                            <div id="bootbox-user-cert-password-error" class="text-danger mt-2 d-none">Merci de saisir votre mot de passe.</div>
+                        ` : ''}
+                        ${needsSignAll ? `
+                            <div class="form-check form-switch form-switch-md d-flex flex-row align-items-center ${needsPassword ? 'mt-3' : ''}">
+                                <input type="checkbox" class="form-check-input" id="bootbox-sign-all">
+                                <label class="form-check-label" for="bootbox-sign-all">Signer tous les documents de la demande en utilisant ce même emplacement de signature.</label>
+                            </div>
+                        ` : ''}
+                    </div>
+                `,
+                buttons: {
+                    cancel: {
+                        label: 'Annuler',
+                        className: 'btn-secondary',
+                        callback: () => {
+                            if (!resolved) {
+                                resolved = true;
+                                resolve(false);
+                            }
+                        }
+                    },
+                    confirm: {
+                        label: 'Continuer',
+                        className: 'btn-primary',
+                        callback: () => {
+                            if (needsPassword) {
+                                const passwordInput = dialog.find('#bootbox-user-cert-password');
+                                const errorMessage = dialog.find('#bootbox-user-cert-password-error');
+                                const password = passwordInput.val();
+                                if (typeof password !== 'string' || password.trim() === '') {
+                                    errorMessage.removeClass('d-none');
+                                    passwordInput.trigger('focus');
+                                    return false;
+                                }
+                                this.setContextualPassword(password);
+                            }
+                            if (needsSignAll) {
+                                this.setContextualSignAll(dialog.find('#bootbox-sign-all').prop('checked'));
+                            }
+                            if (!resolved) {
+                                resolved = true;
+                                resolve(true);
+                            }
+                        }
+                    }
+                }
+            });
+
+            dialog.on('shown.bs.modal', () => {
+                if (needsPassword) {
+                    const passwordInput = dialog.find('#bootbox-user-cert-password');
+                    passwordInput.trigger('focus');
+                    passwordInput.on('keydown', e => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            dialog.find('.btn-primary').trigger('click');
+                        }
+                    });
+                }
+            });
+
+            dialog.on('hidden.bs.modal', () => {
+                if (!resolved) {
+                    resolved = true;
+                    resolve(false);
+                }
+            });
+        });
+    }
+
     launchSign(e) {
         const signUi = this.signUi;
-        $("#checkValidateSignButtonNext").attr("disabled", "disabled");
-        $("#checkValidateSignButtonEnd").attr("disabled", "disabled");
+        this.setLaunchButtonsDisabled(true);
         let signModal = $('#signModal');
         if(signUi.certTypeSelect.val() === '' || signUi.certTypeSelect.val() === null) {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
+            this.setLaunchButtonsDisabled(false);
             return;
         }
         if (signUi.isPdf && signUi.workspace.checkSignsPositions() != null && signUi.workspace.signType !== "hiddenVisa" && (signUi.certTypeSelect.val() === 'imageStamp')) {
             bootbox.alert("Merci de placer la signature", null);
             signModal.modal('hide');
+            this.setLaunchButtonsDisabled(false);
             return;
         }
         $(window).unbind("beforeunload");
@@ -187,18 +308,22 @@ export class SignatureFlowController {
             }
         }
         if(good) {
-            console.log('launch sign for : ' + signUi.signRequestId);
-            signUi.wait.modal('show');
-            signUi.wait.modal({backdrop: 'static', keyboard: false});
-            if(signUi.isPdf) {
-                signUi.workspace.pdfViewer.promiseSaveValues().then(() => this.submitSignRequest());
-            } else {
-                this.submitSignRequest();
-            }
-        } else {
-            signUi.signModal.on('hidden.bs.modal', function () {
-                $("#checkDataSubmit").click();
+            this.requestContextualInfo().then(canContinue => {
+                if (!canContinue) {
+                    this.setLaunchButtonsDisabled(false);
+                    return;
+                }
+                console.log('launch sign for : ' + signUi.signRequestId);
+                signUi.wait.modal('show');
+                signUi.wait.modal({backdrop: 'static', keyboard: false});
+                if(signUi.isPdf) {
+                    signUi.workspace.pdfViewer.promiseSaveValues().then(() => this.submitSignRequest());
+                } else {
+                    this.submitSignRequest();
+                }
             });
+        } else {
+            $("#checkDataSubmit").click();
         }
     }
 
@@ -240,6 +365,7 @@ export class SignatureFlowController {
                     }
                 }
                 let paramToSend = {
+                    id: signUi.normalizeInteger(originalParams.id, null),
                     signPageNumber: signPageNumber,
                     signDocumentNumber: signUi.normalizeInteger(originalParams.signDocumentNumber, 0, 0),
                     signWidth: signUi.normalizeInteger(originalParams.signWidth / signScale, 200, 1),
@@ -265,6 +391,7 @@ export class SignatureFlowController {
                     green: signUi.normalizeInteger(originalParams.green, 0, 0),
                     blue: signUi.normalizeInteger(originalParams.blue, 0, 0),
                     fontSize: signUi.normalizeInteger(originalParams.fontSize, signUi.signatureUiConfig?.defaultFontSize ?? 16, 1),
+                    recipientId: signUi.normalizeInteger(originalParams.recipientId, null),
                 };
                 if(originalParams.userSignaturePad != null) {
                     if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
@@ -277,9 +404,9 @@ export class SignatureFlowController {
                 return paramToSend;
             });
             this.state.signRequestUrlParams = {
-                'password' : $("#password").val(),
+                'password' : this.getContextualPassword(),
                 'certType' : signUi.certTypeSelect.val(),
-                'signAll' : $("#sign-all").prop("checked"),
+                'signAll' : this.getContextualSignAll(),
                 'sealCertificat' : signUi.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
                 'comment' : signUi.signComment.val(),
@@ -288,7 +415,7 @@ export class SignatureFlowController {
             signUi.signRequestUrlParams = this.state.signRequestUrlParams;
         } else {
             this.state.signRequestUrlParams = {
-                "password": document.getElementById("password").value,
+                "password": this.getContextualPassword(),
             };
             signUi.signRequestUrlParams = this.state.signRequestUrlParams;
         }

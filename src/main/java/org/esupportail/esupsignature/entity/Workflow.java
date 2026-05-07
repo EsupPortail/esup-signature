@@ -65,6 +65,8 @@ public class Workflow {
 
     private String documentsSourceUri;
 
+    private Boolean unzip;
+
     private Boolean forbidDownloadsBeforeEnd = false;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
@@ -92,6 +94,8 @@ public class Workflow {
     private Boolean ownerSystem = false;
 
     private Boolean disableDeleteByCreator = false;
+
+    private Boolean disableUpdateByCreator = false;
 
     private Boolean sealAtEnd = false;
 
@@ -256,6 +260,14 @@ public class Workflow {
         this.documentsSourceUri = documentsSourceUri;
     }
 
+    public Boolean getUnzip() {
+        return unzip;
+    }
+
+    public void setUnzip(Boolean unzip) {
+        this.unzip = unzip;
+    }
+
     public List<Target> getTargets() {
         return targets;
     }
@@ -374,6 +386,14 @@ public class Workflow {
 
     public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) {
         this.disableDeleteByCreator = disableDeleteByCreator;
+    }
+
+    public Boolean getDisableUpdateByCreator() {
+        return disableUpdateByCreator;
+    }
+
+    public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
+        this.disableUpdateByCreator = disableUpdateByCreator;
     }
 
     public List<User> getViewers() {

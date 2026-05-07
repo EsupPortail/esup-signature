@@ -198,6 +198,10 @@ export class SignPlacementController extends EventFactory {
     }
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
+        const normalizedSignImageNumber = signImageNumber == null ? null : Number.parseInt(signImageNumber, 10);
+        if (signImageNumber != null && Number.isFinite(normalizedSignImageNumber)) {
+            signImageNumber = normalizedSignImageNumber;
+        }
         if (this.isOtp) {
             this.popUserUi();
             const selection = await new Promise((resolve) => {
@@ -397,12 +401,16 @@ export class SignPlacementController extends EventFactory {
 
     hasPendingSignaturePlacement() {
         const activeSigns = Array.from(this.signRequestParamses.values()).filter(signRequestParams =>
-            signRequestParams != null
-            && signRequestParams.isSign
-            && signRequestParams.signImageNumber != null
-            && signRequestParams.signImageNumber >= 0
-            && signRequestParams.signImageNumber !== 999997
-            && signRequestParams.signImageNumber !== 999999
+            {
+                const signImageNumber = signRequestParams?.signImageNumber == null
+                    ? null
+                    : Number.parseInt(signRequestParams.signImageNumber, 10);
+                return signRequestParams != null
+                    && signRequestParams.isSign
+                    && signImageNumber != null
+                    && signImageNumber >= 0
+                    && signImageNumber !== 999999;
+            }
         );
 
         if (activeSigns.length === 0) {
@@ -460,8 +468,8 @@ export class SignPlacementController extends EventFactory {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
         let step3 = $("#step-3");
-        let addSignButton2 = $("#addSignButton2");
         let addSignButton = $("#addSignButton");
+        let addSignButton2 = $("#addSignButton2");
         let addParaphButton2 = $("#addParaphButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
@@ -470,8 +478,8 @@ export class SignPlacementController extends EventFactory {
         let selectCertType = $("#certType");
 
         selectCertType.removeAttr("disabled");
-        addSignButton2.attr("disabled", "disabled");
         addSignButton.attr("disabled", "disabled");
+        addSignButton2.attr("disabled", "disabled");
         addParaphButton2.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
@@ -497,7 +505,9 @@ export class SignPlacementController extends EventFactory {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
         let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton2");
+        let addSignButton = $("#addSignButton");
+        let addSignButton2 = $("#addSignButton2");
+        let addParaphButton2 = $("#addParaphButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
@@ -506,12 +516,13 @@ export class SignPlacementController extends EventFactory {
 
         selectCertType.removeAttr("disabled");
         addSignButton.removeAttr("disabled");
+        addSignButton2.removeAttr("disabled");
+        addParaphButton2.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
-        // signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none");
 
-        this.setButtonVariant(addSignButton, "btn-success");
+        this.setButtonVariant(addSignButton2, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
         this.setButtonVariant(signLaunchButton, "btn-secondary");

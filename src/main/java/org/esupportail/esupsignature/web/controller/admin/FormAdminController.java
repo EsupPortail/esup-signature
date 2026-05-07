@@ -51,28 +51,22 @@ public class FormAdminController {
 	}
 
 	private final FormService formService;
-	private final WorkflowService workflowService;
 	private final UserService userService;
-	private final PreFillService preFillService;
 	private final DataExportService dataExportService;
 	private final FieldService fieldService;
 	private final ObjectMapper objectMapper;
 	private final PreAuthorizeService preAuthorizeService;
-    private final TagService tagService;
 	private final UiFetchService uiFetchService;
 	private final GlobalProperties globalProperties;
 
-	public FormAdminController(FormService formService, WorkflowService workflowService, UserService userService, PreFillService preFillService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, TagService tagService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
+	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
 		this.formService = formService;
-		this.workflowService = workflowService;
 		this.userService = userService;
-		this.preFillService = preFillService;
 		this.dataExportService = dataExportService;
 		this.fieldService = fieldService;
 		this.objectMapper = objectMapper;
 		this.preAuthorizeService = preAuthorizeService;
-        this.tagService = tagService;
-						this.uiFetchService = uiFetchService;
+		this.uiFetchService = uiFetchService;
 		this.globalProperties = globalProperties;
     }
 
@@ -106,10 +100,7 @@ public class FormAdminController {
 						 @RequestParam(required = false) List<String> roleNames,
 						 @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes, authUserEppn);
-			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				form.setManagerRole(managerRole);
-			}
+			Form form = formService.createForm(null, name, title, workflowId, prefillType, roleNames, publicUsage, fieldNames, fieldTypes, authUserEppn, managerRole);
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				return "redirect:/admin/forms/" + form.getId() + "/fields";
 			} else {
@@ -132,12 +123,12 @@ public class FormAdminController {
 						   @RequestParam(required = false) List<String> roleNames,
 						   @RequestParam(required = false) Boolean publicUsage, RedirectAttributes redirectAttributes) throws IOException {
 		try {
-			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn);
-			if(!userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				form.setManagerRole(managerRole);
-			}
-			return "redirect:/admin/forms/" + form.getId() + "/fields";
-		} catch (EsupSignatureRuntimeException e) {
+			Form form = formService.generateForm(multipartFile, name, title, workflowId, prefillType, roleNames, publicUsage, authUserEppn, managerRole);
+			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+				return "redirect:/admin/forms/" + form.getId() + "/fields";
+			} else {
+				return "redirect:/manager/forms/" + form.getId() + "/fields";
+			}		} catch (EsupSignatureRuntimeException e) {
 			logger.error(e.getMessage());
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 			return "redirect:/admin/forms";
@@ -303,8 +294,11 @@ public class FormAdminController {
 	public String deleteForm(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		formService.deleteForm(id);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le formulaire a bien été supprimé"));
-		return "redirect:/admin/forms";
-	}
+		if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			return "redirect:/admin/forms/";
+		} else {
+			return "redirect:/manager/forms/";
+		}	}
 
 	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
 	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
@@ -403,7 +397,7 @@ public class FormAdminController {
 		Form form = formService.getById(id);
 		try {
 			response.setContentType("text/json; charset=utf-8");
-			response.setHeader("Content-Disposition", "attachment; filename=" + form.getName() + ".json");
+			response.setHeader("Content-Disposition", "attachment; filename=form_" + form.getName() + ".json");
 			InputStream csvInputStream = formService.getJsonFormSetup(id);
 			IOUtils.copy(csvInputStream, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);

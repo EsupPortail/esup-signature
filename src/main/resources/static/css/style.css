@@ -61,7 +61,6 @@ main {
      font-size: 16px;
  }
 
-/* Keep signrequest toolbar responsive and prevent horizontal page overflow. */
 body.es-signrequest-page .es-nav-tools {
     width: 100%;
     min-width: 0;
@@ -126,25 +125,55 @@ body.es-signrequest-page #tools #signLaunchButton {
     pointer-events: none !important;
 }
 
-body.es-spot-add-mode #content > *:not(#workspace) {
+body.es-spot-add-mode .es-main-content > *:not(.es-spot-add-scope):not(.es-spot-add-admin-scope):not(#sidebar):not(.es-sidebar) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
-body.es-spot-add-mode #workspace > *:not(form):not(#pdf):not([id^="cross_"]):not([id^="crossTools_"]):not(#spot-modal) {
+body.es-spot-add-mode .es-signrequest-main-content > #sidebar,
+body.es-spot-add-mode .es-signrequest-main-content > #sidebar *,
+body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar,
+body.es-spot-add-mode .es-signrequest-main-content > .es-sidebar * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+body.es-spot-add-mode .es-spot-add-scope > *:not(#workspace) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
-body.es-spot-add-mode #workspace > form:not(#pdf),
-body.es-spot-add-mode #workspace > form:not(#pdf) > *:not(#pdf) {
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row {
+    opacity: 1;
+    filter: none;
+}
+
+body.es-spot-add-mode .es-spot-add-admin-scope > *:not(.es-spot-workspace-row) {
     opacity: 0.35;
     filter: grayscale(1);
     transition: opacity 0.15s ease, filter 0.15s ease;
 }
 
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host),
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > *:not(.es-spot-workspace-host) {
+    opacity: 0.35;
+    filter: grayscale(1);
+    transition: opacity 0.15s ease, filter 0.15s ease;
+}
+
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-spot-add-mode .es-spot-add-scope > .es-spot-workspace-row > .es-spot-workspace-host *,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host,
+body.es-spot-add-mode .es-spot-add-admin-scope > .es-spot-workspace-row > .es-spot-workspace-host * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+body.es-spot-add-mode #workspace,
+body.es-spot-add-mode #workspace *,
 body.es-spot-add-mode #pdf,
 body.es-spot-add-mode #pdf *,
 body.es-spot-add-mode #cross_999999,
@@ -305,10 +334,11 @@ td {
 
 .nav-item.ws-tab:not(:last-child)::after {
     content: '';
+    z-index: 1000;
     position: absolute;
-    top: 16px;
-    bottom: 8px;
-    right: 0;
+    top: 14px;
+    bottom: 10px;
+    right: -1px;
     width: 2px;
     background-color: var(--color-adb5bd);
 }
@@ -327,7 +357,7 @@ td {
 }
 
 .nav-item.ws-tab.active {
-    border-bottom : 1px solid var(--bs-white);
+    border-bottom : 0px solid var(--bs-white);
 }
 
 .nav-tabs .nav-link {
@@ -377,10 +407,6 @@ option[unavailable="unavailable"] {
     pointer-events: none;
     color: var(--bs-black);
     font-weight: bold;
-}
-
-.nav-tab-admin {
-    background-color: var(--bs-white);
 }
 
 .breadcrumb-nav,
@@ -548,24 +574,12 @@ dd {
 .hr {
     align-items: center;
     display: flex;
-    font-weight: bold;
+    /*font-weight: bold;*/
+    text-transform: uppercase !important;
 }
 
 .hr::after {
-    border-top: 1px solid;
-    content: "";
-    flex: 1;
-    margin: 5px;
-}
-
-.hr {
-    align-items: center;
-    display: flex;
-    font-weight: bold;
-}
-
-.hr::after {
-    border-top: 1px solid;
+    border-top: 1px solid var(--color-rgba-0-0-0-03);
     content: "";
     flex: 1;
     margin: 5px;
@@ -1857,6 +1871,141 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     background: var(--bs-danger);
     border-color: var(--bs-danger);
     color: var(--bs-white);
+}
+
+.wizard-steps-preview {
+    background-color: var(--bs-light);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.wizard-steps-preview .step-vertical {
+    padding-bottom: 1rem;
+}
+
+.wizard-steps-preview .step-vertical:last-child {
+    padding-bottom: 0;
+}
+
+.wizard-steps-preview .step-vertical:not(:last-child)::after {
+    background: var(--color-dee2e6);
+}
+
+.wizard-steps-preview .step-vertical-content {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--bs-white) !important;
+}
+
+.wizard-steps-preview .step-vertical.configured .step-vertical-content {
+    border-left-color: var(--bs-primary);
+}
+
+.wizard-steps-preview .step-vertical.configured .step-vertical-icon {
+    background: var(--bs-white);
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+.wizard-step-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-step-card-body {
+    min-width: 0;
+}
+
+.wizard-step-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 40px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.wizard-step-actions .step-vertical-icon {
+    margin-right: 0;
+}
+
+.wizard-step-delete-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wizard-step-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+}
+
+.wizard-step-card-badge i {
+    font-size: 0.85rem;
+}
+
+.wizard-step-card-indicators {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.wizard-step-card-table {
+    margin-bottom: 0;
+}
+
+.wizard-steps-preview--horizontal {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    max-width: none;
+}
+
+.wizard-steps-preview--horizontal .step-vertical {
+    flex: 1 1 320px;
+    max-width: 420px;
+    padding-bottom: 0;
+}
+
+.wizard-steps-preview--horizontal .step-vertical:not(:last-child)::after {
+    display: none;
+}
+
+.wizard-steps-preview--horizontal .step-vertical-content {
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .wizard-steps-preview--horizontal .step-vertical {
+        max-width: none;
+        flex-basis: 100%;
+    }
+
+    .wizard-step-card-header {
+        flex-direction: column;
+    }
+
+    .wizard-step-card-indicators {
+        justify-content: flex-start;
+    }
 }
 
 /* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */

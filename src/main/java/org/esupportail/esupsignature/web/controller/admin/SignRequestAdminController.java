@@ -4,6 +4,8 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.Log;
@@ -28,7 +30,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -47,9 +48,6 @@ public class SignRequestAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestAdminController.class);
 
-	@Resource
-	private WebUtilsService webUtilsService;
-
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
 		return "active";
@@ -60,20 +58,17 @@ public class SignRequestAdminController {
 		return "adminsignrequests";
 	}
 
-	@Resource
-	private SignRequestService signRequestService;
+	private final SignBookRepository signBookRepository;
+	private final DocumentRepository documentRepository;
+	private final SignBookService signBookService;
+	private final UiFetchService uiFetchService;
 
-	@Resource
-	private SignBookRepository signBookRepository;
-
-	@Resource
-	private DocumentRepository documentRepository;
-
-	@Resource
-	private SignBookService signBookService;
-
-	@Resource
-	private LogService logService;
+	public SignRequestAdminController(SignBookRepository signBookRepository, DocumentRepository documentRepository, SignBookService signBookService, UiFetchService uiFetchService) {
+		this.signBookRepository = signBookRepository;
+		this.documentRepository = documentRepository;
+		this.signBookService = signBookService;
+		this.uiFetchService = uiFetchService;
+	}
 
 	@GetMapping
 	public String list(
@@ -95,20 +90,22 @@ public class SignRequestAdminController {
 	}
 
 	@GetMapping(value = "/{id}")
-	@Transactional
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		SignRequest signRequest = signRequestService.getById(id);
-		if(signRequest != null) {
-			List<Log> logs = logService.getBySignRequestId(signRequest.getId());
-			model.addAttribute("logs", logs);
-			model.addAttribute("comments", logs.stream().filter(log -> log.getComment() != null && !log.getComment().isEmpty()).collect(Collectors.toList()));
-			model.addAttribute("signRequest", signRequest);
-			model.addAttribute("originalDocuments", signRequest.getOriginalDocuments());
-			model.addAttribute("signedDocuments", signRequest.getSignedDocuments());
-			if(signRequest.getDocumentsHistory() != null) {
-				model.addAttribute("documentsHistory", Collections.singleton(signRequest.getDocumentsHistory()));
-			}
-			model.addAttribute("isManager", true);
+		AdminSignRequestShowViewDto view = uiFetchService.buildAdminSignRequestShowView(id);
+		if(view != null) {
+			model.addAttribute("adminSignRequestView", view);
+			model.addAttribute("signRequestLight", view.signRequestLight());
+			model.addAttribute("signRequestFull", view.signRequestFull());
+			model.addAttribute("signBookLight", view.signBookLight());
+			model.addAttribute("workflow", view.workflow());
+			model.addAttribute("steps", view.steps());
+			model.addAttribute("targets", view.targets());
+			model.addAttribute("comments", view.comments());
+			model.addAttribute("logs", view.logs());
+			model.addAttribute("originalDocuments", view.originalDocuments());
+			model.addAttribute("signedDocuments", view.signedDocuments());
+			model.addAttribute("documentsHistory", view.documentsHistory());
+			model.addAttribute("isManager", view.manager());
 			return "admin/signrequests/show";
 		} else {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "La demande de signature n'existe pas"));

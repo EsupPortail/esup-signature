@@ -17,6 +17,9 @@ public class SignRequestParams {
 
     transient private Integer stepNumber;
 
+    @Transient
+    private Long recipientId;
+
 	private Integer signImageNumber = 0;
 
 	private Integer signPageNumber = 1;
@@ -338,5 +341,14 @@ public class SignRequestParams {
 
     public void setRecipient(Recipient recipient) {
         this.recipient = recipient;
+        this.recipientId = recipient != null ? recipient.getId() : null;
+    }
+
+    public Long getRecipientId() {
+        return recipient != null ? recipient.getId() : recipientId;
+    }
+
+    public void setRecipientId(Long recipientId) {
+        this.recipientId = recipientId;
     }
 }

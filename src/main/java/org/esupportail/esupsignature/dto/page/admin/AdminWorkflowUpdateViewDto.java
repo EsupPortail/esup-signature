@@ -73,6 +73,7 @@ public class AdminWorkflowUpdateViewDto {
         private final Boolean sendAlertToAllRecipients;
         private final Boolean ownerSystem;
         private final Boolean disableDeleteByCreator;
+        private final Boolean disableUpdateByCreator;
         private final Boolean disableEmailAlerts;
         private final Boolean forbidDownloadsBeforeEnd;
         private final Boolean authorizeClone;
@@ -84,6 +85,7 @@ public class AdminWorkflowUpdateViewDto {
         private final String signRequestParamsDetectionPattern;
         private final Boolean scanPdfMetadatas;
         private final String documentsSourceUri;
+        private final Boolean unzip;
         private final String targetNamingTemplate;
         private final Date startArchiveDate;
         private final String archiveTarget;
@@ -110,6 +112,7 @@ public class AdminWorkflowUpdateViewDto {
                            Boolean sendAlertToAllRecipients,
                            Boolean ownerSystem,
                            Boolean disableDeleteByCreator,
+                           Boolean disableUpdateByCreator,
                            Boolean disableEmailAlerts,
                            Boolean forbidDownloadsBeforeEnd,
                            Boolean authorizeClone,
@@ -121,6 +124,7 @@ public class AdminWorkflowUpdateViewDto {
                            String signRequestParamsDetectionPattern,
                            Boolean scanPdfMetadatas,
                            String documentsSourceUri,
+                           Boolean unzip,
                            String targetNamingTemplate,
                            Date startArchiveDate,
                            String archiveTarget,
@@ -146,6 +150,7 @@ public class AdminWorkflowUpdateViewDto {
             this.sendAlertToAllRecipients = sendAlertToAllRecipients;
             this.ownerSystem = ownerSystem;
             this.disableDeleteByCreator = disableDeleteByCreator;
+            this.disableUpdateByCreator = disableUpdateByCreator;
             this.disableEmailAlerts = disableEmailAlerts;
             this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
             this.authorizeClone = authorizeClone;
@@ -157,6 +162,7 @@ public class AdminWorkflowUpdateViewDto {
             this.signRequestParamsDetectionPattern = signRequestParamsDetectionPattern;
             this.scanPdfMetadatas = scanPdfMetadatas;
             this.documentsSourceUri = documentsSourceUri;
+            this.unzip = unzip;
             this.targetNamingTemplate = targetNamingTemplate;
             this.startArchiveDate = startArchiveDate;
             this.archiveTarget = archiveTarget;
@@ -235,6 +241,10 @@ public class AdminWorkflowUpdateViewDto {
             return disableDeleteByCreator;
         }
 
+        public Boolean getDisableUpdateByCreator() {
+            return disableUpdateByCreator;
+        }
+
         public Boolean getDisableEmailAlerts() {
             return disableEmailAlerts;
         }
@@ -277,6 +287,10 @@ public class AdminWorkflowUpdateViewDto {
 
         public String getDocumentsSourceUri() {
             return documentsSourceUri;
+        }
+
+        public Boolean getUnzip() {
+            return unzip;
         }
 
         public String getTargetNamingTemplate() {

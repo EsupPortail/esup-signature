@@ -32,36 +32,45 @@
         </div>
     </div>
     <hr>
-    <div id="stepper2" class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
+    <div id="stepper2" class="wizard-steps-preview wizard-steps-preview--horizontal">
         <th:block th:if="${signBook.liveWorkflow.liveWorkflowSteps.size() > 0}" th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
-            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step-horizontal-v2 d-flex gap-2 align-items-center complete border border-dark bg-white rounded p-1" th:name="'step_' + ${iterator.index}">
-                <div class="d-flex align-items-center gap-2">
-                    <div title="Étape configurée" class="step-horizontal-v2-icon">
-                        <i class="fa-solid fa-clock"></i>
+            <div th:id="'liveStep-' + ${iterator.index + 1}" class="step-vertical configured" th:name="'step_' + ${iterator.index}">
+                <div class="wizard-step-actions">
+                    <div class="step-vertical-icon" title="Étape configurée">
+                        <span th:text="${iterator.index + 1}"></span>
                     </div>
+                    <button type="button"
+                            th:id="'delete-step-' + ${liveWorkflowStep.id}"
+                            th:data-es-step-id="${liveWorkflowStep.id}"
+                            class="btn btn-transparent text-danger btn-sm wizard-step-delete-btn"
+                            title="Supprimer cette étape">
+                        <i class="fi fi-rr-trash"></i>
+                    </button>
                 </div>
-                <div class="step-horizontal-v2-content">
-                    <th:block th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}">
-                        <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
-                        <br/>
-                    </th:block>
-                    <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
-                    <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
-                    <div>
-                    <table class="table table-sm table-hover table-borderless">
+                <div class="step-vertical-content bg-white rounded">
+                    <div class="wizard-step-card-header">
+                        <div class="wizard-step-card-body">
+                            <div th:if="${liveWorkflowStep.workflowStep != null && liveWorkflowStep.workflowStep.description != null && liveWorkflowStep.workflowStep.description != ''}" class="mb-1">
+                                <span th:text="${liveWorkflowStep.workflowStep.description}"></span>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="step-type" th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></span>
+                                <span th:replace="~{user/signrequests/cards/levelcard :: levelcard}"></span>
+                            </div>
+                        </div>
+                        <div class="wizard-step-card-indicators">
+                            <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}"><i class="fi fi-rr-users-alt"></i></span>
+                            <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="text-muted"><i class="fi fi-rr-users-slash"></i></span>
+                            <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="text-dark"><i class="fi fi-rr-infinite-cycle"></i></span>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-hover table-borderless wizard-step-card-table">
                         <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
                             <tr>
                                 <td th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
-                                <td class="text-right">
-                                    <i title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
-                                </td>
                             </tr>
                         </th:block>
                     </table>
-                    <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="float-end"><i class="fa-solid fa-users"></i></span>
-                    <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}" class="float-end text-muted"><i class="fi fi-rr-users-slash"></i></span>
-                    <span title="Étape infinie" th:if="${liveWorkflowStep.repeatable}" class="float-end me-1 text-dark"><i class="fi fi-rr-infinite-cycle"></i></span>
-                    </div>
                 </div>
             </div>
         </th:block>

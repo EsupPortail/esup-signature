@@ -15,7 +15,7 @@
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
+                <li aria-current="page" class="breadcrumb-item active">Étapes du circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
         </nav>
@@ -28,13 +28,13 @@
                 <div class="flex-grow-1 overflow-scroll">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}"><i class="fi fi-rr-location-crosshairs"></i> Destinations</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}"><i class="fi fi-rr-shoe-prints"></i> Étapes</a>
                 </li>
             </ul>
             <div class="card text-bg-light m-2">
@@ -158,8 +158,8 @@
                     <li>
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addStep">
                             <span class="fa-stack fa-1x">
-                                <i class="fi fi fi-rr-shoe-prints fa-stack-2x" style="margin-left: -6px"></i>
-                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
+                                <i class="fi fi-rr-shoe-prints fa-stack-2x" style="margin-left: -6px"></i>
+                                <i class="fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
                             </span>
                         </a>
                     </li>
@@ -167,7 +167,7 @@
                         <a th:if="${workflow.fromCode == null || !workflow.fromCode}" role="button" title="Ajouter une étape automatique" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addAutoStep">
                             <span class="fa-stack fa-1x">
                                 <i class="fi fi-rr-cloud-gear-automation fa-stack-2x" style="margin-left: -6px"></i>
-                                <i class="fi fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
+                                <i class="fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
                             </span>
                         </a>
                     </li>

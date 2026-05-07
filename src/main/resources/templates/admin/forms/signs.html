@@ -24,28 +24,30 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1 d-flex flex-column">
-            <ul class="nav nav-tabs nav-tab-admin" style="top: 86px;z-index: 1000;">
+                <div class="flex-grow-1 d-flex flex-column es-spot-add-admin-scope">
+            <ul class="nav nav-tabs">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">Paramètres</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">Configuration des champs</a>
+                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">Configuration des signatures</a>
+                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
                 </li>
             </ul>
             <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-            <div class="d-flex gap-2 flex-grow-1 overflow-hidden workspace-margin-top-admin" th:if="${workflow != null}">
+            <div class="d-flex gap-2 flex-grow-1 overflow-hidden es-spot-workspace-row" th:if="${workflow != null}">
                 <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
-                <div class="flex-grow-1 overflow-hidden" th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
+                <div class="flex-grow-1 overflow-hidden es-spot-workspace-host" style="width: calc(100vw - 672px);">
+                    <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
+                </div>
             </div>
             <div th:if="${workflow == null}" class="alert alert-warning">
                 Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire
             </div>
                 </div>
-            <div style="margin-top: 30px;" class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
+            <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
                     <li>
                         <button th:if="${form.document != null}" tabindex="1" id="addSpotButton2" role="button" class="btn btn-transparent text-dark d-none" title="Ajouter un emplacement de signature">
@@ -155,7 +157,7 @@
                                 </td>
                                 <td>
                                     <a class="btn btn-danger" th:href="'#modal-warning-' + ${signRequestParams.id}" role="button" title="Supprimer" data-bs-toggle="modal">
-                                        <i class="fa-solid fa-trash-alt pr-2"></i>
+                                        <i class="fi fi-rr-trash pr-2"></i>
                                     </a>
                                 </td>
                             </tr>

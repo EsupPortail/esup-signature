@@ -24,30 +24,33 @@ import java.util.stream.Collectors;
 @Service
 public class RecipientService {
 
-    private static final Logger logger = LoggerFactory.getLogger(RecipientService.class);
+    private final static Logger logger = LoggerFactory.getLogger(RecipientService.class);
 
-    @Resource
-    private RecipientRepository recipientRepository;
+    private final RecipientRepository recipientRepository;
+    private final WebUtilsService webUtilsService;
+    private final UserListService userListService;
+    private final UserService userService;
+    private final ObjectMapper objectMapper;
+    private final UserShareService userShareService;
 
-    @Resource
-    private WebUtilsService webUtilsService;
-
-    @Resource
-    private UserListService userListService;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private ObjectMapper objectMapper;
-    @Autowired
-    private UserShareService userShareService;
+    public RecipientService(RecipientRepository recipientRepository, WebUtilsService webUtilsService, UserListService userListService, UserService userService, ObjectMapper objectMapper, UserShareService userShareService) {
+        this.recipientRepository = recipientRepository;
+        this.webUtilsService = webUtilsService;
+        this.userListService = userListService;
+        this.userService = userService;
+        this.objectMapper = objectMapper;
+        this.userShareService = userShareService;
+    }
 
     public Recipient createRecipient(User user) {
         Recipient recipient = new Recipient();
         recipient.setUser(user);
         recipientRepository.save(recipient);
         return recipient;
+    }
+
+    public Recipient getById(Long id) {
+        return recipientRepository.findById(id).orElse(null);
     }
 
     public boolean needSign(List<Recipient> recipients, String userEppn) {
@@ -59,7 +62,34 @@ public class RecipientService {
     }
 
     public boolean validateRecipient(SignRequest signRequest, String userEppn) {
+        return validateRecipient(signRequest, userEppn, signRequest.getSignRequestParams());
+    }
+
+    public boolean validateRecipient(SignRequest signRequest, String userEppn, List<SignRequestParams> signRequestParamses) {
         User user = userService.getByEppn(userEppn);
+        Set<Long> targetedRecipientIds = signRequestParamses == null ? Set.of() : signRequestParamses.stream()
+                .map(SignRequestParams::getRecipientId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if(!targetedRecipientIds.isEmpty()) {
+            List<Recipient> recipientsToValidate = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream()
+                    .filter(recipient1 -> targetedRecipientIds.contains(recipient1.getId()))
+                    .toList();
+            if(recipientsToValidate.isEmpty()) {
+                logger.error("validateRecipient : no targeted recipient found for user " + userEppn + " in signRequest " + signRequest.getId());
+                return false;
+            }
+            for (Recipient recipientToValidate : recipientsToValidate) {
+                if(signRequest.getRecipientHasSigned().get(recipientToValidate) != null) {
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setActionType(ActionType.signed);
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setUserIp(webUtilsService.getClientIp());
+                    signRequest.getRecipientHasSigned().get(recipientToValidate).setDate(new Date());
+                }
+                allSigned(signRequest, recipientToValidate);
+            }
+            return true;
+        }
+
         Recipient recipient;
         Optional<Recipient> validateRecipient = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().filter(r -> r.getUser().getEppn().equals(userEppn)).findFirst();
         if(validateRecipient.isEmpty()) {

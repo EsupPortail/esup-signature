@@ -154,11 +154,18 @@
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
                                 <option data-placeholder="true" readonly="" value="">Choisir une étape</option>
                                 <th:block th:each="step, iterator : ${showSignRequest.steps}">
-                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${showSignRequest.liveWorkflowStepCount == 1}"></option>
+                                    <option th:if="${step.signType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" th:text="'Etape ' + ${iterator.index + 1}" th:value="${iterator.index + 1}" th:selected="${showSignRequest.liveWorkflowStepCount == 1}" th:attr="data-es-all-sign-to-complete=${step.allSignToComplete},data-es-recipient-count=${#lists.size(step.recipients)}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumber" name="spotStepNumber" value="1" th:unless="${showSignRequest.liveWorkflowStepCount > 1}">
+                        <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:unless="${showSignRequest.liveWorkflowStepCount > 1}" th:attr="data-es-all-sign-to-complete=${showSignRequest.steps[0].allSignToComplete},data-es-recipient-count=${#lists.size(showSignRequest.steps[0].recipients)}">
+                        <div id="divSpotRecipientId" class="form-group mb-3 d-none">
+                            <label for="spotRecipientId">Choisir le destinataire concerné</label>
+                            <br/>
+                            <select id="spotRecipientId" name="recipientId" class="slim-select-simple">
+                                <option data-placeholder="true" readonly="" value="">Choisir un destinataire</option>
+                            </select>
+                        </div>
                         <button id="hideSpotButton" type="button" class="btn btn-sm btn-secondary float-start" data-bs-dismiss="modal">
                             Annuler
                         </button>

@@ -15,8 +15,20 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
+
+    @Query("""
+            select distinct sb from SignBook sb
+            left join fetch sb.liveWorkflow lw
+            left join fetch lw.liveWorkflowSteps lws
+            left join fetch lws.recipients r
+            left join fetch r.user ru
+            left join fetch lws.workflowStep ws
+            where sb.id = :id
+            """)
+    Optional<SignBook> findByIdWithWizardContext(@Param("id") Long id);
 
     List<SignBook> findBySubject(String subject);
 

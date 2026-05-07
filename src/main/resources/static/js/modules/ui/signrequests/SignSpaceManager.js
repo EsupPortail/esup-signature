@@ -46,7 +46,7 @@ export class SignSpaceManager {
 					signSpaceDiv.remove();
 				}
 				const spotId = this.options.findSpotIdForSignParams(currentSignRequestParams);
-				const deleteBtnHtml = (this.options.isSignable() && this.options.isEditable()) && spotId != null
+				const deleteBtnHtml = this.options.isEditable() && spotId != null
 					? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
 					: "";
 				let cssClasses = "sign-space";
@@ -76,14 +76,17 @@ export class SignSpaceManager {
 
 				if (isSignableField) {
 					signSpaceDiv.off("click" + this.options.signSpaceNamespace).on("click" + this.options.signSpaceNamespace, () => this.options.requestAddSign(i));
-					if(currentSignRequestParams.ready == null || !currentSignRequestParams.ready) {
-						signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
-					}
+					this.renderSignSpaceContent(signSpaceDiv, {
+						isSignableField: true,
+						ready: currentSignRequestParams.ready === true
+					});
 					this.makeItDroppable(signSpaceDiv);
 				} else {
 					const stepNumberFromDom = parseInt(signSpaceDiv.attr("data-es-step-number"), 10);
-					const stepLabel = Number.isFinite(stepNumberFromDom) ? " étape " + stepNumberFromDom : "";
-					signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature" + stepLabel + "</span></div>");
+					this.renderSignSpaceContent(signSpaceDiv, {
+						isSignableField: false,
+						stepNumber: stepNumberFromDom
+					});
 					if (Number.isFinite(stepNumberFromDom)) {
 						signSpaceDiv.off("mouseenter" + this.options.signSpaceNamespace).on("mouseenter" + this.options.signSpaceNamespace, () => this.highlightLiveStep(stepNumberFromDom));
 						signSpaceDiv.off("mouseleave" + this.options.signSpaceNamespace).on("mouseleave" + this.options.signSpaceNamespace, () => this.resetLiveStepHighlight());
@@ -104,10 +107,50 @@ export class SignSpaceManager {
 				const renderedHeight = Math.round(currentSignRequestParams.signHeight * pdfViewer.scale * this.options.getBrowserZoom());
 				signSpaceDiv.css("width", renderedWidth + "px");
 				signSpaceDiv.css("height", renderedHeight + "px");
-				signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
-				signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
+				this.updateSignSpaceFontSize(signSpaceDiv, renderedHeight);
 			}
 		}
+	}
+
+	renderSignSpaceContent(signSpaceDiv, { isSignableField = false, ready = false, stepNumber = null } = {}) {
+		signSpaceDiv.children(".sign-content").remove();
+		this.updateSignSpaceDeleteButtonVisibility(signSpaceDiv, {
+			isSignableField,
+			ready
+		});
+		if (isSignableField) {
+			if (!ready) {
+				signSpaceDiv.append("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Votre signature ici</span></div>");
+			}
+		} else {
+			const parsedStepNumber = parseInt(stepNumber, 10);
+			const stepLabel = Number.isFinite(parsedStepNumber) ? " étape " + parsedStepNumber : "";
+			signSpaceDiv.append("<div class='sign-content'><span class='sign-text text-uppercase'>Emplacement de signature" + stepLabel + "</span></div>");
+		}
+		this.updateSignSpaceFontSize(signSpaceDiv);
+	}
+
+	updateSignSpaceDeleteButtonVisibility(signSpaceDiv, { isSignableField = false, ready = false } = {}) {
+		const deleteBtn = signSpaceDiv.children(".slot-delete-btn");
+		if (!deleteBtn.length) {
+			return;
+		}
+		if (isSignableField) {
+			deleteBtn.toggle(!ready);
+			return;
+		}
+		deleteBtn.show();
+	}
+
+	updateSignSpaceFontSize(signSpaceDiv, renderedHeight = null) {
+		const effectiveHeight = Number.isFinite(renderedHeight)
+			? renderedHeight
+			: parseInt(signSpaceDiv.css("height"), 10);
+		if (!Number.isFinite(effectiveHeight)) {
+			return;
+		}
+		signSpaceDiv.css("font-size", Math.round(effectiveHeight * 0.15) + "px");
+		signSpaceDiv.find(".sign-icon").css("font-size", Math.round(effectiveHeight * 0.45) + "px");
 	}
 
 	getSignSpaceId(signParams, index, isSignableField) {
@@ -195,8 +238,7 @@ export class SignSpaceManager {
 			const pageLeft = pdfViewer.getPageLeftInPdf(pageNum);
 			signSpaceDiv.css("left", signSpaceDiv.attr("data-es-pos-x") * pdfViewer.scale + pageLeft + 'px');
 			signSpaceDiv.css("top", signSpaceDiv.attr("data-es-pos-y") * pdfViewer.scale + pageTop + 'px');
-			signSpaceDiv.css("font-size", Math.round(renderedHeight * 0.15) + "px");
-			signSpaceDiv.find(".sign-icon").css("font-size", Math.round(renderedHeight * 0.45) + "px");
+			this.updateSignSpaceFontSize(signSpaceDiv, renderedHeight);
 		});
 	}
 
@@ -206,6 +248,7 @@ export class SignSpaceManager {
 		if (signPlacementController == null || pdfViewer == null) {
 			return;
 		}
+		const manager = this;
 		signSpaceDiv.droppable({
 			tolerance: "touch",
 			hoverClass: "drop-hover",
@@ -218,7 +261,10 @@ export class SignSpaceManager {
 				$(this).removeClass("sign-field");
 				$(this).addClass("sign-field-dropped");
 				$(this).css("pointer-events", "none");
-				$(this).text("");
+					manager.renderSignSpaceContent($(this), {
+						isSignableField: true,
+						ready: true
+					});
 				for (let i = 0; i < signPlacementController.signRequestParamses.size; i++) {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
 					let cross = signRequestParams.cross;
@@ -268,7 +314,10 @@ export class SignSpaceManager {
 				$(this).addClass("sign-field");
 				$(this).removeClass("sign-field-dropped");
 				signPlacementController.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
-				$(this).html("<div class='sign-content'><span class='sign-icon fi fi-rr-add'></span><span class='sign-text text-uppercase'>Placer la signature ici</span></div>");
+				manager.renderSignSpaceContent($(this), {
+					isSignableField: true,
+					ready: false
+				});
 				$(this).css("pointer-events", "auto");
 				for (let i = 0; i < signPlacementController.signRequestParamses.size; i++) {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];

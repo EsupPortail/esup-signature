@@ -25,6 +25,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.entity.enums.UiParams;
+import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +39,12 @@ import java.util.stream.Collectors;
 
 @Component
 public class UiFetchMapper {
+
+    private final WorkflowService workflowService;
+
+    public UiFetchMapper(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+    }
 
     public AdminUiStatusDto toAdminUiStatusDto(Integer nbSessions, Boolean dssStatus) {
         return new AdminUiStatusDto(nbSessions, dssStatus);
@@ -287,6 +294,7 @@ public class UiFetchMapper {
                 workflow.getSendAlertToAllRecipients(),
                 workflow.getOwnerSystem(),
                 workflow.getDisableDeleteByCreator(),
+                workflow.getDisableUpdateByCreator(),
                 workflow.getDisableEmailAlerts(),
                 workflow.getForbidDownloadsBeforeEnd(),
                 workflow.getAuthorizeClone(),
@@ -298,6 +306,7 @@ public class UiFetchMapper {
                 workflow.getSignRequestParamsDetectionPattern(),
                 workflow.getScanPdfMetadatas(),
                 workflow.getDocumentsSourceUri(),
+                workflow.getUnzip(),
                 workflow.getTargetNamingTemplate(),
                 workflow.getStartArchiveDate(),
                 workflow.getArchiveTarget(),
@@ -377,13 +386,17 @@ public class UiFetchMapper {
         return new AdminWorkflowUpdateViewDto.ViewerDto(user.getEmail(), user.getFirstname(), user.getName());
     }
 
-    public WorkflowViewDto toWorkflowViewDto(Workflow workflow, String messageToDisplay) {
+    public WorkflowViewDto toWorkflowViewDto(Workflow workflow, String messageToDisplay, String userEppn) {
         if (workflow == null) {
             return null;
+        }
+        if(workflow.getFromCode()) {
+            workflow = workflowService.computeWorkflow(workflow, null, userEppn, true);
         }
         return new WorkflowViewDto(
                 workflow.getId(),
                 workflow.getDescription(),
+                workflow.getMailFrom(),
                 workflow.getDocumentsSourceUri(),
                 workflow.getSendAlertToAllRecipients(),
                 workflow.getFromCode(),
@@ -394,7 +407,7 @@ public class UiFetchMapper {
         );
     }
 
-    public StartFormViewDto toStartFormViewDto(Form form, String messageToDisplay) {
+    public StartFormViewDto toStartFormViewDto(Form form, String messageToDisplay, String userEppn) {
         if (form == null) {
             return null;
         }
@@ -402,7 +415,7 @@ public class UiFetchMapper {
                 form.getId(),
                 form.getTitle(),
                 messageToDisplay,
-                toWorkflowViewDto(form.getWorkflow(), null)
+                toWorkflowViewDto(form.getWorkflow(), null, userEppn)
         );
     }
 
@@ -709,7 +722,8 @@ public class UiFetchMapper {
                         signRequestParams.getRed(),
                         signRequestParams.getGreen(),
                         signRequestParams.getBlue(),
-                        signRequestParams.getFontSize()
+                        signRequestParams.getFontSize(),
+                        signRequestParams.getRecipient() != null ? signRequestParams.getRecipient().getId() : null
                 ))
                 .toList();
     }

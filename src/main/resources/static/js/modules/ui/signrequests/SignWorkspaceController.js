@@ -75,7 +75,9 @@ export class SignWorkspaceController {
         this.first = true;
         this.actionInitialyzed = false;
         this.saveAlert = false;
+        this.missingCertTypeAlertShown = false;
         this.scrollTop = 0;
+        this.refreshWorkspaceTimer = null;
         this.nextCommand = "none";
         this.hoverLiveStepState = null;
         this.state = workspaceState;
@@ -258,7 +260,7 @@ export class SignWorkspaceController {
             $('#prev').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.prevPage());
             $('#next').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
             $('#end-button').off('click' + eventNamespace).on('click' + eventNamespace, e => this.pdfViewer.nextPage());
-            $("#spotStepNumber").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
+            $("[name='spotStepNumber']").off('change' + eventNamespace).on('change' + eventNamespace, e => this.changeSpotStep());
             // this.signPlacementController.addEventListener("startDrag", e => this.hideAllPostits());
             // this.signPlacementController.addEventListener("stopDrag", e => this.showAllPostits());
             this.pdfViewer.addEventListener('renderFinished', e => this.initSignWorkspace());
@@ -356,6 +358,27 @@ export class SignWorkspaceController {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
+        const certTypeSelect = $("#certType");
+        const hasValidSelectedCertType = !certTypeSelect.length
+            || (typeof this.signPlacementController?.hasValidSelectedCertType === "function"
+                ? this.signPlacementController.hasValidSelectedCertType()
+                : (certTypeSelect.val() != null && certTypeSelect.val() !== ""));
+        if (!hasValidSelectedCertType) {
+            if (!this.missingCertTypeAlertShown) {
+                this.missingCertTypeAlertShown = true;
+                bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", function() {
+                    setTimeout(() => {
+                        $("#certType").focus();
+                        }, 50);
+                });
+            }
+            if (typeof this.signPlacementController?.refreshSteps === "function") {
+                this.signPlacementController.refreshSteps();
+            } else {
+                certTypeSelect.trigger("focus");
+            }
+            return;
+        }
         this.pdfViewer.annotationLinkRemove();
         let targetPageNumber = this.pdfViewer.pageNum;
 
@@ -374,8 +397,9 @@ export class SignWorkspaceController {
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
         }
-        if(JSON.parse(localStorage.getItem('signNumber')) != null && this.restore) {
-            this.signImageNumber = localStorage.getItem('signNumber');
+        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+        if(Number.isFinite(storedSignNumber) && this.restore) {
+            this.signImageNumber = storedSignNumber;
         }
         this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
     }
@@ -517,7 +541,7 @@ export class SignWorkspaceController {
 
     checkSignsPositions() {
         let testSign = Array.from(this.signPlacementController.signRequestParamses.values());
-        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999997 && s.isSign).length > 0) {
+        if(testSign.filter(s => s.signImageNumber >= 0 && s.signImageNumber !== 999999 && s.isSign).length > 0) {
             for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
                 if ((this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready)) {
                     return i;
@@ -553,8 +577,11 @@ export class SignWorkspaceController {
 
     refreshWorkspace() {
         console.info("refresh workspace");
-        this.pdfViewer.startRender();
-        localStorage.setItem("scale", this.pdfViewer.scale);
+        clearTimeout(this.refreshWorkspaceTimer);
+        this.refreshWorkspaceTimer = setTimeout(() => {
+            this.pdfViewer.startRender();
+            localStorage.setItem("scale", this.pdfViewer.scale);
+        }, 75);
     }
 
     refreshAfterPageChange() {

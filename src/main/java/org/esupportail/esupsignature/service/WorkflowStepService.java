@@ -20,33 +20,25 @@ import java.util.Objects;
 @Service
 public class WorkflowStepService {
 
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
+    private final WorkflowStepRepository workflowStepRepository;
+    private final UserService userService;
+    private final UserPropertieService userPropertieService;
+    private final FieldService fieldService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
+    private final CertificatService certificatService;
+    private final WorkflowRepository workflowRepository;
+    private final UserListService userListService;
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private FieldService fieldService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-
-    @Resource
-    private SignTypeService signTypeService;
-
-    @Resource
-    private CertificatService certificatService;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
-    private UserListService userListService;
+    public WorkflowStepService(WorkflowStepRepository workflowStepRepository, UserService userService, UserPropertieService userPropertieService, FieldService fieldService, LiveWorkflowStepService liveWorkflowStepService, CertificatService certificatService, WorkflowRepository workflowRepository, UserListService userListService) {
+        this.workflowStepRepository = workflowStepRepository;
+        this.userService = userService;
+        this.userPropertieService = userPropertieService;
+        this.fieldService = fieldService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.certificatService = certificatService;
+        this.workflowRepository = workflowRepository;
+        this.userListService = userListService;
+    }
 
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, Boolean changeable, RecipientWsDto ...recipients) throws EsupSignatureRuntimeException {

@@ -27,7 +27,6 @@
                                 </button>
 
                                 <ul class="dropdown-menu dropdown-menu-end p-1"  style="width:300px; text-wrap: auto; overflow: clip;">
-                                    <!-- Bouton visualisation document -->
                                     <th:block th:if="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
                                             <button class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
@@ -36,8 +35,6 @@
                                             </button>
                                         </li>
                                     </th:block>
-
-                                    <!-- Lien téléchargement historique -->
                                     <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
                                             <a class="btn btn-transparent text-dark w-100 text-left"
@@ -47,14 +44,13 @@
                                             </a>
                                         </li>
                                     </th:block>
-                                    <th:block th:if="${signRequestFull.manager  && signRequestFull.currentStepNumber == 1 && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                    <th:block th:if="${signRequestFull.updateAllowed  && signRequestFull.currentStepNumber == 1 && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                                     <li>
                                         <button class="btn btn-transparent text-dark w-100 text-left"
                                                 type="button"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#addStep"
-                                                data-step-number="0"
-                                                title="Ajouter une étape au début du circuit">
+                                                data-step-number="0">
                                             <i class="fi fi-rr-plus-small"></i> Ajouter une étape au début
                                         </button>
                                     </li>
@@ -70,7 +66,7 @@
                     <div class="step-vertical">
                         <div class="step-vertical-content bg-light p-1 rounded">
                             <p class="text-muted">Le circuit n’est pas démarré</p>
-                            <button th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
+                            <button th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}"
                                     class="btn btn-sm btn-outline-primary"
                                     type="button"
                                     data-bs-toggle="modal"
@@ -332,33 +328,31 @@
                                                 </a>
                                             </li>
                                         </th:block>
-                                         <li th:if="${signRequestFull.manager && !isNextCompleted  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                         <li th:if="${signRequestFull.updateAllowed && !isNextCompleted  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                                              <button class="btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
                                                      data-bs-target="#addStep"
-                                                     th:attr="data-step-number=${stepNumber}"
-                                                     title="Ajouter une étape après cette étape">
+                                                     th:attr="data-step-number=${stepNumber}">
                                                  <i class="fi fi-rr-plus-small"></i> Ajouter une étape après
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}">
                                              <button class="btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
-                                                     th:data-bs-target="'#modal-update-' + ${stepNumber}"
-                                                     title="Modifier l'étape">
+                                                     th:data-bs-target="'#modal-update-' + ${stepNumber}">
                                                  <i class="fi fi-rr-pencil"></i> Modifier l'étape
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && showSignRequest.steps.size() > 1  && showSignRequest.steps.size() > signRequestFull.currentStepNumber  && stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${signRequestFull.updateAllowed && signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && showSignRequest.steps.size() > 1  && showSignRequest.steps.size() > signRequestFull.currentStepNumber  && stepNumber >= signRequestFull.currentStepNumber}">
                                              <form th:id="'del_' + ${iterator.index}"
                                                    th:action="'/user/signbooks/remove-live-step/' + ${showSignRequest.signBookLight.id} + '/' + ${iterator.index}"
                                                    th:method="delete">
                                                  <button type="submit"
                                                          onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');"
                                                          class="btn btn-transparent text-danger w-100 text-left"
-                                                         title="Supprimer l'étape">
+                                                         >
                                                      <i class="fi fi-rr-trash"></i> Supprimer l'étape
                                                  </button>
                                              </form>
@@ -366,7 +360,7 @@
                                     </ul>
                                 </div>
                             </div>
-                            <div th:if="${signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}"
+                            <div th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}"
                                  data-bs-focus="false"
                                  role="dialog"
                                  class="modal modal-lg fade"

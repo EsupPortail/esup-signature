@@ -76,14 +76,14 @@
                             <td>
                                 <a th:href="${link}" target="_blank" th:text="${link}"></a>
                             </td>
-                            <td th:if="${signRequestLight.createBy.eppn == userEppn}">
+                            <td >
                                 <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-link/' + ${signRequestLight.id} + '/' + ${iterator.index}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
                                 </form>
                             </td>
-                            <td th:unless="${signRequestLight.createBy.eppn == userEppn}">
-                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>
-                            </td>
+<!--                            <td th:unless="${signRequestLight.createBy.eppn == userEppn}">-->
+<!--                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>-->
+<!--                            </td>-->
                         </tr>
                     </th:block>
                 </table>

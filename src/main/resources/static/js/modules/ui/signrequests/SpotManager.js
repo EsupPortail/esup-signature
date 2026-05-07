@@ -3,6 +3,10 @@ export class SpotManager {
     constructor(state, options = {}) {
         this.state = state;
         this.spotAddEnabled = false;
+        this.stepDefinitions = this.buildStepDefinitions();
+        this.activeWorkspaceScope = $();
+        this.preservedWorkspaceVisualScope = $();
+        this.preservedSidebarScope = $();
         this.options = {
             signSpaceNamespace: options.signSpaceNamespace ?? ".spotManagerSignSpace",
             spotAddNamespace: options.spotAddNamespace ?? ".spotManagerAdd",
@@ -33,8 +37,31 @@ export class SpotManager {
     activateSpotAddMode() {
         this.spotAddEnabled = true;
         const pdfViewer = this.options.getPdfViewer();
+        const workspace = $("#workspace");
+        const sidebarRoots = $(".es-signrequest-main-content #sidebar, .es-signrequest-main-content > .es-sidebar");
+        this.preservedSidebarScope = sidebarRoots.length
+            ? sidebarRoots.parentsUntil(".es-signrequest-main-content").addBack()
+            : $();
+        const mainContent = workspace.closest(".es-main-content");
+        const workspaceElement = workspace.get(0);
+        this.activeWorkspaceScope = mainContent.length && workspaceElement != null ? mainContent.children().has(workspaceElement) : $();
+        this.preservedWorkspaceVisualScope = workspace.length
+            ? workspace.parentsUntil(".es-main-content").addBack()
+            : $();
+        this.activeWorkspaceScope.addClass("es-spot-add-scope");
         $("body").addClass("es-spot-add-mode");
         $('body *').css('pointer-events', 'none');
+        $('#workspace, #workspace *').css('pointer-events', 'auto');
+        this.preservedSidebarScope.css({
+            opacity: 1,
+            filter: 'none',
+            'pointer-events': 'auto'
+        });
+        this.preservedSidebarScope.find('*').css('pointer-events', 'auto');
+        this.preservedWorkspaceVisualScope.css({
+            opacity: 1,
+            filter: 'none'
+        });
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css({
                 'pointer-events': 'auto',
@@ -43,6 +70,7 @@ export class SpotManager {
         }
         $("#cross_999999, #cross_999999 *").css('pointer-events', 'auto');
         $("#spot-modal, #spot-modal *").css('pointer-events', 'auto');
+        $("#spot-modal .ss-main, #spot-modal .ss-main *, .ss-content, .ss-content *").css('pointer-events', 'auto');
         $(".textLayer").each(function () {
             $(this).addClass("text-disable-selection");
         });
@@ -52,6 +80,20 @@ export class SpotManager {
         this.spotAddEnabled = false;
         const pdfViewer = this.options.getPdfViewer();
         $("body").removeClass("es-spot-add-mode");
+        this.activeWorkspaceScope.removeClass("es-spot-add-scope");
+        this.activeWorkspaceScope = $();
+        this.preservedWorkspaceVisualScope.css({
+            opacity: '',
+            filter: ''
+        });
+        this.preservedWorkspaceVisualScope = $();
+        this.preservedSidebarScope.css({
+            opacity: '',
+            filter: '',
+            'pointer-events': ''
+        });
+        this.preservedSidebarScope.find('*').css('pointer-events', '');
+        this.preservedSidebarScope = $();
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css('cursor', 'default');
         }
@@ -81,7 +123,7 @@ export class SpotManager {
     }
 
     changeSpotStep() {
-        let stepNumber = $("#spotStepNumber").val();
+        let stepNumber = this.getSpotStepField().val();
         $('[id^="liveStep-"]').each(function () {
             $(this).find(".step-vertical-content")
                 .removeClass("bg-success bg-secondary-subtle")
@@ -91,6 +133,274 @@ export class SpotManager {
         liveStep.find(".step-vertical-content")
             .removeClass("bg-light bg-secondary-subtle")
             .addClass("bg-secondary");
+        this.refreshSpotRecipientOptions();
+    }
+
+    getSpotStepField() {
+        return $("[name='spotStepNumber']").first();
+    }
+
+    getSpotRecipientField() {
+        return $("[name='recipientId']").first();
+    }
+
+    buildStepDefinitions() {
+        const rawSteps = Array.isArray(this.state?.signUiDto?.steps)
+            ? this.state.signUiDto.steps
+            : Array.isArray(this.state?.backDto?.steps)
+                ? this.state.backDto.steps
+                : [];
+        if (rawSteps.length > 0) {
+            return rawSteps.map((step, index) => ({
+                stepNumber: String(index + 1),
+                allSignToComplete: step?.allSignToComplete === true,
+                recipients: Array.isArray(step?.recipients)
+                    ? step.recipients
+                        .filter(recipient => recipient?.id != null)
+                        .map(recipient => ({
+                            id: String(recipient.id),
+                            label: recipient?.user?.email ?? `Destinataire #${recipient.id}`
+                        }))
+                    : []
+            }));
+        }
+
+        const recipientOptions = this.getSpotRecipientField().find("option[data-step-number]");
+        const recipientsByStep = new Map();
+        recipientOptions.each((_, optionElement) => {
+            const option = $(optionElement);
+            const stepNumber = option.attr("data-step-number");
+            const value = option.attr("value");
+            if (stepNumber == null || value == null || value === "") {
+                return;
+            }
+            if (!recipientsByStep.has(stepNumber)) {
+                recipientsByStep.set(stepNumber, []);
+            }
+            recipientsByStep.get(stepNumber).push({
+                id: String(value),
+                label: option.text()
+            });
+        });
+
+        const stepField = this.getSpotStepField();
+        if (!stepField.length) {
+            return [];
+        }
+
+        const definitions = [];
+        if (stepField.is("select")) {
+            stepField.find("option[value]").each((_, optionElement) => {
+                const option = $(optionElement);
+                const value = option.attr("value") ?? "";
+                if (value === "") {
+                    return;
+                }
+                definitions.push({
+                    stepNumber: String(value),
+                    allSignToComplete: option.attr("data-es-all-sign-to-complete") === "true",
+                    recipients: recipientsByStep.get(String(value)) ?? []
+                });
+            });
+            return definitions;
+        }
+
+        return [{
+            stepNumber: String(stepField.val() ?? stepField.attr("value") ?? "1"),
+            allSignToComplete: stepField.attr("data-es-all-sign-to-complete") === "true",
+            recipients: recipientsByStep.get(String(stepField.val() ?? stepField.attr("value") ?? "1")) ?? []
+        }];
+    }
+
+    getStepDefinition(stepNumber) {
+        return this.stepDefinitions.find(step => step.stepNumber === String(stepNumber)) ?? null;
+    }
+
+    getStepRecipients(stepNumber) {
+        return this.getStepDefinition(stepNumber)?.recipients ?? [];
+    }
+
+    getStepMetadata(stepNumber) {
+        const stepDefinition = this.getStepDefinition(stepNumber);
+        if (stepDefinition != null) {
+            return {
+                allSignToComplete: stepDefinition.allSignToComplete === true,
+                recipientCount: stepDefinition.recipients.length
+            };
+        }
+
+        const spotStepNumber = this.getSpotStepField();
+        if (!spotStepNumber.length) {
+            return {allSignToComplete: false, recipientCount: 0};
+        }
+
+        let source = spotStepNumber;
+        if (spotStepNumber.is("select")) {
+            source = spotStepNumber.find(`option[value='${stepNumber}']`).first();
+            if (!source.length) {
+                return {allSignToComplete: false, recipientCount: 0};
+            }
+        }
+
+        const fallbackRecipients = this.getSpotRecipientField()
+            .find(`option[data-step-number='${stepNumber}']`)
+            .filter((_, optionElement) => ($(optionElement).attr("value") ?? "") !== "")
+            .length;
+        const recipientCount = parseInt(source.attr("data-es-recipient-count"), 10);
+        return {
+            allSignToComplete: source.attr("data-es-all-sign-to-complete") === "true",
+            recipientCount: Number.isFinite(recipientCount) ? recipientCount : fallbackRecipients
+        };
+    }
+
+    stepRequiresRecipientSelection(stepNumber) {
+        const metadata = this.getStepMetadata(stepNumber);
+        return metadata.recipientCount > 1 && metadata.allSignToComplete === true;
+    }
+
+    syncSlimSelect(selectField, items, selectedValue) {
+        const slim = selectField.get(0)?.slim;
+        if (slim != null && typeof slim.setData === "function") {
+            items.forEach(item => {
+                item.selected = item.value === selectedValue;
+            });
+            slim.setData(items);
+            if (typeof slim.setSelected === "function") {
+                slim.setSelected(selectedValue === "" ? "" : selectedValue);
+            }
+        }
+    }
+
+    escapeHtml(value) {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    rebuildRecipientFieldOptions(recipientField, recipients, selectedValue, occupiedRecipientIds, hasGenericSpot) {
+        const optionHtml = ["<option data-placeholder='true' readonly='' value=''>Choisir un destinataire</option>"];
+        const slimData = [{
+            text: "Choisir un destinataire",
+            value: "",
+            disabled: false,
+            placeholder: true,
+            selected: false
+        }];
+
+        recipients.forEach(recipient => {
+            const value = String(recipient.id);
+            const disabled = hasGenericSpot || occupiedRecipientIds.has(value);
+            optionHtml.push(`<option value='${this.escapeHtml(value)}'${disabled ? " disabled='disabled'" : ""}>${this.escapeHtml(recipient.label)}</option>`);
+            slimData.push({
+                text: recipient.label,
+                value,
+                disabled,
+                placeholder: false,
+                selected: false
+            });
+        });
+
+        recipientField.html(optionHtml.join(""));
+        const nextValue = slimData.some(item => item.value === selectedValue && item.disabled !== true) ? selectedValue : "";
+        recipientField.val(nextValue);
+        this.syncSlimSelect(recipientField, slimData, nextValue);
+        return nextValue;
+    }
+
+    refreshSpotRecipientOptions() {
+        const recipientField = this.getSpotRecipientField();
+        const recipientWrapper = $("#divSpotRecipientId");
+        const spotStepNumber = this.getSpotStepField();
+        if (!recipientField.length || !recipientWrapper.length || !spotStepNumber.length) {
+            return;
+        }
+
+        const stepValue = spotStepNumber.val() ?? "";
+        const requiresRecipient = stepValue !== "" && this.stepRequiresRecipientSelection(stepValue);
+        let nextValue = recipientField.val() ?? "";
+        const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
+        const stepSpots = spots.filter(spot => String(spot?.stepNumber ?? "") === String(stepValue));
+        const hasGenericSpot = stepSpots.some(spot => spot?.recipientId == null);
+        const occupiedRecipientIds = new Set(
+            stepSpots
+                .map(spot => spot?.recipientId)
+                .filter(recipientId => recipientId != null)
+                .map(recipientId => String(recipientId))
+        );
+        const recipients = requiresRecipient ? this.getStepRecipients(stepValue) : [];
+        recipientField.prop("required", requiresRecipient);
+        recipientField.prop("disabled", !requiresRecipient);
+        recipientWrapper.toggleClass("d-none", !requiresRecipient);
+        if (!requiresRecipient) {
+            nextValue = "";
+            recipientField.html("<option data-placeholder='true' readonly='' value=''>Choisir un destinataire</option>");
+            recipientField.val("");
+            this.syncSlimSelect(recipientField, [{
+                text: "Choisir un destinataire",
+                value: "",
+                disabled: false,
+                placeholder: true,
+                selected: false
+            }], "");
+            return;
+        }
+
+        nextValue = this.rebuildRecipientFieldOptions(recipientField, recipients, nextValue, occupiedRecipientIds, hasGenericSpot);
+        recipientField.val(nextValue);
+    }
+
+    refreshSpotStepOptions() {
+        const spotStepNumber = this.getSpotStepField();
+        if (!spotStepNumber.length || spotStepNumber.attr("type") === "hidden") {
+            this.refreshSpotRecipientOptions();
+            return;
+        }
+
+        const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
+
+        let nextValue = spotStepNumber.val() ?? "";
+        const slimData = [];
+
+        spotStepNumber.find("option").each((_, optionElement) => {
+            const option = $(optionElement);
+            const value = option.attr("value") ?? "";
+            const isPlaceholder = option.is("[data-placeholder='true']");
+            const stepSpots = spots.filter(spot => String(spot?.stepNumber ?? "") === value);
+            let shouldDisable = false;
+            if (!isPlaceholder && value !== "") {
+                if (this.stepRequiresRecipientSelection(value)) {
+                    const metadata = this.getStepMetadata(value);
+                    const hasGenericSpot = stepSpots.some(spot => spot?.recipientId == null);
+                    const occupiedRecipientCount = new Set(
+                        stepSpots
+                            .map(spot => spot?.recipientId)
+                            .filter(recipientId => recipientId != null)
+                            .map(recipientId => String(recipientId))
+                    ).size;
+                    shouldDisable = hasGenericSpot || (metadata.recipientCount > 0 && occupiedRecipientCount >= metadata.recipientCount);
+                } else {
+                    shouldDisable = stepSpots.length > 0;
+                }
+            }
+            option.prop("disabled", shouldDisable);
+            slimData.push({
+                text: option.text(),
+                value: value,
+                disabled: shouldDisable,
+                placeholder: isPlaceholder,
+                selected: false
+            });
+            if (value === nextValue && shouldDisable) {
+                nextValue = "";
+            }
+        });
+
+        spotStepNumber.val(nextValue);
+        this.syncSlimSelect(spotStepNumber, slimData, nextValue);
+        this.refreshSpotRecipientOptions();
     }
 
     filterSpotsNotCurrentStep(spots) {
@@ -103,7 +413,7 @@ export class SpotManager {
             if (!Number.isFinite(step)) {
                 return true;
             }
-            return step >= currentStep;
+            return step > currentStep;
         });
     }
 
@@ -152,7 +462,10 @@ export class SpotManager {
             yPos: parseInt(spotData.yPos, 10),
             signWidth: parseInt(spotData.signWidth, 10),
             signHeight: parseInt(spotData.signHeight, 10),
-            stepNumber: spotStep
+            stepNumber: spotStep,
+            recipientId: spotData.recipientId != null && Number.isFinite(parseInt(spotData.recipientId, 10))
+                ? parseInt(spotData.recipientId, 10)
+                : null
         };
 
         const existingSpotIdx = spots.findIndex(spot => parseInt(spot?.id, 10) === spotId);
@@ -162,8 +475,9 @@ export class SpotManager {
             spots.push(normalizedSpot);
         }
         this.options.setSpots(spots);
+        this.refreshSpotStepOptions();
 
-        if (this.options.isSignable() && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
+        if (this.options.isSignable() && normalizedSpot.recipientId == null && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
             this.options.removeSignSpaceBySpotId(spotId);
             const currentParams = Array.isArray(this.options.getCurrentSignRequestParamses())
                 ? [...this.options.getCurrentSignRequestParamses()]
@@ -190,6 +504,7 @@ export class SpotManager {
             : [];
         this.options.setSpots(spots);
         this.options.setCurrentSignRequestParamses(currentParams);
+        this.refreshSpotStepOptions();
     }
 
     bindSignSpaceDelete(signSpaceDiv) {
@@ -224,6 +539,7 @@ export class SpotManager {
     enableSpotAdd() {
         this.options.exitCommentAddMode();
         this.exitSpotAddMode();
+        this.refreshSpotStepOptions();
         this.options.setToolsDisabled(true);
         this.options.setSignSpacesDroppableEnabled(false);
         this.activateSpotAddMode();

@@ -10,6 +10,7 @@ public class WorkflowViewDto {
 
     private final Long id;
     private final String description;
+    private final String mailFrom;
     private final String documentsSourceUri;
     private final Boolean sendAlertToAllRecipients;
     private final Boolean fromCode;
@@ -20,6 +21,7 @@ public class WorkflowViewDto {
 
     public WorkflowViewDto(Long id,
                            String description,
+                           String mailFrom,
                            String documentsSourceUri,
                            Boolean sendAlertToAllRecipients,
                            Boolean fromCode,
@@ -29,6 +31,7 @@ public class WorkflowViewDto {
                            List<WorkflowStepDto> workflowSteps) {
         this.id = id;
         this.description = description;
+        this.mailFrom = mailFrom;
         this.documentsSourceUri = documentsSourceUri;
         this.sendAlertToAllRecipients = sendAlertToAllRecipients;
         this.fromCode = fromCode;
@@ -44,6 +47,10 @@ public class WorkflowViewDto {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getMailFrom() {
+        return mailFrom;
     }
 
     public String getDocumentsSourceUri() {

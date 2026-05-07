@@ -269,7 +269,7 @@ public class SignBookController {
         return "redirect:/user/signbooks?statusFilter=deleted";
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookUpdate(#id, #authUserEppn)")
     @PutMapping(value = "/update/{id}")
     public String update(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam String subject,
@@ -286,7 +286,7 @@ public class SignBookController {
         return "redirect:/user/signbooks/update/" + id;
     }
 
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookUpdate(#id, #authUserEppn)")
     @PostMapping(value = "/add-live-step/{id}")
     public String addStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                           @RequestParam(value = "recipientsEmails", required = false) List<String> recipientsEmails,
@@ -387,9 +387,11 @@ public class SignBookController {
     @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
     @PostMapping(value = "/add-docs/{id}")
     public String addDocumentToNewSignRequest(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
-                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles, RedirectAttributes redirectAttributes) {
+                                              @RequestParam("multipartFiles") MultipartFile[] multipartFiles,
+                                              @RequestParam(value = "unzip", defaultValue = "false") boolean unzip,
+                                              RedirectAttributes redirectAttributes) {
         try {
-            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false);
+            signBookService.addDocumentsToSignBook(id, multipartFiles, authUserEppn, null, false, unzip);
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Ajout effectuée"));
         } catch(Exception e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
@@ -492,7 +494,7 @@ public class SignBookController {
 
     @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
-    @PreAuthorize("@preAuthorizeService.signBookManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signBookUpdate(#id, #authUserEppn)")
     public String updateRecipients(@PathVariable Long id,
                                    @ModelAttribute("authUserEppn") String authUserEppn,
                                    @ModelAttribute("xApiKey") @Parameter(hidden = true) String xApiKey,

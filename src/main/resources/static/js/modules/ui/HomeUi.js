@@ -130,7 +130,7 @@ export class HomeUi {
                 <td class="text-break d-none d-md-table-cell">
                     <i class="${multiple ? 'fi fi-rr-folder-open' : 'fi fi-rr-file'}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                 </td>
-                <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                     ${multiple
                         ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fa-solid fa-caret-down"></i></span>'
                         : '<span>' + this.escapeHtml(subject) + '</span>'}
@@ -390,8 +390,7 @@ export class HomeUi {
 
     syncFavoriteItem(type, id, isFavorite) {
         if (type === 'workflow') {
-            const favoriteLink = document.querySelector('#myFavoritesWorkflows [data-es-workflow-id="' + id + '"]');
-            favoriteLink?.closest('.workflow-button')?.classList.toggle('d-none', !isFavorite);
+            this.getFavoriteWorkflowContainer(id)?.classList.toggle('d-none', !isFavorite);
             return;
         }
         const favoriteLink = document.querySelector('#myFavoritesForms [data-es-form-id="' + id + '"]');
@@ -402,8 +401,11 @@ export class HomeUi {
     syncFavoriteEmptyState(type) {
         if (type === 'workflow') {
             const emptyState = document.getElementById('noFavoritesWorkflows');
-            const visibleItems = Array.from(document.querySelectorAll('#myFavoritesWorkflows [data-es-workflow-id]'))
-                .filter(element => !element.closest('.workflow-button')?.classList.contains('d-none'));
+            const favoritesRoot = document.getElementById('myFavoritesWorkflows');
+            const visibleItems = favoritesRoot == null
+                ? []
+                : Array.from(favoritesRoot.querySelectorAll('[id^="btn-workflow-"]'))
+                    .filter(element => !element.classList.contains('d-none'));
             emptyState?.classList.toggle('d-none', visibleItems.length > 0);
             return;
         }
@@ -411,6 +413,17 @@ export class HomeUi {
         const visibleItems = Array.from(document.querySelectorAll('#myFavoritesForms [data-es-form-id]'))
             .filter(element => !element.classList.contains('d-none'));
         emptyState?.classList.toggle('d-none', visibleItems.length > 0);
+    }
+
+    getFavoriteWorkflowContainer(id) {
+        const favoritesRoot = document.getElementById('myFavoritesWorkflows');
+        if (favoritesRoot == null) {
+            return null;
+        }
+
+        return favoritesRoot.querySelector('[id="btn-workflow-' + id + '"]')
+            || favoritesRoot.querySelector('[data-es-workflow-id="' + id + '"]')?.closest('[id^="btn-workflow-"]')
+            || null;
     }
 
     initWarningModals() {

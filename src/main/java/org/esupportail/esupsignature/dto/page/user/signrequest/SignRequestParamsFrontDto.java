@@ -26,6 +26,7 @@ public record SignRequestParamsFrontDto(
         Integer red,
         Integer green,
         Integer blue,
-        Integer fontSize
+        Integer fontSize,
+        Long recipientId
 ) {}
 

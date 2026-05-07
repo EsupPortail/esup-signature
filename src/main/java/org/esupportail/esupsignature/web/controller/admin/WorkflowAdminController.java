@@ -21,6 +21,7 @@ import org.esupportail.esupsignature.dto.mapper.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -136,10 +137,10 @@ public class WorkflowAdminController {
 		Workflow workflow;
 		try {
 			if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser());
+				workflow = workflowService.createWorkflow(title, description, userService.getSystemUser(), managerRole);
 				return "redirect:/admin/workflows/update/" + workflow.getId();
 			} else {
-				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn));
+				workflow = workflowService.createWorkflow(title, description, userService.getByEppn(authUserEppn), managerRole);
 				workflow.setManagerRole(managerRole);
 				return "redirect:/manager/workflows/update/" + workflow.getId();
 			}
@@ -330,7 +331,7 @@ public class WorkflowAdminController {
 
 	@GetMapping(value = "/get-files-from-source/{id}")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
-	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
+	public String getFileFromSource(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(authUserEppn);
         int nbImportedFiles = 0;
         try {
@@ -344,7 +345,7 @@ public class WorkflowAdminController {
 		} else {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", nbImportedFiles + " ficher(s) importé(s)"));
 		}
-		return "redirect:/admin/workflows";
+		return "redirect:" + httpServletRequest.getHeader(HttpHeaders.REFERER);
 	}
 
 	@PostMapping(value = "/add-target/{id}")
@@ -393,7 +394,7 @@ public class WorkflowAdminController {
 		Workflow workflow = workflowService.getById(id);
 		try {
 			response.setContentType("text/json; charset=utf-8");
-			response.setHeader("Content-Disposition", "attachment; filename=" + workflow.getName() + ".json");
+			response.setHeader("Content-Disposition", "attachment; filename=workflow_" + workflow.getDescription() + ".json");
 			InputStream csvInputStream = workflowService.getJsonWorkflowSetup(id);
 			IOUtils.copy(csvInputStream, response.getOutputStream());
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -412,7 +413,7 @@ public class WorkflowAdminController {
 				workflowService.setWorkflowSetupFromJson(id, multipartFormSetup.getInputStream(), authUserEppn);
 			}
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error(e.getMessage(), e);
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
 		return "redirect:/admin/workflows/update/" + id;

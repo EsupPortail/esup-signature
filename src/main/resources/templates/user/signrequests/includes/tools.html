@@ -37,7 +37,7 @@
                 </div>
                 <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
                     <select id="certType" name="certType" class="form-select es-form-select-xl" required title="Choix du type de signature">
-                        <option value="" disabled selected hidden>Type de signature</option>
+                        <option value="" disabled selected hidden>Choix du type de signature</option>
                         <th:block th:each="signWith : ${showSignRequest.signWiths}">
                             <th:block th:if="${signWith.name != 'sealCert'}">
                                 <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}" th:unavailable="${signWith.name == 'nexuCert'} ? 'unavailable'"></option>
@@ -76,7 +76,7 @@
                     </span>
                 </div>
             </div>
-            <div id="step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div id="step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
                 <div class="d-flex align-items-center gap-2">
                     <div class="step-horizontal-v2-icon">
                         3

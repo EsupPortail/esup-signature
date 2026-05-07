@@ -101,22 +101,18 @@ public class PreAuthorizeService {
         return false;
     }
 
-    public boolean signRequestCreator(Long id, String userEppn) {
-        if(userEppn != null) {
-            SignRequest signRequest = signRequestService.getById(id);
-            if(signRequest != null) {
-            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager(userEppn, signRequest.getParentSignBook());
-            }
+    public boolean signBookUpdate(Long id, String userEppn) {
+        if (userEppn != null) {
+            return signBookService.checkUserUpdateRights(id, userEppn);
         }
         return false;
     }
 
-    public boolean signRequestOwner(Long id, String userEppn) {
+    public boolean signRequestManager(Long id, String userEppn) {
         if(userEppn != null) {
             SignRequest signRequest = signRequestService.getById(id);
             if(signRequest != null) {
-                boolean isManager = isManager(userEppn, signRequest.getParentSignBook());
-                return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager;
+            return signRequest.getCreateBy().getEppn().equals(userEppn) || isManager(userEppn, signRequest.getParentSignBook());
             }
         }
         return false;

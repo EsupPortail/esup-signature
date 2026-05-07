@@ -90,6 +90,7 @@ export default class SelectUser {
             select: "#" + selectName,
             settings: {
                 placeholderText: placeHolder,
+                addableText: "Cliquer sur '+' pour ajouter un utilisateur externe",
                 searchText: 'Aucun résultat',
                 searchingText: 'Recherche en cours',
                 searchPlaceholder: 'Rechercher',

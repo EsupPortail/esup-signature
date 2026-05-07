@@ -49,7 +49,7 @@ public class SignRequestController {
         return "redirect:/user";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @PostMapping(value = "/clone/{id}")
     public String clone(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureException {
         Long cloneId = signBookService.clone(id, multipartFiles, comment, authUserEppn);
@@ -78,7 +78,7 @@ public class SignRequestController {
         return "redirect:/user/signbooks";
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestOwner(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @GetMapping(value = "/update-step/{id}/{step}")
     public String changeStepSignType(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("step") Integer step, @RequestParam(name = "signType") SignType signType) {
         SignRequest signRequest = signRequestService.getById(id);

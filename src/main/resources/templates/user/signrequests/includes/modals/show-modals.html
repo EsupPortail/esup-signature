@@ -246,7 +246,7 @@
         </div>
     </div>
 
-    <div th:if="${@preAuthorizeService.signRequestOwner(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
+    <div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}" data-bs-focus="false" class="modal modal-lg modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="command" th:action="'/user/signrequests/'+ ${signRequestLight.id}" th:method="delete">

@@ -44,7 +44,7 @@ public class WorkflowController {
     @GetMapping(value = "/{id}", produces = "text/html")
     public String show(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, Model model) {
         model.addAttribute("fromAdmin", false);
-        var workflow = uiFetchService.buildWorkflowView(id);
+        var workflow = uiFetchService.buildWorkflowView(id, userEppn);
         model.addAttribute("workflow", workflow);
         model.addAttribute("certificats", certificatService.getAllCertificats());
         model.addAttribute("workflowRole", "user");

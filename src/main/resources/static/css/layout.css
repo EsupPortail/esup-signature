@@ -97,10 +97,14 @@ header {
     padding-right: 4px;
 }
 
-.main-content,
-.es-main-content {
-    padding-top: 92px; height: calc(100vh - 92px);
+.main-content, .es-main-content {
+    padding-top: 92px;
+    height: calc(100vh - 50px);
     min-width: 0;
+}
+
+.es-main-content-admin {
+    height: calc(100vh - 172px) !important;
 }
 
 .es-main-content-user-settings {
@@ -218,10 +222,6 @@ header {
     display: flex;
 }
 
-.workspace-margin-top-admin {
-    margin-top: 30px;
-}
-
 #pdf {
     display: flex;
     flex-direction: column;
@@ -302,8 +302,7 @@ header {
     z-index: 1 !important;
 }
 
-.fixed-action-btns,
-.es-fixed-action-btns {
+.fixed-action-btns, .es-fixed-action-btns {
     padding: 10px;
     height: calc(100vh - 134px);
     overflow-y: auto;
@@ -337,17 +336,6 @@ header {
     height: 100% !important;
     flex-wrap: nowrap !important;
     /*overflow: hidden;*/
-}
-
-.nav-tab-admin {
-    position: fixed;
-    top: 86px;
-    z-index: 1000;
-    width: 100%;
-}
-
-.file-tab {
-
 }
 
 .breadcrumb {

@@ -112,7 +112,11 @@
                 </div>
                 <div id="warningPdfA"
                      class="alert alert-light es-status-card es-status-card--danger"
-                     th:if="${showSignRequest.pdfaCheck != null && showSignRequest.pdfaCheck.contains('6.3.5') && !globalProperties.disablePdfFontAlert}">
+                     th:if="${showSignRequest.pdfaCheck != null &&
+                            (showSignRequest.pdfaCheck.contains('6.2') ||
+                             showSignRequest.pdfaCheck.contains('6.3') ||
+                             showSignRequest.pdfaCheck.contains('6.5')) &&
+                            !globalProperties.disablePdfFontAlert}">
                     <script>
                         displayPdfAlertsDropdown().removeClass("d-none");
                         $("#infos-btn").addClass("form-dirty-indicator");
@@ -121,8 +125,11 @@
                         <i class="fi fi-rr-triangle-warning"></i>
                     </div>
                     <div class="es-status-card__body">
-                        <h6 class="es-status-card__title mb-1">Police à vérifier avant signature</h6>
-                        <p class="es-status-card__description">Avant l’import, le document comportait au moins une police de caractère susceptible de poser un problème d’affichage. Merci de bien lire le document avant de le signer.</p>
+                        <h6 class="es-status-card__title mb-1">Risque d’altération du document</h6>
+                        <p class="es-status-card__description">
+                            Ce document présente des anomalies PDF/A (polices, couleurs ou transparence) pouvant entraîner des modifications lors de la signature ou conversion (texte altéré, rendu différent).
+                            Vérifiez attentivement le document avant et après signature.
+                        </p>
                     </div>
                 </div>
             </div>
