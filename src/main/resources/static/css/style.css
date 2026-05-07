@@ -55,6 +55,7 @@ main {
  #sidebar a {
      font-size: clamp(0.8rem, 1vw, 0.95rem);
      margin-right: 4px;
+     font-weight: 500;
  }
 
  .es-nav-tools {
@@ -572,17 +573,17 @@ dd {
 }
 
 .hr {
-    align-items: center;
-    display: flex;
-    /*font-weight: bold;*/
     text-transform: uppercase !important;
+    font-weight: 500;
+    color: var(--bs-secondary);
 }
 
-.hr::after {
+.hr::before {
     border-top: 1px solid var(--color-rgba-0-0-0-03);
     content: "";
-    flex: 1;
+    display: flex;
     margin: 5px;
+    flex-direction: row;
 }
 
 .hr-center::before {

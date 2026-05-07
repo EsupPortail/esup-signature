@@ -4,20 +4,20 @@
 <nav th:fragment="side-user" id="sidebar">
     <div th:unless="${user.userType.name() == 'external'}" class="d-flex flex-column gap-1 ms-1 mt-2">
         <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-2 d-flex align-items-center gap-2" href="/user/users/shares"
-           th:classappend="${paramMenu == 'shares'} ? 'btn-secondary' : 'text-dark btn-transparent'" title="Délégations">
+           th:classappend="${paramMenu == 'shares'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'" title="Délégations">
             <i class="fi fi-rr-share"></i> <span class="sidebar-label">Délégations</span>
         </a>
         <a th:if="${globalProperties.shareMode > 0}" class="btn text-left rounded-2 d-flex align-items-center gap-2" href="/user/users/replace"
-            th:classappend="${paramMenu == 'replace'} ? 'btn-secondary' : 'text-dark btn-transparent'" title="Délégations">
+            th:classappend="${paramMenu == 'replace'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'" title="Délégations">
             <i class="fi fi-rr-together-people"></i> <span class="sidebar-label">Remplacement</span>
         </a>
         <a class="btn text-left rounded-2 d-flex align-items-center gap-2"
-           th:classappend="${paramMenu == 'settings'} ? 'btn-secondary' : 'text-dark btn-transparent'"
+           th:classappend="${paramMenu == 'settings'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
            href="/user/users?form" title="Mes paramètres">
             <i class="fi fi-rr-user-gear"></i> <span class="sidebar-label">Mes paramètres</span>
         </a>
         <a class="btn text-left rounded-2 d-flex align-items-center gap-2" href="/user/users/properties"
-            th:classappend="${paramMenu == 'properties'} ? 'btn-secondary' : 'text-dark btn-transparent'" title="Favoris">
+            th:classappend="${paramMenu == 'properties'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'" title="Favoris">
             <i class="fi fi-rr-keyboard-down"></i> <span class="sidebar-label">Mes saisies</span>
         </a>
     </div>
