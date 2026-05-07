@@ -122,16 +122,15 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         if(summary == null) return true;
         boolean checkTl = false;
         for (LOTLInfo lotlInfo : summary.getLOTLInfos()) {
-            if(!lotlInfo.getValidationCacheInfo().isValid()
-                    || !lotlInfo.getParsingCacheInfo().isSynchronized()
-                    || !lotlInfo.getDownloadCacheInfo().isSynchronized()) {
+            if(!lotlInfo.getParsingCacheInfo().isSynchronized()
+                || !lotlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }
         }
         for (TLInfo tlInfo : summary.getOtherTLInfos()) {
             if(!tlInfo.getValidationCacheInfo().isValid()
-                    || !tlInfo.getParsingCacheInfo().isSynchronized()
-                    || !tlInfo.getDownloadCacheInfo().isSynchronized()) {
+                || !tlInfo.getParsingCacheInfo().isSynchronized()
+                || !tlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }
         }
