@@ -48,6 +48,7 @@ export class ListSignBooksUi {
         new Nexu(null, null, null, null, null);
         $(document).ready(() => {
             this.initListeners();
+            this.ensureSealCertificateSelection();
             if(this.infiniteScrolling) {
                 this.detectEndDiv();
             } else {
@@ -300,8 +301,26 @@ export class ListSignBooksUi {
 
     checkSignOptions() {
         console.info("check sign options");
+        this.ensureSealCertificateSelection();
         new Nexu(null, null, null, null, null);
         $("#certType").focus();
+    }
+
+    ensureSealCertificateSelection() {
+        const sealCertificatSelect = $("#sealCertificat");
+        if (!sealCertificatSelect.length) {
+            return;
+        }
+
+        const currentValue = sealCertificatSelect.val();
+        if (currentValue != null && currentValue !== "") {
+            return;
+        }
+
+        const firstOptionValue = sealCertificatSelect.find("option:first").val();
+        if (firstOptionValue != null && firstOptionValue !== "") {
+            sealCertificatSelect.val(firstOptionValue);
+        }
     }
 
     checkAfterChangeSignType() {
@@ -321,6 +340,7 @@ export class ListSignBooksUi {
             $("#alert-sign-present").show();
         }
         if(value === "sealCert") {
+            this.ensureSealCertificateSelection();
             $("#sealChoose").removeClass('d-none');
         } else {
             $("#sealChoose").addClass('d-none');
@@ -613,6 +633,7 @@ export class ListSignBooksUi {
         let waitModal = $("#wait");
         waitModal.modal('show');
         waitModal.modal({backdrop: 'static', keyboard: false});
+        this.ensureSealCertificateSelection();
         let signRequestUrlParams;
         signRequestUrlParams = {
             "ids" : JSON.stringify(ids),

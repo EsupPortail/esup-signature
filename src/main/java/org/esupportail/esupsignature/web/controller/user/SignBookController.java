@@ -134,7 +134,7 @@ public class SignBookController {
         model.addAttribute("creatorFilter", creatorFilter);
         model.addAttribute("dateFilter", dateFilter);
         model.addAttribute("recipientsFilter", recipientsFilter);
-        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
+        model.addAttribute("sealCertificatPropertieses", certificatService.getAuthorizedSealCertificatProperties(userEppn));
         model.addAttribute("signable", true);
         model.addAttribute("currentSignType", SignType.signature);
         LinkedHashSet<String> workflowNames = new LinkedHashSet<>();
