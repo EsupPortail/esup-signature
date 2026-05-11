@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -113,7 +114,7 @@ public class ManageController {
         model.addAttribute("statusFilter", statusFilter);
         model.addAttribute("workflow", workflow);
         model.addAttribute("hided", hided);
-        Page<SignBook> signBooks = signBookService.getSignBooksForManagers(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
+        Page<SignBookFullDto> signBooks = signBookService.getSignBooksForManagersListItems(signRequestStatus, recipientsFilter, workflow.getId(), docTitleFilter, creatorFilter, dateFilter, pageable, authUserEppn, hided);
         model.addAttribute("signBooks", signBooks);
         return "user/manage/details";
     }

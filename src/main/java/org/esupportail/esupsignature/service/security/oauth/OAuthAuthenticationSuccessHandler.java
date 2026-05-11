@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,6 +26,8 @@ import java.util.List;
 @Service
 public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
+	private static final Logger logger = LoggerFactory.getLogger(OAuthAuthenticationSuccessHandler.class);
+
 	private final UserService userService;
 
     public OAuthAuthenticationSuccessHandler(UserService userService) {
@@ -39,6 +43,10 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 				: defaultOidcUser.getAttributes().get("usual_name").toString();
 		String firstName = defaultOidcUser.getAttributes().get("given_name").toString();
 		String email = defaultOidcUser.getAttributes().get("email").toString();
+		logSuspiciousUserFieldLength("sub", id);
+		logSuspiciousUserFieldLength("family_name", name);
+		logSuspiciousUserFieldLength("given_name", firstName);
+		logSuspiciousUserFieldLength("email", email);
 		try {
 			if(userService.checkMailDomain(email) != UserType.external) {
 				httpServletRequest.getSession().invalidate();
@@ -72,5 +80,11 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 		}
 
 	}
-	
+
+	private void logSuspiciousUserFieldLength(String field, String value) {
+		if (value != null && value.length() > 255) {
+			logger.warn("Attribut OIDC trop long pour User [{}] length={}", field, value.length());
+		}
+	}
+
 }
