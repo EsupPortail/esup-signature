@@ -233,6 +233,10 @@
         /*transform-origin: center top;*/
     }
 
+    body.es-signrequest-page #tools .es-tools-responsive-refuse {
+        transform: scale(0.92);
+    }
+
     #returnButton {
         display: none;
     }
@@ -342,6 +346,10 @@
     body.es-signrequest-page #tools .step-horizontal-v2-content {
         transform: scale(0.82);
 
+    }
+
+    body.es-signrequest-page #tools .es-tools-responsive-refuse {
+        transform: scale(0.82);
     }
 
     .nav-item-label {

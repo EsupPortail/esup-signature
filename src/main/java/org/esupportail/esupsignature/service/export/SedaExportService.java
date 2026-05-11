@@ -110,8 +110,8 @@ public class SedaExportService {
                     signature.addMetadata(validator);
                     ReferencedObject referencedObject = new ReferencedObject(
                             docBinaryDataObject.getInDataObjectPackageId(),
-                            docBinaryDataObject.messageDigest.getValue(),
-                            docBinaryDataObject.messageDigest.getAlgorithm());
+                            docBinaryDataObject.getMetadataMessageDigest().getValue(),
+                            docBinaryDataObject.getMetadataMessageDigest().getAlgorithm());
                     signature.addMetadata(referencedObject);
                     id2ArchiveUnit.getContent().addMetadata(signature);
                 }

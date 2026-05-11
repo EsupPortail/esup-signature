@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.hibernate.Hibernate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -112,6 +113,9 @@ public class FormService {
 		}
 		for(Form form : forms) {
 			form.setMessageToDisplay(getHelpMessage(userEppn, form));
+			if (form.getWorkflow() != null) {
+				Hibernate.initialize(form.getWorkflow().getTags());
+			}
 		}
 		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
