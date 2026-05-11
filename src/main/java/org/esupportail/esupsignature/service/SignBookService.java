@@ -242,6 +242,20 @@ public class SignBookService {
         return signBooks;
     }
 
+    @Transactional(readOnly = true)
+    public Page<SignBookFullDto> getSignBooksForManagersListItems(SignRequestStatus statusFilter,
+                                                                  String recipientsFilter,
+                                                                  Long workflowId,
+                                                                  String docTitleFilter,
+                                                                  String creatorFilter,
+                                                                  String dateFilter,
+                                                                  Pageable pageable,
+                                                                  String userEppn,
+                                                                  Boolean hided) {
+        Page<SignBook> signBooks = getSignBooksForManagers(statusFilter, recipientsFilter, workflowId, docTitleFilter, creatorFilter, dateFilter, pageable, userEppn, hided);
+        return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
+    }
+
     /**
      * Récupère une page de SignBooks en fonction des filtres et des paramètres fournis.
      *
