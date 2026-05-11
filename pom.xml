@@ -17,7 +17,7 @@
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
-		<bouncycastle.version>1.83</bouncycastle.version>
+		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.4</dss.framework.version>
         <pdfbox.version>3.0.6</pdfbox.version>
@@ -525,7 +525,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.18.0</version>
+			<version>3.19.0</version>
 		</dependency>
 
 		<dependency>
