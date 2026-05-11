@@ -433,7 +433,16 @@ export class SignPlacementController extends EventFactory {
         return true;
     }
 
+    isHiddenVisa() {
+        return this.signType === "hiddenVisa";
+    }
+
     refreshSteps() {
+        if (this.isHiddenVisa()) {
+            this.goStep3();
+            return;
+        }
+
         const selectCertType = $("#certType");
         if (!selectCertType.length) {
             return;
@@ -552,6 +561,28 @@ export class SignPlacementController extends EventFactory {
         this.setStepState(step1, false, true, false);
         this.setStepState(step2, false, true, false);
         this.setStepState(step3, true, false, false);
+
+        if (this.isHiddenVisa()) {
+            if (selectCertType.length) {
+                selectCertType.attr("disabled", "disabled");
+            }
+            addSignButton.attr("disabled", "disabled");
+            insertBtn.removeAttr("disabled");
+            refuseLaunchButton.removeAttr("disabled");
+            signLaunchButton.removeAttr("disabled");
+            refuseLaunchDiv.removeClass("d-none");
+
+            this.setButtonVariant(addSignButton, "btn-secondary");
+            this.setButtonVariant(insertBtn, "btn-success");
+            this.setButtonVariant(refuseLaunchButton, "btn-danger");
+            this.setButtonVariant(signLaunchButton, "btn-success");
+            this.setCertTypeHighlight(false);
+
+            step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
+            step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
+            step3.find(".step-horizontal-v2-icon").html("3");
+            return;
+        }
 
         selectCertType.removeAttr("disabled");
         addSignButton.attr("disabled", "disabled");

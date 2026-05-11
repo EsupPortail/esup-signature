@@ -158,21 +158,24 @@
                                     </small>
                                 </div>
                             </div>
-                            <label for="signType">Choisir un type de signature *</label>
-                            <select name="signType" id="signType" class="form-select">
+                            <label for="repeatableSignType">Choisir un type de signature *</label>
+                            <select name="signType" id="repeatableSignType" class="form-select">
                                 <th:block th:each="signType : ${signTypes}">
                                     <option th:value="${signType}"
                                             th:text="#{'signbook.signtype.' + ${signType}}"></option>
                                 </th:block>
                             </select>
                         </div>
-                        <input th:if="${currentStepRepeatableSignType != null}" type="hidden" id="signType" name="signType" th:value="${currentStepRepeatableSignType}">
+                        <input th:if="${currentStepRepeatableSignType != null}" type="hidden" id="signTypeHidden" name="signType" th:value="${currentStepRepeatableSignType}">
                         <button type="button" id="launch-infinite-sign-button" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signBook.id}">
-                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                             <i class="fa-solid fa-signature"></i> Confirmer la signature et l’ajout de l’étape
                         </span>
-                            <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                             <i class="fa-solid fa-check"></i> Confirmer le visa et l’ajout de l’étape
+                        </span>
+                            <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Confirmer la validation et l’ajout de l’étape
                         </span>
                         </button>
                     </form>
@@ -195,22 +198,28 @@
                     </p>
                     <button id="launchNoInfiniteSignButtonEnd" class="mt-1 col-12 btn btn-success" title="Signer"
                             th:value="${signBook.id}">
-                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                             <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape
                         </span>
-                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                             <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape
+                        </span>
+                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Valider le document sans ajout d’étape
                         </span>
                     </button>
                     <button id="launchNoInfiniteSignButtonNext" class="mt-1 col-12 btn btn-success" title="Signer"
                             th:if="${nextSignRequestId != null}"
                             th:data-es-next-url="'/' + ${urlProfil} + '/signrequests/' + ${nextSignRequestId}"
                             th:value="${signBook.id}">
-                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                             <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape et aller à la suivante
                         </span>
-                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
                             <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape et aller à la suivante
+                        </span>
+                        <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                            <i class="fa-solid fa-check"></i> Valider le document sans ajout d’étape et aller à la suivante
                         </span>
                     </button>
                 </div>
@@ -221,13 +230,15 @@
                 <button id="checkValidateSignButtonEnd"
                             class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider</span>
                     </button>
                     <button id="checkValidateSignButtonNext" th:if="${nextSignRequestId != null}"
                             th:data-es-next-url="'/' + ${urlProfil} + '/signrequests/' + ${nextSignRequestId}"
                             class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Viser et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider et aller à la suivante </span>
                         <i class="fa-solid fa-arrow-alt-circle-right"></i>
                     </button>
                 </div>
