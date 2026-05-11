@@ -3362,6 +3362,7 @@ public class SignBookService {
             replacedByUser.setPhone(phone);
             replacedByUser.setName(name);
             replacedByUser.setFirstname(firstname);
+            userService.validateUserForPersistence(replacedByUser, "transfertSignRequest");
         }
         SignRequest signRequest = signRequestService.getById(signRequestId);
         transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);

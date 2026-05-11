@@ -154,6 +154,7 @@ public class LiveWorkflowStepService {
                             userService.updatePhone(recipientUser.getEppn(), recipientWsDto.getPhone());
                         }
                         recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
+                        userService.validateUserForPersistence(recipientUser, "addRecipientsToWorkflowStep");
                     }
                 }
             }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
@@ -80,6 +82,7 @@ public class UserService {
     private final ObjectMapper objectMapper;
     private final SignRequestParamsRepository signRequestParamsRepository;
     private final RecipientRepository recipientRepository;
+    private final Validator validator;
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
@@ -88,7 +91,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository, RecipientRepository recipientRepository) {
+                       ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository, RecipientRepository recipientRepository, Validator validator) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -104,6 +107,7 @@ public class UserService {
         this.objectMapper = objectMapper;
         this.signRequestParamsRepository = signRequestParamsRepository;
         this.recipientRepository = recipientRepository;
+        this.validator = validator;
     }
 
     public User getById(Long id) {
@@ -390,6 +394,7 @@ public class UserService {
             user.getRoles().remove("ROLE_USER");
             user.getRoles().add("ROLE_OTP");
         }
+        validateUserForPersistence(user, "createUser:" + userType.name());
         userRepository.save(user);
         return user;
     }
@@ -838,10 +843,12 @@ public class UserService {
     public void setFormMessage(String authUserEppn, long formId) {
         User authUser = getByEppn(authUserEppn);
         authUser.setFormMessages(authUser.getFormMessages() + " " + formId);
+        validateUserForPersistence(authUser, "setFormMessage");
     }
 
     @Transactional
     public void save(User user) {
+        validateUserForPersistence(user, "save");
         userRepository.save(user);
     }
 
@@ -866,6 +873,7 @@ public class UserService {
     public void setUiParams(String authUserEppn, UiParams key, String value) {
         User user = getByEppn(authUserEppn);
         user.getUiParams().put(key, value);
+        validateUserForPersistence(user, "setUiParams:" + key.name());
     }
 
     @Transactional
@@ -911,7 +919,35 @@ public class UserService {
             throw new EsupSignatureRuntimeException("Le numéro de téléphone est déjà présent dans la base");
         } else {
             user.setPhone(phoneNormalized);
+            validateUserForPersistence(user, "updatePhone");
         }
+    }
+
+    public void validateUserForPersistence(User user, String context) {
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (violations.isEmpty()) {
+            return;
+        }
+        violations.stream()
+                .sorted(Comparator.comparing(v -> v.getPropertyPath().toString()))
+                .forEach(violation -> logger.error(
+                        "Validation utilisateur en échec avant persistence [context={}, field={}, message={}, length={}, max={}]",
+                        context,
+                        violation.getPropertyPath(),
+                        violation.getMessage(),
+                        getInvalidValueLength(violation),
+                        violation.getConstraintDescriptor().getAttributes().get("max")
+                ));
+        ConstraintViolation<User> violation = violations.iterator().next();
+        throw new EsupSignatureRuntimeException("Champ utilisateur invalide : " + violation.getPropertyPath() + " - " + violation.getMessage());
+    }
+
+    private Integer getInvalidValueLength(ConstraintViolation<User> violation) {
+        Object invalidValue = violation.getInvalidValue();
+        if (invalidValue instanceof String value) {
+            return value.length();
+        }
+        return null;
     }
 
     public List<String> getAllRoles() {
@@ -1188,6 +1224,7 @@ public class UserService {
     public void renewToken(String userEppn) {
         User user = getByEppn(userEppn);
         user.setAccessToken(UUID.randomUUID().toString());
+        validateUserForPersistence(user, "renewToken");
     }
 
     @Transactional

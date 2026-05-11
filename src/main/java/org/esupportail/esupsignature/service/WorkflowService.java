@@ -445,6 +445,7 @@ public class WorkflowService {
                         if (StringUtils.hasText(recipient.getFirstName())) {
                             user.setFirstname(recipient.getFirstName());
                         }
+                        userService.validateUserForPersistence(user, "getFavoriteRecipientEmail");
                     }
                     users.add(user);
                 }
