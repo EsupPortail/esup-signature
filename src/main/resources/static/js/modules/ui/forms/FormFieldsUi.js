@@ -1,11 +1,11 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
-import Toast from "../Toast.js?version=@version@";
+import NotificationCenter from "../NotificationCenter.js?version=@version@";
 
 export class FormFieldsUi {
 
     constructor(domain, formId, prefillTypes) {
         console.info("Starting Form UI for " + formId);
-        this.toast = new Toast();
+        this.notificationCenter = new NotificationCenter();
         this.formId = formId;
         this.btnSaveFields = $('#saveButton');
         this.prefillTypes = prefillTypes;
@@ -124,14 +124,14 @@ export class FormFieldsUi {
             successMessage.type = "success";
             successMessage.text = "Modifications enregistrées";
             successMessage.object = null;
-            this.toast.launch(successMessage);
+            this.notificationCenter.launch(successMessage);
         } catch (error) {
             console.error('save fields error', error);
             let errorMessage = new Message();
             errorMessage.type = "error";
             errorMessage.text = "Problème lors de l'enregistrement";
             errorMessage.object = null;
-            this.toast.launch(errorMessage);
+            this.notificationCenter.launch(errorMessage);
         } finally {
             this.btnSaveFields.removeClass('disabled');
             this.btnSaveFields.removeAttr('aria-disabled');

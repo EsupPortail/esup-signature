@@ -15,7 +15,11 @@
 }
 
 .toast-es {
-    /*for javascript detection : new Toast()*/
+    /*legacy selector for javascript detection : new NotificationCenter()*/
+}
+
+.es-notification {
+    /*for javascript detection : new NotificationCenter()*/
 }
 
 .notViewed {

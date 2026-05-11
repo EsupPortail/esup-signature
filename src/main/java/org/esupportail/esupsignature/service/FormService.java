@@ -189,19 +189,6 @@ public class FormService {
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
 		form.setIsFeatured(updateForm.getIsFeatured());
-		if(updateForm.getWorkflow() != null) {
-			Workflow workflow = workflowRepository.findById(updateForm.getWorkflow().getId()).orElseThrow();
-			workflow.getTags().clear();
-			for (Tag tag : updateForm.getTags()) {
-				Tag checkTag;
-				try {
-					checkTag = tagService.getById(tag.getId());
-				} catch (Exception e) {
-					checkTag = tagService.createTag(tag.getName(), tag.getColor());
-				}
-				workflow.getTags().add(checkTag);
-			}
-		}
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {

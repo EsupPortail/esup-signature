@@ -54,7 +54,7 @@
                                         </h2>
                                         <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
                                             <div class="accordion-body">
-                                                <p>Identifiant du formulaire : <input type="text" readonly disabled th:value="${form.id}">, Circuit associé : <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>, Modèle actuel : <th:block th:if="${form.document != null}"><a th:href="'/' + ${workflowRole} + '/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></th:block><span th:if="${form.document == null}">Aucun modèle</span></p>
+                                                <p>Identifiant du formulaire : <input type="text" readonly disabled th:value="${form.id}">, Circuit associé : <b th:if="${form.workflow == null}" class="text-danger">Aucun</b><a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>, Modèle actuel : <th:block th:if="${form.document != null}"><a th:href="'/' + ${workflowRole} + '/forms/get-file/' + ${form.id}" target="_blank"><span th:text="${form.document.fileName}"></span></a></th:block><span th:if="${form.document == null}">Aucun modèle</span></p>
 
                                                 <div class="form-group mb-3">
                                                     <label for="title"><strong>Titre (affiché aux utilisateurs)</strong></label>
@@ -66,7 +66,7 @@
                                                 </div>
                                                 <div class="form-group mb-3">
                                                     <label for="workflowType"><strong>Circuit associé au formulaire</strong></label>
-                                                    <select class="slim-select-simple" id="workflowType" name="workflow">
+                                                    <select class="slim-select-simple" id="workflowType" name="workflow" th:classappend="${form.workflow == null} ? 'border-2 border-danger' : ''">
                                                         <option value="">-- dissocier d’un circuit (perte des emplacements de signature) --</option>
                                                         <th:block th:each="workflowType : ${workflowTypes}">
                                                             <option th:if="${workflowType != null}" th:value="${workflowType.id}"
@@ -199,8 +199,11 @@
                                         </h2>
                                         <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                                             <div class="accordion-body">
+                                                <div class="alert alert-warning">
+                                                    Merci de configurer les tags au niveau du circuit associer
+                                                </div>
                                                 <div class="d-inline-flex justify-content-around w-100">
-                                                    <select id="tags" name="tags" class="slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple>
+                                                    <select id="tags" name="tags" class="slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple disabled>
                                                         <th:block th:each="tag : ${allTags}">
                                                             <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${#lists.contains(selectedTagIds, tag.id)}"></option>
                                                         </th:block>

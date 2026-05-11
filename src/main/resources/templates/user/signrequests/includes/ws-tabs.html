@@ -42,18 +42,18 @@
                     <th:block th:unless="${signRequestTab.deleted}">
                         <div class="d-flex align-items-center" >
                             <span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
-                                <i class="fi fi-rr-memo" style="font-size: 18px;"></i> 
+                                <i class="fi fi-rr-memo" style="font-size: 18px;"></i>
                             </span>
                             <span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
-                                <i class="fi fi-rr-memo-circle-check"></i> 
+                                <i class="fi fi-rr-memo-circle-check"></i>
                             </span>
                             <span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
-                                <i class="fi fi-rr-document-circle-wrong"></i> 
+                                <i class="fi fi-rr-document-circle-wrong"></i>
                             </span>
                             <span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
-                                <i class="fa-solid fa-file"></i>
+                                <i class="fi fi-rr-document"></i>
                             </span>
-                            <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                             <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
                         </div>
                     </th:block>
                     <span title="Document supprimé" class="d-flex align-items-center text-white"  th:if="${signRequestTab.deleted}">

@@ -55,9 +55,14 @@ main {
  #sidebar a {
      font-size: clamp(0.8rem, 1vw, 0.95rem);
      margin-right: 4px;
+     font-weight: 500;
  }
 
- .es-nav-tools {
+#breadcrumb {
+    background-color: var(--bs-light-bg-subtle);
+}
+
+.es-nav-tools {
      font-size: 16px;
  }
 
@@ -456,6 +461,7 @@ dd {
 .form-switch.form-switch-md .form-check-input {
     height: 20px;
     width: 40px;
+    border-radius: .375em;
 }
 
 .form-switch.form-switch-md .form-check-label {
@@ -572,17 +578,17 @@ dd {
 }
 
 .hr {
-    align-items: center;
-    display: flex;
-    /*font-weight: bold;*/
     text-transform: uppercase !important;
+    font-weight: 500;
+    color: var(--bs-secondary);
 }
 
-.hr::after {
+.hr::before {
     border-top: 1px solid var(--color-rgba-0-0-0-03);
     content: "";
-    flex: 1;
+    display: flex;
     margin: 5px;
+    flex-direction: row;
 }
 
 .hr-center::before {
@@ -638,43 +644,52 @@ dd {
     border: 2px solid var(--bs-warning) !important;
 }
 
-#snackbar {
+.es-notification {
     visibility: hidden;
-    background-color: var(--bs-dark);
-    color: var(--bs-white);
-    text-align: left;
-    border-radius: 14px;
-    padding: 14px 18px;
     position: fixed;
-    z-index: 10020;
     left: 50%;
-    bottom: 32px;
+    bottom: 80px;
     width: min(92vw, 640px);
+    border-radius: 14px;
     box-shadow: 0 1rem 3rem var(--color-rgba-0-0-0-05);
     transform: translate(-50%, 24px);
     opacity: 0;
     transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+}
+
+#snackbar,
+.es-notification--snackbar {
+    background-color: var(--bs-dark);
+    color: var(--bs-white);
+    text-align: left;
+    padding: 14px 18px;
+    z-index: 10020;
     pointer-events: none;
 }
 
-#snackbar.snackbar-error {
+#snackbar.snackbar-error,
+.es-notification--snackbar.is-error {
     background-color: var(--bs-danger);
 }
 
-#snackbar.snackbar-warning {
+#snackbar.snackbar-warning,
+.es-notification--snackbar.is-warning {
     background-color: var(--bs-warning);
     color: var(--bs-dark);
 }
 
-#snackbar.snackbar-success {
+#snackbar.snackbar-success,
+.es-notification--snackbar.is-success {
     background-color: var(--bs-success);
 }
 
-#snackbar.snackbar-info {
+#snackbar.snackbar-info,
+.es-notification--snackbar.is-info {
     background-color: var(--bs-dark);
 }
 
-#snackbar.snackbar-custom {
+#snackbar.snackbar-custom,
+.es-notification--snackbar.is-custom {
     background-color: var(--bs-primary);
 }
 

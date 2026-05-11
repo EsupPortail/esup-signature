@@ -58,16 +58,14 @@
     height: 50px;
 }
 
-#snackbar.show {
+.es-notification.show {
     visibility: visible;
     opacity: 1;
     transform: translate(-50%, 0);
 }
 
-.toast-es.show {
-    visibility: visible;
-    opacity: 1;
-    transform: translate(-50%, 0);
+.toast-es.show,
+.es-notification--panel.show {
     pointer-events: auto;
 }
 

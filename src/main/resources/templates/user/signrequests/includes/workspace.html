@@ -148,7 +148,7 @@
                         <input id="spotPosX" name="commentPosX" type="hidden"/>
                         <input id="spotPosY" name="commentPosY" type="hidden"/>
                         <input id="spotPageNumber" name="commentPageNumber" type="hidden"/>
-                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${showSignRequest.liveWorkflowStepCount > 1}">
+                        <div id="divSpotStepNumber" class="form-group mb-3" th:if="${showSignRequest.steps != null and #lists.size(showSignRequest.steps) > 1}">
                             <label for="spotStepNumber">Choisir l’étape concernée</label>
                             <br/>
                             <select id="spotStepNumber" name="spotStepNumber" class="slim-select-simple">
@@ -158,7 +158,9 @@
                                 </th:block>
                             </select>
                         </div>
-                        <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:unless="${showSignRequest.liveWorkflowStepCount > 1}" th:attr="data-es-all-sign-to-complete=${showSignRequest.steps[0].allSignToComplete},data-es-recipient-count=${#lists.size(showSignRequest.steps[0].recipients)}">
+                        <th:block th:if="${showSignRequest.steps != null and #lists.size(showSignRequest.steps) == 1}" th:with="singleStep=${showSignRequest.steps[0]}">
+                            <input type="hidden" id="spotStepNumberHidden" name="spotStepNumber" value="1" th:attr="data-es-all-sign-to-complete=${singleStep.allSignToComplete},data-es-recipient-count=${#lists.size(singleStep.recipients)}">
+                        </th:block>
                         <div id="divSpotRecipientId" class="form-group mb-3 d-none">
                             <label for="spotRecipientId">Choisir le destinataire concerné</label>
                             <br/>

@@ -92,29 +92,8 @@
         <td class="clickable-td d-none d-xxxl-table-cell">
             <span th:if="${signBook.endDateLabel != null}" th:text="${signBook.endDateLabel}"></span>
         </td>
-        <td class="clickable-td d-table-cell">
-            <div th:if="${!signBook.deleted}" th:switch="${signBook.status}" class="text-center mb-1 mt-1">
-                <div th:case="'uploading'" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-                    <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                    <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                </div>
-                <div th:case="'refused'" class="badge rounded-pill badge-status bg-danger" th:title="${signBook.refusedCommentTitle}">
-                    <i class="fi fi-rr-cross-circle"></i>
-                    <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                </div>
-                <div th:case="*">
-                    <div class="badge rounded-pill badge-status" th:classappend="'text-bg-' + #{'signbook.status.color.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}">
-                        <i class="fi" th:classappend="#{'signbook.status.icon.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                        <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${signBook.deleted}" class="text-center mb-1 mt-1">
-                <div class="badge rounded-pill badge-status bg-danger" th:title="'Avant suppression : ' + #{'signbook.status.' + ${signBook.status}}">
-                    <i class="fi fi-rr-trash"></i>
-                    <span class="d-md-inline-flex">Supprimé</span>
-                </div>
-            </div>
+        <td class="clickable-td d-table-cell" th:with="refusedCommentTitle=${signBook.refusedCommentTitle}">
+            <div th:replace="~{user/signbooks/includes/status :: status(signBookLight=${signBook})}"></div>
         </td>
         <td class="clickable-td d-none d-xxl-table-cell align-middle" th:title="#{'signbook.archivestatus.' + ${signBook.archiveStatus}}">
             <span th:if="${signBook.archiveStatus != null && signBook.archiveStatus != 'none'}">
@@ -237,29 +216,8 @@
             </div>
         </td>
         <td></td>
-        <td class="d-none d-md-table-cell">
-            <div th:if="${!signBook.deleted}" th:switch="${signBook.status}" class="text-center mb-1 mt-1">
-                <div th:case="'uploading'" class="badge rounded-pill badge-status bg-secondary" th:title="#{'signbook.status.' + ${signBook.status}}">
-                    <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                    <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                </div>
-                <div th:case="'refused'" class="badge rounded-pill badge-status bg-danger" th:title="${signBook.refusedCommentTitle}">
-                    <i class="fi fi-rr-cross-circle"></i>
-                    <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                </div>
-                <div th:case="*">
-                    <div class="badge rounded-pill badge-status" th:classappend="'text-bg-' + #{'signbook.status.color.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}">
-                        <i class="fi" th:classappend="#{'signbook.status.icon.' + ${signBook.status}}" th:title="#{'signbook.status.' + ${signBook.status}}"></i>
-                        <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${signBook.status}}"></span>
-                    </div>
-                </div>
-            </div>
-            <div th:if="${signBook.deleted}" class="text-center mb-1 mt-1">
-                <div class="badge rounded-pill badge-status bg-danger" th:title="'Avant suppression : ' + #{'signbook.status.' + ${signBook.status}}">
-                    <i class="fi fi-rr-trash"></i>
-                    <span class="d-md-inline-flex">Supprimé</span>
-                </div>
-            </div>
+        <td class="d-none d-md-table-cell" th:with="refusedCommentTitle=${signBook.refusedCommentTitle}">
+            <div th:replace="~{user/signbooks/includes/status :: status(signBookLight=${signBook})}"></div>
         </td>
         <td>
             <div class="dropdown position-relative">

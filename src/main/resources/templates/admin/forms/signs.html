@@ -25,27 +25,27 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1 d-flex flex-column es-spot-add-admin-scope">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
-                </li>
-            </ul>
-            <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
-            <div class="d-flex gap-2 flex-grow-1 overflow-hidden es-spot-workspace-row" th:if="${workflow != null}">
-                <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
-                <div class="flex-grow-1 overflow-hidden es-spot-workspace-host" style="width: calc(100vw - 672px);">
-                    <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
-                </div>
-            </div>
-            <div th:if="${workflow == null}" class="alert alert-warning">
-                Merci d’associer le formulaire à un circuit pour éditer les champs de formulaire
-            </div>
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
+                        </li>
+                    </ul>
+                    <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
+                        Merci de configurer un circuit pour ce formulaire
+                    </div>
+                    <div th:replace="~{admin/forms/includes/tools :: tools}"></div>
+                    <div class="d-flex gap-2 flex-grow-1 overflow-hidden es-spot-workspace-row" th:if="${workflow != null}">
+                        <div style="width: 300px; flex: 0 0 300px;" th:insert="~{admin/workflows/cards/stepscard-light :: stepscard-light}"></div>
+                        <div class="flex-grow-1 overflow-hidden es-spot-workspace-host" style="width: calc(100vw - 672px);">
+                            <div th:replace="~{admin/forms/includes/workspace :: workspace}"></div>
+                        </div>
+                    </div>
                 </div>
             <div class="es-sign-buttons es-fixed-action-btns active" th:if="${workflow != null}">
                 <ul class="list-unstyled">
