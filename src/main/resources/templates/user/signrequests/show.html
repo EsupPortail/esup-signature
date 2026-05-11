@@ -5,7 +5,7 @@
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
-<body class="es-signrequest-page">
+<body class="es-signrequest-page" th:classappend="${signRequestFull.signable && showSignRequest.toSignDocumentContentType == 'application/pdf'} ? ' signrequest-tools-loading' : ''">
 <script th:inline="javascript" type="module" th:if="${globalProperties.enableHelp}">
     import {SignRequestHelp} from '/js/modules/help/SignRequestHelp.js?version=@[(${versionApp})]@';
 
@@ -198,7 +198,7 @@
                     </div>
                     <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
                     <div id="pdf-progress-bar" class="progress" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
-                        <div class="progress-bar bg-dark progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress-bar bg-dark" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                     </div>
                     <div id="comment-div" class="postit alert alert-warning" style="z-index: 100;">
                         <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
