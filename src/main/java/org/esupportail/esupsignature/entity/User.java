@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -25,19 +26,24 @@ public class User {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
+	@Size(max = 255)
 	private String name;
 
+	@Size(max = 255)
 	private String firstname;
 	
     @Column(unique=true)
     @NotNull
+    @Size(max = 255)
     private String eppn;
 
     @Column(unique=true)
     @NotNull
+    @Size(max = 255)
     private String email;
 
     @Column(unique=true)
+    @Size(max = 255)
     private String phone;
 
     @Transient
@@ -54,6 +60,7 @@ public class User {
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
+    @Size(max = 255)
     private String formMessages = "";
 
     @Enumerated(EnumType.STRING)
@@ -125,6 +132,7 @@ public class User {
 
     private Boolean forceSms = false;
 
+    @Size(max = 255)
     private String accessToken;
 
 	public Long getId() {

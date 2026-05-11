@@ -215,6 +215,7 @@ public class Form {
 	}
 
 	public Boolean getDeleted() {
+		if(deleted == null) return false;
 		return deleted;
 	}
 
