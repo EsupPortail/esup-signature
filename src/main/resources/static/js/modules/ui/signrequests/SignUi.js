@@ -26,6 +26,7 @@ export class SignUi {
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         this.signatureFlowController = new SignatureFlowController(this);
         this.initListeners();
+        this.ensureSealCertificateSelection();
         this.initMobileCertTypeVisibility();
         if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
             this.initReportModal();
@@ -191,8 +192,25 @@ export class SignUi {
         if (this.signable) {
             let nexu = new Nexu(null, null, this.currentSignType, null, null);
             $("#certType").focus();
+            this.ensureSealCertificateSelection();
             this.updateMobileCertTypeVisibility();
             return nexu;
+        }
+    }
+
+    ensureSealCertificateSelection() {
+        if (!this.sealCertificatSelect.length) {
+            return;
+        }
+
+        const currentValue = this.sealCertificatSelect.val();
+        if (currentValue != null && currentValue !== "") {
+            return;
+        }
+
+        const firstOptionValue = this.sealCertificatSelect.find("option:first").val();
+        if (firstOptionValue != null && firstOptionValue !== "") {
+            this.sealCertificatSelect.val(firstOptionValue);
         }
     }
 
@@ -366,6 +384,7 @@ export class SignUi {
             $("#alert-sign-present").show();
         }
         if (value === "sealCert") {
+            this.ensureSealCertificateSelection();
             $("#sealChoose").removeClass('d-none');
         } else {
             $("#sealChoose").addClass('d-none');

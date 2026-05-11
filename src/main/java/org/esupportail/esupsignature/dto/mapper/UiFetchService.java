@@ -1156,7 +1156,7 @@ public class UiFetchService {
         }
 
         boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
-        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getCheckedSealCertificates();
+        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getAuthorizedSealCertificatProperties(userEppn);
         List<ShowSignRequestDto.StepDto> steps = context.liveWorkflow() != null
                 ? context.liveWorkflow().getLiveWorkflowSteps().stream()
                 .map(step -> new ShowSignRequestDto.StepDto(
