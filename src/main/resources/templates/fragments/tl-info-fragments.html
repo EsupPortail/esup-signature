@@ -22,7 +22,7 @@
 </span>
 
 <span th:fragment="result-status(result)">
-	<i th:if="${!result.resultExist and !result.isError()}" class="fa fa-ban text-muted" title="Not performed"></i>
+	<i th:if="${!result.resultExist  && !result.isError()}" class="fa fa-ban text-muted" title="!performed"></i>
 	<i th:if="${result.isSynchronized()}" class="fa fa-check-circle text-success" title="OK"></i>
 	<i th:if="${result.isError()}" class="fa fa fa-times-circle text-danger"
 	   th:title="${result.exceptionMessage}"></i>
@@ -37,7 +37,7 @@
 </span>
 
 <span th:fragment="validation-status(validationResult)">
-	<i th:if="${!validationResult.resultExist and !validationResult.isError()}" class="fa fa-ban text-muted" title="Not performed"></i>
+	<i th:if="${!validationResult.resultExist  && !validationResult.isError()}" class="fa fa-ban text-muted" title="!performed"></i>
 	<i th:if="${validationResult.isValid()}" class="fa fa-check-circle text-success"
 	   th:title="${validationResult.indication}"></i>
 	<i th:if="${validationResult.isIndeterminate()}" class="fa fa-exclamation-circle text-warning"
@@ -48,11 +48,11 @@
 
 <!-- Next Update -->
 <th:block th:fragment="next-update(parsingResult)">
-	<span th:if="${!parsingResult.resultExist or parsingResult.nextUpdateDate == null}" th:text="${'-'}"></span>
-	<span th:if="${parsingResult.resultExist and parsingResult.nextUpdateDate != null and parsingResult.nextUpdateDate.after(#dates.createNow())}">
+	<span th:if="${!parsingResult.resultExist  || parsingResult.nextUpdateDate == null}" th:text="${'-'}"></span>
+	<span th:if="${parsingResult.resultExist  && parsingResult.nextUpdateDate != null  && parsingResult.nextUpdateDate.after(#dates.createNow())}">
         <span th:text="${#dates.format(parsingResult.nextUpdateDate, 'dd-MMM-yyyy HH:mm:ss')}"></span>
     </span>
-	<span th:if="${parsingResult.resultExist and parsingResult.nextUpdateDate != null and !(parsingResult.nextUpdateDate.after(#dates.createNow()))}">
+	<span th:if="${parsingResult.resultExist  && parsingResult.nextUpdateDate != null  && !(parsingResult.nextUpdateDate.after(#dates.createNow()))}">
         <span th:text="${#dates.format(parsingResult.nextUpdateDate, 'dd-MMM-yyyy HH:mm:ss')}"></span>
         <i class="fa fa-exclamation-circle text-danger" th:title="#{label.summary.tl.info}"></i>
     </span>

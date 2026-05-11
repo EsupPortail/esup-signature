@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.UserRepository;
@@ -55,9 +55,9 @@ public class UserAdminController {
     public String anonymize(@ModelAttribute("userEppn") String userEppn, @PathVariable Long id, @RequestParam(required = false) Boolean force, RedirectAttributes redirectAttributes) {
         try {
             anonymizeService.anonymize(id, force);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Suppression effectuée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Suppression effectuée"));
         } catch (EsupSignatureUserException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         return "redirect:/admin/users";
     }

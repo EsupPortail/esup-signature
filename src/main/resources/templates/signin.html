@@ -5,7 +5,7 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="card col-lg-10 mx-auto" style="top: 60px;">
+    <div class="card col-lg-12" style="top: 60px;">
         <div class="card-body text-center">
             <div class="d-none" th:if="${#authorization.expression('isAuthenticated()')}">
                 <span th:if="${auth != null}" th:text="${auth}"></span>
@@ -35,6 +35,7 @@
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
 <script th:if="${globalProperties.enableCaptcha}">
     $(function() {
+        const captchaFillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bs-dark').trim();
         let myCaptcha = new jCaptcha({
             el: '.jCaptcha',
             canvasClass: 'jCaptchaCanvas',
@@ -45,9 +46,9 @@
                 textBaseline: 'top',
                 font: '15px Arial',
                 textAlign: 'left',
-                fillStyle: '#111'
+                fillStyle: captchaFillStyle
             },
-            // set callback function for success and error messages:
+            // set callback function for success  && error messages:
             callback: ( response, $captchaInputElement, numberOfTries ) => {
                 if ( response == 'success' ) {
                     $("#loginBlock").removeClass('d-none');

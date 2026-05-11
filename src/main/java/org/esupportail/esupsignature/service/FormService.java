@@ -117,10 +117,10 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn, managerRole);
 		updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		return form;
 	}
@@ -174,9 +174,11 @@ public class FormService {
 				for(Field field : form.getFields()) {
 					field.getWorkflowSteps().clear();
 				}
-                for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-                    workflowStep.getSignRequestParams().clear();
-                }
+				if(form.getWorkflow() != null) {
+					for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+						workflowStep.getSignRequestParams().clear();
+					}
+				}
 			}
 			form.setWorkflow(updateForm.getWorkflow());
 		}
@@ -187,16 +189,6 @@ public class FormService {
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
 		form.setIsFeatured(updateForm.getIsFeatured());
-        form.getTags().clear();
-		for(Tag tag : updateForm.getTags()) {
-			Tag checkTag;
-			try {
-				checkTag = tagService.getById(tag.getId());
-			} catch (Exception e) {
-				checkTag = tagService.createTag(tag.getName(), tag.getColor());
-			}
-			form.getTags().add(checkTag);
-		}
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
@@ -268,7 +260,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
@@ -309,6 +301,9 @@ public class FormService {
 		}
 		if(fieldTypes != null) {
 			form.setPdfDisplay(false);
+		}
+		if(managerRole != null) {
+			form.setManagerRole(managerRole);
 		}
 		formRepository.save(form);
 		return form;

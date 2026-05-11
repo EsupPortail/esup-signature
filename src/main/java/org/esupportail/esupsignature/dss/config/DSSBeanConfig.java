@@ -68,6 +68,10 @@ import org.springframework.core.io.ClassPathResource;
 import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -79,8 +83,10 @@ public class DSSBeanConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);
 
-	private final DSSProperties dssProperties;
+	private static final String KEYSTORE_TYPE = "PKCS12";
+	private static final String KEYSTORE_FILEPATH = "src/main/resources/keystore.p12";
 
+	private final DSSProperties dssProperties;
 	private final ProxyConfig proxyConfig;
 
 	public DSSBeanConfig(DSSProperties dssProperties, @Autowired(required = false) ProxyConfig proxyConfig) {
@@ -216,9 +222,21 @@ public class DSSBeanConfig {
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
 		try {
-			return new KeyStoreCertificateSource(new ClassPathResource("/keystore.p12").getInputStream(), "PKCS12", "dss-password".toCharArray());
+			Path keystorePath = Paths.get(KEYSTORE_FILEPATH);
+			if (Files.exists(keystorePath)) {
+				return new KeyStoreCertificateSource(keystorePath.toFile(), KEYSTORE_TYPE, "dss-password".toCharArray());
+			}
+			Path parentDirectory = keystorePath.getParent();
+			if (parentDirectory != null) {
+				Files.createDirectories(parentDirectory);
+			}
+			KeyStoreCertificateSource kscs = new KeyStoreCertificateSource((java.io.InputStream) null, KEYSTORE_TYPE, "dss-password".toCharArray());
+			try (OutputStream fos = Files.newOutputStream(keystorePath)) {
+				kscs.store(fos);
+			}
+			return new KeyStoreCertificateSource(keystorePath.toFile(), KEYSTORE_TYPE, "dss-password".toCharArray());
 		} catch (IOException e) {
-			throw new DSSException("Unable to load the file " + "keystore.p12", e);
+			throw new DSSException("Unable to load the file " + KEYSTORE_FILEPATH, e);
 		}
 	}
 

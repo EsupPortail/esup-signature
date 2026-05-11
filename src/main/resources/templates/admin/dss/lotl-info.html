@@ -4,16 +4,18 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active"><a href="/admin/dss">Statut DSS</a></li>
                 <li class="breadcrumb-item active">Liste des listes d’approbation</li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="flex-grow-1">
             <div class="p-2">
                 <p th:if="${lotlInfo == null}">Aucune info trouvée pour ce LOTL</p>
                 <div th:if="${lotlInfo != null}">
@@ -21,7 +23,7 @@
                         th:with="downloadResult=${lotlInfo.downloadCacheInfo}, parsingResult=${lotlInfo.parsingCacheInfo}, validationResult=${lotlInfo.validationCacheInfo}">
                         <h2>
                             <a th:href="@{'/admin/dss/lotl/' + ${lotlInfo.getDSSId().asXmlId()}}">
-                                <span th:if="${parsingResult.resultExist and parsingResult.territory != null}"
+                                <span th:if="${parsingResult.resultExist  && parsingResult.territory != null}"
                                 th:class="${'lotl-flag small_flag mt-2 flag_' + parsingResult.territory}"
                                 th:title="${parsingResult.territory}"></span>
                             </a>
@@ -32,6 +34,8 @@
                         <!-- LOTL Info -->
                         <div th:replace="~{fragments/lotl-info-fragments :: lotl-info-summary(downloadResult=${downloadResult}, parsingResult=${parsingResult}, validationResult=${validationResult}, parsingResult=${parsingResult}, validationResult=${validationResult})}"></div>
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>

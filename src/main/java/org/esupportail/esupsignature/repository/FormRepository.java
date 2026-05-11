@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.json.FormDto;
+import org.esupportail.esupsignature.dto.projection.jpa.FormDto;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.springframework.data.jpa.repository.Query;

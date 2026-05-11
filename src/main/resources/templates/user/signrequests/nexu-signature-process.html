@@ -5,16 +5,16 @@
 <script th:inline="javascript" type="module">
     import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=@[(${versionApp})]@';
     $(document).ready(function() {
-        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]]);
+        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]], [[${rootUrl}]]);
     });
     $("#refresh-certType2").on('click', function (e) {
-        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]]);
+        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]], [[${rootUrl}]]);
     });
 </script>
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div id="content" class="content-full ms-0">
+    <div id="content" class="es-content-full ms-0">
         <div style="height: 70px"></div>
         <div class="alert alert-secondary col-10 mb-1 mx-auto text-center">
             <h1>Signature eIDas en cours</h1>
@@ -32,10 +32,10 @@
             L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.
             <br>
             <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${id}" class="btn btn-secondary">
-                <i class="fa-solid fa-door-open fa-2xl"></i><br/>Annuler la signature et retourner à la demande
+                <i class="fa-solid fa-door-open "></i><br/>Annuler la signature et retourner à la demande
             </a>
             <button id="refresh-certType2" class="mx-auto btn btn-primary align-self-center">
-                <i class="fa-solid fa-sync-alt fa-2xl"></i><br> Cliquez ici après le lancement de Esup-DSS-Client
+                <i class="fa-solid fa-sync-alt "></i><br> Cliquez ici après le lancement de Esup-DSS-Client
             </button>
         </div>
         <div class="card col-10 mx-auto">
@@ -57,10 +57,10 @@
                         </div>
                         <div class="inline-flex">
                             <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${ids.get(0)}" class="btn btn-secondary">
-                                <i class="fa-solid fa-door-open fa-2xl"></i><br/>Annuler la signature et retourner à la demande
+                                <i class="fa-solid fa-door-open "></i><br/>Annuler la signature et retourner à la demande
                             </a>
                             <a onclick="location.reload();" class="btn btn-primary">
-                                <i class="fa-solid fa-sync-alt fa-2xl"></i><br/>Relancer la procédure de signature
+                                <i class="fa-solid fa-sync-alt "></i><br/>Relancer la procédure de signature
                             </a>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                     <strong>Signature effectuée</strong>
                     <br/>
                     <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
-                        <i class="fi fi-rr-flag fa-2xl"></i><br/> Retour
+                        <i class="fi fi-rr-flag "></i><br/> Retour
                     </a>
                 </div>
             </div>

@@ -9,8 +9,23 @@ body {
     padding-right: 0 !important;
 }
 
+.es-nav-tools {
+    margin-left: 8px;
+}
+
+body.es-signrequest-page #tools.es-tools {
+    position: sticky !important;
+    width: 100%;
+    max-width: 100%;
+    margin-top: -2px;
+}
+
+body.es-signrequest-page {
+    overflow-x: clip;
+}
+
 body.modal-open {
-    overflow: auto !important;
+    /*overflow: auto !important;*/
 }
 
 header {
@@ -36,7 +51,7 @@ header {
 }
 
 .navbar-brand {
-    width: 260px;
+    width: 300px;
     margin-right: 0px;
 }
 
@@ -64,29 +79,51 @@ header {
     margin-top: 95px;
 }
 
-.wrapper {
+.wrapper,
+.es-wrapper {
     display: block;
 }
 
-.content {
+#content {
+    height: calc(100vh - 134px);
+}
+
+.content,
+.es-content {
     width: calc(100vw - 275px);
     margin-top: 86px;
-    margin-left: 260px;
+    margin-left: 300px;
     padding-left: 6px;
     padding-right: 4px;
 }
 
-.content-full {
-    /*width: calc(100vw - 75px);*/
-    margin-left: 60px;
+.main-content, .es-main-content {
+    padding-top: 92px;
+    height: calc(100vh - 50px);
+    min-width: 0;
 }
 
-.content-full-fixed {
+.es-main-content-admin {
+    height: calc(100vh - 172px) !important;
+}
+
+.es-main-content-user-settings {
+    height: calc(100vh - 34px);
+}
+
+.content-full,
+.es-content-full {
+    height: calc(100vh - 40px) !important
+}
+
+.content-full-fixed,
+.es-content-full-fixed {
     margin-left: 0;
-    margin-top: 50px;
+    margin-top: 86px;
 }
 
-.content-fixed-breadcrumb {
+.content-fixed-breadcrumb,
+.es-content-fixed-breadcrumb {
     padding: 10px;
     width: calc(100vw - 76px);
     margin-left: 0;
@@ -142,33 +179,57 @@ header {
     overflow-y: auto;
 }
 
-.workspace {
-    margin-top: 130px;
+
+.es-signrequest-workspace-list {
+    margin-top: 42px;
+}
+
+.workspace,
+.es-workspace {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: calc(100vh - 114px);
+}
+
+/* Prevent horizontal overflow on signrequest show layout (sidebar + workspace in flex row). */
+.es-signrequest-main-content > #sidebar {
+    flex: 0 0 300px;
+}
+
+.es-signrequest-main-content > .es-workspace {
+    flex: 1 1 0;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+}
+
+#workspace {
+    overflow-y: scroll;
+}
+
+.workspace-pdf,
+.es-workspace-pdf {
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
 }
 
-.workspace-pdf {
-    margin-top: 130px;
+.workspace-sign,
+.es-workspace-sign {
+    /*margin-top: 15px;*/
+    width: 100%;
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
 }
 
-.workspace-sign {
-    margin-top: 174px;
+#pdf {
     display: flex;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
-.workspace-margin-top {
-    margin-top: 130px;
-}
-
-.workspace-margin-top-admin {
-    margin-top: 175px;
+    flex-direction: column;
+    align-items: center;
+    position: relative !important;
+    opacity: 1;
+    cursor: default;
+    padding-bottom: 1px;
 }
 
 #actionDiv {
@@ -184,9 +245,9 @@ header {
 }
 
 .cross-tools {
-    border: 1px solid #ccc;
+    border: 1px solid var(--bs-secondary-bg-subtle);
     left: 0px;
-    top: -48px;
+    top: -46px;
     z-index: 10;
     user-select: none;
     -moz-user-select: none;
@@ -219,15 +280,10 @@ header {
 }
 
 #sidebar {
-    top: 50px;
-    padding-right: 5px;
-    padding-bottom: 12px;
-    position: fixed;
-    z-index: 1030 !important;
-    min-width: 260px;
-    max-width: 260px;
-    height: calc(100vh - 80px);
+    min-width: 300px;
+    max-width: 300px;
     overflow-y: auto;
+    height: calc(100vh - 134px);
 }
 
 #sidebar.active {
@@ -235,46 +291,51 @@ header {
     max-width: 60px;
 }
 
-.sidebar-mobile {
+.sidebar-mobile,
+.es-sidebar-mobile {
     display: block !important;
-    width: 260px !important;
-    max-width: 260px !important;
+    width: 300px !important;
+    max-width: 300px !important;
     position: absolute !important;
     top: 105px !important;
     height: calc(100vh - 138px) !important;
     z-index: 1 !important;
 }
 
-.tools {
-    top: 82px;
-    /*height: 50px;*/
-    padding-top: 5px;
-    background-color: white;
-    width: 100%;
+.fixed-action-btns, .es-fixed-action-btns {
+    padding: 10px;
+    height: calc(100vh - 134px);
+    overflow-y: auto;
+}
+
+.tools,
+.es-tools {
+    width: calc(100vw - 380px);
+    top: 126px;
     z-index: 1029;
-    position: fixed;
-    /*padding-left: 10px;*/
+    position: absolute;
 }
 
-.tools-admin {
+.tools-admin,
+.es-tools-admin {
     top: 128px;
+    margin-top: 8px;
 }
 
-.second-tools {
-    top: 130px;
+.second-tools,
+.es-second-tools {
+    margin-left: 38px !important;
+    margin-top: 46px;
     z-index: 1;
 }
 
 #ws-tabs {
-    width: 100% !important;
+    width: auto !important;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100% !important;
     flex-wrap: nowrap !important;
-}
-
-.nav-tab-admin {
-    position: fixed;
-    top: 86px;
-    z-index: 1000;
-    width: 100%;
+    /*overflow: hidden;*/
 }
 
 .breadcrumb {
@@ -283,26 +344,15 @@ header {
     padding-left: 15px !important;
 }
 
-.breadcrumb-nav {
-    top:50px;
-    padding: 5px;
+.breadcrumb-nav,
+.es-breadcrumb-nav {
+    top: 50px;
+    height: 42px;
     position: fixed;
-    margin-left: 260px;
     width: 100%;
     z-index: 1029;
-}
-
-.breadcrumb-nav-full {
-    z-index: 1;
-    padding: 5px;
-    margin-left: 60px;
-    width: calc(100vw - 75px);
-}
-
-.breadcrumb-nav-full-fixed {
-    z-index: 1;
-    padding: 5px;
-    margin-left: 0;
+    display: flex;
+    align-items: center;
 }
 
 .breadcrumb {
@@ -340,30 +390,22 @@ header {
 }
 
 #pdf-progress-bar {
-    width: calc(100% - 300px);
+    width: calc(100% - 370px);
     position: fixed;
     z-index: 2;
-    bottom: 40px;
+    top: 216px;
     opacity: 1;
-    -webkit-transition:opacity 2s linear;
-    -moz-transition: opacity 2s linear;
-    -o-transition:opacity 2s linear;
+    -webkit-transition:opacity .5s linear;
+    -moz-transition: opacity .5s linear;
+    -o-transition:opacity .5s linear;
 }
 
 .pdf-alerts-btn {
-    left: 277px;
-    top:135px;
+    height: 33px;
+    left: 304px;
+    top: 94px;
     position: fixed;
     z-index: 9999;
-}
-
-.pdf-alerts {
-    z-index: 999;
-    margin-left: 0px !important;
-    margin-top: 0px !important;
-    padding: 10px;
-    gap: 1rem;
-    width: 500px !important;
 }
 
 .bs-stepper-bottom {
@@ -394,3 +436,6 @@ header {
 .global-button {
     width: 200px;
 }
+
+
+

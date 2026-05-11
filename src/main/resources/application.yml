@@ -33,6 +33,7 @@ global:
     send-postit-by-email: false
     send-creation-mail-to-viewers: false
     sms-required: false
+    user-can-change-phone: true
     file-name-spaces-replace-by: " "
     csv-quote: "\""
     csv-separator: ";"
@@ -101,9 +102,13 @@ spring:
         password: esup
         username: esupsignature
         hikari:
+            auto-commit: false
             maximum-pool-size: 15
             minimum-idle: 3
+            idle-timeout: 300000
             connection-timeout: 30000
+            leak-detection-threshold: 15000
+            max-lifetime: 600000
         tomcat:
             validation-query: SELECT 1;
     jpa:
@@ -222,15 +227,12 @@ dss:
     cache-password:
     cache-username: sa
     default-validation-policy: policy/constraint.xml
-    server-signing-keystore-filename: validate_service.p12
-    server-signing-keystore-password: password
-    server-signing-keystore-type: PKCS12
     tsp-servers:
         - http://timestamp.sectigo.com/qualified
         - http://tsa.belgium.be/connect
     lotl-country-code: EU
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
-    oj-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
+    oj-url: https://eur-lex.europa.eu/eli/C/2026/1944/oj
     root-url-in-tl-browser: https://eidas.ec.europa.eu/efda/tl-browser/#/screen
     country: FR
     state-or-province: Région

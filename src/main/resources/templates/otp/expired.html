@@ -4,8 +4,8 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="wrapper">
-        <div id="content" class="content-full">
+    <div class="es-wrapper">
+        <div id="content" class="es-content-full">
             <div class="expired-container">
                 <div class="alert alert-light">
                     <div class="expired-icon">
@@ -49,7 +49,7 @@
         display: flex;
         justify-content: center;
         margin-bottom: 1.5rem;
-        color: #dc3545;
+        color: var(--bs-danger);
     }
 
     .expired-icon::before {
@@ -57,7 +57,7 @@
         display: inline-block;
         width: 6rem;
         height: 6rem;
-        background-color: #dc3545;
+        background-color: var(--bs-danger);
         mask-image: url('/images/icons/rr-session-timeout.svg');
         mask-repeat: no-repeat;
         mask-position: center;
@@ -69,8 +69,8 @@
     }
 
     .btn-primary {
-        background: #0d6efd;
-        color: white;
+        background: var(--bs-primary);
+        color: var(--bs-white);
         padding: 0.75rem 1.5rem;
         border: none;
         border-radius: 6px;
@@ -80,18 +80,18 @@
     }
 
     .btn-primary:hover {
-        background: #0b5ed7;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+        background: var(--bs-primary);
+        box-shadow: 0 2px 8px var(--color-rgba-13-110-253-03);
     }
 
     .btn-primary:active {
-        background: #0a58ca;
+        background: var(--bs-primary);
         transform: translateY(1px);
     }
 
     .expired-info {
-        background: #f8f9fa;
-        border-left: 4px solid #0d6efd;
+        background: var(--color-f8f9fa);
+        border-left: 4px solid var(--bs-primary);
         padding: 1.25rem;
         border-radius: 6px;
         text-align: left;
@@ -99,7 +99,7 @@
 
     .expired-info p {
         font-size: 0.95rem;
-        color: #495057;
+        color: var(--bs-secondary);
         margin: 0.5rem 0;
         line-height: 1.5;
     }

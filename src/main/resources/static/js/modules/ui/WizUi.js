@@ -380,6 +380,10 @@ export class WizUi {
         $("#wiz-exit").on('click', e => this.wizardExit());
         $("#save-workflow").on('click', e => this.saveWorkflow());
         $("#save-step").on('click', e => this.workflowSignSubmitStepData());
+        $("button[id^='delete-step-']").on('click', e => {
+            e.preventDefault();
+            this.workflowSignDeleteStepData($(e.currentTarget).data('es-step-id'));
+        });
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
         $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
     }
@@ -410,6 +414,33 @@ export class WizUi {
         let url = '/user/wizard/wiz-add-step-' + mode +  '/' + elementId + '?end=' + self.end + '&start=' + self.start + '&close=' + self.close;
         this.sendSteps(url, $("#wiz-step-form"), successCallback, errorCallback);
 
+    }
+
+    workflowSignDeleteStepData(stepId) {
+        console.info("Delete step");
+        let self = this;
+        let mode = "workflow";
+        let elementId = -1;
+        self.end = false;
+        self.start = false;
+        self.close = false;
+        if (this.newSignBookId !== "") {
+            mode = "signbook";
+            elementId = this.newSignBookId;
+        } else if (this.newWorkflowId !== "") {
+            elementId = this.newWorkflowId;
+        }
+        $.ajax({
+            url: '/user/wizard/wiz-delete-step-' + mode + '/' + elementId + '/' + stepId + '?' + self.csrf.parameterName + '=' + self.csrf.token,
+            type: 'POST',
+            success: function(html) {
+                self.workflowSignNextStepDisplay(html);
+                self.manageMinMaxLevels();
+            },
+            error: function() {
+                $("#wiz-step-form-submit").click();
+            }
+        });
     }
 
     workflowSignSubmitLastStepData(pending) {

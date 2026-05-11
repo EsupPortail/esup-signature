@@ -1,0 +1,8 @@
+{
+  "@class": "org.apereo.cas.services.CasRegisteredService",
+  "serviceId": "^http://localhost:7070/login/cas.*",
+  "name": "Esup Signature local test service",
+  "id": 1,
+  "evaluationOrder": 1,
+  "description": "Autorise le callback CAS de l'application locale de test"
+}

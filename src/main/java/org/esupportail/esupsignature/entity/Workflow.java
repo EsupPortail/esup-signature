@@ -35,14 +35,12 @@ public class Workflow {
 
     private Integer counter;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
     @ManyToOne
     private User createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -66,6 +64,8 @@ public class Workflow {
     private Boolean sendAlertToAllRecipients = false;
 
     private String documentsSourceUri;
+
+    private Boolean unzip;
 
     private Boolean forbidDownloadsBeforeEnd = false;
 
@@ -95,6 +95,8 @@ public class Workflow {
 
     private Boolean disableDeleteByCreator = false;
 
+    private Boolean disableUpdateByCreator = false;
+
     private Boolean sealAtEnd = false;
 
     private String signRequestParamsDetectionPattern;
@@ -114,7 +116,6 @@ public class Workflow {
 
     private Boolean authorizeClone = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private Date startArchiveDate;
 
@@ -259,6 +260,14 @@ public class Workflow {
         this.documentsSourceUri = documentsSourceUri;
     }
 
+    public Boolean getUnzip() {
+        return unzip;
+    }
+
+    public void setUnzip(Boolean unzip) {
+        this.unzip = unzip;
+    }
+
     public List<Target> getTargets() {
         return targets;
     }
@@ -377,6 +386,14 @@ public class Workflow {
 
     public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) {
         this.disableDeleteByCreator = disableDeleteByCreator;
+    }
+
+    public Boolean getDisableUpdateByCreator() {
+        return disableUpdateByCreator;
+    }
+
+    public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
+        this.disableUpdateByCreator = disableUpdateByCreator;
     }
 
     public List<User> getViewers() {

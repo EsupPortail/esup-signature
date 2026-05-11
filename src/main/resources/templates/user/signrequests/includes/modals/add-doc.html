@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<div th:fragment="add-doc">
+<div data-bs-focus="false" class="modal fade" id="addDoc" role="dialog" aria-labelledby="addSignRequestLabel" aria-hidden="true" th:if="${showSignRequest.signRequestLight.createBy.eppn == userEppn && showSignRequest.signBookLight.editable}">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form th:action="'/user/signbooks/add-docs/' + ${showSignRequest.signBookLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h3 class="modal-title d-flex align-items-center" id="fastSignRequestLabel"><i class="fi fi-rr-add-document"></i> Ajouter un document</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
+
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-lg-12">
+                        <div class="form-group mb-3">
+                            <div class="custom-file">
+                                <input required class="form-control" data-buttontext="Choisir fichier" id="send-sign-file-input" name="multipartFiles" type="file">
+                            </div>
+                        </div>
+                        <div id="unzip-option-container" class="form-check d-none">
+                            <input class="form-check-input" type="checkbox" name="unzip" id="unzip-option" value="true">
+                            <label class="form-check-label" for="unzip-option">
+                                Décompresser le zip pour générer une demande par fichier
+                            </label>
+                        </div>
+                        <script th:inline="javascript">
+                            (() => {
+                                const fileInput = document.getElementById('send-sign-file-input');
+                                const unzipOptionContainer = document.getElementById('unzip-option-container');
+                                const unzipOption = document.getElementById('unzip-option');
+                                const addDocModal = document.getElementById('addDoc');
+
+                                const isZipFile = file => {
+                                    if (!file) {
+                                        return false;
+                                    }
+                                    const fileName = (file.name || '').toLowerCase();
+                                    const contentType = (file.type || '').toLowerCase();
+                                    return fileName.endsWith('.zip') || contentType.includes('zip');
+                                };
+
+                                const updateUnzipOptionVisibility = () => {
+                                    const hasZip = Array.from(fileInput.files || []).some(isZipFile);
+                                    unzipOptionContainer.classList.toggle('d-none', !hasZip);
+                                    unzipOption.checked = hasZip;
+                                };
+
+                                fileInput.addEventListener('change', updateUnzipOptionVisibility);
+                                addDocModal.addEventListener('hidden.bs.modal', () => {
+                                    unzipOptionContainer.classList.add('d-none');
+                                    unzipOption.checked = false;
+                                    fileInput.value = '';
+                                });
+                            })();
+                        </script>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-success">Envoyer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+</html>

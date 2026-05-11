@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <head th:replace="~{fragments/head-lite :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
+    <div class="es-wrapper">
         <nav th:replace="~{fragments/sides/side-home :: side-home}"></nav>
         <div id="content" class="content">
-            <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav-full">
+            <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item active">Accueil</li>
                 </ol>

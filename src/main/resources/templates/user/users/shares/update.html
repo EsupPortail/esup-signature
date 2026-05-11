@@ -10,9 +10,8 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/user/users/shares">Délégations</a></li>
                 <li class="breadcrumb-item active" th:if="${userShare.workflow}"
@@ -22,14 +21,11 @@
                 <li class="breadcrumb-item active" th:if="${userShare.allSignRequests}">Toutes les demandes</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-btn">
-                <a title="Enregistrer" type="button" onclick="$('#shareForm').submit()"
-                    class="btn-floating btn-lg bg-success">
-                    <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
-                </a>
-            </div>
-            <div class="alert border-secondary-subtle col-lg-11">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
+                <div class="flex-grow-1">
+            <div class="alert border-secondary-subtle col-lg-12">
                 <h5>Modifier la délégation sur :
                 <span th:if="${userShare.form}" th:text="${userShare.form.title}"></span>
                 <span th:if="${userShare.workflow}" th:text="${userShare.workflow.title}"></span>
@@ -47,17 +43,6 @@
                         <label class="form-label">Circuits délégué : </label>
                         <span th:text="${userShare.workflow.description}" selected></span>
                     </div>
-
-                    <!--                            <div class="form-group mb-3">-->
-                    <!--                                <label for="selectType">Type de délégation</label>-->
-                    <!--                                <select id="selectType" class="slim-select-simple" name="types" required="required" multiple="multiple">-->
-                    <!--                                    <option value="" data-placeholder="true">Choisir un type de délégation</option>-->
-                    <!--                                    <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">-->
-                    <!--                                        <option th:selected="${userShare.shareTypes.contains(shareType)}" th:value="${shareType.name()}"-->
-                    <!--                                                th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></option>-->
-                    <!--                                    </th:block>-->
-                    <!--                                </select>-->
-                    <!--                            </div>-->
 
                     <div class="form-group mb-3">
                         <label class="form-label">Type de délégation</label>
@@ -108,6 +93,14 @@
                         <input type="datetime-local" name="endDate" class="form-control datepicker" th:value="${#dates.format(userShare.endDate, 'yyyy-MM-dd''T''HH:mm')}">
                     </div>
                 </form>
+            </div>
+                </div>
+            <div class="bg-light fixed-action-btn">
+                <a title="Enregistrer" type="button" onclick="$('#shareForm').submit()"
+                    class="btn btn-floating btn-lg bg-success">
+                    <i class="fi fi-rr-disk " style="margin-top: 10px;"></i>
+                </a>
+            </div>
             </div>
         </div>
     </div>

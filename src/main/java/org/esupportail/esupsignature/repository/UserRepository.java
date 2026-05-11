@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.view.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.springframework.data.domain.Page;
@@ -17,25 +18,29 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<UserDto> findAllUsersDto();
     Optional<User> findByEmailIgnoreCase(String email);
     List<User> findByReplaceByUser(User user);
-    List<User> findByEmailAndUserType(String email, UserType userType);
     List<User> findByUserType(UserType userType);
-    @Query("select u from User u where u.userType != 'system'")
-    Page<User> findByUserTypeNot(UserType userType, Pageable pageable);
     @Query("select u from User u where (u.eppn = :eppn or u.phone = :phone or u.email = :email) and u.userType != 'system'")
     Page<User> findByEppnOrPhoneOrEmailAndUserTypeNot(String eppn, String phone, String email, Pageable pageable);
     Optional<User> findByEppn(String eppn);
     Optional<User> findByAccessToken(String accessToken);
-    @Query("select u from User u where u.eppn like :eppn%")
+    @Query("select u from User u where u.eppn like :eppn escape '\\'")
     List<User> findByEppnStartingWith(String eppn);
-    @Query("select u from User u where upper(u.name) like :name%")
+    @Query("select u from User u where upper(u.name) like :name escape '\\'")
     List<User> findByNameStartingWithIgnoreCase(String name);
-    @Query("select u from User u where u.email like :email%")
+    @Query("select u from User u where u.email like :email escape '\\'")
     List<User> findByEmailStartingWith(String email);
     @Query(value = "select distinct roles from user_roles", nativeQuery = true)
     List<String> getAllRoles();
-    List<User> findByManagersRolesIn(List<String> role);
+    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto(role, u) from User u join u.managersRoles role")
+    List<RoleManagerDto> findAllRoleManagers();
+    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto(role, u) from User u join u.managersRoles role where role in :roles")
+    List<RoleManagerDto> findRoleManagersByRoles(List<String> roles);
+    @Query("select role from User u join u.managersRoles role where u.eppn = :eppn")
+    List<String> findManagersRolesByEppn(String eppn);
+    @Query("select distinct u from User u join u.managersRoles role where role in :roles")
+    List<User> findByManagersRolesIn(List<String> roles);
+    @Query("select distinct u from User u join u.managersRoles role")
     List<User> findByManagersRolesNotNull();
-    Long countByEmailIgnoreCaseAndUserType(String email, UserType userType);
     User findByPhone(String phone);
 
     List<User> findAllByUserType(UserType userType);

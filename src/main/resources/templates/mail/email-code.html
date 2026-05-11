@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<title>OTP</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<body>
+<table width="100%" border="0" style="width: 100%; border: 0;" bgcolor="#ffffff">
+	<tr>
+		<td width="100%" style="background-color:#343a40; border-bottom:1px solid rgba(0, 0, 0, 0.125); margin-bottom:0; padding:10px; width: 100%;" bgcolor="#343a40">
+				<img height="30" class="mx-auto float-start" src="cid:logo" style="height: 30px; border-style:none; vertical-align:middle; float:left; margin-right:auto; margin-left:auto" valign="middle" align="left">
+				<img height="30" class="mx-auto float-end" src="cid:logo-univ" style="height: 30px; border-style:none; vertical-align:middle; float:right; margin-right:auto; margin-left:auto" valign="middle" align="right">
+			</td>
+		</tr>
+		<tr>
+			<td style="width:100%; padding:10px;background-color:rgba(0,0,0,0.05);">
+				<p style="margin-bottom:1rem; margin-top:0;text-align: center;font-weight: bold">Bonjour <span th:text="${user.firstname} + ' ' + ${user.name}"></span> ,</p>
+				<p style="margin-bottom:1rem; margin-top:0;text-align: center;">L’établissement <span th:text="#{application.footer}"></span> vous transmet un code de connexion : </p>
+				<p style="margin-bottom:1rem; margin-top:0;text-align: center;font-size: 30px;"><span th:text="${code}"></span></p>
+			</td>
+		</tr>
+		<tr>
+			<td style="width:100%; background-color:#6c757d;  padding:10px;  -ms-flex-pack:center; justify-content:center; text-align:center; font-size:14px;" bgcolor="#6c757d">
+				<span style="text-align:center; color:#fff" align="center" th:text="#{application.footer}"></span>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

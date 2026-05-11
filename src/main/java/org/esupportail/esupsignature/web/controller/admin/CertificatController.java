@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
 import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.UserService;
@@ -52,9 +52,9 @@ public class CertificatController {
             RedirectAttributes redirectAttributes) {
         try {
             certificatService.addCertificat(keystore, roleNames, password);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificat ajouté"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Certificat ajouté"));
         } catch (IOException | EsupSignatureKeystoreException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Erreur lors de l'ajout du keystore : <br>" + e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Erreur lors de l'ajout du keystore : <br>" + e.getMessage()));
         }
 
         return "redirect:/admin/certificats";
@@ -64,14 +64,14 @@ public class CertificatController {
     public String deleteCertificat(@RequestParam Long id,
             RedirectAttributes redirectAttributes) {
         certificatService.delete(id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificat supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Certificat supprimé"));
         return "redirect:/admin/certificats";
     }
 
     @GetMapping("/refresh")
     public String refreshCertificat(RedirectAttributes redirectAttributes) {
         certificatService.clearSealCertificatsCache();
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Certificats rafraichis"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Certificats rafraichis"));
         return "redirect:/admin/certificats";
     }
 

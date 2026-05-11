@@ -93,21 +93,26 @@ public class User {
     @Enumerated(EnumType.STRING)
     private DayOfWeek emailAlertDay;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @JsonIgnore
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            indexes = {
+                    @Index(name = "idx_user_roles_role", columnList = "roles")
+            }
+    )
+    @Column(name = "roles")
     private Set<String> roles = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne
     private User replaceByUser;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceBeginDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
 
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -311,10 +316,6 @@ public class User {
 
     public Set<String> getRoles() {
         return roles;
-    }
-
-    public List<String> getRolesCopy() {
-        return new ArrayList<>(roles);
     }
 
     public void setRoles(Set<String> roles) {

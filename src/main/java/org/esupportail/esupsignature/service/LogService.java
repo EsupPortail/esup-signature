@@ -70,11 +70,6 @@ public class LogService {
         return logRepository.findBySignRequestId(id);
     }
 
-    public List<Log> getLogs(Long id) {
-        List<Log> logs = logRepository.findBySignRequestIdAndPageNumberIsNotNullAndStepNumberIsNullAndCommentIsNotNull(id);
-        return setUsers(logs);
-    }
-
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
             log.setUser(userService.getByEppn(log.getEppn()));
@@ -96,7 +91,7 @@ public class LogService {
                 log.setUserFor(userService.getByEppn(log.getEppnFor()));
             }
         }
-        return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
+        return logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
     }
 
     @Transactional
@@ -127,7 +122,7 @@ public class LogService {
                 log.setFinalStatus(signRequest.get().getStatus().name());
             }
         } else  {
-            action = "signBook : " + action;
+            action = "signBookLight : " + action;
             SignBook signBook = signBookRepository.findById(id).get();
             log.setInitialStatus(signBook.getStatus().name());
         }

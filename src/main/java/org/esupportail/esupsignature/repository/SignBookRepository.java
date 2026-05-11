@@ -1,10 +1,9 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.view.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
-import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.entity.enums.ArchiveStatus;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.springframework.data.domain.Page;
@@ -15,8 +14,20 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public interface SignBookRepository extends CrudRepository<SignBook, Long> {
+
+    @Query("""
+            select distinct sb from SignBook sb
+            left join fetch sb.liveWorkflow lw
+            left join fetch lw.liveWorkflowSteps lws
+            left join fetch lws.recipients r
+            left join fetch r.user ru
+            left join fetch lws.workflowStep ws
+            where sb.id = :id
+            """)
+    Optional<SignBook> findByIdWithWizardContext(@Param("id") Long id);
 
     List<SignBook> findBySubject(String subject);
 
@@ -30,7 +41,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select sb from SignBook sb
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+            and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
             and size(sb.signRequests) > 0
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
@@ -50,7 +61,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
               and (:creatorFilter is null or sb.createBy = :creatorFilter)
               and (sb.createBy = :user or sb.status <> 'draft')
               and (:docTitleFilter is null
-                   or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+                   or lower(sb.subject) like :docTitleFilter escape '\\')
               and exists (
                   select 1 from SignRequest sr
                   where sr.parentSignBook = sb
@@ -79,7 +90,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
              and (:creatorFilter is null or sb.createBy = :creatorFilter)
              and (sb.createBy = :user or sb.status <> 'draft')
              and (:docTitleFilter is null\s
-                  or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+                  or lower(sb.subject) like :docTitleFilter escape '\\')
              and exists (
                  select 1 from SignRequest sr
                  where sr.parentSignBook = sb
@@ -123,7 +134,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
            where :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+            and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
             and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
@@ -149,7 +160,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select sb from SignBook sb
             where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-              and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
               and (:creatorFilter is null or sb.createBy = :creatorFilter)
               and (:statusFilter is null or :statusFilter = 'deleted' or sb.status = :statusFilter)
               and (:statusFilter is null or (sb.deleted is null and :statusFilter != 'deleted') or sb.deleted = :deleted or (:deleted = true and sb.status = 'deleted'))
@@ -173,7 +184,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             where (:workflowId is null or sb.liveWorkflow.workflow.id = :workflowId)
-            and lower(sb.subject) like lower(:searchString)
+            and lower(sb.subject) like :searchString escape '\\'
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
     List<String> findByWorkflowNameSubjects(Long workflowId, String searchString);
@@ -185,7 +196,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
           and (sb.deleted is null or sb.deleted != true)
           and :user not member of sb.hidedBy
           and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-          and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+          and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
           and (:creatorFilter is null or sb.createBy = :creatorFilter)
           and (sb.createDate between :startDateFilter and :endDateFilter)
           and exists (
@@ -242,17 +253,41 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where :user not member of sb.hidedBy
               and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
               and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-              and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
               and (:creatorFilter is null or sb.createBy = :creatorFilter)
               and exists (
                   select 1 from SignRequest sr
                   join sr.recipientHasSigned rhs
                   where sr.parentSignBook = sb
                     and key(rhs).user = :user
-                    and rhs.actionType = :actionType
+                    and rhs.actionType = 'signed'
+              )
+              and not exists (
+                  select 1 from SignRequest sr
+                  join sr.recipientHasSigned rhs
+                  where sr.parentSignBook = sb
+                    and key(rhs).user = :user
+                    and rhs.actionType = 'refused'
               )
             """)
-    Page<SignBook> findByRecipientAndActionTypeNotDeleted(User user, ActionType actionType, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
+    Page<SignBook> findSignedByRecipientNotDeleted(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
+
+    @Query("""
+            select sb from SignBook sb
+            where :user not member of sb.hidedBy
+              and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
+              and (:workflowFilter is null or sb.workflowName = :workflowFilter)
+              and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
+              and (:creatorFilter is null or sb.createBy = :creatorFilter)
+              and exists (
+                  select 1 from SignRequest sr
+                  join sr.recipientHasSigned rhs
+                  where sr.parentSignBook = sb
+                    and key(rhs).user = :user
+                    and rhs.actionType = 'refused'
+              )
+            """)
+    Page<SignBook> findRefusedByRecipientNotDeleted(User user, String workflowFilter, String docTitleFilter, User creatorFilter, Pageable pageable);
 
     @Query("select distinct sb from SignBook sb join sb.hidedBy hb where hb = :hidedBy")
     Page<SignBook> findByHidedById(User hidedBy, Pageable pageable);
@@ -335,7 +370,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and sb.workflowName != ''")
     List<String> findAllWorkflowNames();
 
-    @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and lower(sb.workflowName) like lower(:workflowName)")
+    @Query("select distinct sb.workflowName from SignBook sb where sb.hidedBy is empty and lower(sb.workflowName) like :workflowName escape '\\'")
     List<String> findAllWorkflowNamesByName(String workflowName);
 
     @Query("""
@@ -351,7 +386,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
     @Query("""
             select distinct sb.subject from SignBook sb
             left join sb.team team
-            where (team = :user) and lower(sb.subject) like lower(:searchString)
+            where (team = :user) and lower(sb.subject) like :searchString escape '\\'
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
@@ -362,7 +397,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             select distinct sb.createBy.name as name, sb.createBy.firstname as firstname, sb.createBy.eppn as eppn, sb.createBy.email as email from SignBook sb
             left join sb.team team
             where (:workflowFilter is null or sb.workflowName = :workflowFilter)
-            and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+            and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
             and (team = :user)
             and :user not member of sb.hidedBy
             and size(sb.signRequests) > 0
@@ -397,7 +432,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
               )
         )
         and (:workflowFilter is null or sb.workflowName = :workflowFilter)
-        and (:docTitleFilter is null or lower(sb.subject) like lower(concat('%', cast(:docTitleFilter as string), '%')))
+        and (:docTitleFilter is null or lower(sb.subject) like :docTitleFilter escape '\\')
         and (:recipientUser is null or exists (
               select 1 from SignRequest sr2
               join sr2.recipientHasSigned rhs2

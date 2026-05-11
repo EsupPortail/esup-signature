@@ -560,6 +560,21 @@ public class MailService {
         }
     }
 
+    public void sendMailCode(String userEmail, String code) throws MessagingException, IOException {
+        final Context ctx = new Context(Locale.FRENCH);
+        User user = userService.getUserByEmail(userEmail);
+        ctx.setVariable("user", user);
+        ctx.setVariable("code", code);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+        String htmlContent = templateEngine.process("mail/email-code.html", ctx);
+        mimeMessage.setText(htmlContent, true);
+        mimeMessage.setSubject("Votre code de vérification");
+        mimeMessage.setTo(userEmail);
+        logger.info("send email code for " + userEmail);
+        sendMail(mimeMessage, null);
+    }
+
 //    public MimeMessage signMessage(MimeMessage message) {
 //        try {
 //            if(globalProperties.getSignEmailWithSealCertificat()) {

@@ -1,13 +1,14 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.FieldPropertie;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.UserPropertie;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.extvalue.ExtValue;
@@ -47,8 +48,9 @@ public class UserController {
     private final UserListService userListService;
     private final ExtValueService extValueService;
     private final RecipientService recipientService;
+	private final GlobalProperties globalProperties;
 
-    public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties) {
 		this.userKeystoreService = userKeystoreService;
         this.formService = formService;
         this.userService = userService;
@@ -59,6 +61,7 @@ public class UserController {
         this.userListService = userListService;
         this.extValueService = extValueService;
         this.recipientService = recipientService;
+		this.globalProperties = globalProperties;
     }
 
     @GetMapping
@@ -71,6 +74,7 @@ public class UserController {
         model.addAttribute("activeMenu", "user");
 		model.addAttribute("paramMenu", "settings");
 		model.addAttribute("signImages", Collections.singletonList(userService.getFavoriteImage64(authUserEppn)));
+		model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
 		return "user/users/update";
     }
 
@@ -86,7 +90,7 @@ public class UserController {
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
 		userService.updateUserAndSignRequestParams(authUserEppn, signImageBase64, saveSignRequestParams, returnToHomeAfterSign, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
     }
@@ -101,7 +105,7 @@ public class UserController {
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
 	}
@@ -109,7 +113,7 @@ public class UserController {
 	@DeleteMapping("/delete-sign/{id}")
 	public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		userService.deleteSign(authUserEppn, id);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Signature supprimée"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
 	}
@@ -117,10 +121,10 @@ public class UserController {
 	@PostMapping(value = "/view-cert")
 	public String viewCert(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value =  "password", required = false) String password, RedirectAttributes redirectAttributes) {
 		try {
-        	redirectAttributes.addFlashAttribute("message", new JsMessage("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
+        	redirectAttributes.addFlashAttribute("message", new UiMessageDto("custom", userKeystoreService.checkKeystore(authUserEppn, password)));
         } catch (Exception e) {
         	logger.warn("open keystore fail : " + e.getMessage());
-        	redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Mauvais mot de passe"));
+        	redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Mauvais mot de passe"));
 		}
         return "redirect:/user/users";
     }
@@ -128,7 +132,7 @@ public class UserController {
 	@GetMapping(value = "/remove-keystore")
 	public String removeKeystore(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
 		userService.removeKeystore(authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le magasin de clés a bien été supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le magasin de clés a bien été supprimé"));
 		return "redirect:/user/users";
 	}
 
@@ -173,7 +177,7 @@ public class UserController {
 	@DeleteMapping("/delete-user-propertie/{id}")
 	public String deleteUserPropertie(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
 		userPropertieService.delete(authUserEppn, id);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le favori a bien été supprimé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le favori a bien été supprimé"));
 		return "redirect:/user/users/properties";
 	}
 
@@ -182,7 +186,7 @@ public class UserController {
 		FieldPropertie fieldPropertie = fieldPropertieService.getById(id);
 		if(fieldPropertie.getUser().getEppn().equals(authUserEppn)) {
 			fieldPropertieService.delete(id, key);
-			redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le favori a bien été supprimé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le favori a bien été supprimé"));
 		}
 		return "redirect:/user/users/properties";
 	}
@@ -226,7 +230,7 @@ public class UserController {
 
 	@GetMapping("/replace")
 	public String showReplace(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-		List<SignRequest> signRequests = signBookService.getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
+		List<SignRequest> signRequests = signBookService.getSignRequestsToReplace(authUserEppn);
 		model.addAttribute("signRequests", signRequests);
 		model.addAttribute("activeMenu", "shares");
         model.addAttribute("paramMenu", "replace");
@@ -240,7 +244,7 @@ public class UserController {
 							  @RequestParam(value = "endDate", required = false) String endDate,
 							  RedirectAttributes redirectAttributes) {
 		userService.updateReplaceUserBy(authUserEppn, userEmails, beginDate, endDate);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Le remplacement a été modifier"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Le remplacement a été modifier"));
 		return "redirect:/user/users/replace";
 	}
 
@@ -248,9 +252,9 @@ public class UserController {
 	public String transfert(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
 		int result = signBookService.transfer(authUserEppn);
 		if(result > 0) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Le transfert des demandes a bien été effectué. " + result + " demande(s) transférées."));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Le transfert des demandes a bien été effectué. " + result + " demande(s) transférées."));
 		} else {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune modification n'a été effectuée"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Aucune modification n'a été effectuée"));
 		}
 		return "redirect:/user/users/replace";
 	}
@@ -258,7 +262,7 @@ public class UserController {
 	@PostMapping(value ="/renew-token")
 	public String renewToken(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
 		userService.renewToken(authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Votre token a bien été renouvelé"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Votre token a bien été renouvelé"));
 		return "redirect:/user/users";
 	}
 

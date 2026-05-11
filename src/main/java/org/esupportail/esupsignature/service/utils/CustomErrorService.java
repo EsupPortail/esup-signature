@@ -3,9 +3,9 @@ package org.esupportail.esupsignature.service.utils;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.web.ErrorProperties;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
-import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.webmvc.error.ErrorAttributes;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -16,12 +16,12 @@ import java.util.Map;
 @Service
 public class CustomErrorService {
 
-    private final ServerProperties serverProperties;
+    private final WebProperties webProperties;
 
     private final ErrorAttributes errorAttributes;
 
-    public CustomErrorService(ServerProperties serverProperties, ErrorAttributes errorAttributes) {
-        this.serverProperties = serverProperties;
+    public CustomErrorService(WebProperties webProperties, ErrorAttributes errorAttributes) {
+        this.webProperties = webProperties;
         this.errorAttributes = errorAttributes;
     }
 
@@ -76,7 +76,7 @@ public class CustomErrorService {
     }
 
     public ErrorProperties getErrorProperties() {
-        return serverProperties.getError();
+        return webProperties.getError();
     }
 
 

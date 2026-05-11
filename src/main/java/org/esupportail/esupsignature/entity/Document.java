@@ -39,7 +39,6 @@ public class Document {
     @ManyToOne
     private User createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -167,6 +166,6 @@ public class Document {
     }
 
     public boolean isPdf() {
-        return contentType.equals("application/pdf");
+        return "application/pdf".equals(contentType);
     }
 }

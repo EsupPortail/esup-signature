@@ -26,6 +26,8 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileremoved', e => this.checkUniqueFile());
         this.input.on('filecleared', e => this.checkUniqueFile());
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
+        this.input.on('change', e => this.updateZipOptionVisibility());
+        this.updateZipOptionVisibility();
     }
 
     initFileInput(documents, readOnly) {
@@ -174,9 +176,51 @@ export default class FilesInput extends EventFactory {
         } else {
             $('#forceAllSign').addClass('d-none');
         }
+        this.updateZipOptionVisibility();
+    }
+
+    getUnzipOptionContainer() {
+        return this.input.closest('form').find('[data-es-unzip-option-container]').first();
+    }
+
+    getUnzipOption() {
+        return this.input.closest('form').find('[data-es-unzip-option]').first();
+    }
+
+    getSelectedFiles() {
+        try {
+            return Object.values(this.input.fileinput('getFileStack') || {}).filter(file => file != null);
+        } catch (e) {
+            return Array.from(this.input[0]?.files || []);
+        }
+    }
+
+    isZipFile(file) {
+        if(file == null) {
+            return false;
+        }
+        const fileName = (file.name || '').toLowerCase();
+        const contentType = (file.type || '').toLowerCase();
+        return fileName.endsWith('.zip') || contentType.includes('zip');
+    }
+
+    updateZipOptionVisibility() {
+        const unzipOptionContainer = this.getUnzipOptionContainer();
+        const unzipOption = this.getUnzipOption();
+        if(unzipOptionContainer.length === 0 || unzipOption.length === 0) {
+            return;
+        }
+        const hasZip = this.getSelectedFiles().some(file => this.isZipFile(file));
+        unzipOptionContainer.toggleClass('d-none', !hasZip);
+        unzipOption.prop('checked', hasZip);
     }
 
     changeUploadUrl() {
-        return "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token
+        let uploadUrl = "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+        const unzipOption = this.getUnzipOption();
+        if(unzipOption.length > 0 && unzipOption.is(':checked')) {
+            uploadUrl += "&unzip=true";
+        }
+        return uploadUrl;
     }
 }

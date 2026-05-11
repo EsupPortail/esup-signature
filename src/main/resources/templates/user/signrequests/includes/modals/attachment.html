@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="attachments" type="java.util.List<Document>"*/-->
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="attachment">
 <div data-bs-focus="false" class="modal fade" id="attachment"  role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -13,7 +14,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div th:if="${attachments != null && attachments.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
+                <div th:if="${showSignRequest.attachments != null && showSignRequest.attachments.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
                 <table class="table table-borderless table-striped table-hover rounded-3">
                     <thead class="table-secondary">
                     <tr>
@@ -24,7 +25,7 @@
                         <td></td>
                     </tr>
                     </thead>
-                    <th:block th:each="attachment : ${attachments}">
+                    <th:block th:each="attachment : ${showSignRequest.attachments}">
                         <tr>
                             <td th:text="${attachment.fileName}"></td>
                             <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
@@ -46,23 +47,23 @@
                                 </script>
                             </td>
                             <td>
-                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"
+                                <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
                                    target="_blank" class="btn btn-primary float-end" title="Télécharger">
                                     <i class="fi fi-rr-download"></i>
                                 </a>
                             </td>
-                            <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
+                            <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}">
+                                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
                                 </form>
                             </td>
-                            <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
+                            <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequestLight.createBy.eppn == userEppn}">
                             </td>
                         </tr>
                     </th:block>
                 </table>
                 </div>
-                <div th:if="${signRequest.links.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
+                <div th:if="${signRequestLight.links.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
                 <table class="table table-borderless table-striped table-hover">
                     <thead class="table-secondary">
                     <tr>
@@ -70,26 +71,26 @@
                         <td></td>
                     </tr>
                     </thead>
-                    <th:block th:each="link, iterator : ${signRequest.links}">
+                    <th:block th:each="link, iterator : ${signRequestLight.links}">
                         <tr>
                             <td>
                                 <a th:href="${link}" target="_blank" th:text="${link}"></a>
                             </td>
-                            <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
+                            <td >
+                                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-link/' + ${signRequestLight.id} + '/' + ${iterator.index}" th:method="delete">
                                     <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
                                 </form>
                             </td>
-                            <td th:unless="${signRequest.createBy.eppn == userEppn}">
-                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>
-                            </td>
+<!--                            <td th:unless="${signRequestLight.createBy.eppn == userEppn}">-->
+<!--                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>-->
+<!--                            </td>-->
                         </tr>
                     </th:block>
                 </table>
                 </div>
-                <div th:if="${attachments.size() == 0 && signRequest.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe pour le moment</div>
+                <div th:if="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe pour le moment</div>
                 <hr/>
-                <form th:action="'/' + ${urlProfil} + '/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${editable || (signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.externalCanEditAttachments)}">
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${signRequestFull.editable || showSignRequest.workflow.externalCanEditAttachments}">
                     <div class="form-group mb-3">
                         <h5>Ajouter une pièce jointe</h5>
                         <div class="custom-file mb-3">
@@ -112,7 +113,7 @@
         </div>
     </div>
 </div>
-    <th:block th:each="attachment : ${attachments}">
+    <th:block th:each="attachment : ${showSignRequest.attachments}">
         <div class="modal fade modal-pdf" th:id="'pdfModal' + ${attachment.id}" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-xl modal-pdf" role="document">
                 <div class="modal-content">
@@ -133,7 +134,7 @@
                                     if (pdfLoaded) return;
                                     pdfLoaded = true;
 
-                                    pdfjsLib.getDocument('/' + '[[${urlProfil}]]' + '/signrequests/get-attachment-inline/' + '[[${signRequest.id}]]' + '/' + '[[${attachment.id}]]').promise.then(pdf => {
+                                    pdfjsLib.getDocument('/' + '[[${showSignRequest.urlProfil}]]' + '/signrequests/get-attachment-inline/' + '[[${signRequestLight.id}]]' + '/' + '[[${attachment.id}]]').promise.then(pdf => {
                                         const container = document.getElementById('pdfContainer_' + '[[${attachment.id}]]');
                                         let currentPage = 1;
                                         const totalPages = pdf.numPages;
@@ -172,7 +173,7 @@
                         <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
                             <div class="alert alert-info">
                                 Aperçu indisponible pour ce format.
-                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}"
+                                <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequestLight.id} + '/' + ${attachment.id}"
                                    target="_blank">Télécharger le document</a>
                             </div>
                         </th:block>

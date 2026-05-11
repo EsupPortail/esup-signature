@@ -196,10 +196,13 @@ public class SignService {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat));
 			} else if (signWith.equals(SignWith.sealCert)
                     &&
-                    (userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
-                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat)
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
+                    (userEppn.equals("system")
+                    ||
+                        (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
+                    ||
+                        (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
+                    ||
+                        certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat) || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
             ) {
 				try {
                     abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(sealCertificat));
@@ -314,10 +317,13 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(signRequestParams.getSignImageNumber() >= 0 && (signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() == 999998 || signRequestParams.getSignImageNumber() == 999999 || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system"))) {
+    Integer signImageNumber = signRequestParams.getSignImageNumber();
+    if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
 			InputStream inputStream;
-			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
-				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+      if(signImageNumber == 999997) {
+        inputStream = fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true);
+      } else if(user.getSignImages().size() > signImageNumber && signRequestParams.getAddImage()) {
+        inputStream = user.getSignImages().get(signImageNumber).getInputStream();
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}
