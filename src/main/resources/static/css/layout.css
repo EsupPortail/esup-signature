@@ -390,7 +390,8 @@ header {
 }
 
 #pdf-progress-bar {
-    width: calc(100% - 370px);
+    width: calc(100% - 386px);
+    margin-left: 8px;
     position: fixed;
     z-index: 2;
     top: 216px;

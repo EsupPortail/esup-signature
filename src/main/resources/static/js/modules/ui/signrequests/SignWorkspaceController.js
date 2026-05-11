@@ -80,6 +80,7 @@ export class SignWorkspaceController {
         this.refreshWorkspaceTimer = null;
         this.nextCommand = "none";
         this.hoverLiveStepState = null;
+        this.toolsLoadingStateReleased = false;
         this.state = workspaceState;
         this.showDataFlow = showDataFlow;
         this.eventNamespace = ".workspacePdf";
@@ -422,6 +423,7 @@ export class SignWorkspaceController {
             this.ready = true;
             this.enableSignMode();
         }
+        this.releaseToolsLoadingState();
     }
 
     initSignWorkspace() {
@@ -441,6 +443,24 @@ export class SignWorkspaceController {
             .off('mousedown' + this.eventNamespace)
             .on('mousedown' + this.eventNamespace, e => this.signPlacementController.lockSigns());
         this.signPlacementController.updateScales(this.pdfViewer.scale);
+        this.releaseToolsLoadingState();
+    }
+
+    setToolsLoadingState(isLoading) {
+        if (document?.body == null) {
+            return;
+        }
+        document.body.classList.toggle('signrequest-tools-loading', Boolean(isLoading));
+    }
+
+    releaseToolsLoadingState() {
+        if (this.toolsLoadingStateReleased) {
+            return;
+        }
+        this.toolsLoadingStateReleased = true;
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => this.setToolsLoadingState(false));
+        });
     }
 
     initForm() {
