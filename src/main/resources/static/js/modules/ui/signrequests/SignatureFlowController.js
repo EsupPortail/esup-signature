@@ -277,7 +277,7 @@ export class SignatureFlowController {
         const signUi = this.signUi;
         this.setLaunchButtonsDisabled(true);
         let signModal = $('#signModal');
-        if(signUi.certTypeSelect.val() === '' || signUi.certTypeSelect.val() === null) {
+        if(signUi.currentSignType !== 'hiddenVisa' && (signUi.certTypeSelect.val() === '' || signUi.certTypeSelect.val() === null)) {
             bootbox.alert("<div class='alert alert-danger'>Merci de choisir un type de signature dans la liste déroulante</div>", null);
             this.setLaunchButtonsDisabled(false);
             return;
@@ -405,13 +405,15 @@ export class SignatureFlowController {
             });
             this.state.signRequestUrlParams = {
                 'password' : this.getContextualPassword(),
-                'certType' : signUi.certTypeSelect.val(),
                 'signAll' : this.getContextualSignAll(),
                 'sealCertificat' : signUi.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
                 'comment' : signUi.signComment.val(),
                 'formData' : JSON.stringify(formData)
             };
+            if (signUi.currentSignType !== 'hiddenVisa') {
+                this.state.signRequestUrlParams.certType = signUi.certTypeSelect.val();
+            }
             signUi.signRequestUrlParams = this.state.signRequestUrlParams;
         } else {
             this.state.signRequestUrlParams = {

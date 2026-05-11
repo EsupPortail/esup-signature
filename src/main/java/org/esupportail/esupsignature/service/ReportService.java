@@ -81,7 +81,7 @@ public class ReportService {
         }
     }
 
-    public byte @Nullable [] getReportBytes(SignRequest signRequest) {
+    public byte[] getReportBytes(SignRequest signRequest) {
         RestTemplate restTemplate = new RestTemplate();
         org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
         List<WsAccessToken> wsAccessTokens = wsAccessTokenRepository.findByWorkflowsEmpty();

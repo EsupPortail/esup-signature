@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.hibernate.Hibernate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
@@ -263,6 +264,7 @@ public class WorkflowService {
                 }
             }
         }
+        workflows.forEach(workflow -> Hibernate.initialize(workflow.getTags()));
         workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
         return workflows;
     }

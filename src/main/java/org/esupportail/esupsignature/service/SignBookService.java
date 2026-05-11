@@ -6,6 +6,7 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.hibernate.Hibernate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -334,6 +335,9 @@ public class SignBookService {
         for (SignBook signBook : signBooks.getContent()) {
             if(!signBook.getSignRequests().isEmpty()) {
                 signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
+            }
+            if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getWorkflow() != null) {
+                Hibernate.initialize(signBook.getLiveWorkflow().getWorkflow().getTags());
             }
         }
         return signBooks;

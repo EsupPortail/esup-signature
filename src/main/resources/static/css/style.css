@@ -189,7 +189,7 @@ body.es-spot-add-mode #spot-modal * {
     filter: none !important;
 }
 
-@media (max-width: 1199.98px) {
+@media (max-width: 1600px) {
     /* Under 1200px, show only the current step in tools bar. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
         display: none !important;
@@ -202,6 +202,10 @@ body.es-spot-add-mode #spot-modal * {
     /* Hide connectors when intermediate steps are hidden to avoid overlap. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
         display: none;
+    }
+
+    body.es-signrequest-page #tools #refuseLaunchDiv {
+        display: none !important;
     }
 }
 

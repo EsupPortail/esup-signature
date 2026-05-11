@@ -65,7 +65,7 @@ public class DssMultipartFile implements MultipartFile, Serializable {
     }
 
     @Override
-    public byte @NotNull [] getBytes() throws IOException {
+    public byte @org.jspecify.annotations.NonNull [] getBytes() throws IOException {
         return this.content;
     }
 
