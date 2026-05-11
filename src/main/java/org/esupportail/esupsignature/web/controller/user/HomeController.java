@@ -134,21 +134,29 @@ public class HomeController {
         if(!searchRequests.isEmpty()) {
             List<String> words = new ArrayList<>();
             List<String> types = new ArrayList<>();
-            List<Tag> tags = new ArrayList<>();
+            Set<Long> tagIds = new HashSet<>();
             List<Workflow> workflows = new ArrayList<>();
             List<Form> forms = new ArrayList<>();
             for (UiSearchRequest searchRequest : searchRequests) {
-                if (searchRequest.getValue().startsWith("tag:")) {
-                    tags.add(tagService.getById(Long.valueOf(searchRequest.getValue().split(":")[1])));
-                } else if (searchRequest.getValue().startsWith("type:")) {
-                    types.add(searchRequest.getValue().split(":")[1]);
-                } else if (!searchRequest.getValue().contains(":")) {
-                    words.add(searchRequest.getValue());
+                String value = searchRequest.getValue();
+                if (!StringUtils.hasText(value)) {
+                    continue;
+                }
+                if (value.startsWith("tag:")) {
+                    try {
+                        tagIds.add(Long.valueOf(value.split(":")[1]));
+                    } catch (NumberFormatException e) {
+                        logger.warn("Tag de recherche invalide: {}", value);
+                    }
+                } else if (value.startsWith("type:")) {
+                    types.add(value.split(":")[1]);
+                } else if (!value.contains(":")) {
+                    words.add(value);
                 }
             }
             if (types.isEmpty() || types.contains("workflow")) {
                 workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(w -> (tags.isEmpty() || new HashSet<>(w.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                        .stream().filter(w -> (tagIds.isEmpty() || hasAllTags(w.getTags(), tagIds)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Workflow workflow : workflows) {
                     UiSearchResult searchResult = new UiSearchResult();
                     searchResult.setIcon("fi fi-rr-diagram-project project-diagram-color");
@@ -163,7 +171,7 @@ public class HomeController {
             }
             if (types.isEmpty() || types.contains("form")) {
                 forms = formService.getFormsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(f -> (tags.isEmpty() || new HashSet<>(f.getTags()).containsAll(tags)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
+                        .stream().filter(f -> (tagIds.isEmpty() || hasAllTags(f.getTags(), tagIds)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
                 for (Form form : forms) {
                     UiSearchResult searchResult = new UiSearchResult();
                     searchResult.setIcon("fi fi-rr-poll-h file-alt-color");
@@ -193,8 +201,8 @@ public class HomeController {
                         signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(form.getWorkflow())).toList());
                     }
                 }
-                if(!tags.isEmpty()) {
-                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && new HashSet<>(s.getLiveWorkflow().getWorkflow().getTags()).containsAll(tags)).toList();
+                if(!tagIds.isEmpty()) {
+                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && hasAllTags(s.getLiveWorkflow().getWorkflow().getTags(), tagIds)).toList();
                 }
                 for (SignBook signBook : signBooks) {
                     UiSearchResult searchResult = new UiSearchResult();
@@ -218,6 +226,19 @@ public class HomeController {
             }
         }
         return searchResults;
+    }
+
+    private boolean hasAllTags(Collection<Tag> sourceTags, Set<Long> expectedTagIds) {
+        if (expectedTagIds.isEmpty()) {
+            return true;
+        }
+        Set<Long> sourceTagIds = new HashSet<>();
+        for (Tag tag : sourceTags) {
+            if (tag != null && tag.getId() != null) {
+                sourceTagIds.add(tag.getId());
+            }
+        }
+        return sourceTagIds.containsAll(expectedTagIds);
     }
 
     @GetMapping(value = "/search-titles")

@@ -285,6 +285,10 @@ export class SignUi {
         if (signPlacementController == null) {
             return;
         }
+        if (this.currentSignType === 'hiddenVisa') {
+            signPlacementController.goStep3();
+            return;
+        }
         if (typeof signPlacementController.refreshSteps === "function") {
             signPlacementController.refreshSteps();
             return;
@@ -447,7 +451,7 @@ export class SignUi {
         step.allSignToComplete = $('#allSignToComplete').is(':checked');
         step.multiSign = $('#multiSign').is(':checked');
         step.autoSign = $('#autoSign').is(':checked');
-        step.signType = $('#signType').val();
+        step.signType = $('#repeatableSignType').val() ?? $('#signTypeHidden').val();
         step.repeatable = true;
         let url;
         if(self.isOtp== null || !self.isOtp) {
