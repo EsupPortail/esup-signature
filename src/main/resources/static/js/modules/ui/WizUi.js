@@ -132,6 +132,36 @@ export class WizUi {
         $('button[aria-label="Close"]').removeAttr("disabled")
     }
 
+    resetFastSignAfterError() {
+        this.pending = false;
+        this.newSignBookId = "";
+        this.files = null;
+        if(this.fileInput != null) {
+            this.fileInput.signBookId = null;
+        }
+        if(this.input != null && this.input.length) {
+            try {
+                this.input.fileinput('cancel');
+            } catch (e) {
+                console.debug("fileinput cancel skipped", e);
+            }
+            try {
+                this.input.fileinput('clear');
+                this.input.fileinput('clearFileStack');
+                this.input.fileinput('unlock');
+            } catch (e) {
+                console.debug("fileinput reset skipped", e);
+            }
+            this.input.val('');
+        }
+        if(this.fileInput != null) {
+            this.fileInput.updateZipOptionVisibility();
+        }
+        this.enableButtons();
+        $("#send-draft-button").removeAttr("disabled");
+        $("#send-pending-button").removeAttr("disabled");
+    }
+
     fastStartSign() {
         let self = this;
         console.info("start fast signbook");
@@ -208,17 +238,24 @@ export class WizUi {
         }
         let errorCallback = function(e) {
             if(e.responseText !== "") {
-                self.input.fileinput('cancel');
+                let signBookId = self.newSignBookId;
                 bootbox.alert("Une erreur s’est produite lors du démarrage du circuit :<br>" + e.responseText, function () {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/ws-secure/global/silent-delete-signbook/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-                        cache: false
-                    });
-                    $("#update-fast-sign-submit").click();
+                    if(signBookId !== "") {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/ws-secure/global/silent-delete-signbook/" + signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false,
+                            complete: function() {
+                                self.resetFastSignAfterError();
+                            }
+                        });
+                    } else {
+                        self.resetFastSignAfterError();
+                    }
                 });
             } else {
                 $("#update-fast-sign-submit").click();
+                self.enableButtons();
             }
         }
         const multiSign = $("#multiSign").is(":checked");
