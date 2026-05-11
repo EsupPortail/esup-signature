@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.chart.CountByYearsChartDto;
+import org.esupportail.esupsignature.dto.projection.chart.CountByYearsChartDto;
 import org.esupportail.esupsignature.entity.AuditStep;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;

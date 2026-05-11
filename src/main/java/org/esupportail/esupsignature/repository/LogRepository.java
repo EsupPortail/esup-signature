@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.chart.CountByYearsChartDto;
+import org.esupportail.esupsignature.dto.projection.chart.CountByYearsChartDto;
 import org.esupportail.esupsignature.entity.Log;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

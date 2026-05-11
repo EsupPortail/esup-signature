@@ -5,8 +5,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.Data;
 import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.SignBook;
@@ -90,7 +90,7 @@ public class DataController {
 			logger.debug("dataId is null");
 		}
 		Data data = dataService.addData(id, dataLongId , datas, userEppn, authUserEppn);
-		redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Données enregistrées"));
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Données enregistrées"));
 		return data.getId().toString();
 	}
 

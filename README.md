@@ -42,24 +42,41 @@ Voir : https://www.esup-portail.org/wiki/display/SIGN/Sources+et+configuration#S
 ```
 mvn clean package
 ```
-Un jeu de test est exécuté au moment de la compilation, tous les prérequis et paramètres doivent être correctes pour que le projet compile.
+Les tests exécutés par défaut pendant `package` sont ceux pilotés par Surefire. Les tests UI Playwright sont exécutés lors de `verify` via Failsafe.
 Pour l’éviter :
 
 ```
 mvn clean package -DskipTests
 ```
 
-# Tests Selenium
+# Tests UI Playwright
 
 Prérequis supplémentaires :
 
- * chromium
- * python3-selenium
  * docker-compose
+
+Le navigateur Chromium utilisé par Playwright est téléchargé automatiquement au premier lancement. Pour préinstaller explicitement le navigateur de test et ses dépendances Linux :
+
+```
+mvn -q -DskipTests -Dexec.classpathScope=test org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+```
  
 ```
-mvn verify -Dspring.config.location=src/test/resources/application-test.yml -DskipDockerCompose=false -DskipSurefire=true
+mvn verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true -DskipDockerCompose=false
 ```
+
+Cette commande déclenche les tests UI Playwright de `PlaywrightTest.java` via Failsafe.
+
+Artefacts utiles après exécution :
+
+ * rapports JUnit/Failsafe : `target/failsafe-reports/`
+ * captures, traces et vidéos Playwright en cas d'échec : `target/playwright-artifacts/`
+ * index HTML local pour parcourir les échecs téléchargés depuis GitHub : `target/playwright-artifacts/index.html`
+
+Convention Maven retenue :
+
+ * tests unitaires / intégration légers : `*Test.java` via Surefire
+ * exception de configuration pour l'UI : `PlaywrightTest.java` est explicitement exclu de Surefire et inclus dans Failsafe
 
 
 # Démarrage

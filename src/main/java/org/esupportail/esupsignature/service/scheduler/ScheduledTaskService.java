@@ -138,7 +138,7 @@ public class ScheduledTaskService {
      * - L'état du processus d'archivage est enregistré, y compris les éventuelles erreurs
      *   survenues lors du traitement.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    @Scheduled(initialDelay = 12000, fixedRate = 3600000)
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			taskService.initArchive();
@@ -176,7 +176,7 @@ public class ScheduledTaskService {
      *
      * En cas d'erreur, les événements seront enregistrés dans les journaux pour analyse.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    @Scheduled(initialDelay = 12000, fixedRate = 3600000)
 	public void scanAllSignbooksToClean() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			taskService.initCleanning("scheduler");
@@ -238,7 +238,11 @@ public class ScheduledTaskService {
 		taskService.initDssRefresh();
 	}
 
-	@Scheduled(cron="00 02 02 * * *")
+	/**
+	 *
+	 * @throws IOException
+	 */
+    @Scheduled(cron="00 02 02 * * *")
 	public void cleanAllSignRequestDocuments() throws IOException {
 		if(globalProperties.getDocumentsHistoryDelay() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findSignRequestsByCleanDocumentsHistoryDateIsNull();
@@ -248,6 +252,7 @@ public class ScheduledTaskService {
 					signRequestService.cleanSignRequestDocumentsHistory(signRequest.getId());
 				}
 			}
+			logger.info("clean history ended");
 		}
 	}
 

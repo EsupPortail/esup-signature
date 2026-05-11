@@ -9,11 +9,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.init.DatabasePopulatorUtils;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
-import org.springframework.util.StreamUtils;
 
 import javax.sql.DataSource;
-import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableJdbcHttpSession
@@ -21,9 +21,11 @@ public class SessionConfig implements InitializingBean {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionConfig.class);
 
+    private final DataSource dataSource;
     private final JdbcTemplate jdbcTemplate;
 
     public SessionConfig(@Qualifier("dataSource") DataSource dataSource) {
+        this.dataSource = dataSource;
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
@@ -34,16 +36,32 @@ public class SessionConfig implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
+        if (springSessionSchemaExists()) {
+            logger.info("Spring Session JDBC schema already exists, skipping initialization.");
+            return;
+        }
+
+        ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator(
+                new ClassPathResource("org/springframework/session/jdbc/schema-postgresql.sql")
+        );
+        databasePopulator.setContinueOnError(false);
+        databasePopulator.setIgnoreFailedDrops(true);
+
         try {
-            String schemaSql = StreamUtils.copyToString(
-                    new ClassPathResource("org/springframework/session/jdbc/schema-postgresql.sql").getInputStream(),
-                    StandardCharsets.UTF_8
-            );
-            jdbcTemplate.execute(schemaSql);
+            DatabasePopulatorUtils.execute(databasePopulator, dataSource);
             logger.info("Spring Session JDBC schema initialized successfully.");
         } catch (Exception e) {
-            logger.info("Spring Session JDBC schema already exists, skipping initialization.");
+            throw new IllegalStateException("Impossible d'initialiser le schéma Spring Session JDBC.", e);
         }
     }
 
+    private boolean springSessionSchemaExists() {
+        Boolean exists = jdbcTemplate.queryForObject(
+                "select to_regclass('public.spring_session') is not null and to_regclass('public.spring_session_attributes') is not null",
+                Boolean.class
+        );
+        return Boolean.TRUE.equals(exists);
+    }
+
 }
+

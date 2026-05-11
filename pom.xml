@@ -7,19 +7,21 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.13</version>
+		<version>4.0.6</version>
 		<relativePath />
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.36.28-SNAPSHOT</version>
+	<version>1.37.0-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
 		<java.version>17</java.version>
+		<bouncycastle.version>1.83</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.framework.version>6.4</dss.framework.version>
         <pdfbox.version>3.0.6</pdfbox.version>
+		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
 		<skipSurefire>false</skipSurefire>
 	</properties>
@@ -27,6 +29,14 @@
 		<repository>
 			   <id>central</id>
 			   <url>https://repo.maven.apache.org/maven2</url>
+		</repository>
+		<repository>
+			<id>shibboleth-releases</id>
+			<name>Shibboleth Releases Repository</name>
+			<url>https://build.shibboleth.net/maven/releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<repository>
 			<id>jitpack.io</id>
@@ -71,6 +81,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-oauth2-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
 		<dependency>
@@ -84,17 +98,19 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-<!--			<exclusions>-->
-<!--				<exclusion>-->
-<!--					<artifactId>spring-boot-starter-tomcat</artifactId>-->
-<!--					<groupId>org.springframework.boot</groupId>-->
-<!--				</exclusion>-->
-<!--			</exclusions>-->
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-starter-jetty</artifactId>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-jackson2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-webservices</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
@@ -425,6 +441,11 @@
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-pdfa</artifactId>
+			<version>${dss.framework.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-utils-google-guava</artifactId>
 			<version>${dss.framework.version}</version>
 		</dependency>
@@ -527,27 +548,27 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15to18</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpkix-jdk18on</artifactId>
-			<version>1.83</version>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -690,7 +711,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-client</artifactId>
-			<version>3.3.2</version>
+			<version>4.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
@@ -720,9 +741,10 @@
             </exclusions>
         </dependency>
 		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>4.35.0</version>
+			<groupId>com.microsoft.playwright</groupId>
+			<artifactId>playwright</artifactId>
+			<version>${playwright.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>software.xdev</groupId>
@@ -736,10 +758,6 @@
 			<artifactId>maven-antrun-plugin</artifactId>
 			<version>3.1.0</version>
 		</dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-        </dependency>
 		<dependency>
 			<groupId>com.dkanejs.maven.plugins</groupId>
 			<artifactId>docker-compose-maven-plugin</artifactId>
@@ -790,7 +808,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>${startClass}</mainClass>
-					<executable>true</executable>
 				</configuration>
 				<executions>
 					<execution>
@@ -806,6 +823,8 @@
 				<version>3.0.0</version>
 				<configuration>
 					<excludes>
+						<exclude>**/*IT.java</exclude>
+						<exclude>**/PlaywrightTest.java</exclude>
 						<exclude>**/Selenium*.java</exclude>
 					</excludes>
 					<skip>${skipSurefire}</skip>
@@ -852,10 +871,12 @@
 				<version>3.0.0</version>
 				<configuration>
 					<includes>
-						<include>**/Selenium*.java</include>
+						<include>**/*IT.java</include>
+						<include>**/PlaywrightTest.java</include>
 					</includes>
 					<systemPropertyVariables>
 						<spring.config.location>src/test/resources/application-test.yml</spring.config.location>
+						<playwright.artifacts.dir>${project.build.directory}/playwright-artifacts</playwright.artifacts.dir>
 					</systemPropertyVariables>
 					<testFailureIgnore>false</testFailureIgnore>
 				</configuration>

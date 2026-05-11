@@ -194,7 +194,7 @@ public class PdfService {
                 signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
@@ -206,7 +206,7 @@ public class PdfService {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
@@ -223,23 +223,22 @@ public class PdfService {
         float tx = 0;
         float ty = 0;
         Float fixFactor = globalProperties.getFixFactor();
+        PDRectangle pageBox = pdPage.getCropBox();
+        float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = 0;
             ty = 0;
         } else if (pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() * fixFactor + signRequestParams.getSignHeight() * signRequestParams.getSignScale());
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = pdfParameters.getWidth();
             ty = pdfParameters.getHeight();
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getWidth() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
                 ty = pdfParameters.getHeight();
             } else {
@@ -257,17 +256,29 @@ public class PdfService {
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
         if (signImage != null) {
+            validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight);
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             String[] lines = signRequestParams.getTextPart().split("\n", -1);
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() + fontSize);
+            float lineHeight = fontSize * 1.2f;
+            float textHeight = lines.length * lineHeight;
+            float maxWidth = 0;
+            for (String line : lines) {
+                float w = pdFont.getStringWidth(line) / 1000 * fontSize;
+                if (w > maxWidth) {
+                    maxWidth = w;
+                }
+            }
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - (signRequestParams.getyPos() * fixFactor + fontSize);
+            float textBottomY = yAdjusted - textHeight;
+            validateSignatureBounds(pageBox, xAdjusted, textBottomY, maxWidth, textHeight, pageNumber);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);
@@ -281,10 +292,10 @@ public class PdfService {
         contentStream.endMarkedContent();
         contentStream.close();
         if (!StringUtils.hasText(signRequestParams.getTextPart()) && signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-            addLinkInLayer(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+            addLinkInLayer(signRequest, renderedSignWidth, renderedSignHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
         } else {
-            float signWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-            float signHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+            float signWidth = renderedSignWidth;
+            float signHeight = renderedSignHeight;
             if (StringUtils.hasText(signRequestParams.getTextPart())) {
                 float fontSize = signRequestParams.getFontSize() * fixFactor;
                 PDFont pdFont = PDType0Font.load(pdDocument,
@@ -307,6 +318,19 @@ public class PdfService {
                 yAdjusted = realY - padding;
             }
             addMetadataAnnotation(signRequest, signWidth, signHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+        }
+    }
+
+    private void validateSignatureBounds(PDRectangle pageBox, float x, float y, float width, float height, int pageNumber) {
+        float minX = pageBox.getLowerLeftX();
+        float minY = pageBox.getLowerLeftY();
+        float maxX = pageBox.getUpperRightX();
+        float maxY = pageBox.getUpperRightY();
+        boolean outOfBounds = width <= 0 || height <= 0 || x < minX || y < minY || x + width > maxX || y + height > maxY;
+        if (outOfBounds) {
+            throw new EsupSignatureRuntimeException(String.format(Locale.ROOT,
+                    "La signature est hors page (page=%d, x=%.2f, y=%.2f, width=%.2f, height=%.2f, pageWidth=%.2f, pageHeight=%.2f)",
+                    pageNumber, x, y, width, height, pageBox.getWidth(), pageBox.getHeight()));
         }
     }
 
@@ -1256,7 +1280,8 @@ public class PdfService {
      */
     public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
         PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-        return new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+        PDRectangle pageBox = pdPage.getCropBox();
+        return new PdfParameters((int) pageBox.getWidth(), (int) pageBox.getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
     }
 
     /**

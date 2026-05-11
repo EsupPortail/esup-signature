@@ -4,11 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.BooleanUtils;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -43,6 +42,7 @@ public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
     private final TagService tagService;
+    private final FormService formService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -64,7 +64,7 @@ public class WorkflowService {
     private final  ObjectMapper objectMapper;
     private final  RecipientService recipientService;
 
-    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService) {
+    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService, FormService formService) {
         this.workflows = workflows;
         this.workflowRepository = workflowRepository;
         this.workflowStepService = workflowStepService;
@@ -82,6 +82,7 @@ public class WorkflowService {
         this.objectMapper = objectMapper;
         this.recipientService = recipientService;
         this.tagService = tagService;
+        this.formService = formService;
     }
 
     @PostConstruct
@@ -121,7 +122,7 @@ public class WorkflowService {
             logger.debug("workflow class found : " + classWorkflow.getName());
             if (!isWorkflowExist(classWorkflow.getName(), "system")) {
                 logger.info("create " + classWorkflow.getName() + " on database : ");
-                Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser());
+                Workflow newWorkflow = createWorkflow(classWorkflow.getName(), classWorkflow.getDescription(), userService.getSystemUser(), classWorkflow.getManagerRole());
                 newWorkflow.setFromCode(true);
             } else {
                 logger.debug("update " + classWorkflow.getName() + " on database");
@@ -159,6 +160,11 @@ public class WorkflowService {
                         i++;
                     }
                 } else {
+                    formRepository.findByWorkflowIdEquals(workflow.getId()).forEach(form -> {
+                        form.setWorkflow(null);
+                        form.setPublicUsage(false);
+                        form.getRoles().clear();
+                    });
                     toRemoveWorkflows.add(workflow);
                 }
             } catch(EsupSignatureUserException e){
@@ -213,7 +219,7 @@ public class WorkflowService {
     }
 
     @Transactional
-    public Workflow createWorkflow(String title, String description, User user) throws EsupSignatureRuntimeException {
+    public Workflow createWorkflow(String title, String description, User user, String manageRole) throws EsupSignatureRuntimeException {
         String name = user.getEppn() + description;
         if(StringUtils.hasText(title)) {
             if (userService.getSystemUser().equals(user)) {
@@ -231,6 +237,9 @@ public class WorkflowService {
             workflow.setCreateBy(user);
             workflow.setCreateDate(new Date());
             workflow.getManagers().removeAll(Collections.singleton(""));
+            if(manageRole != null) {
+                workflow.setManagerRole(manageRole);
+            }
             workflowRepository.save(workflow);
             return workflow;
         } else {
@@ -407,6 +416,7 @@ public class WorkflowService {
                 }
                 stepNumber++;
             }
+            modelWorkflow.setWorkflowSteps(workflowSteps);
             if(modelWorkflow.getFromCode() == null || !modelWorkflow.getFromCode()) {
                 entityManager.detach(modelWorkflow);
             }
@@ -560,14 +570,18 @@ public class WorkflowService {
             userShare.getShareTypes().removeIf(shareType -> !shareTypes.contains(shareType));
         }
         workflowToUpdate.getTargets().addAll(workflow.getTargets());
-        workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            if (StringUtils.hasText(workflow.getToken())) {
+              workflowToUpdate.setToken(generateToken(workflow.getToken()));
+            }
         workflowToUpdate.setDocumentsSourceUri(workflow.getDocumentsSourceUri());
+        workflowToUpdate.setUnzip(workflow.getUnzip());
         workflowToUpdate.setDescription(workflow.getDescription());
         workflowToUpdate.setNamingTemplate(workflow.getNamingTemplate());
         workflowToUpdate.setTargetNamingTemplate(workflow.getTargetNamingTemplate());
         workflowToUpdate.setSealAtEnd(workflow.getSealAtEnd());
         workflowToUpdate.setOwnerSystem(workflow.getOwnerSystem());
         workflowToUpdate.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
+        workflowToUpdate.setDisableUpdateByCreator(workflow.getDisableUpdateByCreator());
         workflowToUpdate.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         workflowToUpdate.setScanPdfMetadatas(workflow.getScanPdfMetadatas());
         workflowToUpdate.setSendAlertToAllRecipients(workflow.getSendAlertToAllRecipients());
@@ -727,23 +741,34 @@ public class WorkflowService {
         Workflow workflowSetup = objectMapper.readValue(inputStream.readAllBytes(), Workflow.class);
         workflowSetup.setId(id);
         workflow.getWorkflowSteps().clear();
+        int i = 0;
         for(WorkflowStep workflowStepSetup : workflowSetup.getWorkflowSteps()) {
             Optional<WorkflowStep> optionalWorkflowStep = workflow.getWorkflowSteps().stream().filter(workflowStep1 -> workflowStep1.getId().equals(workflowStepSetup.getId())).findFirst();
             if(optionalWorkflowStep.isPresent()) {
-                WorkflowStep workflowStep = optionalWorkflowStep.get();
-                workflowStepService.updateStep(workflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
+                workflowStepService.updateStep(id, workflow.getWorkflowSteps().indexOf(optionalWorkflowStep.get()), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
             } else {
                 List<RecipientWsDto> recipients = new ArrayList<>();
                 for(User user : workflowStepSetup.getUsers()) {
                     recipients.add(new RecipientWsDto(user.getEmail()));
                 }
                 WorkflowStep newWorkflowStep = workflowStepService.createWorkflowStep(workflowSetup.getName(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getSignType(), workflowStepSetup.getChangeable(), recipients.toArray(RecipientWsDto[]::new));
-                workflowStepService.updateStep(newWorkflowStep.getId(), workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
-                workflow.getWorkflowSteps().add(newWorkflowStep);
+                if(workflow.getWorkflowSteps().size() > i) {
+                    workflowStepService.updateStep(id, i, workflowStepSetup.getSignType(), workflowStepSetup.getDescription(), workflowStepSetup.getChangeable(), workflowStepSetup.getRepeatable(), workflowStepSetup.getMultiSign(), workflowStepSetup.getSingleSignWithAnnotation(), workflowStepSetup.getAllSignToComplete(), workflowStepSetup.getMaxRecipients(), workflowStepSetup.getAttachmentAlert(), workflowStepSetup.getAttachmentRequire(), false, null, workflowStepSetup.getMinSignLevel(), workflowStepSetup.getMaxSignLevel(), workflowStepSetup.getSealVisa());
+                } else {
+                    workflow.getWorkflowSteps().add(newWorkflowStep);
+                }
             }
+            i++;
         }
         workflow.getTargets().clear();
-        update(workflowSetup, workflowSetup.getCreateBy(), null, workflowSetup.getManagers(), authUserEppn);
+        User updateUser = userService.getByEppn(authUserEppn);
+        if (updateUser == null) {
+          updateUser = workflow.getCreateBy();
+        }
+        if (updateUser == null) {
+          updateUser = userService.getSystemUser();
+        }
+        update(workflowSetup, updateUser, null, workflowSetup.getManagers(), authUserEppn);
         for(Target target : workflowSetup.getTargets()) {
             Target newTarget = targetService.createTarget(target.getTargetUri(), target.getSendDocument(), target.getSendReport(), target.getSendAttachment(), target.getSendZip());
             workflow.getTargets().add(newTarget);
@@ -829,7 +854,7 @@ public class WorkflowService {
 
     @Transactional
     public void importWorkflow(SignBook signBook, Workflow workflow, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
-        logger.debug("importing workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.debug("importing workflow steps in signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         Workflow dataBaseWorkflow;
         if(BooleanUtils.isTrue(workflow.getFromCode())) {
             dataBaseWorkflow = getWorkflowByName(workflow.getName());

@@ -3,9 +3,12 @@
 <head th:replace="~{fragments/head-lite :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav-otp :: nav-otp}"></header>
+<script>
+    let iti = null;
+</script>
 <main role="main">
-    <div class="wrapper">
-        <div id="content" class="content-full ms-0">
+    <div class="es-wrapper">
+        <div id="content" class="es-content-full ms-0">
             <div class="text-center mb-4">
                 <div style="height: 70px"></div>
                 <h4 th:text="'Bonjour ' + ${otp.user.firstname} + ' ' + ${otp.user.name} + ', l’établissement ' + #{application.footer} + ' vous invite à signer un document'"></h4>
@@ -51,12 +54,13 @@
                                     <p class="text-left small" th:if="${!securityServices.isEmpty()}">
                                         Attention ! Merci de privilégier les autres modes de connexion
                                     </p>
+                                    <th:block th:if="${enableSms != 'EMAIL'}">
                                     <p class="text-left"><b>Merci de compléter votre numéro de mobile afin de recevoir votre code SMS :</b></p>
                                     <div class="mb-4">
                                         <form id="phoneForm" th:method="'post'" th:action="'#'">
                                             <input type="hidden" name="urlId" th:value="${urlId}">
                                             <input id="phone" class="form-control" type="text" name="phone" th:value="${otp.user.hidedPhone}" autocomplete="off" placeholder="Saisir un numéro" data-intl-tel-input-id="0" style="padding-left: 48px;">
-                                            <script>
+                                            <script type="module">
                                                 const phoneInput = document.getElementById("phone");
 
                                                 phoneInput.addEventListener("focus", () => {
@@ -67,18 +71,37 @@
                                                     }
                                                     setTimeout(() => phoneInput.setSelectionRange(0, 0), 0);
                                                 });
+                                                let phonesInput = document.querySelector("#phone");
+                                                iti = intlTelInput(phonesInput, {
+                                                    validationNumberTypes: "FIXED_LINE_OR_MOBILE",
+                                                    strictMode: true,
+                                                    separateDialCode: false,
+                                                    initialCountry: "auto",
+                                                    geoIpLookup: callback => {
+                                                        callback(navigator.language.split('-')[0]);
+                                                    },
+                                                    nationalMode: true,
+                                                    countryOrder: ["fr"],
+                                                    customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
+                                                    searchPlaceholder: "Rechercher",
+                                                });
                                             </script>
                                             <input id="submitPhone" type="submit" class="btn btn-sm btn-success" value="Envoyer">
                                         </form>
                                     </div>
-                                    <div class="">
+                                    </th:block>
+                                    <th:block th:if="${enableSms == 'EMAIL'}">
+                                        <form id="phoneForm" th:method="'post'" th:action="'#'">
+                                            <input type="hidden" name="urlId" th:value="${urlId}">
+                                            <input id="submitPhone" type="submit" class="btn btn-success" value="Recevoir mon code d'accès">
+                                        </form>
+                                    </th:block>
                                     <form th:action="'/otp-access'" method="post" class="mx-auto gap-2" style="width: 250px;">
                                         <input name="urlId" type="hidden" th:value="${urlId}">
-                                        <label class="form-label" for="password">Saisir le code reçu par SMS</label>
+                                        <label class="form-label" for="password">Saisir ici le code reçu</label>
                                         <input id="smsPassword" name="password" type="password" class="form-control mb-2" maxlength="6" placeholder="******" autofocus th:disabled="${message == null}">
                                         <input id="smsSubmit" type="submit" class="btn btn-success" value="Confirmer" th:disabled="${message == null}">
                                     </form>
-                                    </div>
                                     <hr>
                                 </th:block>
                                 <th:block th:if="${#lists.contains(externalAuths, T(org.esupportail.esupsignature.entity.enums.ExternalAuth).open)}">
@@ -99,31 +122,22 @@
                 </div>
             </div>
             <script type="module">
-                let phonesInput = document.querySelector("#phone");
-                let iti = intlTelInput(phonesInput, {
-                    validationNumberTypes: "FIXED_LINE_OR_MOBILE",
-                    strictMode: true,
-                    separateDialCode: false,
-                    initialCountry: "auto",
-                    geoIpLookup: callback => {
-                        callback(navigator.language.split('-')[0]);
-                    },
-                    nationalMode: true,
-                    countryOrder: ["fr"],
-                    customPlaceholder: (selectedCountryPlaceholder, selectedCountryData) => "Saisir un numéro",
-                    searchPlaceholder: "Rechercher",
-                });
-                document.getElementById('phoneForm').addEventListener('submit', function(e) {
+                $("#phoneForm").on('submit', function(e) {
                     e.preventDefault();
-
+                    $("#phone").attr("disabled", "disabled");
+                    $("#submitPhone").attr("disabled", "disabled");
                     const form = e.target;
                     const formData = new FormData();
 
-                    const fullPhoneNumber = iti.getNumber();
-                    formData.append('phone', fullPhoneNumber);
+                    if(iti != null) {
+                        const fullPhoneNumber = iti.getNumber();
+                        formData.append('phone', fullPhoneNumber);
+                    } else {
+                        formData.append('phone', '');
+                    }
                     formData.append('urlId', form.querySelector('[name="urlId"]').value);
                     formData.append('_csrf', form.querySelector('[name="_csrf"]').value);
-
+                    let smsPassword = $("#smsPassword");
                     fetch('/otp-access/phone', {
                         method: 'POST',
                         headers: {
@@ -131,23 +145,27 @@
                         },
                         body: formData
                     })
-                        .then(async response => {
-                            if (!response.ok) throw new Error(await response.text());
-                            return response.text();
-                        })
-                        .then(data => {
-                            if(data !== "") {
-                                bootbox.alert(data, function () {
-                                });
-                            }
-                            $("#smsPassword").removeAttr("disabled");
-                            $("#smsSubmit").removeAttr("disabled");
-                        })
-                        .catch(error => {
-                            console.error('Erreur :', error);
-                            bootbox.alert(error.message, function () {
-                            });
+                    .then(async response => {
+                        if (!response.ok) throw new Error(await response.text());
+                        return response.text();
+                    })
+                    .then(data => {
+                        if(data !== "") {
+                            bootbox.alert(data, function () {
+                                smsPassword.removeAttr("disabled");
+                                $("#smsSubmit").removeAttr("disabled");
+                                setTimeout(() => {
+                                    smsPassword.trigger("focus");
+                                }, 50);                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erreur :', error);
+                        bootbox.alert(error.message, function () {
+                            $("#phone").removeAttr("disabled");
+                            $("#submitPhone").removeAttr("disabled");
                         });
+                    });
                 });
             </script>
         </div>

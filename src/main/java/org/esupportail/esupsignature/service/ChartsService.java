@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.dto.chart.CountByYearsChartDto;
-import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
+import org.esupportail.esupsignature.dto.projection.chart.CountByYearsChartDto;
+import org.esupportail.esupsignature.dto.projection.chart.WorkflowStatusChartDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.LogRepository;

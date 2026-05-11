@@ -82,6 +82,7 @@ public class AuditTrailService {
         auditTrail.setDocumentId(document.getId().toString());
     }
 
+    @Transactional
     public void addAuditStep(String token, String userEppn, String signId, String timeStampId, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
         if(auditTrail == null) auditTrail = create(token);
@@ -128,17 +129,33 @@ public class AuditTrailService {
 
     @Transactional
     public AuditTrail getAuditTrailFromCheksum(String checkSum) {
-        return auditTrailRepository.findByDocumentCheckSum(checkSum);
+        return initializeAuditTrail(auditTrailRepository.findByDocumentCheckSum(checkSum));
     }
 
     @Transactional
     public AuditTrail getAuditTrailByToken(String token) {
-        return auditTrailRepository.findByToken(token);
+        return initializeAuditTrail(auditTrailRepository.findByToken(token));
     }
 
     @Transactional
     public AuditTrail getAuditTrailByDocumentId(String id) {
-        return auditTrailRepository.findByDocumentId(id);
+        return initializeAuditTrail(auditTrailRepository.findByDocumentId(id));
+    }
+
+    private AuditTrail initializeAuditTrail(AuditTrail auditTrail) {
+        if (auditTrail == null) {
+            return null;
+        }
+        auditTrail.getAuditSteps().forEach(auditStep -> {
+            auditStep.getId();
+            if (auditStep.getAuthenticationDetails() != null) {
+                auditStep.getAuthenticationDetails().size();
+            }
+            if (auditStep.getSignRequestParams() != null) {
+                auditStep.getSignRequestParams().getId();
+            }
+        });
+        return auditTrail;
     }
 
 

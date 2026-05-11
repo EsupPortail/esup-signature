@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Tag;
 import org.esupportail.esupsignature.service.TagService;
 import org.slf4j.Logger;
@@ -42,14 +42,14 @@ public class TagAdminController {
     @PostMapping
     public String create(Tag tag, RedirectAttributes redirectAttributes) {
         tagService.createTag(tag);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Tag enregistré"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Tag enregistré"));
         return "redirect:/admin/tags";
     }
 
     @PutMapping("{id}")
     public String update(@PathVariable Long id, Tag tag, RedirectAttributes redirectAttributes) {
         tagService.updateTag(id, tag);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Tag enregistré"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Tag enregistré"));
         return "redirect:/admin/tags";
     }
 
@@ -57,7 +57,7 @@ public class TagAdminController {
     @DeleteMapping("{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         tagService.deleteTag(id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Tag supprimé"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Tag supprimé"));
         return "redirect:/admin/tags";
     }
 }

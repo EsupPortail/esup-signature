@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.otp;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.service.UserService;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ public class OtpUserController {
                          @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
                          RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
         userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Vos paramètres ont été enregistrés"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
@@ -45,7 +45,7 @@ public class OtpUserController {
     @DeleteMapping("/delete-sign/{id}")
     public String deleteSign(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable long id, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         userService.deleteSign(authUserEppn, id);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Signature supprimée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Signature supprimée"));
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
@@ -63,5 +63,6 @@ public class OtpUserController {
         String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
         return "redirect:" + referer;
     }
+
 
 }

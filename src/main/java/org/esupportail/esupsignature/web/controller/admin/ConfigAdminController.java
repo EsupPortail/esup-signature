@@ -31,7 +31,7 @@ public class ConfigAdminController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("config", configService.getConfig());
+        model.addAttribute("config", configService.getAdminConfigView());
         model.addAttribute("gsVersion", pdfService.getGhostscriptVersion());
         return "admin/configs/list";
     }

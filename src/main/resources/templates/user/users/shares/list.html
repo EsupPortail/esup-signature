@@ -10,21 +10,21 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item">Profil <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
                 <li class="breadcrumb-item active">Délégations</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-btn">
-                <a title="Ajouter une nouvelle délégation" data-bs-toggle="modal" data-bs-target="#newShareModal" type="button"
-                    class="btn-floating btn-lg bg-primary">
-                    <i class="fa-solid fa-plus fa-2xl"></i>
-                </a>
-            </div>
-            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content es-main-content-user-settings d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
+                </div>
+                <div class="flex-grow-1 overflow-scroll">
+                    <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+            <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                 <table class="table table-borderless table-striped">
                     <thead class="table-secondary">
                     <tr>
@@ -127,6 +127,19 @@
                     </th:block>
                     </tbody>
                 </table>
+            </div>
+                    </div>
+                </div>
+            <div class="es-sign-buttons es-fixed-action-btns active">
+                <ul class="list-unstyled">
+                    <li>
+                        <a title="Ajouter une nouvelle délégation" data-bs-toggle="modal" data-bs-target="#newShareModal" type="button"
+                            class="btn btn-transparent text-dark">
+                            <i class="fa-solid fa-plus "></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
             </div>
         </div>
     </div>

@@ -124,10 +124,11 @@ public class SignRequestParamsService {
      */
     public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage, boolean scaleDimensions) {
         SignRequestParams signRequestParams = new SignRequestParams();
+        PDRectangle pageBox = pdPage.getCropBox();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(name);
-        signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setxPos(Math.round((pdRectangle.getLowerLeftX() - pageBox.getLowerLeftX()) / globalProperties.getFixFactor()));
+        signRequestParams.setyPos(Math.round((pageBox.getLowerLeftY() + pageBox.getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         float scaleWidth = pdRectangle.getWidth() / 200f;
         float scaleHeight = pdRectangle.getHeight() / 100f;
         float scale = Math.min(scaleWidth, scaleHeight);
@@ -209,7 +210,7 @@ public class SignRequestParamsService {
                                 }
                             }
                             if (!isOverlapping) {
-                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, false);
+                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, true);
                                 signRequestParamsList.add(signRequestParams);
                             } else {
                                 logger.warn("Signature field " + signFieldName + " is overlapping with another annotation");
@@ -539,6 +540,7 @@ public class SignRequestParamsService {
             signRequestParams.setAllPages(requestParams.getAllPages());
             signRequestParams.setExtraOnTop(requestParams.getExtraOnTop());
             signRequestParams.setFontSize(requestParams.getFontSize());
+            signRequestParams.setRecipient(requestParams.getRecipient());
             signRequest.getSignRequestParams().add(signRequestParams);
         }
     }

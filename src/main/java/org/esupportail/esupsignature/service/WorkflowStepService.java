@@ -1,8 +1,8 @@
 package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -20,33 +20,25 @@ import java.util.Objects;
 @Service
 public class WorkflowStepService {
 
-    @Resource
-    private WorkflowStepRepository workflowStepRepository;
+    private final WorkflowStepRepository workflowStepRepository;
+    private final UserService userService;
+    private final UserPropertieService userPropertieService;
+    private final FieldService fieldService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
+    private final CertificatService certificatService;
+    private final WorkflowRepository workflowRepository;
+    private final UserListService userListService;
 
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private UserPropertieService userPropertieService;
-
-    @Resource
-    private FieldService fieldService;
-
-    @Resource
-    private LiveWorkflowStepService liveWorkflowStepService;
-
-
-    @Resource
-    private SignTypeService signTypeService;
-
-    @Resource
-    private CertificatService certificatService;
-
-    @Resource
-    private WorkflowRepository workflowRepository;
-
-    @Resource
-    private UserListService userListService;
+    public WorkflowStepService(WorkflowStepRepository workflowStepRepository, UserService userService, UserPropertieService userPropertieService, FieldService fieldService, LiveWorkflowStepService liveWorkflowStepService, CertificatService certificatService, WorkflowRepository workflowRepository, UserListService userListService) {
+        this.workflowStepRepository = workflowStepRepository;
+        this.userService = userService;
+        this.userPropertieService = userPropertieService;
+        this.fieldService = fieldService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+        this.certificatService = certificatService;
+        this.workflowRepository = workflowRepository;
+        this.userListService = userListService;
+    }
 
     @Transactional
     public WorkflowStep createWorkflowStep(String name, Boolean allSignToComplete, SignType signType, Boolean changeable, RecipientWsDto ...recipients) throws EsupSignatureRuntimeException {
@@ -145,7 +137,9 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long workflowStepId, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
+    public void updateStep(Long id, Integer workflowStepNumber, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
+        Workflow workflow = workflowRepository.findById(id).orElseThrow();
+        Long workflowStepId = workflow.getWorkflowSteps().get(workflowStepNumber).getId();
         if(autoSign == null) autoSign = false;
         if(autoSign) {
             signType = SignType.signature;

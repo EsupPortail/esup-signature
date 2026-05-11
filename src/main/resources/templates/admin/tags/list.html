@@ -6,17 +6,21 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
                 <li class="breadcrumb-item active">Tags</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="card mb-1 mx-auto">
-                <div class="card-body">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1">
+            <div class="">
+                <div class="alert alert-light m-2">
                     <h5 class="text-center"><b>Tags</b></h5>
                     <div class="alert alert-secondary mb-2">
                         Ici, vous pouvez créer des tags (mot + couleur) afin de catégoriser vos circuits et vos formulaires.
@@ -40,19 +44,19 @@
                                     <div class="dropdown position-relative" th:if="${tag.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${tag.id}" class="btn text-dark" th:title="'Actions ' + ${tag.id}"
                                                 th:data-bs-target="'#menu-' + ${tag.id}" th:aria-controls="'menu-' + ${tag.id}" data-bs-toggle="dropdown">
-                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${tag.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${tag.id}">
-                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier
+                                                    <i class="fi fi-rr-pencil"></i> Modifier
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${tag.id}">
-                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                    <i class="fi fi-rr-trash pr-2"></i> Supprimer
                                                 </a>
                                             </li>
                                         </ul>
@@ -84,18 +88,22 @@
                         </tbody>
                         <tfoot>
                         <tr>
-                            <td colspan="100%">
-                                <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                            <td colspan="100%" th:replace="~{fragments/pagination :: pagination}">
                             </td>
                         </tr>
                         </tfoot>
                     </table>
                 </div>
+            </div>                </div>
+            <div class="es-sign-buttons es-fixed-action-btns active">
+                <ul class="list-unstyled">
+                    <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                        <a title="Ajouter un tag" data-bs-toggle="modal" data-bs-target="#newTag" class="btn btn-transparent text-dark">
+                            <i class="fa-solid fa-plus"></i>
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="fixed-action-simple-btn gap-4" style="flex-direction: column">
-                <div id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                    <a title="Ajouter un tag" data-bs-toggle="modal" data-bs-target="#newTag" class="btn-floating btn-lg bg-primary"><i class="fa-solid fa-plus fa-2xl"></i></a>
-                </div>
             </div>
         </div>
     </div>

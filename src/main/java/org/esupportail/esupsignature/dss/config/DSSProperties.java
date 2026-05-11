@@ -13,9 +13,6 @@ public class DSSProperties {
     private String cacheDataSourceDriverClassName;
     private String defaultValidationPolicy;
     private List<String> tspServers = List.of("http://timestamp.sectigo.com/qualified", "http://tsa.belgium.be");
-    private String serverSigningKeystoreType;
-    private String serverSigningKeystoreFilename;
-    private String serverSigningKeystorePassword;
     private String lotlUrl;
     private String lotlCountryCode;
     private String ojUrl;
@@ -74,30 +71,6 @@ public class DSSProperties {
 
     public void setTspServers(List<String> tspServers) {
         this.tspServers = tspServers;
-    }
-
-    public String getServerSigningKeystoreType() {
-        return serverSigningKeystoreType;
-    }
-
-    public void setServerSigningKeystoreType(String serverSigningKeystoreType) {
-        this.serverSigningKeystoreType = serverSigningKeystoreType;
-    }
-
-    public String getServerSigningKeystoreFilename() {
-        return serverSigningKeystoreFilename;
-    }
-
-    public void setServerSigningKeystoreFilename(String serverSigningKeystoreFilename) {
-        this.serverSigningKeystoreFilename = serverSigningKeystoreFilename;
-    }
-
-    public String getServerSigningKeystorePassword() {
-        return serverSigningKeystorePassword;
-    }
-
-    public void setServerSigningKeystorePassword(String serverSigningKeystorePassword) {
-        this.serverSigningKeystorePassword = serverSigningKeystorePassword;
     }
 
     public String getLotlUrl() {

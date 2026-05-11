@@ -12,10 +12,13 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.dss.model.DssMultipartFile;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.view.UserDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
+import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -43,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +57,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
@@ -65,6 +70,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -289,9 +295,9 @@ public class SignBookService {
         } else if(statusFilter.equals("toSign"))  {
             signBooks = signBookRepository.findToSign(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, startDateFilter, endDateFilter, pageable);
         } else if(statusFilter.equals("signedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.signed, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findSignedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("refusedByMe")) {
-            signBooks = signBookRepository.findByRecipientAndActionTypeNotDeleted(user, ActionType.refused, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
+            signBooks = signBookRepository.findRefusedByRecipientNotDeleted(user, workflowFilter, docTitleLikeFilter, creatorFilterUser, pageable);
         } else if(statusFilter.equals("followByMe")) {
             signBooks = signBookRepository.findByViewersContaining(user, pageable);
         } else if(statusFilter.equals("sharedSign")) {
@@ -317,6 +323,388 @@ public class SignBookService {
             }
         }
         return signBooks;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SignBookFullDto> getSignBookListItems(String userEppn, String authUserEppn, String statusFilter, String recipientsFilter, String workflowFilter, String docTitleFilter, String creatorFilter, String dateFilter, Pageable pageable) {
+        Page<SignBook> signBooks = getSignBooks(userEppn, authUserEppn, statusFilter, recipientsFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
+    }
+
+    private SignBookFullDto toSignBookListItemDto(SignBook signBook, String userEppn) {
+        SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
+        String currentSignType = null;
+        if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
+            currentSignType = signBook.getLiveWorkflow().getCurrentStep().getSignType().name();
+        }
+
+        String refusedCommentTitle = null;
+        if (primarySignRequest != null && primarySignRequest.getComments() != null && !primarySignRequest.getComments().isEmpty()) {
+            refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
+        }
+
+        return new SignBookFullDto(
+                signBook.getId(),
+                signBook.getSubject(),
+                signBook.getDescription(),
+                signBook.getWorkflowName(),
+                toDisplayName(signBook.getCreateBy()),
+                signBook.getCreateBy() != null ? signBook.getCreateBy().getEppn() : null,
+                signBook.getStatus() != null ? signBook.getStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleted()),
+                signBook.getArchiveStatus() != null ? signBook.getArchiveStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleteableByCurrentUser()),
+                Boolean.TRUE.equals(signBook.getDisplayNotif()),
+                isHiddenByCurrentUser(signBook, userEppn),
+                currentSignType,
+                toParticipantSteps(signBook, primarySignRequest),
+                formatDate(signBook.getEndDate()),
+                Boolean.TRUE.equals(signBook.getDeleted()) ? "Supprimé le : " + formatDate(signBook.getUpdateDate()) : null,
+                toLastSignedDocumentDateLabel(signBook, primarySignRequest),
+                refusedCommentTitle,
+                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
+                toSignRequestDocumentDtos(signBook.getSignRequests()),
+                toPostitDtos(signBook.getPostits()),
+                false,
+                null,
+                List.of(),
+                List.of(),
+                List.of()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public SignBookFullDto getSignBookUpdateView(Long id, String userEppn) {
+        SignBook signBook = getById(id);
+        if (signBook == null) {
+            return null;
+        }
+
+        SignRequest primarySignRequest = signBook.getSignRequests().isEmpty() ? null : signBook.getSignRequests().get(0);
+        String currentSignType = null;
+        if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getCurrentStep() != null && signBook.getLiveWorkflow().getCurrentStep().getSignType() != null) {
+            currentSignType = signBook.getLiveWorkflow().getCurrentStep().getSignType().name();
+        }
+
+        String refusedCommentTitle = null;
+        if (primarySignRequest != null && primarySignRequest.getComments() != null && !primarySignRequest.getComments().isEmpty()) {
+            refusedCommentTitle = primarySignRequest.getComments().get(primarySignRequest.getComments().size() - 1).getText();
+        }
+
+        boolean editable = signBook.getLiveWorkflow() != null && signBook.isEditable();
+
+        return new SignBookFullDto(
+                signBook.getId(),
+                signBook.getSubject(),
+                signBook.getDescription(),
+                signBook.getWorkflowName(),
+                toDisplayName(signBook.getCreateBy()),
+                signBook.getCreateBy() != null ? signBook.getCreateBy().getEppn() : null,
+                signBook.getStatus() != null ? signBook.getStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleted()),
+                signBook.getArchiveStatus() != null ? signBook.getArchiveStatus().name() : null,
+                Boolean.TRUE.equals(signBook.getDeleteableByCurrentUser()),
+                Boolean.TRUE.equals(signBook.getDisplayNotif()),
+                isHiddenByCurrentUser(signBook, userEppn),
+                currentSignType,
+                toParticipantSteps(signBook, primarySignRequest),
+                formatDate(signBook.getEndDate()),
+                Boolean.TRUE.equals(signBook.getDeleted()) ? "Supprimé le : " + formatDate(signBook.getUpdateDate()) : null,
+                toLastSignedDocumentDateLabel(signBook, primarySignRequest),
+                refusedCommentTitle,
+                toPrimarySignRequestDto(signBook, primarySignRequest, userEppn),
+                toSignRequestDocumentDtos(signBook.getSignRequests()),
+                toPostitDtos(signBook.getPostits()),
+                editable,
+                signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null,
+                toSignBookViewerDtos(signBook.getViewers()),
+                toLiveWorkflowStepDtos(signBook),
+                toLiveWorkflowTargetDtos(signBook)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public SignBookLightDto getSignBookUpdateLight(Long id) {
+        SignBook signBook = getById(id);
+        if (signBook == null) {
+            return null;
+        }
+        return new SignBookLightDto(
+                signBook.getId(),
+                signBook.getWorkflowName(),
+                signBook.getSubject(),
+                signBook.getDescription(),
+                signBook.getStatus(),
+                signBook.getDeleted(),
+                signBook.isEditable(),
+                signBook.getArchiveStatus(),
+                signBook.getCreateDate(),
+                toSignBookViewerDtos(signBook.getViewers())
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SignBookFullDto> getAllSignBookListItems(String userEppn,
+                                                         String statusFilter,
+                                                         String workflowFilter,
+                                                         String docTitleFilter,
+                                                         String creatorFilter,
+                                                         String dateFilter,
+                                                         Pageable pageable) {
+        Page<SignBook> signBooks = getAllSignBooks(statusFilter, workflowFilter, docTitleFilter, creatorFilter, dateFilter, pageable);
+        return signBooks.map(signBook -> toSignBookListItemDto(signBook, userEppn));
+    }
+
+    private SignBookFullDto.PrimarySignRequestDto toPrimarySignRequestDto(SignBook signBook, SignRequest signRequest, String userEppn) {
+        if (signRequest == null) {
+            return null;
+        }
+        return new SignBookFullDto.PrimarySignRequestDto(
+                signRequest.getId(),
+                signRequest.getTitle(),
+                signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
+                formatDate(signRequest.getCreateDate()),
+                isViewedByUser(signRequest, userEppn),
+                signRequest.getAttachments() != null && !signRequest.getAttachments().isEmpty(),
+                Boolean.TRUE.equals(signRequest.getDeleted()),
+                buildPrimaryRowTitle(signBook, signRequest),
+                canDownloadSingle(signBook, signRequest),
+                canDownloadAll(signBook, signRequest)
+        );
+    }
+
+    private List<SignBookFullDto.SignRequestDocumentDto> toSignRequestDocumentDtos(List<SignRequest> signRequests) {
+        if (signRequests == null || signRequests.isEmpty()) {
+            return List.of();
+        }
+        return signRequests.stream().map(signRequest -> new SignBookFullDto.SignRequestDocumentDto(
+                signRequest.getId(),
+                signRequest.getTitle(),
+                signRequest.getStatus() != null ? signRequest.getStatus().name() : null,
+                getFirstOriginalFileName(signRequest),
+                formatDate(signRequest.getCreateDate()),
+                toDisplayName(signRequest.getCreateBy()),
+                signRequest.getCreateBy() != null ? signRequest.getCreateBy().getEppn() : null
+        )).toList();
+    }
+
+    private List<ShowSignRequestDto.SignBookViewerDto> toSignBookViewerDtos(Set<User> viewers) {
+        if (viewers == null || viewers.isEmpty()) {
+            return List.of();
+        }
+        return viewers.stream()
+                .map(viewer -> new ShowSignRequestDto.SignBookViewerDto(
+                        viewer.getId(),
+                        viewer.getFirstname(),
+                        viewer.getName(),
+                        viewer.getEmail()
+                ))
+                .toList();
+    }
+
+    private List<ShowSignRequestDto.StepDto> toLiveWorkflowStepDtos(SignBook signBook) {
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null) {
+            return List.of();
+        }
+        return signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                .map(step -> new ShowSignRequestDto.StepDto(
+                        step.getId(),
+                        step.getDescription(),
+                        step.getWorkflowStep() != null && Boolean.TRUE.equals(step.getWorkflowStep().getChangeable()),
+                        step.getSignType(),
+                        step.getAutoSign(),
+                        step.getAllSignToComplete(),
+                        step.getRepeatable(),
+                        step.getUsers().stream().map(this::toStepUserDto).toList(),
+                        step.getRecipients().stream()
+                                .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
+                                        recipient.getId(),
+                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
+                                        recipient.getSigned()
+                                ))
+                                .toList()
+                ))
+                .toList();
+    }
+
+    private List<ShowSignRequestDto.TargetDto> toLiveWorkflowTargetDtos(SignBook signBook) {
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getTargets() == null) {
+            return List.of();
+        }
+        return signBook.getLiveWorkflow().getTargets().stream()
+                .map(target -> new ShowSignRequestDto.TargetDto(
+                        target.getTargetUri(),
+                        target.getProtectedTargetUri(),
+                        target.getTargetOk()
+                ))
+                .toList();
+    }
+
+    private ShowSignRequestDto.StepUserDto toStepUserDto(User user) {
+        return new ShowSignRequestDto.StepUserDto(
+                user.getId(),
+                user.getFirstname(),
+                user.getName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getHidedPhone(),
+                user.getUserType()
+        );
+    }
+
+    private List<SignBookFullDto.PostitDto> toPostitDtos(List<Comment> postits) {
+        if (postits == null || postits.isEmpty()) {
+            return List.of();
+        }
+        return postits.stream()
+                .filter(Objects::nonNull)
+                .map(postit -> new SignBookFullDto.PostitDto(toDisplayName(postit.getCreateBy()), postit.getText()))
+                .toList();
+    }
+
+    private List<SignBookFullDto.ParticipantStepDto> toParticipantSteps(SignBook signBook, SignRequest primarySignRequest) {
+        if (signBook.getLiveWorkflow() == null
+                || signBook.getLiveWorkflow().getLiveWorkflowSteps() == null
+                || signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()
+                || signBook.getLiveWorkflow().getCurrentStepNumber() == null
+                || signBook.getLiveWorkflow().getCurrentStepNumber() <= 0) {
+            return List.of();
+        }
+        List<SignBookFullDto.ParticipantStepDto> participantSteps = new ArrayList<>();
+        for (int i = 0; i < signBook.getLiveWorkflow().getLiveWorkflowSteps().size(); i++) {
+            LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().get(i);
+            List<SignBookFullDto.ParticipantDto> recipients = liveWorkflowStep.getRecipients().stream()
+                    .map(recipient -> toParticipantDto(recipient, primarySignRequest, signBook.getSignRequests().size() == 1))
+                    .toList();
+            participantSteps.add(new SignBookFullDto.ParticipantStepDto(i + 1, recipients));
+        }
+        return participantSteps;
+    }
+
+    private SignBookFullDto.ParticipantDto toParticipantDto(Recipient recipient, SignRequest primarySignRequest, boolean singleDocument) {
+        String statusIconClass = null;
+        String statusTitle = null;
+        if (singleDocument && primarySignRequest != null) {
+            if (Boolean.TRUE.equals(recipient.getSigned())) {
+                if (primarySignRequest.getStatus() == SignRequestStatus.refused) {
+                    statusIconClass = "fa-solid fa-times-circle text-danger";
+                    statusTitle = "A refusé le document";
+                } else {
+                    statusIconClass = "fa-solid fa-check-circle text-success";
+                    statusTitle = "A signé le document";
+                }
+            } else if (primarySignRequest.getStatus() == SignRequestStatus.pending) {
+                statusIconClass = "fa-solid fa-clock text-warning";
+                statusTitle = "En attente de signature";
+            } else {
+                statusIconClass = "fa-solid fa-minus-circle text-secondary";
+                statusTitle = "N'a pas signé le document";
+            }
+        }
+        return new SignBookFullDto.ParticipantDto(
+                recipient.getUser() != null ? recipient.getUser().getEmail() : null,
+                toDisplayNameOrEmail(recipient.getUser()),
+                statusIconClass,
+                statusTitle
+        );
+    }
+
+    private boolean isViewedByUser(SignRequest signRequest, String userEppn) {
+        if (userEppn == null || signRequest.getViewedBy() == null || signRequest.getViewedBy().isEmpty()) {
+            return false;
+        }
+        return signRequest.getViewedBy().stream().anyMatch(user -> user != null && userEppn.equals(user.getEppn()));
+    }
+
+    private boolean isHiddenByCurrentUser(SignBook signBook, String userEppn) {
+        if (userEppn == null || signBook.getHidedBy() == null || signBook.getHidedBy().isEmpty()) {
+            return false;
+        }
+        return signBook.getHidedBy().stream().anyMatch(user -> user != null && userEppn.equals(user.getEppn()));
+    }
+
+    private String buildPrimaryRowTitle(SignBook signBook, SignRequest signRequest) {
+        if (signBook.getSignRequests().size() <= 1) {
+            return signBook.getSubject();
+        }
+        String firstOriginalFileName = getFirstOriginalFileName(signRequest);
+        if (firstOriginalFileName == null) {
+            return signBook.getSubject();
+        }
+        if (Objects.equals(signBook.getSubject(), firstOriginalFileName)) {
+            return firstOriginalFileName + ", ...";
+        }
+        return signBook.getSubject();
+    }
+
+    private String getFirstOriginalFileName(SignRequest signRequest) {
+        if (signRequest.getOriginalDocuments() == null || signRequest.getOriginalDocuments().isEmpty()) {
+            return null;
+        }
+        return signRequest.getOriginalDocuments().get(0).getFileName();
+    }
+
+    private String toLastSignedDocumentDateLabel(SignBook signBook, SignRequest primarySignRequest) {
+        if (primarySignRequest == null) {
+            return null;
+        }
+        if (!(!(Boolean.TRUE.equals(signBook.getDeleted()) || signBook.getEndDate() != null) || signBook.getSignRequests().size() != 1)) {
+            return null;
+        }
+        Document lastSignedDocument = primarySignRequest.getLastSignedDocument();
+        if (lastSignedDocument == null || lastSignedDocument.getCreateDate() == null) {
+            return null;
+        }
+        return formatDate(lastSignedDocument.getCreateDate());
+    }
+
+    private boolean canDownloadAll(SignBook signBook, SignRequest signRequest) {
+        if (signBook.getSignRequests().size() <= 1 || signRequest.getStatus() == null) {
+            return false;
+        }
+        return signRequest.getStatus() == SignRequestStatus.completed
+                || signRequest.getStatus() == SignRequestStatus.exported
+                || signRequest.getStatus() == SignRequestStatus.archived;
+    }
+
+    private boolean canDownloadSingle(SignBook signBook, SignRequest signRequest) {
+        if (signRequest.getStatus() == null) {
+            return false;
+        }
+        if (signRequest.getStatus() == SignRequestStatus.completed
+                || signRequest.getStatus() == SignRequestStatus.exported
+                || signRequest.getStatus() == SignRequestStatus.archived) {
+            return true;
+        }
+        boolean forbidDownloadsBeforeEnd = signBook.getLiveWorkflow() != null
+                && signBook.getLiveWorkflow().getWorkflow() != null
+                && Boolean.TRUE.equals(signBook.getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd());
+        return !forbidDownloadsBeforeEnd && signRequest.getStatus() == SignRequestStatus.pending;
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
+    }
+
+    private String toDisplayName(User user) {
+        if (user == null) {
+            return null;
+        }
+        String firstname = user.getFirstname() != null ? user.getFirstname().trim() : "";
+        String name = user.getName() != null ? user.getName().trim() : "";
+        String displayName = (firstname + " " + name).trim();
+        return displayName.isEmpty() ? null : displayName;
+    }
+
+    private String toDisplayNameOrEmail(User user) {
+        String displayName = toDisplayName(user);
+        if (displayName != null) {
+            return displayName;
+        }
+        return user != null ? user.getEmail() : null;
     }
 
     /**
@@ -653,7 +1041,7 @@ public class SignBookService {
     @Transactional
     public void importWorkflowFromWorkflowStepDto(Long signBookId, List<WorkflowStepDto> steps, String userEppn) throws EsupSignatureException {
         SignBook signBook = getById(signBookId);
-        logger.info("import workflow steps in signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.info("import workflow steps in signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         if(steps.get(0).getUserSignFirst() != null && steps.get(0).getUserSignFirst()) {
             addUserSignFirstStep(signBookId, userEppn);
         }
@@ -687,7 +1075,7 @@ public class SignBookService {
     @Transactional
     public void addNewStepToSignBook(Long signBookId, List<WorkflowStepDto> steps, String authUserEppn) throws EsupSignatureRuntimeException, EsupSignatureException {
         SignBook signBook = signBookRepository.findById(signBookId).get();
-        logger.info("add new workflow step to signBook " + signBook.getSubject() + " - " + signBook.getId());
+        logger.info("add new workflow step to signBookLight " + signBook.getSubject() + " - " + signBook.getId());
         LiveWorkflowStep liveWorkflowStep = liveWorkflowStepService.createLiveWorkflowStep(signBook, null, steps.get(0));
         signBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStep);
         userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
@@ -702,6 +1090,46 @@ public class SignBookService {
     @Transactional
     public SignBook getById(Long id) {
         return signBookRepository.findById(id).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public SignBook getByIdWithWizardContext(Long id) {
+        return signBookRepository.findByIdWithWizardContext(id).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public Long getRedirectSignRequestId(Long signBookId) {
+        SignBook signBook = signBookRepository.findById(signBookId).orElse(null);
+        if (signBook == null || signBook.getSignRequests().isEmpty()) {
+            return null;
+        }
+
+        if (signBook.getSignRequests().size() > 1) {
+            for (SignRequest signRequest : signBook.getSignRequests()) {
+                if (signRequest != null && SignRequestStatus.pending.equals(signRequest.getStatus())) {
+                    return signRequest.getId();
+                }
+            }
+        }
+
+        SignRequest firstSignRequest = signBook.getSignRequests().get(0);
+        return firstSignRequest != null ? firstSignRequest.getId() : null;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isUserEmailInCurrentStepRecipients(Long signBookId, String email) {
+        if (signBookId == null || email == null || email.isEmpty()) {
+            return false;
+        }
+
+        SignBook signBook = signBookRepository.findById(signBookId).orElse(null);
+        if (signBook == null || signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getCurrentStep() == null) {
+            return false;
+        }
+
+        return signBook.getLiveWorkflow().getCurrentStep().getRecipients().stream()
+                .filter(recipient -> recipient != null && recipient.getUser() != null)
+                .anyMatch(recipient -> Objects.equals(recipient.getUser().getEmail(), email));
     }
 
     /**
@@ -839,8 +1267,39 @@ public class SignBookService {
     public boolean checkUserManageRights(Long signBookId, String userEppn) {
         SignBook signBook = getById(signBookId);
         if(signBook == null) return false;
+        User user = userService.getByEppn(userEppn);
+        if(user == null) return false;
+        if(isWorkflowManagerForSignBook(signBook, user)) {
+            return true;
+        }
+        return signBook.getCreateBy().getEppn().equals(userEppn);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean checkUserUpdateRights(Long signBookId, String userEppn) {
+        if (userEppn == null) {
+            return false;
+        }
+        SignBook signBook = getById(signBookId);
+        if (signBook == null) {
+            return false;
+        }
+        User user = userService.getByEppn(userEppn);
+        if (user == null) {
+            return false;
+        }
+        if (user.getRoles().contains("ROLE_ADMIN") || isWorkflowManagerForSignBook(signBook, user)) {
+            return true;
+        }
+        if (!signBook.getCreateBy().getEppn().equals(userEppn)) {
+            return false;
+        }
+        Workflow workflow = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getWorkflow() : null;
+        return workflow == null || !Boolean.TRUE.equals(workflow.getDisableUpdateByCreator());
+    }
+
+    private boolean isWorkflowManagerForSignBook(SignBook signBook, User user) {
         if(signBook.getSignRequests().size() == 1) {
-            User user = userService.getByEppn(userEppn);
             Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
             if(workflow != null) {
                 if ((!signBook.getLiveWorkflow().getWorkflow().getManagers().isEmpty() && signBook.getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail()))
@@ -851,7 +1310,7 @@ public class SignBookService {
                 }
             }
         }
-        return signBook.getCreateBy().getEppn().equals(userEppn);
+        return false;
     }
 
     /**
@@ -929,10 +1388,10 @@ public class SignBookService {
     }
 
     /**
-     * Récupère l'ensemble des étapes d'un workflow en fonction de l'identifiant du signBook donné.
+     * Récupère l'ensemble des étapes d'un workflow en fonction de l'identifiant du signBookLight donné.
      *
-     * @param signBookId l'identifiant unique du signBook pour lequel les étapes doivent être récupérées
-     * @return une liste contenant toutes les étapes du workflow associées au signBook, sauf la première étape
+     * @param signBookId l'identifiant unique du signBookLight pour lequel les étapes doivent être récupérées
+     * @return une liste contenant toutes les étapes du workflow associées au signBookLight, sauf la première étape
      */
     @Transactional
     public List<LiveWorkflowStep> getAllSteps(Long signBookId) {
@@ -1244,7 +1703,7 @@ public class SignBookService {
      * @param signBookId L'identifiant du carnet de signatures dans lequel ajouter les documents
      * @param multipartFiles Un tableau de fichiers multipart contenant les documents à*/
     @Transactional
-    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields) {
+    public void addDocumentsToSignBook(Long signBookId, MultipartFile[] multipartFiles, String authUserEppn, String signRequestParamsDetectionPattern, boolean keepSignFields, boolean unzip) {
         SignBook signBook = getById(signBookId);
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
         if(workflow != null) {
@@ -1254,7 +1713,8 @@ public class SignBookService {
         if(!signBook.isEditable()) {
             throw new EsupSignatureRuntimeException("Ajout impossible, la demande est déjà démarrée");
         }
-        for (MultipartFile multipartFile : multipartFiles) {
+        List<MultipartFile> filesToAdd = expandMultipartFiles(multipartFiles, unzip);
+        for (MultipartFile multipartFile : filesToAdd) {
             pdfService.checkPdfPermitions(multipartFile);
             SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, authUserEppn, authUserEppn);
             try {
@@ -1273,6 +1733,84 @@ public class SignBookService {
         if(!StringUtils.hasText(signBook.getSubject())) {
             signBook.setSubject(generateName(null, null, signBook.getCreateBy(), false, false, signBookId));
         }
+    }
+
+    private List<MultipartFile> expandMultipartFiles(MultipartFile[] multipartFiles, boolean unzip) {
+        List<MultipartFile> expandedMultipartFiles = new ArrayList<>();
+        for (MultipartFile multipartFile : multipartFiles) {
+            if (shouldUnzip(multipartFile, unzip)) {
+                expandedMultipartFiles.addAll(unzipMultipartFile(multipartFile));
+            } else {
+                expandedMultipartFiles.add(multipartFile);
+            }
+        }
+        return expandedMultipartFiles;
+    }
+
+    private boolean shouldUnzip(MultipartFile multipartFile, boolean unzip) {
+        if (!unzip) {
+            return false;
+        }
+        if (StringUtils.hasText(multipartFile.getContentType()) && multipartFile.getContentType().toLowerCase(Locale.ROOT).contains("zip")) {
+            return true;
+        }
+        return StringUtils.hasText(multipartFile.getOriginalFilename()) && "zip".equalsIgnoreCase(fileService.getExtension(multipartFile.getOriginalFilename()));
+    }
+
+    private List<MultipartFile> unzipMultipartFile(MultipartFile multipartFile) {
+        List<MultipartFile> unzippedMultipartFiles = new ArrayList<>();
+        try (ZipInputStream zipInputStream = new ZipInputStream(multipartFile.getInputStream())) {
+            ZipEntry zipEntry = zipInputStream.getNextEntry();
+            int index = 0;
+            while (zipEntry != null) {
+                if (!zipEntry.isDirectory()) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    IOUtils.copy(zipInputStream, outputStream);
+                    byte[] bytes = outputStream.toByteArray();
+                    if (bytes.length > 0) {
+                        String fileName = sanitizeZipEntryFileName(zipEntry.getName(), multipartFile.getOriginalFilename(), index);
+                        String contentType = resolveMultipartContentType(fileName, bytes);
+                        unzippedMultipartFiles.add(new DssMultipartFile(fileName, fileName, contentType, bytes));
+                        index++;
+                    }
+                }
+                zipInputStream.closeEntry();
+                zipEntry = zipInputStream.getNextEntry();
+            }
+        } catch (IOException e) {
+            throw new EsupSignatureIOException("Erreur lors de la décompression du fichier", e);
+        }
+        if (unzippedMultipartFiles.isEmpty()) {
+            throw new EsupSignatureIOException("Aucun fichier exploitable dans l'archive ZIP");
+        }
+        return unzippedMultipartFiles;
+    }
+
+    private String sanitizeZipEntryFileName(String zipEntryName, String originalFilename, int index) {
+        if (StringUtils.hasText(zipEntryName)) {
+            String normalizedName = zipEntryName.replace('\\', '/');
+            int lastSlashIndex = normalizedName.lastIndexOf('/');
+            String fileName = lastSlashIndex >= 0 ? normalizedName.substring(lastSlashIndex + 1) : normalizedName;
+            if (StringUtils.hasText(fileName)) {
+                return fileName;
+            }
+        }
+        String baseName = StringUtils.hasText(originalFilename) ? fileService.getNameOnly(originalFilename) : "document";
+        return baseName + "-" + (index + 1);
+    }
+
+    private String resolveMultipartContentType(String fileName, byte[] bytes) {
+        try {
+            String guessedContentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(bytes));
+            if (StringUtils.hasText(guessedContentType)) {
+                return guessedContentType;
+            }
+        } catch (IOException e) {
+            logger.debug("unable to detect content type from stream for {}", fileName, e);
+        }
+        return MediaTypeFactory.getMediaType(fileName)
+                .map(Object::toString)
+                .orElse("application/octet-stream");
     }
 
     /**
@@ -1297,7 +1835,7 @@ public class SignBookService {
             }
         }
         SignBook signBook = createSignBook(title, null, "Demande générée", createByEppn, true, null);
-        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields);
+        addDocumentsToSignBook(signBook.getId(), multipartFiles, createByEppn, signRequestParamsDetectionPattern, keepSignFields, true);
         signBook.setForceAllDocsSign(forceAllSign);
         addViewers(signBook.getId(), steps.stream().map(WorkflowStepDto::getRecipientsCCEmails).filter(Objects::nonNull).flatMap(List::stream).toList());
         if(targetUrl != null && !targetUrl.isEmpty()) {
@@ -1379,7 +1917,7 @@ public class SignBookService {
     }
 
     /**
-     * Initialise le workflow d'un carnet de signatures (signBook).
+     * Initialise le workflow d'un carnet de signatures (signBookLight).
      *
      * @param signBookId L'identifiant du carnet de signatures à initialiser.
      * @param steps La liste des étapes du workflow à appliquer.
@@ -1402,7 +1940,7 @@ public class SignBookService {
                 workflowService.importWorkflow(signBook, workflow, steps, userEppn);
                 signRequestService.nextWorkFlowStep(signBook);
             }
-//            dispatchSignRequestParams(signBook);
+//            dispatchSignRequestParams(signBookLight);
             targetService.copyTargets(targets, signBook, targetEmails);
             userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
             if (pending != null && pending) {
@@ -1605,7 +2143,7 @@ public class SignBookService {
                 TypeReference<Map<String, String>> type = new TypeReference<>(){};
                 formDataMap = objectMapper.readValue(formData, type);
                 formDataMap.remove("_csrf");
-                data = dataService.getBySignBook(signRequest.getParentSignBook());
+                data = dataService.getBySignBookForUpdate(signRequest.getParentSignBook());
                 if(data != null && data.getForm() != null) {
                     List<Field> fields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), data.getForm().getFields(), userService.getByEppn(userEppn), signRequest);
                     for(Map.Entry<String, String> entry : formDataMap.entrySet()) {
@@ -1634,7 +2172,7 @@ public class SignBookService {
         }
         List<SignRequestParams> signRequestParamses;
         if (signRequestParamsJsonString == null) {
-            signRequestParamses = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams();
+            signRequestParamses = signRequestService.getCurrentStepSignRequestParams(signRequest, userEppn);
             for(SignRequestParams signRequestParamse : signRequestParamses) {
                 User user = userService.getByEppn(userEppn);
                 signRequestParamse.setAddExtra(true);
@@ -1723,7 +2261,7 @@ public class SignBookService {
         List<StepStatus> stepStatuses = new ArrayList<>();
         for (Long id : idsLong) {
             SignRequest selectedSignRequest = signRequestService.getById(id);
-            selectedSignRequest.getSignRequestParams().addAll(selectedSignRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams());
+            selectedSignRequest.getSignRequestParams().addAll(signRequestService.getCurrentStepSignRequestParams(selectedSignRequest, userEppn));
             StepStatus stepStatus = StepStatus.not_completed;
             for(SignRequest signRequest : selectedSignRequest.getParentSignBook().getSignRequests()) {
                 if (!signRequest.getStatus().equals(SignRequestStatus.pending)) {
@@ -1979,28 +2517,35 @@ public class SignBookService {
                     for (FsFile fsFile : fsFiles) {
                         logger.info("adding file : " + fsFile.getName());
                         ByteArrayOutputStream baos = fileService.copyInputStream(fsFile.getInputStream());
-                        Map<String, String> metadatas = pdfService.readMetadatas(new ByteArrayInputStream(baos.toByteArray()));
+                        MultipartFile sourceMultipartFile = new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray());
+                        List<MultipartFile> multipartFilesToImport = expandMultipartFiles(new MultipartFile[]{sourceMultipartFile}, Boolean.TRUE.equals(workflow.getUnzip()));
+                        Map<String, String> metadatas = readMetadatas(multipartFilesToImport.get(0));
                         String documentName = fsFile.getName();
                         if (metadatas.get("Title") != null && !metadatas.get("Title").isEmpty()) {
                             documentName = metadatas.get("Title");
+                        } else if (multipartFilesToImport.size() == 1) {
+                            documentName = multipartFilesToImport.get(0).getOriginalFilename();
                         }
                         SignBook signBook = createSignBook(fileService.getNameOnly(documentName), workflow, "", user.getEppn(), true, null);
                         signBook.getLiveWorkflow().setWorkflow(workflow);
-                        SignRequest signRequest = signRequestService.createSignRequest(null, signBook, user.getEppn(), authUser.getEppn());
                         if (fsFile.getCreateBy() != null && userService.getByEppn(fsFile.getCreateBy()) != null) {
                             user = userService.getByEppn(fsFile.getCreateBy());
                         }
-                        signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, false, new DssMultipartFile(fsFile.getName(), fsFile.getName(), fsFile.getContentType(), baos.toByteArray()));
+                        for (MultipartFile multipartFile : multipartFilesToImport) {
+                            SignRequest signRequest = signRequestService.createSignRequest(fileService.getNameOnly(multipartFile.getOriginalFilename()), signBook, user.getEppn(), authUser.getEppn());
+                            signRequestService.addDocsToSignRequest(signRequest, true, false, j, new ArrayList<>(), null, false, multipartFile);
+                            j++;
+                        }
                         if (workflow.getScanPdfMetadatas()) {
                             String signType = metadatas.get("sign_type_default_val");
                             User creator = userService.createUserWithEppn(metadatas.get("Creator"));
                             if (creator != null) {
-                                signRequest.setCreateBy(creator);
+                                signBook.getSignRequests().forEach(signRequest -> signRequest.setCreateBy(creator));
                                 signBook.setCreateBy(creator);
                                 addToTeam(signBook, creator.getEppn());
                             } else {
                                 User systemUser = userService.getSystemUser();
-                                signRequest.setCreateBy(systemUser);
+                                signBook.getSignRequests().forEach(signRequest -> signRequest.setCreateBy(systemUser));
                                 signBook.setCreateBy(systemUser);
                                 addToTeam(signBook, systemUser.getEppn());
                             }
@@ -2034,7 +2579,6 @@ public class SignBookService {
                                     logger.info("target set to : " + new ArrayList<>(signBook.getLiveWorkflow().getTargets()).get(0).getTargetUri());
                                 }
                             }
-                            j++;
                         } else {
                             targetService.copyTargets(workflow.getTargets(), signBook, null);
                             workflowService.importWorkflow(signBook, workflow, new ArrayList<>(), authUser.getEppn());
@@ -2053,6 +2597,14 @@ public class SignBookService {
             }
         }
         return nbImportedFiles;
+    }
+
+    private Map<String, String> readMetadatas(MultipartFile multipartFile) {
+        try {
+            return pdfService.readMetadatas(new ByteArrayInputStream(multipartFile.getBytes()));
+        } catch (IOException e) {
+            throw new EsupSignatureIOException("Erreur lors de la lecture des métadonnées", e);
+        }
     }
 
     /**
@@ -2098,11 +2650,12 @@ public class SignBookService {
      * Retourne la prochaine demande de signature en attente dans le même SignBook ou dans un SignBook supplémentaire si fourni.
      *
      * @param signRequestId l'identifiant de la demande de signature actuelle
-     * @param nextSignBook un SignBook supplémentaire contenant des demandes de signature
+     * @param nextSignBookId l'identifiant d'un SignBook supplémentaire contenant des demandes de signature
      * @return la prochaine demande de signature en attente si elle existe, sinon null
      */
     @Transactional
-    public SignRequest getNextSignRequest(Long signRequestId, SignBook nextSignBook) {
+    public SignRequest getNextSignRequest(Long signRequestId, Long nextSignBookId) {
+        SignBook nextSignBook = getById(nextSignBookId);
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
         Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId)).findAny();
         if(nextSignRequest.isPresent()) {
@@ -2201,7 +2754,7 @@ public class SignBookService {
     public void saveSignBookAsWorkflow(Long signBookId, String title, String description, String userEppn) throws EsupSignatureRuntimeException {
         User user = userService.getByEppn(userEppn);
         SignBook signBook = getById(signBookId);
-        Workflow workflow = workflowService.createWorkflow(title, description, user);
+        Workflow workflow = workflowService.createWorkflow(title, description, user, null);
         workflow.getViewers().addAll(signBook.getViewers());
         for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
             List<RecipientWsDto> recipients = new ArrayList<>();
@@ -2798,6 +3351,7 @@ public class SignBookService {
         }
         SignRequest signRequest = signRequestService.getById(signRequestId);
         transfertSignRequest(signRequest.getParentSignBook().getId(), false, user, replacedByUser, keepFollow);
+        logService.create(signRequest.getId(), signRequest.getParentSignBook().getSubject(), signRequest.getParentSignBook().getWorkflowName(), signRequest.getStatus(), "Transfert de la demande de signature à " + replacedByUser.getFirstname() + " " + replacedByUser.getName(), "", "SUCCESS", null, null, null, null, userEppn, userEppn);
     }
 
     /**
@@ -2886,11 +3440,11 @@ public class SignBookService {
     }
 
     /**
-     * Vérifie si un utilisateur a les droits de visualisation d'un signBook spécifique.
+     * Vérifie si un utilisateur a les droits de visualisation d'un signBookLight spécifique.
      *
      * @param userEppn l'identifiant unique de l'utilisateur concerné par la vérification des droits
      * @param authUserEppn l'identifiant unique de l'utilisateur authentifié effectuant la demande
-     * @param signBookId l'identifiant unique du signBook à vérifier
+     * @param signBookId l'identifiant unique du signBookLight à vérifier
      * @return true si l'utilisateur possède les droits de visualisation, false sinon
      */
     @Transactional
@@ -3091,4 +3645,10 @@ public class SignBookService {
         User user = userService.getByEppn(userEppn);
         return signBookRepository.countByCreateByEppnAndDeleted(user);
     }
+
+    @Transactional
+    public List<SignRequest> getSignRequestsToReplace(String authUserEppn) {
+        return getSignBookForUsers(authUserEppn).stream().filter(signBook -> signBook.getStatus().equals(SignRequestStatus.pending)).flatMap(signBook -> signBook.getSignRequests().stream().distinct()).collect(Collectors.toList());
+    }
+
 }

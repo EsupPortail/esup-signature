@@ -11,10 +11,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.RecipientsActionsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestStepsDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.*;
@@ -145,6 +145,18 @@ public class SignRequestService {
      */
     public SignRequest getById(long id) {
 		Optional<SignRequest> signRequest = signRequestRepository.findById(id);
+		if(signRequest.isPresent()) {
+			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
+			if (data != null) {
+				signRequest.get().setData(data);
+			}
+			return signRequest.get();
+		}
+		return null;
+	}
+
+    public SignRequest getByIdWithShowContext(long id) {
+		Optional<SignRequest> signRequest = signRequestRepository.findByIdWithShowContext(id);
 		if(signRequest.isPresent()) {
 			Data data = dataService.getBySignBook(signRequest.get().getParentSignBook());
 			if (data != null) {
@@ -886,7 +898,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(signRequestId);
 		SignBook signBook = signRequest.getParentSignBook();
 //		boolean testAllNone = signRequest.getRecipientHasSigned().values().stream().allMatch(a -> a.getActionType().equals(ActionType.none));
-//		int step = signBook.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBook.getLiveWorkflow().getCurrentStep());
+//		int step = signBookLight.getLiveWorkflow().getLiveWorkflowSteps().indexOf(signBookLight.getLiveWorkflow().getCurrentStep());
 //		if(testAllNone && !signRequest.getDeleted() && step > 0) {
 //			return -1L;
 //		}
@@ -1192,7 +1204,7 @@ public class SignRequestService {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
 		} else {
 			signRequest.getAttachments().remove(attachement);
 			documentService.delete(attachement);
@@ -1214,9 +1226,16 @@ public class SignRequestService {
 
 	@Transactional
 	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber) throws EsupSignatureException {
+		return addSpot(id, pageNumber, posX, posY, signWidth, signHeight, spotStepNumber, null);
+	}
+
+	@Transactional
+	public Long addSpot(Long id, Integer pageNumber, Integer posX, Integer posY, Integer signWidth, Integer signHeight, Integer spotStepNumber, Long recipientId) throws EsupSignatureException {
 		SignRequest signRequest = getById(id);
-		if(signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getRecipients().size() > 1 && signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getAllSignToComplete()) {
-			throw new EsupSignatureException("Impossible d'ajouter un champ signature s'il y plusieurs participants dans l'étape");
+		LiveWorkflowStep liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1);
+		Recipient recipient = resolveSpotRecipient(liveWorkflowStep, recipientId);
+		if(recipient == null && liveWorkflowStep.getRecipients().size() > 1 && Boolean.TRUE.equals(liveWorkflowStep.getAllSignToComplete())) {
+			throw new EsupSignatureException("Impossible d'ajouter un champ signature générique s'il y a plusieurs participants dans l'étape ; merci de cibler un destinataire");
 		}
 		SignRequestParams signRequestParams = signRequestParamsService.createSignRequestParams(pageNumber, posX, posY);
 		if(signWidth != null && signHeight != null) {
@@ -1225,8 +1244,49 @@ public class SignRequestService {
 		}
 		int docNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		signRequestParams.setSignDocumentNumber(docNumber);
-		signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().get(spotStepNumber - 1).getSignRequestParams().add(signRequestParams);
+		signRequestParams.setRecipient(recipient);
+		liveWorkflowStep.getSignRequestParams().add(signRequestParams);
 		return signRequestParams.getId();
+	}
+
+	private Recipient resolveSpotRecipient(LiveWorkflowStep liveWorkflowStep, Long recipientId) throws EsupSignatureException {
+		if(recipientId == null) {
+			return null;
+		}
+		Recipient recipient = recipientService.getById(recipientId);
+		if(recipient == null || liveWorkflowStep.getRecipients().stream().noneMatch(stepRecipient -> Objects.equals(stepRecipient.getId(), recipient.getId()))) {
+			throw new EsupSignatureException("Le destinataire cible n'appartient pas à l'étape sélectionnée");
+		}
+		return recipient;
+	}
+
+	private boolean canUseSpot(SignRequestParams signRequestParams, Set<Long> recipientIds) {
+		return signRequestParams.getRecipient() == null
+				|| signRequestParams.getRecipient().getId() != null && recipientIds.contains(signRequestParams.getRecipient().getId());
+	}
+
+	public List<SignRequestParams> getCurrentStepSignRequestParams(SignRequest signRequest, String userEppn) {
+		LiveWorkflowStep currentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep();
+		if(currentStep == null) {
+			return List.of();
+		}
+		User user = userService.getByEppn(userEppn);
+		Set<Long> recipientIds = currentStep.getRecipients().stream()
+				.filter(recipient -> recipient.getUser().equals(user))
+				.filter(recipient -> signRequest.getRecipientHasSigned().isEmpty()
+						|| signRequest.getRecipientHasSigned().get(recipient) == null
+						|| signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none))
+				.map(Recipient::getId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if(recipientIds.isEmpty()) {
+			return List.of();
+		}
+		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
+		return currentStep.getSignRequestParams().stream()
+				.filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber))
+				.filter(signRequestParams -> canUseSpot(signRequestParams, recipientIds))
+				.toList();
 	}
 
     /**
@@ -1579,7 +1639,7 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		boolean displayNotif = false;
 		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
-				(signRequest.getCreateBy().getEppn().equals(userEppn)
+				(userEppn.equals("system") || signRequest.getCreateBy().getEppn().equals(userEppn)
 						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&
 						(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
 						|| !Collections.disjoint(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDashboardRoles(), user.getRoles())))
@@ -1634,20 +1694,14 @@ public class SignRequestService {
 		User user = userService.getByEppn(userEppn);
 		List<SignRequestParams> toUserSignRequestParams = new ArrayList<>();
 		SignRequest signRequest = getById(id);
-		int signOrderNumber = signRequest.getParentSignBook().getSignRequests().indexOf(signRequest);
 		if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-			if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getAllSignToComplete()) {
-				for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-					if (!signRequest.getRecipientHasSigned().isEmpty() && signRequest.getRecipientHasSigned().get(recipient) != null && !signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none)) {
-						return toUserSignRequestParams;
-					}
-				}
-			}
-			List<SignRequestParams> signRequestParamsForCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignRequestParams().stream().filter(signRequestParams -> signRequestParams.getSignDocumentNumber().equals(signOrderNumber)).toList();
-			for(SignRequestParams signRequestParams : signRequestParamsForCurrentStep) {
-				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream().anyMatch(recipient -> recipient.getUser().equals(user))) {
-					toUserSignRequestParams.add(signRequestParams);
-				}
+			boolean currentUserCanUseCurrentStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients().stream()
+					.filter(recipient -> recipient.getUser().equals(user))
+					.anyMatch(recipient -> signRequest.getRecipientHasSigned().isEmpty()
+							|| signRequest.getRecipientHasSigned().get(recipient) == null
+							|| signRequest.getRecipientHasSigned().get(recipient).getActionType().equals(ActionType.none));
+			if(currentUserCanUseCurrentStep) {
+				toUserSignRequestParams.addAll(getCurrentStepSignRequestParams(signRequest, userEppn));
 			}
 		}
 		return toUserSignRequestParams;
@@ -1935,17 +1989,17 @@ public class SignRequestService {
      *         avec les informations sur les actions des destinataires et les métadonnées associées.
      */
     @Transactional
-	public List<SignRequestStepsDto> getStepsDto(Long id) {
-		List<SignRequestStepsDto> signRequestStepsDtos = new ArrayList<>();
+	public List<SignRequestStepsWsDto> getStepsDto(Long id) {
+		List<SignRequestStepsWsDto> signRequestStepsWsDtos = new ArrayList<>();
 		SignRequest signRequest = getById(id);
 		int i = 1;
 		for(LiveWorkflowStep liveWorkflowStep : signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps()) {
-			SignRequestStepsDto signRequestStepsDto = new SignRequestStepsDto();
-			signRequestStepsDto.setStepNumber(i);
-			signRequestStepsDto.setSignType(liveWorkflowStep.getSignType().name());
-			signRequestStepsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
+			SignRequestStepsWsDto signRequestStepsWsDto = new SignRequestStepsWsDto();
+			signRequestStepsWsDto.setStepNumber(i);
+			signRequestStepsWsDto.setSignType(liveWorkflowStep.getSignType().name());
+			signRequestStepsWsDto.setAllSignToComplete(liveWorkflowStep.getAllSignToComplete());
 			for(Recipient recipient : liveWorkflowStep.getRecipients()) {
-				RecipientsActionsDto recipientsActionsDto = new RecipientsActionsDto();
+				RecipientsActionsWsDto recipientsActionsDto = new RecipientsActionsWsDto();
 				recipientsActionsDto.setStepNumber(i);
 				Action action = signRequest.getRecipientHasSigned().get(recipient);
 				if(action != null) {
@@ -1968,12 +2022,12 @@ public class SignRequestService {
 					recipientsActionsDto.setSignPosX(auditStep.getPosX());
 					recipientsActionsDto.setSignPosY(auditStep.getPosY());
 				}
-				signRequestStepsDto.getRecipientsActions().add(recipientsActionsDto);
+				signRequestStepsWsDto.getRecipientsActions().add(recipientsActionsDto);
 			}
-			signRequestStepsDtos.add(signRequestStepsDto);
+			signRequestStepsWsDtos.add(signRequestStepsWsDto);
 			i++;
 		}
-		return signRequestStepsDtos;
+		return signRequestStepsWsDtos;
 	}
 
 	/**
@@ -2012,10 +2066,10 @@ public class SignRequestService {
 	@Transactional
 	public void cleanSignRequestDocumentsHistory(Long signRequestId) throws IOException {
 		SignRequest signRequest = getById(signRequestId);
-		if(signRequest.getParentSignBook().getEndDate()
+		logger.info("try cleaning documents history : " + signRequestId);
+		if(signRequest.getParentSignBook().getEndDate() != null && signRequest.getParentSignBook().getEndDate()
 				.before(Date.from(Instant.now().minus(globalProperties.getDocumentsHistoryDelay(), ChronoUnit.DAYS)))
 		) {
-			logger.info("cleaning signRequest documents history : " + signRequestId);
 			signRequest.getOriginalDocuments().clear();
 			Document lastSignedDocument = signRequest.getLastSignedDocument();
 			if(signRequest.getSignedDocuments().size() > 1) {
@@ -2035,6 +2089,7 @@ public class SignRequestService {
 				signRequest.getSignedDocuments().add(lastSignedDocument);
 			}
 			signRequest.setCleanDocumentsHistoryDate(new Date());
+			logger.info("cleaning documents history ok : " + signRequestId);
 		}
 	}
 
