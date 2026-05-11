@@ -21,7 +21,7 @@
         </li>
     </ul>
     <hr>
-    <div th:if="${currentUri != null && (currentUri == '/user' || currentUri == '/user/users' || (signRequest != null && currentUri == '/user/signrequests/' + signRequest.id))}" class="col-12 text-center">
+    <div th:if="${currentUri != null && (currentUri == '/user' || currentUri == '/user/users' || (signRequestLight != null && currentUri == '/user/signrequests/' + signRequestLight.id))}" class="col-12 text-center">
         <button class="btn btn-primary mx-auto" id="helpStartButton">Relancer le didacticiel</button>
     </div>
     <hr>
