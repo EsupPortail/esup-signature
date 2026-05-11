@@ -50,14 +50,16 @@
                     </div>
                     <input type="text" autocomplete="username" name="username" class="d-none">
                     <div id="sealChoose">
-                        <label for="certType">Merci de sélectionner le certificat à utiliser</label>
-                        <div class="input-group mt-2">
-                            <select id="sealCertificat" name="sealCertificat" class="form-control form-select border-light-subtle">
-                                <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
-                                    <option th:value="${sealCertificatProperties.sealCertificatName}" th:text="${sealCertificatProperties.sealCertificatTitle}"></option>
-                                </th:block>
-                            </select>
-                        </div>
+                        <th:block th:if="${sealCertificatPropertieses != null && !sealCertificatPropertieses.isEmpty()}">
+                            <label for="sealCertificat" th:if="${sealCertificatPropertieses.size() > 1}">Merci de sélectionner le certificat à utiliser</label>
+                            <div class="input-group mt-2" th:classappend="${sealCertificatPropertieses.size() == 1} ? ' d-none' : ''">
+                                <select id="sealCertificat" name="sealCertificat" class="form-control form-select border-light-subtle">
+                                    <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
+                                        <option th:value="${sealCertificatProperties.sealCertificatName}" th:text="${sealCertificatProperties.sealCertificatTitle}"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                        </th:block>
                     </div>
                     <div id="nexuCheck" class="d-none">
                         <div id="nexu_version_alert" class="alert alert-warning mt-1 mb-1 col-12 text-center" style="display: none;">
