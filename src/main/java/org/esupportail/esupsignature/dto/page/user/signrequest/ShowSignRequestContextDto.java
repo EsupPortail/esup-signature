@@ -22,6 +22,10 @@ public class ShowSignRequestContextDto {
     private String userEppn;
     private String authUserEppn;
     private boolean otpView;
+    private Long workflowId;
+    private SignType currentStepSignType;
+    private ShowSignRequestDto showSignRequest;
+    private SignUiFrontDto signUiFront;
     private SignRequest signRequest;
     private SignBook signBook;
     private LiveWorkflow liveWorkflow;
@@ -66,6 +70,14 @@ public class ShowSignRequestContextDto {
     public void setAuthUserEppn(String authUserEppn) { this.authUserEppn = authUserEppn; }
     public boolean isOtpView() { return otpView; }
     public void setOtpView(boolean otpView) { this.otpView = otpView; }
+    public Long getWorkflowId() { return workflowId; }
+    public void setWorkflowId(Long workflowId) { this.workflowId = workflowId; }
+    public SignType getCurrentStepSignType() { return currentStepSignType; }
+    public void setCurrentStepSignType(SignType currentStepSignType) { this.currentStepSignType = currentStepSignType; }
+    public ShowSignRequestDto getShowSignRequest() { return showSignRequest; }
+    public void setShowSignRequest(ShowSignRequestDto showSignRequest) { this.showSignRequest = showSignRequest; }
+    public SignUiFrontDto getSignUiFront() { return signUiFront; }
+    public void setSignUiFront(SignUiFrontDto signUiFront) { this.signUiFront = signUiFront; }
     public SignRequest getSignRequest() { return signRequest; }
     public void setSignRequest(SignRequest signRequest) { this.signRequest = signRequest; }
     public SignBook getSignBook() { return signBook; }

@@ -79,19 +79,16 @@ public class UserAndOtpSignRequestController {
         boolean isOtpView = path.startsWith("/otp");
         String favoriteSignRequestParamsJson = userService.getFavoriteSignRequestParamsJson(userEppn);
         ShowSignRequestContextDto context = uiFetchSignRequestService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
-        Workflow workflow = context.getWorkflow();
-        LiveWorkflowStep currentStep = context.getCurrentStep();
-
         if(context.getSignImagesWarningMessage() != null) {
             model.addAttribute("message", new UiMessageDto("warn", context.getSignImagesWarningMessage()));
         }
 
         if(context.isSignable()
-                && workflow != null && userService.getUiParams(authUserEppn) != null
-                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(workflow.getId().toString()))
-                && currentStep != null && currentStep.getSignType().equals(SignType.hiddenVisa)) {
+                && context.getWorkflowId() != null && userService.getUiParams(authUserEppn) != null
+                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(context.getWorkflowId().toString()))
+                && SignType.hiddenVisa.equals(context.getCurrentStepSignType())) {
             model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
-            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, workflow.getId().toString() + ",");
+            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, context.getWorkflowId().toString() + ",");
         }
         ShowSignRequestDto showSignRequest = uiFetchSignRequestService.buildShowSignRequestBackDto(context);
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
