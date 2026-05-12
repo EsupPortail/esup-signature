@@ -493,7 +493,7 @@ export class SignPlacementController extends EventFactory {
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
-        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton2, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");
@@ -529,7 +529,7 @@ export class SignPlacementController extends EventFactory {
         addParaphButton2.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton2, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
@@ -570,7 +570,7 @@ export class SignPlacementController extends EventFactory {
             insertBtn.removeAttr("disabled");
             refuseLaunchButton.removeAttr("disabled");
             signLaunchButton.removeAttr("disabled");
-            refuseLaunchDiv.removeClass("d-none");
+            refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
             this.setButtonVariant(addSignButton, "btn-secondary");
             this.setButtonVariant(insertBtn, "btn-success");
@@ -589,7 +589,8 @@ export class SignPlacementController extends EventFactory {
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.attr("disabled", "disabled");
         signLaunchButton.removeAttr("disabled");
-        refuseLaunchDiv.addClass("d-none");
+        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.addClass("es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");

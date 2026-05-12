@@ -3,7 +3,6 @@ package org.esupportail.esupsignature.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.Hibernate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -63,9 +62,8 @@ public class FormService {
 	private final WebUtilsService webUtilsService;
 	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 	private final ObjectMapper objectMapper;
-	private final TagService tagService;
 
-	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper, TagService tagService) {
+	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
         this.applicationContext = applicationContext;
         this.formRepository = formRepository;
         this.pdfService = pdfService;
@@ -80,7 +78,6 @@ public class FormService {
         this.webUtilsService = webUtilsService;
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.objectMapper = objectMapper;
-		this.tagService = tagService;
 	}
 
     public Form getById(Long formId) {
@@ -100,24 +97,27 @@ public class FormService {
 
 	@Transactional
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
-		Set<Form> forms = new HashSet<>();
+		Set<Long> formIds = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-            forms.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)));
+	            formIds.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)).stream()
+	                    .map(Form::getId)
+	                    .collect(Collectors.toSet()));
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
 				if(userShare.getForm() != null && !userShare.getForm().getDeleted()){
-					forms.add(userShare.getForm());
+					formIds.add(userShare.getForm().getId());
 				}
 			}
 		}
+		if(formIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<Form> forms = formRepository.findByIdInWithWorkflowTags(formIds);
 		for(Form form : forms) {
 			form.setMessageToDisplay(getHelpMessage(userEppn, form));
-			if (form.getWorkflow() != null) {
-				Hibernate.initialize(form.getWorkflow().getTags());
-			}
 		}
-		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
+		return forms.stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
 
 	@Transactional
