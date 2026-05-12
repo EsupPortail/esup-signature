@@ -3,9 +3,9 @@ package org.esupportail.esupsignature.web.controller.user;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.User;
-import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.FormService;
@@ -40,7 +40,7 @@ public class UserShareController {
 
     @GetMapping
     public String params(@ModelAttribute("authUserEppn") String authUserEppn, Model model) {
-        List<UserShare> userShares = userShareService.getUserSharesByUser(authUserEppn);
+        List<UserShareViewDto> userShares = userShareService.getUserShareViewsByUser(authUserEppn);
         model.addAttribute("userShares", userShares);
         model.addAttribute("shareTypes", ShareType.values());
         model.addAttribute("forms", formService.getAuthorizedToShareForms());
@@ -53,8 +53,8 @@ public class UserShareController {
     @GetMapping("/update/{id}")
     public String params(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         model.addAttribute("activeMenu", "shares");
-        UserShare userShare = userShareService.getById(id);
-        if(userShare.getUser().getEppn().equals(authUserEppn)) {
+        UserShareViewDto userShare = userShareService.getUserShareViewByIdAndUser(id, authUserEppn).orElse(null);
+        if(userShare != null) {
             model.addAttribute("shareTypes", ShareType.values());
             model.addAttribute("userShare", userShare);
             return "user/users/shares/update";

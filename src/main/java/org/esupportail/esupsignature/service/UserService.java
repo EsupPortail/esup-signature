@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -924,7 +925,11 @@ public class UserService {
     }
 
     public void validateUserForPersistence(User user, String context) {
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        User userToValidate = user == null ? null : (User) Hibernate.unproxy(user);
+        if (userToValidate != null && UserType.system.equals(userToValidate.getUserType())) {
+            return;
+        }
+        Set<ConstraintViolation<User>> violations = validator.validate(userToValidate);
         if (violations.isEmpty()) {
             return;
         }
