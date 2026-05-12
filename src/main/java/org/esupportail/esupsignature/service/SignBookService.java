@@ -2853,9 +2853,9 @@ public class SignBookService {
                 }
             }
         }
-        signImages.add(fileService.getBase64Image(userService.getDefaultImage(authUserEppn), "default-image.png"));
+        signImages.add(fileService.getBase64Image(userService.getDefaultImage(userEppn), "default-image.png"));
         if(StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getFirstname())) {
-            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(authUserEppn), "default-paraphe.png"));
+            signImages.add(fileService.getBase64Image(userService.getDefaultParaphe(userEppn), "default-paraphe.png"));
         }
         return signImages;
     }

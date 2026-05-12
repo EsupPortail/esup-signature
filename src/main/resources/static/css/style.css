@@ -107,6 +107,11 @@ body.es-signrequest-page #tools #refuseLaunchDiv {
     min-width: 0;
 }
 
+body.es-signrequest-page #tools #refuseLaunchDiv.es-refuse-slot-hidden {
+    visibility: hidden;
+    pointer-events: none;
+}
+
 body.es-signrequest-page #tools #insert-btn-div {
     flex-wrap: nowrap !important;
 }
@@ -202,6 +207,37 @@ body.es-spot-add-mode #spot-modal * {
     /* Hide connectors when intermediate steps are hidden to avoid overlap. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
         display: none;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 {
+        width: 50% !important;
+        flex: 0 1 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
+        /*width: 50%;*/
+    }
+
+    body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
+        width: auto;
+        flex: 0 0 auto !important;
+    }
+
+    body.es-signrequest-page #tools #step-3 #signLaunchButton {
+        width: auto;
+        max-width: none;
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse {
+        margin-left: 0.25rem !important;
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse .btn {
+        width: auto;
+        max-width: none;
+        white-space: nowrap;
     }
 
     body.es-signrequest-page #tools #refuseLaunchDiv {

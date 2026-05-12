@@ -54,12 +54,19 @@
     }
 }
 
+@media (max-width: 1600px) {
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+}
+
 @media (max-width: 1400px) {
     .d-xxl-flex {
         display: flex !important;
     }
 
     th.col-nom { min-width: 130px; }
+
 }
 
 @media (max-width: 1200px) {
@@ -166,10 +173,6 @@
 }
 
 @media (max-width: 992px) {
-
-    .step-horizontal-v2-icon {
-        display: none !important;
-    }
 
     th.col-nom {
         min-width: 110px;
