@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.dto.mapper.UiFetchSignRequestService;
 import org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
@@ -47,6 +48,7 @@ import java.util.stream.Collectors;
 public class SignRequestAdminController {
 
 	private static final Logger logger = LoggerFactory.getLogger(SignRequestAdminController.class);
+	private final UiFetchSignRequestService uiFetchSignRequestService;
 
 	@ModelAttribute("adminMenu")
 	public String getAdminMenu() {
@@ -63,11 +65,12 @@ public class SignRequestAdminController {
 	private final SignBookService signBookService;
 	private final UiFetchService uiFetchService;
 
-	public SignRequestAdminController(SignBookRepository signBookRepository, DocumentRepository documentRepository, SignBookService signBookService, UiFetchService uiFetchService) {
+	public SignRequestAdminController(SignBookRepository signBookRepository, DocumentRepository documentRepository, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService) {
 		this.signBookRepository = signBookRepository;
 		this.documentRepository = documentRepository;
 		this.signBookService = signBookService;
 		this.uiFetchService = uiFetchService;
+		this.uiFetchSignRequestService = uiFetchSignRequestService;
 	}
 
 	@GetMapping
@@ -91,7 +94,7 @@ public class SignRequestAdminController {
 
 	@GetMapping(value = "/{id}")
 	public String show(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
-		AdminSignRequestShowViewDto view = uiFetchService.buildAdminSignRequestShowView(id);
+		AdminSignRequestShowViewDto view = uiFetchSignRequestService.buildAdminSignRequestShowView(id);
 		if(view != null) {
 			model.addAttribute("adminSignRequestView", view);
 			model.addAttribute("signRequestLight", view.signRequestLight());

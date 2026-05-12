@@ -464,26 +464,6 @@ public class SignBookService {
     }
 
     @Transactional(readOnly = true)
-    public SignBookLightDto getSignBookUpdateLight(Long id) {
-        SignBook signBook = getById(id);
-        if (signBook == null) {
-            return null;
-        }
-        return new SignBookLightDto(
-                signBook.getId(),
-                signBook.getWorkflowName(),
-                signBook.getSubject(),
-                signBook.getDescription(),
-                signBook.getStatus(),
-                signBook.getDeleted(),
-                signBook.isEditable(),
-                signBook.getArchiveStatus(),
-                signBook.getCreateDate(),
-                toSignBookViewerDtos(signBook.getViewers())
-        );
-    }
-
-    @Transactional(readOnly = true)
     public Page<SignBookFullDto> getAllSignBookListItems(String userEppn,
                                                          String statusFilter,
                                                          String workflowFilter,

@@ -10,502 +10,625 @@ import java.util.Map;
 
 public class AdminFormDetailViewDto {
 
-    private final String workflowRole;
-    private final FormDto form;
-    private final WorkflowSummaryDto workflow;
-    private final List<String> roles;
-    private final List<WorkflowOptionDto> workflowTypes;
-    private final List<PreFillOptionDto> preFillTypes;
-    private final List<TagDto> allTags;
-    private final List<Long> selectedTagIds;
-    private final DocumentDto document;
-    private final Map<String, List<String>> preFillTypeOptions;
-    private final List<SignRequestParamsFrontDto> spots;
-    private final Map<Integer, Long> srpMap;
-    private final Integer defaultSignImageNumber;
-
-    public AdminFormDetailViewDto(String workflowRole,
-                                  FormDto form,
-                                  WorkflowSummaryDto workflow,
-                                  List<String> roles,
-                                  List<WorkflowOptionDto> workflowTypes,
-                                  List<PreFillOptionDto> preFillTypes,
-                                  List<TagDto> allTags,
-                                  List<Long> selectedTagIds,
-                                  DocumentDto document,
-                                  Map<String, List<String>> preFillTypeOptions,
-                                  List<SignRequestParamsFrontDto> spots,
-                                  Map<Integer, Long> srpMap,
-                                  Integer defaultSignImageNumber) {
-        this.workflowRole = workflowRole;
-        this.form = form;
-        this.workflow = workflow;
-        this.roles = roles;
-        this.workflowTypes = workflowTypes;
-        this.preFillTypes = preFillTypes;
-        this.allTags = allTags;
-        this.selectedTagIds = selectedTagIds;
-        this.document = document;
-        this.preFillTypeOptions = preFillTypeOptions;
-        this.spots = spots;
-        this.srpMap = srpMap;
-        this.defaultSignImageNumber = defaultSignImageNumber;
-    }
+    private String workflowRole;
+    private FormDto form;
+    private WorkflowSummaryDto workflow;
+    private List<String> roles;
+    private List<WorkflowOptionDto> workflowTypes;
+    private List<PreFillOptionDto> preFillTypes;
+    private List<TagDto> allTags;
+    private List<Long> selectedTagIds;
+    private DocumentDto document;
+    private Map<String, List<String>> preFillTypeOptions;
+    private List<SignRequestParamsFrontDto> spots;
+    private Map<Integer, Long> srpMap;
+    private Integer defaultSignImageNumber;
 
     public String getWorkflowRole() {
         return workflowRole;
+    }
+
+    public void setWorkflowRole(String workflowRole) {
+        this.workflowRole = workflowRole;
     }
 
     public FormDto getForm() {
         return form;
     }
 
+    public void setForm(FormDto form) {
+        this.form = form;
+    }
+
     public WorkflowSummaryDto getWorkflow() {
         return workflow;
+    }
+
+    public void setWorkflow(WorkflowSummaryDto workflow) {
+        this.workflow = workflow;
     }
 
     public List<String> getRoles() {
         return roles;
     }
 
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
     public List<WorkflowOptionDto> getWorkflowTypes() {
         return workflowTypes;
+    }
+
+    public void setWorkflowTypes(List<WorkflowOptionDto> workflowTypes) {
+        this.workflowTypes = workflowTypes;
     }
 
     public List<PreFillOptionDto> getPreFillTypes() {
         return preFillTypes;
     }
 
+    public void setPreFillTypes(List<PreFillOptionDto> preFillTypes) {
+        this.preFillTypes = preFillTypes;
+    }
+
     public List<TagDto> getAllTags() {
         return allTags;
+    }
+
+    public void setAllTags(List<TagDto> allTags) {
+        this.allTags = allTags;
     }
 
     public List<Long> getSelectedTagIds() {
         return selectedTagIds;
     }
 
+    public void setSelectedTagIds(List<Long> selectedTagIds) {
+        this.selectedTagIds = selectedTagIds;
+    }
+
     public DocumentDto getDocument() {
         return document;
+    }
+
+    public void setDocument(DocumentDto document) {
+        this.document = document;
     }
 
     public Map<String, List<String>> getPreFillTypeOptions() {
         return preFillTypeOptions;
     }
 
+    public void setPreFillTypeOptions(Map<String, List<String>> preFillTypeOptions) {
+        this.preFillTypeOptions = preFillTypeOptions;
+    }
+
     public List<SignRequestParamsFrontDto> getSpots() {
         return spots;
+    }
+
+    public void setSpots(List<SignRequestParamsFrontDto> spots) {
+        this.spots = spots;
     }
 
     public Map<Integer, Long> getSrpMap() {
         return srpMap;
     }
 
+    public void setSrpMap(Map<Integer, Long> srpMap) {
+        this.srpMap = srpMap;
+    }
+
     public Integer getDefaultSignImageNumber() {
         return defaultSignImageNumber;
     }
 
-    public static class FormDto {
-        private final Long id;
-        private final String title;
-        private final String name;
-        private final String description;
-        private final Boolean isFeatured;
-        private final Boolean activeVersion;
-        private final List<ShareType> authorizedShareTypes;
-        private final Boolean publicUsage;
-        private final List<String> roles;
-        private final Boolean hideButton;
-        private final String preFillType;
-        private final Boolean pdfDisplay;
-        private final String action;
-        private final String message;
-        private final WorkflowSummaryDto workflow;
-        private final DocumentDto document;
-        private final List<FieldDto> fields;
-        private final List<SignRequestParamsFrontDto> signRequestParams;
-        private final Boolean deleted;
+    public void setDefaultSignImageNumber(Integer defaultSignImageNumber) {
+        this.defaultSignImageNumber = defaultSignImageNumber;
+    }
 
-        public FormDto(Long id,
-                       String title,
-                       String name,
-                       String description,
-                       Boolean isFeatured,
-                       Boolean activeVersion,
-                       List<ShareType> authorizedShareTypes,
-                       Boolean publicUsage,
-                       List<String> roles,
-                       Boolean hideButton,
-                       String preFillType,
-                       Boolean pdfDisplay,
-                       String action,
-                       String message,
-                       WorkflowSummaryDto workflow,
-                       DocumentDto document,
-                       List<FieldDto> fields,
-                       List<SignRequestParamsFrontDto> signRequestParams,
-                       Boolean deleted) {
-            this.id = id;
-            this.title = title;
-            this.name = name;
-            this.description = description;
-            this.isFeatured = isFeatured;
-            this.activeVersion = activeVersion;
-            this.authorizedShareTypes = authorizedShareTypes;
-            this.publicUsage = publicUsage;
-            this.roles = roles;
-            this.hideButton = hideButton;
-            this.preFillType = preFillType;
-            this.pdfDisplay = pdfDisplay;
-            this.action = action;
-            this.message = message;
-            this.workflow = workflow;
-            this.document = document;
-            this.fields = fields;
-            this.signRequestParams = signRequestParams;
-            this.deleted = deleted;
-        }
+    public static class FormDto {
+        private Long id;
+        private String title;
+        private String name;
+        private String description;
+        private Boolean isFeatured;
+        private Boolean activeVersion;
+        private List<ShareType> authorizedShareTypes;
+        private Boolean publicUsage;
+        private List<String> roles;
+        private Boolean hideButton;
+        private String preFillType;
+        private Boolean pdfDisplay;
+        private String action;
+        private String message;
+        private WorkflowSummaryDto workflow;
+        private DocumentDto document;
+        private List<FieldDto> fields;
+        private List<SignRequestParamsFrontDto> signRequestParams;
+        private Boolean deleted;
 
         public Long getId() {
             return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
         }
 
         public String getTitle() {
             return title;
         }
 
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
         public String getName() {
             return name;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public Boolean getIsFeatured() {
             return isFeatured;
         }
 
+        public void setIsFeatured(Boolean featured) {
+            isFeatured = featured;
+        }
+
         public Boolean getActiveVersion() {
             return activeVersion;
+        }
+
+        public void setActiveVersion(Boolean activeVersion) {
+            this.activeVersion = activeVersion;
         }
 
         public List<ShareType> getAuthorizedShareTypes() {
             return authorizedShareTypes;
         }
 
+        public void setAuthorizedShareTypes(List<ShareType> authorizedShareTypes) {
+            this.authorizedShareTypes = authorizedShareTypes;
+        }
+
         public Boolean getPublicUsage() {
             return publicUsage;
+        }
+
+        public void setPublicUsage(Boolean publicUsage) {
+            this.publicUsage = publicUsage;
         }
 
         public List<String> getRoles() {
             return roles;
         }
 
+        public void setRoles(List<String> roles) {
+            this.roles = roles;
+        }
+
         public Boolean getHideButton() {
             return hideButton;
+        }
+
+        public void setHideButton(Boolean hideButton) {
+            this.hideButton = hideButton;
         }
 
         public String getPreFillType() {
             return preFillType;
         }
 
+        public void setPreFillType(String preFillType) {
+            this.preFillType = preFillType;
+        }
+
         public Boolean getPdfDisplay() {
             return pdfDisplay;
+        }
+
+        public void setPdfDisplay(Boolean pdfDisplay) {
+            this.pdfDisplay = pdfDisplay;
         }
 
         public String getAction() {
             return action;
         }
 
+        public void setAction(String action) {
+            this.action = action;
+        }
+
         public String getMessage() {
             return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
         }
 
         public WorkflowSummaryDto getWorkflow() {
             return workflow;
         }
 
+        public void setWorkflow(WorkflowSummaryDto workflow) {
+            this.workflow = workflow;
+        }
+
         public DocumentDto getDocument() {
             return document;
+        }
+
+        public void setDocument(DocumentDto document) {
+            this.document = document;
         }
 
         public List<FieldDto> getFields() {
             return fields;
         }
 
+        public void setFields(List<FieldDto> fields) {
+            this.fields = fields;
+        }
+
         public List<SignRequestParamsFrontDto> getSignRequestParams() {
             return signRequestParams;
+        }
+
+        public void setSignRequestParams(List<SignRequestParamsFrontDto> signRequestParams) {
+            this.signRequestParams = signRequestParams;
         }
 
         public Boolean getDeleted() {
             return deleted;
         }
+
+        public void setDeleted(Boolean deleted) {
+            this.deleted = deleted;
+        }
     }
 
     public static class WorkflowSummaryDto {
-        private final Long id;
-        private final String description;
-        private final String mailFrom;
-        private final List<WorkflowStepDto> workflowSteps;
-
-        public WorkflowSummaryDto(Long id, String description, String mailFrom, List<WorkflowStepDto> workflowSteps) {
-            this.id = id;
-            this.description = description;
-            this.mailFrom = mailFrom;
-            this.workflowSteps = workflowSteps;
-        }
+        private Long id;
+        private String description;
+        private String mailFrom;
+        private List<WorkflowStepDto> workflowSteps;
 
         public Long getId() {
             return id;
         }
 
+        public void setId(Long id) {
+            this.id = id;
+        }
+
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public String getMailFrom() {
             return mailFrom;
         }
 
+        public void setMailFrom(String mailFrom) {
+            this.mailFrom = mailFrom;
+        }
+
         public List<WorkflowStepDto> getWorkflowSteps() {
             return workflowSteps;
+        }
+
+        public void setWorkflowSteps(List<WorkflowStepDto> workflowSteps) {
+            this.workflowSteps = workflowSteps;
         }
     }
 
     public static class WorkflowStepDto {
-        private final Long id;
-        private final SignType signType;
-        private final Boolean allSignToComplete;
-        private final String name;
-        private final List<UserDto> users;
-
-        public WorkflowStepDto(Long id, SignType signType, Boolean allSignToComplete, String name, List<UserDto> users) {
-            this.id = id;
-            this.signType = signType;
-            this.allSignToComplete = allSignToComplete;
-            this.name = name;
-            this.users = users;
-        }
+        private Long id;
+        private SignType signType;
+        private Boolean allSignToComplete;
+        private String name;
+        private List<UserDto> users;
 
         public Long getId() {
             return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
         }
 
         public SignType getSignType() {
             return signType;
         }
 
+        public void setSignType(SignType signType) {
+            this.signType = signType;
+        }
+
         public Boolean getAllSignToComplete() {
             return allSignToComplete;
         }
 
+        public void setAllSignToComplete(Boolean allSignToComplete) {
+            this.allSignToComplete = allSignToComplete;
+        }
+
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public List<UserDto> getUsers() {
             return users;
         }
+
+        public void setUsers(List<UserDto> users) {
+            this.users = users;
+        }
     }
 
     public static class UserDto {
-        private final String firstname;
-        private final String name;
-
-        public UserDto(String firstname, String name) {
-            this.firstname = firstname;
-            this.name = name;
-        }
+        private String firstname;
+        private String name;
 
         public String getFirstname() {
             return firstname;
         }
 
+        public void setFirstname(String firstname) {
+            this.firstname = firstname;
+        }
+
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
     }
 
     public static class WorkflowOptionDto {
-        private final Long id;
-        private final String description;
-
-        public WorkflowOptionDto(Long id, String description) {
-            this.id = id;
-            this.description = description;
-        }
+        private Long id;
+        private String description;
 
         public Long getId() {
             return id;
         }
 
+        public void setId(Long id) {
+            this.id = id;
+        }
+
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
     }
 
     public static class PreFillOptionDto {
-        private final String name;
-        private final String description;
-
-        public PreFillOptionDto(String name, String description) {
-            this.name = name;
-            this.description = description;
-        }
+        private String name;
+        private String description;
 
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public String getDescription() {
             return description;
         }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 
     public static class TagDto {
-        private final Long id;
-        private final String name;
-        private final String color;
-
-        public TagDto(Long id, String name, String color) {
-            this.id = id;
-            this.name = name;
-            this.color = color;
-        }
+        private Long id;
+        private String name;
+        private String color;
 
         public Long getId() {
             return id;
         }
 
+        public void setId(Long id) {
+            this.id = id;
+        }
+
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public String getColor() {
             return color;
         }
+
+        public void setColor(String color) {
+            this.color = color;
+        }
     }
 
     public static class DocumentDto {
-        private final String fileName;
-        private final String contentType;
-
-        public DocumentDto(String fileName, String contentType) {
-            this.fileName = fileName;
-            this.contentType = contentType;
-        }
+        private String fileName;
+        private String contentType;
 
         public String getFileName() {
             return fileName;
         }
 
+        public void setFileName(String fileName) {
+            this.fileName = fileName;
+        }
+
         public String getContentType() {
             return contentType;
+        }
+
+        public void setContentType(String contentType) {
+            this.contentType = contentType;
         }
     }
 
     public static class FieldDto {
-        private final Long id;
-        private final String name;
-        private final String description;
-        private final FieldType type;
-        private final Boolean favorisable;
-        private final Boolean required;
-        private final Boolean readOnly;
-        private final String extValueServiceName;
-        private final String searchServiceName;
-        private final String extValueType;
-        private final String searchType;
-        private final String extValueReturn;
-        private final String searchReturn;
-        private final List<Long> workflowStepIds;
-
-        public FieldDto(Long id,
-                        String name,
-                        String description,
-                        FieldType type,
-                        Boolean favorisable,
-                        Boolean required,
-                        Boolean readOnly,
-                        String extValueServiceName,
-                        String searchServiceName,
-                        String extValueType,
-                        String searchType,
-                        String extValueReturn,
-                        String searchReturn,
-                        List<Long> workflowStepIds) {
-            this.id = id;
-            this.name = name;
-            this.description = description;
-            this.type = type;
-            this.favorisable = favorisable;
-            this.required = required;
-            this.readOnly = readOnly;
-            this.extValueServiceName = extValueServiceName;
-            this.searchServiceName = searchServiceName;
-            this.extValueType = extValueType;
-            this.searchType = searchType;
-            this.extValueReturn = extValueReturn;
-            this.searchReturn = searchReturn;
-            this.workflowStepIds = workflowStepIds;
-        }
+        private Long id;
+        private String name;
+        private String description;
+        private FieldType type;
+        private Boolean favorisable;
+        private Boolean required;
+        private Boolean readOnly;
+        private String extValueServiceName;
+        private String searchServiceName;
+        private String extValueType;
+        private String searchType;
+        private String extValueReturn;
+        private String searchReturn;
+        private List<Long> workflowStepIds;
 
         public Long getId() {
             return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
         }
 
         public String getName() {
             return name;
         }
 
+        public void setName(String name) {
+            this.name = name;
+        }
+
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public FieldType getType() {
             return type;
         }
 
+        public void setType(FieldType type) {
+            this.type = type;
+        }
+
         public Boolean getFavorisable() {
             return favorisable;
+        }
+
+        public void setFavorisable(Boolean favorisable) {
+            this.favorisable = favorisable;
         }
 
         public Boolean getRequired() {
             return required;
         }
 
+        public void setRequired(Boolean required) {
+            this.required = required;
+        }
+
         public Boolean getReadOnly() {
             return readOnly;
+        }
+
+        public void setReadOnly(Boolean readOnly) {
+            this.readOnly = readOnly;
         }
 
         public String getExtValueServiceName() {
             return extValueServiceName;
         }
 
+        public void setExtValueServiceName(String extValueServiceName) {
+            this.extValueServiceName = extValueServiceName;
+        }
+
         public String getSearchServiceName() {
             return searchServiceName;
+        }
+
+        public void setSearchServiceName(String searchServiceName) {
+            this.searchServiceName = searchServiceName;
         }
 
         public String getExtValueType() {
             return extValueType;
         }
 
+        public void setExtValueType(String extValueType) {
+            this.extValueType = extValueType;
+        }
+
         public String getSearchType() {
             return searchType;
+        }
+
+        public void setSearchType(String searchType) {
+            this.searchType = searchType;
         }
 
         public String getExtValueReturn() {
             return extValueReturn;
         }
 
+        public void setExtValueReturn(String extValueReturn) {
+            this.extValueReturn = extValueReturn;
+        }
+
         public String getSearchReturn() {
             return searchReturn;
+        }
+
+        public void setSearchReturn(String searchReturn) {
+            this.searchReturn = searchReturn;
         }
 
         public List<Long> getWorkflowStepIds() {
             return workflowStepIds;
         }
+
+        public void setWorkflowStepIds(List<Long> workflowStepIds) {
+            this.workflowStepIds = workflowStepIds;
+        }
     }
 }
-
-

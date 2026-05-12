@@ -1,61 +1,29 @@
 package org.esupportail.esupsignature.dto.mapper;
 
-import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpSession;
-import org.apache.commons.io.FileUtils;
-import org.esupportail.esupsignature.dto.page.admin.AdminFormListViewDto;
-import org.esupportail.esupsignature.dto.page.admin.AdminFormDetailViewDto;
-import org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto;
-import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowListViewDto;
-import org.esupportail.esupsignature.dto.page.admin.AdminWorkflowUpdateViewDto;
-import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
-import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
-import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
-import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
-import org.esupportail.esupsignature.config.certificat.SealCertificatProperties;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.sms.SmsProperties;
-import org.esupportail.esupsignature.dto.ui.global.UserSignatureStateDto;
-import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
-import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.CommentFrontDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.FieldFrontDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto;
-import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
-import org.esupportail.esupsignature.dto.ui.global.UiCountersDto;
-import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
-import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
-import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
-import org.esupportail.esupsignature.dto.ui.global.UiCurrentUserDto;
-import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.dss.service.DSSService;
+import org.esupportail.esupsignature.dto.page.admin.*;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestParamsFrontDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.StartFormViewDto;
+import org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto;
+import org.esupportail.esupsignature.dto.ui.global.*;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
-import org.esupportail.esupsignature.entity.enums.*;
-import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
+import org.esupportail.esupsignature.entity.enums.DisplayWorkflowType;
+import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
+import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
-import org.esupportail.esupsignature.service.AuditTrailService;
-import org.esupportail.esupsignature.service.DataService;
-import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.CertificatService;
-import org.esupportail.esupsignature.service.FieldPropertieService;
-import org.esupportail.esupsignature.service.FormService;
-import org.esupportail.esupsignature.service.RecipientService;
-import org.esupportail.esupsignature.service.ReportService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.SignWithService;
-import org.esupportail.esupsignature.service.TagService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.UserPropertieService;
-import org.esupportail.esupsignature.service.UserShareService;
-import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.repository.custom.SessionRepositoryCustom;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFill;
 import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
@@ -65,21 +33,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UiFetchService {
@@ -99,12 +59,8 @@ public class UiFetchService {
     private final RecipientService recipientService;
     private final TagService tagService;
     private final PreFillService preFillService;
-    private final SignWithService signWithService;
     private final ReportService reportService;
-    private final AuditTrailService auditTrailService;
-    private final LogService logService;
     private final PreAuthorizeService preAuthorizeService;
-    private final SignService signService;
     private final Environment environment;
     private final BuildProperties buildProperties;
     private final ValidationService validationService;
@@ -112,33 +68,9 @@ public class UiFetchService {
     private final DSSService dssService;
     private final SessionRepositoryCustom sessionRepositoryCustom;
     private final UiFetchMapper uiFetchMapper;
+    private final UiAdminFormMapper uiAdminFormMapper;
 
-    public UiFetchService(GlobalProperties globalProperties,
-                          SmsProperties smsProperties,
-                          SignRequestService signRequestService,
-                          SignBookService signBookService,
-                          WorkflowService workflowService,
-                          FormService formService,
-                          UserShareService userShareService,
-                          UserService userService,
-                          UserPropertieService userPropertieService,
-                          FieldPropertieService fieldPropertieService,
-                          RecipientService recipientService,
-                          TagService tagService,
-                          PreFillService preFillService,
-                          SignWithService signWithService,
-                          ReportService reportService,
-                          AuditTrailService auditTrailService,
-                          LogService logService,
-                          PreAuthorizeService preAuthorizeService,
-                          SignService signService,
-                          Environment environment,
-                          @Autowired(required = false) BuildProperties buildProperties,
-                          ValidationService validationService,
-                          CertificatService certificatService,
-                          @Autowired(required = false) DSSService dssService,
-                          SessionRepositoryCustom sessionRepositoryCustom,
-                          UiFetchMapper uiFetchMapper) {
+    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
@@ -152,12 +84,8 @@ public class UiFetchService {
         this.recipientService = recipientService;
         this.tagService = tagService;
         this.preFillService = preFillService;
-        this.signWithService = signWithService;
         this.reportService = reportService;
-        this.auditTrailService = auditTrailService;
-        this.logService = logService;
         this.preAuthorizeService = preAuthorizeService;
-        this.signService = signService;
         this.environment = environment;
         this.buildProperties = buildProperties;
         this.validationService = validationService;
@@ -165,6 +93,7 @@ public class UiFetchService {
         this.dssService = dssService;
         this.sessionRepositoryCustom = sessionRepositoryCustom;
         this.uiFetchMapper = uiFetchMapper;
+        this.uiAdminFormMapper = uiAdminFormMapper;
     }
 
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
@@ -192,10 +121,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminWorkflowListViewDto buildAdminWorkflowListView(String authUserEppn,
-                                                               String workflowRole,
-                                                               DisplayWorkflowType displayWorkflowType,
-                                                               List<Tag> selectedTags) {
+    public AdminWorkflowListViewDto buildAdminWorkflowListView(String authUserEppn, String workflowRole, DisplayWorkflowType displayWorkflowType, List<Tag> selectedTags) {
         DisplayWorkflowType effectiveDisplayWorkflowType = displayWorkflowType != null ? displayWorkflowType : DisplayWorkflowType.system;
         List<Tag> effectiveSelectedTags = selectedTags != null ? selectedTags : List.of();
         List<Workflow> workflows = "admin".equals(workflowRole)
@@ -215,10 +141,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminFormListViewDto buildAdminFormListView(String authUserEppn,
-                                                       String workflowRole,
-                                                       List<Tag> selectedTags,
-                                                       Boolean activeVersion) {
+    public AdminFormListViewDto buildAdminFormListView(String authUserEppn, String workflowRole, List<Tag> selectedTags, Boolean activeVersion) {
         List<Tag> effectiveSelectedTags = selectedTags != null ? selectedTags : List.of();
         List<Form> forms = ("admin".equals(workflowRole)
                 ? formService.getAllForms(effectiveSelectedTags, activeVersion)
@@ -246,9 +169,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminWorkflowUpdateViewDto buildAdminWorkflowUpdateView(String authUserEppn,
-                                                                  String workflowRole,
-                                                                  Long workflowId) {
+    public AdminWorkflowUpdateViewDto buildAdminWorkflowUpdateView(String authUserEppn, String workflowRole, Long workflowId) {
         Workflow workflow = workflowService.getById(workflowId);
         List<String> roles = "admin".equals(workflowRole)
                 ? userService.getAllRoles()
@@ -299,9 +220,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminFormDetailViewDto buildAdminFormUpdateView(String authUserEppn,
-                                                           String workflowRole,
-                                                           Long formId) {
+    public AdminFormDetailViewDto buildAdminFormUpdateView(String authUserEppn, String workflowRole, Long formId) {
         Form form = formService.getById(formId);
         List<String> roles = "admin".equals(workflowRole)
                 ? userService.getAllRoles()
@@ -310,7 +229,7 @@ public class UiFetchService {
                 ? mergeWorkflowOptions(workflowService.getSystemWorkflows(), form.getWorkflow())
                 : workflowService.getManagerWorkflows(authUserEppn);
         List<PreFill> preFillTypes = preFillService.getPreFillValues();
-        return uiFetchMapper.toAdminFormDetailViewDto(
+        return uiAdminFormMapper.toAdminFormDetailViewDto(
                 workflowRole,
                 form,
                 roles,
@@ -326,13 +245,11 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminFormDetailViewDto buildAdminFormFieldsView(String authUserEppn,
-                                                           String workflowRole,
-                                                           Long formId) {
+    public AdminFormDetailViewDto buildAdminFormFieldsView(String workflowRole, Long formId) {
         Form form = formService.getById(formId);
         PreFill preFill = preFillService.getPreFillServiceByName(form.getPreFillType());
         Map<String, List<String>> preFillTypeOptions = preFill != null ? preFill.getTypes() : Collections.emptyMap();
-        return uiFetchMapper.toAdminFormDetailViewDto(
+        return uiAdminFormMapper.toAdminFormDetailViewDto(
                 workflowRole,
                 form,
                 List.of(),
@@ -348,9 +265,7 @@ public class UiFetchService {
     }
 
     @Transactional(readOnly = true)
-    public AdminFormDetailViewDto buildAdminFormSignsView(String authUserEppn,
-                                                          String workflowRole,
-                                                          Long formId) {
+    public AdminFormDetailViewDto buildAdminFormSignsView(String authUserEppn, String workflowRole, Long formId) {
         Form form = formService.getById(formId);
         List<SignRequestParamsFrontDto> spots = form.getWorkflow() != null
                 ? uiFetchMapper.toSignRequestParamsFrontDtos(formService.getSpots(formId))
@@ -361,7 +276,7 @@ public class UiFetchService {
         Integer defaultSignImageNumber = userService.getFullUserByEppn(authUserEppn) != null
                 ? userService.getFullUserByEppn(authUserEppn).getDefaultSignImageNumber()
                 : null;
-        return uiFetchMapper.toAdminFormDetailViewDto(
+        return uiAdminFormMapper.toAdminFormDetailViewDto(
                 workflowRole,
                 form,
                 List.of(),
@@ -373,40 +288,6 @@ public class UiFetchService {
                 spots,
                 srpMap,
                 defaultSignImageNumber
-        );
-    }
-
-    @Transactional(readOnly = true)
-    public AdminSignRequestShowViewDto buildAdminSignRequestShowView(Long id) {
-        SignRequest signRequest = signRequestService.getByIdWithShowContext(id);
-        if (signRequest == null) {
-            return null;
-        }
-
-        SignBook signBook = signRequest.getParentSignBook();
-        LiveWorkflow liveWorkflow = signBook != null ? signBook.getLiveWorkflow() : null;
-        LiveWorkflowStep currentStep = liveWorkflow != null ? liveWorkflow.getCurrentStep() : null;
-        Workflow workflow = liveWorkflow != null ? liveWorkflow.getWorkflow() : null;
-
-        initializeShowSignRequestGraph(signRequest, signBook, liveWorkflow, currentStep, workflow);
-
-        List<Comment> comments = signRequestService.getComments(id);
-        comments.forEach(comment -> initializeUser(comment.getCreateBy()));
-        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-
-        return new AdminSignRequestShowViewDto(
-                toSignBookLightDto(signBook),
-                toSignRequestLightDto(signRequest),
-                toAdminSignRequestFullDto(signRequest, signBook, liveWorkflow, currentStep),
-                toWorkflowMetaDto(workflow),
-                signRequest.getOriginalDocuments() == null ? List.of() : signRequest.getOriginalDocuments().stream().map(this::toDocumentDto).toList(),
-                signRequest.getSignedDocuments() == null ? List.of() : signRequest.getSignedDocuments().stream().map(this::toDocumentDto).toList(),
-                signRequest.getDocumentsHistory() == null ? List.of() : List.of(toDocumentDto(signRequest.getDocumentsHistory())),
-                liveWorkflow == null ? List.of() : liveWorkflow.getLiveWorkflowSteps().stream().map(this::toStepDto).toList(),
-                liveWorkflow == null ? List.of() : liveWorkflow.getTargets().stream().map(this::toTargetDto).toList(),
-                comments.stream().map(this::toAdminCommentDto).toList(),
-                logs.stream().map(this::toAdminLogDto).toList(),
-                true
         );
     }
 
@@ -450,19 +331,19 @@ public class UiFetchService {
             listTitle = primarySignRequest.getOriginalDocuments().get(0).getFileName() + ", ...";
         }
 
-        return new UiHomeDto.SignBookItem(
-                signBook.getId(),
-                primarySignRequest.getId(),
-                signBook.getDescription(),
-                signBook.getSubject(),
-                signBook.getWorkflowName(),
-                formatHomeDate(signBook.getCreateDate()),
-                listTitle,
-                isViewedByUser(primarySignRequest, userEppn),
-                primarySignRequest.getAttachments() != null && !primarySignRequest.getAttachments().isEmpty(),
-                toHomePostitItems(signBook.getPostits()),
-                toHomeSignRequestItems(signBook.getSignRequests())
-        );
+        UiHomeDto.SignBookItem dto = new UiHomeDto.SignBookItem();
+        dto.setId(signBook.getId());
+        dto.setPrimarySignRequestId(primarySignRequest.getId());
+        dto.setDescription(signBook.getDescription());
+        dto.setSubject(signBook.getSubject());
+        dto.setWorkflowName(signBook.getWorkflowName());
+        dto.setCreateDateLabel(formatHomeDate(signBook.getCreateDate()));
+        dto.setListTitle(listTitle);
+        dto.setViewedByCurrentUser(isViewedByUser(primarySignRequest, userEppn));
+        dto.setHasAttachments(primarySignRequest.getAttachments() != null && !primarySignRequest.getAttachments().isEmpty());
+        dto.setPostits(toHomePostitItems(signBook.getPostits()));
+        dto.setSignRequests(toHomeSignRequestItems(signBook.getSignRequests()));
+        return dto;
     }
 
     private List<UiHomeDto.PostitItem> toHomePostitItems(List<Comment> postits) {
@@ -471,10 +352,12 @@ public class UiFetchService {
         }
         return postits.stream()
                 .filter(Objects::nonNull)
-                .map(postit -> new UiHomeDto.PostitItem(
-                        toDisplayName(postit.getCreateBy()),
-                        postit.getText()
-                ))
+                .map(postit -> {
+                    UiHomeDto.PostitItem dto = new UiHomeDto.PostitItem();
+                    dto.setAuthor(toDisplayName(postit.getCreateBy()));
+                    dto.setText(postit.getText());
+                    return dto;
+                })
                 .toList();
     }
 
@@ -484,11 +367,13 @@ public class UiFetchService {
         }
         return signRequests.stream()
                 .filter(Objects::nonNull)
-                .map(signRequest -> new UiHomeDto.SignRequestItem(
-                        signRequest.getId(),
-                        signRequest.getTitle(),
-                        signRequest.getStatus() != null ? signRequest.getStatus().name() : null
-                ))
+                .map(signRequest -> {
+                    UiHomeDto.SignRequestItem dto = new UiHomeDto.SignRequestItem();
+                    dto.setId(signRequest.getId());
+                    dto.setTitle(signRequest.getTitle());
+                    dto.setStatus(signRequest.getStatus() != null ? signRequest.getStatus().name() : null);
+                    return dto;
+                })
                 .toList();
     }
 
@@ -651,26 +536,12 @@ public class UiFetchService {
         return userService.getKeystoreByUser(authUserEppn);
     }
 
-    public UserSignatureStateDto updateProfile(String userEppn,
-                                               String authUserEppn,
-                                               String signImageBase64,
-                                               String name,
-                                               String firstname,
-                                               Long signRequestId,
-                                               EmailAlertFrequency emailAlertFrequency,
-                                               Integer emailAlertHour,
-                                               DayOfWeek emailAlertDay,
-                                               MultipartFile multipartKeystore,
-                                               HttpSession httpSession) throws Exception {
+    public UserSignatureStateDto updateProfile(String userEppn, String authUserEppn, String signImageBase64, String name, String firstname, Long signRequestId, EmailAlertFrequency emailAlertFrequency, Integer emailAlertHour, DayOfWeek emailAlertDay, MultipartFile multipartKeystore, HttpSession httpSession) throws Exception {
         userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
         return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
     }
 
-    public UserSignatureStateDto deleteSignature(String userEppn,
-                                                 String authUserEppn,
-                                                 long signatureId,
-                                                 Long signRequestId,
-                                                 HttpSession httpSession) {
+    public UserSignatureStateDto deleteSignature(String userEppn, String authUserEppn, long signatureId, Long signRequestId, HttpSession httpSession) {
         userService.deleteSign(authUserEppn, signatureId);
         return buildUserSignatureState(userEppn, authUserEppn, signRequestId, httpSession);
     }
@@ -679,673 +550,15 @@ public class UiFetchService {
         signRequestService.warningReaded(authUserEppn);
     }
 
-    @Transactional(readOnly = true)
-    public ShowSignRequestContext buildShowSignRequestContext(Long id,
-                                                              String userEppn,
-                                                              String authUserEppn,
-                                                              HttpSession httpSession,
-                                                              boolean isOtpView) throws IOException {
-        SignRequest signRequest = signRequestService.getByIdWithShowContext(id);
-        SignBook signBook = signRequest.getParentSignBook();
-        LiveWorkflow liveWorkflow = signBook.getLiveWorkflow();
-        LiveWorkflowStep currentStep = liveWorkflow.getCurrentStep();
-        Workflow workflow = liveWorkflow.getWorkflow();
-
-        initializeShowSignRequestGraph(signRequest, signBook, liveWorkflow, currentStep, workflow);
-
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        boolean editable = signRequestService.isEditable(id, userEppn);
-        boolean manager = signBookService.checkUserManageRights(signBook.getId(), userEppn);
-        boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
-        boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
-        SignType currentSignType = signRequest.getCurrentSignType();
-        Integer currentStepNumber = liveWorkflow.getCurrentStepNumber();
-        boolean currentStepMultiSign = true;
-        boolean currentStepSingleSignWithAnnotation = true;
-        Long currentStepId = null;
-        SignLevel currentStepMinSignLevel = SignLevel.simple;
-        SignLevel currentStepMaxSignLevel = SignLevel.qualified;
-        Boolean stepRepeatable = null;
-
-        if (currentStep != null) {
-            currentStepMinSignLevel = currentStep.getMinSignLevel();
-            currentStepMaxSignLevel = currentStep.getMaxSignLevel();
-            currentStepMultiSign = currentStep.getMultiSign();
-            currentStepSingleSignWithAnnotation = currentStep.getSingleSignWithAnnotation();
-            stepRepeatable = currentStep.getRepeatable();
-            if (currentStep.getWorkflowStep() != null) {
-                currentStepId = currentStep.getWorkflowStep().getId();
-            }
-        }
-
-        int nbSignRequestInSignBookParent = signBook.getSignRequests().size();
-        boolean lastStep = !liveWorkflow.getLiveWorkflowSteps().isEmpty() && currentStepNumber >= liveWorkflow.getLiveWorkflowSteps().size();
-        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
-        Document toSignDocument = toSignDocuments.size() == 1 ? toSignDocuments.get(0) : null;
-        boolean pdf = toSignDocument != null && "application/pdf".equals(toSignDocument.getContentType());
-        if (toSignDocuments.stream().anyMatch(document -> !document.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
-            currentStepMinSignLevel = SignLevel.advanced;
-        }
-
-        Reports reports = signService.validate(id);
-        List<String> signatureIds = new ArrayList<>();
-        boolean signatureIssue = false;
-        if (reports != null) {
-            signatureIds = reports.getSimpleReport().getSignatureIdList();
-            for (String signatureId : signatureIds) {
-                if (!reports.getSimpleReport().isValid(signatureId)) {
-                    signatureIssue = true;
-                    break;
-                }
-            }
-            if (!signatureIds.isEmpty() && currentStepMinSignLevel.getValue() < 3) {
-                currentStepMinSignLevel = SignLevel.advanced;
-            }
-        }
-
-        List<Field> fields = signRequestService.prefillSignRequestFields(id, userEppn);
-        List<SignRequestParams> currentSignRequestParamses = signRequestService.getToUseSignRequestParams(id, userEppn);
-        List<Comment> comments = signRequestService.getComments(id);
-        List<SignRequestParams> spots = signRequestService.getSpots(id);
-        List<String> signImages = new ArrayList<>();
-        String signImagesWarningMessage = null;
-        try {
-            signImages = fetchSignImagesForRequest(id, userEppn, authUserEppn, httpSession);
-        } catch (EsupSignatureUserException e) {
-            signImagesWarningMessage = e.getMessage();
-        }
-
-        User frontUser = userService.getFullUserByEppn(userEppn);
-        User frontAuthUser = userService.getByEppn(authUserEppn);
-        String action = null;
-        Set<String> supervisors = null;
-        if (signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
-            action = signRequest.getData().getForm().getAction();
-            supervisors = signRequest.getData().getForm().getWorkflow().getManagers();
-        }
-
-        boolean notSigned = !signRequestService.isSigned(signRequest, reports);
-
-        return new ShowSignRequestContext(
-                userEppn,
-                authUserEppn,
-                isOtpView,
-                signRequest,
-                signBook,
-                liveWorkflow,
-                currentStep,
-                workflow,
-                signable,
-                editable,
-                manager,
-                attachmentAlert,
-                attachmentRequire,
-                currentSignType,
-                currentStepNumber,
-                currentStepId,
-                currentStepMultiSign,
-                currentStepSingleSignWithAnnotation,
-                currentStepMinSignLevel,
-                currentStepMaxSignLevel,
-                stepRepeatable,
-                nbSignRequestInSignBookParent,
-                lastStep,
-                toSignDocuments,
-                toSignDocument,
-                pdf,
-                reports,
-                signatureIds,
-                signatureIssue,
-                fields,
-                currentSignRequestParamses,
-                comments,
-                spots,
-                signImages,
-                signImagesWarningMessage,
-                frontUser,
-                frontAuthUser,
-                action,
-                supervisors,
-                notSigned
-        );
-    }
-
-    private void initializeShowSignRequestGraph(SignRequest signRequest,
-                                                SignBook signBook,
-                                                LiveWorkflow liveWorkflow,
-                                                LiveWorkflowStep currentStep,
-                                                Workflow workflow) {
-        initializeUser(signRequest.getCreateBy());
-        signRequest.getComments().size();
-        signRequest.getOriginalDocuments().size();
-        signRequest.getSignedDocuments().size();
-        signRequest.getAttachments().size();
-        signRequest.getSignRequestParams().size();
-        signRequest.getViewedBy().forEach(this::initializeUser);
-        signBook.getSignRequests().forEach(signRequestItem -> signRequestItem.getId());
-        signBook.getViewers().forEach(this::initializeUser);
-
-        if (workflow != null) {
-            workflow.getWorkflowSteps().forEach(workflowStep -> {
-                workflowStep.getId();
-                workflowStep.getUsers().forEach(this::initializeUser);
-            });
-        }
-
-        if (currentStep != null) {
-            currentStep.getRecipients().forEach(recipient -> {
-                if (recipient.getUser() != null) {
-                    initializeUser(recipient.getUser());
-                }
-            });
-            if (currentStep.getWorkflowStep() != null) {
-                currentStep.getWorkflowStep().getId();
-            }
-        }
-
-        liveWorkflow.getLiveWorkflowSteps().forEach(step -> {
-            step.getRecipients().forEach(recipient -> {
-                if (recipient.getUser() != null) {
-                    initializeUser(recipient.getUser());
-                }
-            });
-            if (step.getWorkflowStep() != null) {
-                step.getWorkflowStep().getId();
-            }
-        });
-
-        liveWorkflow.getTargets().forEach(target -> {
-            target.getId();
-            target.getTargetUri();
-            target.getProtectedTargetUri();
-            target.getTargetOk();
-        });
-
-        if (signRequest.getData() != null && signRequest.getData().getForm() != null) {
-            signRequest.getData().getForm().getId();
-            if (signRequest.getData().getForm().getWorkflow() != null) {
-                signRequest.getData().getForm().getWorkflow().getWorkflowSteps().forEach(workflowStep -> {
-                    workflowStep.getId();
-                    workflowStep.getUsers().forEach(this::initializeUser);
-                });
-            }
-        }
-    }
-
-    private void initializeUser(User user) {
-        if (user == null) {
-            return;
-        }
-        user.getEppn();
-        user.getName();
-        user.getFirstname();
-        user.getEmail();
-        user.getPhone();
-        user.getUserType();
-    }
-
-    private AdminSignRequestShowViewDto.UserDto toAdminUserDto(User user) {
-        if (user == null) {
-            return null;
-        }
-        return new AdminSignRequestShowViewDto.UserDto(
-                user.getId(),
-                user.getEppn(),
-                user.getFirstname(),
-                user.getName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getUserType() != null ? user.getUserType().name() : null
-        );
-    }
-
-    private AdminSignRequestShowViewDto.CommentDto toAdminCommentDto(Comment comment) {
-        return new AdminSignRequestShowViewDto.CommentDto(
-                comment.getId(),
-                toAdminUserDto(comment.getCreateBy()),
-                comment.getCreateDate(),
-                comment.getText()
-        );
-    }
-
-    private AdminSignRequestShowViewDto.LogDto toAdminLogDto(Log log) {
-        return new AdminSignRequestShowViewDto.LogDto(
-                log.getLogDate(),
-                log.getEppn(),
-                log.getAction(),
-                log.getInitialStatus(),
-                log.getFinalStatus(),
-                log.getComment()
-        );
-    }
-
-    private ShowSignRequestDto.SignRequestLightDto toSignRequestLightDto(SignRequest signRequest) {
-        return new ShowSignRequestDto.SignRequestLightDto(
-                signRequest.getId(),
-                signRequest.getStatus(),
-                signRequest.getDeleted(),
-                signRequest.getToken(),
-                signRequest.getCreateBy() != null
-                        ? new ShowSignRequestDto.SignRequestUserDto(
-                        signRequest.getCreateBy().getId(),
-                        signRequest.getCreateBy().getEppn(),
-                        signRequest.getCreateBy().getFirstname(),
-                        signRequest.getCreateBy().getName()
-                )
-                        : null,
-                signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>()
-        );
-    }
-
-    private SignBookLightDto toSignBookLightDto(SignBook signBook) {
-        return new SignBookLightDto(
-                signBook.getId(),
-                signBook.getWorkflowName(),
-                signBook.getSubject(),
-                signBook.getDescription(),
-                signBook.getStatus(),
-                signBook.getDeleted(),
-                signBook.isEditable(),
-                signBook.getArchiveStatus(),
-                signBook.getCreateDate(),
-                signBook.getViewers() != null
-                        ? signBook.getViewers().stream()
-                        .map(viewer -> new ShowSignRequestDto.SignBookViewerDto(
-                                viewer.getId(),
-                                viewer.getFirstname(),
-                                viewer.getName(),
-                                viewer.getEmail()
-                        ))
-                        .toList()
-                        : List.of()
-        );
-    }
-
-    private ShowSignRequestDto.WorkflowMetaDto toWorkflowMetaDto(Workflow workflow) {
-        return new ShowSignRequestDto.WorkflowMetaDto(
-                workflow != null,
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAnnotations()),
-                workflow != null && Boolean.TRUE.equals(workflow.getDisableSidebarForExternal()),
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAttachments()),
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanEdit()),
-                workflow != null && Boolean.TRUE.equals(workflow.getExternalCanEditAttachments()),
-                workflow == null || Boolean.TRUE.equals(workflow.getAuthorizeClone()),
-                workflow != null && Boolean.TRUE.equals(workflow.getForbidDownloadsBeforeEnd()),
-                workflow != null && Boolean.TRUE.equals(workflow.getSendAlertToAllRecipients()),
-                workflow != null && workflow.getWorkflowSteps() != null ? workflow.getWorkflowSteps().size() : 0,
-                workflow != null && workflow.getMailFrom() != null ? workflow.getMailFrom() : ""
-        );
-    }
-
-    private SignRequestFullDto toAdminSignRequestFullDto(SignRequest signRequest,
-                                                         SignBook signBook,
-                                                         LiveWorkflow liveWorkflow,
-                                                         LiveWorkflowStep currentStep) {
-        return new SignRequestFullDto(
-                signRequest.getId(),
-                signRequest.getData() != null ? signRequest.getData().getId() : null,
-                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
-                List.of(),
-                signRequest.getCurrentSignType(),
-                false,
-                false,
-                List.of(),
-                List.of(),
-                false,
-                liveWorkflow != null ? liveWorkflow.getCurrentStepNumber() : null,
-                currentStep != null && Boolean.TRUE.equals(currentStep.getMultiSign()),
-                currentStep != null && Boolean.TRUE.equals(currentStep.getSingleSignWithAnnotation()),
-                currentStep != null ? currentStep.getMinSignLevel() : null,
-                List.of(),
-                List.of(),
-                currentStep != null ? currentStep.getRepeatable() : null,
-                currentStep != null ? currentStep.getRepeatableSignType() : null,
-                signRequest.getStatus(),
-                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getAction() : null,
-                signBook != null && signBook.getSignRequests() != null ? signBook.getSignRequests().size() : 0,
-                false,
-                false,
-                false,
-                true,
-                false,
-                false,
-                signRequest.getDocumentsHistory() != null
-        );
-    }
-
-    private ShowSignRequestDto.StepDto toStepDto(LiveWorkflowStep step) {
-        return new ShowSignRequestDto.StepDto(
-                step.getId(),
-                step.getDescription(),
-                step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
-                step.getSignType(),
-                step.getAutoSign(),
-                step.getAllSignToComplete(),
-                step.getRepeatable(),
-                step.getUsers().stream()
-                        .map(this::toStepUserDto)
-                        .toList(),
-                step.getRecipients().stream()
-                        .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
-                                recipient.getId(),
-                                recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
-                                recipient.getSigned()
-                        ))
-                        .toList()
-        );
-    }
-
-    private ShowSignRequestDto.TargetDto toTargetDto(Target target) {
-        return new ShowSignRequestDto.TargetDto(
-                target.getTargetUri(),
-                target.getProtectedTargetUri(),
-                target.getTargetOk()
-        );
-    }
-
-    public ShowSignRequestDto buildShowSignRequestBackDto(ShowSignRequestContext context) {
-        SignRequestFullDto common = buildCommonDto(context);
-        SignRequest signRequest = context.signRequest();
-        SignBook signBook = context.signBook();
-        String userEppn = context.userEppn();
-        String authUserEppn = context.authUserEppn();
-        ShowSignRequestDto.SignRequestLightDto request = new ShowSignRequestDto.SignRequestLightDto(
-                signRequest.getId(),
-                signRequest.getStatus(),
-                signRequest.getDeleted(),
-                signRequest.getToken(),
-                signRequest.getCreateBy() != null
-                        ? new ShowSignRequestDto.SignRequestUserDto(
-                        signRequest.getCreateBy().getId(),
-                        signRequest.getCreateBy().getEppn(),
-                        signRequest.getCreateBy().getFirstname(),
-                        signRequest.getCreateBy().getName()
-                )
-                        : null,
-                signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>()
-        );
-        Workflow workflow = context.workflow();
-        SignBookLightDto signBookLight = new SignBookLightDto(
-                signBook.getId(),
-                signBook.getWorkflowName(),
-                signBook.getSubject(),
-                signBook.getDescription(),
-                signBook.getStatus(),
-                signBook.getDeleted(),
-                signBook.isEditable(),
-                signBook.getArchiveStatus(),
-                signBook.getCreateDate(),
-                signBook.getViewers() != null
-                        ? signBook.getViewers().stream()
-                        .map(viewer -> new ShowSignRequestDto.SignBookViewerDto(
-                                viewer.getId(),
-                                viewer.getFirstname(),
-                                viewer.getName(),
-                                viewer.getEmail()
-                        ))
-                        .toList()
-                        : List.of()
-        );
-        ShowSignRequestDto.WorkflowMetaDto workflowMeta = new ShowSignRequestDto.WorkflowMetaDto(
-                workflow != null,
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAnnotations()),
-                workflow != null && Boolean.TRUE.equals(workflow.getDisableSidebarForExternal()),
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanReaderAttachments()),
-                workflow == null || Boolean.TRUE.equals(workflow.getExternalCanEdit()),
-                workflow != null && Boolean.TRUE.equals(workflow.getExternalCanEditAttachments()),
-                workflow == null || Boolean.TRUE.equals(workflow.getAuthorizeClone()),
-                workflow != null && Boolean.TRUE.equals(workflow.getForbidDownloadsBeforeEnd()),
-                workflow != null && Boolean.TRUE.equals(workflow.getSendAlertToAllRecipients()),
-                workflow != null && workflow.getWorkflowSteps() != null ? workflow.getWorkflowSteps().size() : 0,
-                workflow != null && workflow.getMailFrom() != null ? workflow.getMailFrom() : ""
-        );
-
-        boolean displayNotif = !context.isOtpView() && signRequestService.isDisplayNotif(signRequest, userEppn);
-        boolean tempUsers = !context.isOtpView() && signBookService.isTempUsers(signBook.getId());
-        String toSignDocumentContentType = context.toSignDocument() != null ? context.toSignDocument().getContentType() : null;
-        List<Comment> postits = signRequestService.getPostits(signRequest.getId());
-        List<ShowSignRequestDto.AttachmentDto> attachments = signRequestService.getAttachments(signRequest.getId()).stream()
-                .map(attachment -> new ShowSignRequestDto.AttachmentDto(
-                        attachment.getId(),
-                        attachment.getFileName(),
-                        attachment.getCreateBy() != null
-                                ? new ShowSignRequestDto.AttachmentUserDto(
-                                attachment.getCreateBy().getEppn(),
-                                attachment.getCreateBy().getFirstname(),
-                                attachment.getCreateBy().getName()
-                        )
-                                : null
-                ))
-                .toList();
-        List<ShowSignRequestDto.DocumentDto> originalDocuments = signRequest.getOriginalDocuments().stream()
-                .map(this::toDocumentDto)
-                .toList();
-        List<ShowSignRequestDto.DocumentDto> signedDocuments = signRequest.getSignedDocuments().stream()
-                .map(this::toDocumentDto)
-                .toList();
-        String exportedDocumentURI = signRequest.getExportedDocumentURI();
-        String lastSignedDocumentContentType = signRequest.getLastSignedDocument() != null
-                ? signRequest.getLastSignedDocument().getContentType()
-                : null;
-        SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
-        SignRequest nextSignRequest = nextSignBook != null
-                ? signBookService.getNextSignRequest(signRequest.getId(), nextSignBook.getId())
-                : null;
-        boolean hasNextSignBook = nextSignBook != null;
-        Long nextSignRequestId = nextSignRequest != null ? nextSignRequest.getId() : null;
-        List<SignWith> signWiths = new ArrayList<>();
-        if (context.reports() != null) {
-            signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !context.signatureIds().isEmpty());
-        } else if (context.signable()) {
-            signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, false);
-        }
-
-        AuditTrail auditTrail = null;
-        String size = null;
-        if (!signRequest.getStatus().equals(SignRequestStatus.draft)
-                && !signRequest.getStatus().equals(SignRequestStatus.pending)
-                && !signRequest.getStatus().equals(SignRequestStatus.refused)
-                && !signRequest.getDeleted()) {
-            auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            if (auditTrail != null && auditTrail.getDocumentSize() != null) {
-                size = FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize());
-            }
-        }
-
-        boolean sealCertOK = signWithService.checkSealCertificat(userEppn, true);
-        List<SealCertificatProperties> sealCertificatPropertieses = certificatService.getAuthorizedSealCertificatProperties(userEppn);
-        List<ShowSignRequestDto.StepDto> steps = context.liveWorkflow() != null
-                ? context.liveWorkflow().getLiveWorkflowSteps().stream()
-                .map(step -> new ShowSignRequestDto.StepDto(
-                        step.getId(),
-                        step.getDescription(),
-                        step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
-                        step.getSignType(),
-                        step.getAutoSign(),
-                        step.getAllSignToComplete(),
-                        step.getRepeatable(),
-                        step.getUsers().stream()
-                                .map(this::toStepUserDto)
-                                .toList(),
-                        step.getRecipients().stream()
-                                .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
-                                        recipient.getId(),
-                                        recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
-                                        recipient.getSigned()
-                                ))
-                                .toList()
-                ))
-                .toList()
-                : new ArrayList<>();
-        List<ShowSignRequestDto.TargetDto> targets = context.liveWorkflow() != null
-                ? context.liveWorkflow().getTargets().stream()
-                .map(target -> new ShowSignRequestDto.TargetDto(
-                        target.getTargetUri(),
-                        target.getProtectedTargetUri(),
-                        target.getTargetOk()
-                ))
-                .toList()
-                : new ArrayList<>();
-        Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();
-        if (signRequest.getRecipientHasSigned() != null) {
-            signRequest.getRecipientHasSigned().forEach((recipient, action) -> {
-                if (recipient != null && recipient.getId() != null && action != null) {
-                    recipientActions.put(
-                            recipient.getId(),
-                            new ShowSignRequestDto.RecipientActionDto(
-                                    action.getActionType(),
-                                    action.getDate()
-                            )
-                    );
-                }
-            });
-        }
-        List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signBook.getSignRequests().stream()
-                .map(signRequestTab -> new ShowSignRequestDto.SignRequestTabDto(
-                        signRequestTab.getId(),
-                        signRequestTab.getTitle(),
-                        signRequestTab.getStatus(),
-                        signRequestTab.getDeleted()
-                ))
-                .toList();
-        boolean viewedByCurrentUser = isViewedByUser(signRequest, userEppn);
-        boolean viewRight = preAuthorizeService.checkUserViewRights(signRequest.getId(), userEppn, authUserEppn);
-        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-        String pdfaCheck = !context.toSignDocuments().isEmpty() ? context.toSignDocuments().get(0).getPdfaCheck() : null;
-        boolean auditTrailChecked = signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported);
-        List<RecipientWsDto> externalsRecipients = auditTrailChecked
-                ? signRequestService.getExternalRecipients(signRequest.getId())
-                : new ArrayList<>();
-
-        return new ShowSignRequestDto(
-                signBookLight,
-                request,
-                common,
-                workflowMeta,
-                context.isOtpView() ? "otp" : "user",
-                displayNotif,
-                tempUsers,
-                context.lastStep(),
-                signRequestService.isCurrentUserAsSigned(signRequest, userEppn),
-                context.signatureIds(),
-                context.signatureIssue(),
-                context.supervisors(),
-                toSignDocumentContentType,
-                postits,
-                attachments,
-                originalDocuments,
-                signedDocuments,
-                exportedDocumentURI,
-                lastSignedDocumentContentType,
-                hasNextSignBook,
-                nextSignRequestId,
-                signWiths,
-                auditTrail,
-                size,
-                sealCertOK,
-                sealCertificatPropertieses,
-                steps,
-                targets,
-                recipientActions,
-                signRequestTabs,
-                steps.size(),
-                viewedByCurrentUser,
-                viewRight,
-                logs,
-                pdfaCheck,
-                auditTrailChecked,
-                externalsRecipients
-        );
-    }
-
-    private ShowSignRequestDto.StepUserDto toStepUserDto(User user) {
-        return new ShowSignRequestDto.StepUserDto(
-                user.getId(),
-                user.getFirstname(),
-                user.getName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getHidedPhone(),
-                user.getUserType()
-        );
-    }
-
-    private ShowSignRequestDto.DocumentDto toDocumentDto(Document document) {
-        return new ShowSignRequestDto.DocumentDto(
-                document.getId(),
-                document.getFileName(),
-                document.getSize(),
-                document.getContentType()
-        );
-    }
-
-    public SignUiFrontDto buildSignUiFrontDto(ShowSignRequestContext context) {
-        SignRequestFullDto common = buildCommonDto(context);
-        User frontUser = context.frontUser();
-        User frontAuthUser = context.frontAuthUser();
-
-        return new SignUiFrontDto(
-                common.signRequestId(),
-                common.dataId(),
-                common.formId(),
-                context.liveWorkflow() != null
-                        ? context.liveWorkflow().getLiveWorkflowSteps().stream()
-                        .map(step -> new ShowSignRequestDto.StepDto(
-                                step.getId(),
-                                step.getDescription(),
-                                step.getWorkflowStep() != null ? step.getWorkflowStep().getChangeable() : false,
-                                step.getSignType(),
-                                step.getAutoSign(),
-                                step.getAllSignToComplete(),
-                                step.getRepeatable(),
-                                step.getUsers().stream()
-                                        .map(this::toStepUserDto)
-                                        .toList(),
-                                step.getRecipients().stream()
-                                        .map(recipient -> new ShowSignRequestDto.StepRecipientDto(
-                                                recipient.getId(),
-                                                recipient.getUser() != null ? toStepUserDto(recipient.getUser()) : null,
-                                                recipient.getSigned()
-                                        ))
-                                        .toList()
-                        ))
-                        .toList()
-                        : List.of(),
-                toSignRequestParamsFrontDtos(common.signRequestParams()),
-                frontUser != null ? frontUser.getDefaultSignImageNumber() : null,
-                common.currentSignType(),
-                common.signable(),
-                common.editable(),
-                toCommentFrontDtos(common.comments()),
-                toSignRequestParamsFrontDtos(common.spots()),
-                common.pdf(),
-                common.currentStepNumber(),
-                common.currentStepMultiSign(),
-                common.currentStepSingleSignWithAnnotation(),
-                common.currentStepMinSignLevel(),
-                context.workflow() != null,
-                common.signImages(),
-                toDisplayName(frontUser),
-                toDisplayName(frontAuthUser),
-                toFieldFrontDtos(common.fields(), context.workflow()),
-                common.stepRepeatable(),
-                common.status(),
-                common.action(),
-                common.nbSignRequests(),
-                common.notSigned(),
-                common.attachmentAlert(),
-                common.attachmentRequire(),
-                context.isOtpView(),
-                frontUser == null || frontUser.getFavoriteSignRequestParams() == null,
-                frontUser != null ? frontUser.getPhone() : null,
-                frontUser != null ? frontUser.getReturnToHomeAfterSign() : null,
-                common.manager()
-        );
-    }
-
     private UserSignatureStateDto buildUserSignatureState(String userEppn, String authUserEppn, Long signRequestId, HttpSession httpSession) {
         User user = userService.getFullUserByEppn(authUserEppn);
-        return new UserSignatureStateDto(user.getFirstname(), user.getName(), user.getEmail(), user.getSignImagesIds(), getSignImages(signRequestId, userEppn, authUserEppn, httpSession));
+        UserSignatureStateDto dto = new UserSignatureStateDto();
+        dto.setFirstname(user.getFirstname());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setSignImageIds(user.getSignImagesIds());
+        dto.setSignImages(getSignImages(signRequestId, userEppn, authUserEppn, httpSession));
+        return dto;
     }
 
     private List<String> getSignImages(Long signRequestId, String userEppn, String authUserEppn, HttpSession httpSession) {
@@ -1372,139 +585,6 @@ public class UiFetchService {
         return Long.valueOf(userShareString.toString());
     }
 
-    private List<CommentFrontDto> toCommentFrontDtos(List<Comment> comments) {
-        if (comments == null || comments.isEmpty()) {
-            return List.of();
-        }
-        return comments.stream()
-                .map(comment -> new CommentFrontDto(
-                        comment.getId(),
-                        comment.getPageNumber(),
-                        comment.getStepNumber(),
-                        comment.getPosX(),
-                        comment.getPosY()
-                ))
-                .toList();
-    }
-
-    private List<SignRequestParamsFrontDto> toSignRequestParamsFrontDtos(List<SignRequestParams> signRequestParamses) {
-        if (signRequestParamses == null || signRequestParamses.isEmpty()) {
-            return List.of();
-        }
-        return signRequestParamses.stream()
-                .map(signRequestParams -> new SignRequestParamsFrontDto(
-                        signRequestParams.getId(),
-                        signRequestParams.getPdSignatureFieldName(),
-                        signRequestParams.getStepNumber(),
-                        signRequestParams.getSignImageNumber(),
-                        signRequestParams.getSignPageNumber(),
-                        signRequestParams.getSignDocumentNumber(),
-                        signRequestParams.getSignWidth(),
-                        signRequestParams.getSignHeight(),
-                        signRequestParams.getxPos(),
-                        signRequestParams.getyPos(),
-                        signRequestParams.getExtraText(),
-                        signRequestParams.getIsExtraText(),
-                        signRequestParams.getAddWatermark(),
-                        signRequestParams.getAllPages(),
-                        signRequestParams.getAddImage(),
-                        signRequestParams.getAddExtra(),
-                        signRequestParams.getExtraType(),
-                        signRequestParams.getExtraName(),
-                        signRequestParams.getExtraDate(),
-                        signRequestParams.getExtraOnTop(),
-                        signRequestParams.getTextPart(),
-                        signRequestParams.getSignScale(),
-                        signRequestParams.getRed(),
-                        signRequestParams.getGreen(),
-                        signRequestParams.getBlue(),
-                        signRequestParams.getFontSize(),
-                        signRequestParams.getRecipient() != null ? signRequestParams.getRecipient().getId() : null
-                ))
-                .toList();
-    }
-
-    private List<FieldFrontDto> toFieldFrontDtos(List<Field> fields, Workflow workflow) {
-        if (fields == null || fields.isEmpty()) {
-            return List.of();
-        }
-        return fields.stream()
-                .map(field -> new FieldFrontDto(
-                        field.getId(),
-                        field.getName(),
-                        field.getDescription(),
-                        field.getPage(),
-                        field.getRequired(),
-                        field.getReadOnly(),
-                        field.getEditable(),
-                        toWorkflowStepNumbers(field, workflow),
-                        field.getDefaultValue(),
-                        field.getSearchServiceName(),
-                        field.getSearchType(),
-                        field.getSearchReturn(),
-                        field.getType() != null ? field.getType().name().toLowerCase() : null,
-                        field.getFavorisable()
-                ))
-                .toList();
-    }
-
-    private List<Integer> toWorkflowStepNumbers(Field field, Workflow workflow) {
-        if (field == null || workflow == null || field.getWorkflowSteps() == null || field.getWorkflowSteps().isEmpty()) {
-            return List.of();
-        }
-        List<WorkflowStep> workflowSteps = workflow.getWorkflowSteps();
-        if (workflowSteps == null || workflowSteps.isEmpty()) {
-            return List.of();
-        }
-
-        List<Integer> stepNumbers = new ArrayList<>();
-        for (WorkflowStep fieldWorkflowStep : field.getWorkflowSteps()) {
-            Long workflowStepId = fieldWorkflowStep != null ? fieldWorkflowStep.getId() : null;
-            for (int i = 0; i < workflowSteps.size(); i++) {
-                WorkflowStep workflowStep = workflowSteps.get(i);
-                if (workflowStepId != null && workflowStep != null && workflowStepId.equals(workflowStep.getId())) {
-                    stepNumbers.add(i + 1);
-                    break;
-                }
-            }
-        }
-        return stepNumbers;
-    }
-
-    private SignRequestFullDto buildCommonDto(ShowSignRequestContext context) {
-        SignRequest signRequest = context.signRequest();
-        boolean updateAllowed = preAuthorizeService.signBookUpdate(context.signBook().getId(), context.authUserEppn());
-        return new SignRequestFullDto(
-                signRequest.getId(),
-                signRequest.getData() != null ? signRequest.getData().getId() : null,
-                signRequest.getData() != null && signRequest.getData().getForm() != null ? signRequest.getData().getForm().getId() : null,
-                context.currentSignRequestParamses(),
-                context.currentSignType(),
-                context.signable(),
-                context.editable(),
-                context.comments(),
-                context.spots(),
-                context.pdf(),
-                context.currentStepNumber(),
-                context.currentStepMultiSign(),
-                context.currentStepSingleSignWithAnnotation(),
-                context.currentStepMinSignLevel(),
-                context.signImages(),
-                context.fields(),
-                context.stepRepeatable(),
-                context.currentStep() != null ? context.currentStep().getRepeatableSignType() : null,
-                signRequest.getStatus(),
-                context.action(),
-                context.nbSignRequestInSignBookParent(),
-                context.notSigned(),
-                context.attachmentAlert(),
-                context.attachmentRequire(),
-                context.manager(),
-                updateAllowed,
-                context.manager() && (signRequest.getStatus() == SignRequestStatus.draft || signRequest.getStatus() == SignRequestStatus.pending),
-                signRequest.getDocumentsHistory() != null
-        );
-    }
 
     private String toDisplayName(User user) {
         if (user == null) {
@@ -1513,48 +593,6 @@ public class UiFetchService {
         return user.getFirstname() + " " + user.getName();
     }
 
-    public record ShowSignRequestContext(
-            String userEppn,
-            String authUserEppn,
-            boolean isOtpView,
-            SignRequest signRequest,
-            SignBook signBook,
-            LiveWorkflow liveWorkflow,
-            LiveWorkflowStep currentStep,
-            Workflow workflow,
-            boolean signable,
-            boolean editable,
-            boolean manager,
-            boolean attachmentAlert,
-            boolean attachmentRequire,
-            SignType currentSignType,
-            Integer currentStepNumber,
-            Long currentStepId,
-            boolean currentStepMultiSign,
-            boolean currentStepSingleSignWithAnnotation,
-            SignLevel currentStepMinSignLevel,
-            SignLevel currentStepMaxSignLevel,
-            Boolean stepRepeatable,
-            int nbSignRequestInSignBookParent,
-            boolean lastStep,
-            List<Document> toSignDocuments,
-            Document toSignDocument,
-            boolean pdf,
-            Reports reports,
-            List<String> signatureIds,
-            boolean signatureIssue,
-            List<Field> fields,
-            List<SignRequestParams> currentSignRequestParamses,
-            List<Comment> comments,
-            List<SignRequestParams> spots,
-            List<String> signImages,
-            String signImagesWarningMessage,
-            User frontUser,
-            User frontAuthUser,
-            String action,
-            Set<String> supervisors,
-            boolean notSigned
-    ) {}
 }
 
 

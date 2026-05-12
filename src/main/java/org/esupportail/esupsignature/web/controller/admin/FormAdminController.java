@@ -147,7 +147,7 @@ public class FormAdminController {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
-		var view = uiFetchService.buildAdminFormFieldsView(authUserEppn, workflowRole, id);
+		var view = uiFetchService.buildAdminFormFieldsView(workflowRole, id);
 		model.addAttribute("workflowRole", view.getWorkflowRole());
 		model.addAttribute("form", view.getForm());
 		model.addAttribute("workflow", view.getWorkflow());
