@@ -90,7 +90,6 @@ public class UiFetchService {
     private final SmsProperties smsProperties;
     private final SignRequestService signRequestService;
     private final SignBookService signBookService;
-    private final DataService dataService;
     private final WorkflowService workflowService;
     private final FormService formService;
     private final UserShareService userShareService;
@@ -118,7 +117,6 @@ public class UiFetchService {
                           SmsProperties smsProperties,
                           SignRequestService signRequestService,
                           SignBookService signBookService,
-                          DataService dataService,
                           WorkflowService workflowService,
                           FormService formService,
                           UserShareService userShareService,
@@ -145,7 +143,6 @@ public class UiFetchService {
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
         this.signBookService = signBookService;
-        this.dataService = dataService;
         this.workflowService = workflowService;
         this.formService = formService;
         this.userShareService = userShareService;
