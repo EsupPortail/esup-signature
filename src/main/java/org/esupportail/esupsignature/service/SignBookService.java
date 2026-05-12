@@ -6,7 +6,6 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.hibernate.Hibernate;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -185,8 +184,20 @@ public class SignBookService {
      */
     @Transactional
     public Long nbToSignSignBooks(String userEppn) {
+        return nbToSignSignBooks(userEppn, userEppn);
+    }
+
+    @Transactional(readOnly = true)
+    public Long nbToSignSignBooks(String userEppn, String authUserEppn) {
         User user = userService.getByEppn(userEppn);
-        return signBookRepository.countToSign(user);
+        if(authUserEppn == null || userEppn.equals(authUserEppn)) {
+            return signBookRepository.countToSign(user);
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(9999, Calendar.DECEMBER, 31);
+        List<SignBook> signBooksToSign = signBookRepository.findToSign(user, null, null, null, new Date(0), calendar.getTime(), Pageable.unpaged()).getContent();
+        return (long) filterByUserShares(userEppn, authUserEppn, signBooksToSign).size();
     }
 
     /**
@@ -332,15 +343,26 @@ public class SignBookService {
             List<SignBook> sharedSignBooks = filterByUserShares(userEppn, authUserEppn, signBooks.getContent());
             signBooks = new PageImpl<>(sharedSignBooks, pageable, sharedSignBooks.size());
         }
+        preloadWorkflowTags(signBooks.getContent());
         for (SignBook signBook : signBooks.getContent()) {
             if(!signBook.getSignRequests().isEmpty()) {
                 signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
             }
-            if (signBook.getLiveWorkflow() != null && signBook.getLiveWorkflow().getWorkflow() != null) {
-                Hibernate.initialize(signBook.getLiveWorkflow().getWorkflow().getTags());
-            }
         }
         return signBooks;
+    }
+
+    private void preloadWorkflowTags(Collection<SignBook> signBooks) {
+        Set<Long> workflowIds = signBooks.stream()
+                .map(SignBook::getLiveWorkflow)
+                .filter(Objects::nonNull)
+                .map(LiveWorkflow::getWorkflow)
+                .filter(Objects::nonNull)
+                .map(Workflow::getId)
+                .collect(Collectors.toSet());
+        if (!workflowIds.isEmpty()) {
+            workflowRepository.findByIdInWithTags(workflowIds);
+        }
     }
 
     @Transactional(readOnly = true)

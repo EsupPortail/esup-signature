@@ -29,6 +29,14 @@ public interface FormRepository extends CrudRepository<Form, Long> {
     List<Form> findByManagerRole(String role);
 	List<Form> findByWorkflowIdEquals(Long workflowId);
 	List<Form> findByFieldsContaining(Field field);
+  @Query("""
+    select distinct f
+    from Form f
+    left join fetch f.workflow w
+    left join fetch w.tags
+    where f.id in :ids
+  """)
+  List<Form> findByIdInWithWorkflowTags(Set<Long> ids);
 	@Query("select f from Form f where f.id = :id")
     FormDto getByIdJson(Long id);
 	@Query("select f from Form f")

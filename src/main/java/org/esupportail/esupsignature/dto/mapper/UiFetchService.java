@@ -559,7 +559,7 @@ public class UiFetchService {
         Boolean certificatProblem = certificatService.checkCertificatProblem(userService.getRoles(userEppn));
         return uiFetchMapper.toUiCountersDto(
                 signRequestService.getNbPendingSignRequests(userEppn),
-                signBookService.nbToSignSignBooks(userEppn),
+                signBookService.nbToSignSignBooks(userEppn, authUserEppn),
                 signBookService.nbDeleted(userEppn),
                 reportNumber,
                 managedWorkflowsSize,
