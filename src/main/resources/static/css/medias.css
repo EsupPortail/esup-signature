@@ -54,18 +54,19 @@
     }
 }
 
+@media (max-width: 1600px) {
+    .step-horizontal-v2-icon {
+        display: none !important;
+    }
+}
+
 @media (max-width: 1400px) {
     .d-xxl-flex {
         display: flex !important;
     }
 
     th.col-nom { min-width: 130px; }
-}
 
-@media (max-width: 1200px) {
-    body.es-signrequest-page #breadcrumb {
-        display: flex !important;
-    }
 
     /* On signrequest page, sidebar is hidden by default on <= xl and opened only via mobile toggle class. */
     body.es-signrequest-page #sidebar {
@@ -82,6 +83,12 @@
         width: 300px !important;
         height: calc(100vh - 138px) !important;
         z-index: 10003 !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    body.es-signrequest-page #breadcrumb {
+        display: flex !important;
     }
 
     .navbar-brand {
@@ -166,10 +173,6 @@
 }
 
 @media (max-width: 992px) {
-
-    .step-horizontal-v2-icon {
-        display: none !important;
-    }
 
     th.col-nom {
         min-width: 110px;

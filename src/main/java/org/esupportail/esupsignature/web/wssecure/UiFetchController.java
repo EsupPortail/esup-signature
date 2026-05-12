@@ -96,15 +96,15 @@ public class UiFetchController {
     }
 
     @GetMapping(value = "/signatures/default-image")
-    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn,
+    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                 HttpServletResponse response) throws IOException {
-        return getDocumentResponseEntity(response, uiFetchService.getDefaultImage(authUserEppn).readAllBytes(), "default.png", "image/png");
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultImage(userEppn).readAllBytes(), "default.png", "image/png");
     }
 
     @GetMapping(value = "/signatures/default-paraphe")
-    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("authUserEppn") String authUserEppn,
+    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                   HttpServletResponse response) throws IOException {
-        return getDocumentResponseEntity(response, uiFetchService.getDefaultParaphe(authUserEppn).readAllBytes(), "default.png", "image/png");
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultParaphe(userEppn).readAllBytes(), "default.png", "image/png");
     }
 
     @GetMapping(value = "/keystore")

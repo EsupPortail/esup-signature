@@ -43,6 +43,13 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
     @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
     WorkflowDto getByIdJson(Long idLong, String idStr);
+    @Query("""
+        select distinct w
+        from Workflow w
+        left join fetch w.tags
+        where w.id in :ids
+    """)
+    List<Workflow> findByIdInWithTags(Set<Long> ids);
     @Query(value = """
         select distinct
             sb.id as signBookId,

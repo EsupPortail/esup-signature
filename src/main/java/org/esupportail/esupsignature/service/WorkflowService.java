@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.hibernate.Hibernate;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
@@ -43,7 +42,6 @@ public class WorkflowService {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkflowService.class);
     private final TagService tagService;
-    private final FormService formService;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -65,7 +63,7 @@ public class WorkflowService {
     private final  ObjectMapper objectMapper;
     private final  RecipientService recipientService;
 
-    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService, FormService formService) {
+    public WorkflowService(List<Workflow> workflows, WorkflowRepository workflowRepository, WorkflowStepService workflowStepService, LiveWorkflowService liveWorkflowService, LiveWorkflowStepService liveWorkflowStepService, FsAccessFactoryService fsAccessFactoryService, UserService userService, UserShareService userShareService, UserPropertieService userPropertieService, TargetService targetService, FieldService fieldService, SignBookRepository signBookRepository, UserListService userListService, FormRepository formRepository, ObjectMapper objectMapper, RecipientService recipientService, TagService tagService) {
         this.workflows = workflows;
         this.workflowRepository = workflowRepository;
         this.workflowStepService = workflowStepService;
@@ -83,7 +81,6 @@ public class WorkflowService {
         this.objectMapper = objectMapper;
         this.recipientService = recipientService;
         this.tagService = tagService;
-        this.formService = formService;
     }
 
     @PostConstruct
@@ -251,22 +248,31 @@ public class WorkflowService {
     @Transactional
     public Set<Workflow> getWorkflowsByUser(String userEppn, String authUserEppn) {
         User authUser = userService.getByEppn(authUserEppn);
-        Set<Workflow> authorizedWorkflows =
-                new HashSet<>(workflowRepository.findAuthorizedFormsByRoles(authUser.getRoles()));
-        Set<Workflow> workflows = new HashSet<>();
+        Set<Long> authorizedWorkflowIds = workflowRepository.findAuthorizedFormsByRoles(authUser.getRoles())
+                .stream()
+                .map(Workflow::getId)
+                .collect(Collectors.toSet());
+        Set<Long> workflowIds = new HashSet<>();
         if (userEppn.equals(authUserEppn)) {
-            workflows.addAll(workflowRepository.findByCreateByEppn(userEppn).stream().filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty()).collect(Collectors.toList()));
-            workflows.addAll(authorizedWorkflows);
+            workflowIds.addAll(workflowRepository.findByCreateByEppn(userEppn).stream()
+                    .filter(workflow -> workflow.getManagerRole() == null || workflow.getManagerRole().isEmpty())
+                    .map(Workflow::getId)
+                    .collect(Collectors.toSet()));
+            workflowIds.addAll(authorizedWorkflowIds);
         } else {
             for (UserShare userShare : userShareService.getByUserAndToUsersInAndShareTypesContains(userEppn, authUser, ShareType.create)) {
-                if (userShare.getWorkflow() != null && authorizedWorkflows.contains(userShare.getWorkflow())) {
-                    workflows.add(userShare.getWorkflow());
+                Workflow sharedWorkflow = userShare.getWorkflow();
+                if (sharedWorkflow != null && authorizedWorkflowIds.contains(sharedWorkflow.getId())) {
+                    workflowIds.add(sharedWorkflow.getId());
                 }
             }
         }
-        workflows.forEach(workflow -> Hibernate.initialize(workflow.getTags()));
-        workflows = workflows.stream().sorted(Comparator.comparing(Workflow::getCreateDate)).collect(Collectors.toCollection(LinkedHashSet::new));
-        return workflows;
+        if (workflowIds.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        return workflowRepository.findByIdInWithTags(workflowIds).stream()
+                .sorted(Comparator.comparing(Workflow::getCreateDate))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     public List<Workflow> getClassesWorkflows() {
