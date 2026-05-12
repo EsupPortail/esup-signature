@@ -2,6 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -255,10 +257,79 @@ public class UserShareService {
         return userShareRepository.findByUserEppn(authUserEppn);
     }
 
+    @Transactional(readOnly = true)
+    public List<UserShareViewDto> getUserShareViewsByUser(String authUserEppn) {
+        return userShareRepository.findViewByUserEppn(authUserEppn).stream()
+                .map(this::toViewDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<UserShareViewDto> getUserShareViewByIdAndUser(Long id, String authUserEppn) {
+        return userShareRepository.findViewByIdAndUserEppn(id, authUserEppn)
+                .map(this::toViewDto);
+    }
+
     public UserShare getById(Long id) {
         return userShareRepository.findById(id).orElseThrow();
     }
 
+    private UserShareViewDto toViewDto(UserShare userShare) {
+        return new UserShareViewDto(
+                userShare.getId(),
+                userShare.getUser().getEppn(),
+                userShare.getSignWithOwnSign(),
+                userShare.getForceTransmitEmails(),
+                toFormRefDto(userShare.getForm()),
+                toWorkflowRefDto(userShare.getWorkflow()),
+                userShare.getAllSignRequests(),
+                userShare.getBeginDate(),
+                userShare.getEndDate(),
+                userShare.getCreateDate(),
+                new HashSet<>(userShare.getShareTypes()),
+                toDelegatedUsers(userShare.getToUsers())
+        );
+    }
+
+    private UserShareViewDto.FormRefDto toFormRefDto(Form form) {
+        if (form == null) {
+            return null;
+        }
+        return new UserShareViewDto.FormRefDto(
+                form.getTitle(),
+                new HashSet<>(form.getAuthorizedShareTypes())
+        );
+    }
+
+    private UserShareViewDto.WorkflowRefDto toWorkflowRefDto(Workflow workflow) {
+        if (workflow == null) {
+            return null;
+        }
+        return new UserShareViewDto.WorkflowRefDto(
+                workflow.getTitle(),
+                workflow.getDescription(),
+                new HashSet<>(workflow.getAuthorizedShareTypes())
+        );
+    }
+
+    private List<UserDto> toDelegatedUsers(List<User> toUsers) {
+        Map<String, UserDto> usersByKey = new LinkedHashMap<>();
+        for (User toUser : toUsers) {
+            if (toUser == null) {
+                continue;
+            }
+            String key = StringUtils.hasText(toUser.getEmail()) ? toUser.getEmail() : toUser.getEppn();
+            usersByKey.putIfAbsent(key, new UserShareViewDto.DelegatedUserDto(
+                    toUser.getName(),
+                    toUser.getFirstname(),
+                    toUser.getEppn(),
+                    toUser.getEmail()
+            ));
+        }
+        return new ArrayList<>(usersByKey.values());
+    }
+
+    @Transactional
     public void delete(Long userShareId, String authUserEppn) {
         User authUser = userService.getByEppn(authUserEppn);
         UserShare userShare = getById(userShareId);

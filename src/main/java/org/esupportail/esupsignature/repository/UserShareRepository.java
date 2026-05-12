@@ -4,11 +4,33 @@ import org.esupportail.esupsignature.entity.Form;
 import org.esupportail.esupsignature.entity.UserShare;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.ShareType;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserShareRepository extends CrudRepository<UserShare, Long>  {
+	@Query("""
+		select distinct userShare from UserShare userShare
+		join fetch userShare.user user
+		left join fetch userShare.toUsers toUser
+		left join fetch userShare.form form
+		left join fetch userShare.workflow workflow
+		where user.eppn = :userEppn
+		""")
+	List<UserShare> findViewByUserEppn(String userEppn);
+
+	@Query("""
+		select distinct userShare from UserShare userShare
+		join fetch userShare.user user
+		left join fetch userShare.toUsers toUser
+		left join fetch userShare.form form
+		left join fetch userShare.workflow workflow
+		where userShare.id = :id and user.eppn = :userEppn
+		""")
+	Optional<UserShare> findViewByIdAndUserEppn(Long id, String userEppn);
+
 	List<UserShare> findByUserEppn(String userEppn);
 	List<UserShare> findByUserEppnAndWorkflow(String userEppn, Workflow workflow);
 	List<UserShare> findByToUsersEppnIn(List<String> toUsers);

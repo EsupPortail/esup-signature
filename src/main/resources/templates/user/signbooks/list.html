@@ -129,11 +129,10 @@
                                             </th:block>
                                         </select>
                                         <th:block th:with="order=${signBooks.sort.getOrderFor('createBy')}">
-                                            <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                                <i th:class="${order == null || order.direction.name() == 'ASC'
-                                                    ? 'fi fi-rr-sort-amount-down'
-                                                    : 'fi fi-rr-sort-amount-up'}">
-                                                </i>
+                                            <a sd:pagination-sort="createBy" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                                <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                                <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                                <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
                                             </a>
                                         </th:block>
                                     </div>
@@ -142,11 +141,10 @@
                                     <div class="d-flex text-center">
                                         <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
                                         <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
-                                            <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
-                                                <i th:class="${order == null || order.direction.name() == 'ASC'
-                                                ? 'fi fi-rr-sort-amount-down'
-                                                : 'fi fi-rr-sort-amount-up'}">
-                                                </i>
+                                            <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                                <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                                <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                                <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
                                             </a>
                                         </th:block>
                                     </div>
@@ -159,23 +157,21 @@
                                 </th>
                                 <th class="d-none d-xxxl-table-cell" style="min-width:138px">
                                     <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
-                                        <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                        <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
                                             Terminé le 
-                                            <i th:class="${order == null || order.direction.name() == 'ASC'
-                                                ? 'fi fi-rr-sort-amount-down'
-                                                : 'fi fi-rr-sort-amount-up'}">
-                                            </i>
+                                            <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                            <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                            <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
                                         </a>
                                     </th:block>
                                 </th>
                                 <th class="text-center" style="width: 150px;">
                                     <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
-                                        <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}">
+                                        <a sd:pagination-sort="status" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
                                             Statut 
-                                            <i th:class="${order == null || order.direction.name() == 'ASC'
-                                                ? 'fi fi-rr-sort-amount-down'
-                                                : 'fi fi-rr-sort-amount-up'}">
-                                            </i>
+                                            <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                            <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                            <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
                                         </a>
                                     </th:block>
                                 </th>
