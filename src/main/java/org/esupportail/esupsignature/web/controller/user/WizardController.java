@@ -71,6 +71,11 @@ public class WizardController {
                                @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         String modalTile = "Création d'une nouvelle demande personnalisée";
         if(workflowId != null) {
+            if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                model.addAttribute("modalTitle", "Erreur");
+                model.addAttribute("errorMessage", "Circuit non autorisé");
+                return "user/wizard/wiz-not-autorized";
+            }
             var workflow = uiFetchService.buildWorkflowWizardView(workflowId, userEppn);
             modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription();
             model.addAttribute("workflow", workflow);
@@ -92,6 +97,8 @@ public class WizardController {
             model.addAttribute("form", uiFetchService.buildStartFormWizardView(formId, userEppn));
             return "user/wizard/wiz-start-form";
         } else {
+            model.addAttribute("modalTitle", "Erreur");
+            model.addAttribute("errorMessage", "Formulaire non autorisé");
             return "user/wizard/wiz-not-autorized";
         }
     }
@@ -160,6 +167,9 @@ public class WizardController {
         Workflow workflow = null;
         String name = "Demande personnalisée";
         if (workflowId != null) {
+            if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                return ResponseEntity.status(403).build();
+            }
             workflow = workflowService.getById(workflowId);
             name = workflow.getDescription();
         }
@@ -171,6 +181,7 @@ public class WizardController {
     @PostMapping(value = "/wiz-new-step/{signBookId}")
     public String wizWorkflowSignNewStep(@ModelAttribute("userEppn") String userEppn,
                        @PathVariable("signBookId") Long signBookId,
+                       @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestBody List<WorkflowStepDto> steps,
                        Model model) {
@@ -179,6 +190,11 @@ public class WizardController {
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null && workflowId != 0) {
+                if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                    model.addAttribute("modalTitle", "Erreur");
+                    model.addAttribute("errorMessage", "Circuit non autorisé");
+                    return "user/wizard/wiz-not-autorized";
+                }
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
                 var workflow = uiFetchService.buildWorkflowView(workflowId, userEppn);
                 model.addAttribute("workflow", workflow);
@@ -261,6 +277,7 @@ public class WizardController {
         return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-step", context));
     }
 
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #userEppn)")
     @PostMapping(value = "/wiz-save-signbook/{id}")
     public String saveWorkflow(@ModelAttribute("userEppn") String userEppn,
                                @PathVariable("id") Long id,
@@ -278,6 +295,7 @@ public class WizardController {
         return "user/wizard/wiz-end";
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#workflowId, #userEppn)")
     @PostMapping(value = "/wiz-add-step-workflow/{workflowId}", produces = "text/html")
     @ResponseBody
     public ResponseEntity<String> wizXWorkflow(@PathVariable("workflowId") Long workflowId,
@@ -331,6 +349,7 @@ public class WizardController {
         return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-workflow-step", context));
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/wiz-save-workflow/{id}")
     public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                                Model model) {
@@ -341,6 +360,7 @@ public class WizardController {
         return "user/wizard/wiz-save-workflow";
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @PostMapping(value = "/wiz-save-workflow/{id}")
     @ResponseBody
     public ResponseEntity<Void> wizSaveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name,
@@ -379,6 +399,7 @@ public class WizardController {
         return ResponseEntity.ok().body(signBookId);
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);

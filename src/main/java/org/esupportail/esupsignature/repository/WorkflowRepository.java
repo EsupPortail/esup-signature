@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.repository;
 import org.esupportail.esupsignature.dto.projection.chart.WorkflowStatusChartProjectionDto;
 import org.esupportail.esupsignature.dto.projection.export.WorkflowDatasCsvProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.WorkflowDto;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -19,6 +20,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     Workflow findByIdOrToken(Long idLong, String idStr);
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
+    List<Workflow> findBySharedToUsersContains(User user);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
     List<Workflow> findByManagerRole(String role);
     @Query(value = "select count(*) from workflow as w where w.name = :name", nativeQuery = true)

@@ -13,8 +13,8 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/workflows"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Étapes du circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
@@ -26,6 +26,7 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1 overflow-scroll">
+                    <div class="p-0 m-2">
             <ul class="nav nav-tabs">
                 <li class="nav-item">
                     <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
@@ -152,6 +153,7 @@
                     </div>
                 </div>
             </div>
+                    </div>
                 </div>
             <div class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">

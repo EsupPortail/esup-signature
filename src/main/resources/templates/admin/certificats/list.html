@@ -9,7 +9,7 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active">Certificats</li>
             </ol>
         </nav>
@@ -19,102 +19,97 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card mb-1 mx-auto" th:if="${sealCertificatPropertieses != null && !sealCertificatPropertieses.isEmpty()}">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Certificat cachet</b></h5>
-                    <table class="table table-sm table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Nom</th>
-                            <th>Secours de</th>
-                            <th>Titre</th>
-                            <th>Certificat</th>
-                            <th>Rôles</th>
-                            <th>Date de création</th>
-                            <th>Date de fin</th>
-                            <th class="text-center">Validité eIDas</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
-                            <tr>
-                                <td th:text="${sealCertificatProperties.sealCertificatName}"></td>
-                                <td th:text="${sealCertificatProperties.sealSpareOf}"></td>
-                                <td th:text="${sealCertificatProperties.sealCertificatTitle}"></td>
-                                <td style="width: 600px; word-break: break-all" th:text="${sealCertificatProperties.dssPrivateKeyEntry.certificate.subject.principal}"></td>
-                                <td th:text="${sealCertificatProperties.roles}"></td>
-                                <td th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td>
-                                    <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-cross text-danger fa-2x"></i>
-                                    <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
-
-                                </td>
-
-                                <td class="text-center">
-                                    <i th:if="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-check text-success fa-2x"></i>
-                                    <i th:unless="${sealCertificatProperties.eIDasValidity}" class="fi fi-rr-cross text-danger fa-2x"></i>
-                                </td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card mb-1 mx-auto">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Certificats pour les rôles</b></h5>
-                    <table class="table table-sm table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Nom</th>
-                            <th>Date de création</th>
-                            <th>Date de fin</th>
-                            <th>Roles</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="certificat : ${certificats}">
-                            <tr>
-                                <td style="width: 600px; word-break: break-all" th:text="${certificat.keystore.fileName}"></td>
-                                <td th:text="${#dates.format(certificat.createDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></td>
-                                <td th:text="${certificat.roles}"></td>
-                                <td>
-                                    <a class="btn btn-danger" th:href="'#modal-warning'" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning'">
-                                        <i class="fi fi-rr-trash"></i>
-                                    </a>
-                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning'">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <form th:action="'/admin/certificats'" th:method="delete">
-                                                    <input type="hidden" name="id" th:value="${certificat.id}">
-                                                    <div class="modal-header">
-                                                        <h2>Attention</h2>
-                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                                                        </button>
+                    <div class="p-0 m-2 d-flex flex-column gap-2">
+                        <div class="alert alert-light" th:if="${sealCertificatPropertieses != null && !sealCertificatPropertieses.isEmpty()}">
+                                <h5 class="text-center"><b>Certificat cachet</b></h5>
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Secours de</th>
+                                        <th>Titre</th>
+                                        <th>Certificat</th>
+                                        <th>Rôles</th>
+                                        <th>Date de création</th>
+                                        <th>Date de fin</th>
+                                        <th class="text-center">Validité eIDas</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
+                                        <tr>
+                                            <td th:text="${sealCertificatProperties.sealCertificatName}"></td>
+                                            <td th:text="${sealCertificatProperties.sealSpareOf}"></td>
+                                            <td th:text="${sealCertificatProperties.sealCertificatTitle}"></td>
+                                            <td style="width: 600px; word-break: break-all" th:text="${sealCertificatProperties.dssPrivateKeyEntry.certificate.subject.principal}"></td>
+                                            <td th:text="${sealCertificatProperties.roles}"></td>
+                                            <td th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.creationDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                            <td>
+                                                <i th:if="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fa-solid fa-check text-success fa-2x"></i>
+                                                <i th:unless="${sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter.after(#dates.createNow())}" class="fi fi-rr-cross text-danger fa-2x"></i>
+                                                <span th:text="${#dates.format(sealCertificatProperties.dssPrivateKeyEntry.certificate.notAfter, 'dd/MM/yyyy HH:mm')}"></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <i th:if="${sealCertificatProperties.eIDasValidity}" class="fa-solid fa-check text-success fa-2x"></i>
+                                                <i th:unless="${sealCertificatProperties.eIDasValidity}" class="fi fi-rr-cross text-danger fa-2x"></i>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                        </div>
+                        <div class="alert alert-light">
+                                <h5 class="text-center"><b>Certificats pour les rôles</b></h5>
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Date de création</th>
+                                        <th>Date de fin</th>
+                                        <th>Roles</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="certificat : ${certificats}">
+                                        <tr>
+                                            <td style="width: 600px; word-break: break-all" th:text="${certificat.keystore.fileName}"></td>
+                                            <td th:text="${#dates.format(certificat.createDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                            <td th:text="${#dates.format(certificat.expireDate, 'dd/MM/yyyy HH:mm')}"></td>
+                                            <td th:text="${certificat.roles}"></td>
+                                            <td>
+                                                <a class="btn btn-danger" th:href="'#modal-warning-' + ${certificat.id}" role="button" title="Supprimer"
+                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${certificat.id}">
+                                                    <i class="fi fi-rr-trash"></i>
+                                                </a>
+                                                <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${certificat.id}">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <form th:action="'/admin/certificats'" th:method="delete">
+                                                                <input type="hidden" name="id" th:value="${certificat.id}">
+                                                                <div class="modal-header">
+                                                                    <h2>Attention</h2>
+                                                                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="alert alert-danger">Confirmez-vous la suppression de ce certificat ?</div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
+                                                                    <button type="submit" class="btn btn-danger">Oui</button>
+                                                                </div>
+                                                            </form>
+                                                        </div>
                                                     </div>
-                                                    <div class="modal-body">
-                                                        <div class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>
-                                                        <button type="submit" class="btn btn-danger">Oui</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
                 </div>
-                </div>
-            </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
                         <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
@@ -123,14 +118,14 @@
                             </a>
                         </li>
                         <li id="refreshButton" onmouseover="$('#refreshButton').toggleClass('active');" onmouseout="$('#refreshButton').toggleClass('active');">
-                            <a title="Rafraichir les certificats" href="/admin/certificats/refresh" class="btn btn-transparent text-dark">
-                                <i class="fa-solid fa-sync"></i>
-                            </a>
-                        </li>
+                    </div>
+                </div>
+            </div>
                     </ul>
                 </div>
         </div>
     </div>
+</div>
 </div>
 
     <div data-bs-focus="false" class="modal fade" id="newCertificat"  role="dialog" aria-hidden="true">

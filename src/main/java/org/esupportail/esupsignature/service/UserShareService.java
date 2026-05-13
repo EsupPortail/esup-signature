@@ -223,6 +223,22 @@ public class UserShareService {
         return false;
     }
 
+    public Boolean checkWorkflowShare(String fromUserEppn, String toUserEppn, ShareType shareType, Workflow workflow) {
+        if(fromUserEppn.equals(toUserEppn)) {
+            return true;
+        }
+        List<UserShare> userShares = getUserShares(fromUserEppn, Collections.singletonList(toUserEppn), shareType);
+        if(shareType.equals(ShareType.sign) && !userShares.isEmpty()) {
+            return true;
+        }
+        for(UserShare userShare : userShares) {
+            if(userShare.getWorkflow().equals(workflow) && checkUserShareDate(userShare)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Boolean isOneShareByType(String fromUserEppn, String toUserEppn, ShareType shareType) {
         if(fromUserEppn.equals(toUserEppn)) {
             return true;

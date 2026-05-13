@@ -8,25 +8,28 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active">Utilisateurs</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <form method="get">
-                        <div class="input-group">
-                            <input class="form-control" type="text" name="searchText" placeholder="Recherche par email, eppn ou numéro de mobile" th:value="${searchText}">
-                                <input class="btn btn-success" type="submit" value="OK">
-                                <a type="button" href="/admin/users" class="btn btn-danger" >X</a>
-                        </div>
-                    </form>
-                    <br>
-                    <div class="table-fix-head scrollbar-style rounded-3 ">
+                    <div class="p-0 m-2">
+                        <div class="card col-lg-12">
+                            <div class="card-body">
+                                <form method="get">
+                                    <div class="input-group">
+                                        <input class="form-control" type="text" name="searchText" placeholder="Recherche par email, eppn ou numéro de mobile" th:value="${searchText}">
+                                        <input class="btn btn-success" type="submit" value="OK">
+                                        <a type="button" href="/admin/users" class="btn btn-danger">X</a>
+                                    </div>
+                                </form>
+                                <br>
+                                <div class="table-fix-head scrollbar-style rounded-3 ">
                     <table class="table table-light table-sm table-borderless table-hover">
                         <thead class="table-secondary">
                         <tr>
@@ -109,10 +112,11 @@
                         </th:block>
                         </tbody>
                     </table>
-                    <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                                    <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
                 </div>
             </div>
         </div>

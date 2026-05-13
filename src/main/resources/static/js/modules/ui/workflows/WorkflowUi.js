@@ -64,7 +64,9 @@ export class WorkflowUi {
             return;
         }
 
-        this.form = document.getElementById('updateSignBook') || document.getElementById('formUpdate');
+        this.form = document.getElementById('updateSignBook')
+            || document.getElementById('formUpdate')
+            || document.getElementById('params');
         const saveButton = document.getElementById('saveButton');
 
         if (!this.form || !saveButton) {

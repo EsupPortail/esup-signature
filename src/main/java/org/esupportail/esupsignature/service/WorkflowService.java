@@ -267,12 +267,20 @@ public class WorkflowService {
                 }
             }
         }
+        workflowIds.addAll(workflowRepository.findBySharedToUsersContains(authUser).stream().map(Workflow::getId).collect(Collectors.toSet()));
         if (workflowIds.isEmpty()) {
             return new LinkedHashSet<>();
         }
         return workflowRepository.findByIdInWithTags(workflowIds).stream()
                 .sorted(Comparator.comparing(Workflow::getCreateDate))
                 .collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    @Transactional
+    public Boolean isWorkflowAuthorized(String userEppn, String authUserEppn, Long id) {
+        Workflow workflow = getById(id);
+        return getWorkflowsByUser(userEppn, authUserEppn).contains(workflow)
+                && userShareService.checkWorkflowShare(userEppn, authUserEppn, ShareType.create, workflow);
     }
 
     public List<Workflow> getClassesWorkflows() {
@@ -803,6 +811,20 @@ public class WorkflowService {
             }
         } else {
             workflow.getViewers().clear();
+        }
+    }
+
+    @Transactional
+    public void addShareToUsers(Long id, List<String> sharedToUsers) {
+        Workflow workflow = getById(id);
+        if(sharedToUsers != null && !sharedToUsers.isEmpty()) {
+            workflow.getSharedToUsers().clear();
+            for (String sharedToUser : sharedToUsers) {
+                User user = userService.getUserByEmail(sharedToUser);
+                workflow.getSharedToUsers().add(user);
+            }
+        } else {
+            workflow.getSharedToUsers().clear();
         }
     }
 

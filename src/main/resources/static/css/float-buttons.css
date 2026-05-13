@@ -69,6 +69,7 @@
 .es-fixed-action-btns ul {
     pointer-events: initial;
     opacity: 1;
+    width: 100%;
     display: -webkit-box;
     display: flex;
     -webkit-box-orient: vertical;
@@ -82,6 +83,8 @@
 .fixed-action-btns li,
 .es-fixed-action-btns li {
     display: -webkit-box;
+    width: 100%;
+    justify-content: center;
     margin-right: auto;
     margin-left: auto;
 }
@@ -112,5 +115,12 @@
 .fixed-action-btns .btn-floating i,
 .es-fixed-action-btns .btn-floating i {
     margin-top: 0 !important;
+}
+
+.fixed-action-btns,
+.es-fixed-action-btns {
+    width: 74px;
+    min-width: 74px;
+    box-sizing: border-box;
 }
 

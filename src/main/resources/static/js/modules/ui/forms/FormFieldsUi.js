@@ -1,5 +1,6 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
 import NotificationCenter from "../NotificationCenter.js?version=@version@";
+import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
 
 export class FormFieldsUi {
 
@@ -8,6 +9,7 @@ export class FormFieldsUi {
         this.notificationCenter = new NotificationCenter();
         this.formId = formId;
         this.btnSaveFields = $('#saveButton');
+        this.dirtyIndicator = null;
         this.prefillTypes = prefillTypes;
         this.domain = domain;
         this.initListeners();
@@ -15,6 +17,7 @@ export class FormFieldsUi {
 
     initListeners() {
         this.btnSaveFields.on('click', () => this.saveFields());
+        this.initDirtyIndicator();
         let self = this;
         $('[id^="valueServiceName_"]').each(function (){
             $(this).on('change', e => self.updateTypes(e));
@@ -28,6 +31,24 @@ export class FormFieldsUi {
         });
         $("#multipartModel").on('change', function () {
             $("#submitModel").removeClass("d-none");
+        });
+    }
+
+    initDirtyIndicator() {
+        if (this.dirtyIndicator != null) {
+            return;
+        }
+
+        const formContainer = document.querySelector('.table-fix-head');
+        const saveButton = document.getElementById('saveButton');
+
+        if (!formContainer || !saveButton) {
+            return;
+        }
+
+        this.dirtyIndicator = attachDirtyIndicator({
+            form: formContainer,
+            saveButton
         });
     }
 
@@ -125,6 +146,7 @@ export class FormFieldsUi {
             successMessage.text = "Modifications enregistrées";
             successMessage.object = null;
             this.notificationCenter.launch(successMessage);
+            this.dirtyIndicator?.markClean();
         } catch (error) {
             console.error('save fields error', error);
             let errorMessage = new Message();
