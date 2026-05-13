@@ -62,6 +62,11 @@ main {
     background-color: var(--bs-light-bg-subtle);
 }
 
+#breadcrumb a {
+    color: var(--bs-dark);
+    text-decoration: none;
+}
+
 .es-nav-tools {
      font-size: 16px;
  }
@@ -87,7 +92,7 @@ body.es-signrequest-page #tools .steps-horizontal-v2 {
 }
 
 body.es-signrequest-page #tools .step-horizontal-v2 {
-    flex: 1 0 auto;
+    /*flex: 1 0 auto;*/
     min-width: 0;
     white-space: nowrap;
 }
@@ -105,6 +110,11 @@ body.es-signrequest-page #tools #insert-btn-div,
 body.es-signrequest-page #tools #refuseLaunchDiv {
     flex: 1 1 0;
     min-width: 0;
+}
+
+body.es-signrequest-page #tools #refuseLaunchDiv.es-refuse-slot-hidden {
+    visibility: hidden;
+    pointer-events: none;
 }
 
 body.es-signrequest-page #tools #insert-btn-div {
@@ -190,7 +200,7 @@ body.es-spot-add-mode #spot-modal * {
 }
 
 @media (max-width: 1600px) {
-    /* Under 1200px, show only the current step in tools bar. */
+
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
         display: none !important;
     }
@@ -202,6 +212,45 @@ body.es-spot-add-mode #spot-modal * {
     /* Hide connectors when intermediate steps are hidden to avoid overlap. */
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
         display: none;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 {
+        width: 50% !important;
+        flex: 0 1 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
+        /*width: 50%;*/
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2 {
+        flex: 1 0 auto;
+    }
+
+    .step-horizontal-v2 {
+        padding-right: 0 !important;
+    }
+
+    body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
+        width: auto;
+        flex: 0 0 auto !important;
+    }
+
+    body.es-signrequest-page #tools #step-3 #signLaunchButton {
+        width: auto;
+        max-width: none;
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse {
+        margin-left: 0.25rem !important;
+        flex: 0 0 auto;
+    }
+
+    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse .btn {
+        width: auto;
+        max-width: none;
+        white-space: nowrap;
     }
 
     body.es-signrequest-page #tools #refuseLaunchDiv {
@@ -2137,7 +2186,7 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     position: relative;
     flex: 1;
     padding-right: 4rem;
-    padding-left: 3rem;
+    padding-left: 1rem;
     gap: 0.5rem;
     white-space: nowrap;
 }
@@ -2146,8 +2195,8 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     content: '';
     position: absolute;
     top: 50%;
-    right: -2rem;
-    width: 4rem;
+    right: 0rem;
+    width: 3rem;
     height: 2px;
     background: var(--color-dee2e6);
     transform: translateY(-50%);
@@ -2201,11 +2250,11 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     color: var(--bs-success);
 }
 
-button.form-dirty-indicator {
+.form-dirty-indicator {
     position: relative;
 }
 
-button.form-dirty-indicator::after {
+.form-dirty-indicator::after {
     content: '';
     position: absolute;
     top: 0.1rem;

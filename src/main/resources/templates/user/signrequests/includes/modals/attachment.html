@@ -88,9 +88,9 @@
                     </th:block>
                 </table>
                 </div>
-                <div th:if="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe pour le moment</div>
-                <hr/>
-                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${signRequestFull.editable || showSignRequest.workflow.externalCanEditAttachments}">
+                <div th:if="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe</div>
+                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${signRequestFull.editable && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)  && (user.userType.name() != 'external' || showSignRequest.workflow.externalCanEditAttachments)}">
+                    <hr/>
                     <div class="form-group mb-3">
                         <h5>Ajouter une pièce jointe</h5>
                         <div class="custom-file mb-3">

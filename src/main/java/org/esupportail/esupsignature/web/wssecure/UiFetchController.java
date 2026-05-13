@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -96,15 +96,15 @@ public class UiFetchController {
     }
 
     @GetMapping(value = "/signatures/default-image")
-    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("authUserEppn") String authUserEppn,
+    public ResponseEntity<Void> getDefaultImage(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                 HttpServletResponse response) throws IOException {
-        return getDocumentResponseEntity(response, uiFetchService.getDefaultImage(authUserEppn).readAllBytes(), "default.png", "image/png");
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultImage(userEppn).readAllBytes(), "default.png", "image/png");
     }
 
     @GetMapping(value = "/signatures/default-paraphe")
-    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("authUserEppn") String authUserEppn,
+    public ResponseEntity<Void> getDefaultParaphe(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
                                                   HttpServletResponse response) throws IOException {
-        return getDocumentResponseEntity(response, uiFetchService.getDefaultParaphe(authUserEppn).readAllBytes(), "default.png", "image/png");
+        return getDocumentResponseEntity(response, uiFetchService.getDefaultParaphe(userEppn).readAllBytes(), "default.png", "image/png");
     }
 
     @GetMapping(value = "/keystore")

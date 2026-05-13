@@ -3,7 +3,7 @@
 <!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto"*/-->
 <div th:fragment="status(signBookLight)" th:with="statusValue=${signBookLight.status != null ? signBookLight.status.toString() : null}">
     <div th:if="${!signBookLight.deleted}" th:switch="${statusValue}" class="text-center mb-1 mt-1">
-        <div th:case="'uploading'" class="badge rounded-pill badge-status bg-secondary-subtle" th:title="#{'signbook.status.' + ${statusValue}}">
+        <div th:case="'uploading'" class="badge rounded-pill badge-status bg-secondary-subtle text-secondary-emphasis" th:title="#{'signbook.status.' + ${statusValue}}">
             <i class="fi fi-rr-cloud-upload-alt" th:title="#{'signbook.status.' + ${statusValue}}"></i>
             <span class="d-md-inline-flex" th:text="#{'signbook.status.' + ${statusValue}}"></span>
         </div>

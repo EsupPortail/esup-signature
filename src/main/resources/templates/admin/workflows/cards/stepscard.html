@@ -156,12 +156,12 @@
                             <table th:if="${workflow.fromCode == null || !workflow.fromCode}" th:id="'table_' + ${workflowStep.id}" class="table table-sm table-bordered" th:classappend="${!workflowStep.autoSign ? '' : 'd-none'}">
                                 <thead class="table-secondary">
                                 <tr>
-                                    <th>Participants</th>
+                                    <th style="width: 100%">Participants</th>
                                     <th>
                                         <button type="button" title="Ajouter un destinataire"
-                                                class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                                class="btn btn-sm btn-primary float-end" data-bs-toggle="modal"
                                                 th:data-bs-target="'#reSendModal' + ${workflowStep.id}">
-                                            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                            <i class="fi fi-rr-plus" aria-hidden="true"></i>
                                         </button>
                                     </th>
                                 </tr>
@@ -173,12 +173,12 @@
                                             <span th:unless="${user.firstname != '' || user.name != ''}" th:text="${user.email}"></span>
                                         </td>
                                         <td>
-                                            <form th:action="'/' + ${workflowRole} + '/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}" th:method="'delete'">
+                                            <form class="float-end" th:action="'/' + ${workflowRole} + '/workflows/remove-step-recipent/' + ${workflow.id} + '/' + ${workflowStep.id}" th:method="'delete'">
                                                 <input type="hidden" name="userToRemoveEppn" th:value="${user.eppn}"/>
                                                 <button title="Supprimer le destinataire"
                                                     onclick="return confirm('Voulez-vous vraiment supprimer cet element ?');"
                                                     type="submit" class="btn btn-danger btn-sm"><i
-                                                    class="fa-solid fa-minus-circle"></i></button>
+                                                    class="fi fi-rr-trash"></i></button>
                                             </form>
                                         </td>
                                     </tr>

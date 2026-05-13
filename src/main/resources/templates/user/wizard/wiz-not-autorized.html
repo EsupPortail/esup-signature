@@ -1,17 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-    <div class="modal-header">
-        <h3 class="modal-title" id="fastSignRequestLabel">Erreur</h3>
-        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
-    <div class="modal-body">
-        <div class="alert alert-danger text-center">
-            <h1>Formulaire non autorisé</h1>
+<div class="modal-header">
+    <h4 class="modal-title d-flex align-items-center gap-2 text-danger" id="fastSignRequestLabel">
+        <i class="fi fi-rr-triangle-warning"></i>
+        <span th:text="${modalTitle != null ? modalTitle : 'Accès refusé'}">Accès refusé</span>
+    </h4>
+    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="d-flex flex-column align-items-center text-center py-4 px-3">
+        <div class="d-flex align-items-center justify-content-center rounded-circle bg-danger-subtle text-danger mb-4" style="width: 72px; height: 72px;">
+            <i class="fi fi-rr-triangle-warning" style="font-size: 2rem;"></i>
         </div>
+        <h4 class="mb-2" data-es-wiz-not-authorized-message th:text="${errorMessage != null ? errorMessage : 'Accès non autorisé'}">Accès non autorisé</h4>
+        <p class="text-body-secondary mb-0">
+            Vous ne disposez pas des droits nécessaires pour ouvrir cette demande.
+            <br>
+            Vérifiez vos habilitations ou contactez un administrateur si besoin.
+        </p>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">
-            Fermer
-        </button>
-    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">
+        <i class="fi fi-rr-cross-small"></i> Fermer
+    </button>
+</div>
 </html>

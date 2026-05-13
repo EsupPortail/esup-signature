@@ -129,6 +129,7 @@ export class SignWorkspaceController {
         this.nextCommand = "none";
         this.toolbar = new SignToolbar({
             eventNamespace: ".workspacePdfToolbar",
+            priorityContainers: ["#tools", ".es-nav-tools"],
             onAddComment: () => this.enableCommentAdd(),
             onAddSpot: () => this.enableSpotAdd(),
             onAddSign: () => this.addSign(),
@@ -275,6 +276,7 @@ export class SignWorkspaceController {
             this.commentManager.bind(eventNamespace);
         }
         this.toolbar.bind();
+        this.refreshToolbarAccessibility();
         this.postitManager.bind();
 
         let signImageBtn = $("#signImageBtn");
@@ -459,8 +461,32 @@ export class SignWorkspaceController {
         }
         this.toolsLoadingStateReleased = true;
         window.requestAnimationFrame(() => {
-            window.requestAnimationFrame(() => this.setToolsLoadingState(false));
+            window.requestAnimationFrame(() => {
+                this.setToolsLoadingState(false);
+                this.refreshToolbarAccessibility();
+                this.focusPrimaryToolbarAction();
+            });
         });
+    }
+
+    getPrimaryToolbarFocusSelectors() {
+        if (this.currentSignType === 'hiddenVisa') {
+            return ['#signLaunchButton', '#refuseLaunchButton', '#insert-btn'];
+        }
+        return ['#addSignButton2', '#certType', '#addParaphButton2', '#signLaunchButton', '#refuseLaunchButton'];
+    }
+
+    refreshToolbarAccessibility() {
+        if (this.toolbar != null && typeof this.toolbar.refreshAccessibility === 'function') {
+            this.toolbar.refreshAccessibility();
+        }
+    }
+
+    focusPrimaryToolbarAction() {
+        if (this.toolbar == null || typeof this.toolbar.focusPrimaryAction !== 'function') {
+            return;
+        }
+        this.toolbar.focusPrimaryAction(this.getPrimaryToolbarFocusSelectors());
     }
 
     initForm() {
@@ -626,6 +652,7 @@ export class SignWorkspaceController {
         console.info("apply unified workspace ui");
         this.disableAllModes();
         this.setToolsBarDisabled(false);
+        this.refreshToolbarAccessibility();
         this.setSignSpacesDroppableEnabled(true);
         this.signPlacementController.pointItEnable = false;
         if (this.status === 'deleted') {
@@ -669,15 +696,13 @@ export class SignWorkspaceController {
             $(".sign-space").hide();
         }
 
-        if(this.signable && this.currentSignType !== 'hiddenVisa') {
-            $("#addSignButton2").focus();
-        }
 
         $('#infos').show();
         $('#insert-btn-div').show();
         let insertBtn = $('#insert-btn');
         insertBtn.show();
         insertBtn.removeClass("btn-warning");
+        this.refreshToolbarAccessibility();
         if(this.isPdf) {
             if (this.currentSignRequestParamses != null && this.currentSignRequestParamses.length > 0 && this.currentSignRequestParamses[0] != null) {
                 if (this.forcePageNum) {
@@ -696,7 +721,6 @@ export class SignWorkspaceController {
     }
 
     disableAllModes() {
-        $('#workspace').removeClass('alert-success').removeClass('alert-secondary').removeClass('alert-warning').removeClass('alert-primary');
         $('#commentModeButton').removeClass('btn-outline-warning');
         $('#signModeButton').removeClass('btn-outline-success');
         $('#readModeButton').removeClass('btn-outline-secondary');

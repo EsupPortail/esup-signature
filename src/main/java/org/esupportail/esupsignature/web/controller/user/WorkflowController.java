@@ -11,7 +11,7 @@ import org.esupportail.esupsignature.service.CertificatService;
 import org.esupportail.esupsignature.service.RecipientService;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WorkflowStepService;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -155,10 +155,12 @@ public class WorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                          @RequestParam(required = false) List<String> viewers,
-                            @RequestParam(required = false) Boolean sendAlertToAllRecipients,
+                         @RequestParam(required = false) List<String> sharedToUsers,
+                         @RequestParam(required = false) Boolean sendAlertToAllRecipients,
                          @RequestParam String name) {
         workflowService.rename(id, name);
         workflowService.addViewers(id, viewers);
+        workflowService.addShareToUsers(id, sharedToUsers);
         workflowService.updateSendAlertToAllRecipients(id, sendAlertToAllRecipients);
         return "redirect:/user/workflows/" + id;
     }

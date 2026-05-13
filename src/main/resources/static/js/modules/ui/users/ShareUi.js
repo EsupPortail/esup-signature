@@ -1,14 +1,18 @@
+import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
+
 export default class ShareUi {
 
     constructor() {
         console.info("Starting share UI");
+        this.dirtyIndicator = null;
         this.initListeners();
     }
 
     initListeners() {
-        $('#selectTarget').on('change', e => this.toggleShareForm());
+        $('#selectTarget').on('change', () => this.toggleShareForm());
         $('#selectWorkflow').on('change', e => this.updateTypeCheckboxes(e));
         $('#selectForm').on('change', e => this.updateTypeCheckboxes(e));
+        this.initDirtyIndicatorWhenReady();
         let checkSign = $("#check-sign");
         if(checkSign) {
             this.listenToCheckSign();
@@ -25,6 +29,33 @@ export default class ShareUi {
             }
         });
 
+    }
+
+    initDirtyIndicatorWhenReady() {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            queueMicrotask(() => this.initDirtyIndicator());
+            return;
+        }
+
+        document.addEventListener('globalUiReady', () => this.initDirtyIndicator(), {once: true});
+    }
+
+    initDirtyIndicator() {
+        if (this.dirtyIndicator != null) {
+            return;
+        }
+
+        const form = document.getElementById('shareForm');
+        const saveButton = document.getElementById('saveButton');
+
+        if (!form || !saveButton) {
+            return;
+        }
+
+        this.dirtyIndicator = attachDirtyIndicator({
+            form,
+            saveButton
+        });
     }
 
     toggleShareForm() {

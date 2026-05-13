@@ -35,8 +35,6 @@ export class SignPlacementController extends EventFactory {
         this.signType = signType;
         this.forwardButton = $("#forward-btn");
         this.addSignButton = $("#addSignButton");
-        $("#signLaunchButton").focus();
-        $("#addSignButton2").focus();
         this.faImages = ["check-solid", "times-solid", "circle-regular", "minus-solid"];
         // if(localStorage.getItem("scale") != null) {
         //     this.currentScale = localStorage.getItem("scale");
@@ -52,6 +50,29 @@ export class SignPlacementController extends EventFactory {
     getCurrentScrollTop() {
         const workspace = this.getScrollContainer();
         return workspace ? workspace.scrollTop : window.scrollY;
+    }
+
+    focusWhenVisible(selector, attempts = 10, delay = 60) {
+        const tryFocus = remainingAttempts => {
+            const element = document.querySelector(selector);
+            if (element != null) {
+                const style = window.getComputedStyle(element);
+                const isVisible = element.getClientRects().length > 0
+                    && style.display !== "none"
+                    && style.visibility !== "hidden"
+                    && !element.disabled;
+                if (isVisible) {
+                    element.focus({preventScroll: true});
+                    return true;
+                }
+            }
+            if (remainingAttempts <= 0) {
+                return false;
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
     }
 
     initListeners() {
@@ -148,7 +169,7 @@ export class SignPlacementController extends EventFactory {
             addSignButton2.removeClass("d-none");
             addSignButton2.addClass("pulse-success");
             $("#signLaunchButton").removeClass("pulse-success");
-            addSignButton2.focus();
+            this.focusWhenVisible("#addSignButton2");
             $("#addSignButton").removeAttr("disabled");
             $(window).off("beforeunload" + this.beforeUnloadNamespace);
             this.enableForwardButton();
@@ -493,7 +514,7 @@ export class SignPlacementController extends EventFactory {
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
-        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton2, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");
@@ -529,7 +550,7 @@ export class SignPlacementController extends EventFactory {
         addParaphButton2.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton2, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
@@ -544,7 +565,6 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
         step3.find(".step-horizontal-v2-icon").html("3");
-
     }
 
     goStep3() {
@@ -570,7 +590,7 @@ export class SignPlacementController extends EventFactory {
             insertBtn.removeAttr("disabled");
             refuseLaunchButton.removeAttr("disabled");
             signLaunchButton.removeAttr("disabled");
-            refuseLaunchDiv.removeClass("d-none");
+            refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
             this.setButtonVariant(addSignButton, "btn-secondary");
             this.setButtonVariant(insertBtn, "btn-success");
@@ -589,7 +609,8 @@ export class SignPlacementController extends EventFactory {
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.attr("disabled", "disabled");
         signLaunchButton.removeAttr("disabled");
-        refuseLaunchDiv.addClass("d-none");
+        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.addClass("es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton, "btn-secondary");
         this.setButtonVariant(insertBtn, "btn-success");

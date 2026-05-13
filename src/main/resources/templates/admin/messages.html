@@ -9,7 +9,7 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active">Messages</li>
             </ol>
         </nav>
@@ -19,55 +19,54 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Messages</b></h5>
-                    <div class="alert alert-secondary mb-2">
-                        Ici, vous pouvez ajouter un message qui sera affiché aux utilisateurs.
-                    </div>
-                    <table class="table table-borderless table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Message</th>
-                            <th>Date de fin</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="message :${messages}">
-                        <tr>
-                            <td th:utext="${message.text}"></td>
-                            <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
-                            <td>
-                                <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${message.id }" class="btn btn-danger">
-                                    <i class="fi fi-rr-trash"></i>
-                                </button>
-                                <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${message.id}">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">
-                                                <div class="modal-header">
-                                                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <div class="p-0 m-2">
+                        <div class="alert alert-light">
+                            <div class="alert alert-secondary mb-2">
+                                Ici, vous pouvez ajouter un message qui sera affiché aux utilisateurs.
+                            </div>
+                            <table class="table table-borderless table-hover">
+                                <thead class="table-secondary">
+                                <tr>
+                                    <th>Message</th>
+                                    <th>Date de fin</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="message :${messages}">
+                                <tr>
+                                    <td th:utext="${message.text}"></td>
+                                    <td th:text="${#dates.format(message.endDate, 'dd/MM/yyyy')}"></td>
+                                    <td>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${message.id }" class="btn btn-danger">
+                                            <i class="fi fi-rr-trash"></i>
+                                        </button>
+                                        <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${message.id}">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form id="command" th:action="'/admin/messages/' + ${message.id}" th:method="delete">
+                                                        <div class="modal-header">
+                                                            <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="alert alert-danger text-center">Confirmez-vous la suppression ?</div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
+                                                            <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
+                                                        </div>
+                                                    </form>
                                                 </div>
-                                                <div class="modal-body">
-                                                    <div class="alert alert-danger text-center">Confirmez-vous la suppression ?</div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline pull-left" data-bs-dismiss="modal">Non</button>
-                                                    <button type="submit" class="btn btn-outline pull-left btn-danger">Oui</button>
-                                                </div>
-                                            </form>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </div>
+                                    </td>
+                                </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
             </div>
-                </div>
             <div class="es-sign-buttons es-fixed-action-btns active">
                 <ul class="list-unstyled">
                     <li>

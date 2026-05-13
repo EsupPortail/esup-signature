@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.projection.jpa;
 
-public interface UserDto {
+public interface UserProjectionDto {
 
     String getName();
 

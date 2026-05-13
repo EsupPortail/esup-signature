@@ -7,8 +7,8 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item active">Managers Roles</li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active">Gestionnaires de rôles</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
@@ -18,52 +18,51 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Gestionnaires de rôles</b></h5>
-                    <div class="alert alert-secondary mb-2">
-                        Ici, vous pouvez déclarer des utilisateurs autorisés à créer des circuits et des formulaires à destinations des certains rôles. Seules les personnes ayant le rôle correspondant, pourront acceder aux circuits et formulaires créés pas le gestionnaire
+                    <div class="p-0 m-2">
+                        <div class="alert alert-light">
+                                <div class="alert alert-secondary mb-2">
+                                    Ici, vous pouvez déclarer des utilisateurs autorisés à créer des circuits et des formulaires à destinations des certains rôles. Seules les personnes ayant le rôle correspondant, pourront acceder aux circuits et formulaires créés pas le gestionnaire
+                                </div>
+                                <table class="table table-borderless table-hover">
+                                    <thead class="table-secondary">
+                                    <tr>
+                                        <th>Roles</th>
+                                        <th>Managers</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="role, status :${roleManagers.keySet}">
+                                        <tr>
+                                            <form th:action="'/admin/roles-managers/edit-role'" method="post">
+                                                <td th:text="${role}"></td>
+                                                <input name="role" type="hidden" th:value="${role}">
+                                                <td>
+                                                    <select th:id="${'rolesManagersSelect' + status.index}" class="auto-select-users"
+                                                            multiple="multiple" name="rolesManagers">
+                                                        <option data-placeholder="true"></option>
+                                                        <th:block th:each="user : ${roleManagers.get(role)}">
+                                                            <option th:value="${user.email}"
+                                                                    th:text="${user.email}"
+                                                                    selected></option>
+                                                        </th:block>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <div class="text-center">
+                                                        <button id="saveButton" title="Enregistrer" type="submit"
+                                                                class="btn btn-sm btn-success">
+                                                            <i class="fi fi-rr-disk"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </form>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </div>
                     </div>
-                    <table class="table table-borderless table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Roles</th>
-                            <th>Managers</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="role, status :${roleManagers.keySet}">
-                            <tr>
-                                <form th:action="'/admin/roles-managers/edit-role'" method="post">
-                                    <td th:text="${role}"></td>
-                                    <input name="role" type="hidden" th:value="${role}">
-                                    <td>
-                                        <select th:id="${'rolesManagersSelect' + status.index}" class="auto-select-users"
-                                                multiple="multiple" name="rolesManagers">
-                                            <option data-placeholder="true"></option>
-                                            <th:block th:each="user : ${roleManagers.get(role)}">
-                                                <option th:value="${user.email}"
-                                                        th:text="${user.email}"
-                                                        selected></option>
-                                            </th:block>
-                                        </select>
-                                    </td>
-                                    <td>
-                                        <div class="text-center">
-                                            <button id="saveButton" title="Enregistrer" type="submit"
-                                                    class="btn btn-sm btn-success">
-                                                <i class="fi fi-rr-disk"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </form>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
                 </div>
             <div class="es-sign-buttons es-fixed-action-btns active" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                 <ul class="list-unstyled">

@@ -12,10 +12,10 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto;
+import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerProjectionDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
@@ -33,6 +33,7 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,7 +161,7 @@ public class UserService {
         return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
     }
 
-    public List<UserDto> getAllUsersDto() {
+    public List<UserProjectionDto> getAllUsersDto() {
         return userRepository.findAllUsersDto();
     }
 
@@ -924,7 +925,11 @@ public class UserService {
     }
 
     public void validateUserForPersistence(User user, String context) {
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        User userToValidate = user == null ? null : (User) Hibernate.unproxy(user);
+        if (userToValidate != null && UserType.system.equals(userToValidate.getUserType())) {
+            return;
+        }
+        Set<ConstraintViolation<User>> violations = validator.validate(userToValidate);
         if (violations.isEmpty()) {
             return;
         }
@@ -994,14 +999,14 @@ public class UserService {
         return groupRoleManagers(userRepository.findRoleManagersByRoles(roles));
     }
 
-    private Map<String, List<User>> groupRoleManagers(List<RoleManagerDto> roleManagers) {
+    private Map<String, List<User>> groupRoleManagers(List<RoleManagerProjectionDto> roleManagers) {
         return roleManagers.stream()
-                .sorted(Comparator.comparing(RoleManagerDto::role)
+                .sorted(Comparator.comparing(RoleManagerProjectionDto::role)
                         .thenComparing(dto -> dto.user().getEmail(), Comparator.nullsLast(String::compareToIgnoreCase)))
                 .collect(Collectors.groupingBy(
-                RoleManagerDto::role,
+                RoleManagerProjectionDto::role,
                 LinkedHashMap::new,
-                Collectors.mapping(RoleManagerDto::user, Collectors.toList())
+                Collectors.mapping(RoleManagerProjectionDto::user, Collectors.toList())
         ));
     }
 
