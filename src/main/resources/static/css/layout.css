@@ -208,6 +208,8 @@ header {
 
 #workspace {
     overflow-y: scroll;
+    margin-top: 12px;
+    padding: 5px;
 }
 
 .workspace-pdf,

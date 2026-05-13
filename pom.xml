@@ -761,10 +761,23 @@
 
 		<!-- Plugins dependencies -->
 		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-utils</artifactId>
+			<version>4.0.3</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-antrun-plugin</artifactId>
-			<version>3.1.0</version>
+			<version>3.2.0</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>plexus-utils</artifactId>
+					<groupId>org.codehaus.plexus</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>com.dkanejs.maven.plugins</groupId>
 			<artifactId>docker-compose-maven-plugin</artifactId>
@@ -778,7 +791,11 @@
                     <artifactId>commons-lang3</artifactId>
                     <groupId>org.apache.commons</groupId>
                 </exclusion>
-            </exclusions>
+	            <exclusion>
+		            <artifactId>plexus-utils</artifactId>
+		            <groupId>org.codehaus.plexus</groupId>
+	            </exclusion>
+			</exclusions>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.session</groupId>

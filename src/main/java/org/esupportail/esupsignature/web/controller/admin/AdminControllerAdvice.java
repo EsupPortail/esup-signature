@@ -2,7 +2,7 @@ package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dto.page.admin.AdminUiStatusDto;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;

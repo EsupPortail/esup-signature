@@ -48,12 +48,12 @@ public class ConfigService {
     @Transactional(readOnly = true)
     public AdminConfigViewDto getAdminConfigView() {
         Config config = getConfig();
-        return new AdminConfigViewDto(
-                new LinkedHashMap<>(config.getMappingFiltersGroups()),
-                new LinkedHashMap<>(config.getMappingGroupsRoles()),
-                new LinkedHashMap<>(config.getGroupMappingSpel()),
-                config.getHideAutoSign()
-        );
+        AdminConfigViewDto dto = new AdminConfigViewDto();
+        dto.setMappingFiltersGroups(new LinkedHashMap<>(config.getMappingFiltersGroups()));
+        dto.setMappingGroupsRoles(new LinkedHashMap<>(config.getMappingGroupsRoles()));
+        dto.setGroupMappingSpel(new LinkedHashMap<>(config.getGroupMappingSpel()));
+        dto.setHideAutoSign(config.getHideAutoSign());
+        return dto;
     }
 
     @Transactional

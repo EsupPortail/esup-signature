@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.service;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto;
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -275,20 +275,20 @@ public class UserShareService {
     }
 
     private UserShareViewDto toViewDto(UserShare userShare) {
-        return new UserShareViewDto(
-                userShare.getId(),
-                userShare.getUser().getEppn(),
-                userShare.getSignWithOwnSign(),
-                userShare.getForceTransmitEmails(),
-                toFormRefDto(userShare.getForm()),
-                toWorkflowRefDto(userShare.getWorkflow()),
-                userShare.getAllSignRequests(),
-                userShare.getBeginDate(),
-                userShare.getEndDate(),
-                userShare.getCreateDate(),
-                new HashSet<>(userShare.getShareTypes()),
-                toDelegatedUsers(userShare.getToUsers())
-        );
+        UserShareViewDto dto = new UserShareViewDto();
+        dto.setId(userShare.getId());
+        dto.setUserEppn(userShare.getUser().getEppn());
+        dto.setSignWithOwnSign(userShare.getSignWithOwnSign());
+        dto.setForceTransmitEmails(userShare.getForceTransmitEmails());
+        dto.setForm(toFormRefDto(userShare.getForm()));
+        dto.setWorkflow(toWorkflowRefDto(userShare.getWorkflow()));
+        dto.setAllSignRequests(userShare.getAllSignRequests());
+        dto.setBeginDate(userShare.getBeginDate());
+        dto.setEndDate(userShare.getEndDate());
+        dto.setCreateDate(userShare.getCreateDate());
+        dto.setShareTypes(new HashSet<>(userShare.getShareTypes()));
+        dto.setToUsers(toDelegatedUsers(userShare.getToUsers()));
+        return dto;
     }
 
     private UserShareViewDto.FormRefDto toFormRefDto(Form form) {
@@ -312,8 +312,8 @@ public class UserShareService {
         );
     }
 
-    private List<UserDto> toDelegatedUsers(List<User> toUsers) {
-        Map<String, UserDto> usersByKey = new LinkedHashMap<>();
+    private List<UserProjectionDto> toDelegatedUsers(List<User> toUsers) {
+        Map<String, UserProjectionDto> usersByKey = new LinkedHashMap<>();
         for (User toUser : toUsers) {
             if (toUser == null) {
                 continue;

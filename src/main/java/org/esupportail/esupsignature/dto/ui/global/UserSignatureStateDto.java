@@ -10,6 +10,9 @@ public class UserSignatureStateDto {
     private List<Long> signImageIds;
     private List<String> signImages;
 
+    public UserSignatureStateDto() {
+    }
+
     public UserSignatureStateDto(String firstname, String name, String email, List<Long> signImageIds, List<String> signImages) {
         this.firstname = firstname;
         this.name = name;

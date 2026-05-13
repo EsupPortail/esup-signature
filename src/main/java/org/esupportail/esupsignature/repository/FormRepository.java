@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.projection.jpa.FormDto;
+import org.esupportail.esupsignature.dto.projection.jpa.FormProjectionDto;
 import org.esupportail.esupsignature.entity.Field;
 import org.esupportail.esupsignature.entity.Form;
 import org.springframework.data.jpa.repository.Query;
@@ -38,7 +38,7 @@ public interface FormRepository extends CrudRepository<Form, Long> {
   """)
   List<Form> findByIdInWithWorkflowTags(Set<Long> ids);
 	@Query("select f from Form f where f.id = :id")
-    FormDto getByIdJson(Long id);
+    FormProjectionDto getByIdJson(Long id);
 	@Query("select f from Form f")
-	List<FormDto> findAllJson();
+	List<FormProjectionDto> findAllJson();
 }

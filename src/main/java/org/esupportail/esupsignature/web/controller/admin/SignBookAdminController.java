@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -125,8 +125,8 @@ public class SignBookAdminController {
 	public Object[] creators() {
 		List<UiSlimSelectDto> slimSelectDtos = new ArrayList<>();
 		slimSelectDtos.add(new UiSlimSelectDto("Tout", ""));
-		for(UserDto userDto : userService.getAllUsersDto()) {
-			slimSelectDtos.add(new UiSlimSelectDto(userDto.getFirstname() + " " + userDto.getName(), userDto.getEmail()));
+		for(UserProjectionDto userProjectionDto : userService.getAllUsersDto()) {
+			slimSelectDtos.add(new UiSlimSelectDto(userProjectionDto.getFirstname() + " " + userProjectionDto.getName(), userProjectionDto.getEmail()));
 		}
 		return slimSelectDtos.toArray();
 	}

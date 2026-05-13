@@ -8,78 +8,103 @@ import java.util.List;
 
 public class WorkflowViewDto {
 
-    private final Long id;
-    private final String description;
-    private final String mailFrom;
-    private final String documentsSourceUri;
-    private final Boolean sendAlertToAllRecipients;
-    private final Boolean fromCode;
-    private final String messageToDisplay;
-    private final List<TargetDto> targets;
-    private final List<ViewerDto> viewers;
-    private final List<WorkflowStepDto> workflowSteps;
-
-    public WorkflowViewDto(Long id,
-                           String description,
-                           String mailFrom,
-                           String documentsSourceUri,
-                           Boolean sendAlertToAllRecipients,
-                           Boolean fromCode,
-                           String messageToDisplay,
-                           List<TargetDto> targets,
-                           List<ViewerDto> viewers,
-                           List<WorkflowStepDto> workflowSteps) {
-        this.id = id;
-        this.description = description;
-        this.mailFrom = mailFrom;
-        this.documentsSourceUri = documentsSourceUri;
-        this.sendAlertToAllRecipients = sendAlertToAllRecipients;
-        this.fromCode = fromCode;
-        this.messageToDisplay = messageToDisplay;
-        this.targets = targets;
-        this.viewers = viewers;
-        this.workflowSteps = workflowSteps;
-    }
+    private Long id;
+    private String description;
+    private String mailFrom;
+    private String documentsSourceUri;
+    private Boolean sendAlertToAllRecipients;
+    private Boolean fromCode;
+    private String messageToDisplay;
+    private List<TargetDto> targets;
+    private List<ViewerDto> viewers;
+    private List<WorkflowStepDto> workflowSteps;
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getMailFrom() {
         return mailFrom;
+    }
+
+    public void setMailFrom(String mailFrom) {
+        this.mailFrom = mailFrom;
     }
 
     public String getDocumentsSourceUri() {
         return documentsSourceUri;
     }
 
+    public void setDocumentsSourceUri(String documentsSourceUri) {
+        this.documentsSourceUri = documentsSourceUri;
+    }
+
     public Boolean getSendAlertToAllRecipients() {
         return sendAlertToAllRecipients;
+    }
+
+    public void setSendAlertToAllRecipients(Boolean sendAlertToAllRecipients) {
+        this.sendAlertToAllRecipients = sendAlertToAllRecipients;
     }
 
     public Boolean getFromCode() {
         return fromCode;
     }
 
+    public void setFromCode(Boolean fromCode) {
+        this.fromCode = fromCode;
+    }
+
     public String getMessageToDisplay() {
         return messageToDisplay;
+    }
+
+    public void setMessageToDisplay(String messageToDisplay) {
+        this.messageToDisplay = messageToDisplay;
     }
 
     public List<TargetDto> getTargets() {
         return targets;
     }
 
+    public void setTargets(List<TargetDto> targets) {
+        this.targets = targets;
+    }
+
     public List<ViewerDto> getViewers() {
         return viewers;
     }
 
+    public void setViewers(List<ViewerDto> viewers) {
+        this.viewers = viewers;
+    }
+
+    public List<WorkflowStepDto> getWorkflowSteps() {
+        return workflowSteps;
+    }
+
+    public void setWorkflowSteps(List<WorkflowStepDto> workflowSteps) {
+        this.workflowSteps = workflowSteps;
+    }
+
     public static class TargetDto {
-        private final Long id;
-        private final String targetUri;
+        private Long id;
+        private String targetUri;
+
+        public TargetDto() {
+        }
 
         public TargetDto(Long id, String targetUri) {
             this.id = id;
@@ -90,19 +115,26 @@ public class WorkflowViewDto {
             return id;
         }
 
+        public void setId(Long id) {
+            this.id = id;
+        }
+
         public String getTargetUri() {
             return targetUri;
         }
-    }
 
-    public List<WorkflowStepDto> getWorkflowSteps() {
-        return workflowSteps;
+        public void setTargetUri(String targetUri) {
+            this.targetUri = targetUri;
+        }
     }
 
     public static class ViewerDto {
-        private final String email;
-        private final String firstname;
-        private final String name;
+        private String email;
+        private String firstname;
+        private String name;
+
+        public ViewerDto() {
+        }
 
         public ViewerDto(String email, String firstname, String name) {
             this.email = email;
@@ -114,33 +146,48 @@ public class WorkflowViewDto {
             return email;
         }
 
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
         public String getFirstname() {
             return firstname;
+        }
+
+        public void setFirstname(String firstname) {
+            this.firstname = firstname;
         }
 
         public String getName() {
             return name;
         }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 
     public static class WorkflowStepDto {
-        private final Long id;
-        private final String description;
-        private final Boolean autoSign;
-        private final SignType signType;
-        private final SignLevel minSignLevel;
-        private final SignLevel maxSignLevel;
-        private final Boolean sealVisa;
-        private final Integer maxRecipients;
-        private final Boolean changeable;
-        private final Boolean repeatable;
-        private final Boolean multiSign;
-        private final Boolean singleSignWithAnnotation;
-        private final Boolean allSignToComplete;
-        private final Boolean attachmentAlert;
-        private final Boolean attachmentRequire;
-        private final List<UserDto> users;
-        private final CertificatDto certificat;
+        private Long id;
+        private String description;
+        private Boolean autoSign;
+        private SignType signType;
+        private SignLevel minSignLevel;
+        private SignLevel maxSignLevel;
+        private Boolean sealVisa;
+        private Integer maxRecipients;
+        private Boolean changeable;
+        private Boolean repeatable;
+        private Boolean multiSign;
+        private Boolean singleSignWithAnnotation;
+        private Boolean allSignToComplete;
+        private Boolean attachmentAlert;
+        private Boolean attachmentRequire;
+        private List<UserDto> users;
+        private CertificatDto certificat;
+
+        public WorkflowStepDto() {
+        }
 
         public WorkflowStepDto(Long id,
                                String description,
@@ -182,79 +229,150 @@ public class WorkflowViewDto {
             return id;
         }
 
+        public void setId(Long id) {
+            this.id = id;
+        }
+
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public Boolean getAutoSign() {
             return autoSign;
         }
 
+        public void setAutoSign(Boolean autoSign) {
+            this.autoSign = autoSign;
+        }
+
         public SignType getSignType() {
             return signType;
+        }
+
+        public void setSignType(SignType signType) {
+            this.signType = signType;
         }
 
         public SignLevel getMinSignLevel() {
             return minSignLevel;
         }
 
+        public void setMinSignLevel(SignLevel minSignLevel) {
+            this.minSignLevel = minSignLevel;
+        }
+
         public SignLevel getMaxSignLevel() {
             return maxSignLevel;
+        }
+
+        public void setMaxSignLevel(SignLevel maxSignLevel) {
+            this.maxSignLevel = maxSignLevel;
         }
 
         public Boolean getSealVisa() {
             return sealVisa;
         }
 
+        public void setSealVisa(Boolean sealVisa) {
+            this.sealVisa = sealVisa;
+        }
+
         public Integer getMaxRecipients() {
             return maxRecipients;
+        }
+
+        public void setMaxRecipients(Integer maxRecipients) {
+            this.maxRecipients = maxRecipients;
         }
 
         public Boolean getChangeable() {
             return changeable;
         }
 
+        public void setChangeable(Boolean changeable) {
+            this.changeable = changeable;
+        }
+
         public Boolean getRepeatable() {
             return repeatable;
+        }
+
+        public void setRepeatable(Boolean repeatable) {
+            this.repeatable = repeatable;
         }
 
         public Boolean getMultiSign() {
             return multiSign;
         }
 
+        public void setMultiSign(Boolean multiSign) {
+            this.multiSign = multiSign;
+        }
+
         public Boolean getSingleSignWithAnnotation() {
             return singleSignWithAnnotation;
+        }
+
+        public void setSingleSignWithAnnotation(Boolean singleSignWithAnnotation) {
+            this.singleSignWithAnnotation = singleSignWithAnnotation;
         }
 
         public Boolean getAllSignToComplete() {
             return allSignToComplete;
         }
 
+        public void setAllSignToComplete(Boolean allSignToComplete) {
+            this.allSignToComplete = allSignToComplete;
+        }
+
         public Boolean getAttachmentAlert() {
             return attachmentAlert;
+        }
+
+        public void setAttachmentAlert(Boolean attachmentAlert) {
+            this.attachmentAlert = attachmentAlert;
         }
 
         public Boolean getAttachmentRequire() {
             return attachmentRequire;
         }
 
+        public void setAttachmentRequire(Boolean attachmentRequire) {
+            this.attachmentRequire = attachmentRequire;
+        }
+
         public List<UserDto> getUsers() {
             return users;
+        }
+
+        public void setUsers(List<UserDto> users) {
+            this.users = users;
         }
 
         public CertificatDto getCertificat() {
             return certificat;
         }
+
+        public void setCertificat(CertificatDto certificat) {
+            this.certificat = certificat;
+        }
     }
 
     public static class UserDto {
-        private final String eppn;
-        private final String email;
-        private final String firstname;
-        private final String name;
-        private final String hidedPhone;
-        private final UserType userType;
-        private final UserDto currentReplaceByUser;
+        private String eppn;
+        private String email;
+        private String firstname;
+        private String name;
+        private String hidedPhone;
+        private UserType userType;
+        private UserDto currentReplaceByUser;
+
+        public UserDto() {
+        }
 
         public UserDto(String eppn,
                        String email,
@@ -276,33 +394,64 @@ public class WorkflowViewDto {
             return eppn;
         }
 
+        public void setEppn(String eppn) {
+            this.eppn = eppn;
+        }
+
         public String getEmail() {
             return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
         }
 
         public String getFirstname() {
             return firstname;
         }
 
+        public void setFirstname(String firstname) {
+            this.firstname = firstname;
+        }
+
         public String getName() {
             return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
         }
 
         public String getHidedPhone() {
             return hidedPhone;
         }
 
+        public void setHidedPhone(String hidedPhone) {
+            this.hidedPhone = hidedPhone;
+        }
+
         public UserType getUserType() {
             return userType;
+        }
+
+        public void setUserType(UserType userType) {
+            this.userType = userType;
         }
 
         public UserDto getCurrentReplaceByUser() {
             return currentReplaceByUser;
         }
+
+        public void setCurrentReplaceByUser(UserDto currentReplaceByUser) {
+            this.currentReplaceByUser = currentReplaceByUser;
+        }
     }
 
     public static class CertificatDto {
-        private final Long id;
+        private Long id;
+
+        public CertificatDto() {
+        }
 
         public CertificatDto(Long id) {
             this.id = id;
@@ -311,6 +460,9 @@ public class WorkflowViewDto {
         public Long getId() {
             return id;
         }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
     }
 }
-

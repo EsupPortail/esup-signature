@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto;
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.springframework.data.domain.Page;
@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface UserRepository extends CrudRepository<User, Long>  {
     Page<User> findAll(Pageable pageable);
     @Query("select distinct u.name as name, u.firstname as firstname, u.eppn as eppn, u.email as email from User u")
-    List<UserDto> findAllUsersDto();
+    List<UserProjectionDto> findAllUsersDto();
     Optional<User> findByEmailIgnoreCase(String email);
     List<User> findByReplaceByUser(User user);
     List<User> findByUserType(UserType userType);
@@ -31,10 +31,10 @@ public interface UserRepository extends CrudRepository<User, Long>  {
     List<User> findByEmailStartingWith(String email);
     @Query(value = "select distinct roles from user_roles", nativeQuery = true)
     List<String> getAllRoles();
-    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto(role, u) from User u join u.managersRoles role")
-    List<RoleManagerDto> findAllRoleManagers();
-    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerDto(role, u) from User u join u.managersRoles role where role in :roles")
-    List<RoleManagerDto> findRoleManagersByRoles(List<String> roles);
+    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerProjectionDto(role, u) from User u join u.managersRoles role")
+    List<RoleManagerProjectionDto> findAllRoleManagers();
+    @Query("select new org.esupportail.esupsignature.dto.projection.jpa.RoleManagerProjectionDto(role, u) from User u join u.managersRoles role where role in :roles")
+    List<RoleManagerProjectionDto> findRoleManagersByRoles(List<String> roles);
     @Query("select role from User u join u.managersRoles role where u.eppn = :eppn")
     List<String> findManagersRolesByEppn(String eppn);
     @Query("select distinct u from User u join u.managersRoles role where role in :roles")
