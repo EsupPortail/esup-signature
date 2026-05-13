@@ -1,24 +1,18 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
-import org.esupportail.esupsignature.dto.mapper.UiFetchSignRequestService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchSignRequestService;
 import org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
-import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignBook;
-import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.DocumentRepository;
 import org.esupportail.esupsignature.repository.SignBookRepository;
-import org.esupportail.esupsignature.service.LogService;
 import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.utils.WebUtilsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -38,9 +32,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RequestMapping("/admin/signrequests")
 @Controller

@@ -16,12 +16,7 @@ import java.util.List;
 @Component
 public class UiAdminWorkflowMapper {
 
-    public AdminWorkflowListViewDto toAdminWorkflowListViewDto(String workflowRole,
-                                                               String displayWorkflowType,
-                                                               List<Long> selectedTagIds,
-                                                               List<AdminWorkflowListViewDto.TagDto> allTags,
-                                                               List<String> roles,
-                                                               List<AdminWorkflowListViewDto.RowDto> workflows) {
+    public AdminWorkflowListViewDto toAdminWorkflowListViewDto(String workflowRole, String displayWorkflowType, List<Long> selectedTagIds, List<AdminWorkflowListViewDto.TagDto> allTags, List<String> roles, List<AdminWorkflowListViewDto.RowDto> workflows) {
         AdminWorkflowListViewDto dto = new AdminWorkflowListViewDto();
         dto.setWorkflowRole(workflowRole);
         dto.setDisplayWorkflowType(displayWorkflowType);
@@ -71,12 +66,7 @@ public class UiAdminWorkflowMapper {
         return dto;
     }
 
-    public AdminWorkflowUpdateViewDto toAdminWorkflowUpdateViewDto(String workflowRole,
-                                                                   Workflow workflow,
-                                                                   Long nbWorkflowSignRequests,
-                                                                   List<String> roles,
-                                                                   List<AdminWorkflowUpdateViewDto.TagDto> allTags,
-                                                                   List<Long> selectedTagIds) {
+    public AdminWorkflowUpdateViewDto toAdminWorkflowUpdateViewDto(String workflowRole, Workflow workflow, Long nbWorkflowSignRequests, List<String> roles, List<AdminWorkflowUpdateViewDto.TagDto> allTags, List<Long> selectedTagIds) {
         AdminWorkflowUpdateViewDto dto = new AdminWorkflowUpdateViewDto();
         dto.setWorkflowRole(workflowRole);
         dto.setWorkflow(toAdminWorkflowUpdateWorkflowDto(workflow));

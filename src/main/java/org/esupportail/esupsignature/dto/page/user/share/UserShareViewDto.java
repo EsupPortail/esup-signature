@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.page.user.share;
 
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 
 import java.util.Date;
@@ -20,7 +20,7 @@ public class UserShareViewDto {
     private Date endDate;
     private Date createDate;
     private Set<ShareType> shareTypes;
-    private List<UserDto> toUsers;
+    private List<UserProjectionDto> toUsers;
 
     public Long getId() {
         return id;
@@ -110,11 +110,11 @@ public class UserShareViewDto {
         this.shareTypes = shareTypes;
     }
 
-    public List<UserDto> getToUsers() {
+    public List<UserProjectionDto> getToUsers() {
         return toUsers;
     }
 
-    public void setToUsers(List<UserDto> toUsers) {
+    public void setToUsers(List<UserProjectionDto> toUsers) {
         this.toUsers = toUsers;
     }
 
@@ -162,12 +162,12 @@ public class UserShareViewDto {
         }
     }
 
-    public static class DelegatedUserDto implements UserDto {
+    public static class DelegatedUserDto implements UserProjectionDto {
 
-        private String name;
-        private String firstname;
-        private String eppn;
-        private String email;
+        private final String name;
+        private final String firstname;
+        private final String eppn;
+        private final String email;
 
         public DelegatedUserDto(String name, String firstname, String eppn, String email) {
             this.name = name;

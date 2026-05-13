@@ -5,7 +5,7 @@ import org.esupportail.esupsignature.entity.Workflow;
 
 import java.util.List;
 
-public interface FormDto {
+public interface FormProjectionDto {
 
     Long getId();
 

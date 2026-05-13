@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.projection.export;
 
-public interface WorkflowDatasCsvDto {
+public interface WorkflowDatasCsvProjectionDto {
 
     String getSignBookId();
     String getWorkflowDatasSignRequestIds();

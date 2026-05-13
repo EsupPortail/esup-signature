@@ -3,7 +3,7 @@ package org.esupportail.esupsignature.service;
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.page.user.share.UserShareViewDto;
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ShareType;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
@@ -312,8 +312,8 @@ public class UserShareService {
         );
     }
 
-    private List<UserDto> toDelegatedUsers(List<User> toUsers) {
-        Map<String, UserDto> usersByKey = new LinkedHashMap<>();
+    private List<UserProjectionDto> toDelegatedUsers(List<User> toUsers) {
+        Map<String, UserProjectionDto> usersByKey = new LinkedHashMap<>();
         for (User toUser : toUsers) {
             if (toUser == null) {
                 continue;

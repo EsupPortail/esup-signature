@@ -28,11 +28,7 @@ public class UiGlobalMapper {
         return dto;
     }
 
-    public UiDataDto toUiDataDto(UiDataDto.UiConfigDto config,
-                                 UiCountersDto counters,
-                                 UiCurrentUserDto currentUser,
-                                 Map<String, String> preferences,
-                                 AdminUiStatusDto adminStatus) {
+    public UiDataDto toUiDataDto(UiDataDto.UiConfigDto config, UiCountersDto counters, UiCurrentUserDto currentUser, Map<String, String> preferences, AdminUiStatusDto adminStatus) {
         UiDataDto dto = new UiDataDto();
         dto.setConfig(config);
         dto.setCounters(counters);
@@ -42,13 +38,7 @@ public class UiGlobalMapper {
         return dto;
     }
 
-    public UiHomeDto toUiHomeBootstrapDto(Long startFormId,
-                                          Long startWorkflowId,
-                                          String warningReadUrl,
-                                          String searchUrl,
-                                          String searchTitlesUrl,
-                                          List<UiHomeDto.SignBookItem> toSignSignBooks,
-                                          List<UiHomeDto.SignBookItem> pendingSignBooks) {
+    public UiHomeDto toUiHomeBootstrapDto(Long startFormId, Long startWorkflowId, String warningReadUrl, String searchUrl, String searchTitlesUrl, List<UiHomeDto.SignBookItem> toSignSignBooks, List<UiHomeDto.SignBookItem> pendingSignBooks) {
         UiHomeDto dto = new UiHomeDto();
         dto.setStartFormId(startFormId);
         dto.setStartWorkflowId(startWorkflowId);
@@ -60,15 +50,7 @@ public class UiGlobalMapper {
         return dto;
     }
 
-    public UiCurrentUserDto toUiMeDto(User user,
-                                      Set<String> userRoles,
-                                      User authUser,
-                                      Set<String> authUserRoles,
-                                      List<User> suUsers,
-                                      List<Long> userImagesIds,
-                                      String keystoreFileName,
-                                      Map<UiParams, String> uiParams,
-                                      Object securityServiceName) {
+    public UiCurrentUserDto toUiMeDto(User user, Set<String> userRoles, User authUser, Set<String> authUserRoles, List<User> suUsers, List<Long> userImagesIds, String keystoreFileName, Map<UiParams, String> uiParams, Object securityServiceName) {
         UiCurrentUserDto dto = new UiCurrentUserDto();
         dto.setUser(toUiUserDto(user, userRoles));
         dto.setAuthUser(toUiUserDto(authUser, authUserRoles));
@@ -141,15 +123,7 @@ public class UiGlobalMapper {
                 .toList();
     }
 
-    public UiCountersDto toUiCountersDto(Long nbSignRequests,
-                                         Long nbToSign,
-                                         Long nbDeleted,
-                                         Integer reportNumber,
-                                         Integer managedWorkflowsSize,
-                                         Boolean isRoleManager,
-                                         Boolean isOneSignShare,
-                                         Boolean isOneReadShare,
-                                         Boolean certificatProblem) {
+    public UiCountersDto toUiCountersDto(Long nbSignRequests, Long nbToSign, Long nbDeleted, Integer reportNumber, Integer managedWorkflowsSize, Boolean isRoleManager, Boolean isOneSignShare, Boolean isOneReadShare, Boolean certificatProblem) {
         UiCountersDto dto = new UiCountersDto();
         dto.setNbSignRequests(nbSignRequests);
         dto.setNbToSign(nbToSign);
@@ -163,16 +137,7 @@ public class UiGlobalMapper {
         return dto;
     }
 
-    public UiDataDto.UiConfigDto toUiConfigDto(UiGlobalPropertiesDto globalProperties,
-                                               String enableSms,
-                                               Boolean smsRequired,
-                                               Boolean validationToolsEnabled,
-                                               String applicationEmail,
-                                               Integer maxInactiveInterval,
-                                               Integer hoursBeforeRefreshNotif,
-                                               Boolean infiniteScrolling,
-                                               String versionApp,
-                                               String profile) {
+    public UiDataDto.UiConfigDto toUiConfigDto(UiGlobalPropertiesDto globalProperties, String enableSms, Boolean smsRequired, Boolean validationToolsEnabled, String applicationEmail, Integer maxInactiveInterval, Integer hoursBeforeRefreshNotif, Boolean infiniteScrolling, String versionApp, String profile) {
         UiDataDto.UiConfigDto dto = new UiDataDto.UiConfigDto();
         dto.setGlobalProperties(globalProperties);
         dto.setEnableSms(enableSms);

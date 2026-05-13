@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import org.esupportail.esupsignature.dto.projection.jpa.AdminLogProjectionDto;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.SignRequest;
@@ -80,6 +81,11 @@ public class LogService {
 
     public List<Log> getBySignRequest(Long id) {
         return logRepository.findBySignRequestId(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminLogProjectionDto> getAdminLogsBySignRequest(Long id) {
+        return logRepository.findAdminLogsBySignRequestId(id);
     }
 
     @Transactional

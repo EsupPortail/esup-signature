@@ -14,299 +14,298 @@
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
                 <div class="flex-grow-1">
-                    <div>
-                <h5 class="text-center">Résultats de la validation</h5>
-                <ul class="nav nav-pills nav-justified d-print-none" id="tabsResult">
-                    <li class="nav-item" th:if="${simpleReport} != null" role="presentation">
-                        <a class="nav-link active" href="#simple-report" th:text="#{label.simple.report}" data-bs-toggle="tab" role="tab"
-                            aria-controls="simple-report" aria-selected="true"></a>
-                    </li>
-                    <li class="nav-item" th:if="${detailedReport} != null" role="presentation">
-                        <a class="nav-link" href="#detailed-report" th:text="#{label.detailed.report}" data-bs-toggle="tab" role="tab"
-                            aria-controls="detailed-report" aria-selected="false"></a>
-                    </li>
-                    <li class="nav-item" th:if="${diagnosticDataXml} != null" role="presentation">
-                        <a class="nav-link" href="#diagnostic-tree" th:text="#{label.diagnostic.tree}" data-bs-toggle="tab" role="tab"
-                            aria-controls="diagnostic-tree" aria-selected="false"></a>
-                    </li>
-                    <li class="nav-item" th:if="${etsiValidationReport} != null" role="presentation">
-                        <a class="nav-link" href="#etsi-validation-report" th:text="#{label.etsi.validation.report}" data-bs-toggle="tab"
-                            role="tab" aria-controls="etsi-validation-report" aria-selected="false"></a>
-                    </li>
-                    <li class="nav-item" th:if="${pdfaReport != null}">
-                        <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
-                    </li>
-                </ul>
-                <div class="tab-content mt-1">
-                    <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
-                        <div class="position-relative">
+                    <ul class="nav nav-pills nav-justified d-print-none" id="tabsResult">
+                        <li class="nav-item" th:if="${simpleReport} != null" role="presentation">
+                            <a class="nav-link active" href="#simple-report" th:text="#{label.simple.report}" data-bs-toggle="tab" role="tab"
+                               aria-controls="simple-report" aria-selected="true"></a>
+                        </li>
+                        <li class="nav-item" th:if="${detailedReport} != null" role="presentation">
+                            <a class="nav-link" href="#detailed-report" th:text="#{label.detailed.report}" data-bs-toggle="tab" role="tab"
+                                aria-controls="detailed-report" aria-selected="false"></a>
+                        </li>
+                        <li class="nav-item" th:if="${diagnosticDataXml} != null" role="presentation">
+                            <a class="nav-link" href="#diagnostic-tree" th:text="#{label.diagnostic.tree}" data-bs-toggle="tab" role="tab"
+                                aria-controls="diagnostic-tree" aria-selected="false"></a>
+                        </li>
+                        <li class="nav-item" th:if="${etsiValidationReport} != null" role="presentation">
+                            <a class="nav-link" href="#etsi-validation-report" th:text="#{label.etsi.validation.report}" data-bs-toggle="tab"
+                                role="tab" aria-controls="etsi-validation-report" aria-selected="false"></a>
+                        </li>
+                        <li class="nav-item" th:if="${pdfaReport != null}">
+                            <a class="nav-link" id="pdfa-tab" data-bs-toggle="tab" href="#pdfa" role="tab" aria-controls="pdfa" aria-selected="false">Validation PDF/A</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content mt-1">
+                        <div th:if="${simpleReport} != null" role="tabcard" class="tab-pane fade in active show report" id="simple-report">
+                            <div class="position-relative">
+                                <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                                    Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                                </div>
+                                <th:block th:if="${auditTrail != null}">
+                                    <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
+                                        <h5>Le document est conforme. Il n’a pas été modifié depuis sa signature.</h5>
+                                    </div>
+                                    <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
+                                        Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
+                                    </div>
+                                    <div class="row">
+                                        <div class="alert alert-light border-secondary mx-auto mb-1" th:if="${auditTrail.getDocumentCheckSum() != null}">
+                                            <h4>Informations générales sur le document</h4>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-3">Nom de document : </dt>
+                                                <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-3">Type de document : </dt>
+                                                <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
+                                            </dl>
+                                            <dl class="row border-bottom m-0">
+                                                <dt class="col-3">Taille : </dt>
+                                                <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
+                                            </dl>
+                                        </div>
+                                        <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
+                                            <h4>Signatures</h4>
+                                            <table class="table table-sm table-hover">
+                                                <thead class="table-secondary">
+                                                <tr>
+                                                    <th></th>
+                                                    <th>Date</th>
+                                                    <th>Nom</th>
+                                                    <th>Email</th>
+                                                    <th>Document lu</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
+                                                    <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
+                                                        <td><i class="fa-solid fa-signature"></i></td>
+                                                        <td class="text-left"><span
+                                                                th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
+                                                        <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
+                                                        <td class="text-left"><span th:text="${auditStep.email}"></span></td>
+                                                        <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu au moment de la signature'"></td>
+                                                    </tr>
+                                                    <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
+                                                        <td colspan="6">
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Login : </dt>
+                                                                <dd th:text="${auditStep.login}"></dd>
+                                                            </dl>
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Authentification : </dt>
+                                                                <dd>
+                                                                    <pre class="prettyprint"><code class="language-json" th:text="${auditStep.pettyPrintAuthenticationDetails}"></code></pre>
+                                                                </dd>
+                                                            </dl>
+                                                            <link rel="stylesheet" th:href="@{/webjars/highlightjs/styles/github.min.css}">
+                                                            <script th:src="@{/webjars/highlightjs/highlight.min.js}"></script>
+                                                            <script type="module">
+                                                                hljs.highlightAll();
+                                                            </script>
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Id signature : </dt>
+                                                                <dd th:text="${auditStep.signId}"></dd>
+                                                            </dl>
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Certificat signature : </dt>
+                                                                <dd th:text="${auditStep.signCertificat}"></dd>
+                                                            </dl>
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Id timestamp : </dt>
+                                                                <dd th:text="${auditStep.timeStampId}"></dd>
+                                                            </dl>
+                                                            <dl class="row border-bottom m-0">
+                                                                <dt class="col-lg-5">Certificat timestamp : </dt>
+                                                                <dd th:text="${auditStep.timeStampCertificat}"></dd>
+                                                            </dl>
+                                                        </td>
+                                                    </tr>
+                                                </th:block>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </th:block>
+                                <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                                    <div id="simple-report-buttons" class="btn-group d-print-none" role="toolbar">
+                                        <h4>Signatures présentes dans le document</h4>
+                                        <button type="button" class="btn btn-light float-end"
+                                                onclick="window.print();">
+                                            <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                        </button>
+                                        <a class="btn btn-light float-end"
+                                            th:href="@{/ws-secure/validation/download-simple-report}" role="button"
+                                            th:if="${displayDownloadPdf}">
+                                            <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                        </a>
+                                    </div>
+                                    <div th:if="${simpleReport != null}" th:utext="${simpleReport}" class="mt-2"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
                             <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
                                 Ce document ne comporte pas de signature reconnue par le système de contrôle.
                             </div>
-                            <th:block th:if="${auditTrail != null}">
-                                <div class="alert alert-success mb-1 text-center" th:if="${auditTrail.getDocumentCheckSum() != null}">
-                                    <h5>Le document est conforme. Il n’a pas été modifié depuis sa signature.</h5>
-                                </div>
-                                <div class="alert alert-info mb-1" th:if="${signRequest != null && viewAccess != null && viewAccess}">
-                                    Vous avez accès à cette demande : <a th:href="'/user/signrequests/' + ${signRequest.id}">Voir la demande</a>
-                                </div>
-                                <div class="row">
-                                    <div class="alert alert-light border-secondary mx-auto mb-1" th:if="${auditTrail.getDocumentCheckSum() != null}">
-                                        <h4>Informations générales sur le document</h4>
-                                        <dl class="row border-bottom m-0">
-                                            <dt class="col-3">Nom de document : </dt>
-                                            <dd class="col-9" th:text="${auditTrail.documentName}"></dd>
-                                        </dl>
-                                        <dl class="row border-bottom m-0">
-                                            <dt class="col-3">Type de document : </dt>
-                                            <dd class="col-9" th:text="${auditTrail.documentType}"></dd>
-                                        </dl>
-                                        <dl class="row border-bottom m-0">
-                                            <dt class="col-3">Taille : </dt>
-                                            <dd class="col-9" th:text="${size} + ' (' + ${auditTrail.documentSize} + ')'"></dd>
-                                        </dl>
+                            <div class="position-relative">
+                                <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                                    <h4>Détail des signatures présentes dans le document</h4>
+                                    <div id="detailed-report-buttons" class="btn-group ml-auto align-self-center d-print-none" role="toolbar">
+                                        <button type="button" class="btn btn-light switch-annotations">
+                                            <i class="icon fa fa-commenting-o"></i>&nbsp;
+                                            <span class="label-show" th:text="#{label.annotations.show}"></span>
+                                            <span class="label-hide d-none" th:text="#{label.annotations.hide}"></span>
+                                        </button>
+                                        <button type="button" class="btn btn-light"
+                                                onclick="window.print();">
+                                            <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                        </button>
+                                        <a class="btn btn-light"
+                                            th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
+                                            th:if="${displayDownloadPdf}">
+                                            <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                        </a>
                                     </div>
-                                    <div class="alert alert-light border-secondary mx-auto mb-1" style="page-break-after: always;">
-                                        <h4>Signatures</h4>
-                                        <table class="table table-sm table-hover">
-                                            <thead class="table-secondary">
-                                            <tr>
-                                                <th></th>
-                                                <th>Date</th>
-                                                <th>Nom</th>
-                                                <th>Email</th>
-                                                <th>Document lu</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
-                                                <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le detail">
-                                                    <td><i class="fa-solid fa-signature"></i></td>
-                                                    <td class="text-left"><span
-                                                            th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></span></td>
-                                                    <td class="text-left"><span th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></span></td>
-                                                    <td class="text-left"><span th:text="${auditStep.email}"></span></td>
-                                                    <td class="text-left" th:text="${auditStep.getAllScrolled()} ? 'lu' : 'non lu au moment de la signature'"></td>
-                                                </tr>
-                                                <tr class="collapse" th:id="'collapse-' + ${iterator.index}">
-                                                    <td colspan="6">
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Login : </dt>
-                                                            <dd th:text="${auditStep.login}"></dd>
-                                                        </dl>
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Authentification : </dt>
-                                                            <dd>
-                                                                <pre class="prettyprint"><code class="language-json" th:text="${auditStep.pettyPrintAuthenticationDetails}"></code></pre>
-                                                            </dd>
-                                                        </dl>
-                                                        <link rel="stylesheet" th:href="@{/webjars/highlightjs/styles/github.min.css}">
-                                                        <script th:src="@{/webjars/highlightjs/highlight.min.js}"></script>
-                                                        <script type="module">
-                                                            hljs.highlightAll();
-                                                        </script>
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Id signature : </dt>
-                                                            <dd th:text="${auditStep.signId}"></dd>
-                                                        </dl>
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Certificat signature : </dt>
-                                                            <dd th:text="${auditStep.signCertificat}"></dd>
-                                                        </dl>
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Id timestamp : </dt>
-                                                            <dd th:text="${auditStep.timeStampId}"></dd>
-                                                        </dl>
-                                                        <dl class="row border-bottom m-0">
-                                                            <dt class="col-lg-5">Certificat timestamp : </dt>
-                                                            <dd th:text="${auditStep.timeStampCertificat}"></dd>
-                                                        </dl>
-                                                    </td>
-                                                </tr>
-                                            </th:block>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <div class="w-100" th:utext="${detailedReport}"></div>
                                 </div>
-                            </th:block>
+                            </div>
+                        </div>
+                        <div th:if="${diagnosticDataXml} != null" role="tabcard" class="tab-pane fade report" id="diagnostic-tree">
+                            <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                                Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                            </div>
                             <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
-                                <div id="simple-report-buttons" class="btn-group d-print-none" role="toolbar">
-                                    <h4>Signatures présentes dans le document</h4>
-                                    <button type="button" class="btn btn-light float-end"
-                                            onclick="window.print();">
-                                        <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
-                                    </button>
-                                    <a class="btn btn-light float-end"
-                                        th:href="@{/ws-secure/validation/download-simple-report}" role="button"
-                                        th:if="${displayDownloadPdf}">
-                                        <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
-                                    </a>
-                                </div>
-                                <div th:if="${simpleReport != null}" th:utext="${simpleReport}" class="mt-2"></div>
-                            </div>
+                                <h4>Diagnostique technique des signatures</h4>
 
-                        </div>
-                    </div>
-                    <div th:if="${detailedReport} != null" role="tabcard" class="tab-pane fade report" id="detailed-report">
-                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
-                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
-                        </div>
-                        <div class="position-relative">
-                            <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
-                                <h4>Détail des signatures présentes dans le document</h4>
-                                <div id="detailed-report-buttons" class="btn-group ml-auto align-self-center d-print-none" role="toolbar">
-                                    <button type="button" class="btn btn-light switch-annotations">
-                                        <i class="icon fa fa-commenting-o"></i>&nbsp;
-                                        <span class="label-show" th:text="#{label.annotations.show}"></span>
-                                        <span class="label-hide d-none" th:text="#{label.annotations.hide}"></span>
-                                    </button>
-                                    <button type="button" class="btn btn-light"
-                                            onclick="window.print();">
-                                        <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
-                                    </button>
-                                    <a class="btn btn-light"
-                                        th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
-                                        th:if="${displayDownloadPdf}">
-                                        <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
-                                    </a>
+                            <div class="card mb-2">
+                                <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
+                                    data-target="#downloads" aria-expanded='false'>
+                                    <h3 th:text="#{label.validation.download}" th:remove="tag"></h3>
                                 </div>
-                                <div class="w-100" th:utext="${detailedReport}"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div th:if="${diagnosticDataXml} != null" role="tabcard" class="tab-pane fade report" id="diagnostic-tree">
-                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
-                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
-                        </div>
-                        <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
-                            <h4>Diagnostique technique des signatures</h4>
 
-                        <div class="card mb-2">
-                            <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
-                                data-target="#downloads" aria-expanded='false'>
-                                <h3 th:text="#{label.validation.download}" th:remove="tag"></h3>
-                            </div>
-
-                            <div class="card-body collapse show" id="downloads">
-                                <div class="row">
-                                    <div class="col-sm-3">
-                                        <p th:text="#{label.report}"></p>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <ul class="list-unstyled">
-                                            <li>
-                                                <a th:href="@{/ws-secure/validation/download-diagnostic-data}">
-                                                    <span th:text="#{label.diagnostic.data}"></span>
-                                                    <i class="fa fa-download"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="row" th:if="${allCertificates != null && allCertificates.size() > 0}">
-                                    <div class="col-sm-3">
-                                        <p th:text="#{label.certificates}"></p>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <ul class="list-unstyled">
-                                            <li th:each="cert : ${allCertificates}">
-                                                <a th:href="@{|/ws-secure/validation/download-certificate?id=${cert.getId()}|}">
-                                                    <span th:text="${cert.getName()}"></span>
-                                                    <i class="fa fa-download"></i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="row" th:if="${allRevocationData != null && allRevocationData.size() > 0}">
-                                    <div class="col-sm-3">
-                                        <p th:text="#{label.revocation-data}"></p>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <ul class="list-unstyled">
-                                            <li th:each="rd : ${allRevocationData}">
-                                                <span th:text="${rd.getName()}"></span>
-                                                <div th:replace="~{fragment/fields :: field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/ws-secure/validation/download-revocation?id=${rd.getId()}|)}" th:remove="tag"></div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                <div class="row" th:if="${allTimestamps != null && allTimestamps.size() > 0}">
-                                    <div class="col-sm-3">
-                                        <p th:text="#{label.timestamps}"></p>
-                                    </div>
-                                    <div class="col-sm-9">
-                                        <ul class="list-unstyled">
-                                            <li th:each="tst : ${allTimestamps}">
-                                                <span th:text="${tst.getName()}"></span>
-                                                <div th:replace="~{fragment/fields :: field-der-pem(true, |/ws-secure/validation/download-timestamp?id=${tst.getId()}|)}" th:remove="tag"></div>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card mb-2">
-                            <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
-                                data-target="#svg-card" aria-expanded='false'>
-                                <h3 th:text="#{label.validation.visualrepresentation}" th:remove="tag"></h3>
-                            </div>
-                            <div class="card-body collapse show" id="svg-card">
-                                <div id="svg-content">
+                                <div class="card-body collapse show" id="downloads">
                                     <div class="row">
-                                        <div class="col-sm-12 d-flex">
-                                            <object th:data="@{/ws-secure/validation/diag-data.svg}" th:text="#{label.svg.browser.error}"
-                                                    type="image/svg+xml" width="100%" id="svg-diag-data" class="mx-auto">
-                                            </object>
+                                        <div class="col-sm-3">
+                                            <p th:text="#{label.report}"></p>
                                         </div>
-                                    </div>
-                                    <div class="form-group row">
-                                        <label for="select-visualrepresentation" class="col-sm-3 col-form-label">Display :</label>
                                         <div class="col-sm-9">
-                                            <select  class="form-control" id="select-visualrepresentation">
-                                                <optgroup th:label="#{label.signatures}" id="select-visualrepresentation-sigs">
-
-                                                </optgroup>
-                                                <optgroup th:label="#{label.evidence.records}" id="select-visualrepresentation-ers">
-
-                                                </optgroup>
-                                                <optgroup th:label="#{label.timestamps}" id="select-visualrepresentation-tsts">
-
-                                                </optgroup>
-                                                <optgroup th:label="#{label.certificate.chains}" id="select-visualrepresentation-chains">
-
-                                                </optgroup>
-                                            </select>
+                                            <ul class="list-unstyled">
+                                                <li>
+                                                    <a th:href="@{/ws-secure/validation/download-diagnostic-data}">
+                                                        <span th:text="#{label.diagnostic.data}"></span>
+                                                        <i class="fa fa-download"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
                                         </div>
                                     </div>
-                                </div>
-                                <div id="svg-empty" class="d-none">
-                                    <p th:text="#{label.svg.empty}"></p>
+                                    <div class="row" th:if="${allCertificates != null && allCertificates.size() > 0}">
+                                        <div class="col-sm-3">
+                                            <p th:text="#{label.certificates}"></p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <ul class="list-unstyled">
+                                                <li th:each="cert : ${allCertificates}">
+                                                    <a th:href="@{|/ws-secure/validation/download-certificate?id=${cert.getId()}|}">
+                                                        <span th:text="${cert.getName()}"></span>
+                                                        <i class="fa fa-download"></i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row" th:if="${allRevocationData != null && allRevocationData.size() > 0}">
+                                        <div class="col-sm-3">
+                                            <p th:text="#{label.revocation-data}"></p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <ul class="list-unstyled">
+                                                <li th:each="rd : ${allRevocationData}">
+                                                    <span th:text="${rd.getName()}"></span>
+                                                    <div th:replace="~{fragment/fields :: field-der-pem(${#strings.startsWith(rd.getName(), 'CRL')}, |/ws-secure/validation/download-revocation?id=${rd.getId()}|)}" th:remove="tag"></div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row" th:if="${allTimestamps != null && allTimestamps.size() > 0}">
+                                        <div class="col-sm-3">
+                                            <p th:text="#{label.timestamps}"></p>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <ul class="list-unstyled">
+                                                <li th:each="tst : ${allTimestamps}">
+                                                    <span th:text="${tst.getName()}"></span>
+                                                    <div th:replace="~{fragment/fields :: field-der-pem(true, |/ws-secure/validation/download-timestamp?id=${tst.getId()}|)}" th:remove="tag"></div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="card mb-2">
+                                <div class="card-header collapsed cursor-pointer" data-toggle="collapse"
+                                    data-target="#svg-card" aria-expanded='false'>
+                                    <h3 th:text="#{label.validation.visualrepresentation}" th:remove="tag"></h3>
+                                </div>
+                                <div class="card-body collapse show" id="svg-card">
+                                    <div id="svg-content">
+                                        <div class="row">
+                                            <div class="col-sm-12 d-flex">
+                                                <object th:data="@{/ws-secure/validation/diag-data.svg}" th:text="#{label.svg.browser.error}"
+                                                        type="image/svg+xml" width="100%" id="svg-diag-data" class="mx-auto">
+                                                </object>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="select-visualrepresentation" class="col-sm-3 col-form-label">Display :</label>
+                                            <div class="col-sm-9">
+                                                <select  class="form-control" id="select-visualrepresentation">
+                                                    <optgroup th:label="#{label.signatures}" id="select-visualrepresentation-sigs">
+
+                                                    </optgroup>
+                                                    <optgroup th:label="#{label.evidence.records}" id="select-visualrepresentation-ers">
+
+                                                    </optgroup>
+                                                    <optgroup th:label="#{label.timestamps}" id="select-visualrepresentation-tsts">
+
+                                                    </optgroup>
+                                                    <optgroup th:label="#{label.certificate.chains}" id="select-visualrepresentation-chains">
+
+                                                    </optgroup>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="svg-empty" class="d-none">
+                                        <p th:text="#{label.svg.empty}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <pre class="prettyprint"><code class="language-xml" th:text="${diagnosticDataXml}"></code></pre>
+                            </div>
                         </div>
-                        <pre class="prettyprint"><code class="language-xml" th:text="${diagnosticDataXml}"></code></pre>
+                        <div th:if="${etsiValidationReport} != null" role="tabcard" class="tab-pane fade report" id="etsi-validation-report">
+                            <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
+                                Ce document ne comporte pas de signature reconnue par le système de contrôle.
+                            </div>
+                            <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
+                                <h4>Rapport ETSI au format XML</h4>
+                                <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
+                            </div>
                         </div>
-                    </div>
-                    <div th:if="${etsiValidationReport} != null" role="tabcard" class="tab-pane fade report" id="etsi-validation-report">
-                        <div class="alert alert-secondary mb-1" th:if="${auditTrail == null && signCount == 0}">
-                            Ce document ne comporte pas de signature reconnue par le système de contrôle.
-                        </div>
-                        <div class="alert alert-light border-secondary-subtle mx-auto mb-1" style="page-break-after: always;">
-                            <h4>Rapport ETSI au format XML</h4>
-                            <pre class="prettyprint"><code class="language-xml" th:text="${etsiValidationReport}"></code></pre>
-                        </div>
-                    </div>
-                    <div th:if="${pdfaReport != null && pdfaReport.size() > 0}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
-                        <div th:class="'alert alert-' + ${pdfaReport[0]}">
-                            <h4>Validation PDF/A</h4>
-                            <ul>
-                                <th:block th:each="line : ${pdfaReport}">
-                                    <li th:if="${lineStat.index > 0}">
-                                        <span th:text="${line}"></span>
-                                    </li>
-                                </th:block>
-                            </ul>
+                        <div th:if="${pdfaReport != null && pdfaReport.size() > 0}" class="tab-pane fade" id="pdfa" role="tabpanel" aria-labelledby="profile-tab">
+                            <div th:class="'alert alert-' + ${pdfaReport[0]}">
+                                <h4>Validation PDF/A</h4>
+                                <ul>
+                                    <th:block th:each="line : ${pdfaReport}">
+                                        <li th:if="${lineStat.index > 0}">
+                                            <span th:text="${line}"></span>
+                                        </li>
+                                    </th:block>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>

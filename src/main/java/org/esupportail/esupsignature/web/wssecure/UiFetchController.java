@@ -8,7 +8,7 @@ import org.esupportail.esupsignature.dto.ui.global.UiDataDto;
 import org.esupportail.esupsignature.dto.ui.global.UiHomeDto;
 import org.esupportail.esupsignature.dto.ui.global.UiUserLookupDto;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

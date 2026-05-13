@@ -1,6 +1,6 @@
 package org.esupportail.esupsignature.dto.projection.chart;
 
-public interface WorkflowStatusChartDto {
+public interface WorkflowStatusChartProjectionDto {
     String getStatus();
     Integer getCount();
 }

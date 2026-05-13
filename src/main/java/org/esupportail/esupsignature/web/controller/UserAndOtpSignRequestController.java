@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.mapper.UiFetchSignRequestService;
+import org.esupportail.esupsignature.service.ui.UiFetchSignRequestService;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestContextDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -90,7 +90,7 @@ public class UserAndOtpSignRequestController {
             model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
             userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, context.getWorkflowId().toString() + ",");
         }
-        ShowSignRequestDto showSignRequest = uiFetchSignRequestService.buildShowSignRequestBackDto(context);
+        ShowSignRequestDto showSignRequest = context.getShowSignRequest();
         model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
         model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
         model.addAttribute("showSignRequest", showSignRequest);
@@ -110,7 +110,7 @@ public class UserAndOtpSignRequestController {
         String path = httpServletRequest.getRequestURI();
         boolean isOtpView = path.startsWith("/otp");
         ShowSignRequestContextDto context = uiFetchSignRequestService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
-        SignUiFrontDto frontDto = uiFetchSignRequestService.buildSignUiFrontDto(context);
+        SignUiFrontDto frontDto = context.getSignUiFront();
         return ResponseEntity.ok(frontDto);
     }
 

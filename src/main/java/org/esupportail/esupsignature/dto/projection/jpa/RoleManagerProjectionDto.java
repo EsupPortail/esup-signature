@@ -2,15 +2,15 @@ package org.esupportail.esupsignature.dto.projection.jpa;
 
 import org.esupportail.esupsignature.entity.User;
 
-public class RoleManagerDto {
+public class RoleManagerProjectionDto {
 
     private String role;
     private User user;
 
-    public RoleManagerDto() {
+    public RoleManagerProjectionDto() {
     }
 
-    public RoleManagerDto(String role, User user) {
+    public RoleManagerProjectionDto(String role, User user) {
         this.role = role;
         this.user = user;
     }

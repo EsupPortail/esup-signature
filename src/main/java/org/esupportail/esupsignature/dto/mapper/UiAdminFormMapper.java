@@ -23,14 +23,7 @@ import java.util.stream.Collectors;
 @Component
 public class UiAdminFormMapper {
 
-    public AdminFormListViewDto toAdminFormListViewDto(String workflowRole,
-                                                       Boolean activeVersion,
-                                                       List<Long> selectedTagIds,
-                                                       List<AdminFormListViewDto.TagDto> allTags,
-                                                       List<String> roles,
-                                                       List<AdminFormListViewDto.WorkflowOptionDto> workflowTypes,
-                                                       List<AdminFormListViewDto.PreFillOptionDto> preFillTypes,
-                                                       List<AdminFormListViewDto.RowDto> forms) {
+    public AdminFormListViewDto toAdminFormListViewDto(String workflowRole, Boolean activeVersion, List<Long> selectedTagIds, List<AdminFormListViewDto.TagDto> allTags, List<String> roles, List<AdminFormListViewDto.WorkflowOptionDto> workflowTypes, List<AdminFormListViewDto.PreFillOptionDto> preFillTypes, List<AdminFormListViewDto.RowDto> forms) {
         AdminFormListViewDto dto = new AdminFormListViewDto();
         dto.setWorkflowRole(workflowRole);
         dto.setActiveVersion(activeVersion);
@@ -81,17 +74,7 @@ public class UiAdminFormMapper {
         return dto;
     }
 
-    public AdminFormDetailViewDto toAdminFormDetailViewDto(String workflowRole,
-                                                           Form form,
-                                                           List<String> roles,
-                                                           List<AdminFormDetailViewDto.WorkflowOptionDto> workflowTypes,
-                                                           List<AdminFormDetailViewDto.PreFillOptionDto> preFillTypes,
-                                                           List<AdminFormDetailViewDto.TagDto> allTags,
-                                                           List<Long> selectedTagIds,
-                                                           Map<String, List<String>> preFillTypeOptions,
-                                                           List<SignRequestParamsFrontDto> spots,
-                                                           Map<Integer, Long> srpMap,
-                                                           Integer defaultSignImageNumber) {
+    public AdminFormDetailViewDto toAdminFormDetailViewDto(String workflowRole, Form form, List<String> roles, List<AdminFormDetailViewDto.WorkflowOptionDto> workflowTypes, List<AdminFormDetailViewDto.PreFillOptionDto> preFillTypes, List<AdminFormDetailViewDto.TagDto> allTags, List<Long> selectedTagIds, Map<String, List<String>> preFillTypeOptions, List<SignRequestParamsFrontDto> spots, Map<Integer, Long> srpMap, Integer defaultSignImageNumber) {
         AdminFormDetailViewDto dto = new AdminFormDetailViewDto();
         dto.setWorkflowRole(workflowRole);
         dto.setForm(toAdminFormDto(form));

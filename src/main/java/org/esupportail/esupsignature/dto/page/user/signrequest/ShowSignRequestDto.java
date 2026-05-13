@@ -295,16 +295,6 @@ public class ShowSignRequestDto {
         private String firstname;
         private String name;
 
-        public SignRequestUserDto() {
-        }
-
-        public SignRequestUserDto(Long id, String eppn, String firstname, String name) {
-            this.id = id;
-            this.eppn = eppn;
-            this.firstname = firstname;
-            this.name = name;
-        }
-
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
         public String getEppn() { return eppn; }
@@ -319,17 +309,7 @@ public class ShowSignRequestDto {
         private Long id;
         private String title;
         private SignRequestStatus status;
-        private Boolean deleted;
-
-        public SignRequestTabDto() {
-        }
-
-        public SignRequestTabDto(Long id, String title, SignRequestStatus status, Boolean deleted) {
-            this.id = id;
-            this.title = title;
-            this.status = status;
-            this.deleted = deleted;
-        }
+        private boolean deleted;
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -337,23 +317,14 @@ public class ShowSignRequestDto {
         public void setTitle(String title) { this.title = title; }
         public SignRequestStatus getStatus() { return status; }
         public void setStatus(SignRequestStatus status) { this.status = status; }
-        public Boolean getDeleted() { return deleted; }
-        public void setDeleted(Boolean deleted) { this.deleted = deleted; }
+        public boolean isDeleted() { return deleted; }
+        public void setDeleted(Boolean deleted) { this.deleted = Boolean.TRUE.equals(deleted); }
     }
 
     public static class AttachmentDto {
         private Long id;
         private String fileName;
         private AttachmentUserDto createBy;
-
-        public AttachmentDto() {
-        }
-
-        public AttachmentDto(Long id, String fileName, AttachmentUserDto createBy) {
-            this.id = id;
-            this.fileName = fileName;
-            this.createBy = createBy;
-        }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -368,15 +339,6 @@ public class ShowSignRequestDto {
         private String firstname;
         private String name;
 
-        public AttachmentUserDto() {
-        }
-
-        public AttachmentUserDto(String eppn, String firstname, String name) {
-            this.eppn = eppn;
-            this.firstname = firstname;
-            this.name = name;
-        }
-
         public String getEppn() { return eppn; }
         public void setEppn(String eppn) { this.eppn = eppn; }
         public String getFirstname() { return firstname; }
@@ -390,16 +352,6 @@ public class ShowSignRequestDto {
         private String fileName;
         private Long size;
         private String contentType;
-
-        public DocumentDto() {
-        }
-
-        public DocumentDto(Long id, String fileName, Long size, String contentType) {
-            this.id = id;
-            this.fileName = fileName;
-            this.size = size;
-            this.contentType = contentType;
-        }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -493,8 +445,7 @@ public class ShowSignRequestDto {
         public StepUserDto() {
         }
 
-        public StepUserDto(Long id, String firstname, String name, String email, String phone, String hidedPhone,
-                           UserType userType) {
+        public StepUserDto(Long id, String firstname, String name, String email, String phone, String hidedPhone, UserType userType) {
             this.id = id;
             this.firstname = firstname;
             this.name = name;
