@@ -1088,10 +1088,10 @@ export class SignRequestParams extends EventFactory {
                 const viewportBottom = workspace ? workspace.getBoundingClientRect().bottom : window.innerHeight;
                 const viewportTop = workspace ? workspace.getBoundingClientRect().top : 0;
                 if (rect.bottom > viewportBottom - margin) {
-                    this.#scrollTo(targetY);
+                    this.#scrollBy(scrollStep);
                 }
                 if (rect.top < viewportTop + margin) {
-                    this.#scrollTo(-scrollStep);
+                    this.#scrollBy(-scrollStep);
                 }
                 const ui = {
                     position: position,
