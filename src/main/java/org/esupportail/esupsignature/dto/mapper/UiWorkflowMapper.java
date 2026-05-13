@@ -38,7 +38,8 @@ public class UiWorkflowMapper {
         dto.setFromCode(workflow.getFromCode());
         dto.setMessageToDisplay(messageToDisplay);
         dto.setTargets(workflow.getTargets() == null ? List.of() : workflow.getTargets().stream().map(this::toWorkflowTargetViewDto).toList());
-        dto.setViewers(workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toWorkflowViewerDto).toList());
+        dto.setViewers(workflow.getViewers() == null ? List.of() : workflow.getViewers().stream().map(this::toWorkflowUserDto).toList());
+        dto.setSharedToUsers(workflow.getSharedToUsers() == null ? List.of() : workflow.getSharedToUsers().stream().map(this::toWorkflowUserDto).toList());
         dto.setWorkflowSteps(workflow.getWorkflowSteps() == null ? List.of() : workflow.getWorkflowSteps().stream().map(this::toWorkflowStepViewDto).toList());
         return dto;
     }
@@ -65,11 +66,11 @@ public class UiWorkflowMapper {
         return dto;
     }
 
-    public WorkflowViewDto.ViewerDto toWorkflowViewerDto(User user) {
+    public WorkflowViewDto.UserDto toWorkflowUserDto(User user) {
         if (user == null) {
             return null;
         }
-        WorkflowViewDto.ViewerDto dto = new WorkflowViewDto.ViewerDto();
+        WorkflowViewDto.UserDto dto = new WorkflowViewDto.UserDto();
         dto.setEmail(user.getEmail());
         dto.setFirstname(user.getFirstname());
         dto.setName(user.getName());

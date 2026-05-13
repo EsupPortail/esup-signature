@@ -16,7 +16,8 @@ public class WorkflowViewDto {
     private Boolean fromCode;
     private String messageToDisplay;
     private List<TargetDto> targets;
-    private List<ViewerDto> viewers;
+    private List<UserDto> viewers;
+    private List<UserDto> sharedToUsers;
     private List<WorkflowStepDto> workflowSteps;
 
     public Long getId() {
@@ -83,12 +84,20 @@ public class WorkflowViewDto {
         this.targets = targets;
     }
 
-    public List<ViewerDto> getViewers() {
+    public List<UserDto> getViewers() {
         return viewers;
     }
 
-    public void setViewers(List<ViewerDto> viewers) {
+    public void setViewers(List<UserDto> viewers) {
         this.viewers = viewers;
+    }
+
+    public List<UserDto> getSharedToUsers() {
+        return sharedToUsers;
+    }
+
+    public void setSharedToUsers(List<UserDto> sharedToUsers) {
+        this.sharedToUsers = sharedToUsers;
     }
 
     public List<WorkflowStepDto> getWorkflowSteps() {
@@ -125,45 +134,6 @@ public class WorkflowViewDto {
 
         public void setTargetUri(String targetUri) {
             this.targetUri = targetUri;
-        }
-    }
-
-    public static class ViewerDto {
-        private String email;
-        private String firstname;
-        private String name;
-
-        public ViewerDto() {
-        }
-
-        public ViewerDto(String email, String firstname, String name) {
-            this.email = email;
-            this.firstname = firstname;
-            this.name = name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getFirstname() {
-            return firstname;
-        }
-
-        public void setFirstname(String firstname) {
-            this.firstname = firstname;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
         }
     }
 

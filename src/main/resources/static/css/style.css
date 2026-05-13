@@ -2245,11 +2245,11 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     color: var(--bs-success);
 }
 
-button.form-dirty-indicator {
+.form-dirty-indicator {
     position: relative;
 }
 
-button.form-dirty-indicator::after {
+.form-dirty-indicator::after {
     content: '';
     position: absolute;
     top: 0.1rem;

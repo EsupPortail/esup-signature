@@ -155,10 +155,12 @@ public class WorkflowController {
     @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     public String rename(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                          @RequestParam(required = false) List<String> viewers,
-                            @RequestParam(required = false) Boolean sendAlertToAllRecipients,
+                         @RequestParam(required = false) List<String> sharedToUsers,
+                         @RequestParam(required = false) Boolean sendAlertToAllRecipients,
                          @RequestParam String name) {
         workflowService.rename(id, name);
         workflowService.addViewers(id, viewers);
+        workflowService.addShareToUsers(id, sharedToUsers);
         workflowService.updateSendAlertToAllRecipients(id, sendAlertToAllRecipients);
         return "redirect:/user/workflows/" + id;
     }

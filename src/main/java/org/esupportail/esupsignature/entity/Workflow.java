@@ -85,6 +85,9 @@ public class Workflow {
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> sharedToUsers = new ArrayList<>();
+
     private Boolean fromCode;
 
     private String namingTemplate;
@@ -402,6 +405,14 @@ public class Workflow {
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public List<User> getSharedToUsers() {
+        return sharedToUsers;
+    }
+
+    public void setSharedToUsers(List<User> sharedToUsers) {
+        this.sharedToUsers = sharedToUsers;
     }
 
     public Boolean getSealAtEnd() {

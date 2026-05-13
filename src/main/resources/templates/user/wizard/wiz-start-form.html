@@ -23,6 +23,9 @@
 </div>
 <div class="modal-body">
     <form id="send-form">
+        <label for="title" class="form-label fw-semibold">Titre (facultatif)</label>
+        <input type="text" id="title" name="title" class="form-control" placeholder="Saisir le titre du formulaire">
+        <br>
         <input type="submit" id="send-form-submit" class="d-none">
         <th:block th:replace="~{user/wizard/includes/workflow-steps :: workflow-steps(${form.workflow}, 'step-form')}"></th:block>
     </form>
