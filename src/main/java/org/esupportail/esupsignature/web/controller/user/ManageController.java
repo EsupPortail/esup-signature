@@ -162,7 +162,7 @@ public class ManageController {
     }
 
     @GetMapping("/form/{id}/start")
-    @PreAuthorize("@preAuthorizeService.workflowManage(#id, #authUserEppn)")
+    @PreAuthorize("@preAuthorizeService.formManager(#id, #authUserEppn)")
     public String show(@PathVariable("id") Long id, @ModelAttribute("authUserEppn") String authUserEppn, @RequestParam String createByEmail, RedirectAttributes redirectAttributes) {
         User creator = userService.getUserByEmail(createByEmail);
         Data data = dataService.addData(id, creator.getEppn());

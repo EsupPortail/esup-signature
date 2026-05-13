@@ -1,5 +1,6 @@
 import {default as FilesInput} from "../utils/FilesInput.js?version=@version@";
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
+import NotificationCenter from "./NotificationCenter.js?version=@version@";
 import {Step} from "../../prototypes/Step.js?version=@version@";
 import {Recipient} from "../../prototypes/Recipient.js?version=@version@";
 
@@ -29,7 +30,56 @@ export class WizUi {
 
     initListeners() {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
-        this.modal.focus();
+        this.modal.on('shown.bs.modal', () => this.requestModalFocus());
+    }
+
+    requestModalFocus(options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        if (typeof window.esupFocusModalContent === 'function') {
+            return window.esupFocusModalContent(modalElement, {
+                attempts: options.attempts ?? 20,
+                delay: options.delay ?? 80
+            });
+        }
+        const fallbackCandidate = modalElement.querySelector('[autofocus], input:not([type="hidden"]), select, textarea, button:not(.btn-close), [href], [tabindex]:not([tabindex="-1"])');
+        if (fallbackCandidate != null) {
+            fallbackCandidate.focus({preventScroll: true});
+            return true;
+        }
+        modalElement.focus({preventScroll: true});
+        return false;
+    }
+
+    focusVisibleFilePicker(selectors = ['.btn-file', '.file-drop-zone', '#fast-sign-button', '#fast-form-close'], options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        const attempts = options.attempts ?? 20;
+        const delay = options.delay ?? 80;
+        const isVisible = element => element != null
+            && element.getClientRects().length > 0
+            && window.getComputedStyle(element).display !== 'none'
+            && window.getComputedStyle(element).visibility !== 'hidden'
+            && !element.disabled;
+        const tryFocus = remainingAttempts => {
+            for (const selector of selectors) {
+                const element = modalElement.querySelector(selector);
+                if (isVisible(element)) {
+                    element.focus({preventScroll: true});
+                    return true;
+                }
+            }
+            if (remainingAttempts <= 0) {
+                return this.requestModalFocus();
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
     }
 
     listenHelpMarkAsReadButton(btn) {
@@ -72,6 +122,7 @@ export class WizUi {
             self.enableButtons();
         });
         $("#fast-sign-button").on('click', e => self.wizCreateSign("self"));
+        this.focusVisibleFilePicker();
     }
 
     wizCreateSign(type) {
@@ -229,6 +280,7 @@ export class WizUi {
                 $('#singleSignWithAnnotation').prop('checked', true);
             }
         });
+        this.requestModalFocus();
     }
 
     fastSignSubmitDatas() {
@@ -276,6 +328,11 @@ export class WizUi {
             success : function(html) {
                 self.workflowSignDisplayForm(html);
                 self.manageMinMaxLevels();
+            },
+            error: function(e) {
+                self.forceCloseModal(() => {
+                    NotificationCenter.showSnackbar(self.getAjaxErrorMessage(e, "Une erreur s’est produite lors du lancement du circuit"), "error");
+                });
             }
         });
     }
@@ -285,6 +342,9 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
+        if(!this.input.length) {
+            return;
+        }
         this.newSignBookId = this.input.attr("data-es-signbook-id");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, this.newSignBookId);
         if($("#recipientsCCEmails").length) {
@@ -320,6 +380,7 @@ export class WizUi {
             }
         });
         $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
+        this.requestModalFocus();
     }
 
     wizardFormStart(formId) {
@@ -423,6 +484,7 @@ export class WizUi {
         });
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
         $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
+        this.requestModalFocus();
     }
 
     workflowSignSubmitStepData() {
@@ -544,6 +606,7 @@ export class WizUi {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
         $("#save-workflow").on('click', e => this.saveWorkflow());
+        this.requestModalFocus();
 
     }
 
@@ -575,14 +638,88 @@ export class WizUi {
         }
     }
 
-    closeModal() {
-        if(this.recipientCCSelect != null) this.recipientCCSelect.slimSelect.destroy();
+    getAjaxErrorMessage(error, fallbackMessage) {
+        if (error == null) {
+            return fallbackMessage;
+        }
+        if (error.responseJSON != null) {
+            const responseMessage = error.responseJSON.message || error.responseJSON.error;
+            if (responseMessage != null && responseMessage !== "") {
+                return this.escapeHtml(responseMessage);
+            }
+        }
+        if (error.responseText != null && error.responseText !== "") {
+            try {
+                const responseBody = JSON.parse(error.responseText);
+                const responseMessage = responseBody.message || responseBody.error;
+                if (responseMessage != null && responseMessage !== "") {
+                    return this.escapeHtml(responseMessage);
+                }
+            } catch (parseError) {
+                return this.escapeHtml(error.responseText);
+            }
+        }
+        if (error.statusText != null && error.statusText !== "") {
+            return this.escapeHtml(error.statusText);
+        }
+        return fallbackMessage;
+    }
+
+    escapeHtml(text) {
+        if (text == null) {
+            return "";
+        }
+        return String(text)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    cleanupModalState() {
+        if(this.recipientCCSelect != null) {
+            this.recipientCCSelect.slimSelect.destroy();
+            this.recipientCCSelect = null;
+        }
         if(this.recipientsEmailsSelect != null) {
             this.recipientsEmailsSelect.slimSelect.destroy();
+            this.recipientsEmailsSelect = null;
         }
-        this.modal.modal('hide');
-        this.modal.unbind();
+        this.pending = false;
+        this.newSignBookId = "";
+        this.newWorkflowId = "";
+        this.input = null;
+        this.files = null;
+        this.fileInput = null;
+        this.form = null;
+        this.close = false;
+        this.end = false;
+        this.start = false;
         this.div.html("");
+    }
+
+    forceCloseModal(callback = null) {
+        const finalizeClose = () => {
+            this.cleanupModalState();
+            this.modal.off('hidden.bs.modal');
+            this.modal.unbind();
+            if (typeof callback === 'function') {
+                callback();
+            }
+        };
+
+        this.modal.off('hidden.bs.modal');
+        if (this.modal.hasClass('show')) {
+            this.modal.one('hidden.bs.modal', () => finalizeClose());
+            this.modal.modal('hide');
+            return;
+        }
+        finalizeClose();
+    }
+
+    closeModal() {
+        this.forceCloseModal();
     }
 
     startFormDisplayForm(html) {
@@ -600,6 +737,7 @@ export class WizUi {
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
         }
+        this.requestModalFocus();
     }
 
     sendForm(e) {
@@ -613,7 +751,7 @@ export class WizUi {
             $("#send-form-submit").click();
             self.enableButtons();
         };
-        this.sendSteps('/user/datas/send-form/' + formId + '?pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
+        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + $('#send-form').find('[name="title"]').val() + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
     }
 
     sendSteps(url, stepsSources, successCallback, errorCallback) {

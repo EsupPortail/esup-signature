@@ -3,12 +3,22 @@ export function attachDirtyIndicator({ form, saveButton, extraInputs = [], extra
         return null;
     }
 
+    const trackedRoot = form;
+
     const setDirty = isDirty => {
         saveButton.classList.toggle('form-dirty-indicator', isDirty);
     };
 
+    const getTrackedElements = () => {
+        if (trackedRoot.elements != null) {
+            return Array.from(trackedRoot.elements);
+        }
+
+        return Array.from(trackedRoot.querySelectorAll('input, select, textarea, button'));
+    };
+
     const getFormState = () => {
-        const fields = Array.from(form.elements)
+        const fields = getTrackedElements()
             .filter(element => element && element.name && !element.disabled && element.tagName !== 'BUTTON' && !['button', 'submit', 'reset', 'image'].includes(element.type));
 
         return JSON.stringify(fields.map(element => {
@@ -29,19 +39,27 @@ export function attachDirtyIndicator({ form, saveButton, extraInputs = [], extra
         extra: extraStateProviders.map(provider => provider ? provider() : null)
     });
 
-    const initialState = getState();
+    let initialState = getState();
     const refreshDirtyState = () => {
         setDirty(getState() !== initialState);
     };
 
-    form.addEventListener('input', refreshDirtyState, true);
-    form.addEventListener('change', refreshDirtyState, true);
-    form.addEventListener('click', event => {
+    const markClean = () => {
+        initialState = getState();
+        setDirty(false);
+    };
+
+    trackedRoot.addEventListener('input', refreshDirtyState, true);
+    trackedRoot.addEventListener('change', refreshDirtyState, true);
+    trackedRoot.addEventListener('click', event => {
         if (event.target.closest('.btn-add-field, .btn-remove')) {
             window.setTimeout(refreshDirtyState, 0);
         }
     }, true);
-    form.addEventListener('submit', () => setDirty(false));
+
+    if (trackedRoot.tagName === 'FORM') {
+        trackedRoot.addEventListener('submit', () => setDirty(false));
+    }
 
     extraInputs.forEach(input => {
         if (!input) {
@@ -63,6 +81,7 @@ export function attachDirtyIndicator({ form, saveButton, extraInputs = [], extra
     return {
         refreshDirtyState,
         setDirty,
+        markClean,
         getFormState,
         getState,
         initialState

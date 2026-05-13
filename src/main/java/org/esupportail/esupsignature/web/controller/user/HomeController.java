@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.web.controller.user;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ui.global.UiSlimSelectDto;
 import org.esupportail.esupsignature.dto.ui.global.UiSearchRequest;
 import org.esupportail.esupsignature.dto.ui.global.UiSearchResult;
@@ -18,10 +19,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -94,8 +97,8 @@ public class HomeController {
             model.addAttribute("workflows", workflows);
             model.addAttribute("featuredForms", forms.stream().filter(Form::getIsFeatured).toList());
             model.addAttribute("featuredWorkflows", workflows.stream().filter(Workflow::getIsFeatured).toList());
-            model.addAttribute("startFormId", formId);
-            model.addAttribute("startWorkflowId", workflowId);
+            model.addAttribute("startFormId", formId != null && formService.isFormAuthorized(userEppn, authUserEppn, formId) ? formId : null);
+            model.addAttribute("startWorkflowId", workflowId != null && workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId) ? workflowId : null);
             model.addAttribute("allTags", tagService.getAllTags(Pageable.unpaged()).getContent());
             model.addAttribute("nbFollowByMe", signRequestService.nbFollowedByMe(userEppn));
             model.addAttribute("selectedTags", new ArrayList<>());
@@ -105,13 +108,23 @@ public class HomeController {
         }
     }
 
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping("/start-form/{formId}")
-    public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId) {
+    public String startForm(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long formId, RedirectAttributes redirectAttributes) {
+        if(!formService.isFormAuthorized(userEppn, authUserEppn, formId)) {
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Formulaire non autorisé"));
+            return "redirect:/user";
+        }
         return "redirect:/user?formId=" + formId;
     }
 
+    @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping("/start-workflow/{workflowId}")
-    public String startWorkflow(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId) {
+    public String startWorkflow(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long workflowId, RedirectAttributes redirectAttributes) {
+        if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Circuit non autorisé"));
+            return "redirect:/user";
+        }
         return "redirect:/user?workflowId=" + workflowId;
     }
 

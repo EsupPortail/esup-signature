@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.service;
 
-import org.esupportail.esupsignature.dto.projection.chart.CountByYearsChartDto;
-import org.esupportail.esupsignature.dto.projection.chart.WorkflowStatusChartDto;
+import org.esupportail.esupsignature.dto.projection.chart.CountByYearsChartProjectionDto;
+import org.esupportail.esupsignature.dto.projection.chart.WorkflowStatusChartProjectionDto;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.LogRepository;
@@ -39,14 +39,14 @@ public class ChartsService {
     }
 
     public String getSignsByYears() {
-        List<CountByYearsChartDto> signsByYears = logRepository.countAllByYears();
-        List<CountByYearsChartDto> signaturesByYears = auditStepRepository.countAllByYears();
-        List<CountByYearsChartDto> signaturesCertByYears = auditStepRepository.countAllCertByYears();
-        List<CountByYearsChartDto> refusedByYears = logRepository.countAllRefusedByYears();
-        Set<String> labels = signsByYears.stream().map(CountByYearsChartDto::getYear).collect(Collectors.toSet());
-        labels.addAll(signaturesByYears.stream().map(CountByYearsChartDto::getYear).collect(Collectors.toSet()));
-        labels.addAll(signaturesCertByYears.stream().map(CountByYearsChartDto::getYear).collect(Collectors.toSet()));
-        labels.addAll(refusedByYears.stream().map(CountByYearsChartDto::getYear).collect(Collectors.toSet()));
+        List<CountByYearsChartProjectionDto> signsByYears = logRepository.countAllByYears();
+        List<CountByYearsChartProjectionDto> signaturesByYears = auditStepRepository.countAllByYears();
+        List<CountByYearsChartProjectionDto> signaturesCertByYears = auditStepRepository.countAllCertByYears();
+        List<CountByYearsChartProjectionDto> refusedByYears = logRepository.countAllRefusedByYears();
+        Set<String> labels = signsByYears.stream().map(CountByYearsChartProjectionDto::getYear).collect(Collectors.toSet());
+        labels.addAll(signaturesByYears.stream().map(CountByYearsChartProjectionDto::getYear).collect(Collectors.toSet()));
+        labels.addAll(signaturesCertByYears.stream().map(CountByYearsChartProjectionDto::getYear).collect(Collectors.toSet()));
+        labels.addAll(refusedByYears.stream().map(CountByYearsChartProjectionDto::getYear).collect(Collectors.toSet()));
         BarDataset countDocsDataset = new BarDataset().setStack("0").setLabel("Nombre de documents signés par année").addBackgroundColor(toHex(new Color(170, 222, 167)));
         BarDataset countCertDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures avec certificat par année").addBackgroundColor(toHex(new Color(255, 206, 86)));
         BarDataset countSignsDataset = new BarDataset().setStack("1").setLabel("Nombre de signatures sans certificat par année").addBackgroundColor(toHex(new Color(54, 162, 235)));
@@ -54,10 +54,10 @@ public class ChartsService {
         if(!labels.isEmpty()) {
             List<BarDataset> datasets = new ArrayList<>();
             for (String label : labels.stream().sorted(Comparator.comparingInt(Integer::parseInt)).toList()) {
-                countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartDto::getCount).findFirst().orElse("0")));
-                countCertDataset.addData(Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartDto::getCount).findFirst().orElse("0")));
-                countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartDto::getCount).findFirst().orElse("0")) - Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartDto::getCount).findFirst().orElse("0")));
-                countRefusedDataset.addData(Integer.parseInt(refusedByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartDto::getCount).findFirst().orElse("0")));
+                countDocsDataset.addData(Integer.parseInt(signsByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartProjectionDto::getCount).findFirst().orElse("0")));
+                countCertDataset.addData(Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartProjectionDto::getCount).findFirst().orElse("0")));
+                countSignsDataset.addData(Integer.parseInt(signaturesByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartProjectionDto::getCount).findFirst().orElse("0")) - Integer.parseInt(signaturesCertByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartProjectionDto::getCount).findFirst().orElse("0")));
+                countRefusedDataset.addData(Integer.parseInt(refusedByYears.stream().filter(s -> s.getYear().equals(label)).map(CountByYearsChartProjectionDto::getCount).findFirst().orElse("0")));
             }
             datasets.add(countDocsDataset);
             datasets.add(countCertDataset);
@@ -73,8 +73,8 @@ public class ChartsService {
 
     public String getWorkflowSignBooksStatus(Long id) {
         Workflow workflow = workflowRepository.findById(id).orElseThrow();
-        List<WorkflowStatusChartDto> workflowStatusChartDtos = workflowRepository.findWorkflowStatusCount(id);
-        if(workflowStatusChartDtos.isEmpty()) {
+        List<WorkflowStatusChartProjectionDto> workflowStatusChartProjectionDtos = workflowRepository.findWorkflowStatusCount(id);
+        if(workflowStatusChartProjectionDtos.isEmpty()) {
             return null;
         }
         Map<String, String> colors = Map.of(
@@ -86,13 +86,13 @@ public class ChartsService {
         DoughnutDataset doughnutDataset = new DoughnutDataset()
                 .setLabel("Nombre de demande");
 
-        List<String> sortedLabels = workflowStatusChartDtos.stream()
-                .map(WorkflowStatusChartDto::getStatus)
+        List<String> sortedLabels = workflowStatusChartProjectionDtos.stream()
+                .map(WorkflowStatusChartProjectionDto::getStatus)
                 .sorted()
                 .toList();
 
         for (String label : sortedLabels) {
-            workflowStatusChartDtos.stream()
+            workflowStatusChartProjectionDtos.stream()
                     .filter(w -> w.getStatus().equals(label))
                     .findFirst().ifPresent(dto -> doughnutDataset.addData(dto.getCount()).addBackgroundColor(colors.getOrDefault(label, "#cccccc")));
 

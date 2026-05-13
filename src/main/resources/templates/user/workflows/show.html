@@ -10,9 +10,9 @@
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
     <div class="es-wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
+                <li class="breadcrumb-item active"><a href="/"><i class="fi fi-rr-home"></i> Accueil</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
@@ -20,12 +20,21 @@
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
                 <div class="flex-grow-1 overflow-scroll p-2">
-                    <div class="alert alert-light">
+                    <div class="alert alert-light col-10 mx-auto">
                         <h5 class="card-title">Paramètres généraux</h5>
                         <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
                             <div class="form-group">
                                 <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
                                 <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="viewersSelect">Partager avec</label>
+                                <select id="sharedToUsersSelect" class="auto-select-users" multiple="multiple" name="sharedToUsers">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="sharedToUsers : ${workflow.sharedToUsers}">
+                                        <option selected="selected" th:value="${sharedToUsers.email}" th:text="${sharedToUsers.firstname} + ' ' + ${sharedToUsers.name} + ' (' + ${sharedToUsers.email} + ')'"></option>
+                                    </th:block>
+                                </select>
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="viewersSelect">Observateurs</label>
@@ -43,8 +52,7 @@
                             </div>
                         </form>
                     </div>
-
-                    <div class="alert alert-light">
+                    <div class="alert alert-light col-10 mx-auto">
                             <h5 class="card-title"><b>Étapes</b></h5>
                             <dl class="row border-bottom m-0 text-start">
                                 <dd>
@@ -64,21 +72,16 @@
                             </button>
                         </li>
                         <li>
-                            <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn btn-transparent text-dark">
-                                <i class="fi fi-rr-folder-times"></i>
-                            </a>
-                        </li>
-                        <li>
                             <a role="button" title="Ajouter une étape" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addStep">
-                                <span class="fa-stack fa-1x">
-                                    <i class="fi fi-rr-shoe-prints fa-stack-2x" style="margin-left: -6px"></i>
-                                    <i class="fi fi-rr-plus-small fa-stack-2x" style="margin-left: 10px"></i>
+                                <span class="d-flex align-items-center">
+                                    <i class="fi fi-rr-shoe-prints"></i>
+                                    <i class="fi fi-rr-plus-small"></i>
                                 </span>
                             </a>
                         </li>
                         <li>
                             <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
-                                <a id="delete-button" role="button" title="Supprimer" class="btn btn-transparent text-dark">
+                                <a id="delete-button" role="button" title="Supprimer" class="btn btn-transparent text-danger">
                                     <i class="fi fi-rr-trash"></i>
                                 </a>
                             </form>

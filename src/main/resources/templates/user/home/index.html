@@ -95,7 +95,7 @@
                 <div th:replace="~{fragments/new-tools :: new-tools}"></div>
             </div>
             <div id="shortcuts" th:if="${userEppn == authUserEppn}" class="mb-0 col-12 col-xxl-10 shadow-sm alert bg-white rounded-3 border-0 mx-auto d-flex flex-wrap justify-content-center gap-2 gap-md-3 gap-xl-4 p-2">
-                <a tabindex="0" id="followed-btn" role="button"
+                <a tabindex="5" id="followed-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=followByMe" title="Afficher les demandes que je suis"
                    th:classappend="${nbSignRequests > 0} ? '' : 'disabled'"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
@@ -104,20 +104,20 @@
                     <span class="d-none d-lg-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Suivies</span>
                     <span title="Demandes suivie" th:if="${nbFollowByMe > 0  && userEppn == authUserEppn}" class="badge rounded-pill bg-primary d-none d-md-inline" th:text="${nbFollowByMe}"></span>
                 </a>
-                <a tabindex="0" id="signeds-btn" role="button"
+                <a tabindex="6" id="signeds-btn" role="button"
                    class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" href="/user/signbooks?statusFilter=signedByMe" title="Afficher les demandes que j'ai envoyées"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-folder-times text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
                     <span class="d-none d-xxxxl-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Historique de mes signatures</span>
                     <span class="d-none d-xxxxl-none d-sm-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Historique</span>
                 </a>
-                <a tabindex="0" title="Valider la signature d'un document" role="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#controlModal"
+                <a tabindex="7" title="Valider la signature d'un document" role="button" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#controlModal"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-registration-paper text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
                     <span class="d-none d-lg-block text-nowrap" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Contrôler un document</span>
                     <span class="d-none d-lg-none d-lg-block" style="font-size: clamp(0.8rem, 1vw, 0.95rem);">Contrôler</span>
                 </a>
-                <a tabindex="0" th:unless="${globalProperties.hideWizardWorkflow}" role="button"
+                <a tabindex="8" th:unless="${globalProperties.hideWizardWorkflow}" role="button"
                    class="start-wizard-buttons btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 flex-shrink-1" data-bs-toggle="modal" data-bs-target="#wiz-modal" title="Créez un nouveau circuit à l'aide de l'assistant"
                    style="font-size: clamp(13px, 1.5vw, 16px); padding: 0.5rem 0.75rem; min-width: fit-content;">
                     <i class="fi fi-rr-customization text-secondary-emphasis" style="font-size: clamp(16px, 2vw, 20px);"></i>
@@ -173,7 +173,7 @@
                     <div class="w-100"  th:if="${workflows.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Mes circuits favoris</h5>
-                            <a tabindex="1" role="button"
+                            <a tabindex="0" role="button"
                                 class="btn btn-sm btn-secondary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#workflowsModal"
@@ -237,7 +237,7 @@
                     <div class="w-100" th:if="${forms.size() > 0}">
                         <div class="d-flex align-items-center w-100 gap-2">
                             <h5 class="d-flex align-items-center m-1"><i class="fi fi-rr-poll-h file-alt-color"></i> Mes formulaires favoris</h5>
-                            <a tabindex="1" role="button"
+                            <a tabindex="0" role="button"
                                 class="btn btn-sm btn-secondary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#formsModal"
@@ -282,11 +282,11 @@
         </div>
     </div>
 </main>
-<div id="controlModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+<div id="controlModal" data-bs-focus="false" data-es-focus-target="#multipartSignedDoc, #Upload, .btn-close" class="modal modal-xl fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h4>Vérification de la conformité du document</h4>
+                <h4 class="d-flex align-items-center"><i class="fi fi-rr-registration-paper"></i> Vérification de la conformité du document</h4>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -295,7 +295,7 @@
         </div>
     </div>
 </div>
-<div id="workflowsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+<div id="workflowsModal" data-bs-focus="false" data-es-focus-target=".toggle-workflow-start, .workflow-favorite-trigger, .btn-close" class="modal modal-xl fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -314,7 +314,7 @@
         </div>
     </div>
 </div>
-<div id="allModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+<div id="allModal" data-bs-focus="false" data-es-focus-target=".start-wizard-buttons, .start-wizard-workflow-button, .start-form-button, .btn-close" class="modal modal-xl fade" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -332,7 +332,7 @@
         </div>
     </div>
 </div>
-<div id="formsModal" data-bs-focus="false" class="modal modal-xl fade" role="dialog">
+<div id="formsModal" data-bs-focus="false" data-es-focus-target=".toggle-form-start, .form-favorite-trigger, .btn-close" class="modal modal-xl fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">

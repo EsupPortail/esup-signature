@@ -1,6 +1,9 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.projection.jpa.SignRequestDto;
+import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.WsAccessToken;
@@ -34,6 +37,73 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
     Optional<SignRequest> findByToken(String token);
 
     @Query("""
+            select d.id as id,
+                   d.fileName as fileName,
+                   d.size as size,
+                   d.contentType as contentType,
+                   d.pdfaCheck as pdfaCheck
+            from SignRequest s
+            join s.originalDocuments d
+            where s.id = :id
+            order by index(d)
+            """)
+    List<DocumentProjectionDto> findOriginalDocumentProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select d.id as id,
+                   d.fileName as fileName,
+                   d.size as size,
+                   d.contentType as contentType,
+                   d.pdfaCheck as pdfaCheck
+            from SignRequest s
+            join s.signedDocuments d
+            where s.id = :id
+            order by index(d)
+            """)
+    List<DocumentProjectionDto> findSignedDocumentProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select d.id as id,
+                   d.fileName as fileName,
+                   d.size as size,
+                   d.contentType as contentType,
+                   d.pdfaCheck as pdfaCheck
+            from SignRequest s
+            join s.documentsHistory d
+            where s.id = :id
+            """)
+    Optional<DocumentProjectionDto> findDocumentsHistoryProjectionById(@Param("id") Long id);
+
+    @Query("""
+            select d.id as id,
+                   d.fileName as fileName,
+                   d.size as size,
+                   d.contentType as contentType,
+                   d.pdfaCheck as pdfaCheck,
+                   cb.eppn as createByEppn,
+                   cb.firstname as createByFirstname,
+                   cb.name as createByName
+            from SignRequest s
+            join s.attachments d
+            left join d.createBy cb
+            where s.id = :id
+            order by index(d)
+            """)
+    List<AttachmentProjectionDto> findAttachmentProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select sr.id as id,
+                   sr.title as title,
+                   sr.status as status,
+                   sr.deleted as deleted
+            from SignBook sb
+            join sb.signRequests sr
+            where sb.id = :signBookId
+            order by index(sr)
+            """)
+    List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId);
+
+    @Query("""
             select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate 
             from SignRequest s 
             join SignBook as sb on sb.id = s.parentSignBook.id
@@ -42,10 +112,10 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             join w.wsAccessTokens as t
             where :token in (t) 
             """)
-    List<SignRequestDto> findAllByToken(WsAccessToken token);
+    List<SignRequestProjectionDto> findAllByToken(WsAccessToken token);
 
     @Query("select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate from SignRequest s join SignBook as sb on sb.id = s.parentSignBook.id")
-    List<SignRequestDto> findAllForWs();
+    List<SignRequestProjectionDto> findAllForWs();
 
     List<SignRequest> findByCreateByEppnAndStatus(String createByEppn, SignRequestStatus status);
 

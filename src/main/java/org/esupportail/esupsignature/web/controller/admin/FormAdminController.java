@@ -18,9 +18,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.export.DataExportService;
-import org.esupportail.esupsignature.service.interfaces.prefill.PreFillService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -147,7 +146,7 @@ public class FormAdminController {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 			return "redirect:/admin/forms";
 		}
-		var view = uiFetchService.buildAdminFormFieldsView(authUserEppn, workflowRole, id);
+		var view = uiFetchService.buildAdminFormFieldsView(workflowRole, id);
 		model.addAttribute("workflowRole", view.getWorkflowRole());
 		model.addAttribute("form", view.getForm());
 		model.addAttribute("workflow", view.getWorkflow());

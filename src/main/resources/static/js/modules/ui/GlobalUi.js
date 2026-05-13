@@ -3,6 +3,8 @@ import {WizUi} from "./WizUi.js?version=@version@";
 
 export class GlobalUi {
 
+    static modalFocusableSelector = 'button:not([disabled]), [href], input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])';
+
     constructor(authUserEppn, csrf, applicationEmail, maxSize, maxInactiveInterval) {
         console.info("Starting global UI");
         this.checkBrowser();
@@ -33,6 +35,76 @@ export class GlobalUi {
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         window.__isResizingCross = false;
+        window.esupFocusModalContent = (modal, options = {}) => GlobalUi.focusModalContent(modal, options);
+    }
+
+    static isFocusableElementVisible(element) {
+        if (element == null || element.getClientRects().length === 0) {
+            return false;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && !element.hasAttribute('hidden')
+            && element.getAttribute('aria-hidden') !== 'true';
+    }
+
+    static getFocusableElements(container) {
+        if (container == null) {
+            return [];
+        }
+        return Array.from(container.querySelectorAll(GlobalUi.modalFocusableSelector)).filter(element => GlobalUi.isFocusableElementVisible(element));
+    }
+
+    static getModalFocusTargetSelectors(modal) {
+        const focusTargets = modal?.getAttribute('data-es-focus-target');
+        if (focusTargets == null || focusTargets === '') {
+            return [];
+        }
+        return focusTargets.split(',').map(selector => selector.trim()).filter(Boolean);
+    }
+
+    static findModalFocusCandidate(modal) {
+        for (const selector of GlobalUi.getModalFocusTargetSelectors(modal)) {
+            const element = modal.querySelector(selector);
+            if (GlobalUi.isFocusableElementVisible(element) && !element.disabled) {
+                return element;
+            }
+        }
+
+        const focusableElements = GlobalUi.getFocusableElements(modal);
+        const autofocusElement = focusableElements.find(element => element.hasAttribute('autofocus'));
+        if (autofocusElement != null) {
+            return autofocusElement;
+        }
+
+        const primaryControl = focusableElements.find(element => element.matches('input:not([type="hidden"]), select, textarea, button:not(.btn-close), [role="button"]'));
+        return primaryControl ?? focusableElements[0] ?? null;
+    }
+
+    static focusModalContent(modal, options = {}) {
+        if (modal == null) {
+            return false;
+        }
+        const attempts = options.attempts ?? 20;
+        const delay = options.delay ?? 80;
+        const tryFocus = remainingAttempts => {
+            const candidate = GlobalUi.findModalFocusCandidate(modal);
+            if (candidate != null) {
+                candidate.focus({preventScroll: true});
+                return true;
+            }
+            if (remainingAttempts <= 0) {
+                if (!modal.hasAttribute('tabindex')) {
+                    modal.setAttribute('tabindex', '-1');
+                }
+                modal.focus({preventScroll: true});
+                return false;
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
     }
 
     readSessionJson(key) {
@@ -325,18 +397,14 @@ export class GlobalUi {
             }
         }, { once: true });
 
+        document.addEventListener('show.bs.modal', function (e) {
+            const modal = e.target;
+            modal._returnFocusElement = e.relatedTarget || document.activeElement;
+        });
+
         document.addEventListener('shown.bs.modal', function (e) {
             const modal = e.target;
-            const focusable = Array.from(
-                modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-            ).filter(el => !el.disabled && el.offsetParent !== null && el.hasAttribute("autofocus"));
-
-            if (focusable) {
-                const last = focusable.at(-1);
-                if (last) {
-                    last.focus();
-                }
-            }
+            GlobalUi.focusModalContent(modal);
             function escHandler(event) {
                 if (event.key === 'Escape' || event.key === 'Esc') {
                     const instance = bootstrap.Modal.getOrCreateInstance(modal);
@@ -364,6 +432,11 @@ export class GlobalUi {
             if (modal._escHandler) {
                 document.removeEventListener('keydown', modal._escHandler);
                 delete modal._escHandler;
+            }
+            const returnFocusElement = modal._returnFocusElement;
+            delete modal._returnFocusElement;
+            if (GlobalUi.isFocusableElementVisible(returnFocusElement) && !returnFocusElement.disabled) {
+                window.requestAnimationFrame(() => returnFocusElement.focus({preventScroll: true}));
             }
         });
 

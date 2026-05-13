@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service;
 
+import org.esupportail.esupsignature.dto.projection.jpa.AdminCommentProjectionDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 /**
@@ -48,6 +51,11 @@ public class CommentService {
     @Transactional
     public Comment getById(Long id) {
         return commentRepository.findById(id).orElseThrow();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminCommentProjectionDto> getAdminCommentsBySignRequest(Long signRequestId) {
+        return commentRepository.findAdminCommentsBySignRequestId(signRequestId);
     }
 
     /**

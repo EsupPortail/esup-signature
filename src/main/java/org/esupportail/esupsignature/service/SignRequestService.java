@@ -11,6 +11,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
+import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
@@ -165,6 +168,31 @@ public class SignRequestService {
 			return signRequest.get();
 		}
 		return null;
+	}
+
+    @Transactional(readOnly = true)
+    public List<DocumentProjectionDto> getOriginalDocumentProjections(Long signRequestId) {
+		return signRequestRepository.findOriginalDocumentProjectionsById(signRequestId);
+	}
+
+    @Transactional(readOnly = true)
+    public List<DocumentProjectionDto> getSignedDocumentProjections(Long signRequestId) {
+		return signRequestRepository.findSignedDocumentProjectionsById(signRequestId);
+	}
+
+    @Transactional(readOnly = true)
+    public List<DocumentProjectionDto> getDocumentsHistoryProjections(Long signRequestId) {
+		return signRequestRepository.findDocumentsHistoryProjectionById(signRequestId).stream().toList();
+	}
+
+    @Transactional(readOnly = true)
+    public List<AttachmentProjectionDto> getAttachmentProjections(Long signRequestId) {
+		return signRequestRepository.findAttachmentProjectionsById(signRequestId);
+	}
+
+    @Transactional(readOnly = true)
+    public List<SignRequestTabProjectionDto> getSignRequestTabProjections(Long signBookId) {
+		return signRequestRepository.findTabProjectionsBySignBookId(signBookId);
 	}
 
     @Transactional

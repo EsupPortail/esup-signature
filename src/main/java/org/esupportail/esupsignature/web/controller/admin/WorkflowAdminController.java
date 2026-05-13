@@ -17,7 +17,7 @@ import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.dto.mapper.UiFetchService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,10 +57,9 @@ public class WorkflowAdminController {
 	private final CertificatService certificatService;
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<ExternalAuth> externalAuths;
-    private final TagService tagService;
 	private final UiFetchService uiFetchService;
 
-	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, TagService tagService, UiFetchService uiFetchService) {
+	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, UiFetchService uiFetchService) {
 		this.targetService = targetService;
 		this.userService = userService;
 		this.recipientService = recipientService;
@@ -70,8 +69,7 @@ public class WorkflowAdminController {
 		this.certificatService = certificatService;
 		this.preAuthorizeService = preAuthorizeService;
         this.externalAuths = externalAuths;
-        this.tagService = tagService;
-						this.uiFetchService = uiFetchService;
+		this.uiFetchService = uiFetchService;
     }
 
 	@GetMapping

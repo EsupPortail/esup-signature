@@ -1,6 +1,10 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.projection.jpa.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepRecipientProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowTargetProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignBookViewerProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
@@ -28,6 +32,66 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             where sb.id = :id
             """)
     Optional<SignBook> findByIdWithWizardContext(@Param("id") Long id);
+
+    @Query("""
+            select v.id as id,
+                   v.firstname as firstname,
+                   v.name as name,
+                   v.email as email
+            from SignBook sb
+            join sb.viewers v
+            where sb.id = :id
+            order by lower(v.name), lower(v.firstname), v.id
+            """)
+    List<SignBookViewerProjectionDto> findViewerProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select t.targetUri as targetUri,
+                   t.targetOk as targetOk
+            from SignBook sb
+            join sb.liveWorkflow lw
+            join lw.targets t
+            where sb.id = :id
+            order by t.id
+            """)
+    List<LiveWorkflowTargetProjectionDto> findTargetProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select lws.id as id,
+                   coalesce(lws.description, ws.description) as description,
+                   coalesce(ws.changeable, false) as changeable,
+                   lws.signType as signType,
+                   coalesce(lws.autoSign, false) as autoSign,
+                   coalesce(lws.allSignToComplete, false) as allSignToComplete,
+                   coalesce(lws.repeatable, false) as repeatable
+            from SignBook sb
+            join sb.liveWorkflow lw
+            join lw.liveWorkflowSteps lws
+            left join lws.workflowStep ws
+            where sb.id = :id
+            order by index(lws)
+            """)
+    List<LiveWorkflowStepProjectionDto> findStepProjectionsById(@Param("id") Long id);
+
+    @Query("""
+            select lws.id as stepId,
+                   r.id as recipientId,
+                   r.signed as signed,
+                   u.id as userId,
+                   u.firstname as userFirstname,
+                   u.name as userName,
+                   u.email as userEmail,
+                   u.phone as userPhone,
+                   u.userType as userUserType
+            from SignBook sb
+            join sb.liveWorkflow lw
+            join lw.liveWorkflowSteps lws
+            left join lws.recipients r
+            left join r.user u
+            where sb.id = :id
+            order by index(lws), r.id
+            """)
+    List<LiveWorkflowStepRecipientProjectionDto> findStepRecipientProjectionsById(@Param("id") Long id);
 
     List<SignBook> findBySubject(String subject);
 
@@ -404,7 +468,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             and (:creatorFilter is null or sb.createBy = :creatorFilter)
             """)
-    List<UserDto> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
+    List<UserProjectionDto> findUserByRecipientAndCreateBy(User user, String workflowFilter, String docTitleFilter, User creatorFilter);
 
     Page<SignBook> findAll(Pageable pageable);
 
@@ -419,7 +483,7 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
             and :user not member of sb.hidedBy
             and sb.status <> 'deleted' and (sb.deleted is null or sb.deleted != true)
             """)
-    List<UserDto> findRecipientNames(User user);
+    List<UserProjectionDto> findRecipientNames(User user);
 
     @Query("""
         select sb from SignBook sb

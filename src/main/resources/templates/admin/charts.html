@@ -8,17 +8,18 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active">Statistiques</li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1">
-                    <div class="card mx-auto">
-                        <div class="card-body">
-                            <h5 class="text-center"><b>Statistiques</b></h5>
+                    <div class="p-0 m-2">
+                        <div class="alert alert-light">
                             <div style="width: 100%; height: 500px;">
                                 <canvas id="signsCount" style="width: 100%; height: 100%;"></canvas>
                                 <script th:inline="javascript">
