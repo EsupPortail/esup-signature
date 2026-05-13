@@ -14,69 +14,68 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <h5 class="text-center"><b>Tâches planifiées</b></h5>
-                </div>
-            </div>
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <form th:action="@{/admin/tasks/run-archive}" method="POST">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            <div th:if="${isEnableArchiveTask}" class="justify-content-center">
-                                Stopper l'archivage
-                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                                </div>
+                    <div class="p-0 m-2 d-flex flex-column gap-2">
+                        <div class="card col-lg-12">
+                            <div class="card-body">
+                                <form th:action="@{/admin/tasks/run-archive}" method="POST">
+                                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                                        <div th:if="${isEnableArchiveTask}" class="justify-content-center">
+                                            Stopper l'archivage
+                                            <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                            </div>
+                                        </div>
+                                        <span th:unless="${isEnableArchiveTask}">Lancer l'archivage</span>
+                                    </button>
+                                </form>
                             </div>
-                            <span th:unless="${isEnableArchiveTask}">Lancer l'archivage</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <form th:action="@{/admin/tasks/run-clean}" method="POST">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            <div th:if="${isEnableCleanTask}" class="justify-content-center">
-                                Stopper le nettoyage
-                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                                </div>
+                        </div>
+                        <div class="card col-lg-12">
+                            <div class="card-body">
+                                <form th:action="@{/admin/tasks/run-clean}" method="POST">
+                                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                                        <div th:if="${isEnableCleanTask}" class="justify-content-center">
+                                            Stopper le nettoyage
+                                            <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                            </div>
+                                        </div>
+                                        <span th:unless="${isEnableCleanTask}">Lancer le nettoyage des demandes archivées et des corbeilles</span>
+                                    </button>
+                                </form>
                             </div>
-                            <span th:unless="${isEnableCleanTask}">Lancer le nettoyage des demandes archivées et des corbeilles</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <form th:action="@{/admin/tasks/run-clean-uploading-sign-books}" method="POST">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            <div th:if="${isEnableCleanUploadingSignBookTask}" class="justify-content-center">
-                                Stopper le nettoyage
-                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                                </div>
+                        </div>
+                        <div class="card col-lg-12">
+                            <div class="card-body">
+                                <form th:action="@{/admin/tasks/run-clean-uploading-sign-books}" method="POST">
+                                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                                        <div th:if="${isEnableCleanUploadingSignBookTask}" class="justify-content-center">
+                                            Stopper le nettoyage
+                                            <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                            </div>
+                                        </div>
+                                        <span th:unless="${isEnableCleanUploadingSignBookTask}">Lancer le nettoyage des brouillons</span>
+                                    </button>
+                                </form>
                             </div>
-                            <span th:unless="${isEnableCleanUploadingSignBookTask}">Lancer le nettoyage des brouillons</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <form th:action="@{/admin/tasks/run-dss-refresh}" method="POST">
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">
-                            <div th:if="${isEnableDssRefreshTask}" class="justify-content-center">
-                                Stopper la synchronisation DSS
-                                <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
-                                </div>
+                        </div>
+                        <div class="card col-lg-12">
+                            <div class="card-body">
+                                <form th:action="@{/admin/tasks/run-dss-refresh}" method="POST">
+                                    <button class="btn btn-lg btn-primary btn-block" type="submit">
+                                        <div th:if="${isEnableDssRefreshTask}" class="justify-content-center">
+                                            Stopper la synchronisation DSS
+                                            <div class="spinner-border" role="status" style="width: 1rem; height: 1rem;">
+                                            </div>
+                                        </div>
+                                        <span th:unless="${isEnableDssRefreshTask}">Lancer la synchronisation DSS</span>
+                                    </button>
+                                </form>
                             </div>
-                            <span th:unless="${isEnableDssRefreshTask}">Lancer la synchronisation DSS</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

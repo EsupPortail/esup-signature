@@ -13,19 +13,23 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
-                    <h5 class="text-center mb-4"><b>Changer d’utilisateur</b></h5>
-                    <form th:action="@{/admin/su-login}" method="POST" class="form-signin mb-4">
-                        <div class="input-group">
-                            <input type="text" id="username" name="username" th:placeholder="Identifiant"class="form-control"/> <br/>
-                            <input class="btn btn-lg btn-primary btn-block input-group-append" type="submit" value="Login"/>
-                        </div>
-                    </form>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-            </div>
+                <div class="flex-grow-1">
+                    <div class="p-0 m-2">
+                        <div class="alert alert-light">
+                            <div class="alert alert-secondary">
+                                Entrer le login d'un utilisateur pour se connecter à sa place. Utile pour le support ou le debug.
+                            </div>
+                                <form th:action="@{/admin/su-login}" method="POST" class="form-signin mb-4">
+                                    <div class="input-group">
+                                        <input type="text" id="username" name="username" th:placeholder="Identifiant" class="form-control"/>
+                                        <input class="btn btn-lg btn-primary btn-block input-group-append" type="submit" value="Login"/>
+                                    </div>
+                                </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

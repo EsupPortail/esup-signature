@@ -13,9 +13,12 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1 overflow-scroll">
-                    <div class="p-2">
+                    <div class="p-0 m-2">
+                        <div class="p-2">
                         <div class="alert alert-secondary">
                             <div class="eu-official-journal d-flex gap-3">
                                 <div>
@@ -34,7 +37,8 @@
                                     <span class="badge rounded-pill bg-secondary pull-right">
                             <span th:text="${keystoreCertificates}"></span>&nbsp<span th:text="#{label.trusted.certificates.from.OJ}"></span>
                         </span>
-                                </div>
+                                                </div>
+                                            </div>
                             </div>
 
                         </div>

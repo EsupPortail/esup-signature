@@ -31,7 +31,8 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card text-bg-light m-2">
+                    <div class="p-0 m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Statut</h5>
                 </div>
@@ -44,7 +45,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Liste des documents originaux</h5>
                 </div>
@@ -54,7 +55,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Historique des modifications</h5>
                 </div>
@@ -64,7 +65,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Liste des documents signés</h5>
                 </div>
@@ -75,7 +76,7 @@
                 </div>
             </div>
             <div th:replace="~{admin/signrequests/cards/stepscard}"></div>
-            <div class="card text-bg-light m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span></h5>
                 </div>
@@ -95,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="card text-bg-light m-2">
+            <div class="card text-bg-light mb-2">
                 <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
                     <h5 class="ms-4">Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
                 </div>
@@ -125,7 +126,7 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
+                    </div>
                 </div>
             <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
                 <ul id="buttonList" class="list-unstyled">
@@ -147,6 +148,7 @@
             </div>
         </div>
     </div>
+</div>
 </main>
 <div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}"
      data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">

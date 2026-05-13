@@ -14,9 +14,12 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
                 <div class="flex-grow-1 overflow-scroll">
-                    <div class="p-2">
+                    <div class="p-0 m-2">
+                        <div class="p-2">
                         <p th:if="${tlInfo == null}">No data found for this country</p>
 
                         <div th:if="${tlInfo != null}" th:with="status=${tlInfo.validationCacheInfo == null  || tlInfo.validationCacheInfo.invalid  || !tlInfo.downloadCacheInfo.resultExist} ? 'danger' :
@@ -47,6 +50,7 @@
                                 </div>
 
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -14,39 +14,43 @@
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
-                <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-                <div class="flex-grow-1">
-            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                    <table class="table table-light table-borderless table-hover">
-                        <thead class="table-secondary">
-                        <tr>
-                            <th>Date</th>
-                            <th>Id</th>
-                            <th>Titre</th>
-                            <th>Circuit</th>
-                            <th>Eppn</th>
-                            <th>Action</th>
-                            <th>Statut initial</th>
-                            <th>Statut final</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <th:block th:each="log : ${logs}">
-                            <tr>
-                                <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
-                                <td><input type="text" th:value="${log.signRequestId}" disabled /></td>
-                                <td><span th:text="${log.subject}"></span></td>
-                                <td><span th:text="${log.workflowName}"></span></td>
-                                <td><span th:text="${log.eppn}"></span></td>
-                                <td><span th:text="${log.action}"></span></td>
-                                <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
-                                <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
-                            </tr>
-                        </th:block>
-                        </tbody>
-                    </table>
-                    <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
+                <div class="flex-grow-1">
+                    <div class="p-0 m-2">
+                        <div class="table-fix-head scrollbar-style rounded-3">
+                            <table class="table table-light table-borderless table-hover">
+                                <thead class="table-secondary">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Id</th>
+                                    <th>Titre</th>
+                                    <th>Circuit</th>
+                                    <th>Eppn</th>
+                                    <th>Action</th>
+                                    <th>Statut initial</th>
+                                    <th>Statut final</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="log : ${logs}">
+                                    <tr>
+                                        <td><span th:text="${#dates.format(log.logDate, 'dd/MM/yyyy HH:mm')}"></span></td>
+                                        <td><input type="text" th:value="${log.signRequestId}" disabled /></td>
+                                        <td><span th:text="${log.subject}"></span></td>
+                                        <td><span th:text="${log.workflowName}"></span></td>
+                                        <td><span th:text="${log.eppn}"></span></td>
+                                        <td><span th:text="${log.action}"></span></td>
+                                        <td><span th:text="#{'signbook.status.' + ${log.initialStatus}}"></span></td>
+                                        <td><span th:text="#{'signbook.status.' + ${log.finalStatus}}"></span></td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                            <nav th:replace="~{fragments/pagination :: pagination}"></nav>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

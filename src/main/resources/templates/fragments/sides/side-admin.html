@@ -7,7 +7,7 @@
         <div class="hr"><span class="sidebar-label"> Supervision</span></div>
         <a th:classappend="${activeMenu == 'adminsignrequests'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
             title="Toutes les demandes" type="button" href="/admin/signbooks" class="btn text-left rounded-2 d-flex align-items-center gap-2">
-            <i class="fi fi-rr-ballot"></i> <span class="sidebar-label">Demandes</span>
+            <i class="fi fi-rr-ballot"></i> <span class="sidebar-label">Toutes les demandes</span>
         </a>
         <a th:classappend="${activeMenu == 'logs'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
             title="Tous les logs" type="button" href="/admin/logs" class="btn text-left rounded-2 d-flex align-items-center gap-2">
@@ -25,7 +25,7 @@
             title="Exports" type="button" href="/admin/export" class="btn text-left rounded-2 d-flex align-items-center gap-2">
             <i class="fi fi-rr-file-export"></i> <span class="sidebar-label">Exports</span>
         </a>
-        <div class="hr"><span class="sidebar-label"> Configuration</span></div>
+        <div class="hr"><span class="sidebar-label"> Paramétrage</span></div>
         <a th:classappend="${activeMenu == 'workflows'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
             title="Circuits de signature" href="/admin/workflows" class="btn text-left rounded-2 d-flex align-items-center gap-2">
             <i class="fi fi-rr-diagram-project project-diagram-color"></i> <span class="sidebar-label">Circuits</span>
@@ -36,7 +36,7 @@
         </a>
         <a th:classappend="${activeMenu == 'configs'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
             title="Configuration" href="/admin/configs" class="btn text-left rounded-2 d-flex align-items-center gap-2">
-            <i class="fi fi-rr-api-cloud"></i> <span class="sidebar-label">Configuration</span>
+            <i class="fi fi-rr-customization-cogwheel"></i> <span class="sidebar-label">Configuration</span>
         </a>
         <a th:classappend="${activeMenu == 'tags'} ? 'bg-dark-subtle' : 'text-dark btn-transparent'"
             title="Tags" href="/admin/tags" class="btn text-left rounded-2 d-flex align-items-center gap-2">

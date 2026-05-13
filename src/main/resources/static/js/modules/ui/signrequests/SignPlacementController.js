@@ -544,7 +544,9 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
         step3.find(".step-horizontal-v2-icon").html("3");
-
+        setTimeout(function () {
+            addSignButton2.focus();
+        }, 2000);
     }
 
     goStep3() {
