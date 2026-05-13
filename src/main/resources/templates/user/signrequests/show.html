@@ -101,7 +101,7 @@
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side-otp}" th:unless="${showSignRequest.workflow.disableSidebarForExternal}"></nav>
                 <nav th:unless="${user.userType.name() == 'external'}" th:insert="~{fragments/sides/side-sign :: side-sign}"></nav>
                 <div class="es-workspace d-flex flex-column">
-                    <div class="es-nav-tools d-flex justify-content-start"  th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
+                    <div class="es-nav-tools d-flex justify-content-start" role="toolbar" aria-label="Outils du document" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="es-nav-tools-breadcrumb d-none" th:insert="~{user/signrequests/includes/show-sections :: breadcrumb-content}"></div>
                         <div class="d-flex justify-content-center align-items-center" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                             <div id="commentsTools" th:if="${(signRequestFull.editable || signRequestFull.manager) && showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="d-flex text-start gap-1">

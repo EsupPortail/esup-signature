@@ -30,7 +30,56 @@ export class WizUi {
 
     initListeners() {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
-        this.modal.focus();
+        this.modal.on('shown.bs.modal', () => this.requestModalFocus());
+    }
+
+    requestModalFocus(options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        if (typeof window.esupFocusModalContent === 'function') {
+            return window.esupFocusModalContent(modalElement, {
+                attempts: options.attempts ?? 20,
+                delay: options.delay ?? 80
+            });
+        }
+        const fallbackCandidate = modalElement.querySelector('[autofocus], input:not([type="hidden"]), select, textarea, button:not(.btn-close), [href], [tabindex]:not([tabindex="-1"])');
+        if (fallbackCandidate != null) {
+            fallbackCandidate.focus({preventScroll: true});
+            return true;
+        }
+        modalElement.focus({preventScroll: true});
+        return false;
+    }
+
+    focusVisibleFilePicker(selectors = ['.btn-file', '.file-drop-zone', '#fast-sign-button', '#fast-form-close'], options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        const attempts = options.attempts ?? 20;
+        const delay = options.delay ?? 80;
+        const isVisible = element => element != null
+            && element.getClientRects().length > 0
+            && window.getComputedStyle(element).display !== 'none'
+            && window.getComputedStyle(element).visibility !== 'hidden'
+            && !element.disabled;
+        const tryFocus = remainingAttempts => {
+            for (const selector of selectors) {
+                const element = modalElement.querySelector(selector);
+                if (isVisible(element)) {
+                    element.focus({preventScroll: true});
+                    return true;
+                }
+            }
+            if (remainingAttempts <= 0) {
+                return this.requestModalFocus();
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
     }
 
     listenHelpMarkAsReadButton(btn) {
@@ -73,6 +122,7 @@ export class WizUi {
             self.enableButtons();
         });
         $("#fast-sign-button").on('click', e => self.wizCreateSign("self"));
+        this.focusVisibleFilePicker();
     }
 
     wizCreateSign(type) {
@@ -230,6 +280,7 @@ export class WizUi {
                 $('#singleSignWithAnnotation').prop('checked', true);
             }
         });
+        this.requestModalFocus();
     }
 
     fastSignSubmitDatas() {
@@ -329,6 +380,7 @@ export class WizUi {
             }
         });
         $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
+        this.requestModalFocus();
     }
 
     wizardFormStart(formId) {
@@ -432,6 +484,7 @@ export class WizUi {
         });
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
         $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
+        this.requestModalFocus();
     }
 
     workflowSignSubmitStepData() {
@@ -553,6 +606,7 @@ export class WizUi {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
         $("#save-workflow").on('click', e => this.saveWorkflow());
+        this.requestModalFocus();
 
     }
 
@@ -683,6 +737,7 @@ export class WizUi {
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
         }
+        this.requestModalFocus();
     }
 
     sendForm(e) {
