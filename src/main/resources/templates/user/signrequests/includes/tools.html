@@ -91,7 +91,7 @@
                          th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? '' : ' es-refuse-slot-hidden'"
                          th:styleappend="'width:auto;flex:0 0 auto;'">
                         ou
-                        <button tabindex="1" th:id="'refuseLaunchButton'" class="btn p-3 btn-danger border-0" title="Refuser"
+                        <button tabindex="1" th:id="'refuseLaunchButton'" class="btn p-3 btn-danger" title="Refuser"
                                 th:styleappend="'width:auto;max-width:none;flex:0 0 auto;'"
                                 th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
                             <i class="fi fi-rr-document-circle-wrong "></i> Refuser
@@ -102,7 +102,7 @@
         </div>
         <div class="es-tools-responsive-refuse d-xxxl-none"
              th:if="${signRequestFull.signable && (signRequestFull.currentStepNumber > 1 || signRequestLight.createBy.eppn != userEppn)}">
-            <button tabindex="1" class="btn p-3 btn-danger border-0" title="Refuser"
+            <button tabindex="1" class="btn p-3 btn-danger" title="Refuser"
                     th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">
                 <i class="fi fi-rr-document-circle-wrong "></i> Refuser
             </button>

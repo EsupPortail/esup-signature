@@ -87,7 +87,7 @@ body.es-signrequest-page #tools .steps-horizontal-v2 {
 }
 
 body.es-signrequest-page #tools .step-horizontal-v2 {
-    flex: 1 0 auto;
+    /*flex: 1 0 auto;*/
     min-width: 0;
     white-space: nowrap;
 }
@@ -195,7 +195,7 @@ body.es-spot-add-mode #spot-modal * {
 }
 
 @media (max-width: 1600px) {
-    /* Under 1200px, show only the current step in tools bar. */
+
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
         display: none !important;
     }
@@ -216,6 +216,14 @@ body.es-spot-add-mode #spot-modal * {
 
     body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
         /*width: 50%;*/
+    }
+
+    body.es-signrequest-page #tools .step-horizontal-v2 {
+        flex: 1 0 auto;
+    }
+
+    .step-horizontal-v2 {
+        padding-right: 0 !important;
     }
 
     body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
@@ -2173,7 +2181,7 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     position: relative;
     flex: 1;
     padding-right: 4rem;
-    padding-left: 3rem;
+    padding-left: 1rem;
     gap: 0.5rem;
     white-space: nowrap;
 }
@@ -2182,8 +2190,8 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     content: '';
     position: absolute;
     top: 50%;
-    right: -2rem;
-    width: 4rem;
+    right: 0rem;
+    width: 3rem;
     height: 2px;
     background: var(--color-dee2e6);
     transform: translateY(-50%);
