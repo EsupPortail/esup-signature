@@ -9,7 +9,7 @@
     <div class="es-wrapper">
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item active">Messages</li>
             </ol>
         </nav>
@@ -19,9 +19,8 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <div class="card col-lg-12">
-                <div class="card-body">
                     <h5 class="text-center"><b>Messages</b></h5>
+            <div class="alert alert-light col-10 mx-auto">
                     <div class="alert alert-secondary mb-2">
                         Ici, vous pouvez ajouter un message qui sera affiché aux utilisateurs.
                     </div>
@@ -67,7 +66,6 @@
                     </table>
                 </div>
             </div>
-                </div>
             <div class="es-sign-buttons es-fixed-action-btns active">
                 <ul class="list-unstyled">
                     <li>
