@@ -58,6 +58,122 @@
     .step-horizontal-v2-icon {
         display: none !important;
     }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"] {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2:not(.es-mobile-step-view) > [id^="step-"].active,
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2.es-mobile-step-view > [id^="step-"].es-mobile-visible {
+        display: flex !important;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"]::after {
+        display: none;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav {
+        padding-inline: 0;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 {
+        width: auto !important;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding-inline: 2.5rem;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .step-horizontal-v2 {
+        flex: 1 0 auto;
+        justify-content: center;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .es-step-nav-btn {
+        display: inline-flex !important;
+    }
+
+    .step-horizontal-v2 {
+        padding-right: 0 !important;
+    }
+
+    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content,
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content,
+    body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
+        width: 100%;
+        flex: 1 1 auto !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content {
+        justify-content: center;
+    }
+
+    body.es-signrequest-page #tools #step-1 #certType {
+        width: min(100%, 18rem);
+        min-width: 14rem;
+        max-width: 18rem;
+        margin-inline: auto;
+    }
+
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content > div,
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content > div > div {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.es-signrequest-page #tools #step-2 #addSignButton2,
+    body.es-signrequest-page #tools #step-3 #signLaunchButton {
+        width: min(100%, 18rem);
+        min-width: 14rem;
+        max-width: 18rem;
+        flex: 0 1 auto;
+        margin-inline: auto;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav + .es-tools-responsive-refuse {
+        margin-right: 0.75rem !important;
+        margin-left: 0.75rem !important;
+        flex: 0 0 auto;
+        align-self: center;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav + .es-tools-responsive-refuse .btn {
+        width: auto;
+        max-width: none;
+        white-space: nowrap;
+    }
+
+    body.es-signrequest-page #tools #refuseLaunchDiv {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1600px) {
+    body.es-signrequest-page #tools .step-horizontal-v2-icon {
+        display: flex !important;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .step-horizontal-v2 {
+        gap: 0.5rem !important;
+    }
+
+    body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content,
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content,
+    body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
+        width: auto;
+        flex: 0 1 auto !important;
+    }
+
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content > div,
+    body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content > div > div {
+        width: auto;
+    }
 }
 
 @media (max-width: 1400px) {
@@ -217,6 +333,12 @@
     }
 }
 
+@media (max-width: 991.98px) {
+    body.es-signrequest-page #tools.es-tools-single-cert-type-mobile #step-1 {
+        display: none !important;
+    }
+}
+
 @media (max-width: 768px) {
     body.es-signrequest-page #breadcrumb {
         display: none !important;
@@ -335,6 +457,43 @@
 
     }
 
+    .wizard-steps-preview--horizontal .step-vertical {
+        max-width: none;
+        flex-basis: 100%;
+    }
+
+    .wizard-step-card-header {
+        flex-direction: column;
+    }
+
+    .wizard-step-card-indicators {
+        justify-content: flex-start;
+    }
+
+}
+
+@media (max-width: 767.98px) {
+    .es-status-card {
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .es-status-card__icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-basis: 2.5rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    body.es-signrequest-page #tools .es-steps-responsive-nav .es-step-nav-btn {
+        display: none !important;
+    }
+
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 {
+        padding-inline: 0.5rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -442,6 +601,18 @@
         top:58px;
     }
 
+}
+
+@media (hover: hover) and (pointer:fine) {
+    .oidc-connect a[href]:active {
+        background-color: var(--color-e9ecef);
+        --underline-hover-width: var(--underline-max-width);
+    }
+
+    .oidc-connect a[href]:hover {
+        background-color: var(--color-transparent);
+        --underline-hover-width: var(--underline-max-width);
+    }
 }
 
 @media (max-width: 319px) {
