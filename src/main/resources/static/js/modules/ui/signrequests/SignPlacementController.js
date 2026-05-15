@@ -573,6 +573,7 @@ export class SignPlacementController extends EventFactory {
         step2.find(".step-horizontal-v2-icon").html("2");
         step3.find(".step-horizontal-v2-icon").html("3");
         this.dispatchResponsiveStepChange("step-2");
+        this.focusWhenVisible("#addSignButton2", 20, 80);
     }
 
     goStep3() {

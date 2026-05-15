@@ -38,8 +38,11 @@
                 </ul>
             </div>
         </td>
-        <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount == 1}" class="clickable-td" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-            <i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span>
+        <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount == 1}" class="clickable-td signbook-subject-cell">
+            <div class="d-flex align-items-start gap-1">
+                <i class="fi fi-rr-file flex-shrink-0"></i>
+                <span class="signbook-subject-label" th:text="${signBook.subject}"></span>
+            </div>
         </td>
         <td th:classappend="${signRequest.viewedByCurrentUser} ? '' : 'fw-bold'" th:if="${signBook.signRequestCount > 1}" class="d-none d-xl-table-cell">
             <div class="dropdown">
