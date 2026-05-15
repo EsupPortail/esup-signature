@@ -262,6 +262,21 @@ body.signbooks-list-page #listSignRequestTable.signbooks-table-loading-shell {
     min-height: calc(100vh - 190px);
 }
 
+body.signbooks-list-page #listSignRequestTable > table {
+    table-layout: fixed;
+}
+
+body.signbooks-list-page .signbook-subject-cell {
+    min-width: 0;
+}
+
+body.signbooks-list-page .signbook-subject-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: normal;
+}
+
 body.signbooks-list-page .signbooks-thead-loading-row {
     height: 54px;
 }
