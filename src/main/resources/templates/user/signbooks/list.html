@@ -197,7 +197,7 @@
                         </table>
                     </div>
                 </div>
-                <div id="signButtons" class="es-fixed-action-btns active" style="width: 72px;">
+                <div id="signButtons" class="es-sign-buttons d-flex flex-column justify-content-between bg-white es-fixed-action-btns active active" style="width: 72px;">
                     <ul id="buttonList" class="list-unstyled">
                         <li th:if="${statusFilter == 'deleted'}">
                             <form th:action="'/user/signbooks/empty-trash'" th:method="'delete'"
@@ -212,15 +212,8 @@
                             <a type="button" id="massSignModalButton"
                                data-bs-toggle="modal" data-bs-target="#signModal"
                                title="Signer en masse les demandes sélectionnées"
-                               class="btn btn-transparent btn-lg text-success d-none">
+                               class="btn btn-transparent text-success d-none">
                                 <i class="fi fi-rr-signature-lock" ></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a type="button" id="deleteMultipleButton"
-                               title="Supprimer en masse les demandes sélectionnées"
-                               class="btn btn-transparent btn-lg text-danger d-none">
-                                <i class="fi fi-rr-trash" ></i>
                             </a>
                         </li>
                         <li>
@@ -235,6 +228,13 @@
                                title="Télécharger la selection avec les rapports"
                                class="btn btn-transparent text-dark d-none">
                                 <i class="fi fi-rr-folder-download " ></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a type="button" id="deleteMultipleButton"
+                               title="Supprimer en masse les demandes sélectionnées"
+                               class="btn btn-transparent text-danger d-none">
+                                <i class="fi fi-rr-trash" ></i>
                             </a>
                         </li>
                     </ul>

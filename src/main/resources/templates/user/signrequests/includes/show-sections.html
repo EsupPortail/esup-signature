@@ -28,7 +28,7 @@
         <button th:if="${signRequestFull.signable && globalProperties.enableTransfertForUsers}" tabindex="1" id="forward-btn" class="d-flex align-items-center btn btn-transparent text-dark d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
             <i class="fi fi-rr-refer-arrow"></i>
         </button>
-        <button class="d-flex flex-column gap-1 align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
+        <button class="d-flex flex-column align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
                 data-bs-target="#attachment"
                 th:if="${user.userType.name() != 'external' || showSignRequest.workflow.externalCanReaderAttachments}">
             <div th:if="${showSignRequest.attachments != null && showSignRequest.attachments.size() + signRequestLight.links.size() > 0 }"
