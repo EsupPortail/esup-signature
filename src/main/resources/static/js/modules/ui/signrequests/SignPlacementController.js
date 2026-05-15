@@ -458,6 +458,12 @@ export class SignPlacementController extends EventFactory {
         return this.signType === "hiddenVisa";
     }
 
+    dispatchResponsiveStepChange(stepId) {
+        document.dispatchEvent(new CustomEvent("es-signrequest-step-change", {
+            detail: {stepId}
+        }));
+    }
+
     refreshSteps() {
         if (this.isHiddenVisa()) {
             this.goStep3();
@@ -529,6 +535,7 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
         step3.find(".step-horizontal-v2-icon").html("3");
+        this.dispatchResponsiveStepChange("step-1");
     }
 
     goStep2() {
@@ -565,6 +572,8 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
         step3.find(".step-horizontal-v2-icon").html("3");
+        this.dispatchResponsiveStepChange("step-2");
+        this.focusWhenVisible("#addSignButton2", 20, 80);
     }
 
     goStep3() {
@@ -601,6 +610,7 @@ export class SignPlacementController extends EventFactory {
             step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
             step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
             step3.find(".step-horizontal-v2-icon").html("3");
+            this.dispatchResponsiveStepChange("step-3");
             return;
         }
 
@@ -621,6 +631,7 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step3.find(".step-horizontal-v2-icon").html("3");
+        this.dispatchResponsiveStepChange("step-3");
     }
 
     destroy() {

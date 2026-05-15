@@ -91,6 +91,49 @@ body.es-signrequest-page #tools .steps-horizontal-v2 {
     /*overflow-x: auto;*/
 }
 
+body.es-signrequest-page #tools .es-steps-responsive-nav {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+}
+
+body.es-signrequest-page #tools .es-step-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 999px;
+    border-color: var(--bs-border-color);
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--bs-secondary-color);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+}
+
+body.es-signrequest-page #tools #step-nav-prev {
+    left: 0.375rem;
+}
+
+body.es-signrequest-page #tools #step-nav-next {
+    right: 0.375rem;
+}
+
+body.es-signrequest-page #tools .es-step-nav-btn i {
+    font-size: 1rem;
+}
+
+body.es-signrequest-page #tools .es-step-nav-btn:disabled {
+    opacity: 0.35;
+    box-shadow: none;
+}
+
 body.es-signrequest-page #tools .step-horizontal-v2 {
     /*flex: 1 0 auto;*/
     min-width: 0;
@@ -197,71 +240,6 @@ body.es-spot-add-mode #spot-modal,
 body.es-spot-add-mode #spot-modal * {
     opacity: 1 !important;
     filter: none !important;
-}
-
-@media (max-width: 1600px) {
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"] {
-        display: none !important;
-    }
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
-        display: flex !important;
-    }
-
-    /* Hide connectors when intermediate steps are hidden to avoid overlap. */
-    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"]::after {
-        display: none;
-    }
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 {
-        width: 50% !important;
-        flex: 0 1 auto;
-    }
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 > [id^="step-"].active {
-        /*width: 50%;*/
-    }
-
-    body.es-signrequest-page #tools .step-horizontal-v2 {
-        flex: 1 0 auto;
-    }
-
-    .step-horizontal-v2 {
-        padding-right: 0 !important;
-    }
-
-    body.es-signrequest-page #tools #step-3 .step-horizontal-v2-content {
-        width: auto;
-        flex: 0 0 auto !important;
-    }
-
-    body.es-signrequest-page #tools #step-3 #signLaunchButton {
-        width: auto;
-        max-width: none;
-        flex: 0 0 auto;
-    }
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse {
-        margin-left: 0.25rem !important;
-        flex: 0 0 auto;
-    }
-
-    body.es-signrequest-page #tools .steps-horizontal-v2 + .es-tools-responsive-refuse .btn {
-        width: auto;
-        max-width: none;
-        white-space: nowrap;
-    }
-
-    body.es-signrequest-page #tools #refuseLaunchDiv {
-        display: none !important;
-    }
-}
-
-@media (max-width: 991.98px) {
-    body.es-signrequest-page #tools.es-tools-single-cert-type-mobile #step-1 {
-        display: none !important;
-    }
 }
 
 .tools,
@@ -1558,20 +1536,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     --es-status-note-accent: var(--bs-secondary);
 }
 
-@media (max-width: 767.98px) {
-    .es-status-card {
-        padding: 1rem;
-        gap: 0.75rem;
-    }
-
-    .es-status-card__icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        flex-basis: 2.5rem;
-        font-size: 1rem;
-    }
-}
-
 /* ========== COINS (Boules) ========== */
 .cross .ui-resizable-se, .cross .ui-resizable-sw, .cross .ui-resizable-ne, .cross .ui-resizable-nw {
     width: 10px !important;
@@ -1821,17 +1785,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     width: var(--icon-size);
 }
 
-@media (hover: hover) and (pointer:fine) {
-    .oidc-connect a[href]:active {
-        background-color: var(--color-e9ecef);
-        --underline-hover-width: var(--underline-max-width);
-    }
-    .oidc-connect a[href]:hover {
-        background-color: var(--color-transparent);
-        --underline-hover-width: var(--underline-max-width);
-    }
-}
-
 .step-vertical {
     display: flex;
     position: relative;
@@ -2062,20 +2015,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     height: 100%;
 }
 
-@media (max-width: 768px) {
-    .wizard-steps-preview--horizontal .step-vertical {
-        max-width: none;
-        flex-basis: 100%;
-    }
-
-    .wizard-step-card-header {
-        flex-direction: column;
-    }
-
-    .wizard-step-card-indicators {
-        justify-content: flex-start;
-    }
-}
 
 /* Admin workflow steps card: darker connectors to remain visible on light backgrounds. */
 #admin-workflow-stepscard .admin-workflow-steps .step-vertical:not(:last-child)::after {
