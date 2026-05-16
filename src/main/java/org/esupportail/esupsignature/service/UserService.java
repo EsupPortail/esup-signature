@@ -479,6 +479,12 @@ public class UserService {
      *         configurés, sinon false.
      */
     public boolean checkEmailAlert(User user) {
+        if (user == null || user.getEmailAlertFrequency() == null) {
+            return false;
+        }
+        if (EmailAlertFrequency.immediately.equals(user.getEmailAlertFrequency()) || EmailAlertFrequency.never.equals(user.getEmailAlertFrequency())) {
+            return false;
+        }
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -487,14 +493,23 @@ public class UserService {
             diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
         }
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
         long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-        if ((EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
-                || (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour().equals(hour))
-                || (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay().equals(DayOfWeek.of(calendar.get(Calendar.DAY_OF_WEEK))))) {
-            return true;
-        }
-        return false;
+        return (EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
+                || (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour() != null && user.getEmailAlertHour().equals(hour))
+                || (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay() != null && user.getEmailAlertDay().equals(getCurrentDayOfWeek(calendar)));
+    }
+
+    private DayOfWeek getCurrentDayOfWeek(Calendar calendar) {
+        return switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY -> DayOfWeek.MONDAY;
+            case Calendar.TUESDAY -> DayOfWeek.TUESDAY;
+            case Calendar.WEDNESDAY -> DayOfWeek.WEDNESDAY;
+            case Calendar.THURSDAY -> DayOfWeek.THURSDAY;
+            case Calendar.FRIDAY -> DayOfWeek.FRIDAY;
+            case Calendar.SATURDAY -> DayOfWeek.SATURDAY;
+            case Calendar.SUNDAY -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Invalid day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+        };
     }
 
     @Transactional
@@ -1136,6 +1151,7 @@ public class UserService {
         user.getSignImages().clear();
         user.setKeystore(null);
         user.setPhone("");
+        user.getTransmittedSignRequestIds().clear();
         user.getRoles().clear();
     }
 
