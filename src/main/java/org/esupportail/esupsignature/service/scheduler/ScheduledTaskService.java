@@ -198,7 +198,7 @@ public class ScheduledTaskService {
      * - Si une alerte est nécessaire, appelle le service {@code signBookService} pour
      *   envoyer un résumé de l'alerte par email à l'utilisateur correspondant.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 30000)
+    @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
     List<User> users = userService.getAllUsers();
