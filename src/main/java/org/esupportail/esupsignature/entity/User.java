@@ -105,6 +105,18 @@ public class User {
     @JsonIgnore
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
+            name = "user_transmitted_sign_request_ids",
+            joinColumns = @JoinColumn(name = "user_id"),
+            indexes = {
+                    @Index(name = "idx_user_transmitted_sign_request_id", columnList = "transmitted_sign_request_ids")
+            }
+    )
+    @Column(name = "transmitted_sign_request_ids")
+    private Set<Long> transmittedSignRequestIds = new HashSet<>();
+
+    @JsonIgnore
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             indexes = {
@@ -320,6 +332,14 @@ public class User {
 
     public void setEmailAlertFrequency(EmailAlertFrequency emailAlertFrequency) {
         this.emailAlertFrequency = emailAlertFrequency;
+    }
+
+    public Set<Long> getTransmittedSignRequestIds() {
+        return transmittedSignRequestIds;
+    }
+
+    public void setTransmittedSignRequestIds(Set<Long> transmittedSignRequestIds) {
+        this.transmittedSignRequestIds = transmittedSignRequestIds;
     }
 
     public Set<String> getRoles() {
