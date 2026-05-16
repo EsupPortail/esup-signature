@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -197,11 +198,19 @@ public class ScheduledTaskService {
      * - Si une alerte est nécessaire, appelle le service {@code signBookService} pour
      *   envoyer un résumé de l'alerte par email à l'utilisateur correspondant.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    @Scheduled(initialDelay = 12000, fixedRate = 30000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
-		List<User> users = userService.getAllLdapUsers();
+    List<User> users = userService.getAllUsers();
 		for(User user : users) {
+      if (user.getUserType() == null
+          || UserType.external.equals(user.getUserType())
+          || UserType.system.equals(user.getUserType())
+          || UserType.group.equals(user.getUserType())
+          || user.getEmail() == null
+          || user.getEmail().isBlank()) {
+        continue;
+      }
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
 				signBookService.sendEmailAlertSummary(user.getEppn());
