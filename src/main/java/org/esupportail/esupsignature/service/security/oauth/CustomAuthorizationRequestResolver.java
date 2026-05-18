@@ -44,12 +44,11 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
         Map<String, Object> additionalParameters = new LinkedHashMap<>(authorizationRequest.getAdditionalParameters());
         String registrationId = authorizationRequest.getAttributes().get("registration_id").toString();
         OidcOtpSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
+        if ("franceconnect".equals(registrationId)) {
+            additionalParameters.remove("code_challenge");
+            additionalParameters.remove("code_challenge_method");
+        }
         additionalParameters.putAll(currentSecurityService.getAdditionalAuthorizationParameters());
-        String customState = authorizationRequest.getState();
-//        String json = "{\"redirect\":\"/otp/\",\"csrf\":\"" + customState + "\"}";
-//        customState = Base64.getUrlEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
-        return OAuth2AuthorizationRequest.from(authorizationRequest)
-//                .state(customState)
-                .additionalParameters(additionalParameters).build();
+        return OAuth2AuthorizationRequest.from(authorizationRequest).additionalParameters(additionalParameters).build();
     }
 }
