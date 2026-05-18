@@ -12,6 +12,7 @@ export class SignSpaceManager {
 			isSignable: options.isSignable ?? (() => false),
 			isEditable: options.isEditable ?? (() => false),
 			isManager: options.isManager ?? (() => false),
+			isCreator: options.isCreator ?? (() => false),
 			getBrowserZoom: options.getBrowserZoom ?? (() => 1),
 			requestAddSign: options.requestAddSign ?? (() => {}),
 			findSpotIdForSignParams: options.findSpotIdForSignParams ?? (() => null),
@@ -19,6 +20,10 @@ export class SignSpaceManager {
 			bindSignSpaceDelete: options.bindSignSpaceDelete ?? (() => {})
 		};
 		this.hoverLiveStepState = null;
+	}
+
+	canViewAllSpots() {
+		return this.options.isManager() || this.options.isCreator();
 	}
 
 	initSignFields() {
@@ -62,7 +67,8 @@ export class SignSpaceManager {
 					: parseInt(this.options.getCurrentStepNumber(), 10);
 				const currentStep = parseInt(this.options.getCurrentStepNumber(), 10);
 
-				if (!isSignableField
+				if (!this.canViewAllSpots()
+					&& !isSignableField
 					&& spotId != null
 					&& Number.isFinite(currentStep)
 					&& Number.isFinite(resolvedStepNumber)
@@ -187,23 +193,11 @@ export class SignSpaceManager {
 		const currentParams = Array.isArray(this.options.getCurrentSignRequestParamses()) ? this.options.getCurrentSignRequestParamses() : [];
 		const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
 
-		if (this.options.isEditable() && this.options.isManager() && this.options.isSignable()) {
-			const otherStepSpots = this.options.filterSpotsNotCurrentStep(spots);
-			const merged = [...currentParams, ...otherStepSpots];
-			const currentStep = parseInt(this.options.getCurrentStepNumber(), 10);
-			const filteredMerged = merged.filter(item => {
-				if (!Number.isFinite(currentStep)) {
-					return true;
-				}
-				const step = parseInt(item?.stepNumber, 10);
-				if (!Number.isFinite(step)) {
-					return true;
-				}
-				return step >= currentStep;
-			});
+		if (this.options.isEditable() && this.canViewAllSpots()) {
+			const merged = [...currentParams, ...spots];
 			const byKey = new Map();
-			for (let i = 0; i < filteredMerged.length; i++) {
-				const item = filteredMerged[i];
+			for (let i = 0; i < merged.length; i++) {
+				const item = merged[i];
 				const idKey = item != null && item.id != null ? "id:" + item.id : null;
 				const geoKey = "geo:" + [item?.signPageNumber, item?.xPos, item?.yPos, item?.signWidth, item?.signHeight].join("|");
 				const key = idKey || geoKey;
@@ -322,6 +316,9 @@ export class SignSpaceManager {
 			signPlacementController.currentSignRequestParamses[slotIndex].ready = true;
 		}
 		signRequestParams.ready = true;
+		if (typeof signRequestParams.refreshVisualState === "function") {
+			signRequestParams.refreshVisualState();
+		}
 		if (typeof signPlacementController.refreshSteps === "function") {
 			signPlacementController.refreshSteps();
 		}
@@ -388,6 +385,9 @@ export class SignSpaceManager {
 						signRequestParams.signSpace = null;
 						signRequestParams.ready = false;
 						signRequestParams.dropped = false;
+						if (typeof signRequestParams.refreshVisualState === "function") {
+							signRequestParams.refreshVisualState();
+						}
 						if (typeof signPlacementController.refreshSteps === "function") {
 							signPlacementController.refreshSteps();
 						}

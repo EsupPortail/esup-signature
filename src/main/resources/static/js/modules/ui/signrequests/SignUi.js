@@ -35,6 +35,7 @@ export class SignUi {
             this.initReportModal();
         }
         this.nexu = this.checkSignOptions();
+        this.applyInitialPreferredCertType();
     }
 
     normalizeInput() {
@@ -219,6 +220,26 @@ export class SignUi {
 
     getSelectableCertTypeCount() {
         return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
+    }
+
+    getActiveImageStampOption() {
+        if (!this.certTypeSelect.length) {
+            return $();
+        }
+        return this.certTypeSelect.find("option[value='imageStamp']:not(:disabled):not([unavailable])");
+    }
+
+    hasActiveImageStampOption() {
+        return this.getActiveImageStampOption().length > 0;
+    }
+
+    applyInitialPreferredCertType() {
+        if (!this.hasActiveImageStampOption()) {
+            return;
+        }
+
+        this.certTypeSelect.val("imageStamp");
+        this.checkAfterChangeSignType();
     }
 
     updateSelectableSignAlerts() {

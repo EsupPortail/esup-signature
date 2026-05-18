@@ -208,6 +208,7 @@ export class SignWorkspaceController {
             isSignable: () => this.signable,
             isEditable: () => this.editable,
             isManager: () => this.isManager,
+            isCreator: () => this.isCurrentUserCreator(),
             getBrowserZoom: () => this.getBrowserZoom(),
             requestAddSign: signIndex => this.addSign(signIndex),
             findSpotIdForSignParams: signParams => this.findSpotIdForSignParams(signParams),
@@ -336,6 +337,31 @@ export class SignWorkspaceController {
         return this.spotManager.filterSpotsNotCurrentStep(spots);
     }
 
+    isCurrentUserCreator() {
+        const creator = this.state?.frontDto?.creator ?? this.showDataFlow?.front?.creator ?? null;
+        const candidates = [
+            this.state?.frontDto?.user ?? null,
+            this.state?.frontDto?.authUser ?? null,
+            this.showDataFlow?.front?.user ?? null,
+            this.showDataFlow?.front?.authUser ?? null,
+            (typeof window !== "undefined" && window.user != null) ? window.user : null
+        ].filter(candidate => candidate != null);
+
+        const creatorId = Number.parseInt(creator?.id, 10);
+        const creatorEppn = creator?.eppn ?? null;
+        for (let i = 0; i < candidates.length; i++) {
+            const candidate = candidates[i];
+            const candidateId = Number.parseInt(candidate?.id, 10);
+            if (Number.isFinite(creatorId) && Number.isFinite(candidateId) && creatorId === candidateId) {
+                return true;
+            }
+            if (creatorEppn != null && candidate?.eppn != null && creatorEppn === candidate.eppn) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     findSpotIdForSignParams(signParams) {
         return this.spotManager.findSpotIdForSignParams(signParams);
     }
@@ -433,6 +459,13 @@ export class SignWorkspaceController {
         const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
         if (signRequestParams != null && Number.isFinite(parseInt(signNum, 10))) {
             this.signSpaceManager.placeSignOnSlot(parseInt(signNum, 10), signRequestParams);
+        } else if (signRequestParams != null && typeof signRequestParams.activatePlacement === "function") {
+            signRequestParams.activatePlacement();
+            if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+                window.requestAnimationFrame(() => {
+                    signRequestParams.activatePlacement();
+                });
+            }
         }
     }
 

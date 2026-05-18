@@ -5,6 +5,84 @@ export class SignatureFlowController {
         this.state = signUi.state;
         this.contextualPassword = "";
         this.contextualSignAll = false;
+        this.removedImageStampOption = null;
+        this.skipRestoreOnNextSignModalHide = false;
+        this.initSignModalLifecycle();
+    }
+
+    initSignModalLifecycle() {
+        const signModal = $("#signModal");
+        if (!signModal.length) {
+            return;
+        }
+
+        signModal.off(".signatureFlowController");
+        signModal.on('shown.bs.modal.signatureFlowController', function () {
+            $("#checkValidateSignButtonEnd").focus();
+            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+            if(checkValidateSignButtonNext != null) {
+                checkValidateSignButtonNext.focus();
+            }
+        });
+        signModal.on('hidden.bs.modal.signatureFlowController', () => {
+            if (this.skipRestoreOnNextSignModalHide) {
+                this.skipRestoreOnNextSignModalHide = false;
+                return;
+            }
+            this.restoreRemovedImageStampOption();
+        });
+    }
+
+    removeImageStampOptionTemporarily() {
+        const certTypeSelect = this.signUi.certTypeSelect;
+        if (!certTypeSelect.length || this.removedImageStampOption != null) {
+            return;
+        }
+
+        const imageStampOption = certTypeSelect.find("option[value='imageStamp']").first();
+        if (!imageStampOption.length) {
+            return;
+        }
+
+        this.removedImageStampOption = {
+            text: imageStampOption.text() || this.signUi.saveOptionText,
+            wasSelected: certTypeSelect.val() === 'imageStamp'
+        };
+
+        imageStampOption.remove();
+        if (this.removedImageStampOption.wasSelected) {
+            certTypeSelect.val("");
+        }
+
+        this.signUi.checkSignOptions();
+        this.signUi.syncSignatureStepUi();
+    }
+
+    restoreRemovedImageStampOption() {
+        const removedImageStampOption = this.removedImageStampOption;
+        if (removedImageStampOption == null) {
+            return;
+        }
+
+        const certTypeSelect = this.signUi.certTypeSelect;
+        if (certTypeSelect.length && certTypeSelect.find("option[value='imageStamp']").length === 0) {
+            certTypeSelect.prepend($('<option>', {
+                value: 'imageStamp',
+                text: removedImageStampOption.text
+            }));
+        }
+
+        this.removedImageStampOption = null;
+        this.signUi.checkSignOptions();
+
+        if (removedImageStampOption.wasSelected) {
+            certTypeSelect.val('imageStamp');
+            this.signUi.checkAfterChangeSignType();
+            return;
+        }
+
+        this.signUi.syncSignatureStepUi();
+        this.signUi.updateMobileCertTypeVisibility();
     }
 
     launchSignModal() {
@@ -43,7 +121,7 @@ export class SignatureFlowController {
                                     callback: result => {
                                         if (result) {
                                             if(this.checkAttachement()) {
-                                                $("#certType > option[value='imageStamp']").remove();
+                                                this.removeImageStampOptionTemporarily();
                                                 this.confirmLaunchSignModal();
                                             }
                                         } else {
@@ -139,14 +217,6 @@ export class SignatureFlowController {
             $("#launchNoInfiniteSignButtonEnd").toggle();
             $("#launchNoInfiniteSignButtonNext").toggle();
             $("#signCommentNoInfinite").toggle();
-        });
-        let signModal = $("#signModal");
-        signModal.on('shown.bs.modal', function () {
-            $("#checkValidateSignButtonEnd").focus();
-            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
-            if(checkValidateSignButtonNext != null) {
-                checkValidateSignButtonNext.focus();
-            }
         });
         this.launchSign();
     }
@@ -293,6 +363,7 @@ export class SignatureFlowController {
             this.state.gotoNext = $(e.currentTarget).attr("data-es-next-url");
             signUi.gotoNext = this.state.gotoNext;
         }
+        this.skipRestoreOnNextSignModalHide = true;
         signModal.modal('hide');
         $('#stepRepeatableModal').modal('hide');
         this.state.percent = 0;
@@ -310,6 +381,7 @@ export class SignatureFlowController {
         if(good) {
             this.requestContextualInfo().then(canContinue => {
                 if (!canContinue) {
+                    this.restoreRemovedImageStampOption();
                     this.setLaunchButtonsDisabled(false);
                     return;
                 }
@@ -346,6 +418,9 @@ export class SignatureFlowController {
         if(signUi.workspace != null) {
             let signRequestParamses = Array.from(signUi.workspace.signPlacementController.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(originalParams => {
+                if (typeof originalParams?.synchronizePositionWithRenderedCross === 'function') {
+                    originalParams.synchronizePositionWithRenderedCross();
+                }
                 let signScale = signUi.normalizeFloat(originalParams.signScale, 1, 0.01);
                 let signPageNumber = signUi.normalizeInteger(originalParams.signPageNumber, 1, 1);
                 let xPos = signUi.normalizeInteger(originalParams.xPos, 0, 0);

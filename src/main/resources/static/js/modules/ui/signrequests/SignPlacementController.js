@@ -588,7 +588,7 @@ export class SignPlacementController extends EventFactory {
         addParaphButton2.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
-        signLaunchButton.attr("disabled", "disabled");
+        // signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
         this.setButtonVariant(addSignButton2, "btn-secondary");
@@ -680,7 +680,7 @@ export class SignPlacementController extends EventFactory {
             step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
             step3.find(".step-horizontal-v2-icon").html("3");
             this.dispatchResponsiveStepChange("step-3");
-            return;
+            signLaunchButton.focus();
         }
 
         selectCertType.removeAttr("disabled");
@@ -691,7 +691,7 @@ export class SignPlacementController extends EventFactory {
         refuseLaunchDiv.removeClass("d-none");
         refuseLaunchDiv.addClass("es-refuse-slot-hidden");
 
-        this.setButtonVariant(addSignButton, "btn-secondary");
+        this.setButtonVariant(addSignButton, "btn-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.setButtonVariant(signLaunchButton, "btn-success");

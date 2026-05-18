@@ -70,7 +70,7 @@ export class Nexu {
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
             }
-            if($("#certType > option[value='imageStamp']").attr('selected')) {
+            if($("#certType").val() === "imageStamp") {
                 $("#noSeal").show();
             }
         });
