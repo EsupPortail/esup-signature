@@ -39,8 +39,61 @@ export class SignPlacementController extends EventFactory {
         // if(localStorage.getItem("scale") != null) {
         //     this.currentScale = localStorage.getItem("scale");
         // }
+        this.initializeSpecialSignImageNumbers();
         this.initListeners();
         this.refreshSteps();
+    }
+
+    readUiMe() {
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            return rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (error) {
+            console.debug('Unable to parse uiMe session payload', error);
+            return null;
+        }
+    }
+
+    inferSpecialSignImageNumbersFromAvailableImages() {
+        const signImages = Array.isArray(this.signImages) ? this.signImages : [];
+        if (signImages.length === 0) {
+            return {
+                generatedSignImageNumber: null,
+                parapheSignImageNumber: null
+            };
+        }
+
+        const uiMe = this.readUiMe();
+        const userImageIds = Array.isArray(uiMe?.userImagesIds) ? uiMe.userImagesIds : null;
+        if (userImageIds != null) {
+            const generatedSignImageNumber = signImages.length > userImageIds.length
+                ? userImageIds.length
+                : null;
+            return {
+                generatedSignImageNumber,
+                parapheSignImageNumber: generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
+                    ? generatedSignImageNumber + 1
+                    : null
+            };
+        }
+
+        if (signImages.length === 1) {
+            return {
+                generatedSignImageNumber: 0,
+                parapheSignImageNumber: null
+            };
+        }
+
+        return {
+            generatedSignImageNumber: signImages.length - 2,
+            parapheSignImageNumber: signImages.length - 1
+        };
+    }
+
+    initializeSpecialSignImageNumbers() {
+        const specialSignImageNumbers = this.inferSpecialSignImageNumbersFromAvailableImages();
+        this.generatedSignImageNumber = specialSignImageNumbers.generatedSignImageNumber;
+        this.parapheSignImageNumber = specialSignImageNumbers.parapheSignImageNumber;
     }
 
     getScrollContainer() {
@@ -147,6 +200,36 @@ export class SignPlacementController extends EventFactory {
                 }
             });
         }
+    }
+
+    getFavoriteSignRequestParams() {
+        try {
+            const rawFavorite = sessionStorage.getItem("favoriteSignRequestParams");
+            return rawFavorite ? JSON.parse(rawFavorite) : null;
+        } catch (error) {
+            console.debug("Unable to parse favorite sign request params", error);
+            return null;
+        }
+    }
+
+    buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
+        let initialModel = currentSignRequestParams;
+        const favoriteSignRequestParams = !isParaph ? this.getFavoriteSignRequestParams() : null;
+        if (favoriteSignRequestParams != null) {
+            initialModel = { ...favoriteSignRequestParams };
+            if (currentSignRequestParams != null) {
+                initialModel.xPos = currentSignRequestParams.xPos;
+                initialModel.yPos = currentSignRequestParams.yPos;
+            }
+        }
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (Number.isFinite(normalizedSignImageNumber) && normalizedSignImageNumber >= 0) {
+            initialModel = {
+                ...(initialModel ?? {}),
+                signImageNumber: normalizedSignImageNumber
+            };
+        }
+        return initialModel;
     }
 
     removeSign(srpId, id) {
@@ -282,7 +365,7 @@ export class SignPlacementController extends EventFactory {
             }
         }
         if(signImageNumber != null) {
-            let favoriteSignRequestParams = currentSignRequestParams;
+            const initialSignRequestParamsModel = this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
             if (signImageNumber === 999999) {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
@@ -295,14 +378,7 @@ export class SignPlacementController extends EventFactory {
                     alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                     return;
                 }
-                if(!isParaph && JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
-                    favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
-                    if(currentSignRequestParams != null) {
-                        favoriteSignRequestParams.xPos = currentSignRequestParams.xPos;
-                        favoriteSignRequestParams.yPos = currentSignRequestParams.yPos;
-                    }
-                }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : favoriteSignRequestParams, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 if(!isParaph) {
                     this.signsList.push(id);
@@ -319,12 +395,15 @@ export class SignPlacementController extends EventFactory {
                     alert("Impossible d'ajouter des annotations sur cette étape");
                     return;
                 }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
             }
             if(signImageNumber !== 999999) {
                 if(this.signType !== "visa") {
-                    this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                    await this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                    if (currentSignRequestParams == null && typeof this.signRequestParamses.get(id)?.centerOnCurrentViewport === "function") {
+                        this.signRequestParamses.get(id).centerOnCurrentViewport();
+                    }
                 }
             }
         } else {
@@ -336,6 +415,14 @@ export class SignPlacementController extends EventFactory {
             this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
+        this.signRequestParamses.get(id).addEventListener("detachFromSlot", slotIndex => {
+            if (Number.isFinite(parseInt(slotIndex, 10)) && this.currentSignRequestParamses?.[slotIndex] != null) {
+                this.currentSignRequestParamses[slotIndex].ready = false;
+            }
+            if (typeof this.refreshSteps === "function") {
+                this.refreshSteps();
+            }
+        });
         this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
         this.signRequestParamses.get(id).addEventListener("spotDeleted", e => this.onSpotDeleted(e));
         if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {

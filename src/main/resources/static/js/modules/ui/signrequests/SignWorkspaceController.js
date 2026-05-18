@@ -356,7 +356,37 @@ export class SignWorkspaceController {
         return this.signSpaceManager.refreshSignFields();
     }
 
-    addSign(forceSignNumber) {
+    getDefaultSignImageNumber() {
+        const candidates = [
+            this.state?.frontDto?.user?.defaultSignImageNumber,
+            this.showDataFlow?.front?.user?.defaultSignImageNumber,
+            this.signImageNumber
+        ];
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            const uiMe = rawUiMe ? JSON.parse(rawUiMe) : null;
+            candidates.unshift(uiMe?.user?.defaultSignImageNumber ?? null);
+        } catch (error) {
+            console.debug('Unable to read default sign image from session UI payload', error);
+        }
+        for (let i = 0; i < candidates.length; i++) {
+            const parsedSignImageNumber = Number.parseInt(candidates[i], 10);
+            if (Number.isFinite(parsedSignImageNumber)) {
+                return parsedSignImageNumber;
+            }
+        }
+        return null;
+    }
+
+    resolveSignImageNumber() {
+        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+        if (this.restore && Number.isFinite(storedSignNumber)) {
+            return storedSignNumber;
+        }
+        return this.getDefaultSignImageNumber();
+    }
+
+    async addSign(forceSignNumber) {
         if(!this.notSigned && this.signPlacementController.signsList.length > 0) {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
@@ -400,11 +430,14 @@ export class SignWorkspaceController {
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
         }
-        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
-        if(Number.isFinite(storedSignNumber) && this.restore) {
-            this.signImageNumber = storedSignNumber;
+        const resolvedSignImageNumber = this.resolveSignImageNumber();
+        if (Number.isFinite(resolvedSignImageNumber)) {
+            this.signImageNumber = resolvedSignImageNumber;
         }
-        this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        if (signRequestParams != null && Number.isFinite(parseInt(signNum, 10))) {
+            this.signSpaceManager.placeSignOnSlot(parseInt(signNum, 10), signRequestParams);
+        }
     }
 
 

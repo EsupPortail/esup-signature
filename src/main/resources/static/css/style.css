@@ -808,6 +808,7 @@ input:focus, textarea:focus, select:focus {
     justify-content: center;
     height: 100%;
     gap: 8px;
+    pointer-events: none;
     /*font-size: 14px;*/
 }
 
@@ -848,6 +849,11 @@ input:focus, textarea:focus, select:focus {
 
 .sign-field.ui-droppable-hover {
     background-color: var(--color-rgb-123-246-123) !important;
+}
+
+.sign-field.drop-hover {
+    background-color: var(--color-rgb-123-246-123) !important;
+    border: 3px solid var(--color-rgb-123-246-123) !important;
 }
 
 .sign-field-dropped {

@@ -12,8 +12,15 @@ export class SignRequestParams extends EventFactory {
 
     constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null) {
         super();
+        const explicitModelSignImageNumber = Number.parseInt(signRequestParamsModel?.signImageNumber, 10);
         Object.defineProperty(this, "signatureUiConfig", {
             value: signatureUiConfig,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+        });
+        Object.defineProperty(this, "explicitModelSignImageNumber", {
+            value: Number.isFinite(explicitModelSignImageNumber) ? explicitModelSignImageNumber : null,
             writable: true,
             configurable: true,
             enumerable: false,
@@ -118,13 +125,15 @@ export class SignRequestParams extends EventFactory {
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
             const pageLayout = this.#getPageLayout(this.signPageNumber);
             const zoom = this.getBrowserZoom();
-            // At first drop, rendered width is signWidth scaled by signScale.
             const initialRenderedWidth = this.signWidth * this.signScale;
             const crossWidthPixels = initialRenderedWidth * this.currentScale * zoom;
             const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - crossWidthPixels) / 2);
             this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / (scale * zoom));
             let mid = scrollTop + this.#getViewportHeight() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
+        }
+        if (!light && this.cross != null && this.cross.length) {
+            this.applyCurrentSignRequestParams();
         }
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
@@ -266,6 +275,27 @@ export class SignRequestParams extends EventFactory {
             width: Math.round(page.outerWidth() || 0),
             height: Math.round(page.outerHeight() || 0)
         };
+    }
+
+    #centerOnCurrentViewport() {
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
+        const zoom = this.getBrowserZoom();
+        const scaleFactor = this.currentScale * zoom;
+        const renderedWidthPixels = Math.max(0, Math.round(this.signWidth * scaleFactor));
+        const renderedHeightPixels = Math.max(0, Math.round(this.signHeight * scaleFactor));
+        const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - renderedWidthPixels) / 2);
+        const viewportCenterY = this.#getScrollTop() + this.#getViewportHeight() / 2;
+        const centeredTopPixels = Math.max(pageLayout.top, viewportCenterY - renderedHeightPixels / 2);
+        this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / scaleFactor);
+        this.yPos = Math.max(0, Math.round((centeredTopPixels - pageLayout.top) / scaleFactor));
+    }
+
+    centerOnCurrentViewport() {
+        if (this.isLight || this.signSpace != null || this.dropped) {
+            return;
+        }
+        this.#centerOnCurrentViewport();
+        this.applyCurrentSignRequestParams();
     }
 
     #refreshPageAttributeFromRect(rect) {
@@ -624,7 +654,7 @@ export class SignRequestParams extends EventFactory {
         this.extraName = !!favorite.extraName;
         this.extraDate = !!favorite.extraDate;
         this.isExtraText = !(this.extraText !== "");
-        if (Number.isFinite(parseInt(favorite.signImageNumber, 10))) {
+        if (this.explicitModelSignImageNumber == null && Number.isFinite(parseInt(favorite.signImageNumber, 10))) {
             this.signImageNumber = parseInt(favorite.signImageNumber, 10);
         }
     }
@@ -771,6 +801,10 @@ export class SignRequestParams extends EventFactory {
             snapTolerance: 10 / this.getBrowserZoom(),
             refreshPositions:true,
             scroll: true,
+            start: function() {
+                self.setSlotDeleteButtonsEnabled(false);
+                self.detachFromCurrentSignSpace();
+            },
             drag: function(event, ui) {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
@@ -785,6 +819,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #dragStop(event, ui) {
+        this.setSlotDeleteButtonsEnabled(true);
         const dragRect = this.cross[0].getBoundingClientRect();
         this.#refreshPageAttributeFromRect(dragRect);
         this.#checkInside(dragRect, this);
@@ -990,8 +1025,39 @@ export class SignRequestParams extends EventFactory {
         this.#updateSignSpaceFontSize(this.signSpace);
     }
 
+    setSlotDeleteButtonsEnabled(enabled) {
+        $(".slot-delete-btn").css("pointer-events", enabled ? "auto" : "none");
+    }
+
+    detachFromCurrentSignSpace() {
+        if (this.signSpace == null) {
+            return null;
+        }
+        const currentSignSpace = this.signSpace;
+        const slotIndex = parseInt(currentSignSpace.attr("id")?.split("_")[1], 10);
+        currentSignSpace.removeData("locked");
+        currentSignSpace.removeClass("sign-space-disabled ui-state-disabled");
+        currentSignSpace.addClass("sign-field");
+        currentSignSpace.removeClass("sign-field-dropped");
+        currentSignSpace.css("pointer-events", "auto");
+        if (currentSignSpace.hasClass("ui-droppable")) {
+            try {
+                currentSignSpace.droppable("enable");
+            } catch (error) {
+                // Ignore partially initialized droppable widgets.
+            }
+        }
+        this.ready = false;
+        this.dropped = false;
+        this.#restoreSignSpacePlaceholder();
+        this.signSpace = null;
+        this.fireEvent("detachFromSlot", [Number.isFinite(slotIndex) ? slotIndex : null]);
+        return Number.isFinite(slotIndex) ? slotIndex : null;
+    }
+
     #deleteSign() {
         let self = this;
+        this.setSlotDeleteButtonsEnabled(true);
         this.#deleteAllPagesSigns();
         this.cross.attr("remove", "true");
         self.cross.remove();
@@ -2029,7 +2095,9 @@ export class SignRequestParams extends EventFactory {
                         } else if (Number.isInteger(this.parapheSignImageNumber)) {
                             resolvedImageNum = Math.max(0, this.parapheSignImageNumber - 1);
                         } else {
-                            resolvedImageNum = Math.max(0, this.signImages.length - 1);
+                            resolvedImageNum = this.signImages.length > 1
+                                ? Math.max(0, this.signImages.length - 2)
+                                : Math.max(0, this.signImages.length - 1);
                         }
                     } else if (requestedImageNum === 999997) {
                         if (Number.isInteger(this.parapheSignImageNumber)) {
@@ -2047,11 +2115,13 @@ export class SignRequestParams extends EventFactory {
                         img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[resolvedImageNum];
                         this.cross.css("background-image", "url('" + img + "')");
                         let sizes = this.#getImageDimensions(img);
-                        sizes.then(result => this.changeSignSize(result));
-                        if(requestedImageNum !== 999999) {
-                            localStorage.setItem('signNumber', requestedImageNum);
-                        }
-                        resolve(img);
+                        sizes.then(result => {
+                            this.changeSignSize(result);
+                            if(requestedImageNum !== 999999) {
+                                localStorage.setItem('signNumber', requestedImageNum);
+                            }
+                            resolve(img);
+                        }).catch(reject);
                     } else {
                         reject(new Error("Unable to resolve sign image from local state"));
                     }
@@ -2062,8 +2132,10 @@ export class SignRequestParams extends EventFactory {
                 this.#convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
                     self.cross.css("background-image", "url('" + img + "')");
                     let sizes = self.#getImageDimensions(img);
-                    sizes.then(result => self.changeSignSize(result));
-                    resolve(img);
+                    sizes.then(result => {
+                        self.changeSignSize(result);
+                        resolve(img);
+                    }).catch(reject);
                 });
                 this.addExtra = true;
                 this.extraOnTop = true;

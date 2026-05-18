@@ -46,7 +46,7 @@ export class SignSpaceManager {
 					signSpaceDiv.remove();
 				}
 				const spotId = this.options.findSpotIdForSignParams(currentSignRequestParams);
-				const deleteBtnHtml = this.options.isEditable() && spotId != null
+				const deleteBtnHtml = this.options.isManager() && spotId != null
 					? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
 					: "";
 				let cssClasses = "sign-space";
@@ -93,7 +93,7 @@ export class SignSpaceManager {
 					}
 				}
 
-				if (this.options.isEditable()) {
+				if (this.options.isManager()) {
 					this.options.bindSignSpaceDelete(signSpaceDiv);
 				}
 				signSpaceDiv.show();
@@ -242,6 +242,100 @@ export class SignSpaceManager {
 		});
 	}
 
+	findPlacedSignRequestParams(draggableId) {
+		const signPlacementController = this.options.getSignPlacementController();
+		if (signPlacementController == null || signPlacementController.signRequestParamses == null) {
+			return null;
+		}
+		const allParams = Array.from(signPlacementController.signRequestParamses.values());
+		for (let i = 0; i < allParams.length; i++) {
+			const signRequestParams = allParams[i];
+			const cross = signRequestParams?.cross;
+			if (cross != null && cross.attr("id") === draggableId) {
+				return signRequestParams;
+			}
+		}
+		return null;
+	}
+
+	applySignRequestParamsToSignSpace(signSpaceDiv, signRequestParams) {
+		const signPlacementController = this.options.getSignPlacementController();
+		const pdfViewer = this.options.getPdfViewer();
+		if (signPlacementController == null || pdfViewer == null || signSpaceDiv == null || !signSpaceDiv.length || signRequestParams == null) {
+			return false;
+		}
+		const cross = signRequestParams.cross;
+		if (cross == null || !cross.length) {
+			return false;
+		}
+		signSpaceDiv.data("locked", cross.attr("id"));
+		signSpaceDiv.removeClass("sign-field");
+		signSpaceDiv.addClass("sign-field-dropped");
+		signSpaceDiv.css("pointer-events", "none");
+		this.renderSignSpaceContent(signSpaceDiv, {
+			isSignableField: true,
+			ready: true
+		});
+
+		signRequestParams.signSpace = signSpaceDiv;
+		const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
+		const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
+		const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
+		signRequestParams.signPageNumber = pageNum;
+		signRequestParams.xPos = Number.isFinite(targetX) ? targetX : 0;
+		signRequestParams.yPos = Number.isFinite(targetY) ? targetY : 0;
+		cross.attr("page", pageNum);
+		signRequestParams.firstLaunch = false;
+		signRequestParams.applyCurrentSignRequestParams();
+
+		let resizedUi = { size: { width: 0, height: 0 }};
+		let width = parseInt(cross.css("width"), 10);
+		let height = parseInt(cross.css("height"), 10);
+		let maxWidth  = parseInt(signSpaceDiv.css("width"), 10);
+		let maxHeight = parseInt(signSpaceDiv.css("height"), 10);
+		if (!Number.isFinite(width) || width <= 0) {
+			width = Math.round(signRequestParams.signWidth * pdfViewer.scale);
+		}
+		if (!Number.isFinite(height) || height <= 0) {
+			height = Math.round(signRequestParams.signHeight * pdfViewer.scale);
+		}
+		if (!Number.isFinite(maxWidth) || maxWidth <= 0 || !Number.isFinite(maxHeight) || maxHeight <= 0) {
+			return false;
+		}
+		let ratio = width / height;
+		resizedUi.size.width  = maxWidth;
+		resizedUi.size.height = resizedUi.size.width / ratio;
+		if (resizedUi.size.height > maxHeight) {
+			resizedUi.size.height = maxHeight;
+			resizedUi.size.width  = resizedUi.size.height * ratio;
+		}
+		resizedUi.size.width = resizedUi.size.width - 2;
+		resizedUi.size.height = resizedUi.size.height - 2;
+		signRequestParams.resize(resizedUi);
+		cross.css("width", signRequestParams.signWidth * pdfViewer.scale);
+		cross.css("background-size", signRequestParams.signWidth * pdfViewer.scale);
+		cross.css("height", signRequestParams.signHeight * pdfViewer.scale);
+		signRequestParams.dropped = true;
+
+		const slotIndex = parseInt(signSpaceDiv.attr("id")?.split("_")[1], 10);
+		if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
+			signPlacementController.currentSignRequestParamses[slotIndex].ready = true;
+		}
+		signRequestParams.ready = true;
+		if (typeof signPlacementController.refreshSteps === "function") {
+			signPlacementController.refreshSteps();
+		}
+		return true;
+	}
+
+	placeSignOnSlot(slotIndex, signRequestParams) {
+		const signSpaceDiv = $("#signSpace_" + slotIndex);
+		if (!signSpaceDiv.length) {
+			return false;
+		}
+		return this.applySignRequestParamsToSignSpace(signSpaceDiv, signRequestParams);
+	}
+
 	makeItDroppable(signSpaceDiv) {
 		const signPlacementController = this.options.getSignPlacementController();
 		const pdfViewer = this.options.getPdfViewer();
@@ -251,59 +345,15 @@ export class SignSpaceManager {
 		const manager = this;
 		signSpaceDiv.droppable({
 			tolerance: "touch",
-			hoverClass: "drop-hover",
+			hoverClass: "ui-droppable-hover",
 			accept: ".drop-sign",
 			drop: function (event, ui) {
 				if ($(this).data("locked") != null) {
 					return;
 				}
-				$(this).data("locked", ui.draggable.attr("id"));
-				$(this).removeClass("sign-field");
-				$(this).addClass("sign-field-dropped");
-				$(this).css("pointer-events", "none");
-					manager.renderSignSpaceContent($(this), {
-						isSignableField: true,
-						ready: true
-					});
-				for (let i = 0; i < signPlacementController.signRequestParamses.size; i++) {
-					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
-					let cross = signRequestParams.cross;
-					if (cross.attr("id") === ui.draggable.attr("id")) {
-						signRequestParams.signSpace = signSpaceDiv;
-						const pageNum = parseInt(signSpaceDiv.attr("data-es-pos-page"), 10);
-						const targetX = parseInt(signSpaceDiv.attr("data-es-pos-x"), 10);
-						const targetY = parseInt(signSpaceDiv.attr("data-es-pos-y"), 10);
-						signRequestParams.signPageNumber = pageNum;
-						signRequestParams.xPos = Number.isFinite(targetX) ? targetX : 0;
-						signRequestParams.yPos = Number.isFinite(targetY) ? targetY : 0;
-						cross.attr("page", pageNum);
-						signRequestParams.firstLaunch = false;
-						signRequestParams.applyCurrentSignRequestParams();
-						let resizedUi = { size: { width: 0, height: 0 }};
-						let width = parseInt(cross.css("width"));
-						let height = parseInt(cross.css("height"));
-						let maxWidth  = parseInt(signSpaceDiv.css("width"));
-						let maxHeight = parseInt(signSpaceDiv.css("height"));
-						let ratio = width / height;
-						resizedUi.size.width  = maxWidth;
-						resizedUi.size.height = resizedUi.size.width / ratio;
-						if (resizedUi.size.height > maxHeight) {
-							resizedUi.size.height = maxHeight;
-							resizedUi.size.width  = resizedUi.size.height * ratio;
-						}
-						resizedUi.size.width = resizedUi.size.width - 2;
-						resizedUi.size.height = resizedUi.size.height - 2;
-						signRequestParams.resize(resizedUi);
-						cross.css("width", signRequestParams.signWidth * pdfViewer.scale);
-						cross.css("background-size", signRequestParams.signWidth * pdfViewer.scale);
-						cross.css("height", signRequestParams.signHeight * pdfViewer.scale);
-						signRequestParams.dropped = true;
-						console.log("real place : " + signRequestParams.xPos +", " + signRequestParams.yPos);
-					}
-				}
-				signPlacementController.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = true;
-				if (typeof signPlacementController.refreshSteps === "function") {
-					signPlacementController.refreshSteps();
+				const signRequestParams = manager.findPlacedSignRequestParams(ui.draggable.attr("id"));
+				if (signRequestParams != null) {
+					manager.applySignRequestParamsToSignSpace($(this), signRequestParams);
 				}
 			},
 			out: function (event, ui) {
@@ -311,20 +361,33 @@ export class SignSpaceManager {
 					return;
 				}
 				$(this).removeData("locked");
+				$(this).removeClass("sign-space-disabled ui-state-disabled");
 				$(this).addClass("sign-field");
 				$(this).removeClass("sign-field-dropped");
-				signPlacementController.currentSignRequestParamses[$(this).attr("id").split("_")[1]].ready = false;
+				const slotIndex = parseInt($(this).attr("id")?.split("_")[1], 10);
+				if (Number.isFinite(slotIndex) && signPlacementController.currentSignRequestParamses?.[slotIndex] != null) {
+					signPlacementController.currentSignRequestParamses[slotIndex].ready = false;
+				}
 				manager.renderSignSpaceContent($(this), {
 					isSignableField: true,
 					ready: false
 				});
 				$(this).css("pointer-events", "auto");
+				if ($(this).hasClass("ui-droppable")) {
+					try {
+						$(this).droppable("enable");
+					} catch (error) {
+						// Ignore partially initialized droppable widgets.
+					}
+				}
 				for (let i = 0; i < signPlacementController.signRequestParamses.size; i++) {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
 					let cross = signRequestParams.cross;
 					if (cross.attr("id") === ui.draggable.attr("id")) {
 						cross.resizable("enable");
 						signRequestParams.signSpace = null;
+						signRequestParams.ready = false;
+						signRequestParams.dropped = false;
 						if (typeof signPlacementController.refreshSteps === "function") {
 							signPlacementController.refreshSteps();
 						}
