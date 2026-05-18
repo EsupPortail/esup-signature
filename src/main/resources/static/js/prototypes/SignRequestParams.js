@@ -8,12 +8,22 @@ function getCssColorValue(variableName) {
     return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
 }
 
+let activeKeyboardPlacementId = null;
+const activeKeyboardPlacementNamespace = ".signRequestParamsKeyboardActive";
+
 export class SignRequestParams extends EventFactory {
 
     constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null) {
         super();
+        const explicitModelSignImageNumber = Number.parseInt(signRequestParamsModel?.signImageNumber, 10);
         Object.defineProperty(this, "signatureUiConfig", {
             value: signatureUiConfig,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+        });
+        Object.defineProperty(this, "explicitModelSignImageNumber", {
+            value: Number.isFinite(explicitModelSignImageNumber) ? explicitModelSignImageNumber : null,
             writable: true,
             configurable: true,
             enumerable: false,
@@ -86,7 +96,6 @@ export class SignRequestParams extends EventFactory {
         this.inside = true;
         this.isLight = light;
         this.resizeNamespace = ".signRequestParamsResize-" + this.id;
-        this.keydownNamespace = ".signRequestParamsKeydown-" + this.id;
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
@@ -118,13 +127,16 @@ export class SignRequestParams extends EventFactory {
         if(signRequestParamsModel == null || (this.xPos===0 && this.yPos===0)) {
             const pageLayout = this.#getPageLayout(this.signPageNumber);
             const zoom = this.getBrowserZoom();
-            // At first drop, rendered width is signWidth scaled by signScale.
             const initialRenderedWidth = this.signWidth * this.signScale;
             const crossWidthPixels = initialRenderedWidth * this.currentScale * zoom;
             const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - crossWidthPixels) / 2);
             this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / (scale * zoom));
             let mid = scrollTop + this.#getViewportHeight() / 2;
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
+        }
+        if (!light && this.cross != null && this.cross.length) {
+            this.applyCurrentSignRequestParams();
+            this.refreshVisualState();
         }
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
@@ -268,20 +280,101 @@ export class SignRequestParams extends EventFactory {
         };
     }
 
-    #refreshPageAttributeFromRect(rect) {
-        let detectedPage = parseInt(this.cross.attr("page"), 10) || this.signPageNumber;
-        $(".pdf-page").each(function () {
-            const pageRect = this.getBoundingClientRect();
-            if (
-                rect.left + 10 >= pageRect.left &&
-                rect.top + 10 >= pageRect.top &&
-                rect.right - 10 <= pageRect.right &&
-                rect.bottom - 10 <= pageRect.bottom
-            ) {
-                detectedPage = parseInt($(this).attr("page-num") || $(this).attr("id").split("_")[1], 10);
-                return false;
+    #getPageNumberFromElement(pageElement) {
+        const rawPageNumber = $(pageElement).attr("page-num") ?? pageElement.id?.split("_")[1];
+        const pageNumber = parseInt(rawPageNumber, 10);
+        return Number.isFinite(pageNumber) ? pageNumber : null;
+    }
+
+    #getRectOverlapArea(rectA, rectB) {
+        const overlapWidth = Math.max(0, Math.min(rectA.right, rectB.right) - Math.max(rectA.left, rectB.left));
+        const overlapHeight = Math.max(0, Math.min(rectA.bottom, rectB.bottom) - Math.max(rectA.top, rectB.top));
+        return overlapWidth * overlapHeight;
+    }
+
+    #getNearestPageNumberFromRect(rect) {
+        const centerX = (rect.left + rect.right) / 2;
+        const centerY = (rect.top + rect.bottom) / 2;
+        let bestPageNumber = parseInt(this.cross.attr("page"), 10) || this.signPageNumber;
+        let bestScore = Number.POSITIVE_INFINITY;
+
+        $(".pdf-page").each((_, pageElement) => {
+            const pageNumber = this.#getPageNumberFromElement(pageElement);
+            if (!Number.isFinite(pageNumber)) {
+                return;
+            }
+            const pageRect = pageElement.getBoundingClientRect();
+            const pageCenterX = (pageRect.left + pageRect.right) / 2;
+            const pageCenterY = (pageRect.top + pageRect.bottom) / 2;
+            const distance = Math.hypot(centerX - pageCenterX, centerY - pageCenterY);
+            if (distance < bestScore) {
+                bestScore = distance;
+                bestPageNumber = pageNumber;
             }
         });
+
+        return bestPageNumber;
+    }
+
+    #centerOnCurrentViewport() {
+        const pageLayout = this.#getPageLayout(this.signPageNumber);
+        const zoom = this.getBrowserZoom();
+        const scaleFactor = this.currentScale * zoom;
+        const renderedWidthPixels = Math.max(0, Math.round(this.signWidth * scaleFactor));
+        const renderedHeightPixels = Math.max(0, Math.round(this.signHeight * scaleFactor));
+        const centeredLeftPixels = pageLayout.left + Math.max(0, (pageLayout.width - renderedWidthPixels) / 2);
+        const viewportCenterY = this.#getScrollTop() + this.#getViewportHeight() / 2;
+        const centeredTopPixels = Math.max(pageLayout.top, viewportCenterY - renderedHeightPixels / 2);
+        this.xPos = Math.round((centeredLeftPixels - pageLayout.left) / scaleFactor);
+        this.yPos = Math.max(0, Math.round((centeredTopPixels - pageLayout.top) / scaleFactor));
+    }
+
+    centerOnCurrentViewport() {
+        if (this.isLight || this.signSpace != null || this.dropped) {
+            return;
+        }
+        this.#centerOnCurrentViewport();
+        this.applyCurrentSignRequestParams();
+    }
+
+    #refreshPageAttributeFromRect(rect) {
+        let detectedPage = parseInt(this.cross.attr("page"), 10) || this.signPageNumber;
+        const centerX = (rect.left + rect.right) / 2;
+        const centerY = (rect.top + rect.bottom) / 2;
+        let bestOverlapPage = null;
+        let bestOverlapArea = 0;
+
+        $(".pdf-page").each((_, pageElement) => {
+            const pageNumber = this.#getPageNumberFromElement(pageElement);
+            if (!Number.isFinite(pageNumber)) {
+                return;
+            }
+            const pageRect = pageElement.getBoundingClientRect();
+            const centerInsidePage = centerX >= pageRect.left
+                && centerX <= pageRect.right
+                && centerY >= pageRect.top
+                && centerY <= pageRect.bottom;
+            if (centerInsidePage) {
+                detectedPage = pageNumber;
+                bestOverlapPage = pageNumber;
+                bestOverlapArea = Number.POSITIVE_INFINITY;
+                return false;
+            }
+
+            const overlapArea = this.#getRectOverlapArea(rect, pageRect);
+            if (overlapArea > bestOverlapArea) {
+                bestOverlapArea = overlapArea;
+                bestOverlapPage = pageNumber;
+            }
+        });
+
+        if (bestOverlapArea > 0 && Number.isFinite(bestOverlapPage)) {
+            detectedPage = bestOverlapPage;
+        } else if (!Number.isFinite(parseInt(detectedPage, 10))) {
+            detectedPage = this.#getNearestPageNumberFromRect(rect);
+        }
+
+        this.signPageNumber = detectedPage;
         this.cross.attr("page", detectedPage);
         return detectedPage;
     }
@@ -558,7 +651,7 @@ export class SignRequestParams extends EventFactory {
         try { this.cross.resizable("destroy"); } catch (e) {}
         this.tools && this.tools.remove();
         this.border && this.border.remove();
-        $(document).off("keydown" + this.keydownNamespace);
+        this.#deactivateKeyboardPlacement();
 
         const pageLayout = this.#getPageLayout(this.signPageNumber);
         const zoom = this.getBrowserZoom();
@@ -624,7 +717,7 @@ export class SignRequestParams extends EventFactory {
         this.extraName = !!favorite.extraName;
         this.extraDate = !!favorite.extraDate;
         this.isExtraText = !(this.extraText !== "");
-        if (Number.isFinite(parseInt(favorite.signImageNumber, 10))) {
+        if (this.explicitModelSignImageNumber == null && Number.isFinite(parseInt(favorite.signImageNumber, 10))) {
             this.signImageNumber = parseInt(favorite.signImageNumber, 10);
         }
     }
@@ -660,6 +753,40 @@ export class SignRequestParams extends EventFactory {
         this.cross.css("z-index", "1028");
         this.cross.attr("data-id", this.id);
 
+    }
+
+    #activateKeyboardPlacement() {
+        activeKeyboardPlacementId = this.id;
+        $(document)
+            .off('keydown' + activeKeyboardPlacementNamespace)
+            .on('keydown' + activeKeyboardPlacementNamespace, e => this.#handleKeydown(e));
+    }
+
+    #deactivateKeyboardPlacement() {
+        if (activeKeyboardPlacementId === this.id) {
+            activeKeyboardPlacementId = null;
+            $(document).off('keydown' + activeKeyboardPlacementNamespace);
+        }
+    }
+
+    #isKeyboardPlacementActive() {
+        return activeKeyboardPlacementId === this.id
+            && this.tools != null
+            && !this.tools.hasClass("d-none");
+    }
+
+    refreshVisualState() {
+        if (this.cross == null || !this.cross.length) {
+            return;
+        }
+        this.#computeBgColor();
+    }
+
+    activatePlacement() {
+        if (this.isLight || this.cross == null || !this.cross.length) {
+            return;
+        }
+        this.#unlock();
     }
 
     #enableCanvas() {
@@ -771,6 +898,10 @@ export class SignRequestParams extends EventFactory {
             snapTolerance: 10 / this.getBrowserZoom(),
             refreshPositions:true,
             scroll: true,
+            start: function() {
+                self.setSlotDeleteButtonsEnabled(false);
+                self.detachFromCurrentSignSpace();
+            },
             drag: function(event, ui) {
                 if(self.firstLaunch) {
                     self.firstLaunch = false;
@@ -784,7 +915,8 @@ export class SignRequestParams extends EventFactory {
         });
     }
 
-    #dragStop(event, ui) {
+    #dragStop(event, ui, { keepCrossFocus = false } = {}) {
+        this.setSlotDeleteButtonsEnabled(true);
         const dragRect = this.cross[0].getBoundingClientRect();
         this.#refreshPageAttributeFromRect(dragRect);
         this.#checkInside(dragRect, this);
@@ -797,8 +929,10 @@ export class SignRequestParams extends EventFactory {
         if(this.signImages !== 999999) {
             let signLaunchButton = $("#signLaunchButton");
             if(signLaunchButton.length) {
-                signLaunchButton.focus();
                 signLaunchButton.addClass("pulse-success");
+                if (!keepCrossFocus) {
+                    signLaunchButton.focus();
+                }
             }
         }
     }
@@ -819,15 +953,14 @@ export class SignRequestParams extends EventFactory {
 
         if(this.signImages === 999999) {
             this.#computeBgColor();
+            this.fireEvent("placementStateChanged", [this]);
             return;
         }
         if (!this.inside) {
             console.log("La signature n'est pas entièrement dans une page !");
-            $("#signLaunchButton").attr("disabled", "disabled");
-        } else {
-            $("#signLaunchButton").removeAttr("disabled");
         }
         this.#computeBgColor();
+        this.fireEvent("placementStateChanged", [this]);
     }
 
     #computeBgColor() {
@@ -947,11 +1080,15 @@ export class SignRequestParams extends EventFactory {
     }
 
     #afterDropRefresh(ui) {
-        this.signPageNumber = this.cross.attr("page");
+        this.signPageNumber = parseInt(this.cross.attr("page"), 10) || this.signPageNumber;
         const pageLayout = this.#getPageLayout(this.signPageNumber);
         const scaleFactor = this.currentScale * this.getBrowserZoom();
-        this.xPos = Math.round((ui.position.left - pageLayout.left) / scaleFactor);
-        this.yPos = Math.round((ui.position.top - pageLayout.top) / scaleFactor);
+        const currentLeft = parseInt(this.cross.css("left"), 10);
+        const currentTop = parseInt(this.cross.css("top"), 10);
+        const absoluteLeft = Number.isFinite(currentLeft) ? currentLeft : ui.position.left;
+        const absoluteTop = Number.isFinite(currentTop) ? currentTop : ui.position.top;
+        this.xPos = Math.round((absoluteLeft - pageLayout.left) / scaleFactor);
+        this.yPos = Math.round((absoluteTop - pageLayout.top) / scaleFactor);
         // Clamp coordinates to page bounds.
         if (this.xPos < 0) this.xPos = 0;
         if (this.xPos > pageLayout.width / scaleFactor) this.xPos = Math.round(pageLayout.width / scaleFactor);
@@ -964,6 +1101,26 @@ export class SignRequestParams extends EventFactory {
         this.#refreshAllPagesSigns();
     }
 
+
+    synchronizePositionWithRenderedCross() {
+        if (this.cross == null || !this.cross.length || this.signSpace != null) {
+            return false;
+        }
+        const renderedRect = this.cross.get(0)?.getBoundingClientRect?.();
+        if (renderedRect == null) {
+            return false;
+        }
+        const left = parseInt(this.cross.css("left"), 10);
+        const top = parseInt(this.cross.css("top"), 10);
+        this.#refreshPageAttributeFromRect(renderedRect);
+        this.#afterDropRefresh({
+            position: {
+                left: Number.isFinite(left) ? left : 0,
+                top: Number.isFinite(top) ? top : 0
+            }
+        });
+        return true;
+    }
     #refreshAllPagesSigns() {
         if(this.allPages) {
             this.#toggleAllPages();
@@ -990,8 +1147,40 @@ export class SignRequestParams extends EventFactory {
         this.#updateSignSpaceFontSize(this.signSpace);
     }
 
+    setSlotDeleteButtonsEnabled(enabled) {
+        $(".slot-delete-btn").css("pointer-events", enabled ? "auto" : "none");
+    }
+
+    detachFromCurrentSignSpace() {
+        if (this.signSpace == null) {
+            return null;
+        }
+        const currentSignSpace = this.signSpace;
+        const slotIndex = parseInt(currentSignSpace.attr("id")?.split("_")[1], 10);
+        currentSignSpace.removeData("locked");
+        currentSignSpace.removeClass("sign-space-disabled ui-state-disabled");
+        currentSignSpace.addClass("sign-field");
+        currentSignSpace.removeClass("sign-field-dropped");
+        currentSignSpace.css("pointer-events", "auto");
+        if (currentSignSpace.hasClass("ui-droppable")) {
+            try {
+                currentSignSpace.droppable("enable");
+            } catch (error) {
+                // Ignore partially initialized droppable widgets.
+            }
+        }
+        this.ready = false;
+        this.dropped = false;
+        this.#restoreSignSpacePlaceholder();
+        this.signSpace = null;
+        this.refreshVisualState();
+        this.fireEvent("detachFromSlot", [Number.isFinite(slotIndex) ? slotIndex : null]);
+        return Number.isFinite(slotIndex) ? slotIndex : null;
+    }
+
     #deleteSign() {
         let self = this;
+        this.setSlotDeleteButtonsEnabled(true);
         this.#deleteAllPagesSigns();
         this.cross.attr("remove", "true");
         self.cross.remove();
@@ -1040,15 +1229,29 @@ export class SignRequestParams extends EventFactory {
 
     #handleKeydown(e) {
         const activeElement = document.activeElement;
+        const activeTagName = activeElement?.tagName ?? "";
+
+        if (!this.#isKeyboardPlacementActive()) {
+            return true;
+        }
+
+        if (
+            activeTagName === "INPUT"
+            || activeTagName === "TEXTAREA"
+            || activeTagName === "SELECT"
+            || activeElement?.isContentEditable === true
+        ) {
+            return true;
+        }
 
         if (
             (e.key === "Delete" || e.keyCode === 46) &&
-            activeElement.tagName !== "INPUT" &&
-            activeElement.tagName !== "TEXTAREA"
+            activeTagName !== "INPUT" &&
+            activeTagName !== "TEXTAREA"
         ) {
             this.#deleteSign();
         }
-        if(!this.tools.hasClass("d-none")) {
+        if(this.#isKeyboardPlacementActive()) {
             let position,
                 draggable = this.cross,
                 container = $('#pdf');
@@ -1100,7 +1303,7 @@ export class SignRequestParams extends EventFactory {
                 this.#dragStop(
                     e,
                     ui,
-                    draggable[0]
+                    { keepCrossFocus: true }
                 );
                 e.preventDefault();
             }
@@ -1113,9 +1316,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.removeClass("sign-textarea-lock");
         }
-        $(document)
-            .off('keydown' + this.keydownNamespace)
-            .on('keydown' + this.keydownNamespace, e => this.#handleKeydown(e));
+        this.#activateKeyboardPlacement();
         this.#computeBgColor();
     }
 
@@ -1935,7 +2136,7 @@ export class SignRequestParams extends EventFactory {
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
-        $(document).off('keydown' + this.keydownNamespace);
+        this.#deactivateKeyboardPlacement();
         this.canvasBtn.removeClass("d-none");
         this.#computeBgColor();
     }
@@ -2029,7 +2230,9 @@ export class SignRequestParams extends EventFactory {
                         } else if (Number.isInteger(this.parapheSignImageNumber)) {
                             resolvedImageNum = Math.max(0, this.parapheSignImageNumber - 1);
                         } else {
-                            resolvedImageNum = Math.max(0, this.signImages.length - 1);
+                            resolvedImageNum = this.signImages.length > 1
+                                ? Math.max(0, this.signImages.length - 2)
+                                : Math.max(0, this.signImages.length - 1);
                         }
                     } else if (requestedImageNum === 999997) {
                         if (Number.isInteger(this.parapheSignImageNumber)) {
@@ -2047,11 +2250,13 @@ export class SignRequestParams extends EventFactory {
                         img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[resolvedImageNum];
                         this.cross.css("background-image", "url('" + img + "')");
                         let sizes = this.#getImageDimensions(img);
-                        sizes.then(result => this.changeSignSize(result));
-                        if(requestedImageNum !== 999999) {
-                            localStorage.setItem('signNumber', requestedImageNum);
-                        }
-                        resolve(img);
+                        sizes.then(result => {
+                            this.changeSignSize(result);
+                            if(requestedImageNum !== 999999) {
+                                localStorage.setItem('signNumber', requestedImageNum);
+                            }
+                            resolve(img);
+                        }).catch(reject);
                     } else {
                         reject(new Error("Unable to resolve sign image from local state"));
                     }
@@ -2062,8 +2267,10 @@ export class SignRequestParams extends EventFactory {
                 this.#convertImgToBase64URL('/images/' + this.faImages[Math.abs(imageNum) - 1] + '.png', function(img) {
                     self.cross.css("background-image", "url('" + img + "')");
                     let sizes = self.#getImageDimensions(img);
-                    sizes.then(result => self.changeSignSize(result));
-                    resolve(img);
+                    sizes.then(result => {
+                        self.changeSignSize(result);
+                        resolve(img);
+                    }).catch(reject);
                 });
                 this.addExtra = true;
                 this.extraOnTop = true;

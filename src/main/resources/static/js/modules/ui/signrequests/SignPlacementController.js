@@ -30,6 +30,7 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.signsList = [];
+        this.signatureStepRequested = false;
         this.currentScale;
         this.scrollTop = this.getCurrentScrollTop();
         this.signType = signType;
@@ -39,8 +40,45 @@ export class SignPlacementController extends EventFactory {
         // if(localStorage.getItem("scale") != null) {
         //     this.currentScale = localStorage.getItem("scale");
         // }
+        this.initializeSpecialSignImageNumbers();
         this.initListeners();
         this.refreshSteps();
+    }
+
+    initializeSpecialSignImageNumbers() {
+        const signImages = Array.isArray(this.signImages) ? this.signImages : [];
+        if (signImages.length === 0) {
+            this.generatedSignImageNumber = null;
+            this.parapheSignImageNumber = null;
+            return;
+        }
+
+        let uiMe = null;
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            uiMe = rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (error) {
+            console.debug('Unable to parse uiMe session payload', error);
+        }
+        const userImageIds = uiMe != null && Array.isArray(uiMe.userImagesIds) ? uiMe.userImagesIds : null;
+        if (userImageIds != null) {
+            this.generatedSignImageNumber = signImages.length > userImageIds.length
+                ? userImageIds.length
+                : null;
+            this.parapheSignImageNumber = this.generatedSignImageNumber != null && signImages.length > this.generatedSignImageNumber + 1
+                ? this.generatedSignImageNumber + 1
+                : null;
+            return;
+        }
+
+        if (signImages.length === 1) {
+            this.generatedSignImageNumber = 0;
+            this.parapheSignImageNumber = null;
+            return;
+        }
+
+        this.generatedSignImageNumber = signImages.length - 2;
+        this.parapheSignImageNumber = signImages.length - 1;
     }
 
     getScrollContainer() {
@@ -147,6 +185,34 @@ export class SignPlacementController extends EventFactory {
                 }
             });
         }
+    }
+
+    buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
+        let initialModel = currentSignRequestParams;
+        let favoriteSignRequestParams = null;
+        if (!isParaph) {
+            try {
+                const rawFavorite = sessionStorage.getItem("favoriteSignRequestParams");
+                favoriteSignRequestParams = rawFavorite ? JSON.parse(rawFavorite) : null;
+            } catch (error) {
+                console.debug("Unable to parse favorite sign request params", error);
+            }
+        }
+        if (favoriteSignRequestParams != null) {
+            initialModel = { ...favoriteSignRequestParams };
+            if (currentSignRequestParams != null) {
+                initialModel.xPos = currentSignRequestParams.xPos;
+                initialModel.yPos = currentSignRequestParams.yPos;
+            }
+        }
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (Number.isFinite(normalizedSignImageNumber) && normalizedSignImageNumber >= 0) {
+            initialModel = {
+                ...(initialModel ?? {}),
+                signImageNumber: normalizedSignImageNumber
+            };
+        }
+        return initialModel;
     }
 
     removeSign(srpId, id) {
@@ -282,12 +348,12 @@ export class SignPlacementController extends EventFactory {
             }
         }
         if(signImageNumber != null) {
-            let favoriteSignRequestParams = currentSignRequestParams;
+            const initialSignRequestParamsModel = this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
             if (signImageNumber === 999999) {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                     this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
-                this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+                this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
                 this.signRequestParamses.get(id).changeSignSize(null);
 
             } else if(signImageNumber >= 0) {
@@ -295,14 +361,7 @@ export class SignPlacementController extends EventFactory {
                     alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                     return;
                 }
-                if(!isParaph && JSON.parse(sessionStorage.getItem("favoriteSignRequestParams")) != null) {
-                    favoriteSignRequestParams = JSON.parse(sessionStorage.getItem("favoriteSignRequestParams"));
-                    if(currentSignRequestParams != null) {
-                        favoriteSignRequestParams.xPos = currentSignRequestParams.xPos;
-                        favoriteSignRequestParams.yPos = currentSignRequestParams.yPos;
-                    }
-                }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : favoriteSignRequestParams, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
                 if(!isParaph) {
                     this.signsList.push(id);
@@ -319,12 +378,15 @@ export class SignPlacementController extends EventFactory {
                     alert("Impossible d'ajouter des annotations sur cette étape");
                     return;
                 }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, favoriteSignRequestParams, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
+                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                 this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
             }
             if(signImageNumber !== 999999) {
                 if(this.signType !== "visa") {
-                    this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                    await this.signRequestParamses.get(id).changeSignImage(signImageNumber);
+                    if (currentSignRequestParams == null && typeof this.signRequestParamses.get(id)?.centerOnCurrentViewport === "function") {
+                        this.signRequestParamses.get(id).centerOnCurrentViewport();
+                    }
                 }
             }
         } else {
@@ -336,6 +398,19 @@ export class SignPlacementController extends EventFactory {
             this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
         }
         this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
+        this.signRequestParamses.get(id).addEventListener("detachFromSlot", slotIndex => {
+            if (Number.isFinite(parseInt(slotIndex, 10)) && this.currentSignRequestParamses?.[slotIndex] != null) {
+                this.currentSignRequestParamses[slotIndex].ready = false;
+            }
+            if (typeof this.refreshSteps === "function") {
+                this.refreshSteps();
+            }
+        });
+        this.signRequestParamses.get(id).addEventListener("placementStateChanged", () => {
+            if (typeof this.refreshSteps === "function") {
+                this.refreshSteps();
+            }
+        });
         this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
         this.signRequestParamses.get(id).addEventListener("spotDeleted", e => this.onSpotDeleted(e));
         if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
@@ -345,9 +420,9 @@ export class SignPlacementController extends EventFactory {
             $("#signImage_" + id).addClass("d-none");
         }
         if (!isParaph) {
-            this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+            this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
         }
-        let srp = this.signRequestParamses.get(id);
+        const srp = this.signRequestParamses.get(id);
         this.id++;
         if (!isSpot && !isParaph) {
             this.refreshSteps();
@@ -396,43 +471,42 @@ export class SignPlacementController extends EventFactory {
         button.addClass(activeClass);
     }
 
-    setCertTypeHighlight(isHighlighted) {
-        let selectCertType = $("#certType");
-        selectCertType.toggleClass("border-success", isHighlighted);
-        selectCertType.toggleClass("border-light-subtle", !isHighlighted);
-        if(!isHighlighted) {
-            selectCertType.trigger("blur");
+    getStepUiElements() {
+        return {
+            step1: $("#step-1"),
+            step2: $("#step-2"),
+            addSignButton2: $("#addSignButton2"),
+            insertBtn: $("#insert-btn"),
+            refuseLaunchButton: $("#refuseLaunchButton"),
+            signLaunchButton: $("#signLaunchButton"),
+            signAdvancedLaunchButton: $("#signAdvancedLaunchButton"),
+            refuseLaunchDiv: $("#refuseLaunchDiv"),
+            refuseLaunchDivResponsive: $("#refuseLaunchDivResponsive")
+        };
+    }
+
+    getActiveSigns() {
+        return Array.from(this.signRequestParamses.values()).filter(signRequestParams => {
+            const signImageNumber = signRequestParams?.signImageNumber == null
+                ? null
+                : Number.parseInt(signRequestParams.signImageNumber, 10);
+            return signRequestParams != null
+                && signRequestParams.isSign
+                && signImageNumber != null
+                && signImageNumber >= 0
+                && signImageNumber !== 999999;
+        });
+    }
+
+    hasStartedSignaturePlacement() {
+        if (Array.isArray(this.signsList) && this.signsList.length > 0) {
+            return true;
         }
-    }
-
-    getSelectableCertTypeOptions() {
-        return $("#certType").find("option:not(:disabled):not([unavailable])");
-    }
-
-    hasValidSelectedCertType() {
-        const selectCertType = $("#certType");
-        const selectedOption = selectCertType.find("option:selected");
-        const value = selectCertType.val();
-        return value != null
-            && value !== ""
-            && selectedOption.length > 0
-            && !selectedOption.is(":disabled")
-            && !selectedOption.is("[unavailable]");
+        return this.getActiveSigns().length > 0;
     }
 
     hasPendingSignaturePlacement() {
-        const activeSigns = Array.from(this.signRequestParamses.values()).filter(signRequestParams =>
-            {
-                const signImageNumber = signRequestParams?.signImageNumber == null
-                    ? null
-                    : Number.parseInt(signRequestParams.signImageNumber, 10);
-                return signRequestParams != null
-                    && signRequestParams.isSign
-                    && signImageNumber != null
-                    && signImageNumber >= 0
-                    && signImageNumber !== 999999;
-            }
-        );
+        const activeSigns = this.getActiveSigns();
 
         if (activeSigns.length === 0) {
             return false;
@@ -454,184 +528,130 @@ export class SignPlacementController extends EventFactory {
         return true;
     }
 
+    isSignatureActionReady() {
+        return this.isHiddenVisa() || this.hasPendingSignaturePlacement();
+    }
+
+    syncSignatureActionButtons(forceEnabled = null) {
+        const {
+            signLaunchButton,
+            signAdvancedLaunchButton
+        } = this.getStepUiElements();
+
+        const enabled = forceEnabled == null
+            ? this.isSignatureActionReady()
+            : forceEnabled;
+
+        signLaunchButton.prop("disabled", !enabled);
+        signAdvancedLaunchButton.prop("disabled", !enabled);
+        this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
+        this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
+    }
+
     isHiddenVisa() {
         return this.signType === "hiddenVisa";
     }
 
-    dispatchResponsiveStepChange(stepId) {
-        document.dispatchEvent(new CustomEvent("es-signrequest-step-change", {
-            detail: {stepId}
-        }));
+    requestSignatureStep() {
+        if (this.isHiddenVisa()) {
+            this.goStep2();
+            return;
+        }
+        this.signatureStepRequested = true;
+        this.goStep2();
+    }
+
+    clearRequestedSignatureStep() {
+        this.signatureStepRequested = false;
     }
 
     refreshSteps() {
         if (this.isHiddenVisa()) {
-            this.goStep3();
+            this.goStep2();
             return;
         }
 
-        const selectCertType = $("#certType");
-        if (!selectCertType.length) {
+        if (this.hasStartedSignaturePlacement()) {
+            this.signatureStepRequested = false;
+            this.goStep2();
             return;
         }
 
-        const selectableOptions = this.getSelectableCertTypeOptions();
-        if (selectableOptions.length === 1 && !this.hasValidSelectedCertType()) {
-            selectableOptions.prop("selected", true);
-            selectCertType.trigger("change");
-        }
-
-        const countVisible = selectCertType.find("option:not([unavailable])").length;
-        if (countVisible > 0) {
-            selectCertType.removeAttr("disabled");
-        }
-
-        if (!this.hasValidSelectedCertType()) {
-            this.goStep1();
-            selectCertType.trigger("focus");
+        if (this.signatureStepRequested) {
+            this.goStep2();
             return;
         }
 
-        if (this.hasPendingSignaturePlacement()) {
-            this.goStep3();
-            return;
-        }
-
-        this.goStep2();
+        this.goStep1();
     }
 
     goStep1() {
-        let step1 = $("#step-1");
-        let step2 = $("#step-2");
-        let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton");
-        let addSignButton2 = $("#addSignButton2");
-        let addParaphButton2 = $("#addParaphButton2");
-        let insertBtn = $("#insert-btn");
-        let refuseLaunchButton = $("#refuseLaunchButton");
-        let signLaunchButton = $("#signLaunchButton");
-        let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
+        const {
+            step1,
+            step2,
+            addSignButton2,
+            insertBtn,
+            refuseLaunchButton,
+            refuseLaunchDiv,
+            refuseLaunchDivResponsive
+        } = this.getStepUiElements();
 
-        selectCertType.removeAttr("disabled");
-        addSignButton.attr("disabled", "disabled");
-        addSignButton2.attr("disabled", "disabled");
-        addParaphButton2.attr("disabled", "disabled");
+        addSignButton2.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
-        signLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
+        refuseLaunchDivResponsive.removeClass("d-none");
 
-        this.setButtonVariant(addSignButton2, "btn-secondary");
+        this.setButtonVariant(addSignButton2, "btn-success");
+        addSignButton2.addClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
-        this.setButtonVariant(signLaunchButton, "btn-secondary");
-        this.setCertTypeHighlight(true);
+        this.syncSignatureActionButtons(false);
 
         this.setStepState(step1, true, false, false);
         this.setStepState(step2, false, false, true);
-        this.setStepState(step3, false, false, true);
 
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
-        step3.find(".step-horizontal-v2-icon").html("3");
-        this.dispatchResponsiveStepChange("step-1");
     }
 
     goStep2() {
-        let step1 = $("#step-1");
-        let step2 = $("#step-2");
-        let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton");
-        let addSignButton2 = $("#addSignButton2");
-        let addParaphButton2 = $("#addParaphButton2");
-        let insertBtn = $("#insert-btn");
-        let refuseLaunchButton = $("#refuseLaunchButton");
-        let signLaunchButton = $("#signLaunchButton");
-        let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
+        const {
+            step1,
+            step2,
+            addSignButton2,
+            insertBtn,
+            refuseLaunchButton,
+            refuseLaunchDiv,
+            refuseLaunchDivResponsive
+        } = this.getStepUiElements();
 
-        selectCertType.removeAttr("disabled");
-        addSignButton.removeAttr("disabled");
-        addSignButton2.removeAttr("disabled");
-        addParaphButton2.removeAttr("disabled");
+        addSignButton2.attr("disabled", "disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
+        refuseLaunchDiv.removeClass("d-none");
+        refuseLaunchDiv.addClass("es-refuse-slot-hidden");
+        refuseLaunchDivResponsive.addClass("d-none");
 
         this.setButtonVariant(addSignButton2, "btn-success");
+        addSignButton2.removeClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-danger");
-        this.setButtonVariant(signLaunchButton, "btn-secondary");
-
-        this.setStepState(step1, false, true, false);
-        this.setStepState(step2, true, false, false);
-        this.setStepState(step3, false, false, true);
-
-        this.setCertTypeHighlight(false);
-        step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step2.find(".step-horizontal-v2-icon").html("2");
-        step3.find(".step-horizontal-v2-icon").html("3");
-        this.dispatchResponsiveStepChange("step-2");
-        this.focusWhenVisible("#addSignButton2", 20, 80);
-    }
-
-    goStep3() {
-        let step1 = $("#step-1");
-        let step2 = $("#step-2");
-        let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton2");
-        let insertBtn = $("#insert-btn");
-        let refuseLaunchButton = $("#refuseLaunchButton");
-        let signLaunchButton = $("#signLaunchButton");
-        let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
-
-        this.setStepState(step1, false, true, false);
-        this.setStepState(step2, false, true, false);
-        this.setStepState(step3, true, false, false);
+        this.setButtonVariant(refuseLaunchButton, "btn-secondary");
+        this.syncSignatureActionButtons();
 
         if (this.isHiddenVisa()) {
-            if (selectCertType.length) {
-                selectCertType.attr("disabled", "disabled");
-            }
-            addSignButton.attr("disabled", "disabled");
-            insertBtn.removeAttr("disabled");
-            refuseLaunchButton.removeAttr("disabled");
-            signLaunchButton.removeAttr("disabled");
-            refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
-
-            this.setButtonVariant(addSignButton, "btn-secondary");
-            this.setButtonVariant(insertBtn, "btn-success");
+            refuseLaunchDiv.removeClass("es-refuse-slot-hidden");
+            refuseLaunchDivResponsive.removeClass("d-none");
             this.setButtonVariant(refuseLaunchButton, "btn-danger");
-            this.setButtonVariant(signLaunchButton, "btn-success");
-            this.setCertTypeHighlight(false);
-
-            step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-            step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-            step3.find(".step-horizontal-v2-icon").html("3");
-            this.dispatchResponsiveStepChange("step-3");
+            this.setStepState(step2, true, false, false);
+            step2.find(".step-horizontal-v2-icon").html("1");
             return;
         }
 
-        selectCertType.removeAttr("disabled");
-        addSignButton.attr("disabled", "disabled");
-        insertBtn.removeAttr("disabled");
-        refuseLaunchButton.attr("disabled", "disabled");
-        signLaunchButton.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none");
-        refuseLaunchDiv.addClass("es-refuse-slot-hidden");
-
-        this.setButtonVariant(addSignButton, "btn-secondary");
-        this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-secondary");
-        this.setButtonVariant(signLaunchButton, "btn-success");
-        this.setCertTypeHighlight(false);
-
+        this.setStepState(step1, false, true, false);
+        this.setStepState(step2, true, false, false);
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step3.find(".step-horizontal-v2-icon").html("3");
-        this.dispatchResponsiveStepChange("step-3");
+        step2.find(".step-horizontal-v2-icon").html("2");
     }
 
     destroy() {

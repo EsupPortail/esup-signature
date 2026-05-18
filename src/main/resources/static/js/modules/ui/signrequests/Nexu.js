@@ -58,7 +58,11 @@ export class Nexu {
                 $("#no-options").show();
                 $("#no-options-alert").show();
                 $("#signCommentDiv").hide();
+                $("#signGotoNextContainer").hide();
                 // $("#selectTypeDiv").hide();
+                $("#checkValidateAdvancedSignButton").hide();
+                $("#launchNoInfiniteSignButton").hide();
+                $("#launch-infinite-sign-button").hide();
                 $("#checkValidateSignButtonEnd").hide();
                 $("#checkValidateSignButtonNext").hide();
             } else {
@@ -66,11 +70,15 @@ export class Nexu {
                 $("#no-options").hide();
                 $("#no-options-alert").hide();
                 $("#signCommentDiv").show();
+                $("#signGotoNextContainer").show();
                 // $("#selectTypeDiv").show();
+                $("#checkValidateAdvancedSignButton").show();
+                $("#launchNoInfiniteSignButton").show();
+                $("#launch-infinite-sign-button").show();
                 $("#checkValidateSignButtonEnd").show();
                 $("#checkValidateSignButtonNext").show();
             }
-            if($("#certType > option[value='imageStamp']").attr('selected')) {
+            if($("#certType").val() === "imageStamp") {
                 $("#noSeal").show();
             }
         });
