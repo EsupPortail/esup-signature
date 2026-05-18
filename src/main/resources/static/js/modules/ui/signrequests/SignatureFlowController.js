@@ -5,9 +5,211 @@ export class SignatureFlowController {
         this.state = signUi.state;
         this.contextualPassword = "";
         this.contextualSignAll = false;
+        this.gotoNextStorageKey = "esup-signature.gotoNext";
+        this.removedImageStampOption = null;
+        this.skipRestoreOnNextSignModalHide = false;
+        this.initSignModalLifecycle();
+        this.initRefuseModalLifecycle();
+    }
+
+    getStoredGotoNextPreference() {
+        try {
+            return window.localStorage.getItem(this.gotoNextStorageKey) === "true";
+        } catch (error) {
+            console.debug("Unable to read gotoNext preference", error);
+            return false;
+        }
+    }
+
+    storeGotoNextPreference(value) {
+        try {
+            window.localStorage.setItem(this.gotoNextStorageKey, String(Boolean(value)));
+        } catch (error) {
+            console.debug("Unable to persist gotoNext preference", error);
+        }
+    }
+
+    syncGotoNextPreference(checkboxSelector) {
+        const gotoNextCheckbox = $(checkboxSelector);
+        if (!gotoNextCheckbox.length) {
+            return;
+        }
+        gotoNextCheckbox.prop("checked", this.getStoredGotoNextPreference());
+    }
+
+    initGotoNextPreferenceBinding(checkboxSelector, onChange = null) {
+        const gotoNextCheckbox = $(checkboxSelector);
+        if (!gotoNextCheckbox.length) {
+            return;
+        }
+
+        this.syncGotoNextPreference(checkboxSelector);
+        gotoNextCheckbox.off("change.signatureFlowController");
+        gotoNextCheckbox.on("change.signatureFlowController", event => {
+            const isChecked = $(event.currentTarget).is(':checked');
+            this.storeGotoNextPreference(isChecked);
+            if (typeof onChange === "function") {
+                onChange(isChecked, $(event.currentTarget));
+            }
+        });
+
+        if (typeof onChange === "function") {
+            onChange(gotoNextCheckbox.is(':checked'), gotoNextCheckbox);
+        }
+    }
+
+    initSignModalLifecycle() {
+        const signModal = $("#signModal");
+        if (!signModal.length) {
+            return;
+        }
+
+        signModal.off(".signatureFlowController");
+        signModal.on('shown.bs.modal.signatureFlowController', () => {
+            this.initGotoNextPreferenceBinding("#signGotoNext");
+            const certType = $("#certType");
+            const signComment = $("#signComment");
+            const launchNoInfiniteSignButton = $("#launchNoInfiniteSignButton");
+            const enableInfinite = $("#enableInfinite");
+            const checkValidateAdvancedSignButton = $("#checkValidateAdvancedSignButton");
+            const checkValidateSignButtonEnd = $("#checkValidateSignButtonEnd");
+            const checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+
+            if (certType.length && !certType.val()) {
+                certType.trigger('focus');
+                return;
+            }
+            if (signComment.length) {
+                signComment.trigger('focus');
+                return;
+            }
+            if (enableInfinite.length) {
+                enableInfinite.trigger('focus');
+                return;
+            }
+            if (launchNoInfiniteSignButton.length) {
+                launchNoInfiniteSignButton.trigger('focus');
+                return;
+            }
+            if (checkValidateAdvancedSignButton.length) {
+                checkValidateAdvancedSignButton.trigger('focus');
+                return;
+            }
+            if (checkValidateSignButtonNext.length) {
+                checkValidateSignButtonNext.trigger('focus');
+                return;
+            }
+            if (checkValidateSignButtonEnd.length) {
+                checkValidateSignButtonEnd.trigger('focus');
+            }
+        });
+        signModal.on('hidden.bs.modal.signatureFlowController', () => {
+            if (this.skipRestoreOnNextSignModalHide) {
+                this.skipRestoreOnNextSignModalHide = false;
+                return;
+            }
+            this.restoreRemovedImageStampOption();
+        });
+    }
+
+    initRefuseModalLifecycle() {
+        const refuseModal = $("#refuseModal");
+        if (!refuseModal.length) {
+            return;
+        }
+
+        const syncRefuseRedirectValue = isChecked => {
+            const refuseRedirectValue = $("#refuseRedirectValue");
+            const refuseGotoNext = $("#refuseGotoNext");
+            if (!refuseRedirectValue.length) {
+                return;
+            }
+
+            const nextId = refuseGotoNext.attr("data-es-next-id");
+            refuseRedirectValue.val(isChecked && nextId ? nextId : "end");
+        };
+
+        refuseModal.off("shown.bs.modal.signatureFlowController");
+        refuseModal.on("shown.bs.modal.signatureFlowController", () => {
+            this.initGotoNextPreferenceBinding("#refuseGotoNext", syncRefuseRedirectValue);
+            syncRefuseRedirectValue($("#refuseGotoNext").is(':checked'));
+        });
+
+        refuseModal.find("form").off("submit.signatureFlowController");
+        refuseModal.find("form").on("submit.signatureFlowController", () => {
+            const refuseGotoNext = $("#refuseGotoNext");
+            if (refuseGotoNext.length) {
+                this.storeGotoNextPreference(refuseGotoNext.is(':checked'));
+            }
+            syncRefuseRedirectValue(refuseGotoNext.is(':checked'));
+        });
+    }
+
+    launchQuickSign() {
+        const requiresPanel = this.signUi.currentSignType !== 'hiddenVisa'
+            && typeof this.signUi.hasValidSelectedCertType === 'function'
+            && !this.signUi.hasValidSelectedCertType();
+        this.signUi.signComment = $();
+        return this.prepareLaunchSign(Boolean(requiresPanel));
+    }
+
+    removeImageStampOptionTemporarily() {
+        const certTypeSelect = this.signUi.certTypeSelect;
+        if (!certTypeSelect.length || this.removedImageStampOption != null) {
+            return;
+        }
+
+        const imageStampOption = certTypeSelect.find("option[value='imageStamp']").first();
+        if (!imageStampOption.length) {
+            return;
+        }
+
+        this.removedImageStampOption = {
+            text: imageStampOption.text() || this.signUi.saveOptionText,
+            wasSelected: certTypeSelect.val() === 'imageStamp'
+        };
+
+        imageStampOption.remove();
+        if (this.removedImageStampOption.wasSelected) {
+            certTypeSelect.val("");
+        }
+
+        this.signUi.checkSignOptions();
+        this.signUi.syncSignatureStepUi();
+    }
+
+    restoreRemovedImageStampOption() {
+        const removedImageStampOption = this.removedImageStampOption;
+        if (removedImageStampOption == null) {
+            return;
+        }
+
+        const certTypeSelect = this.signUi.certTypeSelect;
+        if (certTypeSelect.length && certTypeSelect.find("option[value='imageStamp']").length === 0) {
+            certTypeSelect.prepend($('<option>', {
+                value: 'imageStamp',
+                text: removedImageStampOption.text
+            }));
+        }
+
+        this.removedImageStampOption = null;
+        this.signUi.checkSignOptions();
+
+        if (removedImageStampOption.wasSelected) {
+            certTypeSelect.val('imageStamp');
+            this.signUi.checkAfterChangeSignType();
+            return;
+        }
+
+        this.signUi.syncSignatureStepUi();
+        this.signUi.updateMobileCertTypeVisibility();
     }
 
     launchSignModal() {
+        return this.prepareLaunchSign(true);
+    }
+
+    prepareLaunchSign(forcePanel = false) {
         const signUi = this.signUi;
         this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
         console.info("launch sign modal");
@@ -43,8 +245,8 @@ export class SignatureFlowController {
                                     callback: result => {
                                         if (result) {
                                             if(this.checkAttachement()) {
-                                                $("#certType > option[value='imageStamp']").remove();
-                                                this.confirmLaunchSignModal();
+                                                this.removeImageStampOptionTemporarily();
+                                                this.confirmLaunchSignModal(forcePanel);
                                             }
                                         } else {
                                             $("#addSignButton").click();
@@ -75,6 +277,9 @@ export class SignatureFlowController {
                                 $("#no-options").hide();
                                 $("#no-options-alert").hide();
                                 $("#selectTypeDiv").show();
+                                $("#checkValidateAdvancedSignButton").show();
+                                $("#launchNoInfiniteSignButton").show();
+                                $("#launch-infinite-sign-button").show();
                                 $("#checkValidateSignButtonEnd").show();
                                 $("#checkValidateSignButtonNext").show();
                             }
@@ -83,14 +288,14 @@ export class SignatureFlowController {
                             $("#certType").val('imageStamp');
                         }
                         if(this.checkAttachement()) {
-                            this.confirmLaunchSignModal();
+                            this.confirmLaunchSignModal(forcePanel);
                         }
                     }
                 }
             });
         } else {
             if(this.checkAttachement()) {
-                this.confirmLaunchSignModal();
+                this.confirmLaunchSignModal(forcePanel);
             }
         }
     }
@@ -131,23 +336,36 @@ export class SignatureFlowController {
         return false;
     }
 
-    confirmLaunchSignModal() {
-        let enableInfinite = $("#enableInfinite");
-        enableInfinite.unbind();
-        enableInfinite.on("click", function () {
-            $("#infiniteForm").toggleClass("d-none");
-            $("#launchNoInfiniteSignButtonEnd").toggle();
-            $("#launchNoInfiniteSignButtonNext").toggle();
-            $("#signCommentNoInfinite").toggle();
+    confirmLaunchSignModal(forcePanel = false) {
+        if (!Boolean(this.signUi.stepRepeatable) && !forcePanel) {
+            this.signUi.signComment = $();
+            this.launchSign();
+            return;
+        }
+
+        const signModal = $("#signModal");
+        const enableInfinite = $("#enableInfinite");
+        const infiniteForm = $("#infiniteForm");
+        const launchNoInfiniteSignButton = $("#launchNoInfiniteSignButton");
+        const signCommentNoInfinite = $("#signCommentNoInfinite");
+
+        infiniteForm.addClass("d-none");
+        launchNoInfiniteSignButton.show();
+        signCommentNoInfinite.show();
+
+        enableInfinite.off("click.signatureFlowController");
+        enableInfinite.on("click.signatureFlowController", function (e) {
+            e.preventDefault();
+            infiniteForm.toggleClass("d-none");
+            launchNoInfiniteSignButton.toggle();
+            signCommentNoInfinite.toggle();
         });
-        let signModal = $("#signModal");
-        signModal.on('shown.bs.modal', function () {
-            $("#checkValidateSignButtonEnd").focus();
-            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
-            if(checkValidateSignButtonNext != null) {
-                checkValidateSignButtonNext.focus();
-            }
-        });
+
+        if (signModal.length) {
+            signModal.modal('show');
+            return;
+        }
+
         this.launchSign();
     }
 
@@ -157,8 +375,36 @@ export class SignatureFlowController {
     }
 
     setLaunchButtonsDisabled(disabled) {
+        $("#signLaunchButton").prop("disabled", disabled);
+        $("#signAdvancedLaunchButton").prop("disabled", disabled);
+        $("#checkValidateAdvancedSignButton").prop("disabled", disabled);
+        $("#launchNoInfiniteSignButton").prop("disabled", disabled);
+        $("#launch-infinite-sign-button").prop("disabled", disabled);
         $("#checkValidateSignButtonNext").prop("disabled", disabled);
         $("#checkValidateSignButtonEnd").prop("disabled", disabled);
+    }
+
+    resolveRequestedNextUrl(trigger = null) {
+        const triggerElement = trigger?.currentTarget != null ? $(trigger.currentTarget) : $();
+        const explicitNextUrl = triggerElement.attr("data-es-next-url");
+        if (explicitNextUrl != null && explicitNextUrl !== "") {
+            return explicitNextUrl;
+        }
+
+        if (triggerElement.closest("#signModal").length) {
+            const signGotoNext = $("#signGotoNext");
+            if (signGotoNext.length && signGotoNext.is(':checked')) {
+                return signGotoNext.attr("data-es-next-url") ?? null;
+            }
+            return null;
+        }
+
+        return null;
+    }
+
+    shouldPersistGotoNextPreference(trigger = null) {
+        const triggerElement = trigger?.currentTarget != null ? $(trigger.currentTarget) : $();
+        return triggerElement.closest("#signModal").length > 0;
     }
 
     setContextualPassword(password) {
@@ -289,12 +535,14 @@ export class SignatureFlowController {
             return;
         }
         $(window).unbind("beforeunload");
-        if(e != null && e.currentTarget != null) {
-            this.state.gotoNext = $(e.currentTarget).attr("data-es-next-url");
-            signUi.gotoNext = this.state.gotoNext;
+        this.state.gotoNext = this.resolveRequestedNextUrl(e);
+        const signGotoNext = $("#signGotoNext");
+        if (signGotoNext.length && this.shouldPersistGotoNextPreference(e)) {
+            this.storeGotoNextPreference(signGotoNext.is(':checked'));
         }
+        signUi.gotoNext = this.state.gotoNext;
+        this.skipRestoreOnNextSignModalHide = true;
         signModal.modal('hide');
-        $('#stepRepeatableModal').modal('hide');
         this.state.percent = 0;
         signUi.percent = 0;
         let good = true;
@@ -310,6 +558,7 @@ export class SignatureFlowController {
         if(good) {
             this.requestContextualInfo().then(canContinue => {
                 if (!canContinue) {
+                    this.restoreRemovedImageStampOption();
                     this.setLaunchButtonsDisabled(false);
                     return;
                 }
@@ -346,6 +595,9 @@ export class SignatureFlowController {
         if(signUi.workspace != null) {
             let signRequestParamses = Array.from(signUi.workspace.signPlacementController.signRequestParamses.values());
             let signRequestParamsesToSend = signRequestParamses.map(originalParams => {
+                if (typeof originalParams?.synchronizePositionWithRenderedCross === 'function') {
+                    originalParams.synchronizePositionWithRenderedCross();
+                }
                 let signScale = signUi.normalizeFloat(originalParams.signScale, 1, 0.01);
                 let signPageNumber = signUi.normalizeInteger(originalParams.signPageNumber, 1, 1);
                 let xPos = signUi.normalizeInteger(originalParams.xPos, 0, 0);
@@ -408,7 +660,7 @@ export class SignatureFlowController {
                 'signAll' : this.getContextualSignAll(),
                 'sealCertificat' : signUi.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
-                'comment' : signUi.signComment.val(),
+                'comment' : signUi.signComment?.val?.() ?? "",
                 'formData' : JSON.stringify(formData)
             };
             if (signUi.currentSignType !== 'hiddenVisa') {
@@ -465,8 +717,7 @@ export class SignatureFlowController {
                 }
             },
             error: function(data) {
-                $("#checkValidateSignButtonEnd").removeAttr("disabled");
-                $("#checkValidateSignButtonNext").removeAttr("disabled");
+                this.setLaunchButtonsDisabled(false);
                 $("#signSpinner").hide();
                 console.error("sign error : " + data.responseText);
                 document.getElementById("signError").style.display = "block";
@@ -474,7 +725,7 @@ export class SignatureFlowController {
                     "<p>Une erreur s’est produite lors de la signature du document.</p>" +
                     "<small>Message retourné par le système de signature : " + data.responseText + "</small>";
                 document.getElementById("closeModal").style.display = "block";
-            }
+            }.bind(this)
         });
     }
 

@@ -10,7 +10,7 @@
     <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
         <ol id="breadcrumb-ol" class="breadcrumb">
             <li th:if="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><a href="/public/control">Retour</a></li>
-            <li th:unless="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><i class="fi fi-rr-registration-paper"></i>&nbsp;Vérification de la conformité du document</li>
+            <li th:unless="${(auditTrail != null || simpleReport != null || (error != null && error)) && generatePdf != true}" class="breadcrumb-item active"><i class="fi fi-rr-registration-paper"></i> Vérification de la conformité du document</li>
         </ol>
     </nav>
     <div class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">

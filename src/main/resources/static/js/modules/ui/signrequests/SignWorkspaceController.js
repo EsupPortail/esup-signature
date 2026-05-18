@@ -132,6 +132,7 @@ export class SignWorkspaceController {
             priorityContainers: ["#tools", ".es-nav-tools"],
             onAddComment: () => this.enableCommentAdd(),
             onAddSpot: () => this.enableSpotAdd(),
+            onRequestSignatureStep: () => this.signPlacementController.requestSignatureStep(),
             onAddSign: () => this.addSign(),
             onAddParaph: () => this.addParaph(),
             onAddCheck: () => this.signPlacementController.addCheckImage(this.pdfViewer.pageNum),
@@ -208,6 +209,7 @@ export class SignWorkspaceController {
             isSignable: () => this.signable,
             isEditable: () => this.editable,
             isManager: () => this.isManager,
+            isCreator: () => this.isCurrentUserCreator(),
             getBrowserZoom: () => this.getBrowserZoom(),
             requestAddSign: signIndex => this.addSign(signIndex),
             findSpotIdForSignParams: signParams => this.findSpotIdForSignParams(signParams),
@@ -336,6 +338,31 @@ export class SignWorkspaceController {
         return this.spotManager.filterSpotsNotCurrentStep(spots);
     }
 
+    isCurrentUserCreator() {
+        const creator = this.state?.frontDto?.creator ?? this.showDataFlow?.front?.creator ?? null;
+        const candidates = [
+            this.state?.frontDto?.user ?? null,
+            this.state?.frontDto?.authUser ?? null,
+            this.showDataFlow?.front?.user ?? null,
+            this.showDataFlow?.front?.authUser ?? null,
+            (typeof window !== "undefined" && window.user != null) ? window.user : null
+        ].filter(candidate => candidate != null);
+
+        const creatorId = Number.parseInt(creator?.id, 10);
+        const creatorEppn = creator?.eppn ?? null;
+        for (let i = 0; i < candidates.length; i++) {
+            const candidate = candidates[i];
+            const candidateId = Number.parseInt(candidate?.id, 10);
+            if (Number.isFinite(creatorId) && Number.isFinite(candidateId) && creatorId === candidateId) {
+                return true;
+            }
+            if (creatorEppn != null && candidate?.eppn != null && creatorEppn === candidate.eppn) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     findSpotIdForSignParams(signParams) {
         return this.spotManager.findSpotIdForSignParams(signParams);
     }
@@ -356,8 +383,43 @@ export class SignWorkspaceController {
         return this.signSpaceManager.refreshSignFields();
     }
 
-    addSign(forceSignNumber) {
+    resolvePreferredSignImageNumber() {
+        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+        const candidates = [
+            this.state?.frontDto?.user?.defaultSignImageNumber,
+            this.showDataFlow?.front?.user?.defaultSignImageNumber,
+            this.signImageNumber
+        ];
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            const uiMe = rawUiMe ? JSON.parse(rawUiMe) : null;
+            candidates.unshift(uiMe?.user?.defaultSignImageNumber ?? null);
+        } catch (error) {
+            console.debug('Unable to read default sign image from session UI payload', error);
+        }
+        for (let i = 0; i < candidates.length; i++) {
+            const parsedSignImageNumber = Number.parseInt(candidates[i], 10);
+            if (Number.isFinite(parsedSignImageNumber)) {
+                return parsedSignImageNumber;
+            }
+        }
+        if (this.restore && Number.isFinite(storedSignNumber)) {
+            return storedSignNumber;
+        }
+        return null;
+    }
+
+    async addSign(forceSignNumber) {
+        const resetRequestedSignatureStep = () => {
+            if (typeof this.signPlacementController?.clearRequestedSignatureStep === "function") {
+                this.signPlacementController.clearRequestedSignatureStep();
+            }
+            if (typeof this.signPlacementController?.refreshSteps === "function") {
+                this.signPlacementController.refreshSteps();
+            }
+        };
         if(!this.notSigned && this.signPlacementController.signsList.length > 0) {
+            resetRequestedSignatureStep();
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.")
             return;
         }
@@ -367,6 +429,7 @@ export class SignWorkspaceController {
                 ? this.signPlacementController.hasValidSelectedCertType()
                 : (certTypeSelect.val() != null && certTypeSelect.val() !== ""));
         if (!hasValidSelectedCertType) {
+            resetRequestedSignatureStep();
             if (!this.missingCertTypeAlertShown) {
                 this.missingCertTypeAlertShown = true;
                 bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", function() {
@@ -375,9 +438,7 @@ export class SignWorkspaceController {
                         }, 50);
                 });
             }
-            if (typeof this.signPlacementController?.refreshSteps === "function") {
-                this.signPlacementController.refreshSteps();
-            } else {
+            if (typeof this.signPlacementController?.refreshSteps !== "function") {
                 certTypeSelect.trigger("focus");
             }
             return;
@@ -400,11 +461,25 @@ export class SignWorkspaceController {
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
         }
-        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
-        if(Number.isFinite(storedSignNumber) && this.restore) {
-            this.signImageNumber = storedSignNumber;
+        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
+        if (Number.isFinite(resolvedSignImageNumber)) {
+            this.signImageNumber = resolvedSignImageNumber;
         }
-        this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
+        if (signRequestParams == null) {
+            resetRequestedSignatureStep();
+            return;
+        }
+        const hasTargetSlot = Number.isFinite(parseInt(signNum, 10));
+        if (signRequestParams != null && hasTargetSlot) {
+            this.signSpaceManager.placeSignOnSlot(parseInt(signNum, 10), signRequestParams);
+        } else if (signRequestParams != null && typeof signRequestParams.activatePlacement === "function") {
+            const activatePlacement = () => signRequestParams.activatePlacement();
+            activatePlacement();
+            if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+                window.requestAnimationFrame(activatePlacement);
+            }
+        }
     }
 
 
@@ -471,9 +546,9 @@ export class SignWorkspaceController {
 
     getPrimaryToolbarFocusSelectors() {
         if (this.currentSignType === 'hiddenVisa') {
-            return ['#signLaunchButton', '#refuseLaunchButton', '#insert-btn'];
+            return ['#signLaunchButton', '#signAdvancedLaunchButton', '#refuseLaunchButton', '#insert-btn'];
         }
-        return ['#addSignButton2', '#certType', '#addParaphButton2', '#signLaunchButton', '#refuseLaunchButton'];
+        return ['#addSignButton2', '#signLaunchButton', '#signAdvancedLaunchButton', '#addParaphButton2', '#refuseLaunchButton'];
     }
 
     refreshToolbarAccessibility() {
@@ -663,6 +738,7 @@ export class SignWorkspaceController {
             $('#sign-tools').removeClass("d-none");
             $('#signTools').removeClass("d-none");
             $('#signLaunchButton').removeClass('d-none');
+            $('#signAdvancedLaunchButton').removeClass('d-none');
             $('#addSignButton2').removeClass('d-none');
             $('#addParaphButton').removeClass('d-none');
             $('#visaLaunchButton').removeClass('d-none');
@@ -727,6 +803,7 @@ export class SignWorkspaceController {
         $('#addCommentButton2').addClass('d-none');
         $('#addSpotButton2').addClass('d-none');
         $('#signLaunchButton').addClass('d-none');
+        $('#signAdvancedLaunchButton').addClass('d-none');
         $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
         $('#addParaphButton').addClass('d-none');

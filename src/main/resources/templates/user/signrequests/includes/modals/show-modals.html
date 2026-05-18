@@ -29,7 +29,26 @@
         </div>
     </div>
 
-    <div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
+    <div th:replace="~{fragments/sign-validation-modal :: sign-modal(
+        signable=${signRequestFull.signable},
+        currentSignType=${signRequestFull.currentSignType},
+        signRequest=${signRequestLight},
+        signRequests=${null},
+        signWiths=${showSignRequest.signWiths},
+        sealCertOK=${showSignRequest.sealCertOK},
+        sealCertificatPropertieses=${showSignRequest.sealCertificatPropertieses},
+        currentStepMinSignLevel=${signRequestFull.currentStepMinSignLevel},
+        signatureIds=${showSignRequest.signatureIds},
+        stepRepeatable=${signRequestFull.stepRepeatable},
+        signBook=${showSignRequest.signBookLight},
+        currentStepRepeatableSignType=${signRequestFull.currentStepRepeatableSignType},
+        signTypes=${signTypes},
+        liveWorkflowStepCount=${showSignRequest.liveWorkflowStepCount},
+        currentStepNumber=${signRequestFull.currentStepNumber},
+        steps=${showSignRequest.steps},
+        nextSignRequestId=${showSignRequest.nextSignRequestId},
+        urlProfil=${showSignRequest.urlProfil}
+    )}"></div>
 
     <div th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
         data-bs-focus="false" class="modal fade" id="sendModal" role="dialog" aria-hidden="true">
@@ -272,7 +291,7 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade es-signrequest-sidepanel" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/refuse/' + ${signRequestLight.id}" method="post">
@@ -282,20 +301,19 @@
                     </div>
                     <div class="modal-body">
                         <textarea id="refuseComment" placeholder="Vous devez ajouter un motif de refus. Celui-ci sera visible par tous les participants" class="form-control" name="comment" required></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <div>
-                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signRequestFull.nbSignRequests == 1 || !showSignRequest.hasNextSignBook}"
-                                    class="btn btn-danger me-1" title="Refuser" autofocus>
-                                <span>Refuser</span>
-                            </button>
-                            <button type="submit" id="refuseNext" th:if="${showSignRequest.nextSignRequestId != null && otp == null}" name="redirect" th:value="${showSignRequest.nextSignRequestId}"
-                                    class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
-                                <span>Refuser et aller à la suivante </span>
-                                <i class="fa-solid fa-arrow-alt-circle-right"></i>
-                            </button>
+                        <div id="refuseGotoNextContainer" class="form-group my-3" th:if="${showSignRequest.nextSignRequestId != null && otp == null}">
+                            <div class="form-check form-switch form-switch-md">
+                                <label class="form-check-label" for="refuseGotoNext">Après refus, ouvrir la demande suivante</label>
+                                <input type="checkbox" class="form-check-input" id="refuseGotoNext"
+                                       th:data-es-next-id="${showSignRequest.nextSignRequestId}"/>
+                            </div>
                         </div>
+                        <input type="hidden" id="refuseRedirectValue" name="redirect" value="end"/>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="submit" id="refuseSubmit" class="btn btn-danger" autofocus>
+                            <span>Refuser</span>
+                        </button>
                     </div>
                 </form>
             </div>
