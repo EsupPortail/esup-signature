@@ -356,7 +356,11 @@ export class SignWorkspaceController {
         return this.signSpaceManager.refreshSignFields();
     }
 
-    getDefaultSignImageNumber() {
+    resolvePreferredSignImageNumber() {
+        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
+        if (this.restore && Number.isFinite(storedSignNumber)) {
+            return storedSignNumber;
+        }
         const candidates = [
             this.state?.frontDto?.user?.defaultSignImageNumber,
             this.showDataFlow?.front?.user?.defaultSignImageNumber,
@@ -376,14 +380,6 @@ export class SignWorkspaceController {
             }
         }
         return null;
-    }
-
-    resolveSignImageNumber() {
-        const storedSignNumber = Number.parseInt(localStorage.getItem('signNumber'), 10);
-        if (this.restore && Number.isFinite(storedSignNumber)) {
-            return storedSignNumber;
-        }
-        return this.getDefaultSignImageNumber();
     }
 
     async addSign(forceSignNumber) {
@@ -430,7 +426,7 @@ export class SignWorkspaceController {
         if(this.currentSignRequestParamses[signNum] != null) {
             targetPageNumber = this.currentSignRequestParamses[signNum].signPageNumber;
         }
-        const resolvedSignImageNumber = this.resolveSignImageNumber();
+        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
         if (Number.isFinite(resolvedSignImageNumber)) {
             this.signImageNumber = resolvedSignImageNumber;
         }

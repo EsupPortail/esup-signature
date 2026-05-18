@@ -44,56 +44,40 @@ export class SignPlacementController extends EventFactory {
         this.refreshSteps();
     }
 
-    readUiMe() {
-        try {
-            const rawUiMe = sessionStorage.getItem('uiMe');
-            return rawUiMe ? JSON.parse(rawUiMe) : null;
-        } catch (error) {
-            console.debug('Unable to parse uiMe session payload', error);
-            return null;
-        }
-    }
-
-    inferSpecialSignImageNumbersFromAvailableImages() {
+    initializeSpecialSignImageNumbers() {
         const signImages = Array.isArray(this.signImages) ? this.signImages : [];
         if (signImages.length === 0) {
-            return {
-                generatedSignImageNumber: null,
-                parapheSignImageNumber: null
-            };
+            this.generatedSignImageNumber = null;
+            this.parapheSignImageNumber = null;
+            return;
         }
 
-        const uiMe = this.readUiMe();
-        const userImageIds = Array.isArray(uiMe?.userImagesIds) ? uiMe.userImagesIds : null;
+        let uiMe = null;
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            uiMe = rawUiMe ? JSON.parse(rawUiMe) : null;
+        } catch (error) {
+            console.debug('Unable to parse uiMe session payload', error);
+        }
+        const userImageIds = uiMe != null && Array.isArray(uiMe.userImagesIds) ? uiMe.userImagesIds : null;
         if (userImageIds != null) {
-            const generatedSignImageNumber = signImages.length > userImageIds.length
+            this.generatedSignImageNumber = signImages.length > userImageIds.length
                 ? userImageIds.length
                 : null;
-            return {
-                generatedSignImageNumber,
-                parapheSignImageNumber: generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
-                    ? generatedSignImageNumber + 1
-                    : null
-            };
+            this.parapheSignImageNumber = this.generatedSignImageNumber != null && signImages.length > this.generatedSignImageNumber + 1
+                ? this.generatedSignImageNumber + 1
+                : null;
+            return;
         }
 
         if (signImages.length === 1) {
-            return {
-                generatedSignImageNumber: 0,
-                parapheSignImageNumber: null
-            };
+            this.generatedSignImageNumber = 0;
+            this.parapheSignImageNumber = null;
+            return;
         }
 
-        return {
-            generatedSignImageNumber: signImages.length - 2,
-            parapheSignImageNumber: signImages.length - 1
-        };
-    }
-
-    initializeSpecialSignImageNumbers() {
-        const specialSignImageNumbers = this.inferSpecialSignImageNumbersFromAvailableImages();
-        this.generatedSignImageNumber = specialSignImageNumbers.generatedSignImageNumber;
-        this.parapheSignImageNumber = specialSignImageNumbers.parapheSignImageNumber;
+        this.generatedSignImageNumber = signImages.length - 2;
+        this.parapheSignImageNumber = signImages.length - 1;
     }
 
     getScrollContainer() {
@@ -202,19 +186,17 @@ export class SignPlacementController extends EventFactory {
         }
     }
 
-    getFavoriteSignRequestParams() {
-        try {
-            const rawFavorite = sessionStorage.getItem("favoriteSignRequestParams");
-            return rawFavorite ? JSON.parse(rawFavorite) : null;
-        } catch (error) {
-            console.debug("Unable to parse favorite sign request params", error);
-            return null;
-        }
-    }
-
     buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
         let initialModel = currentSignRequestParams;
-        const favoriteSignRequestParams = !isParaph ? this.getFavoriteSignRequestParams() : null;
+        let favoriteSignRequestParams = null;
+        if (!isParaph) {
+            try {
+                const rawFavorite = sessionStorage.getItem("favoriteSignRequestParams");
+                favoriteSignRequestParams = rawFavorite ? JSON.parse(rawFavorite) : null;
+            } catch (error) {
+                console.debug("Unable to parse favorite sign request params", error);
+            }
+        }
         if (favoriteSignRequestParams != null) {
             initialModel = { ...favoriteSignRequestParams };
             if (currentSignRequestParams != null) {
