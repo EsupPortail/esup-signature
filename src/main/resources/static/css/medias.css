@@ -63,8 +63,7 @@
         display: none !important;
     }
 
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2:not(.es-mobile-step-view) > [id^="step-"].active,
-    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2.es-mobile-step-view > [id^="step-"].es-mobile-visible {
+    body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 > [id^="step-"].active {
         display: flex !important;
     }
 
@@ -80,16 +79,12 @@
         width: auto !important;
         flex: 1 1 auto;
         min-width: 0;
-        padding-inline: 2.5rem;
+        padding-inline: 0.5rem;
     }
 
     body.es-signrequest-page #tools .es-steps-responsive-nav .step-horizontal-v2 {
         flex: 1 0 auto;
         justify-content: center;
-    }
-
-    body.es-signrequest-page #tools .es-steps-responsive-nav .es-step-nav-btn {
-        display: inline-flex !important;
     }
 
     .step-horizontal-v2 {
@@ -486,7 +481,7 @@
 
 @media (max-width: 576px) {
 
-    body.es-signrequest-page #tools .es-steps-responsive-nav .es-step-nav-btn {
+    body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {
         display: none !important;
     }
 

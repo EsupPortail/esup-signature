@@ -37,14 +37,6 @@
             <i class="fi fi-rr-arrow-small-right" style="margin-top: 0"></i> Aller à la suivante
         </a>
         <div class="es-steps-responsive-nav" th:if="${signRequestFull.signable}">
-            <button type="button"
-                    id="step-nav-prev"
-                    class="es-step-nav-btn btn btn-light btn-outline-dark d-xxxl-none"
-                    title="Étape précédente"
-                    aria-label="Étape précédente"
-                    th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                <i class="fi fi-rr-angle-small-left"></i>
-            </button>
             <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
                 <div id="step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <div class="d-flex align-items-center gap-2">
@@ -75,7 +67,7 @@
                         <div id="signActionButtons" class="d-flex align-items-center justify-content-center gap-1 p-1 bg-secondary-subtle rounded-2">
                             <button tabindex="1" th:id="'signLaunchButton'" role="button"
                                     class="btn p-3"
-                                    th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa ? ' d-none' : ' btn-secondary d-none')}"
+                                    th:classappend="${(signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' es-quick-sign-action' : '') + (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa ? ' d-none' : ' btn-secondary d-none'))}"
                                     th:styleappend="''">
                                 <i th:class="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? 'fi fi-rr-registration-paper' : 'fi fi-rr-signature-lock'" style="margin-top: 0; border: 0"></i>
                                 <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Validation rapide</span>
@@ -105,16 +97,8 @@
                     </div>
                 </div>
             </div>
-            <button type="button"
-                    id="step-nav-next"
-                    class="es-step-nav-btn btn btn-light btn-outline-dark d-xxxl-none"
-                    title="Étape suivante"
-                    aria-label="Étape suivante"
-                    th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                <i class="fi fi-rr-angle-small-right"></i>
-            </button>
         </div>
-        <div class="es-tools-responsive-refuse d-xxxl-none"
+        <div id="refuseLaunchDivResponsive" class="es-tools-responsive-refuse d-xxxl-none"
              th:if="${signRequestFull.signable && (signRequestFull.currentStepNumber > 1 || signRequestLight.createBy.eppn != userEppn)}">
             <button tabindex="1" class="btn p-3 btn-danger" title="Refuser"
                     th:token="${signRequestLight.token}" data-bs-toggle="modal" data-bs-target="#refuseModal">

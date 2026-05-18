@@ -99,40 +99,6 @@ body.es-signrequest-page #tools .es-steps-responsive-nav {
     position: relative;
 }
 
-body.es-signrequest-page #tools .es-step-nav-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    border-radius: 999px;
-    border-color: var(--bs-border-color);
-    background-color: rgba(255, 255, 255, 0.95);
-    color: var(--bs-secondary-color);
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
-}
-
-body.es-signrequest-page #tools #step-nav-prev {
-    left: 0.375rem;
-}
-
-body.es-signrequest-page #tools #step-nav-next {
-    right: 0.375rem;
-}
-
-body.es-signrequest-page #tools .es-step-nav-btn i {
-    font-size: 1rem;
-}
-
-body.es-signrequest-page #tools .es-step-nav-btn:disabled {
-    opacity: 0.35;
-    box-shadow: none;
-}
 
 body.es-signrequest-page #tools .step-horizontal-v2 {
     /*flex: 1 0 auto;*/
