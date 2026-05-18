@@ -457,14 +457,14 @@ export class SignWorkspaceController {
             this.signImageNumber = resolvedSignImageNumber;
         }
         const signRequestParams = await this.signPlacementController.addSign(targetPageNumber, this.restore, this.signImageNumber, signNum);
-        if (signRequestParams != null && Number.isFinite(parseInt(signNum, 10))) {
+        const hasTargetSlot = Number.isFinite(parseInt(signNum, 10));
+        if (signRequestParams != null && hasTargetSlot) {
             this.signSpaceManager.placeSignOnSlot(parseInt(signNum, 10), signRequestParams);
         } else if (signRequestParams != null && typeof signRequestParams.activatePlacement === "function") {
-            signRequestParams.activatePlacement();
+            const activatePlacement = () => signRequestParams.activatePlacement();
+            activatePlacement();
             if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
-                window.requestAnimationFrame(() => {
-                    signRequestParams.activatePlacement();
-                });
+                window.requestAnimationFrame(activatePlacement);
             }
         }
     }

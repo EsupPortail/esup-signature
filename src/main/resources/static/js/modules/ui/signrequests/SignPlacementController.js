@@ -352,7 +352,7 @@ export class SignPlacementController extends EventFactory {
                 id = 999999;
                 this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
                     this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
-                this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+                this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
                 this.signRequestParamses.get(id).changeSignSize(null);
 
             } else if(signImageNumber >= 0) {
@@ -414,9 +414,9 @@ export class SignPlacementController extends EventFactory {
             $("#signImage_" + id).addClass("d-none");
         }
         if (!isParaph) {
-            this.signRequestParamses.get(id).addEventListener("sizeChanged", e => this.signRequestParamses.get(id).simulateDrop());
+            this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
         }
-        let srp = this.signRequestParamses.get(id);
+        const srp = this.signRequestParamses.get(id);
         this.id++;
         if (!isSpot && !isParaph) {
             this.refreshSteps();
@@ -680,7 +680,6 @@ export class SignPlacementController extends EventFactory {
             step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
             step3.find(".step-horizontal-v2-icon").html("3");
             this.dispatchResponsiveStepChange("step-3");
-            signLaunchButton.focus();
         }
 
         selectCertType.removeAttr("disabled");
@@ -701,6 +700,8 @@ export class SignPlacementController extends EventFactory {
         step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step3.find(".step-horizontal-v2-icon").html("3");
         this.dispatchResponsiveStepChange("step-3");
+        signLaunchButton.focus();
+
     }
 
     destroy() {
