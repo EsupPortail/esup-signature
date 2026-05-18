@@ -956,15 +956,8 @@ export class SignRequestParams extends EventFactory {
             this.fireEvent("placementStateChanged", [this]);
             return;
         }
-        const signLaunchButton = $("#signLaunchButton");
-        const signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         if (!this.inside) {
             console.log("La signature n'est pas entièrement dans une page !");
-            signLaunchButton.attr("disabled", "disabled").removeClass("btn-success").addClass("btn-secondary");
-            signAdvancedLaunchButton.attr("disabled", "disabled").removeClass("btn-success").addClass("btn-secondary");
-        } else {
-            signLaunchButton.removeAttr("disabled").removeClass("btn-secondary").addClass("btn-success");
-            signAdvancedLaunchButton.removeAttr("disabled").removeClass("btn-secondary").addClass("btn-success");
         }
         this.#computeBgColor();
         this.fireEvent("placementStateChanged", [this]);

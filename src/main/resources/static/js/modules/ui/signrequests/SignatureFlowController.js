@@ -402,6 +402,11 @@ export class SignatureFlowController {
         return null;
     }
 
+    shouldPersistGotoNextPreference(trigger = null) {
+        const triggerElement = trigger?.currentTarget != null ? $(trigger.currentTarget) : $();
+        return triggerElement.closest("#signModal").length > 0;
+    }
+
     setContextualPassword(password) {
         this.contextualPassword = typeof password === "string" ? password : "";
     }
@@ -532,7 +537,7 @@ export class SignatureFlowController {
         $(window).unbind("beforeunload");
         this.state.gotoNext = this.resolveRequestedNextUrl(e);
         const signGotoNext = $("#signGotoNext");
-        if (signGotoNext.length) {
+        if (signGotoNext.length && this.shouldPersistGotoNextPreference(e)) {
             this.storeGotoNextPreference(signGotoNext.is(':checked'));
         }
         signUi.gotoNext = this.state.gotoNext;

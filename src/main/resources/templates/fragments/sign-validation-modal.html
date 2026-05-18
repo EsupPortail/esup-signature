@@ -199,25 +199,25 @@
                     </button>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer justify-content-center">
                 <div th:if="${signRequest != null}" th:unless="${stepRepeatable != null && stepRepeatable}">
                     <button id="checkValidateAdvancedSignButton"
-                            class="btn btn-success" title="Confirmer" th:value="${signRequest.id}" autofocus>
-                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la signature avancée</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Confirmer le visa avancé</span>
-                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la validation avancée</span>
+                            class="btn btn-success" th:value="${signRequest.id}" autofocus>
+                        <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la signature</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Confirmer le visa</span>
+                        <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Confirmer la validation</span>
                     </button>
                 </div>
                 <div th:if="${signRequest == null && (signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || signWiths.size() > 0)}">
                 <button id="checkValidateSignButtonEnd"
-                            class="btn btn-success me-1" title="Signer/Viser" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
+                            class="btn btn-success me-1" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser</span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider</span>
                     </button>
                     <button id="checkValidateSignButtonNext" th:if="${nextSignRequestId != null}"
                             th:data-es-next-url="'/' + ${urlProfil} + '/signrequests/' + ${nextSignRequestId}"
-                            class="btn btn-success" title="Signer/viser et aller à la suivante" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
+                            class="btn btn-success" th:value="${signRequest != null ? signRequest.id : ''}" autofocus>
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider et aller à la suivante </span>
