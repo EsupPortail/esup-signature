@@ -18,10 +18,30 @@ export class SignatureFlowController {
 
         signModal.off(".signatureFlowController");
         signModal.on('shown.bs.modal.signatureFlowController', function () {
-            $("#checkValidateSignButtonEnd").focus();
-            let checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
-            if(checkValidateSignButtonNext != null) {
-                checkValidateSignButtonNext.focus();
+            const launchNoInfiniteSignButtonEnd = $("#launchNoInfiniteSignButtonEnd");
+            const launchNoInfiniteSignButtonNext = $("#launchNoInfiniteSignButtonNext");
+            const enableInfinite = $("#enableInfinite");
+            const checkValidateSignButtonEnd = $("#checkValidateSignButtonEnd");
+            const checkValidateSignButtonNext = $("#checkValidateSignButtonNext");
+
+            if (launchNoInfiniteSignButtonEnd.length) {
+                launchNoInfiniteSignButtonEnd.trigger('focus');
+                return;
+            }
+            if (launchNoInfiniteSignButtonNext.length) {
+                launchNoInfiniteSignButtonNext.trigger('focus');
+                return;
+            }
+            if (enableInfinite.length) {
+                enableInfinite.trigger('focus');
+                return;
+            }
+            if (checkValidateSignButtonNext.length) {
+                checkValidateSignButtonNext.trigger('focus');
+                return;
+            }
+            if (checkValidateSignButtonEnd.length) {
+                checkValidateSignButtonEnd.trigger('focus');
             }
         });
         signModal.on('hidden.bs.modal.signatureFlowController', () => {
@@ -210,14 +230,37 @@ export class SignatureFlowController {
     }
 
     confirmLaunchSignModal() {
-        let enableInfinite = $("#enableInfinite");
-        enableInfinite.unbind();
-        enableInfinite.on("click", function () {
-            $("#infiniteForm").toggleClass("d-none");
-            $("#launchNoInfiniteSignButtonEnd").toggle();
-            $("#launchNoInfiniteSignButtonNext").toggle();
-            $("#signCommentNoInfinite").toggle();
+        if (!Boolean(this.signUi.stepRepeatable)) {
+            this.launchSign();
+            return;
+        }
+
+        const signModal = $("#signModal");
+        const enableInfinite = $("#enableInfinite");
+        const infiniteForm = $("#infiniteForm");
+        const launchNoInfiniteSignButtonEnd = $("#launchNoInfiniteSignButtonEnd");
+        const launchNoInfiniteSignButtonNext = $("#launchNoInfiniteSignButtonNext");
+        const signCommentNoInfinite = $("#signCommentNoInfinite");
+
+        infiniteForm.addClass("d-none");
+        launchNoInfiniteSignButtonEnd.show();
+        launchNoInfiniteSignButtonNext.show();
+        signCommentNoInfinite.show();
+
+        enableInfinite.off("click.signatureFlowController");
+        enableInfinite.on("click.signatureFlowController", function (e) {
+            e.preventDefault();
+            infiniteForm.toggleClass("d-none");
+            launchNoInfiniteSignButtonEnd.toggle();
+            launchNoInfiniteSignButtonNext.toggle();
+            signCommentNoInfinite.toggle();
         });
+
+        if (signModal.length) {
+            signModal.modal('show');
+            return;
+        }
+
         this.launchSign();
     }
 
@@ -365,7 +408,6 @@ export class SignatureFlowController {
         }
         this.skipRestoreOnNextSignModalHide = true;
         signModal.modal('hide');
-        $('#stepRepeatableModal').modal('hide');
         this.state.percent = 0;
         signUi.percent = 0;
         let good = true;
@@ -483,7 +525,7 @@ export class SignatureFlowController {
                 'signAll' : this.getContextualSignAll(),
                 'sealCertificat' : signUi.sealCertificatSelect.val(),
                 'signRequestParams' : JSON.stringify(signRequestParamsesToSend),
-                'comment' : signUi.signComment.val(),
+                'comment' : signUi.signComment?.val?.() ?? "",
                 'formData' : JSON.stringify(formData)
             };
             if (signUi.currentSignType !== 'hiddenVisa') {

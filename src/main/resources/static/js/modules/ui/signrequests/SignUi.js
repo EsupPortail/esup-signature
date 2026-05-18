@@ -141,7 +141,7 @@ export class SignUi {
     initListeners() {
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign());
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(e));
-        $("#launch-infinite-sign-button").on('click', e => this.insertStep());
+        $("#launch-infinite-sign-button").on('click', e => this.insertStep(e));
         $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign());
         $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(e));
         $("#refresh-certType").on('click', e => this.checkSignOptions());
@@ -612,12 +612,12 @@ export class SignUi {
         textArea.remove();
     }
 
-    insertStep() {
+    insertStep(next = null) {
         console.info("check insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let recipientsEmails = $('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
+        let recipientsEmails = $('#recipientsEmails')[0]?.slim?.getSelected?.() ?? [];
         if(recipientsEmails.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;
@@ -626,11 +626,11 @@ export class SignUi {
             let recipient = new Recipient();
             recipient.email = email;
             let id = email.replaceAll("@", "_").replaceAll(".", "_");
-            let extInfos = $("div[id='recipient_" + id + "']");
-            recipient.name = extInfos.find("#name_" + id).val();
-            recipient.firstName = extInfos.find("#firstname_" + id).val();
-            recipient.phone = extInfos.find("#phone_" + id).val();
-            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked");
+            let extInfos = $("#recipient_" + id);
+            recipient.name = extInfos.find("#name_" + id).val() ?? "";
+            recipient.firstName = extInfos.find("#firstname_" + id).val() ?? "";
+            recipient.phone = extInfos.find("#phone_" + id).val() ?? "";
+            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked") ?? false;
             step.recipients.push(recipient);
         });
 
@@ -655,7 +655,10 @@ export class SignUi {
             data: JSON.stringify(step),
             success: function() {
                 self.signatureFlowController.setContextualPassword("");
-                self.launchSign();
+                self.signatureFlowController.launchSign(next);
+            },
+            error: function() {
+                bootbox.alert("Une erreur s’est produite lors de l’ajout de l’étape supplémentaire.");
             }
         });
     }

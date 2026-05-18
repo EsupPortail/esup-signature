@@ -29,7 +29,26 @@
         </div>
     </div>
 
-    <div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
+    <div th:replace="~{fragments/sign-validation-modal :: sign-modal(
+        signable=${signRequestFull.signable},
+        currentSignType=${signRequestFull.currentSignType},
+        signRequest=${signRequestLight},
+        signRequests=${null},
+        signWiths=${showSignRequest.signWiths},
+        sealCertOK=${showSignRequest.sealCertOK},
+        sealCertificatPropertieses=${showSignRequest.sealCertificatPropertieses},
+        currentStepMinSignLevel=${signRequestFull.currentStepMinSignLevel},
+        signatureIds=${showSignRequest.signatureIds},
+        stepRepeatable=${signRequestFull.stepRepeatable},
+        signBook=${showSignRequest.signBookLight},
+        currentStepRepeatableSignType=${signRequestFull.currentStepRepeatableSignType},
+        signTypes=${signTypes},
+        liveWorkflowStepCount=${showSignRequest.liveWorkflowStepCount},
+        currentStepNumber=${signRequestFull.currentStepNumber},
+        steps=${showSignRequest.steps},
+        nextSignRequestId=${showSignRequest.nextSignRequestId},
+        urlProfil=${showSignRequest.urlProfil}
+    )}"></div>
 
     <div th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
         data-bs-focus="false" class="modal fade" id="sendModal" role="dialog" aria-hidden="true">

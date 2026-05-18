@@ -243,7 +243,26 @@
         </div>
     </div>
 </main>
-<div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
+<div th:replace="~{fragments/sign-validation-modal :: sign-modal(
+    signable=${signable},
+    currentSignType=${currentSignType},
+    signRequest=${null},
+    signRequests=${signRequests},
+    signWiths=${signWiths},
+    sealCertOK=${sealCertOK},
+    sealCertificatPropertieses=${sealCertificatPropertieses},
+    currentStepMinSignLevel=${null},
+    signatureIds=${T(java.util.Collections).emptyList()},
+    stepRepeatable=${false},
+    signBook=${null},
+    currentStepRepeatableSignType=${null},
+    signTypes=${signTypes},
+    liveWorkflowStepCount=${null},
+    currentStepNumber=${null},
+    steps=${T(java.util.Collections).emptyList()},
+    nextSignRequestId=${null},
+    urlProfil=${'user'}
+)}"></div>
 <div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
