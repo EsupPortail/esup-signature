@@ -42,29 +42,6 @@
                             1
                         </div>
                     </div>
-                    <div class="step-horizontal-v2-content d-flex align-items-center gap-1">
-                        <select id="certType" name="certType" class="form-select es-form-select-xl" required title="Choix du type de signature">
-                            <option value="" disabled selected hidden>Choix du type de signature</option>
-                            <th:block th:each="signWith : ${showSignRequest.signWiths}">
-                                <th:block th:if="${signWith.name != 'sealCert'}">
-                                    <option th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}" th:unavailable="${signWith.name == 'nexuCert'} ? 'unavailable'"></option>
-                                </th:block>
-                                <th:block th:if="${signWith.name == 'sealCert'}">
-                                    <option th:if="${showSignRequest.sealCertOK}" th:value="${signWith}" th:text="#{'signwith.' + ${signWith}}"></option>
-                                    <option th:unless="${showSignRequest.sealCertOK}" value="" th:text="#{'signwith.' + ${signWith}}" disabled></option>
-                                </th:block>
-                            </th:block>
-                        </select>
-                        <!--                        <button id="refresh-certType" type="button" class="btn btn-secondary" title="Actualiser la liste des types de signature"><i class="fa-solid fa-arrows-rotate"></i></button>-->
-                    </div>
-
-                </div>
-                <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center active" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="step-horizontal-v2-icon">
-                            2
-                        </div>
-                    </div>
                     <div class="step-horizontal-v2-content">
                         <div class="text-xs font-bold d-flex align-items-center gap-1">
                             <div class="d-flex flex-nowrap" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}" style="flex: 1 1 0;">
@@ -75,23 +52,34 @@
                         </div>
                     </div>
                 </div>
-                <div id="step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center active"
+                <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center active"
                      th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? ' justify-content-center' : ''">
                     <div class="d-flex align-items-center gap-2" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                         <div class="step-horizontal-v2-icon">
-                            3
+                            2
                         </div>
                     </div>
                     <div class="step-horizontal-v2-content d-flex align-items-center gap-1"
                          th:classappend="' justify-content-center flex-grow-0 flex-nowrap'"
                          th:styleappend="'flex:0 0 auto;'">
-                        <button tabindex="1" th:id="'signLaunchButton'" role="button"
-                                class="btn p-3"
-                                th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa ? ' d-none' : ' btn-secondary d-none')}"
-                                th:styleappend="''">
-                            <i th:class="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? 'fi fi-rr-registration-paper' : 'fi fi-rr-signature-lock'" style="margin-top: 0; border: 0"></i>
-                            <span th:text="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? ' Valider le document' : ' Signer'"></span>
-                        </button>
+                        <div id="signActionButtons" class="d-flex align-items-center justify-content-center gap-1 p-1 bg-secondary-subtle rounded-2">
+                            <button tabindex="1" th:id="'signLaunchButton'" role="button"
+                                    class="btn p-3"
+                                    th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa ? ' d-none' : ' btn-secondary d-none')}"
+                                    th:styleappend="''">
+                                <i th:class="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? 'fi fi-rr-registration-paper' : 'fi fi-rr-signature-lock'" style="margin-top: 0; border: 0"></i>
+                                <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Validation rapide</span>
+                                <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"> Visa rapide</span>
+                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature standard</span>
+                            </button>
+                            <button tabindex="1" id="signAdvancedLaunchButton" role="button"
+                                    class="btn p-3 d-none">
+                                <i class="fi fi-rr-settings-sliders" style="margin-top: 0; border: 0"></i>
+                                <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Validation avancée</span>
+                                <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"> Visa avancé</span>
+                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature avancée</span>
+                            </button>
+                        </div>
                         <div th:id="'refuseLaunchDiv'"
                              th:if="${signRequestFull.currentStepNumber > 1 || signRequestLight.createBy.eppn != userEppn}"
                              class="d-flex align-items-center gap-1"

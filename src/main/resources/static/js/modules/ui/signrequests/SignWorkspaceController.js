@@ -533,9 +533,9 @@ export class SignWorkspaceController {
 
     getPrimaryToolbarFocusSelectors() {
         if (this.currentSignType === 'hiddenVisa') {
-            return ['#signLaunchButton', '#refuseLaunchButton', '#insert-btn'];
+            return ['#signLaunchButton', '#signAdvancedLaunchButton', '#refuseLaunchButton', '#insert-btn'];
         }
-        return ['#addSignButton2', '#certType', '#addParaphButton2', '#signLaunchButton', '#refuseLaunchButton'];
+        return ['#addSignButton2', '#signLaunchButton', '#signAdvancedLaunchButton', '#addParaphButton2', '#refuseLaunchButton'];
     }
 
     refreshToolbarAccessibility() {
@@ -725,6 +725,7 @@ export class SignWorkspaceController {
             $('#sign-tools').removeClass("d-none");
             $('#signTools').removeClass("d-none");
             $('#signLaunchButton').removeClass('d-none');
+            $('#signAdvancedLaunchButton').removeClass('d-none');
             $('#addSignButton2').removeClass('d-none');
             $('#addParaphButton').removeClass('d-none');
             $('#visaLaunchButton').removeClass('d-none');
@@ -789,6 +790,7 @@ export class SignWorkspaceController {
         $('#addCommentButton2').addClass('d-none');
         $('#addSpotButton2').addClass('d-none');
         $('#signLaunchButton').addClass('d-none');
+        $('#signAdvancedLaunchButton').addClass('d-none');
         $('#forward-btn').addClass('d-none');
         $('#addSignButton2').addClass('d-none');
         $('#addParaphButton').addClass('d-none');

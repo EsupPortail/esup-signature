@@ -21,6 +21,7 @@ export class SignUi {
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
         this.signLaunchButton = $("#signLaunchButton");
+        this.signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         this.toolsBar = $("#tools");
         this.certTypeObserver = null;
         this.lastResponsiveActiveStepId = null;
@@ -141,9 +142,9 @@ export class SignUi {
     initListeners() {
         $("#checkValidateSignButtonEnd").on('click', e => this.launchSign());
         $("#checkValidateSignButtonNext").on('click', e => this.launchSign(e));
+        $("#checkValidateAdvancedSignButton").on('click', e => this.launchSign(e));
         $("#launch-infinite-sign-button").on('click', e => this.insertStep(e));
-        $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign());
-        $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(e));
+        $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign(e));
         $("#refresh-certType").on('click', e => this.checkSignOptions());
         $("#refresh-certType2").on('click', e => this.checkSignOptions());
         $("#certType").on("change", e => this.checkAfterChangeSignType());
@@ -159,11 +160,15 @@ export class SignUi {
         $("#refuseModal").on('shown.bs.modal', function () {
             $("#refuseComment").focus();
         });
+        $("#signModal, #refuseModal")
+            .on('shown.bs.modal', () => $(document.body).addClass('es-signrequest-sidepanel-open'))
+            .on('hidden.bs.modal', () => $(document.body).removeClass('es-signrequest-sidepanel-open'));
     }
 
     initLaunchButtons() {
         $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        this.signLaunchButton.on('click', e => this.launchSignModal());
+        this.signLaunchButton.on('click', e => this.launchQuickSign());
+        this.signAdvancedLaunchButton.on('click', e => this.launchSignModal());
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
@@ -189,6 +194,10 @@ export class SignUi {
 
     launchSignModal() {
         return this.signatureFlowController.launchSignModal();
+    }
+
+    launchQuickSign() {
+        return this.signatureFlowController.launchQuickSign();
     }
 
     checkSignOptions() {
@@ -312,7 +321,7 @@ export class SignUi {
             return;
         }
         if (this.currentSignType === 'hiddenVisa') {
-            signPlacementController.goStep3();
+            signPlacementController.goStep2();
             this.syncResponsiveStepNavigationState();
             return;
         }
@@ -321,12 +330,7 @@ export class SignUi {
             this.syncResponsiveStepNavigationState();
             return;
         }
-        if (this.hasValidSelectedCertType() && this.hasPendingSignaturePlacement()) {
-            signPlacementController.goStep3();
-            this.syncResponsiveStepNavigationState();
-            return;
-        }
-        if (this.hasValidSelectedCertType()) {
+        if (this.hasPendingSignaturePlacement()) {
             signPlacementController.goStep2();
             this.syncResponsiveStepNavigationState();
             return;
@@ -378,14 +382,11 @@ export class SignUi {
             return [];
         }
 
-        const hideSingleCertTypeStep1 = this.toolsBar.hasClass("es-tools-single-cert-type-mobile")
-            && window.matchMedia("(max-width: 991.98px)").matches;
-
         return this.responsiveStepsContainer
             .children('[id^="step-"]')
             .toArray()
             .map(element => $(element))
-            .filter(step => !(hideSingleCertTypeStep1 && step.attr("id") === "step-1"));
+            .filter(step => step.is(':visible'));
     }
 
     isResponsiveStepNavigationEnabled() {

@@ -465,30 +465,6 @@ export class SignPlacementController extends EventFactory {
         button.addClass(activeClass);
     }
 
-    setCertTypeHighlight(isHighlighted) {
-        let selectCertType = $("#certType");
-        selectCertType.toggleClass("border-success", isHighlighted);
-        selectCertType.toggleClass("border-light-subtle", !isHighlighted);
-        if(!isHighlighted) {
-            selectCertType.trigger("blur");
-        }
-    }
-
-    getSelectableCertTypeOptions() {
-        return $("#certType").find("option:not(:disabled):not([unavailable])");
-    }
-
-    hasValidSelectedCertType() {
-        const selectCertType = $("#certType");
-        const selectedOption = selectCertType.find("option:selected");
-        const value = selectCertType.val();
-        return value != null
-            && value !== ""
-            && selectedOption.length > 0
-            && !selectedOption.is(":disabled")
-            && !selectedOption.is("[unavailable]");
-    }
-
     hasPendingSignaturePlacement() {
         const activeSigns = Array.from(this.signRequestParamses.values()).filter(signRequestParams =>
             {
@@ -535,173 +511,104 @@ export class SignPlacementController extends EventFactory {
 
     refreshSteps() {
         if (this.isHiddenVisa()) {
-            this.goStep3();
-            return;
-        }
-
-        const selectCertType = $("#certType");
-        if (!selectCertType.length) {
-            return;
-        }
-
-        const selectableOptions = this.getSelectableCertTypeOptions();
-        if (selectableOptions.length === 1 && !this.hasValidSelectedCertType()) {
-            selectableOptions.prop("selected", true);
-            selectCertType.trigger("change");
-        }
-
-        const countVisible = selectCertType.find("option:not([unavailable])").length;
-        if (countVisible > 0) {
-            selectCertType.removeAttr("disabled");
-        }
-
-        if (!this.hasValidSelectedCertType()) {
-            this.goStep1();
-            selectCertType.trigger("focus");
+            this.goStep2();
             return;
         }
 
         if (this.hasPendingSignaturePlacement()) {
-            this.goStep3();
+            this.goStep2();
             return;
         }
 
-        this.goStep2();
+        this.goStep1();
     }
 
     goStep1() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
-        let step3 = $("#step-3");
         let addSignButton = $("#addSignButton");
         let addSignButton2 = $("#addSignButton2");
         let addParaphButton2 = $("#addParaphButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
+        let signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
 
-        selectCertType.removeAttr("disabled");
         addSignButton.attr("disabled", "disabled");
-        addSignButton2.attr("disabled", "disabled");
+        addSignButton2.removeAttr("disabled");
         addParaphButton2.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
-        // signLaunchButton.attr("disabled", "disabled");
+        signLaunchButton.attr("disabled", "disabled");
+        signAdvancedLaunchButton.attr("disabled", "disabled");
         refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
 
-        this.setButtonVariant(addSignButton2, "btn-secondary");
+        this.setButtonVariant(addSignButton2, "btn-success");
+        addSignButton2.addClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
         this.setButtonVariant(signLaunchButton, "btn-secondary");
-        this.setCertTypeHighlight(true);
+        this.setButtonVariant(signAdvancedLaunchButton, "btn-secondary");
+        signAdvancedLaunchButton.removeClass("btn-success");
 
         this.setStepState(step1, true, false, false);
         this.setStepState(step2, false, false, true);
-        this.setStepState(step3, false, false, true);
 
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
-        step3.find(".step-horizontal-v2-icon").html("3");
         this.dispatchResponsiveStepChange("step-1");
     }
 
     goStep2() {
         let step1 = $("#step-1");
         let step2 = $("#step-2");
-        let step3 = $("#step-3");
         let addSignButton = $("#addSignButton");
         let addSignButton2 = $("#addSignButton2");
         let addParaphButton2 = $("#addParaphButton2");
         let insertBtn = $("#insert-btn");
         let refuseLaunchButton = $("#refuseLaunchButton");
         let signLaunchButton = $("#signLaunchButton");
+        let signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
 
-        selectCertType.removeAttr("disabled");
-        addSignButton.removeAttr("disabled");
-        addSignButton2.removeAttr("disabled");
-        addParaphButton2.removeAttr("disabled");
-        refuseLaunchButton.removeAttr("disabled");
-        insertBtn.removeAttr("disabled");
-        refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
-
-        this.setButtonVariant(addSignButton2, "btn-success");
-        this.setButtonVariant(insertBtn, "btn-success");
-        this.setButtonVariant(refuseLaunchButton, "btn-danger");
-        this.setButtonVariant(signLaunchButton, "btn-secondary");
-
-        this.setStepState(step1, false, true, false);
-        this.setStepState(step2, true, false, false);
-        this.setStepState(step3, false, false, true);
-
-        this.setCertTypeHighlight(false);
-        step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step2.find(".step-horizontal-v2-icon").html("2");
-        step3.find(".step-horizontal-v2-icon").html("3");
-        this.dispatchResponsiveStepChange("step-2");
-        this.focusWhenVisible("#addSignButton2", 20, 80);
-    }
-
-    goStep3() {
-        let step1 = $("#step-1");
-        let step2 = $("#step-2");
-        let step3 = $("#step-3");
-        let addSignButton = $("#addSignButton2");
-        let insertBtn = $("#insert-btn");
-        let refuseLaunchButton = $("#refuseLaunchButton");
-        let signLaunchButton = $("#signLaunchButton");
-        let refuseLaunchDiv = $("#refuseLaunchDiv");
-        let selectCertType = $("#certType");
-
-        this.setStepState(step1, false, true, false);
-        this.setStepState(step2, false, true, false);
-        this.setStepState(step3, true, false, false);
-
-        if (this.isHiddenVisa()) {
-            if (selectCertType.length) {
-                selectCertType.attr("disabled", "disabled");
-            }
-            addSignButton.attr("disabled", "disabled");
-            insertBtn.removeAttr("disabled");
-            refuseLaunchButton.removeAttr("disabled");
-            signLaunchButton.removeAttr("disabled");
-            refuseLaunchDiv.removeClass("d-none es-refuse-slot-hidden");
-
-            this.setButtonVariant(addSignButton, "btn-secondary");
-            this.setButtonVariant(insertBtn, "btn-success");
-            this.setButtonVariant(refuseLaunchButton, "btn-danger");
-            this.setButtonVariant(signLaunchButton, "btn-success");
-            this.setCertTypeHighlight(false);
-
-            step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-            step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-            step3.find(".step-horizontal-v2-icon").html("3");
-            this.dispatchResponsiveStepChange("step-3");
-        }
-
-        selectCertType.removeAttr("disabled");
         addSignButton.attr("disabled", "disabled");
-        insertBtn.removeAttr("disabled");
-        refuseLaunchButton.attr("disabled", "disabled");
+        addSignButton2.attr("disabled", "disabled");
+        addParaphButton2.attr("disabled", "disabled");
+        refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.removeAttr("disabled");
+        signAdvancedLaunchButton.removeAttr("disabled");
+        insertBtn.removeAttr("disabled");
         refuseLaunchDiv.removeClass("d-none");
         refuseLaunchDiv.addClass("es-refuse-slot-hidden");
 
-        this.setButtonVariant(addSignButton, "btn-success");
+        this.setButtonVariant(addSignButton2, "btn-success");
+        addSignButton2.removeClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.setButtonVariant(signLaunchButton, "btn-success");
-        this.setCertTypeHighlight(false);
+        signAdvancedLaunchButton.addClass("btn-success");
 
+        if (this.isHiddenVisa()) {
+            refuseLaunchDiv.removeClass("es-refuse-slot-hidden");
+            this.setButtonVariant(refuseLaunchButton, "btn-danger");
+            this.setStepState(step2, true, false, false);
+            step2.find(".step-horizontal-v2-icon").html("1");
+            this.dispatchResponsiveStepChange("step-2");
+            signLaunchButton.focus();
+            return;
+        }
+
+        this.setStepState(step1, false, true, false);
+        this.setStepState(step2, true, false, false);
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step2.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
-        step3.find(".step-horizontal-v2-icon").html("3");
-        this.dispatchResponsiveStepChange("step-3");
+        step2.find(".step-horizontal-v2-icon").html("2");
+        this.dispatchResponsiveStepChange("step-2");
         signLaunchButton.focus();
+    }
 
+    goStep3() {
+        this.goStep2();
     }
 
     destroy() {
