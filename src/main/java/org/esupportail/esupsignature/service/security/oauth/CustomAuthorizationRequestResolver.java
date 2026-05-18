@@ -13,6 +13,10 @@ import java.util.Map;
 
 public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
 
+    private static final String CODE_CHALLENGE = "code_challenge";
+    private static final String CODE_CHALLENGE_METHOD = "code_challenge_method";
+    private static final String CODE_VERIFIER = "code_verifier";
+
     private final OAuth2AuthorizationRequestResolver defaultAuthorizationRequestResolver;
 
     private final List<OidcOtpSecurityService> securityServices;
@@ -48,18 +52,20 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
         OidcOtpSecurityService currentSecurityService = securityServices.stream()
                 .filter(s -> s.getCode().equals(registrationId))
                 .findFirst()
-                .get();
+                .orElseThrow(() -> new IllegalStateException("No security service configured for registration id " + registrationId));
 
         if ("franceconnect".equals(registrationId)) {
-            additionalParameters.remove("code_challenge");
-            additionalParameters.remove("code_challenge_method");
+            additionalParameters.remove(CODE_CHALLENGE);
+            additionalParameters.remove(CODE_CHALLENGE_METHOD);
+            additionalParameters.remove(CODE_VERIFIER);
+            attributes.remove(CODE_VERIFIER);
+            attributes.remove(CODE_CHALLENGE);
+            attributes.remove(CODE_CHALLENGE_METHOD);
             attributes.remove("org.springframework.security.oauth2.client.endpoint.code_verifier");
-            attributes.remove("code_challenge");
-            attributes.remove("code_challenge_method");
         }
         additionalParameters.putAll(currentSecurityService.getAdditionalAuthorizationParameters());
 
-        OAuth2AuthorizationRequest oAuth2AuthorizationRequest = OAuth2AuthorizationRequest.authorizationCode()
+        return OAuth2AuthorizationRequest.authorizationCode()
                 .authorizationUri(authorizationRequest.getAuthorizationUri())
                 .clientId(authorizationRequest.getClientId())
                 .redirectUri(authorizationRequest.getRedirectUri())
@@ -68,6 +74,5 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
                 .attributes(attributes)
                 .additionalParameters(additionalParameters)
                 .build();
-        return oAuth2AuthorizationRequest;
     }
 }
