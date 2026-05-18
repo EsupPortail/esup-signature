@@ -562,7 +562,7 @@ class GlobalSecurityAttackSurfaceTest {
             );
 
             ConcurrentModel model = new ConcurrentModel();
-            String view = controller.oauth2Error("access_denied", "provider denied", "state-123", model);
+            String view = controller.oauth2Error("access_denied", "provider denied", null, "state-123", model);
 
             assertEquals("otp/oauth2-error", view);
             assertEquals("access_denied", model.getAttribute("oauth2Error"));
