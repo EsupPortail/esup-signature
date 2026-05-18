@@ -30,6 +30,7 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses = new Map();
         this.id = 0;
         this.signsList = [];
+        this.signatureStepRequested = false;
         this.currentScale;
         this.scrollTop = this.getCurrentScrollTop();
         this.signType = signType;
@@ -465,19 +466,28 @@ export class SignPlacementController extends EventFactory {
         button.addClass(activeClass);
     }
 
+    getActiveSigns() {
+        return Array.from(this.signRequestParamses.values()).filter(signRequestParams => {
+            const signImageNumber = signRequestParams?.signImageNumber == null
+                ? null
+                : Number.parseInt(signRequestParams.signImageNumber, 10);
+            return signRequestParams != null
+                && signRequestParams.isSign
+                && signImageNumber != null
+                && signImageNumber >= 0
+                && signImageNumber !== 999999;
+        });
+    }
+
+    hasStartedSignaturePlacement() {
+        if (Array.isArray(this.signsList) && this.signsList.length > 0) {
+            return true;
+        }
+        return this.getActiveSigns().length > 0;
+    }
+
     hasPendingSignaturePlacement() {
-        const activeSigns = Array.from(this.signRequestParamses.values()).filter(signRequestParams =>
-            {
-                const signImageNumber = signRequestParams?.signImageNumber == null
-                    ? null
-                    : Number.parseInt(signRequestParams.signImageNumber, 10);
-                return signRequestParams != null
-                    && signRequestParams.isSign
-                    && signImageNumber != null
-                    && signImageNumber >= 0
-                    && signImageNumber !== 999999;
-            }
-        );
+        const activeSigns = this.getActiveSigns();
 
         if (activeSigns.length === 0) {
             return false;
@@ -503,6 +513,19 @@ export class SignPlacementController extends EventFactory {
         return this.signType === "hiddenVisa";
     }
 
+    requestSignatureStep() {
+        if (this.isHiddenVisa()) {
+            this.goStep2();
+            return;
+        }
+        this.signatureStepRequested = true;
+        this.goStep2();
+    }
+
+    clearRequestedSignatureStep() {
+        this.signatureStepRequested = false;
+    }
+
     dispatchResponsiveStepChange(stepId) {
         document.dispatchEvent(new CustomEvent("es-signrequest-step-change", {
             detail: {stepId}
@@ -515,7 +538,13 @@ export class SignPlacementController extends EventFactory {
             return;
         }
 
-        if (this.hasPendingSignaturePlacement()) {
+        if (this.hasStartedSignaturePlacement()) {
+            this.signatureStepRequested = false;
+            this.goStep2();
+            return;
+        }
+
+        if (this.signatureStepRequested) {
             this.goStep2();
             return;
         }
@@ -572,9 +601,9 @@ export class SignPlacementController extends EventFactory {
 
         addSignButton2.attr("disabled", "disabled");
         refuseLaunchButton.removeAttr("disabled");
+        insertBtn.removeAttr("disabled");
         signLaunchButton.removeAttr("disabled");
         signAdvancedLaunchButton.removeAttr("disabled");
-        insertBtn.removeAttr("disabled");
         refuseLaunchDiv.removeClass("d-none");
         refuseLaunchDiv.addClass("es-refuse-slot-hidden");
 
@@ -583,7 +612,7 @@ export class SignPlacementController extends EventFactory {
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.setButtonVariant(signLaunchButton, "btn-success");
-        signAdvancedLaunchButton.addClass("btn-success");
+        this.setButtonVariant(signAdvancedLaunchButton, "btn-success");
 
         if (this.isHiddenVisa()) {
             refuseLaunchDiv.removeClass("es-refuse-slot-hidden");
@@ -591,7 +620,9 @@ export class SignPlacementController extends EventFactory {
             this.setStepState(step2, true, false, false);
             step2.find(".step-horizontal-v2-icon").html("1");
             this.dispatchResponsiveStepChange("step-2");
-            signLaunchButton.focus();
+            if (signLaunchButton.length) {
+                signLaunchButton.focus();
+            }
             return;
         }
 
@@ -600,7 +631,9 @@ export class SignPlacementController extends EventFactory {
         step1.find(".step-horizontal-v2-icon").html("<i class='fi fi-rr-check'></i>");
         step2.find(".step-horizontal-v2-icon").html("2");
         this.dispatchResponsiveStepChange("step-2");
-        signLaunchButton.focus();
+        if (signLaunchButton.length) {
+            signLaunchButton.focus();
+        }
     }
 
     goStep3() {
