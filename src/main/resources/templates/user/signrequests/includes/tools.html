@@ -70,14 +70,14 @@
                                 <i th:class="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? 'fi fi-rr-registration-paper' : 'fi fi-rr-signature-lock'" style="margin-top: 0; border: 0"></i>
                                 <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Validation rapide</span>
                                 <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"> Visa rapide</span>
-                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature standard</span>
+                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature rapide</span>
                             </button>
                             <button tabindex="1" id="signAdvancedLaunchButton" role="button"
                                     class="btn p-3 d-none">
-                                <i class="fi fi-rr-settings-sliders" style="margin-top: 0; border: 0"></i>
+                                <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i>
                                 <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Validation avancée</span>
                                 <span th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"> Visa avancé</span>
-                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature avancée</span>
+                                <span th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"> Signature personnalisée</span>
                             </button>
                         </div>
                         <div th:id="'refuseLaunchDiv'"

@@ -535,9 +535,7 @@ export class SignPlacementController extends EventFactory {
         let signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
 
-        addSignButton.attr("disabled", "disabled");
         addSignButton2.removeAttr("disabled");
-        addParaphButton2.attr("disabled", "disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.attr("disabled", "disabled");
@@ -572,9 +570,7 @@ export class SignPlacementController extends EventFactory {
         let signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
         let refuseLaunchDiv = $("#refuseLaunchDiv");
 
-        addSignButton.attr("disabled", "disabled");
         addSignButton2.attr("disabled", "disabled");
-        addParaphButton2.attr("disabled", "disabled");
         refuseLaunchButton.removeAttr("disabled");
         signLaunchButton.removeAttr("disabled");
         signAdvancedLaunchButton.removeAttr("disabled");

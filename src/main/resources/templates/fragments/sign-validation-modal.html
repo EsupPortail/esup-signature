@@ -200,7 +200,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <div th:if="${signRequest != null}" th:unless="${stepRepeatable != null && stepRepeatable}">
                     <button id="checkValidateAdvancedSignButton"
                             class="btn btn-success" title="Confirmer" th:value="${signRequest.id}" autofocus>
