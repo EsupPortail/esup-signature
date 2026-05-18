@@ -72,7 +72,7 @@ public class OtpAccessController {
     }
 
     @GetMapping(value = "/first/{urlId}")
-    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
+    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         model.addAttribute("urlId", urlId);
         List<OidcOtpSecurityService> oidcOtpSecurityServices = getActiveOidcSecurityServices();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
@@ -226,15 +226,21 @@ public class OtpAccessController {
     public String oauth2Error(
             @RequestParam(required = false) String error,
             @RequestParam(required = false) String error_description,
+            @RequestParam(required = false) String internal_error,
             @RequestParam(required = false) String state,
             Model model) {
-        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}", error, error_description, state);
+        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, internal_error: {}, state: {}", error, error_description, internal_error, state);
         model.addAttribute("oauth2Error", error);
         model.addAttribute("oauth2ErrorDescription", error_description);
+        model.addAttribute("oauth2InternalError", internal_error);
         model.addAttribute("oauth2State", state);
-        String errorMessage = mapOAuth2ErrorToMessage(error);
+        String errorMessage = StringUtils.hasText(internal_error) ? internal_error : mapOAuth2ErrorToMessage(error);
         model.addAttribute("errorMessage", errorMessage);
         return "otp/oauth2-error";
+    }
+
+    public String oauth2Error(String error, String error_description, String state, Model model) {
+        return oauth2Error(error, error_description, null, state, model);
     }
 
     private String mapOAuth2ErrorToMessage(String error) {

@@ -75,8 +75,8 @@
                     <label class="form-label" for="sealCertificat">Certificat cachet à utiliser</label>
                     <select id="sealCertificat" name="sealCertificat" class="form-select">
                         <option th:each="sealCertificatProperties : ${sealCertificatPropertieses}"
-                                th:value="${sealCertificatProperties.id}"
-                                th:text="${sealCertificatProperties.label}"></option>
+                                th:value="${sealCertificatProperties.sealCertificatName}"
+                                th:text="${sealCertificatProperties.sealCertificatTitle != null && !#strings.isEmpty(sealCertificatProperties.sealCertificatTitle) ? sealCertificatProperties.sealCertificatTitle : sealCertificatProperties.sealCertificatName}"></option>
                     </select>
                 </div>
                 <div id="signCommentDiv" class="mt-3" th:if="${signRequest != null}">
