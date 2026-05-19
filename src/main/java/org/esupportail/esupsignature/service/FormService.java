@@ -462,6 +462,18 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
+	@Transactional(readOnly = true)
+	public Form getActiveFormByWorkflowId(Long workflowId) {
+		return formRepository.findByWorkflowIdEquals(workflowId).stream()
+				.filter(form -> !Boolean.TRUE.equals(form.getDeleted()))
+				.filter(form -> Boolean.TRUE.equals(form.getActiveVersion()))
+				.findFirst()
+				.orElseGet(() -> formRepository.findByWorkflowIdEquals(workflowId).stream()
+						.filter(form -> !Boolean.TRUE.equals(form.getDeleted()))
+						.findFirst()
+						.orElse(null));
+	}
+
 	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getByEppn(eppn);

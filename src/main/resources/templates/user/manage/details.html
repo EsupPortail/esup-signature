@@ -17,13 +17,12 @@
         <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item text-uppercase d-flex align-items-center"><a href="/user/manage"><i class="fi fi-rr-list-check"></i> Espace superviseurs</a></li>
-                <li class="breadcrumb-item active"><span th:text="${workflow.description}"></span></li>
+                <li class="breadcrumb-item active"><span th:text="${workflow.description}"></span> <span class="mb-0" th:if="${hided}">(Demandes masquées)</span></li>
             </ol>
         </nav>
         <div id="content" class="es-content-full">
             <div class="es-main-content d-flex">
                 <div class="flex-grow-1">
-                    <div class="d-flex align-items-center justify-content-center"><h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5> <h5 th:if="${hided}">(Demandes masquées)</h5></div>
                     <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                 <table class="table table-light table-borderless table-hover">
                     <thead class="table-secondary">
@@ -206,8 +205,13 @@
                             </a>
                         </li>
                         <li>
-                            <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
+                            <a th:unless="${form != null}" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
                                 <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:if="${form != null}" th:href="'/user/manage/form/' + ${form.id} + '/datas/csv'" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-file-csv"></i>
                             </a>
                         </li>
                     </ul>

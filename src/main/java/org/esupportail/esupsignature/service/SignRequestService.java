@@ -922,6 +922,11 @@ public class SignRequestService {
      */
     @Transactional
 	public Long deleteDefinitive(Long signRequestId, String userEppn) {
+		return deleteDefinitive(signRequestId, userEppn, true);
+	}
+
+	@Transactional
+	Long deleteDefinitive(Long signRequestId, String userEppn, boolean deleteEmptySignBook) {
 		logger.info("start definitive delete of signrequest " + signRequestId);
 		SignRequest signRequest = getById(signRequestId);
 		SignBook signBook = signRequest.getParentSignBook();
@@ -960,10 +965,12 @@ public class SignRequestService {
 		long signBookId = 0;
 		if(!signBook.getSignRequests().isEmpty()) {
 			signBookId = signBook.getId();
-		} else {
+		} else if(deleteEmptySignBook) {
 			signBookRepository.delete(signBook);
+		} else {
+			signBookId = signBook.getId();
 		}
-		if(!signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signBook.getSignRequests().isEmpty() && !signBook.getDeleted() && signBook.getStatus().equals(SignRequestStatus.pending) && signBook.getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.signed) || s.getStatus().equals(SignRequestStatus.completed) || s.getStatus().equals(SignRequestStatus.exported) || s.getStatus().equals(SignRequestStatus.refused))) {
 			boolean isNextWorkflow = nextWorkFlowStep(signBook);
 			if(isNextWorkflow) {
 				for(SignRequest signRequest1 : signRequest.getParentSignBook().getSignRequests()) {
@@ -979,7 +986,7 @@ public class SignRequestService {
 				}
 			}
 		}
-		if(signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
+		if(!signRequest.getParentSignBook().getSignRequests().isEmpty() && signRequest.getParentSignBook().getSignRequests().stream().allMatch(s -> s.getStatus().equals(SignRequestStatus.refused))) {
 			signRequest.getParentSignBook().setStatus(SignRequestStatus.refused);
 		}
 		return signBookId;
