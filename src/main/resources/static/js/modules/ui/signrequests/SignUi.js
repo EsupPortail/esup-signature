@@ -137,21 +137,19 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign());
-        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(e));
-        $("#checkValidateAdvancedSignButton").on('click', e => this.launchSign(e));
-        $("#launch-infinite-sign-button").on('click', e => this.insertStep(e));
-        $("#launchNoInfiniteSignButton").on('click', e => this.launchNoInfiniteSign(e));
-        $("#refresh-certType").on('click', e => this.checkSignOptions());
-        $("#refresh-certType2").on('click', e => this.checkSignOptions());
-        $("#certType").on("change", e => this.checkAfterChangeSignType());
-        $("#copyButton").on('click', e => this.copy());
+        [
+            ["#checkValidateSignButtonEnd", () => this.signatureFlowController.launchSign()],
+            ["#checkValidateSignButtonNext", e => this.signatureFlowController.launchSign(e)],
+            ["#checkValidateAdvancedSignButton", e => this.signatureFlowController.launchSign(e)],
+            ["#launch-infinite-sign-button", e => this.insertStep(e)],
+            ["#launchNoInfiniteSignButton", e => this.signatureFlowController.launchNoInfiniteSign(e)],
+            ["#refresh-certType, #refresh-certType2", () => this.checkSignOptions()],
+            ["#copyButton", () => this.copy()]
+        ].forEach(([selector, handler]) => $(selector).on('click', handler));
+        $("#certType").on("change", () => this.checkAfterChangeSignType());
         $("#send").on('submit', function (e) {
             e.preventDefault();
             bootbox.alert("Merci de saisir les participants", null);
-            if ($(e.target).is(':invalid')) {
-                bootbox.alert("Merci de saisir les participants", null);
-            }
         });
         this.initLaunchButtons();
         $("#refuseModal").on('shown.bs.modal', function () {
@@ -163,9 +161,10 @@ export class SignUi {
     }
 
     initLaunchButtons() {
-        $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        this.signLaunchButton.on('click', e => this.launchQuickSign());
-        this.signAdvancedLaunchButton.on('click', e => this.launchSignModal());
+        ["#visaLaunchButton", "#signAdvancedLaunchButton"].forEach(selector => {
+            $(selector).on('click', () => this.signatureFlowController.prepareLaunchSign(true));
+        });
+        this.signLaunchButton.on('click', () => this.signatureFlowController.launchQuickSign());
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
@@ -187,14 +186,6 @@ export class SignUi {
                 $(".reportModalBtn").removeClass("d-none");
             }
         });
-    }
-
-    launchSignModal() {
-        return this.signatureFlowController.launchSignModal();
-    }
-
-    launchQuickSign() {
-        return this.signatureFlowController.launchQuickSign();
     }
 
     checkSignOptions() {
@@ -355,13 +346,14 @@ export class SignUi {
 
     checkAfterChangeSignType() {
         let self = this;
-        if($("#certType").val() == null) {
+        const value = this.certTypeSelect.val();
+        if(value == null) {
             this.checkSignOptions();
             this.syncSignatureStepUi();
             this.updateMobileCertTypeVisibility();
             return;
         }
-        if($("#certType").val() === "nexuCert") {
+        if(value === "nexuCert") {
             this.nexu.checkNexuClient().then(function (e) {
                 console.info("Esup-DSS-Client est lancé !");
                 $("#certType > option[value='nexuCert']").remove('unavailable');
@@ -400,44 +392,19 @@ export class SignUi {
                 });
             });
         }
-        let value = this.certTypeSelect.val();
-        $("#alert-sign-present").hide();
         if (value !== "userCert") {
             this.signatureFlowController.setContextualPassword("");
         }
-        if (value === "nexuCert") {
-            $("#nexuCheck").removeClass('d-none');
-        } else {
-            $("#nexuCheck").addClass('d-none');
-        }
-        if (value === "imageStamp") {
-            $("#alert-sign-present").show();
-        }
+        $("#nexuCheck").toggleClass('d-none', value !== "nexuCert");
+        $("#alert-sign-present").toggle(value === "imageStamp");
         if (value === "sealCert") {
             this.ensureSealCertificateSelection();
-            $("#sealChoose").removeClass('d-none');
-        } else {
-            $("#sealChoose").addClass('d-none');
         }
+        $("#sealChoose").toggleClass('d-none', value !== "sealCert");
         this.syncSignatureStepUi();
         this.updateMobileCertTypeVisibility();
     }
 
-    launchNoInfiniteSign(next) {
-        return this.signatureFlowController.launchNoInfiniteSign(next);
-    }
-
-    launchSign(e) {
-        return this.signatureFlowController.launchSign(e);
-    }
-
-    reset() {
-        return this.signatureFlowController.reset();
-    }
-
-    redirect() {
-        document.location.href="/user/signrequests/" + this.signRequestId;
-    }
 
     copy() {
         let copyText = document.getElementById("exportUrl");

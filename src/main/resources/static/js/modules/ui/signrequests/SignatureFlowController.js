@@ -205,10 +205,6 @@ export class SignatureFlowController {
         this.signUi.updateMobileCertTypeVisibility();
     }
 
-    launchSignModal() {
-        return this.prepareLaunchSign(true);
-    }
-
     prepareLaunchSign(forcePanel = false) {
         const signUi = this.signUi;
         this.setContextualSignAll(signUi.nbSignRequests > 1 ? null : false);
@@ -244,10 +240,12 @@ export class SignatureFlowController {
                                     },
                                     callback: result => {
                                         if (result) {
-                                            if(this.checkAttachement()) {
-                                                this.removeImageStampOptionTemporarily();
-                                                this.confirmLaunchSignModal(forcePanel);
-                                            }
+                                            this.checkAttachement().then(canContinue => {
+                                                if (canContinue) {
+                                                    this.removeImageStampOptionTemporarily();
+                                                    this.confirmLaunchSignModal(forcePanel);
+                                                }
+                                            });
                                         } else {
                                             $("#addSignButton").click();
                                         }
@@ -287,53 +285,50 @@ export class SignatureFlowController {
                         if(signUi.currentSignType === "visa") {
                             $("#certType").val('imageStamp');
                         }
-                        if(this.checkAttachement()) {
-                            this.confirmLaunchSignModal(forcePanel);
-                        }
+                        this.checkAttachement().then(canContinue => {
+                            if (canContinue) {
+                                this.confirmLaunchSignModal(forcePanel);
+                            }
+                        });
                     }
                 }
             });
         } else {
-            if(this.checkAttachement()) {
-                this.confirmLaunchSignModal(forcePanel);
-            }
+            this.checkAttachement().then(canContinue => {
+                if (canContinue) {
+                    this.confirmLaunchSignModal(forcePanel);
+                }
+            });
         }
     }
 
     checkAttachement() {
         const signUi = this.signUi;
         if (signUi.attachmentRequire) {
-            bootbox.dialog({
-                message: "Vous devez joindre un document à cette étape avant de signer",
-                buttons: {
-                    close: {
-                        label: 'Fermer'
-                    }
-                },
-                callback: function () {
-                }
+            return new Promise(resolve => {
+                bootbox.alert({
+                    message: "Vous devez joindre un document à cette étape avant de signer",
+                    callback: () => resolve(false)
+                });
             });
         } else if (signUi.attachmentAlert) {
-            bootbox.confirm({
-                message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
-                buttons: {
-                    cancel: {
-                        label: '<i class="fa fa-times"></i> Retour'
+            return new Promise(resolve => {
+                bootbox.confirm({
+                    message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
+                    buttons: {
+                        cancel: {
+                            label: '<i class="fa fa-times"></i> Retour'
+                        },
+                        confirm: {
+                            label: '<i class="fa fa-check"></i> Continuer sans pièce jointe'
+                        }
                     },
-                    confirm: {
-                        label: '<i class="fa fa-check"></i> Continuer sans pièce jointe'
-                    }
-                },
-                callback: function (result) {
-                    if (result) {
-                        return true;
-                    }
-                }
+                    callback: result => resolve(Boolean(result))
+                });
             });
         } else {
-            return true;
+            return Promise.resolve(true);
         }
-        return false;
     }
 
     confirmLaunchSignModal(forcePanel = false) {
@@ -371,17 +366,11 @@ export class SignatureFlowController {
 
     launchNoInfiniteSign(next) {
         this.signUi.signComment = $("#signComment");
-        this.launchSign(next);
+        return this.launchSign(next);
     }
 
     setLaunchButtonsDisabled(disabled) {
-        $("#signLaunchButton").prop("disabled", disabled);
-        $("#signAdvancedLaunchButton").prop("disabled", disabled);
-        $("#checkValidateAdvancedSignButton").prop("disabled", disabled);
-        $("#launchNoInfiniteSignButton").prop("disabled", disabled);
-        $("#launch-infinite-sign-button").prop("disabled", disabled);
-        $("#checkValidateSignButtonNext").prop("disabled", disabled);
-        $("#checkValidateSignButtonEnd").prop("disabled", disabled);
+        $("#signLaunchButton, #signAdvancedLaunchButton, #checkValidateAdvancedSignButton, #launchNoInfiniteSignButton, #launch-infinite-sign-button, #checkValidateSignButtonNext, #checkValidateSignButtonEnd").prop("disabled", disabled);
     }
 
     resolveRequestedNextUrl(trigger = null) {

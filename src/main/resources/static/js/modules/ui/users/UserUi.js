@@ -49,11 +49,9 @@ export class UserUi {
         this.userSignatureCrop.addEventListener("started", () => this.userSignaturePad.clear());
         $("#sign-div, #sign-pad").on('shown.bs.collapse', () => this.refreshSignaturePadLayout());
         $("#add-sign-image").on('shown.bs.modal', () => this.refreshSignaturePadLayout());
-        if(this.emailAlertFrequencySelect != null) {
-            this.emailAlertFrequencySelect.on("change", e => this.checkAlertFrequency(e));
-        }
-        this.bindDeleteSignButtons();
-        $("input[name='saveSignRequestParams']").on("change", e => this.toggleSaveSignRequest(e));
+        this.emailAlertFrequencySelect?.on("change", () => this.checkAlertFrequency());
+        $(document).on('click', '[id^="deleteSign_"]', e => this.handleDeleteSign(e));
+        $("input[name='saveSignRequestParams']").on("change", () => this.toggleSaveSignRequest());
         $("#signRequestParamsClean").on("click", () => this.clearLocalStorage())
         this.applyUiMe(this.readSessionJson('uiMe'));
     }
@@ -102,17 +100,13 @@ export class UserUi {
         }
     }
 
-    bindDeleteSignButtons() {
-        $('[id^="deleteSign_"]').each(function() {
-            $(this).off('click').on('click', function (e){
-                e.preventDefault();
-                let target = e.currentTarget;
-                bootbox.confirm("Voulez-vous vraiment supprimer cette signature ?", function(result){
-                    if(result) {
-                        $('#deleteForm-' + $(target).attr("data-es-id")).submit();
-                    }
-                });
-            });
+    handleDeleteSign(e) {
+        e.preventDefault();
+        const signId = $(e.currentTarget).attr("data-es-id");
+        bootbox.confirm("Voulez-vous vraiment supprimer cette signature ?", result => {
+            if (result) {
+                $('#deleteForm-' + signId).submit();
+            }
         });
     }
 
@@ -209,7 +203,6 @@ export class UserUi {
             </tr>
             ${customRows}
         `;
-        this.bindDeleteSignButtons();
     }
 
     renderDeleteForms(signImageIds) {
@@ -302,9 +295,7 @@ export class UserUi {
             $("#signImageBase64").val("");
         }
         if(isFetchModalContext && formElement) {
-            document.dispatchEvent(new CustomEvent("userParamsPrepared", {
-                detail: {form: formElement}
-            }));
+            document.dispatchEvent(new CustomEvent("userParamsPrepared", {detail: {form: formElement}}));
             return;
         }
         userParamsForm.submit();
@@ -344,15 +335,7 @@ export class UserUi {
     checkAlertFrequency() {
         let selectedValue = this.emailAlertFrequencySelect.val();
         console.info("selected check alert frequency : " + selectedValue);
-        if(selectedValue === 'daily') {
-            this.emailAlertDay.addClass("d-none");
-            this.emailAlertHour.removeClass("d-none");
-        } else if(selectedValue === 'weekly') {
-            this.emailAlertDay.removeClass("d-none");
-            this.emailAlertHour.addClass("d-none");
-        } else {
-            this.emailAlertDay.addClass("d-none");
-            this.emailAlertHour.addClass("d-none");
-        }
+        this.emailAlertDay.toggleClass("d-none", selectedValue !== 'weekly');
+        this.emailAlertHour.toggleClass("d-none", selectedValue !== 'daily');
     }
 }

@@ -1022,7 +1022,7 @@ export class GlobalUi {
             });
             self.slimSelectHack($(this));
             const slimContainer = $('#' + selectName).next('.ss-main');
-            $('#' + selectName).add(slimContainer).add(slimContainer.find('*')).on('click mousedown mouseup keydown', function (e) {
+            $('#' + selectName).add(slimContainer).on('click mousedown mouseup keydown', function (e) {
                 e.stopPropagation();
             });
         });
