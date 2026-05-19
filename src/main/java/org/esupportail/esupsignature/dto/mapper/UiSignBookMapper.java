@@ -32,7 +32,8 @@ public class UiSignBookMapper {
     }
 
     public SignBookFullDto toSignBookListItemDto(SignBook signBook, String userEppn) {
-        return toSignBookFullDto(signBook, userEppn, false, null, List.of(), List.of(), List.of());
+        Integer currentStepNumber = signBook.getLiveWorkflow() != null ? signBook.getLiveWorkflow().getCurrentStepNumber() : null;
+        return toSignBookFullDto(signBook, userEppn, false, currentStepNumber, List.of(), List.of(), List.of());
     }
 
     public SignBookFullDto toSignBookUpdateViewDto(SignBook signBook,
@@ -175,30 +176,24 @@ public class UiSignBookMapper {
     }
 
     private SignBookFullDto.ParticipantDto toParticipantDto(Recipient recipient, SignRequest primarySignRequest, boolean singleDocument) {
-        String statusIconClass = null;
-        String statusTitle = null;
+        String statusKey = null;
         if (singleDocument && primarySignRequest != null) {
             if (Boolean.TRUE.equals(recipient.getSigned())) {
                 if (primarySignRequest.getStatus() == SignRequestStatus.refused) {
-                    statusIconClass = "fa-solid fa-times-circle text-danger";
-                    statusTitle = "A refusé le document";
+                    statusKey = "refused";
                 } else {
-                    statusIconClass = "fa-solid fa-check-circle text-success";
-                    statusTitle = "A signé le document";
+                    statusKey = "signed";
                 }
             } else if (primarySignRequest.getStatus() == SignRequestStatus.pending) {
-                statusIconClass = "fa-solid fa-clock text-warning";
-                statusTitle = "En attente de signature";
+                statusKey = "pending";
             } else {
-                statusIconClass = "fa-solid fa-minus-circle text-secondary";
-                statusTitle = "N'a pas signé le document";
+                statusKey = "notSigned";
             }
         }
         return new SignBookFullDto.ParticipantDto(
                 recipient.getUser() != null ? recipient.getUser().getEmail() : null,
                 toDisplayNameOrEmail(recipient.getUser()),
-                statusIconClass,
-                statusTitle
+                statusKey
         );
     }
 
