@@ -349,6 +349,7 @@ export class ListSignBooksUi {
 
     refreshListeners() {
         $('.sign-requests-ids').on("change", e => this.checkNbCheckboxes());
+        this.initParticipantStepSelects();
         $("button[id^='menu-toggle']").each(function() {
            $(this).on("click", function (){
                $("div[id^='menu-']").each(function() {
@@ -368,6 +369,91 @@ export class ListSignBooksUi {
                 }
             });
         });
+    }
+
+    initParticipantStepSelects() {
+        if (typeof SlimSelect === 'undefined') {
+            return;
+        }
+
+        document.querySelectorAll('select.participant-step-select').forEach(select => {
+            if (select.dataset.participantStepInit === 'true' || select.id == null || select.id === '') {
+                return;
+            }
+
+            const initialSelectedValue = Array.from(select.options).find(option => option.selected)?.value
+                || Array.from(select.options)[0]?.value
+                || '';
+
+            const slimData = Array.from(select.options).map(option => ({
+                text: option.text,
+                value: option.value,
+                html: this.renderParticipantStepOption(option),
+                selected: option.selected || false,
+                disabled: option.disabled || false,
+                placeholder: option.dataset.placeholder === 'true'
+            }));
+
+            const slim = new SlimSelect({
+                select: '#' + select.id,
+                data: slimData,
+                settings: {
+                    showSearch: false,
+                    searchHighlight: false,
+                    hideSelectedOption: false,
+                    closeOnSelect: true,
+                    allowDeselect: false,
+                },
+                events: {
+                    afterChange: newValue => {
+                        const selectedValue = Array.isArray(newValue) && newValue.length > 0
+                            ? (typeof newValue[0] === 'string' ? newValue[0] : newValue[0]?.value)
+                            : null;
+                        if (selectedValue != null && selectedValue !== select.dataset.readonlyValue) {
+                            window.requestAnimationFrame(() => {
+                                slim.setSelected(select.dataset.readonlyValue);
+                            });
+                        }
+                    }
+                },
+                ajax: function (search, callback) {
+                    callback(false)
+                }
+            });
+
+            select.dataset.readonlyValue = initialSelectedValue;
+            select.dataset.participantStepInit = 'true';
+            const slimContainer = $('#' + select.id).next('.ss-main');
+            slimContainer.addClass('participant-step-select-ui participant-step-select-readonly');
+        });
+    }
+
+    renderParticipantStepOption(option) {
+        const stepNumber = this.escapeHtml(option.dataset.stepNumber || option.value || '');
+        const summary = this.escapeHtml(option.dataset.summary || option.text || '');
+        const statusIcon = this.escapeHtml(option.dataset.statusIcon || '');
+        const statusTitle = this.escapeHtml(option.dataset.statusTitle || '');
+        const isCurrentStep = option.dataset.currentStep === 'true';
+        const statusIconHtml = statusIcon !== ''
+            ? '<i class="fi ' + statusIcon + ' participant-step-status-icon" title="' + statusTitle + '"></i>'
+            : '';
+
+        return '<div class="participant-step-option d-flex align-items-center gap-2 ' + (isCurrentStep ? 'participant-step-option-current' : '') + '">' +
+            '<span class="step-vertical-icon participant-step-badge ' + (isCurrentStep ? 'participant-step-badge-current' : '') + '">' + stepNumber + '</span>' +
+            '<div class="participant-step-meta min-w-0">' +
+            '<span class="participant-step-users">' + summary + '</span>' +
+            '</div>' +
+            statusIconHtml +
+            '</div>';
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
     }
 
     checkNbCheckboxes() {
@@ -544,6 +630,9 @@ export class ListSignBooksUi {
                     self.signRequestTable.append(data);
                     let clickableRows = $(".clickable-row");
                     clickableRows.off('click').on('click', function (e) {
+                        if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                            return;
+                        }
                         let url = $(this).closest('tr').attr('data-href');
                         if (e.ctrlKey || e.metaKey) {
                             window.open(url, '_blank');

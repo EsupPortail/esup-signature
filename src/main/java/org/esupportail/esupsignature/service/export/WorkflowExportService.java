@@ -64,6 +64,19 @@ public class WorkflowExportService {
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(WorkflowDatasCsvProjectionDto workflowDatasCsvProjectionDto : workflowDatasCsvProjectionDtos) {
             LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
+            String[] stepEmails = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsRecipientsEmails());
+            String[] stepTypes = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsTypes());
+            String[] stepDates = splitCsvValues(workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsDates());
+            int stepCount = Math.max(stepEmails.length, Math.max(stepTypes.length, stepDates.length));
+
+            if(stepEmails.length != stepTypes.length || stepTypes.length != stepDates.length) {
+                logger.warn("Workflow export inconsistent step data for signBook {}: emails={}, types={}, dates={}",
+                        workflowDatasCsvProjectionDto.getSignBookId(),
+                        stepEmails.length,
+                        stepTypes.length,
+                        stepDates.length);
+            }
+
             toExportDatas.put("sign_book_id", workflowDatasCsvProjectionDto.getSignBookId());
             toExportDatas.put("sign_request_ids", workflowDatasCsvProjectionDto.getWorkflowDatasSignRequestIds());
             toExportDatas.put("sign_request_titles", workflowDatasCsvProjectionDto.getWorkflowDatasSignRequestTitles());
@@ -72,17 +85,31 @@ public class WorkflowExportService {
             toExportDatas.put("sign_book_create_date", workflowDatasCsvProjectionDto.getSignBookCreateDate());
             toExportDatas.put("completed_date", workflowDatasCsvProjectionDto.getCompletedDate());
             toExportDatas.put("completed_by", workflowDatasCsvProjectionDto.getCompletedBy());
-            toExportDatas.put("current_step_number", (Arrays.stream(workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsTypes().split(",")).filter(s -> !s.equals("none")).count() + 1) + "");
+            toExportDatas.put("current_step_number", (Arrays.stream(stepTypes).filter(s -> !s.isBlank() && !s.equals("none")).count() + 1) + "");
             toExportDatas.put("current_step_id", workflowDatasCsvProjectionDto.getCurrentStepId());
             toExportDatas.put("current_step_description", workflowDatasCsvProjectionDto.getCurrentStepDescription());
-            for(int i = 0; i < workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsTypes().split(",").length; i++) {
-                toExportDatas.put("sign_step_" + (i + 1) + "_email", workflowDatasCsvProjectionDto.getWorkflowDatasStepsRecipientsEmails().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_type", workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsTypes().split(",")[i]);
-                toExportDatas.put("sign_step_" + (i + 1) + "_date", workflowDatasCsvProjectionDto.getWorkflowDatasStepsActionsDates().split(",")[i]);
+            for(int i = 0; i < stepCount; i++) {
+                toExportDatas.put("sign_step_" + (i + 1) + "_email", getCsvValue(stepEmails, i));
+                toExportDatas.put("sign_step_" + (i + 1) + "_type", getCsvValue(stepTypes, i));
+                toExportDatas.put("sign_step_" + (i + 1) + "_date", getCsvValue(stepDates, i));
             }
             dataDatas.add(toExportDatas);
         }
         return dataDatas;
+    }
+
+    private String[] splitCsvValues(String values) {
+        if(values == null || values.isBlank()) {
+            return new String[0];
+        }
+        return values.split(",", -1);
+    }
+
+    private String getCsvValue(String[] values, int index) {
+        if(index < 0 || index >= values.length) {
+            return "";
+        }
+        return values[index];
     }
 
 }
