@@ -120,6 +120,10 @@ textarea:invalid {
     width: initial !important;
 }
 
+.participant-step-select .ss-list {
+    pointer-events: none !important;
+}
+
 .participant-step-select-ui {
     width: 18rem;
     min-width: 18rem;
@@ -164,9 +168,13 @@ textarea:invalid {
 
 .participant-step-option {
     min-width: 0;
-    padding: .15rem 0;
 }
 
+.ss-content .ss-list .ss-option:has(.participant-step-option):hover {
+    pointer-events: none !important;
+    background-color: initial !important;
+    color: initial !important;
+}
 
 .participant-step-badge {
     width: 2rem;
