@@ -114,28 +114,115 @@ export class SignPlacementController extends EventFactory {
     }
 
     initListeners() {
-        let self = this;
         const workspace = this.getScrollContainer();
         if (workspace) {
             this.workspaceScrollHandler = () => {
-                self.scrollTop = workspace.scrollTop;
+                this.scrollTop = workspace.scrollTop;
             };
             workspace.removeEventListener('scroll', this.workspaceScrollHandler);
             workspace.addEventListener('scroll', this.workspaceScrollHandler);
         } else {
-            $(window).off('scroll' + this.scrollNamespace).on('scroll' + this.scrollNamespace, function() {
-                self.scrollTop = $(this).scrollTop();
+            $(window).off('scroll' + this.scrollNamespace).on('scroll' + this.scrollNamespace, () => {
+                this.scrollTop = $(window).scrollTop();
             });
         }
-        $(document).ready(function() {
-            if(self.signImages != null && self.signImages.length === 1) {
-                self.popUserUi();
+        $(document).ready(() => {
+            if (this.signImages?.length === 1) {
+                this.popUserUi();
             }
         });
-        document.removeEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
-        document.removeEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
-        document.addEventListener('userSignatureUpdated', this.userSignatureUpdatedHandler);
-        document.addEventListener('userSignatureDeleted', this.userSignatureDeletedHandler);
+        [["userSignatureUpdated", this.userSignatureUpdatedHandler], ["userSignatureDeleted", this.userSignatureDeletedHandler]]
+            .forEach(([event, handler]) => {
+                document.removeEventListener(event, handler);
+                document.addEventListener(event, handler);
+            });
+    }
+
+    normalizeSignImageNumber(signImageNumber) {
+        const normalizedSignImageNumber = signImageNumber == null ? null : Number.parseInt(signImageNumber, 10);
+        return signImageNumber != null && Number.isFinite(normalizedSignImageNumber) ? normalizedSignImageNumber : signImageNumber;
+    }
+
+    async waitForOtpSelection() {
+        this.popUserUi();
+        return new Promise(resolve => {
+            const modalElement = document.getElementById('add-sign-image');
+            const selectionHandler = e => {
+                cleanup();
+                resolve(e.detail || null);
+            };
+            const hiddenHandler = () => {
+                cleanup();
+                resolve(null);
+            };
+            const cleanup = () => {
+                document.removeEventListener('userSignatureSelected', selectionHandler);
+                modalElement?.removeEventListener('hidden.bs.modal', hiddenHandler);
+            };
+            document.addEventListener('userSignatureSelected', selectionHandler);
+            modalElement?.addEventListener('hidden.bs.modal', hiddenHandler, {once: true});
+        });
+    }
+
+    prepareVisualPlacement() {
+        this.disableForwardButton();
+        $(window)
+            .off("beforeunload" + this.beforeUnloadNamespace)
+            .on("beforeunload" + this.beforeUnloadNamespace, event => {
+                console.log("beforeunload déclenché");
+                event.preventDefault();
+                event.returnValue = "";
+            });
+        this.addSignButton.removeClass("pulse-success");
+        $("#addSignButton2").removeClass("pulse-success");
+    }
+
+    getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph) {
+        if (signImageNumber == null || signImageNumber < 0 || signImageNumber === 999999 || isParaph) {
+            return null;
+        }
+        if (forceSignNumber != null) {
+            return this.currentSignRequestParamses[forceSignNumber];
+        }
+        return this.currentSignRequestParamses.find(signRequestParams => signRequestParams.ready == null || !signRequestParams.ready) ?? null;
+    }
+
+    canAddAnnotations() {
+        return this.currentStepMultiSign !== false || this.currentStepSingleSignWithAnnotation !== false;
+    }
+
+    setSingleSignInsertionState(id, isParaph) {
+        this.signsList.push(id);
+        if (isParaph || this.currentStepMultiSign !== false || this.signRequestParamses.size === 0) {
+            return;
+        }
+        if (this.currentStepSingleSignWithAnnotation === false) {
+            $('#insert-btn').attr('disabled', 'disabled');
+        } else {
+            $('#addSignButton').attr('disabled', 'disabled');
+        }
+    }
+
+    bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph) {
+        signRequestParams.addEventListener("delete", e => this.removeSign(e, id));
+        signRequestParams.addEventListener("detachFromSlot", slotIndex => {
+            if (Number.isFinite(parseInt(slotIndex, 10)) && this.currentSignRequestParamses?.[slotIndex] != null) {
+                this.currentSignRequestParamses[slotIndex].ready = false;
+            }
+            this.refreshSteps?.();
+        });
+        signRequestParams.addEventListener("placementStateChanged", () => this.refreshSteps?.());
+        signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
+        signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
+        if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
+            signRequestParams.cross.addClass("drop-sign");
+        }
+        if (signImageNumber < 0) {
+            $("#signImage_" + id).addClass("d-none");
+        }
+        if (!isParaph) {
+            signRequestParams.addEventListener("sizeChanged", () => signRequestParams.simulateDrop());
+        }
     }
 
     getGeneratedSignImageNumber(userState) {
@@ -285,33 +372,9 @@ export class SignPlacementController extends EventFactory {
     }
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
-        const normalizedSignImageNumber = signImageNumber == null ? null : Number.parseInt(signImageNumber, 10);
-        if (signImageNumber != null && Number.isFinite(normalizedSignImageNumber)) {
-            signImageNumber = normalizedSignImageNumber;
-        }
+        signImageNumber = this.normalizeSignImageNumber(signImageNumber);
         if (this.isOtp) {
-            this.popUserUi();
-            const selection = await new Promise((resolve) => {
-                const modalElement = document.getElementById('add-sign-image');
-                const selectionHandler = e => {
-                    cleanup();
-                    resolve(e.detail || null);
-                };
-                const hiddenHandler = () => {
-                    cleanup();
-                    resolve(null);
-                };
-                const cleanup = () => {
-                    document.removeEventListener('userSignatureSelected', selectionHandler);
-                    if (modalElement) {
-                        modalElement.removeEventListener('hidden.bs.modal', hiddenHandler);
-                    }
-                };
-                document.addEventListener('userSignatureSelected', selectionHandler);
-                if (modalElement) {
-                    modalElement.addEventListener('hidden.bs.modal', hiddenHandler, { once: true });
-                }
-            });
+            const selection = await this.waitForOtpSelection();
             const selectedSignImageNumber = selection?.selectedSignImageNumber != null ? parseInt(selection.selectedSignImageNumber, 10) : null;
             if (selectedSignImageNumber == null || Number.isNaN(selectedSignImageNumber)) {
                 return;
@@ -322,112 +385,52 @@ export class SignPlacementController extends EventFactory {
         const isSpot = signImageNumber === 999999;
         const isParaph = signImageNumber === 999997;
         if (!isSpot && !isParaph) {
-            this.disableForwardButton();
-            $(window)
-                .off("beforeunload" + this.beforeUnloadNamespace)
-                .on("beforeunload" + this.beforeUnloadNamespace, function (event) {
-                console.log("beforeunload déclenché");
-                event.preventDefault();
-                event.returnValue = "";
-            });
-            this.addSignButton.removeClass("pulse-success");
-            $("#addSignButton2").removeClass("pulse-success");
+            this.prepareVisualPlacement();
         }
-        let id = this.id;
-        let currentSignRequestParams = null;
-        if(signImageNumber != null && signImageNumber >= 0 && signImageNumber !== 999999 && !isParaph) {
-            if(forceSignNumber != null) {
-                currentSignRequestParams = this.currentSignRequestParamses[forceSignNumber];
-            } else {
-                for (let i = 0; i < this.currentSignRequestParamses.length; i++) {
-                    if (this.currentSignRequestParamses[i].ready == null || !this.currentSignRequestParamses[i].ready) {
-                        currentSignRequestParams = this.currentSignRequestParamses[i];
-                        break;
-                    }
-                }
-            }
-        }
-        if(signImageNumber != null) {
-            const initialSignRequestParamsModel = this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
-            if (signImageNumber === 999999) {
-                id = 999999;
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
-                    this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
-                this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
-                this.signRequestParamses.get(id).changeSignSize(null);
+        const id = signImageNumber === 999999 ? 999999 : this.id;
+        const currentSignRequestParams = this.getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph);
+        const initialSignRequestParamsModel = signImageNumber == null ? null : this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
+        let signRequestParams = null;
 
-            } else if(signImageNumber >= 0) {
-                if(!isParaph && this.currentStepMultiSign === false && this.signsList.length > 0) {
-                    alert("Impossible d'ajouter plusieurs signatures sur cette étape");
-                    return;
-                }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
-                this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
-                if(!isParaph) {
-                    this.signsList.push(id);
-                }
-                if(!isParaph && this.currentStepMultiSign === false && this.signRequestParamses.size > 0) {
-                    if(this.currentStepSingleSignWithAnnotation === false) {
-                        $('#insert-btn').attr('disabled', 'disabled');
-                    } else {
-                        $('#addSignButton').attr('disabled', 'disabled');
-                    }
-                }
-            } else {
-                if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
-                    alert("Impossible d'ajouter des annotations sur cette étape");
-                    return;
-                }
-                this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
-                this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
+        if (signImageNumber === 999999) {
+            signRequestParams = new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            signRequestParams.changeSignSize({
+                w: signRequestParams.originalWidth,
+                h: signRequestParams.originalHeight
+            });
+        } else if (signImageNumber != null && signImageNumber >= 0) {
+            if (!isParaph && this.currentStepMultiSign === false && this.signsList.length > 0) {
+                alert("Impossible d'ajouter plusieurs signatures sur cette étape");
+                return;
             }
-            if(signImageNumber !== 999999) {
-                if(this.signType !== "visa") {
-                    await this.signRequestParamses.get(id).changeSignImage(signImageNumber);
-                    if (currentSignRequestParams == null && typeof this.signRequestParamses.get(id)?.centerOnCurrentViewport === "function") {
-                        this.signRequestParamses.get(id).centerOnCurrentViewport();
-                    }
-                }
+            signRequestParams = new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            if (!isParaph) {
+                this.setSingleSignInsertionState(id, isParaph);
             }
         } else {
-            if(this.currentStepMultiSign === false && this.currentStepSingleSignWithAnnotation === false) {
+            if (!this.canAddAnnotations()) {
                 alert("Impossible d'ajouter des annotations sur cette étape");
                 return;
             }
-            this.signRequestParamses.set(id, new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, restore, signImageNumber != null && signImageNumber >= 0, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig));
-            this.applySpecialSignImageNumbers(this.signRequestParamses.get(id));
+            signRequestParams = new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
         }
-        this.signRequestParamses.get(id).addEventListener("delete", e => this.removeSign(e, id));
-        this.signRequestParamses.get(id).addEventListener("detachFromSlot", slotIndex => {
-            if (Number.isFinite(parseInt(slotIndex, 10)) && this.currentSignRequestParamses?.[slotIndex] != null) {
-                this.currentSignRequestParamses[slotIndex].ready = false;
+
+        this.signRequestParamses.set(id, signRequestParams);
+        this.applySpecialSignImageNumbers(signRequestParams);
+        this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
+
+        if (signImageNumber != null && signImageNumber !== 999999 && this.signType !== "visa") {
+            await signRequestParams.changeSignImage(signImageNumber);
+            if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
+                signRequestParams.centerOnCurrentViewport();
             }
-            if (typeof this.refreshSteps === "function") {
-                this.refreshSteps();
-            }
-        });
-        this.signRequestParamses.get(id).addEventListener("placementStateChanged", () => {
-            if (typeof this.refreshSteps === "function") {
-                this.refreshSteps();
-            }
-        });
-        this.signRequestParamses.get(id).addEventListener("spotSaved", e => this.onSpotSaved(e));
-        this.signRequestParamses.get(id).addEventListener("spotDeleted", e => this.onSpotDeleted(e));
-        if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
-            this.signRequestParamses.get(id).cross.addClass("drop-sign");
         }
-        if (signImageNumber < 0) {
-            $("#signImage_" + id).addClass("d-none");
-        }
-        if (!isParaph) {
-            this.signRequestParamses.get(id).addEventListener("sizeChanged", () => this.signRequestParamses.get(id).simulateDrop());
-        }
-        const srp = this.signRequestParamses.get(id);
+
         this.id++;
         if (!isSpot && !isParaph) {
             this.refreshSteps();
         }
-        return srp;
+        return signRequestParams;
     }
 
     addCheckImage(page) {

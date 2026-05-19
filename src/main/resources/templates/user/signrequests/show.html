@@ -20,19 +20,13 @@
         }
     }
 
-    function startHelp(setting) {
-        const help = new SignRequestHelp(setting, isOtpHelp);
-        help.autoStart();
-    }
-
+    const startHelp = setting => new SignRequestHelp(setting, isOtpHelp).autoStart();
+    const startHelpFromUiMe = uiMe => startHelp(uiMe?.uiParams?.signRequestHelp ?? null);
     const initialUiMe = readUiMe();
     if (initialUiMe?.uiParams != null) {
-        startHelp(initialUiMe.uiParams.signRequestHelp ?? null);
+        startHelpFromUiMe(initialUiMe);
     } else {
-        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
-            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
-            startHelp(event.detail?.uiParams?.signRequestHelp ?? null);
-        }, {once: true});
+        document.addEventListener('uiMeLoaded', ({detail}) => startHelpFromUiMe(detail), {once: true});
     }
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -245,8 +239,12 @@
                             const csrf = /*[[${_csrf}]]*/ {};
                             const originalDocuments = /*[[${showSignRequest.originalDocuments}]]*/ [];
                             const signedDocuments = /*[[${showSignRequest.signedDocuments}]]*/ [];
-                            new FilesInput($("#multipartFiles"), maxUploadSize, csrf, originalDocuments, true);
-                            new FilesInput($("#signedFiles"), maxUploadSize, csrf, signedDocuments, true);
+                            [["#multipartFiles", originalDocuments], ["#signedFiles", signedDocuments]].forEach(([selector, documents]) => {
+                                const input = $(selector);
+                                if (input.length) {
+                                    new FilesInput(input, maxUploadSize, csrf, documents, true);
+                                }
+                            });
                         </script>
                     </div>
                     <div th:if="${!signRequestFull.signable && showSignRequest.toSignDocumentContentType == null && showSignRequest.originalDocuments.size() > 0}" class="es-workspace alert alert-danger">

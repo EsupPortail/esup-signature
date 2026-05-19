@@ -329,7 +329,7 @@ export class CommentManager {
         postit.addClass("alert-warning");
         this.options.setAddCommentEnabled(true);
         const png = '/images/icons/rr-comment-32.png';
-        $('body *').css('pointer-events', 'none');
+        $('.es-signrequest-main-content *').css('pointer-events', 'none');
         this.options.getPdfViewer().pdfDiv.css({
             'pointer-events': 'auto',
             'cursor': `url("${png}"), auto`
@@ -346,7 +346,7 @@ export class CommentManager {
     deactivateAddCommentMode() {
         this.options.setAddCommentEnabled(false);
         this.options.getPdfViewer().pdfDiv.css('cursor', 'default');
-        $('body *').css('pointer-events', 'auto');
+        $('.es-signrequest-main-content *').css('pointer-events', '');
         $("#divSpotStepNumber").show();
         $(".textLayer").each(function () {
             $(this).removeClass("text-disable-selection");
