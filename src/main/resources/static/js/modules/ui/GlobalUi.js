@@ -449,6 +449,9 @@ export class GlobalUi {
             $("#user-toggle").click();
         });
         this.clickableRow.off('click').on('click', function(e) {
+            if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                return;
+            }
             let url = $(this).closest('tr').attr('data-href');
             if (e.ctrlKey || e.metaKey) {
                 window.open(url, '_blank');
@@ -993,8 +996,18 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             let allowDeselect = Boolean($(this).attr('data-allow-deselect'));
-            new SlimSelect({
+            const selectElement = document.getElementById(selectName);
+            const optionData = selectElement != null ? Array.from(selectElement.options).map(option => ({
+                text: option.text,
+                value: option.value,
+                html: option.dataset.html || option.text,
+                selected: option.selected || false,
+                disabled: option.disabled || false,
+                placeholder: option.dataset.placeholder === 'true'
+            })) : [];
+            const slim = new SlimSelect({
                 select: '#' + selectName,
+                data: optionData.some(option => option.html !== option.text) ? optionData : undefined,
                 settings: {
                     showSearch: false,
                     searchHighlight: false,
@@ -1007,7 +1020,11 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            self.slimSelectHack($(this))
+            self.slimSelectHack($(this));
+            const slimContainer = $('#' + selectName).next('.ss-main');
+            $('#' + selectName).add(slimContainer).add(slimContainer.find('*')).on('click mousedown mouseup keydown', function (e) {
+                e.stopPropagation();
+            });
         });
     }
 
@@ -1140,6 +1157,9 @@ export class GlobalUi {
             let test = $(".card.show").length > 0;
 
             if (!test) {
+                if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                    return;
+                }
                 let url = $(this).closest('tr').attr('data-href');
                 if (e.ctrlKey || e.metaKey) {
                     window.open(url, '_blank');
