@@ -1,8 +1,16 @@
 export class CommentManager {
 
+    static COMMENT_DIALOG_MARGIN_X = 16;
+    static COMMENT_DIALOG_MARGIN_Y = 16;
+    static COMMENT_COORDINATE_MARGIN_X = 0;
+    static COMMENT_COORDINATE_MARGIN_Y = 32;
+    static COMMENT_TARGET_WIDTH = 200;
+    static COMMENT_TARGET_HEIGHT = 100;
+
     constructor(state, options = {}) {
         this.state = state;
         this.positionLocked = false;
+        this.dialogAnchor = null;
         this.options = {
             eventNamespace: options.eventNamespace ?? ".commentManager",
             postitNamespace: options.postitNamespace ?? ".commentManagerPostit",
@@ -158,10 +166,162 @@ export class CommentManager {
         }
         const pageOffset = page.offset() || {left: 0, top: 0};
         const parentOffset = commentDiv.offsetParent().offset() || {left: 0, top: 0};
+        const dialogSize = this.getCommentDialogSize(commentDiv);
+        const pageWidth = page.outerWidth() || 0;
+        const pageHeight = page.outerHeight() || 0;
+        const pageLeft = pageOffset.left - parentOffset.left;
+        const pageTop = pageOffset.top - parentOffset.top;
+        const desiredLeft = pageLeft + (renderedX || 0);
+        const desiredTop = pageTop + (renderedY || 0);
+        const leftBounds = this.getDialogAxisBounds(
+            pageLeft,
+            pageWidth,
+            dialogSize.width,
+            CommentManager.COMMENT_DIALOG_MARGIN_X,
+            CommentManager.COMMENT_DIALOG_MARGIN_X
+        );
+        const topBounds = this.getDialogAxisBounds(
+            pageTop,
+            pageHeight,
+            dialogSize.height,
+            CommentManager.COMMENT_DIALOG_MARGIN_Y,
+            CommentManager.COMMENT_DIALOG_MARGIN_Y
+        );
         return {
-            left: Math.round(pageOffset.left - parentOffset.left + (renderedX || 0)),
-            top: Math.round(pageOffset.top - parentOffset.top + (renderedY || 0))
+            left: this.clampDialogCoordinate(desiredLeft, leftBounds),
+            top: this.clampDialogCoordinate(desiredTop, topBounds)
         };
+    }
+
+    getCommentDialogSize(commentDiv = $("#comment-div")) {
+        if (!commentDiv.length) {
+            return {width: 0, height: 0};
+        }
+        if (commentDiv.is(':visible')) {
+            return {
+                width: commentDiv.outerWidth() || 0,
+                height: commentDiv.outerHeight() || 0
+            };
+        }
+
+        const previousStyle = commentDiv.attr('style');
+        commentDiv.css({
+            display: 'block',
+            visibility: 'hidden'
+        });
+        const size = {
+            width: commentDiv.outerWidth() || 0,
+            height: commentDiv.outerHeight() || 0
+        };
+        if (previousStyle == null) {
+            commentDiv.removeAttr('style');
+        } else {
+            commentDiv.attr('style', previousStyle);
+        }
+        return size;
+    }
+
+    getDialogAxisBounds(pageStart, pageSize, dialogSize, startMargin, endMargin = startMargin) {
+        const safeSpace = Math.max(pageSize - startMargin - endMargin, 0);
+        if (dialogSize >= safeSpace) {
+            const centeredValue = Math.round(pageStart + Math.max((pageSize - dialogSize) / 2, 0));
+            return {
+                min: centeredValue,
+                max: centeredValue
+            };
+        }
+        return {
+            min: Math.round(pageStart + startMargin),
+            max: Math.round(pageStart + pageSize - dialogSize - endMargin)
+        };
+    }
+
+    clampDialogCoordinate(value, bounds) {
+        return Math.round(Math.min(Math.max(value, bounds.min), bounds.max));
+    }
+
+    getCorrectedCommentCoordinates(pageNum, renderedX, renderedY) {
+        const pdfViewer = this.options.getPdfViewer();
+        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
+        const page = $("#page_" + normalizedPage);
+        if (!page.length || pdfViewer?.scale == null || pdfViewer.scale === 0) {
+            return {
+                x: Math.round((renderedX || 0) / (pdfViewer?.scale || 1)),
+                y: Math.round((renderedY || 0) / (pdfViewer?.scale || 1))
+            };
+        }
+        if (!this.options.isAddSpotEnabled()) {
+            const scale = pdfViewer.scale;
+            const correctedRenderedX = (renderedX || 0) + (CommentManager.COMMENT_COORDINATE_MARGIN_X * scale);
+            const correctedRenderedY = (renderedY || 0) + (CommentManager.COMMENT_COORDINATE_MARGIN_Y * scale);
+            const pageWidth = page.outerWidth() || 0;
+            const pageHeight = page.outerHeight() || 0;
+            return {
+                x: Math.round(this.clampDialogCoordinate(correctedRenderedX, {min: 0, max: pageWidth}) / scale),
+                y: Math.round(this.clampDialogCoordinate(correctedRenderedY, {min: 0, max: pageHeight}) / scale)
+            };
+        }
+        const pageWidth = page.outerWidth() || 0;
+        const pageHeight = page.outerHeight() || 0;
+        const targetWidth = CommentManager.COMMENT_TARGET_WIDTH * pdfViewer.scale;
+        const targetHeight = CommentManager.COMMENT_TARGET_HEIGHT * pdfViewer.scale;
+        const xBounds = this.getDialogAxisBounds(
+            0,
+            pageWidth,
+            targetWidth,
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale,
+            CommentManager.COMMENT_COORDINATE_MARGIN_X * pdfViewer.scale
+        );
+        const yBounds = this.getDialogAxisBounds(
+            0,
+            pageHeight,
+            targetHeight,
+            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale,
+            CommentManager.COMMENT_COORDINATE_MARGIN_Y * pdfViewer.scale
+        );
+        const clampedRenderedX = this.clampDialogCoordinate(renderedX || 0, xBounds);
+        const clampedRenderedY = this.clampDialogCoordinate(renderedY || 0, yBounds);
+        return {
+            x: Math.round(clampedRenderedX / pdfViewer.scale),
+            y: Math.round(clampedRenderedY / pdfViewer.scale)
+        };
+    }
+
+    applyCorrectedCommentCoordinates(pageNum, renderedX, renderedY) {
+        const correctedCoordinates = this.getCorrectedCommentCoordinates(pageNum, renderedX, renderedY);
+        $("#commentPosX").val(correctedCoordinates.x);
+        $("#commentPosY").val(correctedCoordinates.y);
+        return correctedCoordinates;
+    }
+
+    setDialogAnchor(pageNum, renderedX, renderedY) {
+        const pdfViewer = this.options.getPdfViewer();
+        const scale = pdfViewer?.scale || 1;
+        this.dialogAnchor = {
+            pageNum: Number.parseInt(pageNum, 10) || 1,
+            x: Math.round((renderedX || 0) / scale),
+            y: Math.round((renderedY || 0) / scale)
+        };
+    }
+
+    getDialogAnchorRendered(pageNum) {
+        const pdfViewer = this.options.getPdfViewer();
+        const scale = pdfViewer?.scale || 1;
+        const normalizedPage = Number.parseInt(pageNum, 10) || 1;
+        if (this.dialogAnchor?.pageNum === normalizedPage) {
+            return {
+                x: this.dialogAnchor.x * scale,
+                y: this.dialogAnchor.y * scale
+            };
+        }
+        return {
+            x: (parseInt($("#commentPosX").val(), 10) || 0) * scale,
+            y: (parseInt($("#commentPosY").val(), 10) || 0) * scale
+        };
+    }
+
+    clearDialogAnchor() {
+        this.dialogAnchor = null;
     }
 
     refresh() {
@@ -247,8 +407,9 @@ export class CommentManager {
         let postitForm = $("#comment-div");
         if (postitForm.is(':visible')) {
             const commentPageNumber = $("#commentPageNumber").val();
-            const renderedX = (parseInt($("#commentPosX").val(), 10) || 0) * pdfViewer.scale;
-            const renderedY = (parseInt($("#commentPosY").val(), 10) || 0) * pdfViewer.scale;
+            const anchor = this.getDialogAnchorRendered(commentPageNumber);
+            const renderedX = anchor.x;
+            const renderedY = anchor.y;
             const cssPos = this.getCommentDialogCssPosition(commentPageNumber, renderedX, renderedY);
             postitForm.css('left', cssPos.left + "px");
             postitForm.css('top', cssPos.top + "px");
@@ -276,10 +437,12 @@ export class CommentManager {
         let commentPageNumber = $("#commentPageNumber").val();
         const clickedRenderedX = parseInt(commentPosX.val(), 10) || 0;
         const clickedRenderedY = parseInt(commentPosY.val(), 10) || 0;
+        this.setDialogAnchor(commentPageNumber, clickedRenderedX, clickedRenderedY);
         let xPos = clickedRenderedX / pdfViewer.scale;
         let yPos = clickedRenderedY / pdfViewer.scale;
         commentPosX.val(Math.round(xPos));
         commentPosY.val(Math.round(yPos));
+        this.applyCorrectedCommentCoordinates(commentPageNumber, clickedRenderedX, clickedRenderedY);
         const cssPos = this.getCommentDialogCssPosition(commentPageNumber, clickedRenderedX, clickedRenderedY);
         comment.css('left', cssPos.left + "px");
         comment.css('top', cssPos.top + "px");
@@ -329,7 +492,7 @@ export class CommentManager {
         postit.addClass("alert-warning");
         this.options.setAddCommentEnabled(true);
         const png = '/images/icons/rr-comment-32.png';
-        $('body *').css('pointer-events', 'none');
+        $('.es-signrequest-main-content *').css('pointer-events', 'none');
         this.options.getPdfViewer().pdfDiv.css({
             'pointer-events': 'auto',
             'cursor': `url("${png}"), auto`
@@ -346,7 +509,7 @@ export class CommentManager {
     deactivateAddCommentMode() {
         this.options.setAddCommentEnabled(false);
         this.options.getPdfViewer().pdfDiv.css('cursor', 'default');
-        $('body *').css('pointer-events', 'auto');
+        $('.es-signrequest-main-content *').css('pointer-events', '');
         $("#divSpotStepNumber").show();
         $(".textLayer").each(function () {
             $(this).removeClass("text-disable-selection");
@@ -406,6 +569,7 @@ export class CommentManager {
 
     exitCommentAddMode() {
         this.positionLocked = false;
+        this.clearDialogAnchor();
         $('#pdf').off(this.options.commentDialogNamespace);
         $(document).off('keydown' + this.options.commentDialogNamespace);
         $('#saveCommentButton').off('click' + this.options.commentDialogNamespace);

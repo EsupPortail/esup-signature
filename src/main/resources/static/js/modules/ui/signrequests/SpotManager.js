@@ -38,6 +38,7 @@ export class SpotManager {
         this.spotAddEnabled = true;
         const pdfViewer = this.options.getPdfViewer();
         const workspace = $("#workspace");
+        const signrequestScope = $(".es-signrequest-main-content *");
         const sidebarRoots = $(".es-signrequest-main-content #sidebar, .es-signrequest-main-content > .es-sidebar");
         this.preservedSidebarScope = sidebarRoots.length
             ? sidebarRoots.parentsUntil(".es-signrequest-main-content").addBack()
@@ -50,7 +51,7 @@ export class SpotManager {
             : $();
         this.activeWorkspaceScope.addClass("es-spot-add-scope");
         $("body").addClass("es-spot-add-mode");
-        $('body *').css('pointer-events', 'none');
+        signrequestScope.css('pointer-events', 'none');
         $('#workspace, #workspace *').css('pointer-events', 'auto');
         this.preservedSidebarScope.css({
             opacity: 1,
@@ -79,6 +80,7 @@ export class SpotManager {
     deactivateSpotAddMode() {
         this.spotAddEnabled = false;
         const pdfViewer = this.options.getPdfViewer();
+        const signrequestScope = $(".es-signrequest-main-content *");
         $("body").removeClass("es-spot-add-mode");
         this.activeWorkspaceScope.removeClass("es-spot-add-scope");
         this.activeWorkspaceScope = $();
@@ -97,7 +99,7 @@ export class SpotManager {
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css('cursor', 'default');
         }
-        $('body *').css('pointer-events', 'auto');
+        signrequestScope.css('pointer-events', '');
         $(".textLayer").each(function () {
             $(this).removeClass("text-disable-selection");
         });

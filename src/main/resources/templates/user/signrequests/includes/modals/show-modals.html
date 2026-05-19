@@ -748,16 +748,14 @@
 
                     function readUiMe() {
                         try {
-                            const rawUiMe = sessionStorage.getItem('uiMe');
-                            return rawUiMe ? JSON.parse(rawUiMe) : null;
+                            return JSON.parse(sessionStorage.getItem('uiMe') || 'null');
                         } catch (e) {
                             return null;
                         }
                     }
 
-                    function getUiProfile(uiMe) {
-                        return uiMe?.authUser || uiMe?.user || null;
-                    }
+                    const getUiProfile = uiMe => uiMe?.authUser || uiMe?.user || null;
+                    const dispatchDocumentEvent = (name, detail) => document.dispatchEvent(new CustomEvent(name, {detail}));
 
                     function hydrateModalFromUiMe(uiMe) {
                         const profile = getUiProfile(uiMe);
@@ -825,11 +823,11 @@
                     }
 
                     function validateIdentityFields() {
-                        if (!userParamsForm.checkValidity()) {
+                        const isValid = userParamsForm.checkValidity();
+                        if (!isValid) {
                             userParamsForm.reportValidity();
-                            return false;
                         }
-                        return true;
+                        return isValid;
                     }
 
                     function setPendingUserSignatureAction(selectionMode, selectedSignImageNumber = '') {
@@ -845,11 +843,7 @@
                         if (selectionMode !== 'custom') {
                             document.getElementById('signImageBase64').value = '';
                         }
-                        document.dispatchEvent(new CustomEvent('userParamsPrepared', {
-                            detail: {
-                                form: userParamsForm
-                            }
-                        }));
+                        dispatchDocumentEvent('userParamsPrepared', {form: userParamsForm});
                     }
 
                     function getDisplayName(userState) {
@@ -957,8 +951,6 @@
                         renderModalSignatures(currentUserSignatureState, modalActiveIndex);
                         renderNavbarSignatures(currentUserSignatureState);
                         updateGeneratedSignaturePreview(currentUserSignatureState);
-                        bindDeleteSignButtons();
-                        bindSignWithButtons();
                         if (currentUserSignatureState?.signImageIds?.length > 0) {
                             focusModalSignatureCarousel(Math.min(modalActiveIndex, currentUserSignatureState.signImageIds.length - 1));
                         }
@@ -1005,54 +997,27 @@
                         }).hide();
                     }
 
-                    function bindDeleteSignButtons() {
-                        document.querySelectorAll('.delete-sign-btn').forEach(btn => {
-                            if (btn.dataset.boundDelete === 'true') {
-                                return;
-                            }
-                            btn.dataset.boundDelete = 'true';
-                            btn.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                const signImageId = this.getAttribute('data-delete-sign-id');
-                                const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
-
-                                if(confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
-                                    fetch(deleteUrl, {
-                                        method: 'DELETE',
-                                        headers: {
-                                            [csrfHeader]: csrfToken,
-                                            'X-Requested-With': 'XMLHttpRequest',
-                                            'Accept': 'application/json'
-                                        }
-                                    })
-                                    .then(async response => {
-                                        if(response.ok) {
-                                            const userState = await response.json();
-                                            updateLiveUserState(userState);
-                                            document.dispatchEvent(new CustomEvent('userSignatureDeleted', { detail: currentUserSignatureState }));
-                                        } else {
-                                            alert('Erreur lors de la suppression de la signature');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Erreur:', error);
-                                        alert('Erreur lors de la suppression');
-                                    });
+                    async function deleteSignature(signImageId) {
+                        const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
+                        try {
+                            const response = await fetch(deleteUrl, {
+                                method: 'DELETE',
+                                headers: {
+                                    [csrfHeader]: csrfToken,
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
                                 }
                             });
-                        });
-                    }
-
-                    function bindSignWithButtons() {
-                        document.querySelectorAll('.sign-with-image-btn').forEach(btn => {
-                            if (btn.dataset.boundSignWith === 'true') {
+                            if (!response.ok) {
+                                alert('Erreur lors de la suppression de la signature');
                                 return;
                             }
-                            btn.dataset.boundSignWith = 'true';
-                            btn.addEventListener('click', function() {
-                                triggerUserParamsPrepared('existing', this.getAttribute('data-sign-image-number'));
-                            });
-                        });
+                            updateLiveUserState(await response.json());
+                            dispatchDocumentEvent('userSignatureDeleted', currentUserSignatureState);
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            alert('Erreur lors de la suppression');
+                        }
                     }
 
                     currentUserSignatureState = enrichUserState({
@@ -1065,28 +1030,25 @@
 
                     updateLiveUserState(currentUserSignatureState);
 
-                    const initialUiMe = readUiMe();
-                    if (initialUiMe != null) {
-                        hydrateModalFromUiMe(initialUiMe);
-                    }
-                    document.addEventListener('uiMeLoaded', function(event) {
-                        hydrateModalFromUiMe(event.detail);
-                    });
-
-                    addSignImageModal?.addEventListener('shown.bs.modal', function() {
-                        updateGeneratedSignaturePreview(currentUserSignatureState);
-                    });
-
-                    signWithGeneratedButton?.addEventListener('click', function() {
-                        triggerUserParamsPrepared('generated', '999998');
-                    });
-
-                    saveButton.addEventListener('click', function() {
-                        setPendingUserSignatureAction('custom', '');
-                    });
-
-                    userParamsForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
+                    readUiMe() && hydrateModalFromUiMe(readUiMe());
+                    document.addEventListener('uiMeLoaded', ({detail}) => hydrateModalFromUiMe(detail));
+                    addSignImageModal?.addEventListener('shown.bs.modal', () => updateGeneratedSignaturePreview(currentUserSignatureState));
+                    signWithGeneratedButton?.addEventListener('click', () => triggerUserParamsPrepared('generated', '999998'));
+                    saveButton.addEventListener('click', () => setPendingUserSignatureAction('custom', ''));
+                    userParamsForm.addEventListener('submit', e => e.preventDefault());
+                    modalSignaturesContainer?.addEventListener('click', async event => {
+                        const deleteButton = event.target.closest('.delete-sign-btn');
+                        if (deleteButton) {
+                            event.preventDefault();
+                            if (confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
+                                await deleteSignature(deleteButton.getAttribute('data-delete-sign-id'));
+                            }
+                            return;
+                        }
+                        const signButton = event.target.closest('.sign-with-image-btn');
+                        if (signButton) {
+                            triggerUserParamsPrepared('existing', signButton.getAttribute('data-sign-image-number'));
+                        }
                     });
 
                     document.addEventListener('userParamsPrepared', function(e) {
@@ -1133,15 +1095,11 @@
                                 if (!isSelectionAction) {
                                     resetCustomSignatureInputs();
                                     collapseSignDiv();
-                                    document.dispatchEvent(new CustomEvent('resetUserSignatureModal', {
-                                        detail: {
-                                            form: userParamsForm
-                                        }
-                                    }));
+                                    dispatchDocumentEvent('resetUserSignatureModal', {form: userParamsForm});
                                 }
-                                document.dispatchEvent(new CustomEvent('userSignatureUpdated', { detail: currentUserSignatureState }));
+                                dispatchDocumentEvent('userSignatureUpdated', currentUserSignatureState);
                                 if (isSelectionAction) {
-                                    document.dispatchEvent(new CustomEvent('userSignatureSelected', { detail: { ...currentUserSignatureState, selectedSignImageNumber } }));
+                                    dispatchDocumentEvent('userSignatureSelected', { ...currentUserSignatureState, selectedSignImageNumber });
                                     const modal = bootstrap.Modal.getInstance(addSignImageModal);
                                     if(modal) {
                                         modal.hide();

@@ -561,6 +561,11 @@ public class WorkflowService {
 
     @Transactional
     public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, String authUserEppn) {
+        return update(workflow, user, types, managers, authUserEppn, null, false, null, false);
+    }
+
+    @Transactional
+    public Workflow update(Workflow workflow, User user, String[] types, Set<String> managers, String authUserEppn, Set<String> missingRoles, boolean removeMissingRoles, Set<String> missingDashboardRoles, boolean removeMissingDashboardRoles) {
         Workflow workflowToUpdate = getById(workflow.getId());
         if(managers != null && !managers.isEmpty()) {
             workflowToUpdate.getManagers().clear();
@@ -617,20 +622,20 @@ public class WorkflowService {
         workflowToUpdate.setDisableSidebarForExternal(workflow.getDisableSidebarForExternal());
         workflowToUpdate.setAuthorizeClone(workflow.getAuthorizeClone());
         workflowToUpdate.setIsFeatured(workflow.getIsFeatured());
+        Set<String> finalRoles = mergeSubmittedRoles(workflow.getRoles(), missingRoles, removeMissingRoles);
+        Set<String> finalDashboardRoles = mergeSubmittedRoles(workflow.getDashboardRoles(), missingDashboardRoles, removeMissingDashboardRoles);
         User manager = userService.getByEppn(authUserEppn);
         if(!manager.getRoles().contains("ROLE_ADMIN") && workflowToUpdate.getManagerRole() != null && manager.getManagersRoles().contains(workflowToUpdate.getManagerRole())) {
             workflowToUpdate.setPublicUsage(false);
             workflowToUpdate.getRoles().clear();
-            if(workflow.getRoles().size() == 1 && workflow.getRoles().contains(workflowToUpdate.getManagerRole())) {
-                workflowToUpdate.getRoles().addAll(workflow.getRoles());
-            }
+            workflowToUpdate.getRoles().addAll(finalRoles.stream().filter(workflowToUpdate.getManagerRole()::equals).collect(Collectors.toSet()));
         } else {
             workflowToUpdate.setPublicUsage(workflow.getPublicUsage());
             workflowToUpdate.getRoles().clear();
-            workflowToUpdate.getRoles().addAll(workflow.getRoles());
+            workflowToUpdate.getRoles().addAll(finalRoles);
         }
         workflowToUpdate.getDashboardRoles().clear();
-        workflowToUpdate.getDashboardRoles().addAll(workflow.getDashboardRoles());
+        workflowToUpdate.getDashboardRoles().addAll(finalDashboardRoles);
         workflowToUpdate.setUpdateBy(user.getEppn());
         workflowToUpdate.setUpdateDate(new Date());
         workflowToUpdate.setMessage(workflow.getMessage());
@@ -653,6 +658,17 @@ public class WorkflowService {
         }
         workflowRepository.save(workflowToUpdate);
         return workflowToUpdate;
+    }
+
+    private Set<String> mergeSubmittedRoles(Set<String> submittedRoles, Set<String> missingRoles, boolean removeMissingRoles) {
+        Set<String> finalRoles = new HashSet<>();
+        if(submittedRoles != null) {
+            finalRoles.addAll(submittedRoles.stream().filter(StringUtils::hasText).collect(Collectors.toSet()));
+        }
+        if(!removeMissingRoles && missingRoles != null) {
+            finalRoles.addAll(missingRoles.stream().filter(StringUtils::hasText).collect(Collectors.toSet()));
+        }
+        return finalRoles;
     }
 
     private String generateToken(String token) {

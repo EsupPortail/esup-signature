@@ -34,6 +34,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -171,6 +173,8 @@ public class WorkflowAdminController {
 		model.addAttribute("targetTypes", DocumentIOType.values());
 		model.addAttribute("shareTypes", ShareType.values());
 		model.addAttribute("roles", view.getRoles());
+		model.addAttribute("missingRoles", getMissingRoles(view.getWorkflow().getRoles(), view.getRoles()));
+		model.addAttribute("missingDashboardRoles", getMissingRoles(view.getWorkflow().getDashboardRoles(), view.getRoles()));
 		model.addAttribute("allTags", view.getAllTags());
 		model.addAttribute("selectedTagIds", view.getSelectedTagIds());
         return "admin/workflows/update";
@@ -181,10 +185,15 @@ public class WorkflowAdminController {
 						 @ModelAttribute Workflow workflow,
 						 @RequestParam(value = "types", required = false) String[] types,
 						 @RequestParam(required = false) List<String> viewersEmails,
-						 @RequestParam(required = false) Set<String> managers, RedirectAttributes redirectAttributes) {
+						 @RequestParam(required = false) Set<String> managers,
+						 @RequestParam(name = "missingRoles", required = false) Set<String> missingRoles,
+						 @RequestParam(name = "removeMissingRoles", defaultValue = "false") boolean removeMissingRoles,
+						 @RequestParam(name = "missingDashboardRoles", required = false) Set<String> missingDashboardRoles,
+						 @RequestParam(name = "removeMissingDashboardRoles", defaultValue = "false") boolean removeMissingDashboardRoles,
+						 RedirectAttributes redirectAttributes) {
 		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers, authUserEppn);
+			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers, authUserEppn, missingRoles, removeMissingRoles, missingDashboardRoles, removeMissingDashboardRoles);
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
 			if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn)) {
 				return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
@@ -195,6 +204,20 @@ public class WorkflowAdminController {
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Accès non autorisé"));
 		return "redirect:/user";
     }
+
+	private Set<String> getMissingRoles(Collection<String> workflowRoles, Collection<String> availableRoles) {
+		Set<String> missingRoles = new LinkedHashSet<>();
+		if(workflowRoles == null || workflowRoles.isEmpty()) {
+			return missingRoles;
+		}
+		Set<String> availableRolesSet = availableRoles == null ? Set.of() : new LinkedHashSet<>(availableRoles);
+		for(String role : workflowRoles) {
+			if(role != null && !availableRolesSet.contains(role)) {
+				missingRoles.add(role);
+			}
+		}
+		return missingRoles;
+	}
 
     @DeleteMapping(value = "/{id}", produces = "text/html")
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")

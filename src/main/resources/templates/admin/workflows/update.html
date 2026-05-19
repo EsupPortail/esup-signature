@@ -142,6 +142,20 @@
                                                         <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
                                                     </th:block>
                                                 </select>
+                                                <th:block th:each="missingRole : ${missingRoles}">
+                                                    <input type="hidden" name="missingRoles" th:value="${missingRole}">
+                                                </th:block>
+                                                <div class="alert alert-warning mt-2" th:if="${!missingRoles.isEmpty()}">
+                                                    <div><strong>Des rôles déjà enregistrés ne sont plus proposés dans la liste.</strong></div>
+                                                    <div>Ils seront conservés lors de l'enregistrement sauf si vous confirmez leur suppression :</div>
+                                                    <ul class="mb-2">
+                                                        <li th:each="missingRole : ${missingRoles}" th:text="${missingRole}"></li>
+                                                    </ul>
+                                                    <div class="form-check">
+                                                        <input id="removeMissingRoles" class="form-check-input" type="checkbox" name="removeMissingRoles" value="true"/>
+                                                        <label for="removeMissingRoles" class="form-check-label">Supprimer aussi ces rôles indisponibles</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="form-group mb-3" id="managers">
@@ -174,6 +188,20 @@
                                                         <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.dashboardRoles, newRole)}"></option>
                                                     </th:block>
                                                 </select>
+                                                <th:block th:each="missingDashboardRole : ${missingDashboardRoles}">
+                                                    <input type="hidden" name="missingDashboardRoles" th:value="${missingDashboardRole}">
+                                                </th:block>
+                                                <div class="alert alert-warning mt-2" th:if="${!missingDashboardRoles.isEmpty()}">
+                                                    <div><strong>Des rôles superviseur déjà enregistrés ne sont plus proposés dans la liste.</strong></div>
+                                                    <div>Ils seront conservés lors de l'enregistrement sauf si vous confirmez leur suppression :</div>
+                                                    <ul class="mb-2">
+                                                        <li th:each="missingDashboardRole : ${missingDashboardRoles}" th:text="${missingDashboardRole}"></li>
+                                                    </ul>
+                                                    <div class="form-check">
+                                                        <input id="removeMissingDashboardRoles" class="form-check-input" type="checkbox" name="removeMissingDashboardRoles" value="true"/>
+                                                        <label for="removeMissingDashboardRoles" class="form-check-label">Supprimer aussi ces rôles superviseur indisponibles</label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Autre</div>
