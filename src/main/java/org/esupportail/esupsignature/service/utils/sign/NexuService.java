@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -91,12 +92,12 @@ public class NexuService {
     }
 
 	@Transactional
-	public NexuSignature getNexuSignature(Long id) {
-		return nexuSignatureRepository.findBySignRequestId(id).get(0);
+	public AbstractSignatureForm getAbstractSignatureForm(Long signRequestId) {
+		NexuSignature nexuSignature = nexuSignatureRepository.findBySignRequestId(signRequestId).stream().findFirst().orElseThrow();
+		return getAbstractSignatureFormFromNexuSignature(nexuSignature);
 	}
 
-	@Transactional
-	public AbstractSignatureForm getAbstractSignatureFormFromNexuSignature(NexuSignature nexuSignature) {
+	private AbstractSignatureForm getAbstractSignatureFormFromNexuSignature(NexuSignature nexuSignature) {
 		AbstractSignatureForm abstractSignatureForm;
 		if(nexuSignature.getDocumentToSign().size() > 1) {
 			abstractSignatureForm = new SignatureMultipleDocumentsForm();
@@ -108,9 +109,13 @@ public class NexuService {
 			((SignatureDocumentForm) abstractSignatureForm).setDocumentToSign(nexuSignature.getDocumentToSign().get(0).getMultipartFile());
 		}
 		abstractSignatureForm.setSigningDate(nexuSignature.getSigningDate());
-		abstractSignatureForm.setSignatureValue(nexuSignature.getSignatureValue());
-		abstractSignatureForm.setCertificate(nexuSignature.getCertificate());
-		abstractSignatureForm.setCertificateChain(nexuSignature.getCertificateChain());
+		abstractSignatureForm.setSignatureValue(nexuSignature.getSignatureValue() != null ? Arrays.copyOf(nexuSignature.getSignatureValue(), nexuSignature.getSignatureValue().length) : null);
+		abstractSignatureForm.setCertificate(nexuSignature.getCertificate() != null ? Arrays.copyOf(nexuSignature.getCertificate(), nexuSignature.getCertificate().length) : null);
+		abstractSignatureForm.setCertificateChain(nexuSignature.getCertificateChain() != null
+				? nexuSignature.getCertificateChain().stream()
+				.map(certificate -> certificate != null ? Arrays.copyOf(certificate, certificate.length) : null)
+				.toList()
+				: null);
 		abstractSignatureForm.setSignatureForm(nexuSignature.getSignatureForm());
 		abstractSignatureForm.setDigestAlgorithm(nexuSignature.getDigestAlgorithm());
 		abstractSignatureForm.setEncryptionAlgorithm(nexuSignature.getEncryptionAlgorithm());

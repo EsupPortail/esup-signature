@@ -99,7 +99,7 @@
                     <ul class="list-unstyled">
                         <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
                             <a title="Ajouter un tag" data-bs-toggle="modal" data-bs-target="#newTag" class="btn btn-transparent text-dark">
-                                <i class="fa-solid fa-plus"></i>
+                                <i class="fi fi-rr-plus"></i>
                             </a>
                         </li>
                     </ul>
@@ -120,11 +120,11 @@
                     <form th:action="'/admin/tags/' + ${tag.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" th:method="'put'" enctype="multipart/form-data">
                         <div class="modal-body">
                             <div class="form-group mb-3">
-                                <label class="col-form-label">Nom du tag</label>
+                                <label class="form-label">Nom du tag</label>
                                 <input class="form-control" type="text" name="name" th:value="${tag.name}">
                             </div>
                             <div class="form-group mb-3">
-                                <label for="tagColor" class="col-form-label">Couleur du tag</label>
+                                <label for="tagColor" class="form-label">Couleur du tag</label>
                                 <br>
                                 <input id="" class="form-control tag-color" type="text" name="color" th:value="${tag.color}">
                             </div>
@@ -151,11 +151,11 @@
                 <form id="addCertificat" th:action="'/admin/tags?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="form-group mb-3">
-                            <label for="tagName" class="col-form-label">Nom du tag</label>
+                            <label for="tagName" class="form-label">Nom du tag</label>
                             <input id="tagName" class="form-control" type="text" name="name">
                         </div>
                         <div class="form-group mb-3">
-                            <label for="tagColor" class="col-form-label">Couleur du tag</label>
+                            <label for="tagColor" class="form-label">Couleur du tag</label>
                             <br>
                             <input id="tagColor" class="form-control tag-color" type="text" name="color">
                         </div>

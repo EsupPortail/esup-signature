@@ -5,6 +5,7 @@ import {Nexu} from "./Nexu.js?version=@version@";
 import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
 import {SignatureFlowController} from "./SignatureFlowController.js?version=@version@";
+import {NexuProcessUi} from "./NexuProcessUi.js?version=@version@";
 
 export class SignUi {
 
@@ -14,6 +15,10 @@ export class SignUi {
         console.info("Starting sign UI for " + signUiDto.signRequestId);
         this.signatureUiConfig = signatureUiConfig;
         this.wait = $('#wait');
+        this.nexuProcessModal = $('#nexuProcessModal');
+        this.nexuProcessLoading = $('#nexu-process-modal-loading');
+        this.nexuProcessError = $('#nexu-process-modal-error');
+        this.nexuProcessContent = $('#nexu-process-modal-content');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.workspace = new SignWorkspaceController(this.state, this.csrf, this.signatureUiConfig);
@@ -22,6 +27,7 @@ export class SignUi {
         this.sealCertificatSelect = $("#sealCertificat");
         this.signLaunchButton = $("#signLaunchButton");
         this.signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
+        this.signTypeLabel = $("#signTypeLabel");
         this.toolsBar = $("#tools");
         this.certTypeObserver = null;
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
@@ -158,6 +164,16 @@ export class SignUi {
         $("#signModal, #refuseModal")
             .on('shown.bs.modal', () => $(document.body).addClass('es-signrequest-sidepanel-open'))
             .on('hidden.bs.modal', () => $(document.body).removeClass('es-signrequest-sidepanel-open'));
+        this.nexuProcessModal.on('hidden.bs.modal', () => {
+            this.resetNexuProcessModal();
+            this.signatureFlowController.resetLaunchUiState();
+        });
+        this.nexuProcessModal.get(0)?.addEventListener('nexuProcessReloadRequested', event => {
+            const requestedIds = Array.isArray(event.detail?.ids) && event.detail.ids.length > 0
+                ? event.detail.ids
+                : [this.signRequestId];
+            this.openNexuProcessModal(requestedIds);
+        });
     }
 
     initLaunchButtons() {
@@ -186,6 +202,55 @@ export class SignUi {
                 $(".reportModalBtn").removeClass("d-none");
             }
         });
+    }
+
+    resetNexuProcessModal() {
+        this.nexuProcessContent.empty();
+        this.nexuProcessError.addClass('d-none').empty();
+        this.nexuProcessLoading.removeClass('d-none');
+    }
+
+    buildNexuProcessFragmentUrl(ids = [this.signRequestId]) {
+        const params = new URLSearchParams();
+        ids.forEach(id => params.append('ids', id));
+        return '/nexu-sign/start-fragment?' + params;
+    }
+
+    async openNexuProcessModal(ids = [this.signRequestId]) {
+        if (!this.nexuProcessModal.length || !this.nexuProcessContent.length) {
+            return false;
+        }
+        this.signatureFlowController.resetLaunchUiState();
+        this.resetNexuProcessModal();
+        const modalElement = this.nexuProcessModal.get(0);
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modalInstance.show();
+        try {
+            const response = await fetch(this.buildNexuProcessFragmentUrl(ids), {
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            const html = await response.text();
+            this.nexuProcessContent.html(html);
+            this.nexuProcessLoading.addClass('d-none');
+            NexuProcessUi.initWithin(modalElement);
+            return true;
+        } catch (error) {
+            console.error('Impossible de charger l’interface Nexu', error);
+            this.nexuProcessLoading.addClass('d-none');
+            this.nexuProcessError
+                .removeClass('d-none')
+                .text("Impossible de charger l’interface de signature eIDAS.");
+            return false;
+        }
     }
 
     checkSignOptions() {
@@ -301,6 +366,24 @@ export class SignUi {
             && !selectedOption.is("[unavailable]");
     }
 
+    getSelectedCertTypeLabel() {
+        if (!this.hasValidSelectedCertType()) {
+            return "";
+        }
+
+        return this.certTypeSelect.find("option:selected").text().trim();
+    }
+
+    updateSignTypeLabel() {
+        if (!this.signTypeLabel.length) {
+            return;
+        }
+
+        const selectedCertTypeLabel = this.getSelectedCertTypeLabel();
+        this.signTypeLabel.text(selectedCertTypeLabel);
+        this.signTypeLabel.toggleClass("d-none", selectedCertTypeLabel === "");
+    }
+
     syncSignatureStepUi() {
         const signPlacementController = this.workspace?.signPlacementController;
         if (signPlacementController == null) {
@@ -329,7 +412,10 @@ export class SignUi {
         this.updateMobileCertTypeVisibility();
 
         this.certTypeObserver?.disconnect?.();
-        this.certTypeObserver = new MutationObserver(() => this.updateMobileCertTypeVisibility());
+        this.certTypeObserver = new MutationObserver(() => {
+            this.updateMobileCertTypeVisibility();
+            this.updateSignTypeLabel();
+        });
         this.certTypeObserver.observe(this.certTypeSelect.get(0), {
             childList: true,
             subtree: true,
@@ -342,6 +428,7 @@ export class SignUi {
             .on("resize.signUiCertTypeVisibility", () => this.updateMobileCertTypeVisibility());
 
         this.updateSelectableSignAlerts();
+        this.updateSignTypeLabel();
     }
 
     checkAfterChangeSignType() {
@@ -351,6 +438,7 @@ export class SignUi {
             this.checkSignOptions();
             this.syncSignatureStepUi();
             this.updateMobileCertTypeVisibility();
+            this.updateSignTypeLabel();
             return;
         }
         if(value === "nexuCert") {
@@ -403,6 +491,7 @@ export class SignUi {
         $("#sealChoose").toggleClass('d-none', value !== "sealCert");
         this.syncSignatureStepUi();
         this.updateMobileCertTypeVisibility();
+        this.updateSignTypeLabel();
     }
 
 

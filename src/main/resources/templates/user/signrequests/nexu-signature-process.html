@@ -2,80 +2,27 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.config.GlobalProperties"*/-->
 <head th:replace="~{fragments/head-lite :: head}"></head>
-<script th:inline="javascript" type="module">
-    import {Nexu} from '/js/modules/ui/signrequests/Nexu.js?version=@[(${versionApp})]@';
-    $(document).ready(function() {
-        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]], [[${rootUrl}]]);
-    });
-    $("#refresh-certType2").on('click', function (e) {
-        new Nexu([[${addExtra}]], [[${ids}]], 'nexuSign', [[${urlProfil}]], [[${massSignReportId}]], [[${rootUrl}]]);
-    });
-</script>
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div id="content" class="es-content-full ms-0">
-        <div style="height: 70px"></div>
-        <div class="alert alert-secondary col-10 mb-1 mx-auto text-center">
-            <h1>Signature eIDas en cours</h1>
-            <h3>Document <span id="current-doc-num"></span> / <span th:text="${ids.size()}"></span></h3>
-            <p>
-                L’application Esup-DSS-Client va s’ouvrir.
-                <br>
-                Pour signer avec une clé matérielle, vous pourrez choisir <OpenSC class=""></OpenSC>
-                Sous windows, vous pourrez aussi choisir le gestionnaire de clés windows.
-                <br>
-                Il est possible que vous deviez saisir votre mot de passe / code pin plusieurs fois pendant la procédure.
-            </p>
-        </div>
-        <div id="alertNexu" class="alert alert-danger col-10 mb-1 mx-auto text-center" style="display: none;">
-            L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.
-            <br>
-            <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${id}" class="btn btn-secondary">
-                <i class="fa-solid fa-door-open "></i><br/>Annuler la signature et retourner à la demande
-            </a>
-            <button id="refresh-certType2" class="mx-auto btn btn-primary align-self-center">
-                <i class="fa-solid fa-sync-alt "></i><br> Cliquez ici après le lancement de Esup-DSS-Client
-            </button>
-        </div>
-        <div class="card col-10 mx-auto">
-            <div class="card-body">
-                <h5 class="text-center"><b>Progression de la procédure de signature</b></h5>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped active" style="width: 20%;" id="bar">
-                        <span id="bar-text">Chargement du certificat...</span>
-                    </div>
-                </div>
-                <div id="error" style="display: none" class="text-center mt-2">
-                    <div class="alert alert-danger" role="alert">
-                        <h3 id="errorText">Une erreur s’est produite lors de la signature</h3>
-                        <button class="btn btn-transparent text-dark mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
-                            <i class="fa-solid fa-chevron-down"></i> Détails de l’erreur
-                        </button>
-                        <div class="collapse" id="collapseError">
-                            <textarea class="form-control mb-1" id="errorcontent"></textarea>
-                        </div>
-                        <div class="inline-flex">
-                            <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${ids.get(0)}" class="btn btn-secondary">
-                                <i class="fa-solid fa-door-open "></i><br/>Annuler la signature et retourner à la demande
-                            </a>
-                            <a onclick="location.reload();" class="btn btn-primary">
-                                <i class="fa-solid fa-sync-alt "></i><br/>Relancer la procédure de signature
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="alert alert-success text-center mt-2" role="alert" id="success">
-                    <strong>Signature effectuée</strong>
-                    <br/>
-                    <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
-                        <i class="fi fi-rr-flag "></i><br/> Retour
-                    </a>
-                </div>
-            </div>
+    <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+        <ol id="breadcrumb-ol" class="breadcrumb">
+            <li class="breadcrumb-item active"><i class="fi fi-rr-file-signature"></i>&nbsp;Signature eIDAS</li>
+        </ol>
+    </nav>
+    <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
+        <div class="col-12 col-xl-10 mx-auto p-2">
+            <div th:replace="~{user/signrequests/includes/modals/nexu-process-content :: content}"></div>
         </div>
     </div>
 </main>
+<script th:inline="javascript" type="module">
+    import {NexuProcessUi} from '/js/modules/ui/signrequests/NexuProcessUi.js?version=@[(${versionApp})]@';
+
+    $(document).ready(function() {
+        NexuProcessUi.initWithin(document);
+    });
+</script>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

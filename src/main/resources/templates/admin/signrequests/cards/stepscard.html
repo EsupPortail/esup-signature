@@ -56,7 +56,10 @@
 
                                 <div class="step-vertical-content bg-white p-2 rounded">
                                     <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-                                        <b th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></b>
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            <b th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></b>
+                                            <span th:replace="~{user/signrequests/cards/levelcard :: levelcard(liveWorkflowStep=${liveWorkflowStep})}"></span>
+                                        </div>
                                         <div class="d-flex align-items-center gap-2">
                                             <small th:if="${isAutoSign}" class="badge bg-info">Automatique</small>
                                             <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger">
@@ -78,8 +81,8 @@
                                                           th:text="${recipient.user.email}"></span>
                                                 </td>
                                                 <td th:if="${(isFuture  || isCurrent)  && isPending}" th:switch="${recipient.signed}">
-                                                    <i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
-                                                    <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
+                                                    <i title="a signé le document" th:case="true" class="fi fi-rr-check-circle text-success"></i>
+                                                    <i title="En attente de signature" th:case="false" class="fi fi-rr-clock text-warning"></i>
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-sm"
