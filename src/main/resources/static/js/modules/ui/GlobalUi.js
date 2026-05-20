@@ -140,6 +140,51 @@ export class GlobalUi {
         }
     }
 
+    getCsrfHeaders() {
+        const headers = {
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        const headerName = this.csrf?.headerName || document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        const token = this.csrf?.token || document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        if (headerName && token) {
+            headers[headerName] = token;
+        }
+        return headers;
+    }
+
+    stringifyClientError(error) {
+        if (error == null) {
+            return null;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error.stack) {
+            return error.stack;
+        }
+        if (error.message) {
+            return error.message;
+        }
+        try {
+            return JSON.stringify(error);
+        } catch (e) {
+            return String(error);
+        }
+    }
+
+    reportClientSideError(clientSideError) {
+        return $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '/log',
+            dataType: 'json',
+            headers: this.getCsrfHeaders(),
+            data: JSON.stringify(clientSideError)
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.debug('Unable to send client-side error log', jqXHR?.status, textStatus, errorThrown);
+        });
+    }
+
     applyUiData(uiData) {
         if (uiData == null) {
             return;
@@ -362,21 +407,15 @@ export class GlobalUi {
 
     initListeners() {
         let applicationEmail = this.applicationEmail;
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
             let clientSideError = {
-                msg: msg,
-                url: url,
-                lineNumber: lineNo,
-                columnNumber: columnNo,
-                error: error
+                msg: typeof msg === 'string' ? msg : msg?.message || String(msg),
+                url: url || window.location.href,
+                lineNumber: lineNo || null,
+                columnNumber: columnNo || null,
+                error: this.stringifyClientError(error)
             };
-            $.ajax({
-                type: 'POST',
-                contentType : 'application/json; charset=utf-8',
-                url: "/log",
-                dataType: "json",
-                data: JSON.stringify(clientSideError)
-            });
+            this.reportClientSideError(clientSideError);
             alert("Une erreur s'est produite au niveau de l'affichage.\n" +
                 "Merci de contacter le gestionnaire de cette application : \n" +
                 applicationEmail + "\n" +
