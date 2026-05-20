@@ -138,7 +138,7 @@
                                         <i class="fi fi-rr-users-slash"></i>
                                     </span>
                                             <span th:if="${liveWorkflowStep.allSignToComplete}" title="Tous les participants doivent signer" class="step-indicator">
-                                        <i class="fa-solid fa-users"></i>
+                                        <i class="fi fi-rr-users-alt"></i>
                                     </span>
                                             <span th:if="${liveWorkflowStep.repeatable}" title="Étape infinie" class="step-indicator">
                                         <i class="fi fi-rr-infinite-cycle"></i>
@@ -169,15 +169,16 @@
                                                     </td>
                                                     <td class="recipient-status bg-light">
                                                         <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'signed'}"
-                                                            class="fa-solid fa-check-circle text-success"
+                                                            class="fi fi-rr-check-circle text-success"
                                                             th:title="|A signé le ${#dates.format(recipientAction.date, 'dd/MM/YYYY HH:mm')}|"></i>
                                                         <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'none'  && isPending}"
-                                                            class="fa-solid fa-clock text-warning"
+                                                            class="fi fi-rr-clock text-warning"
                                                             title="En attente de signature"></i>
                                                         <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'none'  && !isPending}"
-                                                            class="fa-solid fa-minus-circle text-secondary"></i>
+                                                            class="fi fi-rr-minus text-secondary"
+                                                            title="Aucune action"></i>
                                                         <i th:if="${recipientAction != null  && recipientAction.actionType.name() == 'refused'}"
-                                                            class="fa-solid fa-times-circle text-danger"
+                                                            class="fi fi-rr-cross-circle text-danger"
                                                             title="A refusé le document"></i>
                                                     </td>
                                                 </tr>

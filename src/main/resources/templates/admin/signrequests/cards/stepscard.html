@@ -78,8 +78,8 @@
                                                           th:text="${recipient.user.email}"></span>
                                                 </td>
                                                 <td th:if="${(isFuture  || isCurrent)  && isPending}" th:switch="${recipient.signed}">
-                                                    <i title="a signé le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
-                                                    <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
+                                                    <i title="a signé le document" th:case="true" class="fi fi-rr-check-circle text-success"></i>
+                                                    <i title="En attente de signature" th:case="false" class="fi fi-rr-clock text-warning"></i>
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-sm"
