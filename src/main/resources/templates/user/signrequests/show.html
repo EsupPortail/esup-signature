@@ -191,9 +191,6 @@
                         </div>
                     </div>
                     <div th:replace="~{user/signrequests/includes/tools :: tools}"></div>
-                    <div id="pdf-progress-bar" class="progress" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}">
-                        <div class="progress-bar bg-dark" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
                     <div id="comment-div" class="postit alert alert-warning" style="z-index: 100;">
                         <input id="submitPostit" name="submitPostit" type="submit" class="d-none"/>
                         <input id="commentPosX" name="commentPosX" type="hidden"/>
