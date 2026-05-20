@@ -180,18 +180,39 @@ body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-dialog {
     transition: transform 0.25s ease-out;
 }
 
+@supports (height: 100svh) {
+    body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-dialog {
+        height: 100svh;
+    }
+}
+
+@supports (height: 100dvh) {
+    body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-dialog {
+        height: 100dvh;
+    }
+}
+
 body.es-signrequest-page .modal.es-signrequest-sidepanel.show .modal-dialog {
     transform: translate3d(0, 0, 0);
 }
 
 body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-content {
-    height: 100vh;
+    height: 100%;
+    max-height: 100%;
     border-radius: 0;
     border-left: 1px solid var(--bs-border-color);
+    overflow: hidden;
 }
 
 body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-body {
     overflow-y: auto;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+}
+
+body.es-signrequest-page .modal.es-signrequest-sidepanel .modal-footer {
+    flex-shrink: 0;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
 #tools.tools-disabled {
