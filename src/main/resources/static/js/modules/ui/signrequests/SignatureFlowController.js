@@ -283,7 +283,7 @@ export class SignatureFlowController {
                             }
                         });
                         if(signUi.currentSignType === "visa") {
-                            $("#certType").val('imageStamp');
+                            $("#certType").val('imageStamp').trigger('change');
                         }
                         this.checkAttachement().then(canContinue => {
                             if (canContinue) {
@@ -371,6 +371,14 @@ export class SignatureFlowController {
 
     setLaunchButtonsDisabled(disabled) {
         $("#signLaunchButton, #signAdvancedLaunchButton, #checkValidateAdvancedSignButton, #launchNoInfiniteSignButton, #launch-infinite-sign-button, #checkValidateSignButtonNext, #checkValidateSignButtonEnd").prop("disabled", disabled);
+    }
+
+    resetLaunchUiState() {
+        this.reset();
+        this.setLaunchButtonsDisabled(false);
+        this.signUi.wait.modal('hide');
+        $("#signActionButtons button").prop("disabled", false);
+        $("#checkValidateAdvancedSignButton").prop("disabled", false);
     }
 
     resolveRequestedNextUrl(trigger = null) {
@@ -680,7 +688,11 @@ export class SignatureFlowController {
             data: signRequestUrlParams,
             success: (data) => {
                 if(data === "initNexu") {
-                    document.location.href="/nexu-sign/start?ids=" + signUi.signRequestId;
+                    signUi.openNexuProcessModal([signUi.signRequestId]).then(opened => {
+                        if (!opened) {
+                            document.location.href = "/nexu-sign/start?ids=" + signUi.signRequestId;
+                        }
+                    });
                 } else {
                     if (this.state.gotoNext != null) {
                         document.location.href = this.state.gotoNext;

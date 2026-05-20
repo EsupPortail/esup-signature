@@ -29,6 +29,27 @@
         </div>
     </div>
 
+    <div id="nexuProcessModal" data-bs-focus="false" class="modal fade" role="dialog" aria-labelledby="nexuProcessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="nexuProcessModalLabel"><i class="fi fi-rr-file-signature"></i> Signature eIDAS</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="nexu-process-modal-loading" class="d-flex flex-column align-items-center justify-content-center gap-2 py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="text-muted mb-0">Chargement de l’interface de signature…</p>
+                    </div>
+                    <div id="nexu-process-modal-error" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="nexu-process-modal-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{fragments/sign-validation-modal :: sign-modal(
         signable=${signRequestFull.signable},
         currentSignType=${signRequestFull.currentSignType},
@@ -614,17 +635,17 @@
 
                         <div class="row g-3 align-items-start">
                             <div class="col-12 col-lg-6">
-                                <label class="col-form-label" for="name">
+                                <label class="form-label" for="name">
                                     <strong>Nom</strong>
                                 </label>
                                 <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
-                                <label class="col-form-label mt-2" for="firstname">
+                                <label class="form-label mt-2" for="firstname">
                                     <strong>Prénom</strong>
                                 </label>
                                 <input type="text" class="form-control" id="firstname" name="firstname" value="" required="required"/>
                             </div>
                             <div class="col-12 col-lg-6">
-                                <div class="col-form-label d-block">
+                                <div class="form-label d-block">
                                     <strong>Aperçu du visuel nom / prénom</strong>
                                 </div>
                                 <div id="generated-signature-preview" class="border rounded bg-white d-flex align-items-center justify-content-center text-center p-3" style="min-height: 150px;">
@@ -646,12 +667,12 @@
                         </h4>
                         <div id="sign-div" class="alert alert-light collapse">
                             <div class="sign-pad-content">
-                                <label class="col-form-label">
+                                <label class="form-label">
                                     <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
                                     <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
                                             type="button"
                                             class="btn btn-sm btn-transparent">
-                                        <i class="fa-solid fa-info-circle text-info"></i>
+                                        <i class="fi fi-rr-info text-info"></i>
                                     </button>
                                     <div class="collapse" id="collapseHelpSignImage">
                                         <div class="alert alert-info">
@@ -666,7 +687,7 @@
                                     <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                 </div>
                                 <br/>
-                                <label id="signPadLabel" class="col-form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
+                                <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
                                 <div id="signPad">
                                     <div id="signPadTip" style="
                                         position: absolute;

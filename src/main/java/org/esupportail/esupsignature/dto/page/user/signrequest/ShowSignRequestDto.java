@@ -7,6 +7,7 @@ import org.esupportail.esupsignature.entity.AuditTrail;
 import org.esupportail.esupsignature.entity.Comment;
 import org.esupportail.esupsignature.entity.Log;
 import org.esupportail.esupsignature.entity.enums.ActionType;
+import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.entity.enums.SignWith;
@@ -368,25 +369,29 @@ public class ShowSignRequestDto {
         private String description;
         private Boolean changeable;
         private SignType signType;
+        private SignLevel minSignLevel;
         private Boolean autoSign;
         private Boolean allSignToComplete;
         private Boolean repeatable;
+        private Boolean sealVisa;
         private List<StepUserDto> users;
         private List<StepRecipientDto> recipients;
 
         public StepDto() {
         }
 
-        public StepDto(Long id, String description, Boolean changeable, SignType signType, Boolean autoSign,
-                       Boolean allSignToComplete, Boolean repeatable, List<StepUserDto> users,
+        public StepDto(Long id, String description, Boolean changeable, SignType signType, SignLevel minSignLevel,
+                       Boolean autoSign, Boolean allSignToComplete, Boolean repeatable, Boolean sealVisa, List<StepUserDto> users,
                        List<StepRecipientDto> recipients) {
             this.id = id;
             this.description = description;
             this.changeable = changeable;
             this.signType = signType;
+            this.minSignLevel = minSignLevel;
             this.autoSign = autoSign;
             this.allSignToComplete = allSignToComplete;
             this.repeatable = repeatable;
+            this.sealVisa = sealVisa;
             this.users = users;
             this.recipients = recipients;
         }
@@ -399,12 +404,16 @@ public class ShowSignRequestDto {
         public void setChangeable(Boolean changeable) { this.changeable = changeable; }
         public SignType getSignType() { return signType; }
         public void setSignType(SignType signType) { this.signType = signType; }
+        public SignLevel getMinSignLevel() { return minSignLevel; }
+        public void setMinSignLevel(SignLevel minSignLevel) { this.minSignLevel = minSignLevel; }
         public Boolean getAutoSign() { return autoSign; }
         public void setAutoSign(Boolean autoSign) { this.autoSign = autoSign; }
         public Boolean getAllSignToComplete() { return allSignToComplete; }
         public void setAllSignToComplete(Boolean allSignToComplete) { this.allSignToComplete = allSignToComplete; }
         public Boolean getRepeatable() { return repeatable; }
         public void setRepeatable(Boolean repeatable) { this.repeatable = repeatable; }
+        public Boolean getSealVisa() { return sealVisa; }
+        public void setSealVisa(Boolean sealVisa) { this.sealVisa = sealVisa; }
         public List<StepUserDto> getUsers() { return users; }
         public void setUsers(List<StepUserDto> users) { this.users = users; }
         public List<StepRecipientDto> getRecipients() { return recipients; }

@@ -73,10 +73,27 @@ public class LogService {
 
     private List<Log> setUsers(List<Log> logs) {
         for (Log log :logs) {
-            log.setUser(userService.getByEppn(log.getEppn()));
-            log.setUserFor(userService.getByEppn(log.getEppnFor()));
+            log.setUser(toLogUserSnapshot(log.getEppn()));
+            log.setUserFor(toLogUserSnapshot(log.getEppnFor()));
         }
         return logs;
+    }
+
+    private User toLogUserSnapshot(String eppn) {
+        if (eppn == null) {
+            return null;
+        }
+        User source = userService.getByEppn(eppn);
+        if (source == null) {
+            return null;
+        }
+        User snapshot = new User();
+        snapshot.setId(source.getId());
+        snapshot.setEppn(source.getEppn());
+        snapshot.setFirstname(source.getFirstname());
+        snapshot.setName(source.getName());
+        snapshot.setEmail(source.getEmail());
+        return snapshot;
     }
 
     public List<Log> getBySignRequest(Long id) {
@@ -91,24 +108,14 @@ public class LogService {
     @Transactional
     public List<Log> getFullBySignRequest(Long id) {
         List<Log> logs = logRepository.findBySignRequestId(id);
-        for (Log log : logs) {
-            if(log.getEppn() != null) {
-                log.setUser(userService.getByEppn(log.getEppn()));
-                log.setUserFor(userService.getByEppn(log.getEppnFor()));
-            }
-        }
+        setUsers(logs);
         return logs.stream().sorted(Comparator.comparing(Log::getLogDate).reversed()).toList();
     }
 
     @Transactional
     public List<Log> getFullByToken(String token) {
         List<Log> logs = logRepository.findBySignRequestToken(token);
-        for (Log log : logs) {
-            if(log.getEppn() != null) {
-                User user = userService.getByEppn(log.getEppn());
-                log.setUser(user);
-            }
-        }
+        setUsers(logs);
         return logs.stream().sorted(Comparator.comparing(Log::getLogDate)).toList();
     }
 

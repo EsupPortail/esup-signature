@@ -384,6 +384,7 @@ export class SignPlacementController extends EventFactory {
         }
         const isSpot = signImageNumber === 999999;
         const isParaph = signImageNumber === 999997;
+        const isVisaPlacement = this.signType === "visa" && !isParaph;
         if (!isSpot && !isParaph) {
             this.prepareVisualPlacement();
         }
@@ -403,7 +404,7 @@ export class SignPlacementController extends EventFactory {
                 alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                 return;
             }
-            signRequestParams = new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, this.signType === "visa", this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            signRequestParams = new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, isVisaPlacement, this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
             if (!isParaph) {
                 this.setSingleSignInsertionState(id, isParaph);
             }
@@ -419,7 +420,7 @@ export class SignPlacementController extends EventFactory {
         this.applySpecialSignImageNumbers(signRequestParams);
         this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
 
-        if (signImageNumber != null && signImageNumber !== 999999 && this.signType !== "visa") {
+        if (signImageNumber != null && signImageNumber !== 999999 && (!isVisaPlacement || isParaph)) {
             await signRequestParams.changeSignImage(signImageNumber);
             if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
                 signRequestParams.centerOnCurrentViewport();

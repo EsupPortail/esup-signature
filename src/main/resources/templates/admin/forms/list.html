@@ -245,11 +245,11 @@
             <div class="modal-body">
                 <form th:action="'/' + ${workflowRole} + '/forms'" method="post">
                     <div class="form-group mb-3">
-                        <label for="titleManual" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <label for="titleManual" class="form-label">Titre (affiché aux utilisateurs)</label>
                         <input type="text" id="titleManual" name="title" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="nameManual" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
+                        <label for="nameManual" class="form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="nameManual" name="name" class="form-control" required>
                     </div>
                     <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
@@ -257,7 +257,7 @@
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
                     <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
-                        <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <label for="roleNames" class="form-label">Nom du role autorisé à accéder au formulaire</label>
                         <select id="roleNames" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
@@ -265,7 +265,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowIdManual" class="col-form-label">Circuit associé</label>
+                        <label for="workflowIdManual" class="form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowIdManual" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -283,7 +283,7 @@
                                 </th:block>
                             </select>
                             <button id="btn-add-field" type="button" class="btn btn-success">
-                                <span class="fa-solid fa-plus " aria-hidden="true"></span>
+                                <span class="fi fi-rr-plus" aria-hidden="true"></span>
                             </button>
                         </div>
                     </div>
@@ -303,15 +303,15 @@
             <form id="addModel" th:action="'/' + ${workflowRole} + '/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="title" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <label for="title" class="form-label">Titre (affiché aux utilisateurs)</label>
                         <input type="text" id="title" name="title" class="form-control" onchange="" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="name" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
+                        <label for="name" class="form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="col-form-label">Modèle PDF Form</label>
+                        <label class="form-label">Modèle PDF Form</label>
                         <div class="custom-file">
                             <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="modelFile" name="multipartFile" type="file" required/>
                         </div>
@@ -329,7 +329,7 @@
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
                     <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
-                        <label for="roleNames2" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <label for="roleNames2" class="form-label">Nom du role autorisé à accéder au formulaire</label>
                         <select id="roleNames2" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
@@ -337,7 +337,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowId" class="col-form-label">Circuit associé</label>
+                        <label for="workflowId" class="form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -345,7 +345,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="prefillType" class="col-form-label">Type de pré-remplissage</label>
+                        <label for="prefillType" class="form-label">Type de pré-remplissage</label>
                         <select class="slim-select-simple" id="prefillType" name="prefillType">
                             <th:block th:each="preFillType : ${preFillTypes}">
                                 <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"
