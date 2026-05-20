@@ -4,6 +4,14 @@
 <!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div id="workspace" tabindex="1" th:fragment="workspace" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="alert rounded-bottom-0 light border-0 justify-content-center" th:classappend="(${signRequestFull.nbSignRequests > 1} ? 'es-workspace-sign' : 'es-workspace-pdf workspace-margin-top') + ' ' + (${signRequestFull.signable && signRequestLight.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).signed}? '' : '')">
+    <div id="pdf-progress-bar" class="es-pdf-progress-overlay" aria-live="polite" aria-atomic="true">
+        <div class="es-pdf-progress-card shadow-sm">
+            <div class="es-pdf-progress-label">Chargement du document…</div>
+            <div class="progress">
+                <div class="progress-bar bg-dark" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
     <form id="signForm" th:action="''">
         <input id="checkDataSubmit" type="submit" style="display: none;"/>
         <div tabindex="0" id="pdf">
