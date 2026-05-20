@@ -4,7 +4,6 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.validation.Valid;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.*;
-import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
@@ -27,7 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -125,9 +123,8 @@ public class NexuProcessController implements Serializable {
 	public ResponseEntity<?> signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @RequestBody @Valid SignResponse signatureValue,
 										  @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException, EsupSignatureException {
-		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
-		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
+									  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, EsupSignatureException {
+		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureForm(id);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
         SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);
