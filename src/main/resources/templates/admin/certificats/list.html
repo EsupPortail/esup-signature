@@ -112,12 +112,14 @@
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">
                     <ul class="list-unstyled">
-                        <li id="addButton" onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
+                        <li id="refreshButton">
+                            <a title="Rafraichir les certificats" href="/admin/certificats/refresh" class="btn btn-transparent text-dark"><i class="fi fi-rr-refresh"></i></a>
+                        </li>
+                        <li id="addButton">
                             <a title="Ajouter un certificat" data-bs-toggle="modal" data-bs-target="#newCertificat" class="btn btn-transparent text-dark">
-                                <i class="fa-solid fa-plus"></i>
+                                <i class="fi fi-rr-plus"></i>
                             </a>
                         </li>
-                        <li id="refreshButton" onmouseover="$('#refreshButton').toggleClass('active');" onmouseout="$('#refreshButton').toggleClass('active');">
                     </div>
                 </div>
             </div>

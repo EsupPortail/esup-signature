@@ -22,13 +22,13 @@
             <div class="p-0 m-2">
                 <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
-                    <select name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
+                    <select id="displayWorkflowType" name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();">
                         <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
                         <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
                         <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
                         <option value="users" th:selected="${displayWorkflowType == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
                     </select>
-                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
+                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
                         <th:block th:each="tag : ${allTags}">
                             <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                         </th:block>
@@ -178,6 +178,51 @@
 <script th:inline="javascript" type="module">
     import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=@[(${versionApp})]@';
     new WorkflowManualAdd();
+</script>
+<script>
+    (() => {
+        const navigateWithFilters = (updates) => {
+            const currentUrl = new URL(window.location.href);
+            const targetUrl = new URL(window.location.href);
+
+            Object.entries(updates).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        targetUrl.searchParams.set(key, value.join(','));
+                    } else {
+                        targetUrl.searchParams.delete(key);
+                    }
+                    return;
+                }
+
+                if (value == null || value === '') {
+                    targetUrl.searchParams.delete(key);
+                } else {
+                    targetUrl.searchParams.set(key, value);
+                }
+            });
+
+            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
+                return;
+            }
+
+            window.location.assign(targetUrl.pathname + targetUrl.search + targetUrl.hash);
+        };
+
+        const displayWorkflowTypeSelect = document.getElementById('displayWorkflowType');
+        if (displayWorkflowTypeSelect) {
+            displayWorkflowTypeSelect.addEventListener('change', function () {
+                navigateWithFilters({ displayWorkflowType: this.value });
+            });
+        }
+
+        const tagsSelect = document.getElementById('tags');
+        if (tagsSelect) {
+            tagsSelect.addEventListener('change', function () {
+                navigateWithFilters({ selectedTags: Array.from(this.selectedOptions).map(option => option.value) });
+            });
+        }
+    })();
 </script>
 <div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">

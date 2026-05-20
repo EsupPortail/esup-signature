@@ -355,7 +355,8 @@ export class GlobalUi {
         this.toggleStatusClasses(document.getElementById('admin-side-dss-label'), isAlert, 'text-success', 'text-danger');
         this.toggleStatusClasses(document.getElementById('admin-index-dss-icon'), isAlert);
         this.toggleStatusClasses(document.getElementById('admin-index-dss-label'), isAlert, 'text-success', 'text-danger');
-        this.setElementVisibility('navbar-admin-dss-alert', isAlert || counters.certificatProblem === true, 'd-none');
+        const hasCertificatProblem = counters?.certificatProblem === true;
+        this.setElementVisibility('navbar-admin-dss-alert', isAlert || hasCertificatProblem, 'd-none');
         document.dispatchEvent(new CustomEvent('adminUiStatusLoaded', {detail: status}));
     }
 
