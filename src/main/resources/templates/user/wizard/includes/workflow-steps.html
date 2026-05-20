@@ -17,7 +17,7 @@
                     <div class="d-flex flex-column gap-1">
                         <div class="d-flex align-items-center">
                             <h3 class="d-inline">
-                                <span class="badge rounded-pill text-bg-primary me-4 align-middle" th:text="${iterator.index + 1}"></span>
+                                <span class="step-vertical-icon bg-primary border-primary text-white fw-bold" th:text="${iterator.index + 1}"></span>
                             </h3>
                             <h5 th:if="${step.description != null && step.description != ''}" th:text="${step.description}"></h5>
                             <h5 th:unless="${step.description != null && step.description != ''}" th:text="'Étape ' + ${iterator.index + 1}"></h5>
