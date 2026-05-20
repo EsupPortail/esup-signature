@@ -1623,23 +1623,28 @@ public class SignBookService {
      * @param sendEmailAlert Indicateur spécifiant si une alerte e-mail*/
     @Transactional
     public void initSignBookWorkflow(Long signBookId, List<WorkflowStepDto> steps, List<String> targetEmails, String userEppn, String authUserEppn, Boolean pending, Boolean sendEmailAlert) throws EsupSignatureRuntimeException, EsupSignatureException {
-        List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
-        signRequestService.checkTempUsers(signBookId, recipients);
+        List<WorkflowStepDto> workflowSteps = steps == null ? List.of() : steps;
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
-            List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
-            if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
-                workflowService.computeWorkflow(steps, signBook);
+            if (workflowSteps.isEmpty()) {
+                completeSignBook(signBook, userEppn, "Tous les documents sont signés");
             } else {
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), steps, userEppn, false);
-                workflowService.importWorkflow(signBook, workflow, steps, userEppn);
-                signRequestService.nextWorkFlowStep(signBook);
-            }
+                List<RecipientWsDto> recipients = workflowSteps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
+                signRequestService.checkTempUsers(signBookId, recipients);
+                List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
+                if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
+                    workflowService.computeWorkflow(workflowSteps, signBook);
+                } else {
+                    Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), workflowSteps, userEppn, false);
+                    workflowService.importWorkflow(signBook, workflow, workflowSteps, userEppn);
+                    signRequestService.nextWorkFlowStep(signBook);
+                }
 //            dispatchSignRequestParams(signBookLight);
-            targetService.copyTargets(targets, signBook, targetEmails);
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
-            if (pending != null && pending) {
-                pendingSignBook(signBook, null, userEppn, authUserEppn, false, sendEmailAlert);
+                targetService.copyTargets(targets, signBook, targetEmails);
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), workflowSteps);
+                if (pending != null && pending) {
+                    pendingSignBook(signBook, null, userEppn, authUserEppn, false, sendEmailAlert);
+                }
             }
         }
         if(signBook.getLiveWorkflow().getWorkflow().getOwnerSystem() != null && signBook.getLiveWorkflow().getWorkflow().getOwnerSystem()) {
