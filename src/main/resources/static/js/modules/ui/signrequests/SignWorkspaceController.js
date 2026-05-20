@@ -478,20 +478,20 @@ export class SignWorkspaceController {
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.");
             return;
         }
-        const certTypeSelect = $("#certType");
-        if (!this.hasValidSelectedCertType(certTypeSelect)) {
-            this.resetRequestedSignatureStep();
-            if (!this.missingCertTypeAlertShown) {
-                this.missingCertTypeAlertShown = true;
-                bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", () => {
-                    setTimeout(() => $("#certType").focus(), 50);
-                });
-            }
-            if (typeof this.signPlacementController?.refreshSteps !== "function") {
-                certTypeSelect.trigger("focus");
-            }
-            return;
-        }
+        // const certTypeSelect = $("#certType");
+        // if (!this.hasValidSelectedCertType(certTypeSelect)) {
+        //     this.resetRequestedSignatureStep();
+        //     if (!this.missingCertTypeAlertShown) {
+        //         this.missingCertTypeAlertShown = true;
+        //         bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", () => {
+        //             setTimeout(() => $("#certType").focus(), 50);
+        //         });
+        //     }
+        //     if (typeof this.signPlacementController?.refreshSteps !== "function") {
+        //         certTypeSelect.trigger("focus");
+        //     }
+        //     return;
+        // }
         this.pdfViewer.annotationLinkRemove();
         const {signNum, targetPageNumber} = this.resolveTargetSign(forceSignNumber);
         const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();

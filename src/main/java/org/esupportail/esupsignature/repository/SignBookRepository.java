@@ -61,9 +61,11 @@ public interface SignBookRepository extends CrudRepository<SignBook, Long> {
                    coalesce(lws.description, ws.description) as description,
                    coalesce(ws.changeable, false) as changeable,
                    lws.signType as signType,
+                   lws.minSignLevel as minSignLevel,
                    coalesce(lws.autoSign, false) as autoSign,
                    coalesce(lws.allSignToComplete, false) as allSignToComplete,
-                   coalesce(lws.repeatable, false) as repeatable
+                   coalesce(lws.repeatable, false) as repeatable,
+                   coalesce(lws.sealVisa, false) as sealVisa
             from SignBook sb
             join sb.liveWorkflow lw
             join lw.liveWorkflowSteps lws

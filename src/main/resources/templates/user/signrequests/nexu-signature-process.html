@@ -12,127 +12,15 @@
     </nav>
     <div id="content" class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
         <div class="col-12 col-xl-10 mx-auto p-2">
-            <div class="alert alert-light es-status-card es-status-card--primary mb-2">
-                <div class="es-status-card__icon">
-                    <i class="fi fi-rr-file-signature"></i>
-                </div>
-                <div class="es-status-card__body">
-                    <h1 class="es-status-card__title mb-1">Signature eIDAS en cours</h1>
-                    <p class="es-status-card__description mb-2">
-                        Document <span id="current-doc-num"></span> / <span th:text="${ids.size()}"></span>
-                    </p>
-                    <div class="es-status-card__content">
-                        <p class="mb-2">L’application Esup-DSS-Client va s’ouvrir pour finaliser la signature électronique.</p>
-                        <div class="es-status-note es-status-note--secondary">
-                            <ul class="mb-0 ps-3">
-                                <li>Pour signer avec une clé matérielle, vous pourrez choisir <strong>OpenSC</strong>.</li>
-                                <li>Sous Windows, vous pourrez aussi choisir le gestionnaire de clés Windows.</li>
-                                <li>Selon votre certificat, votre mot de passe ou code PIN pourra être demandé plusieurs fois.</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="alertNexu" class="alert alert-light es-status-card es-status-card--warning mb-2" style="display: none;">
-                <div class="es-status-card__icon">
-                    <i class="fi fi-rr-triangle-warning"></i>
-                </div>
-                <div class="es-status-card__body">
-                    <h5 class="es-status-card__title mb-1">Esup-DSS-Client n’a pas été détecté</h5>
-                    <p class="es-status-card__description">Cette application est nécessaire pour le mode de signature qui vous est demandé.</p>
-                    <div class="es-status-card__actions">
-                        <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${id}" class="btn btn-secondary">
-                            <i class="fi fi-rr-door-open"></i>&nbsp;Annuler et retourner à la demande
-                        </a>
-                        <button id="refresh-certType2" type="button" class="btn btn-primary">
-                            <i class="fi fi-rr-refresh"></i>&nbsp;J’ai lancé Esup-DSS-Client
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert alert-light es-status-card es-status-card--neutral mb-2">
-                <div class="es-status-card__icon">
-                    <i class="fi fi-rr-clock"></i>
-                </div>
-                <div class="es-status-card__body">
-                    <h5 class="es-status-card__title mb-1">Progression de la procédure de signature</h5>
-                    <p class="es-status-card__description">Le certificat est chargé puis les documents sont signés et enregistrés automatiquement.</p>
-                    <div class="es-status-card__content">
-                        <div class="progress" role="progressbar" aria-label="Progression de la signature" aria-valuemin="0" aria-valuemax="100">
-                            <div class="progress-bar active" style="width: 20%;" id="bar">
-                                <span id="bar-text">Chargement du certificat...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="error" style="display: none;" class="alert alert-light es-status-card es-status-card--danger mb-2" role="alert">
-                <div class="es-status-card__icon">
-                    <i class="fi fi-rr-cross-circle"></i>
-                </div>
-                <div class="es-status-card__body">
-                    <h3 id="errorText" class="es-status-card__title mb-1">Une erreur s’est produite lors de la signature</h3>
-                    <p class="es-status-card__description">Vous pouvez consulter le détail technique ci-dessous, puis relancer la procédure ou revenir à la demande.</p>
-                    <div class="es-status-card__content">
-                        <button class="btn btn-transparent text-dark mb-2 ps-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseError" aria-expanded="false" aria-controls="collapseError">
-                            <i class="fi fi-rr-angle-small-down"></i>&nbsp;Détails de l’erreur
-                        </button>
-                        <div class="collapse" id="collapseError">
-                            <label class="visually-hidden" for="errorcontent">Détails de l’erreur</label>
-                            <textarea class="form-control mb-2" id="errorcontent" rows="8" readonly></textarea>
-                        </div>
-                    </div>
-                    <div class="es-status-card__actions">
-                        <a th:href="'/' + ${urlProfil} + '/signrequests/' + ${ids.get(0)}" class="btn btn-secondary">
-                            <i class="fi fi-rr-door-open"></i>&nbsp;Annuler et retourner à la demande
-                        </a>
-                        <button type="button" onclick="location.reload();" class="btn btn-primary">
-                            <i class="fi fi-rr-refresh"></i>&nbsp;Relancer la procédure
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="alert alert-light es-status-card es-status-card--success mb-2" role="alert" id="success" style="display: none;">
-                <div class="es-status-card__icon">
-                    <i class="fi fi-rr-check-circle"></i>
-                </div>
-                <div class="es-status-card__body">
-                    <h5 class="es-status-card__title mb-1">Signature effectuée</h5>
-                    <p class="es-status-card__description">La procédure est terminée. Vous pouvez revenir à la demande pour consulter le document signé.</p>
-                    <div class="es-status-card__actions">
-                        <a th:href="'/user/signrequests/' + ${id}" class="btn btn-success" id="return2">
-                            <i class="fi fi-rr-flag"></i>&nbsp;Retour
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <div th:replace="~{user/signrequests/includes/modals/nexu-process-content :: content}"></div>
         </div>
     </div>
 </main>
 <script th:inline="javascript" type="module">
-    const nexuModuleUrl = /*[[@{/js/modules/ui/signrequests/Nexu.js(version=${versionApp})}]]*/ '/js/modules/ui/signrequests/Nexu.js';
-    const {Nexu} = await import(nexuModuleUrl);
+    import {NexuProcessUi} from '/js/modules/ui/signrequests/NexuProcessUi.js?version=@[(${versionApp})]@';
 
     $(document).ready(function() {
-        const addExtra = /*[[${addExtra}]]*/ false;
-        const ids = /*[[${ids}]]*/ [];
-        const urlProfil = /*[[${urlProfil}]]*/ 'user';
-        const massSignReportId = /*[[${massSignReportId}]]*/ null;
-        const rootUrl = /*[[${rootUrl}]]*/ '';
-
-        const initNexu = function() {
-            new Nexu(addExtra, ids, 'nexuSign', urlProfil, massSignReportId, rootUrl);
-        };
-
-        initNexu();
-
-        $('#refresh-certType2').on('click', function() {
-            initNexu();
-        });
+        NexuProcessUi.initWithin(document);
     });
 </script>
 <footer th:replace="~{fragments/footer :: footer}"></footer>

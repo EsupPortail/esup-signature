@@ -63,8 +63,11 @@
                             <!-- Contenu simplifié -->
                             <div class="step-vertical-content bg-light p-1 rounded">
                                 <div class="d-flex flex-column">
-                                    <div class="d-flex justify-content-between">
-                                        <b th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></b>
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                            <b th:text="#{'signbook.signtype.' + ${liveWorkflowStep.signType}}"></b>
+                                            <span th:replace="~{user/signrequests/cards/levelcard :: levelcard(liveWorkflowStep=${liveWorkflowStep})}"></span>
+                                        </div>
 
                                         <!-- Indicateurs -->
                                         <div class="step-indicators">
@@ -73,7 +76,7 @@
                                         <i class="fi fi-rr-users-slash"></i>
                                     </span>
                                             <span th:if="${liveWorkflowStep.allSignToComplete}" title="Tous les participants doivent signer" class="step-indicator">
-                                        <i class="fa-solid fa-users"></i>
+                                        <i class="fi fi-rr-users-alt"></i>
                                     </span>
                                             <span th:if="${liveWorkflowStep.repeatable}" title="Étape infinie" class="step-indicator">
                                         <i class="fi fi-rr-infinite-cycle"></i>

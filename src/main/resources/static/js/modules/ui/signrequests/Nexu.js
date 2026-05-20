@@ -1,6 +1,6 @@
 export class Nexu {
 
-    constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId, rootUrl) {
+    constructor(addExtra, ids, currentSignType, urlProfil, massSignReportId, rootUrl, rootElement = null) {
         Nexu.urlProfil = urlProfil;
         if(massSignReportId != null) {
             Nexu.massSignReportId = massSignReportId;
@@ -10,6 +10,7 @@ export class Nexu {
         Nexu.rootUrl = rootUrl ?? window.location.origin;
         Nexu.addExtra = addExtra;
         Nexu.ids = ids;
+        Nexu.rootElement = rootElement instanceof jQuery ? rootElement.get(0) : rootElement;
         Nexu.i = 0;
         Nexu.version;
         Nexu.certificateData;
@@ -17,7 +18,7 @@ export class Nexu {
         this.keyId = null;
         this.bindingPorts = "9795";
         this.detectedPort = "";
-        this.successDiv = $("#success");
+        this.successDiv = Nexu.find("#success");
         this.successDiv.hide();
         let self = this;
         $(document).ready(function() {
@@ -32,9 +33,9 @@ export class Nexu {
                 }
                 // $("#certType > option[value='nexuCert']").removeAttr('disabled');
                 if(currentSignType === 'nexuSign') {
-                    $("#certType").val("nexuCert");
+                    $("#certType").val("nexuCert").trigger("change");
                     $("#nexu_ready_alert").show();
-                    $("#alertNexu").hide();
+                    Nexu.find("#alertNexu").hide();
                     $("#signLaunchButton").show();
                 }
                 self.updateSignModal();
@@ -42,11 +43,75 @@ export class Nexu {
             }).catch(function(e){
                 console.info("Esup-DSS-Client non lancé !");
                 $("#nexu_ready_alert").hide();
-                $("#alertNexu").show();
+                Nexu.find("#alertNexu").show();
                 $("#nexu_missing_alert").show();
                 self.updateSignModal()
                 $("#certType > option[value='nexuCert']").attr('unavailable', 'unavailable');
             });
+        });
+    }
+
+    static getRootElement() {
+        return Nexu.rootElement ?? null;
+    }
+
+    static find(selector) {
+        const rootElement = Nexu.getRootElement();
+        if (rootElement == null) {
+            return $(selector);
+        }
+        const root = $(rootElement);
+        if (root.is(selector)) {
+            return root;
+        }
+        const scopedMatch = root.find(selector);
+        return scopedMatch.length ? scopedMatch : $(selector);
+    }
+
+    static getGlobalScope() {
+        if (typeof globalThis !== "undefined") {
+            return globalThis;
+        }
+        if (typeof window !== "undefined") {
+            return window;
+        }
+        return {};
+    }
+
+    static getClientFunction(functionName) {
+        const globalScope = Nexu.getGlobalScope();
+        return typeof globalScope[functionName] === "function"
+            ? globalScope[functionName]
+            : null;
+    }
+
+    static waitForClientFunction(functionName, maxAttempts = 20, delayMs = 150) {
+        return new Promise((resolve, reject) => {
+            let attempts = 0;
+
+            const checkFunction = () => {
+                const clientFunction = Nexu.getClientFunction(functionName);
+                if (clientFunction != null) {
+                    resolve(clientFunction);
+                    return;
+                }
+
+                attempts += 1;
+                if (attempts >= maxAttempts) {
+                    reject(new Error("Esup-DSS-Client ne fournit pas la fonction " + functionName));
+                    return;
+                }
+
+                window.setTimeout(checkFunction, delayMs);
+            };
+
+            checkFunction();
+        });
+    }
+
+    static reportMissingClientFunction(functionName) {
+        Nexu.error({
+            errorMessage: "La fonction " + functionName + " n’a pas été fournie par Esup-DSS-Client. Vérifiez que l’application est bien démarrée, compatible, puis relancez la procédure."
         });
     }
 
@@ -89,7 +154,7 @@ export class Nexu {
             const merror = {
                 errorMessage: "Erreur au moment de lire le certificat"
             };
-            error(Object.create(merror));
+            Nexu.error(Object.create(merror));
         } else {
             console.log(Nexu.rootUrl);
             Nexu.certificateData = certificateData;
@@ -112,12 +177,17 @@ export class Nexu {
             const merror = {
                 errorMessage: "Erreur lors de la vérification du certificat"
             };
-            error(Object.create(merror));
+            Nexu.error(Object.create(merror));
         } else {
             Nexu.updateProgressBar("Signature du/des documents(s)", "50%");
             console.log("token : " + Nexu.tokenId + "," + Nexu.keyId);
             let digestAlgo = "SHA256";
-            nexu_sign_with_token_infos(Nexu.tokenId, Nexu.keyId, dataToSignResponse.dataToSign, digestAlgo, Nexu.signDocument, Nexu.error);
+            const signWithTokenInfos = Nexu.getClientFunction("nexu_sign_with_token_infos");
+            if (signWithTokenInfos == null) {
+                Nexu.reportMissingClientFunction("nexu_sign_with_token_infos");
+                return;
+            }
+            signWithTokenInfos(Nexu.tokenId, Nexu.keyId, dataToSignResponse.dataToSign, digestAlgo, Nexu.signDocument, Nexu.error);
         }
     }
 
@@ -131,19 +201,19 @@ export class Nexu {
             const merror = {
                 errorMessage: "Erreur au moment de la signature du document"
             };
-            error(Object.create(merror));
+            Nexu.error(Object.create(merror));
         }
     }
 
     static downloadSignedDocument() {
         if(Nexu.ids.length > Nexu.i + 1) {
             Nexu.i++
-            $("#current-doc-num").html(Nexu.i + 1);
+            Nexu.find("#current-doc-num").html(Nexu.i + 1);
             Nexu.getDataToSign(Nexu.certificateData);
             // nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
         } else {
             Nexu.updateProgressBar("Signature terminée", "100%");
-            let bar = $('#bar');
+            let bar = Nexu.find('#bar');
             bar.removeClass('progress-bar-striped active');
             bar.addClass('progress-bar-success');
             if(Nexu.ids.length === 1) {
@@ -151,61 +221,64 @@ export class Nexu {
             } else {
                 window.location.href = "/" + Nexu.urlProfil + "/signbooks";
             }
-            $("#success").show();
+            Nexu.find("#success").show();
         }
     }
 
     static error(error) {
         console.error(error);
-        $('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
+        Nexu.find('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
         if (error!= null) {
             if (error.responseJSON !=null) {
                 let jsonResp = error.responseJSON;
                 console.error(jsonResp);
                 if (jsonResp.feedback != null && jsonResp.feedback.stacktrace != null) {
-                    $("#errorcontent").html(jsonResp.feedback.stacktrace);
+                    Nexu.find("#errorcontent").html(jsonResp.feedback.stacktrace);
                     if (jsonResp.feedback.stacktrace.includes("No slot")) {
-                        $("#errorText").html("Aucune clé n'a été détecté");
+                        Nexu.find("#errorText").html("Aucune clé n'a été détecté");
                     } else if (jsonResp.feedback.stacktrace.includes("keystore password was incorrect")) {
-                        $("#errorText").html("Le mot de passe du keystore est incorrect");
+                        Nexu.find("#errorText").html("Le mot de passe du keystore est incorrect");
                     } else if (jsonResp.feedback.stacktrace.includes("CKR_PIN_INCORRECT")) {
-                        $("#errorText").html("Le code PIN est incorrect. Attention, après 3 essais infructueux, votre certificat sera définitivement bloqué !");
+                        Nexu.find("#errorText").html("Le code PIN est incorrect. Attention, après 3 essais infructueux, votre certificat sera définitivement bloqué !");
                     }
                 } else if (jsonResp.message != null) {
                     if (jsonResp.message.includes("is expired")) {
-                        $("#errorText").html("Votre certificat est expiré");
+                        Nexu.find("#errorText").html("Votre certificat est expiré");
                     } else if (jsonResp.message.includes("revoked") || jsonResp.message.includes("suspended")) {
-                        $("#errorText").html("Votre certificat est révoqué");
+                        Nexu.find("#errorText").html("Votre certificat est révoqué");
                     }
-                    $("#errorcontent").html(jsonResp.message);
+                    Nexu.find("#errorcontent").html(jsonResp.message);
                 } else if (jsonResp.errorMessage != null) {
                     if (jsonResp.errorMessage.includes("The user has cancelled the operation")) {
-                        $("#errorText").html("Opération annulée par l'utilisateur");
+                        Nexu.find("#errorText").html("Opération annulée par l'utilisateur");
                     }
-                    $("#errorcontent").html(jsonResp.errorMessage);
+                    Nexu.find("#errorcontent").html(jsonResp.errorMessage);
                 } else if (jsonResp.trace != null) {
                     if (jsonResp.trace.includes("is expired")) {
-                        $("#errorText").html("Votre certificat est expiré");
+                        Nexu.find("#errorText").html("Votre certificat est expiré");
                     } else if (jsonResp.trace.includes("revoked") || (jsonResp.message != null && jsonResp.message.includes("suspended"))) {
-                        $("#errorText").html("Votre certificat est révoqué");
+                        Nexu.find("#errorText").html("Votre certificat est révoqué");
                     } else {
-                        $("#errorText").html("Erreur indéterminée : " + jsonResp.message);
+                        Nexu.find("#errorText").html("Erreur indéterminée : " + jsonResp.message);
                     }
-                    $("#errorcontent").html(jsonResp.trace);
+                    Nexu.find("#errorcontent").html(jsonResp.trace);
                 } else if (jsonResp.error != null) {
-                    $("#errorcontent").html(jsonResp.error);
+                    Nexu.find("#errorcontent").html(jsonResp.error);
                 } else {
-                    $("#errorcontent").html(JSON.stringify(jsonResp));
+                    Nexu.find("#errorcontent").html(JSON.stringify(jsonResp));
                 }
             } else {
-                $("#errorcontent").html(error.responseText);
-                if(error.responseText.includes("Expired")) {
-                    $("#errorText").html("Votre certificat est expiré");
+                const responseText = error.responseText ?? error.errorMessage ?? "";
+                Nexu.find("#errorcontent").html(responseText);
+                if(responseText.includes("Expired")) {
+                    Nexu.find("#errorText").html("Votre certificat est expiré");
+                } else if (error.errorMessage != null && error.errorMessage !== "") {
+                    Nexu.find("#errorText").html("Erreur lors de la communication avec Esup-DSS-Client");
                 }
             }
         }
-        $("#error").show();
-        $("#success").hide();
+        Nexu.find("#error").show();
+        Nexu.find("#success").hide();
         $.ajax({
             type: "POST",
             url: Nexu.rootUrl + "/nexu-sign/error?massSignReportId=" + Nexu.massSignReportId + "&ids=" + Nexu.ids,
@@ -218,8 +291,8 @@ export class Nexu {
 
     static updateProgressBar(action, percent) {
         console.log("update " + action);
-        $('#bar-text').html(action);
-        $('#bar').width(percent);
+        Nexu.find('#bar-text').html(action);
+        Nexu.find('#bar').width(percent);
     }
 
     checkNexuClient() {
@@ -280,9 +353,31 @@ export class Nexu {
     loadScript() {
         let url = "http://127.0.0.1:" + this.detectedPort + "/nexu.js";
         console.info("loading esup-dss-client script : " + url);
-        $("#current-doc-num").html("1");
-        $.getScript(url, function() {
-            nexu_get_certificates(Nexu.getDataToSign, Nexu.error);
+        Nexu.find("#current-doc-num").html("1");
+
+        const startCertificateRetrieval = () => {
+            Nexu.waitForClientFunction("nexu_get_certificates")
+                .then(getCertificates => {
+                    getCertificates(Nexu.getDataToSign, Nexu.error);
+                })
+                .catch(error => {
+                    console.error("Esup-DSS-Client API unavailable", error);
+                    Nexu.reportMissingClientFunction("nexu_get_certificates");
+                });
+        };
+
+        if (Nexu.getClientFunction("nexu_get_certificates") != null) {
+            startCertificateRetrieval();
+            return;
+        }
+
+        $.getScript(url).done(function() {
+            startCertificateRetrieval();
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            const details = errorThrown || textStatus || "chargement du script impossible";
+            Nexu.error({
+                errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
+            });
         });
     }
 

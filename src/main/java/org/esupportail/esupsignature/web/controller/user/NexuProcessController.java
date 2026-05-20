@@ -65,6 +65,20 @@ public class NexuProcessController implements Serializable {
 	@GetMapping(value = "/start", produces = "text/html")
 	public String startNexuProcess(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 								   @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", true);
+		return "user/signrequests/nexu-signature-process";
+	}
+
+	@GetMapping(value = "/start-fragment", produces = "text/html")
+	public String startNexuProcessFragment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+									 @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", false);
+		return "user/signrequests/nexu-signature-process-content";
+	}
+
+	private void populateNexuStartModel(String userEppn, String authUserEppn, List<Long> ids, Model model) {
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
 			signRequestService.deleteNexu(id);
@@ -85,7 +99,7 @@ public class NexuProcessController implements Serializable {
 			model.addAttribute("urlProfil", "user");
 		}
 		model.addAttribute("rootUrl", globalProperties.getRootUrl());
-		return "user/signrequests/nexu-signature-process";
+		model.addAttribute("addExtra", false);
 	}
 
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")

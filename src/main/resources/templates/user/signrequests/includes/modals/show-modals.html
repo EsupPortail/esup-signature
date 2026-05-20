@@ -29,6 +29,27 @@
         </div>
     </div>
 
+    <div id="nexuProcessModal" data-bs-focus="false" class="modal fade" role="dialog" aria-labelledby="nexuProcessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="nexuProcessModalLabel"><i class="fi fi-rr-file-signature"></i> Signature eIDAS</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="nexu-process-modal-loading" class="d-flex flex-column align-items-center justify-content-center gap-2 py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="text-muted mb-0">Chargement de l’interface de signature…</p>
+                    </div>
+                    <div id="nexu-process-modal-error" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="nexu-process-modal-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{fragments/sign-validation-modal :: sign-modal(
         signable=${signRequestFull.signable},
         currentSignType=${signRequestFull.currentSignType},

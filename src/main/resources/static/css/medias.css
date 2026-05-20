@@ -481,9 +481,9 @@
 
 @media (max-width: 576px) {
 
-    body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {
-        display: none !important;
-    }
+    /*body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {*/
+    /*    display: none !important;*/
+    /*}*/
 
     body.es-signrequest-page #tools .es-steps-responsive-nav .steps-horizontal-v2 {
         padding-inline: 0.5rem;
