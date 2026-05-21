@@ -116,19 +116,33 @@ public class UserAndOtpSignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")
-    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public Object postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam(value = "comment", required = false) String comment,
                          @RequestParam(value = "postit", required = false) String postit,
                          @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend, Model model, HttpServletRequest httpServletRequest) {
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
         Long commentId = null;
         try {
             commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
         } catch (EsupSignatureException e) {
+            if (ajaxRequest) {
+                return internalServerErrorResponse("Problème lors de l'ajout du post-it");
+            }
             model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         if(commentId != null) {
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "Post-it ajouté");
+                response.put("postit", toPostitResponse(commentService.getById(commentId), id, userEppn));
+                return ResponseEntity.ok(response);
+            }
             model.addAttribute("message", new UiMessageDto("success", "Post-it ajouté"));
         } else {
+            if (ajaxRequest) {
+                return badRequestResponse("Problème lors de l'ajout du post-it");
+            }
             model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         String path = httpServletRequest.getRequestURI();
@@ -465,6 +479,25 @@ public class UserAndOtpSignRequestController {
             createBy.put("eppn", attachment.getCreateByEppn());
             createBy.put("firstname", attachment.getCreateByFirstname());
             createBy.put("name", attachment.getCreateByName());
+            response.put("createBy", createBy);
+        }
+        return response;
+    }
+
+    private Map<String, Object> toPostitResponse(Comment comment, Long signRequestId, String userEppn) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", comment.getId());
+        response.put("text", comment.getText());
+        response.put("postitColor", comment.getPostitColor());
+        response.put("refuse", Boolean.TRUE.equals(comment.getRefuse()));
+        response.put("createDate", comment.getCreateDate() != null ? comment.getCreateDate().getTime() : null);
+        response.put("canEdit", comment.getCreateBy() != null && Objects.equals(comment.getCreateBy().getEppn(), userEppn) && !Boolean.TRUE.equals(comment.getRefuse()));
+        response.put("signRequestId", signRequestId);
+        if (comment.getCreateBy() != null) {
+            Map<String, Object> createBy = new LinkedHashMap<>();
+            createBy.put("eppn", comment.getCreateBy().getEppn());
+            createBy.put("firstname", comment.getCreateBy().getFirstname());
+            createBy.put("name", comment.getCreateBy().getName());
             response.put("createBy", createBy);
         }
         return response;
