@@ -158,7 +158,7 @@ public class UserAndOtpSignRequestController {
                                 @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.updateComment(signRequestId, postitId, comment);
-            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit modifiée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit modifié"));
 
         } catch (EsupSignatureException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
@@ -166,6 +166,27 @@ public class UserAndOtpSignRequestController {
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + signRequestId;
+    }
+
+    // AJAX-friendly endpoint to update a postit via fetch (avoid relying on _method override)
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @PostMapping(value = "/comment-ajax/{signRequestId}/update/{postitId}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> commentUpdateAjax(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                  @PathVariable("signRequestId") Long signRequestId,
+                                                                  @PathVariable("postitId") Long postitId,
+                                                                  @RequestParam(value = "comment", required = false) String comment) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            commentService.updateComment(signRequestId, postitId, comment);
+            response.put("success", true);
+            response.put("message", "Postit modifié");
+            return ResponseEntity.ok(response);
+        } catch (EsupSignatureException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
@@ -183,6 +204,26 @@ public class UserAndOtpSignRequestController {
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + signRequestId;
+    }
+
+    // AJAX-friendly endpoint to delete a postit via fetch (avoid relying on _method override)
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @PostMapping(value = "/comment-ajax/{signRequestId}/delete/{postitId}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> commentDeleteAjax(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                  @PathVariable("signRequestId") Long signRequestId,
+                                                                  @PathVariable("postitId") Long postitId) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            commentService.deletePostit(signRequestId, postitId);
+            response.put("success", true);
+            response.put("message", "Postit supprimé");
+            return ResponseEntity.ok(response);
+        } catch (EsupSignatureException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")

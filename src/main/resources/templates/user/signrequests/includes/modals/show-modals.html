@@ -603,7 +603,7 @@
             function showSnackbar(message, type = 'info') {
                 if (typeof window.showSnackbar === 'function') {
                     window.showSnackbar(escapeHtml(message), type, {
-                        delay: type === 'success' ? 2000 : 4000
+                        delay: type === 'dark' ? 2000 : 4000
                     });
                     return;
                 }
@@ -636,8 +636,6 @@
                 const left = 310 + (index * 15);
                 const top = 310 + (index * 70);
                 const authorName = `${postit.createBy?.firstname || ''} ${postit.createBy?.name || ''}`.trim();
-                const updateAction = `/${urlProfil}/signrequests/comment/${signRequestId}/update/${postit.id}`;
-                const deleteAction = `/${urlProfil}/signrequests/comment/${signRequestId}/delete/${postit.id}`;
                 const escapedText = escapeHtml(postit.text);
                 const escapedColor = escapeHtml(postit.postitColor || '#FFF740');
                 const canEdit = Boolean(postit.canEdit) && !postit.refuse && postit.createBy?.eppn === userEppn;
@@ -654,19 +652,13 @@
                             <i data-es-postit-id="${postit.id}" class="fi fi-rr-copy"></i>
                         </button>
                         ${canEdit ? `
-                            <form class="es-postit-edit-form" action="${updateAction}" method="post">
-                                <input type="hidden" name="_method" value="put">
-                                <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
+                            <div class="es-postit-edit-form" id="postit-${postit.id}" data-postit-id="${postit.id}">
                                 <textarea style="color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ${escapedColor}" name="comment" id="postit-text-${postit.id}" class="postitarea">${escapedText}</textarea>
-                                <button type="submit" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
-                            </form>
-                            <form action="${deleteAction}" method="post">
-                                <input type="hidden" name="_method" value="delete">
-                                <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
-                                <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn" title="Supprimer">
-                                    <i class="fi fi-rr-trash"></i>
-                                </button>
-                            </form>`
+                                <button type="button" data-postit-id="${postit.id}" onclick="return window.postitSaveAjax(event, this);" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
+                            </div>
+                            <button type="button" data-postit-id="${postit.id}" onclick="return window.postitDeleteAjax(event, this);" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax" title="Supprimer">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>`
                             : `<p id="postit-text-${postit.id}" class="postitarea">${escapedText}</p>`}
                     </div>`;
             }
