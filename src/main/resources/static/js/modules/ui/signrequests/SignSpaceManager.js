@@ -19,7 +19,6 @@ export class SignSpaceManager {
 			filterSpotsNotCurrentStep: options.filterSpotsNotCurrentStep ?? (spots => spots),
 			bindSignSpaceDelete: options.bindSignSpaceDelete ?? (() => {})
 		};
-		this.hoverLiveStepState = null;
 	}
 
 	canViewAllSpots() {
@@ -416,25 +415,15 @@ export class SignSpaceManager {
 		if (!Number.isFinite(parsedStepNumber)) {
 			return;
 		}
-		if (this.hoverLiveStepState == null) {
-			this.hoverLiveStepState = [];
-			$("[id^='liveStep-'].bg-success").each((_, element) => {
-				const id = $(element).attr("id");
-				if (id) {
-					this.hoverLiveStepState.push(id);
-				}
-			});
-		}
+		this.resetLiveStepHighlight();
 		const liveStep = $("#liveStep-" + parsedStepNumber);
 		if (liveStep.length) {
-			liveStep.find(".step-vertical-content").toggleClass("bg-light bg-secondary-subtle");
+			liveStep.find(".step-vertical-content").addClass("step-vertical-content-hover");
 		}
 	}
 
 	resetLiveStepHighlight() {
-		$("[id^='liveStep-']").find(".step-vertical-content").removeClass("bg-secondary-subtle");
-		$("[id^='liveStep-']").find(".step-vertical-content").addClass("bg-light");
-		this.hoverLiveStepState = null;
+		$("[id^='liveStep-']").find(".step-vertical-content").removeClass("step-vertical-content-hover");
 	}
 
 	destroy() {

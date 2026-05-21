@@ -1,8 +1,11 @@
+import {markIntroAsRead} from "./HelpState.js?version=@version@";
+
 export class UserParamsHelp {
 
     constructor(doneTour, isOtp) {
         this.doneTour = doneTour;
         this.isOtp = isOtp;
+        this.introReadMarked = false;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.8, disableInteraction: true})
         this.initListeners();
@@ -10,17 +13,21 @@ export class UserParamsHelp {
     }
 
     initListeners() {
-        this.intro.onbeforechange(e => this.scrollTop(e));
-        this.intro.onafterchange(e => this.modButtons());
-        let self = this;
-        this.intro.onexit(function () {
-            if(self.isOtp) {
-                $.get("/otp/users/mark-intro-as-read/userParamsHelp");
-            } else {
-                $.get("/user/users/mark-intro-as-read/userParamsHelp");
-            }
-        });
-        $("#helpStartButton").on('click', e => this.start());
+        this.intro.onbeforechange(() => this.scrollTop());
+        this.intro.onafterchange(() => this.modButtons());
+        this.intro.onexit(() => this.markAsRead());
+        this.intro.oncomplete(() => this.markAsRead());
+        $("#helpStartButton").on('click', () => this.start());
+    }
+
+    markAsRead() {
+        if (this.introReadMarked) {
+            return;
+        }
+
+        this.introReadMarked = true;
+        this.doneTour = true;
+        markIntroAsRead('userParamsHelp', this.isOtp);
     }
 
     initStep() {
@@ -82,11 +89,11 @@ export class UserParamsHelp {
         this.intro.start();
     }
 
-    scrollTop(e) {
+    scrollTop() {
         window.scrollTo(0, 0);
     }
 
-    modButtons(e) {
+    modButtons() {
         $('.introjs-button').each(function(){
             if($(this).hasClass('introjs-disabled')) {
                 $(this).removeClass('introjs-disabled');

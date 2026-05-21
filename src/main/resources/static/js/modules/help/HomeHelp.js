@@ -1,7 +1,10 @@
+import {markIntroAsRead} from "./HelpState.js?version=@version@";
+
 export class HomeHelp {
 
     constructor(doneTour) {
         this.doneTour = doneTour;
+        this.introReadMarked = false;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -9,12 +12,21 @@ export class HomeHelp {
     }
 
     initListeners() {
-        this.intro.onbeforechange(e => this.scrollTop(e));
-        this.intro.onafterchange(e => this.modButtons());
-        this.intro.onexit(function () {
-            $.get("/user/users/mark-intro-as-read/homeHelp");
-        });
-        $("#helpStartButton").on('click', e => this.start());
+        this.intro.onbeforechange(() => this.scrollTop());
+        this.intro.onafterchange(() => this.modButtons());
+        this.intro.onexit(() => this.markAsRead());
+        this.intro.oncomplete(() => this.markAsRead());
+        $("#helpStartButton").on('click', () => this.start());
+    }
+
+    markAsRead() {
+        if (this.introReadMarked) {
+            return;
+        }
+
+        this.introReadMarked = true;
+        this.doneTour = true;
+        markIntroAsRead('homeHelp');
     }
 
     initStep() {
@@ -105,7 +117,7 @@ export class HomeHelp {
         this.intro.start();
     }
 
-    scrollTop(e) {
+    scrollTop() {
         window.scrollTo(0, 0);
     }
 

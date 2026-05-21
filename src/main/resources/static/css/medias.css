@@ -223,11 +223,6 @@
         margin-left: 0;
     }
 
-    .tools,
-    .es-tools {
-        top: 50px;
-    }
-
         .workspace-sign,
     .es-workspace-sign {
         margin-top: 142px;
@@ -319,10 +314,6 @@
     .workspace,
     .es-workspace {
         margin-top: -45px;
-    }
-
-    body.es-signrequest-page #tools.es-tools {
-        top: 90px;
     }
 
     .pdf-alerts-btn {
@@ -524,11 +515,6 @@
 
     #breadcrumb {
         display: none;
-    }
-
-    .tools,
-    .es-tools {
-        top: 50px;
     }
 
     .workspace,

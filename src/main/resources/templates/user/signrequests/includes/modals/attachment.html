@@ -4,183 +4,534 @@
 <!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
 <!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="attachment">
-<div data-bs-focus="false" class="modal fade" id="attachment"  role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="attachmentLabel"><i class="fi fi-rr-clip"></i> Pièces jointes</h4>
-                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
-            </div>
-            <div class="modal-body">
-                <div th:if="${showSignRequest.attachments != null && showSignRequest.attachments.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
-                <table class="table table-borderless table-striped table-hover rounded-3">
-                    <thead class="table-secondary">
-                    <tr>
-                        <td>Fichier</td>
-                        <td>Créateur</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </thead>
-                    <th:block th:each="attachment : ${showSignRequest.attachments}">
-                        <tr>
-                            <td th:text="${attachment.fileName}"></td>
-                            <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
-                            <td>
-                                <button type="button" class="btn btn-info float-end" title="Voir"
-                                        th:onclick="'openPdfModal(' + ${attachment.id} + ')'">
-                                    <i class="fi fi-rr-eye"></i>
-                                </button>
-
-                                <script>
-                                    function openPdfModal(attachmentId) {
-                                        const modal = document.getElementById('pdfModal' + attachmentId);
-                                        const bsModal = new bootstrap.Modal(modal, {
-                                            backdrop: 'static',
-                                            keyboard: false
-                                        });
-                                        bsModal.show();
-                                    }
-                                </script>
-                            </td>
-                            <td>
-                                <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
-                                   target="_blank" class="btn btn-primary float-end" title="Télécharger">
-                                    <i class="fi fi-rr-download"></i>
-                                </a>
-                            </td>
-                            <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}">
-                                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
-                                </form>
-                            </td>
-                            <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequestLight.createBy.eppn == userEppn}">
-                            </td>
-                        </tr>
-                    </th:block>
-                </table>
+    <div data-bs-focus="false" class="modal fade" id="attachment" role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="attachmentLabel"><i class="fi fi-rr-clip"></i>&nbsp;Pièces jointes</h4>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div th:if="${signRequestLight.links.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
-                <table class="table table-borderless table-striped table-hover">
-                    <thead class="table-secondary">
-                    <tr>
-                        <td>Liens</td>
-                        <td></td>
-                    </tr>
-                    </thead>
-                    <th:block th:each="link, iterator : ${signRequestLight.links}">
-                        <tr>
-                            <td>
-                                <a th:href="${link}" target="_blank" th:text="${link}"></a>
-                            </td>
-                            <td >
-                                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-link/' + ${signRequestLight.id} + '/' + ${iterator.index}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
-                                </form>
-                            </td>
-<!--                            <td th:unless="${signRequestLight.createBy.eppn == userEppn}">-->
-<!--                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>-->
-<!--                            </td>-->
-                        </tr>
-                    </th:block>
-                </table>
+                <div class="modal-body">
+                    <div id="attachment-table-wrapper"
+                         class="table-fix-head scrollbar-style rounded-3 p-0 m-2"
+                         style="height: 30vh;"
+                         th:styleappend="${showSignRequest.attachments != null && showSignRequest.attachments.size() > 0} ? '' : 'display: none;'">
+                        <table class="table table-borderless table-striped table-hover rounded-3">
+                            <thead class="table-secondary">
+                            <tr>
+                                <td>Fichier</td>
+                                <td>Créateur</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </thead>
+                            <tbody id="attachments-tbody">
+                            <th:block th:each="attachment : ${showSignRequest.attachments}">
+                                <tr th:id="'attachment-row-' + ${attachment.id}">
+                                    <td th:text="${attachment.fileName}"></td>
+                                    <td>
+                                        <span th:if="${attachment.createBy != null}"
+                                              th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-info float-end" title="Voir"
+                                                th:onclick="'openPdfModal(' + ${attachment.id} + ')'">
+                                            <i class="fi fi-rr-eye"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                           target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                                            <i class="fi fi-rr-download"></i>
+                                        </a>
+                                    </td>
+                                    <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}">
+                                        <form class="js-remove-attachment-form"
+                                              th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                              method="post"
+                                              th:attr="data-attachment-id=${attachment.id}">
+                                            <input type="hidden" name="_method" value="delete">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}"></td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="links-table-wrapper"
+                         class="table-fix-head scrollbar-style rounded-3 p-0 m-2"
+                         style="height: 15vh;"
+                         th:styleappend="${signRequestLight.links.size() > 0} ? '' : 'display: none;'">
+                        <table class="table table-borderless table-striped table-hover">
+                            <thead class="table-secondary">
+                            <tr>
+                                <td>Liens</td>
+                                <td></td>
+                            </tr>
+                            </thead>
+                            <tbody id="links-tbody">
+                            <th:block th:each="link, iterator : ${signRequestLight.links}">
+                                <tr th:id="'link-row-' + ${iterator.index}">
+                                    <td>
+                                        <a th:href="${link}" target="_blank" th:text="${link}"></a>
+                                    </td>
+                                    <td>
+                                        <form class="js-remove-link-form"
+                                              th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-link/' + ${signRequestLight.id} + '/' + ${iterator.index}"
+                                              method="post"
+                                              th:attr="data-link-index=${iterator.index}">
+                                            <input type="hidden" name="_method" value="delete">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="attachment-empty-state"
+                         class="alert alert-secondary"
+                         th:styleappend="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0} ? '' : 'display: none;'">
+                        Aucune pièce jointe
+                    </div>
+
+                    <form id="add-attachment-form"
+                          th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id}"
+                          method="post"
+                          enctype="multipart/form-data"
+                          th:if="${signRequestFull.editable && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)  && (user.userType.name() != 'external' || showSignRequest.workflow.externalCanEditAttachments)}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <hr/>
+                        <div class="form-group mb-3">
+                            <h5>Ajouter une pièce jointe</h5>
+                            <div class="custom-file mb-3">
+                                <input aria-describedby="inputGroupLabel03" class="form-control"
+                                       data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
+                                       type="file">
+                            </div>
+                            <div class="hr mb-3">OU</div>
+                            <div class="form-group mt-2">
+                                <label for="attachment-link-input">Ajouter un lien</label>
+                                <input id="attachment-link-input" class="form-control" type="text" name="link">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <button type="submit" class="btn btn-success" id="add-attachment-submit">Ajouter</button>
+                        </div>
+                    </form>
+
+                    <div id="attachment-feedback" class="mt-3"></div>
                 </div>
-                <div th:if="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe</div>
-                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${signRequestFull.editable && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)  && (user.userType.name() != 'external' || showSignRequest.workflow.externalCanEditAttachments)}">
-                    <hr/>
-                    <div class="form-group mb-3">
-                        <h5>Ajouter une pièce jointe</h5>
-                        <div class="custom-file mb-3">
-                            <input aria-describedby="inputGroupLabel03" class="form-control"
-                                data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
-                                type="file">
-                        </div>
-                        <div class="hr mb-3">OU</div>
-                        <div class="form-group mt-2">
-                            <label>Ajouter un lien</label>
-                            <input class="form-control" type="text" name="link">
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                        <button type="submit" class="btn btn-success">Ajouter</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-</div>
-    <th:block th:each="attachment : ${showSignRequest.attachments}">
-        <div class="modal fade modal-pdf" th:id="'pdfModal' + ${attachment.id}" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-xl modal-pdf" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" th:text="${attachment.fileName}"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
-                        <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
-                            <div th:id="'pdfContainer_' + ${attachment.id}" class="d-flex flex-column align-items-center" style="height: 100%; overflow: auto;"></div>
 
-                            <script type="module">
-                                const modalId = 'pdfModal' + '[[${attachment.id}]]';
-                                const modal = document.getElementById(modalId);
-                                let pdfLoaded = false;
-
-                                modal.addEventListener('shown.bs.modal', () => {
-                                    if (pdfLoaded) return;
-                                    pdfLoaded = true;
-
-                                    pdfjsLib.getDocument('/' + '[[${showSignRequest.urlProfil}]]' + '/signrequests/get-attachment-inline/' + '[[${signRequestLight.id}]]' + '/' + '[[${attachment.id}]]').promise.then(pdf => {
-                                        const container = document.getElementById('pdfContainer_' + '[[${attachment.id}]]');
-                                        let currentPage = 1;
-                                        const totalPages = pdf.numPages;
-
-                                        const renderPage = (pageNum) => {
-                                            if (pageNum > totalPages) return;
-
-                                            pdf.getPage(pageNum).then(page => {
-                                                const canvas = document.createElement('canvas');
-                                                const context = canvas.getContext('2d');
-                                                const viewport = page.getViewport({ scale: 1.5 });
-                                                canvas.width = viewport.width;
-                                                canvas.height = viewport.height;
-                                                canvas.style.display = 'block';
-                                                canvas.style.marginBottom = '10px';
-
-                                                page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
-                                                    container.appendChild(canvas);
-                                                    renderPage(pageNum + 1);
-                                                });
-                                            });
-                                        };
-
-                                        renderPage(1);
-
-                                        container.addEventListener('scroll', () => {
-                                            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 500) {
-                                                currentPage++;
-                                                renderPage(currentPage);
-                                            }
-                                        });
-                                    });
-                                });
-                            </script>
-                        </th:block>
-                        <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
-                            <div class="alert alert-info">
-                                Aperçu indisponible pour ce format.
-                                <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequestLight.id} + '/' + ${attachment.id}"
-                                   target="_blank">Télécharger le document</a>
-                            </div>
-                        </th:block>
+    <div id="attachment-preview-modals">
+        <th:block th:each="attachment : ${showSignRequest.attachments}">
+            <div class="modal fade modal-pdf js-attachment-preview-modal"
+                 th:id="'pdfModal' + ${attachment.id}"
+                 tabindex="-1"
+                 role="dialog"
+                 th:attr="data-attachment-id=${attachment.id},data-file-name=${attachment.fileName}">
+                <div class="modal-dialog modal-xl modal-pdf" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" th:text="${attachment.fileName}"></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
+                            <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                                <div th:id="'pdfContainer_' + ${attachment.id}"
+                                     class="js-pdf-container d-flex flex-column align-items-center"
+                                     style="height: 100%; overflow: auto;"></div>
+                            </th:block>
+                            <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                                <div class="alert alert-info">
+                                    Aperçu indisponible pour ce format.
+                                    <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                       target="_blank">Télécharger le document</a>
+                                </div>
+                            </th:block>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </th:block>
+        </th:block>
+    </div>
+
+    <script th:inline="javascript">
+        (() => {
+            const urlProfil = /*[[${showSignRequest.urlProfil}]]*/ 'user';
+            const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
+            const csrfParameterName = /*[[${_csrf.parameterName}]]*/ '_csrf';
+            const csrfToken = /*[[${_csrf.token}]]*/ '';
+            const userEppn = /*[[${userEppn}]]*/ '';
+            const signRequestCreatorEppn = /*[[${signRequestLight.createBy.eppn}]]*/ '';
+            const signRequestStatus = /*[[${signRequestLight.status != null ? signRequestLight.status.name() : ''}]]*/ '';
+
+            const attachmentsTbody = document.getElementById('attachments-tbody');
+            const linksTbody = document.getElementById('links-tbody');
+            const attachmentTableWrapper = document.getElementById('attachment-table-wrapper');
+            const linksTableWrapper = document.getElementById('links-table-wrapper');
+            const emptyState = document.getElementById('attachment-empty-state');
+            const addAttachmentForm = document.getElementById('add-attachment-form');
+            const feedback = document.getElementById('attachment-feedback');
+            const previewModalsContainer = document.getElementById('attachment-preview-modals');
+            const attachmentBadge = document.getElementById('attachment-badge');
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function showMessage(type, message) {
+                const normalizedType = ['success', 'error', 'warn', 'info', 'custom'].includes(type) ? type : 'info';
+                const sanitizedMessage = escapeHtml(message);
+                if (typeof window.showSnackbar === 'function') {
+                    if (feedback) {
+                        feedback.innerHTML = '';
+                    }
+                    window.showSnackbar(sanitizedMessage, normalizedType, {
+                        delay: normalizedType === 'success' ? 2000 : 4000
+                    });
+                    return;
+                }
+                if (!feedback) {
+                    return;
+                }
+                const alertClass = normalizedType === 'error' ? 'danger' : 'success';
+                feedback.innerHTML = `
+                    <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+                        ${sanitizedMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+            }
+
+            function updateAttachmentBadge() {
+                if (!attachmentBadge) {
+                    return;
+                }
+                const count = (attachmentsTbody?.children.length || 0) + (linksTbody?.children.length || 0);
+                attachmentBadge.textContent = String(count);
+                attachmentBadge.classList.toggle('d-none', count === 0);
+            }
+
+            function updateEmptyState() {
+                const hasAttachments = !!attachmentsTbody && attachmentsTbody.children.length > 0;
+                const hasLinks = !!linksTbody && linksTbody.children.length > 0;
+                if (attachmentTableWrapper) {
+                    attachmentTableWrapper.style.display = hasAttachments ? '' : 'none';
+                }
+                if (linksTableWrapper) {
+                    linksTableWrapper.style.display = hasLinks ? '' : 'none';
+                }
+                if (emptyState) {
+                    emptyState.style.display = (!hasAttachments && !hasLinks) ? '' : 'none';
+                }
+                updateAttachmentBadge();
+            }
+
+            function isPdfFile(fileName) {
+                return String(fileName || '').toLowerCase().endsWith('.pdf');
+            }
+
+            function getAttachmentDownloadUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/get-attachment/${signRequestId}/${attachmentId}`;
+            }
+
+            function getAttachmentInlineUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/get-attachment-inline/${signRequestId}/${attachmentId}`;
+            }
+
+            function getRemoveAttachmentUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/remove-attachment/${signRequestId}/${attachmentId}`;
+            }
+
+            function getRemoveLinkUrl(linkIndex) {
+                return `/${urlProfil}/signrequests/remove-link/${signRequestId}/${linkIndex}`;
+            }
+
+            function canDeleteAttachment(attachment) {
+                const attachmentCreatorEppn = attachment && attachment.createBy ? attachment.createBy.eppn : null;
+                return (attachmentCreatorEppn === userEppn && signRequestStatus === 'pending') || signRequestCreatorEppn === userEppn;
+            }
+
+            function creatorDisplayName(createBy) {
+                if (!createBy) {
+                    return '';
+                }
+                return `${createBy.firstname || ''} ${createBy.name || ''}`.trim();
+            }
+
+            function createAttachmentRow(attachment) {
+                const tr = document.createElement('tr');
+                tr.id = `attachment-row-${attachment.id}`;
+                const deleteCellHtml = canDeleteAttachment(attachment)
+                    ? `
+                        <form class="js-remove-attachment-form"
+                              action="${getRemoveAttachmentUrl(attachment.id)}"
+                              method="post"
+                              data-attachment-id="${attachment.id}">
+                            <input type="hidden" name="_method" value="delete">
+                            <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
+                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
+                        </form>`
+                    : '';
+                tr.innerHTML = `
+                    <td>${escapeHtml(attachment.fileName)}</td>
+                    <td>${escapeHtml(creatorDisplayName(attachment.createBy))}</td>
+                    <td>
+                        <button type="button" class="btn btn-info float-end" title="Voir" onclick="openPdfModal(${attachment.id})">
+                            <i class="fi fi-rr-eye"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${getAttachmentDownloadUrl(attachment.id)}" target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                            <i class="fi fi-rr-download"></i>
+                        </a>
+                    </td>
+                    <td>${deleteCellHtml}</td>`;
+                return tr;
+            }
+
+            function createLinkRow(link, index) {
+                const tr = document.createElement('tr');
+                tr.id = `link-row-${index}`;
+                const linkValue = escapeHtml(link);
+                tr.innerHTML = `
+                    <td>
+                        <a href="${linkValue}" target="_blank">${linkValue}</a>
+                    </td>
+                    <td>
+                        <form class="js-remove-link-form"
+                              action="${getRemoveLinkUrl(index)}"
+                              method="post"
+                              data-link-index="${index}">
+                            <input type="hidden" name="_method" value="delete">
+                            <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
+                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
+                        </form>
+                    </td>`;
+                return tr;
+            }
+
+            function renderLinks(links) {
+                if (!linksTbody) {
+                    return;
+                }
+                linksTbody.innerHTML = '';
+                (links || []).forEach((link, index) => {
+                    linksTbody.appendChild(createLinkRow(link, index));
+                });
+                updateEmptyState();
+            }
+
+            function createAttachmentModalElement(attachment) {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div class="modal fade modal-pdf js-attachment-preview-modal"
+                         id="pdfModal${attachment.id}"
+                         tabindex="-1"
+                         role="dialog"
+                         data-attachment-id="${attachment.id}"
+                         data-file-name="${escapeHtml(attachment.fileName)}">
+                        <div class="modal-dialog modal-xl modal-pdf" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">${escapeHtml(attachment.fileName)}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
+                                    ${isPdfFile(attachment.fileName)
+                                        ? `<div id="pdfContainer_${attachment.id}" class="js-pdf-container d-flex flex-column align-items-center" style="height: 100%; overflow: auto;"></div>`
+                                        : `<div class="alert alert-info">Aperçu indisponible pour ce format. <a href="${getAttachmentInlineUrl(attachment.id)}" target="_blank">Télécharger le document</a></div>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                return wrapper.firstElementChild;
+            }
+
+            function ensureAttachmentModal(attachment) {
+                if (!previewModalsContainer || document.getElementById(`pdfModal${attachment.id}`)) {
+                    return;
+                }
+                const modalElement = createAttachmentModalElement(attachment);
+                previewModalsContainer.appendChild(modalElement);
+                setupPreviewModal(modalElement);
+            }
+
+            async function fetchJson(url, options = {}) {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(options.headers || {})
+                    }
+                });
+                const contentType = response.headers.get('content-type') || '';
+                const payload = contentType.includes('application/json') ? await response.json() : { message: await response.text() };
+                if (!response.ok) {
+                    throw new Error(payload.message || 'Une erreur est survenue');
+                }
+                return payload;
+            }
+
+            async function submitDeleteForm(form) {
+                const body = new URLSearchParams(new FormData(form));
+                return fetchJson(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: body.toString()
+                });
+            }
+
+            async function renderPdfPreview(modalElement) {
+                if (!modalElement || modalElement.dataset.pdfLoaded === 'true' || !isPdfFile(modalElement.dataset.fileName)) {
+                    return;
+                }
+                modalElement.dataset.pdfLoaded = 'true';
+                const attachmentId = modalElement.dataset.attachmentId;
+                const container = modalElement.querySelector('.js-pdf-container');
+                if (!container) {
+                    return;
+                }
+                container.innerHTML = '';
+                try {
+                    const pdf = await pdfjsLib.getDocument(getAttachmentInlineUrl(attachmentId)).promise;
+                    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                        const page = await pdf.getPage(pageNumber);
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        const viewport = page.getViewport({ scale: 1.5 });
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        canvas.style.display = 'block';
+                        canvas.style.marginBottom = '10px';
+                        await page.render({ canvasContext: context, viewport }).promise;
+                        container.appendChild(canvas);
+                    }
+                } catch (error) {
+                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                }
+            }
+
+            function setupPreviewModal(modalElement) {
+                if (!modalElement || modalElement.dataset.previewReady === 'true') {
+                    return;
+                }
+                modalElement.dataset.previewReady = 'true';
+                modalElement.addEventListener('shown.bs.modal', () => {
+                    renderPdfPreview(modalElement);
+                });
+            }
+
+            document.querySelectorAll('.js-attachment-preview-modal').forEach(setupPreviewModal);
+
+            window.openPdfModal = function (attachmentId) {
+                const modalElement = document.getElementById(`pdfModal${attachmentId}`);
+                if (!modalElement) {
+                    return;
+                }
+                setupPreviewModal(modalElement);
+                const modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                modal.show();
+            };
+
+            if (addAttachmentForm) {
+                addAttachmentForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    try {
+                        const payload = await fetchJson(addAttachmentForm.action, {
+                            method: 'POST',
+                            body: new FormData(addAttachmentForm)
+                        });
+                        (payload.addedAttachments || []).forEach((attachment) => {
+                            if (attachmentsTbody) {
+                                attachmentsTbody.appendChild(createAttachmentRow(attachment));
+                            }
+                            ensureAttachmentModal(attachment);
+                        });
+                        if (Array.isArray(payload.links)) {
+                            renderLinks(payload.links);
+                        }
+                        addAttachmentForm.reset();
+                        updateEmptyState();
+                        showMessage('success', payload.message || 'La pièce jointe a bien été ajoutée');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de l’ajout');
+                    }
+                });
+            }
+
+            document.addEventListener('submit', async (event) => {
+                const removeAttachmentForm = event.target.closest('.js-remove-attachment-form');
+                if (removeAttachmentForm) {
+                    event.preventDefault();
+                    if (!confirm('Confirmez-vous la suppression ?')) {
+                        return;
+                    }
+                    try {
+                        const payload = await submitDeleteForm(removeAttachmentForm);
+                        const attachmentId = payload.attachmentId || removeAttachmentForm.dataset.attachmentId;
+                        document.getElementById(`attachment-row-${attachmentId}`)?.remove();
+                        document.getElementById(`pdfModal${attachmentId}`)?.remove();
+                        updateEmptyState();
+                        showMessage('success', payload.message || 'La pièce jointe a été supprimée');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de la suppression');
+                    }
+                    return;
+                }
+
+                const removeLinkForm = event.target.closest('.js-remove-link-form');
+                if (removeLinkForm) {
+                    event.preventDefault();
+                    if (!confirm('Confirmez-vous la suppression ?')) {
+                        return;
+                    }
+                    try {
+                        const payload = await submitDeleteForm(removeLinkForm);
+                        if (Array.isArray(payload.links)) {
+                            renderLinks(payload.links);
+                        }
+                        showMessage('success', payload.message || 'Le lien a été supprimé');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de la suppression');
+                    }
+                }
+            });
+
+            updateEmptyState();
+        })();
+    </script>
 </div>
 </html>
+
+
+
