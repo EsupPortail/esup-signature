@@ -28,12 +28,13 @@
         <button th:if="${signRequestFull.signable && globalProperties.enableTransfertForUsers}" tabindex="1" id="forward-btn" class="d-flex align-items-center btn btn-transparent text-dark d-none" title="Réaffecter la demande" data-bs-toggle="modal" data-bs-target="#forwardModal">
             <i class="fi fi-rr-refer-arrow"></i>
         </button>
-        <button class="d-flex flex-column align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
+        <button id="attachment-trigger-button" class="d-flex flex-column align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Pièces jointes"
                 data-bs-target="#attachment"
                 th:if="${user.userType.name() != 'external' || showSignRequest.workflow.externalCanReaderAttachments}">
-            <div th:if="${showSignRequest.attachments != null && showSignRequest.attachments.size() + signRequestLight.links.size() > 0 }"
-                 th:text="${showSignRequest.attachments.size() + signRequestLight.links.size()}"
-                 class="badge rounded-pill bg-primary"></div>
+            <span id="attachment-badge"
+                  th:text="${showSignRequest.attachments.size() + signRequestLight.links.size()}"
+                  class="badge rounded-pill bg-primary"
+                  th:classappend="${showSignRequest.attachments != null && showSignRequest.attachments.size() + signRequestLight.links.size() > 0} ? '' : ' d-none'"></span>
             <i class="fi fi-rr-clip"></i> <span class="d-none"> Pièces jointes </span>
         </button>
         <button class="d-flex align-items-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Ajouter un post-it"

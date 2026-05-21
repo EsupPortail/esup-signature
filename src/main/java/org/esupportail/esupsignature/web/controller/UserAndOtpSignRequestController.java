@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
 import org.esupportail.esupsignature.service.ui.UiFetchSignRequestService;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestContextDto;
@@ -34,8 +35,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
@@ -173,48 +173,93 @@ public class UserAndOtpSignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
-    public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public Object addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
                                  @RequestParam(value = "link", required = false) String link,
-                                 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
+                                 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start add attachment");
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        Set<Long> attachmentIdsBefore = signRequestService.getAttachmentProjections(id).stream()
+                .map(AttachmentProjectionDto::getId)
+                .filter(Objects::nonNull)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll);
+        Set<String> linksBefore = new HashSet<>(signRequestService.getById(id).getLinks());
         try {
             if(StringUtils.hasText(link)) {
                 new URI(link);
             }
             if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
+                if (ajaxRequest) {
+                    return ResponseEntity.ok(buildAddAttachmentResponse(id, attachmentIdsBefore, linksBefore, link));
+                }
                 redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La piece jointe a bien été ajoutée"));
             } else {
+                if (ajaxRequest) {
+                    return badRequestResponse("Aucune pièce jointe n'a été ajoutée. Merci de contrôler la validité du document");
+                }
                 redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
             }
+        } catch (EsupSignatureIOException e) {
+            logger.warn("error adding attachment", e);
+            if (ajaxRequest) {
+                return internalServerErrorResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         } catch (Exception e) {
+            if (ajaxRequest) {
+                return badRequestResponse("Le lien fourni n'est pas valide");
+            }
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Le lien fourni n'est pas valide"));
         }
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-attachment/{id}/{attachementId}")
-    public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+    public Object removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove attachment");
-        signRequestService.removeAttachement(id, attachementId, redirectAttributes);
-        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La pieces jointe a été supprimée"));
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        try {
+            signRequestService.removeAttachement(id, attachementId);
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "La pièce jointe a été supprimée");
+                response.put("attachmentId", attachementId);
+                return ResponseEntity.ok(response);
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La pieces jointe a été supprimée"));
+        } catch (EsupSignatureRuntimeException e) {
+            if (ajaxRequest) {
+                return badRequestResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-link/{id}/{linkId}")
-    public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+    public Object removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove link");
-        signRequestService.removeLink(id, linkId);
-        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le lien a été supprimé"));
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        try {
+            signRequestService.removeLink(id, linkId);
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "Le lien a été supprimé");
+                response.put("links", new ArrayList<>(signRequestService.getById(id).getLinks()));
+                return ResponseEntity.ok(response);
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le lien a été supprimé"));
+        } catch (EsupSignatureRuntimeException e) {
+            if (ajaxRequest) {
+                return badRequestResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -357,6 +402,72 @@ public class UserAndOtpSignRequestController {
         } else {
             return "redirect:" + basePath + redirect;
         }
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {
+        return "XMLHttpRequest".equalsIgnoreCase(httpServletRequest.getHeader("X-Requested-With"));
+    }
+
+    private String getBasePath(HttpServletRequest httpServletRequest) {
+        String path = httpServletRequest.getRequestURI();
+        return path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
+    }
+
+    private ResponseEntity<Map<String, Object>> badRequestResponse(String message) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    private ResponseEntity<Map<String, Object>> internalServerErrorResponse(String message) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return ResponseEntity.internalServerError().body(response);
+    }
+
+    private Map<String, Object> buildAddAttachmentResponse(Long id, Set<Long> attachmentIdsBefore, Set<String> linksBefore, String submittedLink) {
+        List<AttachmentProjectionDto> attachments = signRequestService.getAttachmentProjections(id);
+        SignRequest signRequest = signRequestService.getById(id);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("message", "La pièce jointe a bien été ajoutée");
+
+        List<Map<String, Object>> addedAttachments = new ArrayList<>();
+        for (AttachmentProjectionDto attachment : attachments) {
+            if (attachment.getId() != null && !attachmentIdsBefore.contains(attachment.getId())) {
+                addedAttachments.add(toAttachmentResponse(attachment));
+            }
+        }
+        response.put("addedAttachments", addedAttachments);
+
+        List<String> links = new ArrayList<>(signRequest.getLinks());
+        response.put("links", links);
+        if (StringUtils.hasText(submittedLink) && !linksBefore.contains(submittedLink)) {
+            int addedLinkIndex = links.indexOf(submittedLink);
+            if (addedLinkIndex >= 0) {
+                Map<String, Object> addedLink = new LinkedHashMap<>();
+                addedLink.put("index", addedLinkIndex);
+                addedLink.put("value", submittedLink);
+                response.put("addedLink", addedLink);
+            }
+        }
+        return response;
+    }
+
+    private Map<String, Object> toAttachmentResponse(AttachmentProjectionDto attachment) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", attachment.getId());
+        response.put("fileName", attachment.getFileName());
+        if (attachment.getCreateByEppn() != null || attachment.getCreateByFirstname() != null || attachment.getCreateByName() != null) {
+            Map<String, Object> createBy = new LinkedHashMap<>();
+            createBy.put("eppn", attachment.getCreateByEppn());
+            createBy.put("firstname", attachment.getCreateByFirstname());
+            createBy.put("name", attachment.getCreateByName());
+            response.put("createBy", createBy);
+        }
+        return response;
     }
 
 }

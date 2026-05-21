@@ -14,7 +14,6 @@ import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
-import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
 import org.esupportail.esupsignature.dto.ws.SignRequestStepsWsDto;
@@ -47,7 +46,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -1203,8 +1201,7 @@ public class SignRequestService {
 					}
 				}
 			}
-			if (link != null && !link.isEmpty()) {
-				signRequest.getLinks().add(link);
+			if (link != null && !link.isEmpty() && signRequest.getLinks().add(link)) {
 				nbAttachmentAdded++;
 			}
 			return nbAttachmentAdded > 0;
@@ -1231,15 +1228,13 @@ public class SignRequestService {
      *
      * @param id l'identifiant de la demande de signature
      * @param attachementId l'identifiant de la pièce jointe à supprimer
-     * @param redirectAttributes les attributs utilisés pour transmettre des informations supplémentaires
-     *        après la redirection, comme les messages d'erreur ou de succès
      */
     @Transactional
-	public void removeAttachement(Long id, Long attachementId, RedirectAttributes redirectAttributes) {
+	public void removeAttachement(Long id, Long attachementId) {
 		SignRequest signRequest = getById(id);
 		Document attachement = documentService.getById(attachementId);
 		if (!attachement.getParentId().equals(signRequest.getId())) {
-			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
+			throw new EsupSignatureRuntimeException("Pièce jointe non trouvée ...");
 		} else {
 			signRequest.getAttachments().remove(attachement);
 			documentService.delete(attachement);
@@ -1255,7 +1250,11 @@ public class SignRequestService {
     @Transactional
 	public void removeLink(Long id, Integer linkId) {
 		SignRequest signRequest = getById(id);
-		String toRemove = new ArrayList<>(signRequest.getLinks()).get(linkId);
+		List<String> links = new ArrayList<>(signRequest.getLinks());
+		if (linkId == null || linkId < 0 || linkId >= links.size()) {
+			throw new EsupSignatureRuntimeException("Lien non trouvé ...");
+		}
+		String toRemove = links.get(linkId);
 		signRequest.getLinks().remove(toRemove);
 	}
 
