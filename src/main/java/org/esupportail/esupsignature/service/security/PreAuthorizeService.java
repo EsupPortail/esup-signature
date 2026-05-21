@@ -213,6 +213,8 @@ public class PreAuthorizeService {
             Workflow workflow = workflowService.getById(id);
             if(workflow != null) {
                 return userEppn.equals(workflow.getCreateBy().getEppn()) || workflow.getCreateBy().equals(userService.getSystemUser());
+            } else {
+                return true;
             }
         }
         return false;

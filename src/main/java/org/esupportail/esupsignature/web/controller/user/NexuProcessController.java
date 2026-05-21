@@ -4,7 +4,6 @@ import eu.europa.esig.dss.model.ToBeSigned;
 import jakarta.validation.Valid;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.model.*;
-import org.esupportail.esupsignature.entity.NexuSignature;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.ReportStatus;
@@ -27,7 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -67,6 +65,20 @@ public class NexuProcessController implements Serializable {
 	@GetMapping(value = "/start", produces = "text/html")
 	public String startNexuProcess(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 								   @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", true);
+		return "user/signrequests/nexu-signature-process";
+	}
+
+	@GetMapping(value = "/start-fragment", produces = "text/html")
+	public String startNexuProcessFragment(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+									 @RequestParam("ids") List<Long> ids, Model model) {
+		populateNexuStartModel(userEppn, authUserEppn, ids, model);
+		model.addAttribute("fullScreen", false);
+		return "user/signrequests/nexu-signature-process-content";
+	}
+
+	private void populateNexuStartModel(String userEppn, String authUserEppn, List<Long> ids, Model model) {
 		for(Long id : ids) {
 			if(!preAuthorizeService.signRequestSign(id, userEppn, authUserEppn)) throw new EsupSignatureRuntimeException("Vous n'avez pas les droits pour signer ce document");
 			signRequestService.deleteNexu(id);
@@ -87,7 +99,7 @@ public class NexuProcessController implements Serializable {
 			model.addAttribute("urlProfil", "user");
 		}
 		model.addAttribute("rootUrl", globalProperties.getRootUrl());
-		return "user/signrequests/nexu-signature-process";
+		model.addAttribute("addExtra", false);
 	}
 
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
@@ -125,9 +137,8 @@ public class NexuProcessController implements Serializable {
 	public ResponseEntity<?> signDocument(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
 										  @RequestBody @Valid SignResponse signatureValue,
 										  @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-										  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException, EsupSignatureException {
-		NexuSignature nexuSignature = nexuService.getNexuSignature(id);
-		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureFormFromNexuSignature(nexuSignature);
+									  @RequestParam("id") Long id) throws EsupSignatureRuntimeException, EsupSignatureException {
+		AbstractSignatureForm abstractSignatureForm = nexuService.getAbstractSignatureForm(id);
 		abstractSignatureForm.setSignatureValue(signatureValue.getSignatureValue());
         SignDocumentResponse responseJson = nexuService.getSignDocumentResponse(id, signatureValue, abstractSignatureForm, userEppn);
 		signRequestService.updateStatus(id, SignRequestStatus.signed, "Signature", null, "SUCCESS", null,null,null,null, userEppn, authUserEppn);

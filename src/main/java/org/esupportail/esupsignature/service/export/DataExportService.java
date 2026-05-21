@@ -39,10 +39,17 @@ public class DataExportService {
     @Resource
     private WebUtilsService webUtilsService;
 
+    @Transactional(readOnly = true)
     public InputStream getCsvDatasFromForms(List<Workflow> workflows) throws IOException {
         return webUtilsService.mapListToCSV(getDatasToExport(workflows));
     }
 
+    @Transactional(readOnly = true)
+    public InputStream getCsvDatasFromForm(Form form) throws IOException {
+        return webUtilsService.mapListToCSV(new ArrayList<>(getDatasToExport(form)));
+    }
+
+    @Transactional(readOnly = true)
     public List<Map<String, String>> getDatasToExport(List<Workflow> workflows) {
         List<Map<String, String>> dataDatas = new ArrayList<>();
         for(Workflow workflow: workflows) {
@@ -66,9 +73,18 @@ public class DataExportService {
         return null;
     }
 
+    @Transactional(readOnly = true)
     public List<LinkedHashMap<String, String>> getDatasToExport(Workflow workflow) {
         List<Form> forms = formRepository.findByWorkflowIdEquals(workflow.getId());
-        List<Data> datas = dataRepository.findByFormId(forms.get(0).getId());
+        if(forms.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return getDatasToExport(forms.get(0));
+    }
+
+    @Transactional(readOnly = true)
+    public List<LinkedHashMap<String, String>> getDatasToExport(Form form) {
+        List<Data> datas = dataRepository.findByFormId(form.getId());
         List<LinkedHashMap<String, String>> dataDatas = new ArrayList<>();
         for(Data data : datas) {
             SignBook signBook = data.getSignBook();
@@ -96,10 +112,11 @@ public class DataExportService {
 
     private LinkedHashMap<String, String> getToExportDatas(Data data, SignBook signBook) {
         LinkedHashMap<String, String> toExportDatas = new LinkedHashMap<>();
+        SignRequest firstSignRequest = signBook != null && !signBook.getSignRequests().isEmpty() ? signBook.getSignRequests().get(0) : null;
         if(signBook != null) {
-            toExportDatas.put("sign_request_id", signBook.getSignRequests().get(0).getId().toString());
-            toExportDatas.put("sign_request_attachements_size", String.valueOf(signBook.getSignRequests().get(0).getAttachments().size()));
-            toExportDatas.put("sign_request_current_status", signBook.getSignRequests().get(0).getStatus().toString());
+            toExportDatas.put("sign_request_id", firstSignRequest != null ? firstSignRequest.getId().toString() : "");
+            toExportDatas.put("sign_request_attachements_size", firstSignRequest != null ? String.valueOf(firstSignRequest.getAttachments().size()) : "");
+            toExportDatas.put("sign_request_current_status", firstSignRequest != null ? firstSignRequest.getStatus().toString() : "");
         } else {
             toExportDatas.put("sign_request_id", "");
             toExportDatas.put("sign_request_attachements_size", "");
@@ -110,14 +127,23 @@ public class DataExportService {
         toExportDatas.put("form_create_date", data.getCreateDate().toString());
         toExportDatas.put("form_create_by", data.getCreateBy().getEppn());
         toExportDatas.put("form_current_status", data.getStatus().name());
-        Map<Recipient, Action> recipientHasSigned = null;
+        Map<Recipient, Action> recipientHasSigned = Collections.emptyMap();
+        if(firstSignRequest != null) {
+            recipientHasSigned = Optional.ofNullable(firstSignRequest.getRecipientHasSigned()).orElse(Collections.emptyMap());
+        }
         if(signBook != null) {
-            recipientHasSigned = signBook.getSignRequests().get(0).getRecipientHasSigned();
-            if (recipientHasSigned != null && !recipientHasSigned.isEmpty() && signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported)) {
+            if (!recipientHasSigned.isEmpty() && (signBook.getStatus().equals(SignRequestStatus.completed) || signBook.getStatus().equals(SignRequestStatus.exported))) {
                 Optional<Action> lastActionHero = recipientHasSigned.values().stream().filter(action -> !action.getActionType().equals(ActionType.none)).findFirst();
                 if (lastActionHero.isPresent()) {
                     toExportDatas.put("form_completed_date", lastActionHero.get().getDate().toString());
-                    toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream().filter(entry -> lastActionHero.get().equals(entry.getValue())).map(Map.Entry::getKey).findFirst().get().getUser().getEppn());
+                    toExportDatas.put("form_completed_by", recipientHasSigned.entrySet().stream()
+                            .filter(entry -> lastActionHero.get().equals(entry.getValue()))
+                            .map(Map.Entry::getKey)
+                            .map(Recipient::getUser)
+                            .filter(Objects::nonNull)
+                            .map(User::getEppn)
+                            .findFirst()
+                            .orElse(""));
                 } else {
                     toExportDatas.put("form_completed_date", "");
                     toExportDatas.put("form_completed_by", "");
@@ -142,7 +168,7 @@ public class DataExportService {
                 toExportDatas.put("current_step_description", "");
             }
             int step = 1;
-            List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).collect(Collectors.toList());
+            List<Map.Entry<Recipient, Action>> actionsList = recipientHasSigned.entrySet().stream().filter(recipientActionEntry -> !recipientActionEntry.getValue().getActionType().equals(ActionType.none) && recipientActionEntry.getValue().getDate() != null).sorted(Comparator.comparing(o -> o.getValue().getDate())).toList();
             for (Map.Entry<Recipient, Action> actions : actionsList) {
                 toExportDatas.put("sign_step_" + step + "_user_eppn", actions.getKey().getUser().getEppn());
                 toExportDatas.put("sign_step_" + step + "_type", actions.getValue().getActionType().name());

@@ -12,23 +12,23 @@
         <td class="clickable-td d-none d-xxl-table-cell" th:text="${signBook.createByDisplayName}"></td>
         <td class="clickable-td d-none d-xl-table-cell"><span th:text="${signRequest.createDateLabel}"></span>
         </td>
-        <td class="d-none d-xl-table-cell">
+        <td class="d-none d-xl-table-cell no-row-navigation">
             <div th:if="${signBook.hasParticipants()}">
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fa-solid fa-list"></i> Liste des participants
-                    </button>
-                    <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
-                        <th:block th:each="participantStep : ${signBook.participantSteps}">
-                            <th:block th:each="recipient : ${participantStep.recipients}">
-                                <li class="dropdown-item" th:title="${recipient.email}" style="display: inline-flex;">
-                                    <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${participantStep.stepNumber}" style="font-size: 13px; line-height: 12px;"></span>&nbsp;
-                                    <span class="me-1" th:text="${recipient.displayName}"></span>
-                                    <i th:if="${recipient.statusIconClass != null}" th:title="${recipient.statusTitle}" th:class="${recipient.statusIconClass}"></i>
-                                </li>
-                            </th:block>
-                        </th:block>
-                    </ul>
+                <div th:with="currentParticipantStep=${signBook.currentParticipantStep}">
+                    <select class="participant-step-select"
+                            aria-label="Participants"
+                            th:id="'participantStepSelect-admin-' + ${signBook.id}"
+                            th:title="${currentParticipantStep != null ? currentParticipantStep.recipientsSummary : 'Participants'}">
+                        <option th:each="participantStep : ${signBook.participantSteps}"
+                                th:with="isCurrentStep=${currentParticipantStep != null and participantStep.stepNumber == currentParticipantStep.stepNumber},
+                                         statusIcon=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.icon.' + participantStep.statusKey) : ''},
+                                         statusTitle=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.title.' + participantStep.statusKey) : ''}"
+                                th:value="${participantStep.stepNumber}"
+                                th:selected="${isCurrentStep}"
+                                th:text="${'Étape ' + participantStep.stepNumber + ' - ' + (participantStep.recipientsSummary != null ? participantStep.recipientsSummary : '')}"
+                                th:attr="data-step-number=${participantStep.stepNumber},data-summary=${participantStep.recipientsSummary},data-current-step=${isCurrentStep},data-current-label=#{signbook.participant.current},data-status-icon=${statusIcon},data-status-title=${statusTitle}">
+                        </option>
+                    </select>
                 </div>
             </div>
         </td>
@@ -103,22 +103,23 @@
         </td>
         <td></td>
         <td></td>
-        <td class="d-none d-xl-table-cell">
+        <td class="d-none d-xl-table-cell no-row-navigation">
             <div th:if="${signBook.hasParticipants()}">
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-light btn-outline-light dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                        <i class="fa-solid fa-users"></i> Liste des participants
-                    </button>
-                    <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
-                        <th:block th:each="participantStep : ${signBook.participantSteps}">
-                            <th:block th:each="recipient : ${participantStep.recipients}">
-                                <li class="dropdown-item" th:title="${recipient.email}" style="display: inline-flex;">
-                                    <span class="me-1" style="word-break: break-all" th:text="${recipient.displayName}"></span>
-                                    <i th:if="${recipient.statusIconClass != null}" th:title="${recipient.statusTitle}" th:class="${recipient.statusIconClass}"></i>
-                                </li>
-                            </th:block>
-                        </th:block>
-                    </ul>
+                <div th:with="currentParticipantStep=${signBook.currentParticipantStep}">
+                    <select class="participant-step-select"
+                            aria-label="Participants"
+                            th:id="'participantStepSelect-admin-empty-' + ${signBook.id}"
+                            th:title="${currentParticipantStep != null ? currentParticipantStep.recipientsSummary : 'Participants'}">
+                        <option th:each="participantStep : ${signBook.participantSteps}"
+                                th:with="isCurrentStep=${currentParticipantStep != null and participantStep.stepNumber == currentParticipantStep.stepNumber},
+                                         statusIcon=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.icon.' + participantStep.statusKey) : ''},
+                                         statusTitle=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.title.' + participantStep.statusKey) : ''}"
+                                th:value="${participantStep.stepNumber}"
+                                th:selected="${isCurrentStep}"
+                                th:text="${'Étape ' + participantStep.stepNumber + ' - ' + (participantStep.recipientsSummary != null ? participantStep.recipientsSummary : '')}"
+                                th:attr="data-step-number=${participantStep.stepNumber},data-summary=${participantStep.recipientsSummary},data-current-step=${isCurrentStep},data-current-label=#{signbook.participant.current},data-status-icon=${statusIcon},data-status-title=${statusTitle}">
+                        </option>
+                    </select>
                 </div>
             </div>
         </td>

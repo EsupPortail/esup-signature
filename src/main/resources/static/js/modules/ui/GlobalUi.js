@@ -140,6 +140,51 @@ export class GlobalUi {
         }
     }
 
+    getCsrfHeaders() {
+        const headers = {
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        const headerName = this.csrf?.headerName || document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        const token = this.csrf?.token || document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        if (headerName && token) {
+            headers[headerName] = token;
+        }
+        return headers;
+    }
+
+    stringifyClientError(error) {
+        if (error == null) {
+            return null;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error.stack) {
+            return error.stack;
+        }
+        if (error.message) {
+            return error.message;
+        }
+        try {
+            return JSON.stringify(error);
+        } catch (e) {
+            return String(error);
+        }
+    }
+
+    reportClientSideError(clientSideError) {
+        return $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '/log',
+            dataType: 'json',
+            headers: this.getCsrfHeaders(),
+            data: JSON.stringify(clientSideError)
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.debug('Unable to send client-side error log', jqXHR?.status, textStatus, errorThrown);
+        });
+    }
+
     applyUiData(uiData) {
         if (uiData == null) {
             return;
@@ -355,27 +400,22 @@ export class GlobalUi {
         this.toggleStatusClasses(document.getElementById('admin-side-dss-label'), isAlert, 'text-success', 'text-danger');
         this.toggleStatusClasses(document.getElementById('admin-index-dss-icon'), isAlert);
         this.toggleStatusClasses(document.getElementById('admin-index-dss-label'), isAlert, 'text-success', 'text-danger');
-        this.setElementVisibility('navbar-admin-dss-alert', isAlert || counters.certificatProblem === true, 'd-none');
+        const hasCertificatProblem = counters?.certificatProblem === true;
+        this.setElementVisibility('navbar-admin-dss-alert', isAlert || hasCertificatProblem, 'd-none');
         document.dispatchEvent(new CustomEvent('adminUiStatusLoaded', {detail: status}));
     }
 
     initListeners() {
         let applicationEmail = this.applicationEmail;
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
             let clientSideError = {
-                msg: msg,
-                url: url,
-                lineNumber: lineNo,
-                columnNumber: columnNo,
-                error: error
+                msg: typeof msg === 'string' ? msg : msg?.message || String(msg),
+                url: url || window.location.href,
+                lineNumber: lineNo || null,
+                columnNumber: columnNo || null,
+                error: this.stringifyClientError(error)
             };
-            $.ajax({
-                type: 'POST',
-                contentType : 'application/json; charset=utf-8',
-                url: "/log",
-                dataType: "json",
-                data: JSON.stringify(clientSideError)
-            });
+            this.reportClientSideError(clientSideError);
             alert("Une erreur s'est produite au niveau de l'affichage.\n" +
                 "Merci de contacter le gestionnaire de cette application : \n" +
                 applicationEmail + "\n" +
@@ -449,6 +489,9 @@ export class GlobalUi {
             $("#user-toggle").click();
         });
         this.clickableRow.off('click').on('click', function(e) {
+            if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                return;
+            }
             let url = $(this).closest('tr').attr('data-href');
             if (e.ctrlKey || e.metaKey) {
                 window.open(url, '_blank');
@@ -993,8 +1036,18 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             let allowDeselect = Boolean($(this).attr('data-allow-deselect'));
-            new SlimSelect({
+            const selectElement = document.getElementById(selectName);
+            const optionData = selectElement != null ? Array.from(selectElement.options).map(option => ({
+                text: option.text,
+                value: option.value,
+                html: option.dataset.html || option.text,
+                selected: option.selected || false,
+                disabled: option.disabled || false,
+                placeholder: option.dataset.placeholder === 'true'
+            })) : [];
+            const slim = new SlimSelect({
                 select: '#' + selectName,
+                data: optionData.some(option => option.html !== option.text) ? optionData : undefined,
                 settings: {
                     showSearch: false,
                     searchHighlight: false,
@@ -1007,7 +1060,11 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            self.slimSelectHack($(this))
+            self.slimSelectHack($(this));
+            const slimContainer = $('#' + selectName).next('.ss-main');
+            $('#' + selectName).add(slimContainer).on('click mousedown mouseup keydown', function (e) {
+                e.stopPropagation();
+            });
         });
     }
 
@@ -1140,6 +1197,9 @@ export class GlobalUi {
             let test = $(".card.show").length > 0;
 
             if (!test) {
+                if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                    return;
+                }
                 let url = $(this).closest('tr').attr('data-href');
                 if (e.ctrlKey || e.metaKey) {
                     window.open(url, '_blank');

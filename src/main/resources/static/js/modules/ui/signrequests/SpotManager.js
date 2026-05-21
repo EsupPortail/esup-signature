@@ -38,6 +38,7 @@ export class SpotManager {
         this.spotAddEnabled = true;
         const pdfViewer = this.options.getPdfViewer();
         const workspace = $("#workspace");
+        const signrequestScope = $(".es-signrequest-main-content *");
         const sidebarRoots = $(".es-signrequest-main-content #sidebar, .es-signrequest-main-content > .es-sidebar");
         this.preservedSidebarScope = sidebarRoots.length
             ? sidebarRoots.parentsUntil(".es-signrequest-main-content").addBack()
@@ -50,7 +51,7 @@ export class SpotManager {
             : $();
         this.activeWorkspaceScope.addClass("es-spot-add-scope");
         $("body").addClass("es-spot-add-mode");
-        $('body *').css('pointer-events', 'none');
+        signrequestScope.css('pointer-events', 'none');
         $('#workspace, #workspace *').css('pointer-events', 'auto');
         this.preservedSidebarScope.css({
             opacity: 1,
@@ -79,6 +80,7 @@ export class SpotManager {
     deactivateSpotAddMode() {
         this.spotAddEnabled = false;
         const pdfViewer = this.options.getPdfViewer();
+        const signrequestScope = $(".es-signrequest-main-content *");
         $("body").removeClass("es-spot-add-mode");
         this.activeWorkspaceScope.removeClass("es-spot-add-scope");
         this.activeWorkspaceScope = $();
@@ -97,7 +99,7 @@ export class SpotManager {
         if (pdfViewer?.pdfDiv != null) {
             pdfViewer.pdfDiv.css('cursor', 'default');
         }
-        $('body *').css('pointer-events', 'auto');
+        signrequestScope.css('pointer-events', '');
         $(".textLayer").each(function () {
             $(this).removeClass("text-disable-selection");
         });
@@ -159,6 +161,7 @@ export class SpotManager {
                         .filter(recipient => recipient?.id != null)
                         .map(recipient => ({
                             id: String(recipient.id),
+                            userId: recipient?.user?.id != null ? String(recipient.user.id) : null,
                             label: recipient?.user?.email ?? `Destinataire #${recipient.id}`
                         }))
                     : []
@@ -218,6 +221,80 @@ export class SpotManager {
 
     getStepRecipients(stepNumber) {
         return this.getStepDefinition(stepNumber)?.recipients ?? [];
+    }
+
+    getCurrentFrontUserId() {
+        const candidates = [];
+        candidates.push(this.state?.frontDto?.user?.id ?? null);
+        candidates.push(this.state?.showDataFlow?.front?.user?.id ?? null);
+        try {
+            const rawUiMe = sessionStorage.getItem('uiMe');
+            const uiMe = rawUiMe ? JSON.parse(rawUiMe) : null;
+            candidates.push(uiMe?.user?.id ?? null);
+            candidates.push(uiMe?.authUser?.id ?? null);
+        } catch (error) {
+            // Ignore malformed session data.
+        }
+        if (typeof window !== "undefined" && window.user != null) {
+            candidates.push(window.user.id ?? null);
+        }
+        for (let i = 0; i < candidates.length; i++) {
+            const parsedUserId = parseInt(candidates[i], 10);
+            if (Number.isFinite(parsedUserId)) {
+                return parsedUserId;
+            }
+        }
+        return null;
+    }
+
+    getCurrentUserRecipientIds(stepNumber) {
+        const currentUserId = this.getCurrentFrontUserId();
+        if (!Number.isFinite(currentUserId)) {
+            return new Set();
+        }
+        return new Set(
+            this.getStepRecipients(stepNumber)
+                .filter(recipient => parseInt(recipient?.userId, 10) === currentUserId)
+                .map(recipient => parseInt(recipient?.id, 10))
+                .filter(recipientId => Number.isFinite(recipientId))
+        );
+    }
+
+    getSoleCurrentStepRecipientId(stepNumber) {
+        const recipients = this.getStepRecipients(stepNumber)
+            .map(recipient => parseInt(recipient?.id, 10))
+            .filter(recipientId => Number.isFinite(recipientId));
+        return recipients.length === 1 ? recipients[0] : null;
+    }
+
+    canCurrentUserUseSpot(spot) {
+        const spotStepNumber = parseInt(spot?.stepNumber, 10);
+        const currentStepNumber = parseInt(this.options.getCurrentStepNumber(), 10);
+        if (!Number.isFinite(spotStepNumber) || !Number.isFinite(currentStepNumber) || spotStepNumber !== currentStepNumber) {
+            return false;
+        }
+
+        const spotRecipientId = parseInt(spot?.recipientId, 10);
+        if (!Number.isFinite(spotRecipientId)) {
+            return true;
+        }
+
+        const currentUserRecipientIds = this.getCurrentUserRecipientIds(spotStepNumber);
+        if (currentUserRecipientIds.has(spotRecipientId)) {
+            return true;
+        }
+
+        const currentParams = Array.isArray(this.options.getCurrentSignRequestParamses())
+            ? this.options.getCurrentSignRequestParamses()
+            : [];
+        if (currentParams.some(param => parseInt(param?.recipientId, 10) === spotRecipientId)) {
+            return true;
+        }
+
+        const soleRecipientId = this.getSoleCurrentStepRecipientId(spotStepNumber);
+        return Number.isFinite(soleRecipientId)
+            && soleRecipientId === spotRecipientId
+            && this.options.isSignable();
     }
 
     getStepMetadata(stepNumber) {
@@ -454,7 +531,6 @@ export class SpotManager {
 
         const spotId = parseInt(spotData.id, 10);
         const spotStep = parseInt(spotData.stepNumber, 10);
-        const currentStep = parseInt(this.options.getCurrentStepNumber(), 10);
         const normalizedSpot = {
             id: spotId,
             signPageNumber: parseInt(spotData.signPageNumber, 10),
@@ -477,7 +553,7 @@ export class SpotManager {
         this.options.setSpots(spots);
         this.refreshSpotStepOptions();
 
-        if (this.options.isSignable() && normalizedSpot.recipientId == null && Number.isFinite(spotStep) && Number.isFinite(currentStep) && spotStep === currentStep) {
+        if (this.options.isSignable() && this.canCurrentUserUseSpot(normalizedSpot)) {
             this.options.removeSignSpaceBySpotId(spotId);
             const currentParams = Array.isArray(this.options.getCurrentSignRequestParamses())
                 ? [...this.options.getCurrentSignRequestParamses()]

@@ -93,12 +93,12 @@
                         th:classappend="${adminMenu == 'active'} ? 'bg-secondary bg-opacity-75' : ''">
                         <i class="fi fi-rr-chess-queen"></i>
                         <span class="nav-item-label d-none d-xxxl-inline">Admin</span>
-                        <span id="navbar-admin-dss-alert" title="Statut DSS" class="badge rounded-pill bg-danger ms-1" th:classappend="${dssStatus == null || dssStatus == true || certificatProblem == true} ? '' : 'd-none'">!</span>
+                        <span id="navbar-admin-dss-alert" title="Statut DSS" class="badge rounded-pill bg-danger ms-1 d-none">!</span>
                     </a>
                 </li>
             </ul>
             <ul id="user-buttons" class="navbar-nav">
-                <li class="nav-item" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
+                <li class="d-flex align-items-center" th:if="${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')')}" title="Logout SU">
                     <form th:action="'/su-logout'" method="POST">
                         <button id="link-su" type="submit" class="btn bg-dark text-white"><i class="fa-solid fa-user-secret"></i></button>
                     </form>
@@ -233,7 +233,7 @@
                         class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 mx-auto mt-2"
                         aria-label="Paramètres utilisateur"
                         title="Déconnexion">
-                    <i class="fi fi-rr-power"></i> Déconnexion
+                    <i class="fi fi-rr-power"></i> Déconnexion
                 </button>
             </form>
         </div>

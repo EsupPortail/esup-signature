@@ -956,7 +956,7 @@ public class SignBookService {
             }
             List<Long> signRequestsIds = signBook.getSignRequests().stream().map(SignRequest::getId).toList();
             for (Long signRequestId : signRequestsIds) {
-                signRequestService.deleteDefinitive(signRequestId, userEppn);
+                signRequestService.deleteDefinitive(signRequestId, userEppn, false);
             }
             dataService.deleteBySignBook(signBook);
             signBookRepository.delete(signBook);
@@ -1158,22 +1158,30 @@ public class SignBookService {
     }
 
     private List<SignBook> getSharedSignBooks(String userEppn) {
-        List<SignBook> sharedSignBook = new ArrayList<>();
+        Map<Long, SignBook> sharedSignBookMap = new LinkedHashMap<>();
         for(UserShare userShare : userShareService.getByToUsersEppnInAndShareTypesContains(Collections.singletonList(userEppn), ShareType.sign)) {
-            if(userShare.getWorkflow() != null) {
-                sharedSignBook.addAll(getByWorkflowId(userShare.getWorkflow().getId()));
-            } else if(userShare.getForm() != null) {
-                List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getEppn());
-                for (SignRequest signRequest : signRequests) {
-                    Data data = dataService.getBySignBook(signRequest.getParentSignBook());
-                    if(data.getForm().equals(userShare.getForm())) {
-                        sharedSignBook.add(signRequest.getParentSignBook());
-                        break;
+            if (!userShareService.checkUserShareDate(userShare)) {
+                continue;
+            }
+            List<SignRequest> signRequests = signRequestService.getToSignRequests(userShare.getUser().getEppn());
+            for (SignRequest signRequest : signRequests) {
+                SignBook signBook = signRequest.getParentSignBook();
+                if (userShare.getAllSignRequests()) {
+                    sharedSignBookMap.put(signBook.getId(), signBook);
+                } else if(userShare.getWorkflow() != null) {
+                    Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
+                    if (workflow != null && workflow.getId().equals(userShare.getWorkflow().getId())) {
+                        sharedSignBookMap.put(signBook.getId(), signBook);
+                    }
+                } else if(userShare.getForm() != null) {
+                    Data data = dataService.getBySignBook(signBook);
+                    if(data != null && data.getForm() != null && data.getForm().equals(userShare.getForm())) {
+                        sharedSignBookMap.put(signBook.getId(), signBook);
                     }
                 }
             }
         }
-        return sharedSignBook;
+        return new ArrayList<>(sharedSignBookMap.values());
     }
 
     /**
@@ -1364,11 +1372,18 @@ public class SignBookService {
     public void sendEmailAlertSummary(String recipientUserEppn) throws EsupSignatureMailException {
         User recipientUser = userService.getByEppn(recipientUserEppn);
         Date date = new Date();
-        List<SignRequest> toSignSignRequests = signRequestService.getToSignRequests(recipientUser.getEppn());
-        toSignSignRequests.addAll(getSharedToSignSignRequests(recipientUser.getEppn()));
+        Map<Long, SignRequest> toSignSignRequestsMap = new LinkedHashMap<>();
+        signRequestService.getToSignRequests(recipientUser.getEppn()).forEach(signRequest -> toSignSignRequestsMap.put(signRequest.getId(), signRequest));
+        getSharedToSignSignRequests(recipientUser.getEppn()).forEach(signRequest -> toSignSignRequestsMap.put(signRequest.getId(), signRequest));
+        List<SignRequest> toSignSignRequests = toSignSignRequestsMap.values().stream()
+                .filter(signRequest -> signRequest.getId() != null)
+                .filter(signRequest -> !recipientUser.getTransmittedSignRequestIds().contains(signRequest.getId()))
+                .toList();
         if (!toSignSignRequests.isEmpty()) {
-            recipientUser.setLastSendAlertDate(date);
-            mailService.sendSignRequestSummaryAlert(Collections.singletonList(recipientUser.getEmail()), toSignSignRequests);
+            if (mailService.sendSignRequestSummaryAlert(Collections.singletonList(recipientUser.getEmail()), toSignSignRequests)) {
+                toSignSignRequests.stream().map(SignRequest::getId).forEach(recipientUser.getTransmittedSignRequestIds()::add);
+                recipientUser.setLastSendAlertDate(date);
+            }
         }
     }
 
@@ -1608,23 +1623,28 @@ public class SignBookService {
      * @param sendEmailAlert Indicateur spécifiant si une alerte e-mail*/
     @Transactional
     public void initSignBookWorkflow(Long signBookId, List<WorkflowStepDto> steps, List<String> targetEmails, String userEppn, String authUserEppn, Boolean pending, Boolean sendEmailAlert) throws EsupSignatureRuntimeException, EsupSignatureException {
-        List<RecipientWsDto> recipients = steps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
-        signRequestService.checkTempUsers(signBookId, recipients);
+        List<WorkflowStepDto> workflowSteps = steps == null ? List.of() : steps;
         SignBook signBook = getById(signBookId);
         if(signBook.getStatus().equals(SignRequestStatus.draft) || signBook.getStatus().equals(SignRequestStatus.uploading)) {
-            List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
-            if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
-                workflowService.computeWorkflow(steps, signBook);
+            if (workflowSteps.isEmpty()) {
+                completeSignBook(signBook, userEppn, "Tous les documents sont signés");
             } else {
-                Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), steps, userEppn, false);
-                workflowService.importWorkflow(signBook, workflow, steps, userEppn);
-                signRequestService.nextWorkFlowStep(signBook);
-            }
+                List<RecipientWsDto> recipients = workflowSteps.stream().map(WorkflowStepDto::getRecipients).flatMap(List::stream).toList();
+                signRequestService.checkTempUsers(signBookId, recipients);
+                List<Target> targets = new ArrayList<>(signBook.getLiveWorkflow().getWorkflow().getTargets());
+                if(signBook.getLiveWorkflow().getWorkflow().getWorkflowSteps().isEmpty()) {
+                    workflowService.computeWorkflow(workflowSteps, signBook);
+                } else {
+                    Workflow workflow = workflowService.computeWorkflow(signBook.getLiveWorkflow().getWorkflow(), workflowSteps, userEppn, false);
+                    workflowService.importWorkflow(signBook, workflow, workflowSteps, userEppn);
+                    signRequestService.nextWorkFlowStep(signBook);
+                }
 //            dispatchSignRequestParams(signBookLight);
-            targetService.copyTargets(targets, signBook, targetEmails);
-            userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), steps);
-            if (pending != null && pending) {
-                pendingSignBook(signBook, null, userEppn, authUserEppn, false, sendEmailAlert);
+                targetService.copyTargets(targets, signBook, targetEmails);
+                userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), workflowSteps);
+                if (pending != null && pending) {
+                    pendingSignBook(signBook, null, userEppn, authUserEppn, false, sendEmailAlert);
+                }
             }
         }
         if(signBook.getLiveWorkflow().getWorkflow().getOwnerSystem() != null && signBook.getLiveWorkflow().getWorkflow().getOwnerSystem()) {
@@ -3072,7 +3092,7 @@ public class SignBookService {
                         if (replacedByUser.getUserType().equals(UserType.external)) {
                             otpService.generateOtpForSignRequest(signBook.getId(), replacedByUser.getId(), replacedByUser.getPhone(), true);
                         } else {
-                            mailService.sendSignRequestAlert(Collections.singletonList(replacedByUser.getEmail()), signBook);
+                            mailService.sendSignRequestAlert(replacedByUser, signBook);
                         }
                         nbTransfert++;
                     }

@@ -3,6 +3,8 @@ package org.esupportail.esupsignature.dto.page.user.signbook;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 public class SignBookFullDto {
 
@@ -172,6 +174,20 @@ public class SignBookFullDto {
         return participantSteps != null && !participantSteps.isEmpty();
     }
 
+    public ParticipantStepDto getCurrentParticipantStep() {
+        if (liveWorkflowCurrentStepNumber == null || participantSteps == null || participantSteps.isEmpty()) {
+            return null;
+        }
+        return participantSteps.stream()
+                .filter(participantStep -> participantStep != null && Objects.equals(participantStep.getStepNumber(), liveWorkflowCurrentStepNumber))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean hasCurrentParticipantStep() {
+        return getCurrentParticipantStep() != null;
+    }
+
     public static class PrimarySignRequestDto {
         private Long id;
         private String title;
@@ -321,6 +337,49 @@ public class SignBookFullDto {
         public List<ParticipantDto> getRecipients() { return recipients; }
         public void setRecipients(List<ParticipantDto> recipients) { this.recipients = recipients; }
 
+        public String getRecipientsSummary() {
+            if (recipients == null || recipients.isEmpty()) {
+                return null;
+            }
+            StringJoiner stringJoiner = new StringJoiner(", ");
+            recipients.stream()
+                    .filter(Objects::nonNull)
+                    .map(recipient -> recipient.getDisplayName() != null ? recipient.getDisplayName() : recipient.getEmail())
+                    .filter(Objects::nonNull)
+                    .forEach(stringJoiner::add);
+            String summary = stringJoiner.toString();
+            return summary.isEmpty() ? null : summary;
+        }
+
+        public String getStatusKey() {
+            if (recipients == null || recipients.isEmpty()) {
+                return null;
+            }
+            String resolvedStatusKey = null;
+            int resolvedPriority = -1;
+            for (ParticipantDto recipient : recipients) {
+                if (recipient == null || recipient.getStatusKey() == null) {
+                    continue;
+                }
+                int candidatePriority = getStatusPriority(recipient.getStatusKey());
+                if (candidatePriority > resolvedPriority) {
+                    resolvedPriority = candidatePriority;
+                    resolvedStatusKey = recipient.getStatusKey();
+                }
+            }
+            return resolvedStatusKey;
+        }
+
+        private int getStatusPriority(String statusKey) {
+            return switch (statusKey) {
+                case "refused" -> 4;
+                case "pending" -> 3;
+                case "notSigned" -> 2;
+                case "signed" -> 1;
+                default -> 0;
+            };
+        }
+
         public Integer stepNumber() { return stepNumber; }
         public List<ParticipantDto> recipients() { return recipients; }
     }
@@ -328,31 +387,26 @@ public class SignBookFullDto {
     public static class ParticipantDto {
         private String email;
         private String displayName;
-        private String statusIconClass;
-        private String statusTitle;
+        private String statusKey;
 
         public ParticipantDto() {
         }
 
-        public ParticipantDto(String email, String displayName, String statusIconClass, String statusTitle) {
+        public ParticipantDto(String email, String displayName, String statusKey) {
             this.email = email;
             this.displayName = displayName;
-            this.statusIconClass = statusIconClass;
-            this.statusTitle = statusTitle;
+            this.statusKey = statusKey;
         }
 
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getDisplayName() { return displayName; }
         public void setDisplayName(String displayName) { this.displayName = displayName; }
-        public String getStatusIconClass() { return statusIconClass; }
-        public void setStatusIconClass(String statusIconClass) { this.statusIconClass = statusIconClass; }
-        public String getStatusTitle() { return statusTitle; }
-        public void setStatusTitle(String statusTitle) { this.statusTitle = statusTitle; }
+        public String getStatusKey() { return statusKey; }
+        public void setStatusKey(String statusKey) { this.statusKey = statusKey; }
 
         public String email() { return email; }
         public String displayName() { return displayName; }
-        public String statusIconClass() { return statusIconClass; }
-        public String statusTitle() { return statusTitle; }
+        public String statusKey() { return statusKey; }
     }
 }

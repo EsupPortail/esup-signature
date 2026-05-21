@@ -4,7 +4,7 @@ export class SignToolbar {
         this.eventNamespace = options.eventNamespace ?? ".esupSignToolbar";
         this.rootSelector = options.rootSelector ?? "#tools";
         this.priorityContainers = options.priorityContainers ?? ["#tools", ".es-nav-tools"];
-        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#certType", "#addParaphButton2", "#signLaunchButton", "#refuseLaunchButton"];
+        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#signAdvancedLaunchButton", "#addParaphButton2", "#refuseLaunchButton"];
         this.focusRetryDelay = options.focusRetryDelay ?? 80;
         this.focusableSelector = options.focusableSelector ?? [
             "a[href]",
@@ -17,6 +17,7 @@ export class SignToolbar {
         this.callbacks = {
             onAddComment: options.onAddComment ?? (() => {}),
             onAddSpot: options.onAddSpot ?? (() => {}),
+            onRequestSignatureStep: options.onRequestSignatureStep ?? (() => {}),
             onAddSign: options.onAddSign ?? (() => {}),
             onAddParaph: options.onAddParaph ?? (() => {}),
             onAddCheck: options.onAddCheck ?? (() => {}),
@@ -31,7 +32,14 @@ export class SignToolbar {
             { selector: "#addSpotButton", event: "click", handler: () => this.callbacks.onAddSpot() },
             { selector: "#addSpotButton2", event: "click", handler: () => this.callbacks.onAddSpot() },
             { selector: "#addSignButton", event: "click", handler: () => this.callbacks.onAddSign() },
-            { selector: "#addSignButton2", event: "click", handler: () => this.callbacks.onAddSign() },
+            {
+                selector: "#addSignButton2",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onRequestSignatureStep();
+                    this.callbacks.onAddSign();
+                }
+            },
             { selector: "#addSignButton3", event: "click", handler: () => this.callbacks.onAddSign() },
             { selector: "#addParaphButton", event: "click", handler: () => this.callbacks.onAddParaph() },
             { selector: "#addParaphButton2", event: "click", handler: () => this.callbacks.onAddParaph() },

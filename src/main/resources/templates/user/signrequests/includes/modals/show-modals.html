@@ -29,7 +29,47 @@
         </div>
     </div>
 
-    <div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
+    <div id="nexuProcessModal" data-bs-focus="false" class="modal fade" role="dialog" aria-labelledby="nexuProcessModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="nexuProcessModalLabel"><i class="fi fi-rr-file-signature"></i> Signature eIDAS</h3>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="nexu-process-modal-loading" class="d-flex flex-column align-items-center justify-content-center gap-2 py-5">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                        <p class="text-muted mb-0">Chargement de l’interface de signature…</p>
+                    </div>
+                    <div id="nexu-process-modal-error" class="alert alert-danger d-none" role="alert"></div>
+                    <div id="nexu-process-modal-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/sign-validation-modal :: sign-modal(
+        signable=${signRequestFull.signable},
+        currentSignType=${signRequestFull.currentSignType},
+        signRequest=${signRequestLight},
+        signRequests=${null},
+        signWiths=${showSignRequest.signWiths},
+        sealCertOK=${showSignRequest.sealCertOK},
+        sealCertificatPropertieses=${showSignRequest.sealCertificatPropertieses},
+        currentStepMinSignLevel=${signRequestFull.currentStepMinSignLevel},
+        signatureIds=${showSignRequest.signatureIds},
+        stepRepeatable=${signRequestFull.stepRepeatable},
+        signBook=${showSignRequest.signBookLight},
+        currentStepRepeatableSignType=${signRequestFull.currentStepRepeatableSignType},
+        signTypes=${signTypes},
+        liveWorkflowStepCount=${showSignRequest.liveWorkflowStepCount},
+        currentStepNumber=${signRequestFull.currentStepNumber},
+        steps=${showSignRequest.steps},
+        nextSignRequestId=${showSignRequest.nextSignRequestId},
+        urlProfil=${showSignRequest.urlProfil}
+    )}"></div>
 
     <div th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}"
         data-bs-focus="false" class="modal fade" id="sendModal" role="dialog" aria-hidden="true">
@@ -272,7 +312,7 @@
         </div>
     </div>
 
-    <div data-bs-focus="false" class="modal fade" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
+    <div data-bs-focus="false" class="modal fade es-signrequest-sidepanel" id="refuseModal" role="dialog" aria-labelledby="refuseModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/refuse/' + ${signRequestLight.id}" method="post">
@@ -282,20 +322,19 @@
                     </div>
                     <div class="modal-body">
                         <textarea id="refuseComment" placeholder="Vous devez ajouter un motif de refus. Celui-ci sera visible par tous les participants" class="form-control" name="comment" required></textarea>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <div>
-                            <button type="submit" id="refuseEnd" name="redirect" value="end" th:if="${signRequestFull.nbSignRequests == 1 || !showSignRequest.hasNextSignBook}"
-                                    class="btn btn-danger me-1" title="Refuser" autofocus>
-                                <span>Refuser</span>
-                            </button>
-                            <button type="submit" id="refuseNext" th:if="${showSignRequest.nextSignRequestId != null && otp == null}" name="redirect" th:value="${showSignRequest.nextSignRequestId}"
-                                    class="btn btn-danger" title="Refuser et aller à la suivante" autofocus>
-                                <span>Refuser et aller à la suivante </span>
-                                <i class="fa-solid fa-arrow-alt-circle-right"></i>
-                            </button>
+                        <div id="refuseGotoNextContainer" class="form-group my-3" th:if="${showSignRequest.nextSignRequestId != null && otp == null}">
+                            <div class="form-check form-switch form-switch-md">
+                                <label class="form-check-label" for="refuseGotoNext">Après refus, ouvrir la demande suivante</label>
+                                <input type="checkbox" class="form-check-input" id="refuseGotoNext"
+                                       th:data-es-next-id="${showSignRequest.nextSignRequestId}"/>
+                            </div>
                         </div>
+                        <input type="hidden" id="refuseRedirectValue" name="redirect" value="end"/>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="submit" id="refuseSubmit" class="btn btn-danger" autofocus>
+                            <span>Refuser</span>
+                        </button>
                     </div>
                 </form>
             </div>
@@ -515,7 +554,7 @@
     <div data-bs-focus="false" class="modal fade" id="addCommentModal" role="dialog" aria-labelledby="detailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <form th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/postit/' + ${signRequestLight.id}" method="post">
+                <form id="add-comment-form" th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/postit/' + ${signRequestLight.id}" method="post">
                     <div class="modal-header">
                         <h3 class="modal-title" id="addCommentLabel">Ajouter un post-it</h3>
                         <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -537,6 +576,218 @@
             </div>
         </div>
     </div>
+    <script th:inline="javascript">
+        (() => {
+            const addCommentForm = document.getElementById('add-comment-form');
+            const addCommentModalElement = document.getElementById('addCommentModal');
+            if (!addCommentForm || !addCommentModalElement) {
+                return;
+            }
+
+            const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
+            const urlProfil = /*[[${showSignRequest.urlProfil}]]*/ 'user';
+            const userEppn = /*[[${userEppn}]]*/ '';
+            const csrfParameterName = /*[[${_csrf.parameterName}]]*/ '_csrf';
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function showSnackbar(message, type = 'info') {
+                if (typeof window.showSnackbar === 'function') {
+                    window.showSnackbar(escapeHtml(message), type, {
+                        delay: type === 'dark' ? 2000 : 4000
+                    });
+                    return;
+                }
+                console.info(message);
+            }
+
+            function formatPostitDate(timestamp) {
+                if (!timestamp) {
+                    return '';
+                }
+                return new Intl.DateTimeFormat('fr-FR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }).format(new Date(timestamp));
+            }
+
+            function getPostitLayer() {
+                return document.querySelector('.es-signrequest-postits-layer');
+            }
+
+            function getPostitIndex() {
+                return document.querySelectorAll('.es-signrequest-postits-layer > [id^="postit-"]:not(#postit-comment)').length;
+            }
+
+            function buildPostitHtml(postit) {
+                const index = getPostitIndex();
+                const left = 310 + (index * 15);
+                const top = 310 + (index * 70);
+                const authorName = `${postit.createBy?.firstname || ''} ${postit.createBy?.name || ''}`.trim();
+                const escapedText = escapeHtml(postit.text);
+                const escapedColor = escapeHtml(postit.postitColor || '#FFF740');
+                const canEdit = Boolean(postit.canEdit) && !postit.refuse && postit.createBy?.eppn === userEppn;
+
+                return `
+                    <div id="postit-${postit.id}" class="postit-global overflow-hidden"
+                         style="width: 215px; height:215px; z-index: 1001; cursor: move; background-color: ${escapedColor}; position: fixed; left: ${left}px; top: ${top}px;">
+                        <button type="button" class="postit-global-close close">
+                            <i class="fi fi-rr-eye-crossed"></i>
+                        </button>
+                        <b>${escapeHtml(authorName)}</b><br>
+                        <span style="font-size: 12px; width: fit-content;">${escapeHtml(formatPostitDate(postit.createDate))}</span>
+                        <button data-es-postit-id="${postit.id}" type="button" title="Copier le texte du postit" class="postit-copy btn btn-sm btn-transparent text-dark">
+                            <i data-es-postit-id="${postit.id}" class="fi fi-rr-copy"></i>
+                        </button>
+                        ${canEdit ? `
+                            <div class="es-postit-edit-form" id="postit-${postit.id}" data-postit-id="${postit.id}">
+                                <textarea style="color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ${escapedColor}" name="comment" id="postit-text-${postit.id}" class="postitarea">${escapedText}</textarea>
+                                <button type="button" data-postit-id="${postit.id}" onclick="return window.postitSaveAjax(event, this);" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
+                            </div>
+                            <button type="button" data-postit-id="${postit.id}" onclick="return window.postitDeleteAjax(event, this);" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax" title="Supprimer">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>`
+                            : `<p id="postit-text-${postit.id}" class="postitarea">${escapedText}</p>`}
+                    </div>`;
+            }
+
+            function toggleCompactMode(postitElement) {
+                const $postit = $(postitElement);
+                if (typeof $postit.resizable === 'function') {
+                    try {
+                        $postit.resizable($postit.hasClass('postit-small') ? 'enable' : 'disable');
+                    } catch (e) {
+                        // ignore partially initialized widget states
+                    }
+                }
+                $postit.toggleClass('postit-small');
+                $postit.find('button').each(function () {
+                    if (!$(this).hasClass('postit-global-close')) {
+                        $(this).toggle();
+                    }
+                });
+            }
+
+            async function copyPostitText(postitId) {
+                const postitTextNode = document.getElementById(`postit-text-${postitId}`);
+                const text = postitTextNode?.value ?? postitTextNode?.textContent ?? '';
+                try {
+                    if (navigator.clipboard?.writeText) {
+                        await navigator.clipboard.writeText(text);
+                        showSnackbar('Texte copié dans le presse-papier', 'success');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Clipboard fallback', e);
+                }
+
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = text;
+                document.body.appendChild(tempTextarea);
+                tempTextarea.style.position = 'absolute';
+                tempTextarea.style.left = '-9999px';
+                tempTextarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextarea);
+                showSnackbar('Texte copié dans le presse-papier', 'success');
+            }
+
+            function initRenderedPostit(postitElement) {
+                if (!postitElement) {
+                    return;
+                }
+                $(postitElement).find('.postit-global-close').off('click.renderedPostit').on('click.renderedPostit', () => toggleCompactMode(postitElement));
+                $(postitElement).find('.postit-copy').off('click.renderedPostit').on('click.renderedPostit', event => {
+                    const postitId = event.currentTarget.getAttribute('data-es-postit-id') || event.target.getAttribute('data-es-postit-id');
+                    copyPostitText(postitId);
+                });
+
+                if (typeof $(postitElement).draggable === 'function') {
+                    $(postitElement).draggable();
+                }
+                if (typeof $(postitElement).resizable === 'function') {
+                    $(postitElement).resizable({
+                        aspectRatio: false,
+                        minWidth: 215,
+                        minHeight: 215,
+                        resize: function () {
+                            const currentPostitArea = $(this).find('.postitarea').first().get(0);
+                            const parent = currentPostitArea?.closest('.postit-global');
+                            if (!currentPostitArea || !parent) {
+                                return;
+                            }
+                            const lineHeight = parseFloat(window.getComputedStyle(currentPostitArea).lineHeight);
+                            if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
+                                return;
+                            }
+                            currentPostitArea.style.webkitLineClamp = Math.floor(parent.clientHeight / lineHeight);
+                        }
+                    });
+                }
+
+                $(postitElement).off('mousedown.renderedPostit').on('mousedown.renderedPostit', function () {
+                    const currentPostitId = this.id;
+                    $('.es-signrequest-postits-layer > [id^="postit-"]:not(#postit-comment)').each(function () {
+                        $(this).css('z-index', this.id === currentPostitId ? 1001 : 1000);
+                    });
+                });
+            }
+
+            async function fetchJson(url, options = {}) {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        [csrfHeader]: csrfToken,
+                        ...(options.headers || {})
+                    }
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload.message || 'Une erreur est survenue');
+                }
+                return payload;
+            }
+
+            addCommentForm.addEventListener('submit', async event => {
+                event.preventDefault();
+                try {
+                    const payload = await fetchJson(addCommentForm.action, {
+                        method: 'POST',
+                        body: new FormData(addCommentForm)
+                    });
+                    if (payload.postit) {
+                        const postitLayer = getPostitLayer();
+                        if (postitLayer) {
+                            const wrapper = document.createElement('div');
+                            wrapper.innerHTML = buildPostitHtml(payload.postit).trim();
+                            const postitElement = wrapper.firstElementChild;
+                            postitLayer.appendChild(postitElement);
+                            initRenderedPostit(postitElement);
+                        }
+                    }
+                    addCommentForm.reset();
+                    bootstrap.Modal.getInstance(addCommentModalElement)?.hide();
+                    showSnackbar(payload.message || 'Post-it ajouté', 'success');
+                } catch (error) {
+                    showSnackbar(error.message || 'Erreur lors de l’ajout du post-it', 'error');
+                }
+            });
+        })();
+    </script>
 
     <div th:replace="~{user/signrequests/includes/modals/attachment :: attachment}"></div>
     <div th:replace="~{user/signrequests/includes/modals/add-doc :: add-doc}"></div>
@@ -596,17 +847,17 @@
 
                         <div class="row g-3 align-items-start">
                             <div class="col-12 col-lg-6">
-                                <label class="col-form-label" for="name">
+                                <label class="form-label" for="name">
                                     <strong>Nom</strong>
                                 </label>
                                 <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
-                                <label class="col-form-label mt-2" for="firstname">
+                                <label class="form-label mt-2" for="firstname">
                                     <strong>Prénom</strong>
                                 </label>
                                 <input type="text" class="form-control" id="firstname" name="firstname" value="" required="required"/>
                             </div>
                             <div class="col-12 col-lg-6">
-                                <div class="col-form-label d-block">
+                                <div class="form-label d-block">
                                     <strong>Aperçu du visuel nom / prénom</strong>
                                 </div>
                                 <div id="generated-signature-preview" class="border rounded bg-white d-flex align-items-center justify-content-center text-center p-3" style="min-height: 150px;">
@@ -628,12 +879,12 @@
                         </h4>
                         <div id="sign-div" class="alert alert-light collapse">
                             <div class="sign-pad-content">
-                                <label class="col-form-label">
+                                <label class="form-label">
                                     <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
                                     <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
                                             type="button"
                                             class="btn btn-sm btn-transparent">
-                                        <i class="fa-solid fa-info-circle text-info"></i>
+                                        <i class="fi fi-rr-info text-info"></i>
                                     </button>
                                     <div class="collapse" id="collapseHelpSignImage">
                                         <div class="alert alert-info">
@@ -648,7 +899,7 @@
                                     <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                 </div>
                                 <br/>
-                                <label id="signPadLabel" class="col-form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
+                                <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
                                 <div id="signPad">
                                     <div id="signPadTip" style="
                                         position: absolute;
@@ -730,16 +981,14 @@
 
                     function readUiMe() {
                         try {
-                            const rawUiMe = sessionStorage.getItem('uiMe');
-                            return rawUiMe ? JSON.parse(rawUiMe) : null;
+                            return JSON.parse(sessionStorage.getItem('uiMe') || 'null');
                         } catch (e) {
                             return null;
                         }
                     }
 
-                    function getUiProfile(uiMe) {
-                        return uiMe?.authUser || uiMe?.user || null;
-                    }
+                    const getUiProfile = uiMe => uiMe?.authUser || uiMe?.user || null;
+                    const dispatchDocumentEvent = (name, detail) => document.dispatchEvent(new CustomEvent(name, {detail}));
 
                     function hydrateModalFromUiMe(uiMe) {
                         const profile = getUiProfile(uiMe);
@@ -807,11 +1056,11 @@
                     }
 
                     function validateIdentityFields() {
-                        if (!userParamsForm.checkValidity()) {
+                        const isValid = userParamsForm.checkValidity();
+                        if (!isValid) {
                             userParamsForm.reportValidity();
-                            return false;
                         }
-                        return true;
+                        return isValid;
                     }
 
                     function setPendingUserSignatureAction(selectionMode, selectedSignImageNumber = '') {
@@ -827,11 +1076,7 @@
                         if (selectionMode !== 'custom') {
                             document.getElementById('signImageBase64').value = '';
                         }
-                        document.dispatchEvent(new CustomEvent('userParamsPrepared', {
-                            detail: {
-                                form: userParamsForm
-                            }
-                        }));
+                        dispatchDocumentEvent('userParamsPrepared', {form: userParamsForm});
                     }
 
                     function getDisplayName(userState) {
@@ -939,8 +1184,6 @@
                         renderModalSignatures(currentUserSignatureState, modalActiveIndex);
                         renderNavbarSignatures(currentUserSignatureState);
                         updateGeneratedSignaturePreview(currentUserSignatureState);
-                        bindDeleteSignButtons();
-                        bindSignWithButtons();
                         if (currentUserSignatureState?.signImageIds?.length > 0) {
                             focusModalSignatureCarousel(Math.min(modalActiveIndex, currentUserSignatureState.signImageIds.length - 1));
                         }
@@ -987,54 +1230,27 @@
                         }).hide();
                     }
 
-                    function bindDeleteSignButtons() {
-                        document.querySelectorAll('.delete-sign-btn').forEach(btn => {
-                            if (btn.dataset.boundDelete === 'true') {
-                                return;
-                            }
-                            btn.dataset.boundDelete = 'true';
-                            btn.addEventListener('click', function(e) {
-                                e.preventDefault();
-                                const signImageId = this.getAttribute('data-delete-sign-id');
-                                const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
-
-                                if(confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
-                                    fetch(deleteUrl, {
-                                        method: 'DELETE',
-                                        headers: {
-                                            [csrfHeader]: csrfToken,
-                                            'X-Requested-With': 'XMLHttpRequest',
-                                            'Accept': 'application/json'
-                                        }
-                                    })
-                                    .then(async response => {
-                                        if(response.ok) {
-                                            const userState = await response.json();
-                                            updateLiveUserState(userState);
-                                            document.dispatchEvent(new CustomEvent('userSignatureDeleted', { detail: currentUserSignatureState }));
-                                        } else {
-                                            alert('Erreur lors de la suppression de la signature');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Erreur:', error);
-                                        alert('Erreur lors de la suppression');
-                                    });
+                    async function deleteSignature(signImageId) {
+                        const deleteUrl = '/ws-secure/ui/profile/signatures/' + signImageId + (signRequestId ? ('?signRequestId=' + signRequestId) : '');
+                        try {
+                            const response = await fetch(deleteUrl, {
+                                method: 'DELETE',
+                                headers: {
+                                    [csrfHeader]: csrfToken,
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
                                 }
                             });
-                        });
-                    }
-
-                    function bindSignWithButtons() {
-                        document.querySelectorAll('.sign-with-image-btn').forEach(btn => {
-                            if (btn.dataset.boundSignWith === 'true') {
+                            if (!response.ok) {
+                                alert('Erreur lors de la suppression de la signature');
                                 return;
                             }
-                            btn.dataset.boundSignWith = 'true';
-                            btn.addEventListener('click', function() {
-                                triggerUserParamsPrepared('existing', this.getAttribute('data-sign-image-number'));
-                            });
-                        });
+                            updateLiveUserState(await response.json());
+                            dispatchDocumentEvent('userSignatureDeleted', currentUserSignatureState);
+                        } catch (error) {
+                            console.error('Erreur:', error);
+                            alert('Erreur lors de la suppression');
+                        }
                     }
 
                     currentUserSignatureState = enrichUserState({
@@ -1047,28 +1263,25 @@
 
                     updateLiveUserState(currentUserSignatureState);
 
-                    const initialUiMe = readUiMe();
-                    if (initialUiMe != null) {
-                        hydrateModalFromUiMe(initialUiMe);
-                    }
-                    document.addEventListener('uiMeLoaded', function(event) {
-                        hydrateModalFromUiMe(event.detail);
-                    });
-
-                    addSignImageModal?.addEventListener('shown.bs.modal', function() {
-                        updateGeneratedSignaturePreview(currentUserSignatureState);
-                    });
-
-                    signWithGeneratedButton?.addEventListener('click', function() {
-                        triggerUserParamsPrepared('generated', '999998');
-                    });
-
-                    saveButton.addEventListener('click', function() {
-                        setPendingUserSignatureAction('custom', '');
-                    });
-
-                    userParamsForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
+                    readUiMe() && hydrateModalFromUiMe(readUiMe());
+                    document.addEventListener('uiMeLoaded', ({detail}) => hydrateModalFromUiMe(detail));
+                    addSignImageModal?.addEventListener('shown.bs.modal', () => updateGeneratedSignaturePreview(currentUserSignatureState));
+                    signWithGeneratedButton?.addEventListener('click', () => triggerUserParamsPrepared('generated', '999998'));
+                    saveButton.addEventListener('click', () => setPendingUserSignatureAction('custom', ''));
+                    userParamsForm.addEventListener('submit', e => e.preventDefault());
+                    modalSignaturesContainer?.addEventListener('click', async event => {
+                        const deleteButton = event.target.closest('.delete-sign-btn');
+                        if (deleteButton) {
+                            event.preventDefault();
+                            if (confirm('Êtes-vous sûr de vouloir supprimer cette signature ?')) {
+                                await deleteSignature(deleteButton.getAttribute('data-delete-sign-id'));
+                            }
+                            return;
+                        }
+                        const signButton = event.target.closest('.sign-with-image-btn');
+                        if (signButton) {
+                            triggerUserParamsPrepared('existing', signButton.getAttribute('data-sign-image-number'));
+                        }
                     });
 
                     document.addEventListener('userParamsPrepared', function(e) {
@@ -1115,15 +1328,11 @@
                                 if (!isSelectionAction) {
                                     resetCustomSignatureInputs();
                                     collapseSignDiv();
-                                    document.dispatchEvent(new CustomEvent('resetUserSignatureModal', {
-                                        detail: {
-                                            form: userParamsForm
-                                        }
-                                    }));
+                                    dispatchDocumentEvent('resetUserSignatureModal', {form: userParamsForm});
                                 }
-                                document.dispatchEvent(new CustomEvent('userSignatureUpdated', { detail: currentUserSignatureState }));
+                                dispatchDocumentEvent('userSignatureUpdated', currentUserSignatureState);
                                 if (isSelectionAction) {
-                                    document.dispatchEvent(new CustomEvent('userSignatureSelected', { detail: { ...currentUserSignatureState, selectedSignImageNumber } }));
+                                    dispatchDocumentEvent('userSignatureSelected', { ...currentUserSignatureState, selectedSignImageNumber });
                                     const modal = bootstrap.Modal.getInstance(addSignImageModal);
                                     if(modal) {
                                         modal.hide();

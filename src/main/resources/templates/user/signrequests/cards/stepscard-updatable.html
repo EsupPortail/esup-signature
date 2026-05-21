@@ -34,8 +34,8 @@
                                             <td th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></td>
                                             <td th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" th:title="${recipient.user.email}" th:text="${recipient.user.email}"></td>
                                             <td th:if="${stepNumber >= signBook.liveWorkflowCurrentStepNumber  && signBook.status == 'pending'}" th:switch="${recipient.signed}">
-                                                <i title="a signe le document" th:case="true" class="fa-solid fa-check-circle text-success"></i>
-                                                <i title="En attente de signature" th:case="false" class="fa-solid fa-clock text-warning"></i>
+                                                <i title="a signe le document" th:case="true" class="fi fi-rr-check-circle text-success"></i>
+                                                <i title="En attente de signature" th:case="false" class="fi fi-rr-clock text-warning"></i>
                                             </td>
                                         </tr>
                                     </th:block>

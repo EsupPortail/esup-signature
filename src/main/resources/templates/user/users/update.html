@@ -21,15 +21,31 @@
         help.autoStart();
     }
 
-    const initialUiMe = readUiMe();
-    if (initialUiMe?.uiParams != null) {
-        startHelp(initialUiMe.uiParams.userParamsHelp ?? null);
-    } else {
-        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
-            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
-            startHelp(event.detail?.uiParams?.userParamsHelp ?? null);
-        }, {once: true});
+    function startHelpFromFreshUiMe(uiMe) {
+        startHelp(uiMe?.uiParams?.userParamsHelp ?? null);
     }
+
+    function waitForFreshUiMe(callback) {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            callback(readUiMe());
+            return;
+        }
+
+        function onUiMeLoaded(event) {
+            document.removeEventListener('globalUiReady', onGlobalUiReady);
+            callback(event.detail ?? null);
+        }
+
+        function onGlobalUiReady() {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            callback(readUiMe());
+        }
+
+        document.addEventListener('uiMeLoaded', onUiMeLoaded, {once: true});
+        document.addEventListener('globalUiReady', onGlobalUiReady, {once: true});
+    }
+
+    waitForFreshUiMe(startHelpFromFreshUiMe);
 </script>
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
@@ -63,17 +79,8 @@
                         <label class="form-check-label" for="returnToHomeAfterSign">Retourner à l’accueil après chaque signature</label>
                     </div>
                     <div id="emailAlertFrequency" th:unless="${user.userType.name() == 'external'}">
-                        <label class="col-form-label" for="emailAlertFrequency_id"> Fréquence
+                        <label class="form-label" for="emailAlertFrequency_id"> Fréquence
                             d'alerte
-                            <button data-bs-target="#collapseHelpEmailAlertFrequency" data-bs-toggle="collapse"
-                                    type="button" class="btn btn-sm btn-transparent">
-                                <span class="fa-solid fa-info-circle text-info"></span>
-                            </button>
-                            <div class="collapse" id="collapseHelpEmailAlertFrequency">
-                                <div class="alert alert-info">
-                                    <small>Vous pouvez choisir une fréquence pour les alertes</small>
-                                </div>
-                            </div>
                         </label>
                         <select class="slim-select-simple" id="emailAlertFrequency_id" name="emailAlertFrequency"
                                 size="1">
@@ -89,14 +96,14 @@
                         </select>
                     </div>
                     <div class="form-group d-none" id="emailAlertHourDiv" th:unless="${user.userType.name() == 'external'}">
-                        <label class="col-form-label" for="emailAlertHour"> Heure d’alerte
+                        <label class="form-label" for="emailAlertHour"> Heure d’alerte
                         </label>
                         <select class="slim-select-simple" name="emailAlertHour" id="emailAlertHour">
                             <option th:each="i : ${#numbers.sequence(0, 23)}" th:value="${i}" th:text="${i} + ':00'" th:selected="${i==authUser.emailAlertHour}"></option>
                         </select>
                     </div>
                     <div class="form-group d-none" id="emailAlertDayDiv" th:unless="${user.userType.name() == 'external'}">
-                        <label class="col-form-label" for="emailAlertDay"> Jour de l’alerte</label>
+                        <label class="form-label" for="emailAlertDay"> Jour de l’alerte</label>
                         <select class="slim-select-simple" id="emailAlertDay" name="emailAlertDay">
                             <th:block th:each="emailAlertDay : ${daysOfWeek}" var="emailAlertDay">
                                 <option th:if="${emailAlertDay == user.emailAlertDay}" selected="selected"
@@ -175,12 +182,12 @@
                                 </table>
                             </div>
                             <div class="col-12 col-xl-8 mb-2 text-center">
-                                <label class="col-form-label">
+                                <label class="form-label">
                                     Vous pouvez choisir une image provenant de votre ordinateur
                                     <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
                                             type="button"
                                             class="btn btn-sm btn-transparent">
-                                        <i class="fa-solid fa-info-circle text-info"></i>
+                                        <i class="fi fi-rr-info text-info"></i>
                                     </button>
                                     <div class="collapse" id="collapseHelpSignImage">
                                         <div class="alert alert-info">
@@ -195,7 +202,7 @@
                                     <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                 </div>
                                 <br/>
-                                <label id="signPadLabel" class="col-form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
+                                <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
                                 <div id="signPad">
                                     <div id="signPadTip" style="
                                         position: absolute;
@@ -277,10 +284,10 @@
                 <div th:unless="${user.userType.name() == 'external'}" class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12 m-2" th:if="${validationToolsEnabled && !globalProperties.disableCertStorage}">
                     <h5>Paramètres de signature électronique (Facultatif)</h5>
                     <div id="keyForm" class="form-group col-10 mx-auto">
-                        <label class="col-form-label">Magasin de certificats
+                        <label class="form-label">Magasin de certificats
                             <button data-bs-target="#collapseHelpKeyStore" data-bs-toggle="collapse" type="button"
                                     class="btn btn-sm btn-transparent">
-                        <span class="fa-solid fa-info-circle text-info"> <!-- -->
+                        <span class="fi fi-rr-info text-info"> <!-- -->
                         </span>
                             </button>
                             <div class="collapse collapse" id="collapseHelpKeyStore">

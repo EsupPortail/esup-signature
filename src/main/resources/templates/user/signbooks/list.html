@@ -77,7 +77,7 @@
                             <tr class="signbooks-thead-loading-row" style="z-index: 2;">
                                 <th class="d-none d-lg-table-cell" style="width: 20px; z-index: 3;">
                                     <div class="dropdown position-relative">
-                                        <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
+                                        <button type="button" id="menu-toggle_multiple" class="btn" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
                                             <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
@@ -243,7 +243,26 @@
         </div>
     </div>
 </main>
-<div th:replace="~{fragments/sign-validation-modal :: sign-modal}"></div>
+<div th:replace="~{fragments/sign-validation-modal :: sign-modal(
+    signable=${signable},
+    currentSignType=${currentSignType},
+    signRequest=${null},
+    signRequests=${signRequests},
+    signWiths=${signWiths},
+    sealCertOK=${sealCertOK},
+    sealCertificatPropertieses=${sealCertificatPropertieses},
+    currentStepMinSignLevel=${null},
+    signatureIds=${null},
+    stepRepeatable=${false},
+    signBook=${null},
+    currentStepRepeatableSignType=${null},
+    signTypes=${signTypes},
+    liveWorkflowStepCount=${null},
+    currentStepNumber=${null},
+    steps=${null},
+    nextSignRequestId=${null},
+    urlProfil=${'user'}
+)}"></div>
 <div id="wait" data-bs-focus="false" class="modal fade"  role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

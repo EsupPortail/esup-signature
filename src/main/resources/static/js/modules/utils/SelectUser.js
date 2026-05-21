@@ -79,12 +79,15 @@ export default class SelectUser {
     createUserSelect(selectName, valuePrefix) {
         let controller = new AbortController();
         let signal = controller.signal;
-        let placeHolder;
-        if(this.limit > 1) {
-            placeHolder = "Choisir une ou plusieurs personnes";
-        } else {
-            placeHolder = "Choisir une personne";
+        let placeHolder = $("#" + selectName).attr("data-placeholder");
+        if (placeHolder === undefined || placeHolder === "" || placeHolder == null || placeHolder === "undefined") {
+            if (this.limit > 1) {
+                placeHolder = "Choisir une ou plusieurs personnes";
+            } else {
+                placeHolder = "Choisir une personne";
+            }
         }
+
         let self = this;
         this.slimSelect = new SlimSelect({
             select: "#" + selectName,

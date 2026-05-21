@@ -299,26 +299,27 @@ public class FormAdminController {
 			return "redirect:/manager/forms/";
 		}	}
 
-	@GetMapping(value = "/{name}/datas/csv", produces="text/csv")
-	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable String name, HttpServletResponse response) {
-		List<Form> forms = formService.getFormByName(name);
-		if (!forms.isEmpty()) {
-			if(preAuthorizeService.formManager(forms.get(0).getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
-				try {
-					response.setContentType("text/csv; charset=utf-8");
-					response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(forms.get(0).getName(), StandardCharsets.UTF_8) + ".csv");
-					InputStream csvInputStream = dataExportService.getCsvDatasFromForms(forms.stream().map(Form::getWorkflow).collect(Collectors.toList()));
-					IOUtils.copy(csvInputStream, response.getOutputStream());
-					return new ResponseEntity<>(HttpStatus.OK);
-				} catch (Exception e) {
-					logger.error("get file error", e);
-				}
-			} else {
-				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+	@GetMapping(value = "/{id}/datas/csv", produces="text/csv")
+	public ResponseEntity<Void> getFormDatasCsv(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable Long id, HttpServletResponse response) {
+		Form form;
+		try {
+			form = formService.getById(id);
+		} catch (NoSuchElementException e) {
+			logger.warn("form {} not found", id);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+		if(preAuthorizeService.formManager(form.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
+			try {
+				response.setContentType("text/csv; charset=utf-8");
+				response.setHeader("Content-Disposition", "inline; filename=" + URLEncoder.encode(form.getName(), StandardCharsets.UTF_8) + ".csv");
+				InputStream csvInputStream = dataExportService.getCsvDatasFromForm(form);
+				IOUtils.copy(csvInputStream, response.getOutputStream());
+				return new ResponseEntity<>(HttpStatus.OK);
+			} catch (Exception e) {
+				logger.error("get file error", e);
 			}
 		} else {
-			logger.warn("form " + name + " not found");
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	}

@@ -103,6 +103,21 @@ header {
     min-width: 0;
 }
 
+body.es-signrequest-page .es-main-content.es-signrequest-main-content {
+    box-sizing: border-box;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.es-signrequest-page .es-signrequest-main-content > #sidebar,
+body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
+    min-height: 0;
+}
+
+body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
+    height: auto;
+}
+
 .es-main-content-admin {
     height: calc(100vh - 172px) !important;
 }
@@ -207,6 +222,7 @@ header {
 }
 
 #workspace {
+    position: relative;
     overflow-y: scroll;
     margin-top: 12px;
     padding: 5px;
@@ -313,7 +329,6 @@ header {
 .tools,
 .es-tools {
     width: calc(100vw - 380px);
-    top: 126px;
     z-index: 1029;
     position: absolute;
 }
@@ -392,15 +407,46 @@ header {
 }
 
 #pdf-progress-bar {
-    width: calc(100% - 386px);
-    margin-left: 8px;
-    position: fixed;
-    z-index: 2;
-    top: 216px;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 4;
     opacity: 1;
-    -webkit-transition:opacity .5s linear;
-    -moz-transition: opacity .5s linear;
-    -o-transition:opacity .5s linear;
+    -webkit-transition:opacity 1s linear;
+    -moz-transition: opacity 1s linear;
+    -o-transition:opacity 1s linear;
+    pointer-events: none;
+}
+
+.es-pdf-progress-card {
+    width: min(28rem, calc(100% - 2rem));
+    max-width: 70%;
+    min-width: min(18rem, calc(100% - 2rem));
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.96);
+}
+
+.es-pdf-progress-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--bs-dark);
+}
+
+#pdf-progress-bar .progress {
+    height: 1.25rem;
+    background-color: var(--bs-secondary-bg);
+}
+
+#pdf-progress-bar .progress-bar {
+    min-width: 3.5rem;
 }
 
 .pdf-alerts-btn {

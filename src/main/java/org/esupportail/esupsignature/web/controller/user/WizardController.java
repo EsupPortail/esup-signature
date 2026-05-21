@@ -379,8 +379,10 @@ public class WizardController {
                                         @RequestParam(value = "pending", required = false) Boolean pending,
                                         @RequestParam(value = "sendEmailAlert", required = false, defaultValue = "true") Boolean sendEmailAlert) throws MessagingException, EsupSignatureRuntimeException {
         if (sendEmailAlert == null) sendEmailAlert = true;
+        List<WorkflowStepDto> workflowSteps = steps == null ? List.of() : steps;
+        List<String> targetEmails = workflowSteps.isEmpty() ? List.of() : workflowSteps.get(0).getTargetEmails();
         try {
-            signBookService.initSignBookWorkflow(signBookId, steps, steps.get(0).getTargetEmails(), userEppn, authUserEppn, pending, sendEmailAlert);
+            signBookService.initSignBookWorkflow(signBookId, workflowSteps, targetEmails, userEppn, authUserEppn, pending, sendEmailAlert);
             if(comment != null && !comment.isEmpty()) {
                 signRequestService.addPostit(signBookId, comment, userEppn, authUserEppn);
             }

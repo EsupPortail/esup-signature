@@ -67,8 +67,9 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 			}
 
 			SecurityContextHolder.getContext().setAuthentication(newAuth);
-			String targetUrl = httpServletRequest.getSession().getAttribute("after_oauth_redirect").toString();
-			if (targetUrl == null || targetUrl.isBlank()) {
+			Object targetUrlAttr = httpServletRequest.getSession().getAttribute("after_oauth_redirect");
+			String targetUrl = targetUrlAttr != null ? targetUrlAttr.toString() : "/";
+			if (targetUrl.isBlank()) {
 				targetUrl = "/";
 			}
 			SavedRequest savedRequest = new SimpleSavedRequest(targetUrl);

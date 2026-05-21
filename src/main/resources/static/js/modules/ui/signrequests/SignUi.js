@@ -5,6 +5,7 @@ import {Nexu} from "./Nexu.js?version=@version@";
 import {Recipient} from "../../../prototypes/Recipient.js?version=@version@";
 import {WorkspaceState} from "./WorkspaceState.js?version=@version@";
 import {SignatureFlowController} from "./SignatureFlowController.js?version=@version@";
+import {NexuProcessUi} from "./NexuProcessUi.js?version=@version@";
 
 export class SignUi {
 
@@ -14,6 +15,10 @@ export class SignUi {
         console.info("Starting sign UI for " + signUiDto.signRequestId);
         this.signatureUiConfig = signatureUiConfig;
         this.wait = $('#wait');
+        this.nexuProcessModal = $('#nexuProcessModal');
+        this.nexuProcessLoading = $('#nexu-process-modal-loading');
+        this.nexuProcessError = $('#nexu-process-modal-error');
+        this.nexuProcessContent = $('#nexu-process-modal-content');
         this.signForm = document.getElementById("signForm");
         this.csrf = new CsrfToken(csrf);
         this.workspace = new SignWorkspaceController(this.state, this.csrf, this.signatureUiConfig);
@@ -21,20 +26,20 @@ export class SignUi {
         this.certTypeSelect = $("#certType");
         this.sealCertificatSelect = $("#sealCertificat");
         this.signLaunchButton = $("#signLaunchButton");
+        this.signAdvancedLaunchButton = $("#signAdvancedLaunchButton");
+        this.signTypeLabel = $("#signTypeLabel");
         this.toolsBar = $("#tools");
         this.certTypeObserver = null;
-        this.lastResponsiveActiveStepId = null;
-        this.responsiveStepChangeHandler = null;
         this.saveOptionText =  $("#certType > option[value='imageStamp']").text();
         this.signatureFlowController = new SignatureFlowController(this);
         this.initListeners();
         this.ensureSealCertificateSelection();
         this.initMobileCertTypeVisibility();
-        this.initResponsiveStepNavigation();
         if(signUiDto.status !== "archived" && signUiDto.status !== "cleaned" && signUiDto.currentSignType !== "form") {
             this.initReportModal();
         }
         this.nexu = this.checkSignOptions();
+        this.applyInitialPreferredCertType();
     }
 
     normalizeInput() {
@@ -138,31 +143,44 @@ export class SignUi {
     }
 
     initListeners() {
-        $("#checkValidateSignButtonEnd").on('click', e => this.launchSign());
-        $("#checkValidateSignButtonNext").on('click', e => this.launchSign(e));
-        $("#launch-infinite-sign-button").on('click', e => this.insertStep());
-        $("#launchNoInfiniteSignButtonEnd").on('click', e => this.launchNoInfiniteSign());
-        $("#launchNoInfiniteSignButtonNext").on('click', e => this.launchNoInfiniteSign(e));
-        $("#refresh-certType").on('click', e => this.checkSignOptions());
-        $("#refresh-certType2").on('click', e => this.checkSignOptions());
-        $("#certType").on("change", e => this.checkAfterChangeSignType());
-        $("#copyButton").on('click', e => this.copy());
+        [
+            ["#checkValidateSignButtonEnd", () => this.signatureFlowController.launchSign()],
+            ["#checkValidateSignButtonNext", e => this.signatureFlowController.launchSign(e)],
+            ["#checkValidateAdvancedSignButton", e => this.signatureFlowController.launchSign(e)],
+            ["#launch-infinite-sign-button", e => this.insertStep(e)],
+            ["#launchNoInfiniteSignButton", e => this.signatureFlowController.launchNoInfiniteSign(e)],
+            ["#refresh-certType, #refresh-certType2", () => this.checkSignOptions()],
+            ["#copyButton", () => this.copy()]
+        ].forEach(([selector, handler]) => $(selector).on('click', handler));
+        $("#certType").on("change", () => this.checkAfterChangeSignType());
         $("#send").on('submit', function (e) {
             e.preventDefault();
             bootbox.alert("Merci de saisir les participants", null);
-            if ($(e.target).is(':invalid')) {
-                bootbox.alert("Merci de saisir les participants", null);
-            }
         });
         this.initLaunchButtons();
         $("#refuseModal").on('shown.bs.modal', function () {
             $("#refuseComment").focus();
         });
+        $("#signModal, #refuseModal")
+            .on('shown.bs.modal', () => $(document.body).addClass('es-signrequest-sidepanel-open'))
+            .on('hidden.bs.modal', () => $(document.body).removeClass('es-signrequest-sidepanel-open'));
+        this.nexuProcessModal.on('hidden.bs.modal', () => {
+            this.resetNexuProcessModal();
+            this.signatureFlowController.resetLaunchUiState();
+        });
+        this.nexuProcessModal.get(0)?.addEventListener('nexuProcessReloadRequested', event => {
+            const requestedIds = Array.isArray(event.detail?.ids) && event.detail.ids.length > 0
+                ? event.detail.ids
+                : [this.signRequestId];
+            this.openNexuProcessModal(requestedIds);
+        });
     }
 
     initLaunchButtons() {
-        $("#visaLaunchButton").on('click', e => this.launchSignModal());
-        this.signLaunchButton.on('click', e => this.launchSignModal());
+        ["#visaLaunchButton", "#signAdvancedLaunchButton"].forEach(selector => {
+            $(selector).on('click', () => this.signatureFlowController.prepareLaunchSign(true));
+        });
+        this.signLaunchButton.on('click', () => this.signatureFlowController.launchQuickSign());
         $("#refuseLaunchButton").on('click', function () {
             window.onbeforeunload = null;
         });
@@ -186,8 +204,53 @@ export class SignUi {
         });
     }
 
-    launchSignModal() {
-        return this.signatureFlowController.launchSignModal();
+    resetNexuProcessModal() {
+        this.nexuProcessContent.empty();
+        this.nexuProcessError.addClass('d-none').empty();
+        this.nexuProcessLoading.removeClass('d-none');
+    }
+
+    buildNexuProcessFragmentUrl(ids = [this.signRequestId]) {
+        const params = new URLSearchParams();
+        ids.forEach(id => params.append('ids', id));
+        return '/nexu-sign/start-fragment?' + params;
+    }
+
+    async openNexuProcessModal(ids = [this.signRequestId]) {
+        if (!this.nexuProcessModal.length || !this.nexuProcessContent.length) {
+            return false;
+        }
+        this.signatureFlowController.resetLaunchUiState();
+        this.resetNexuProcessModal();
+        const modalElement = this.nexuProcessModal.get(0);
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement, {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modalInstance.show();
+        try {
+            const response = await fetch(this.buildNexuProcessFragmentUrl(ids), {
+                headers: {
+                    'Accept': 'text/html',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            if (!response.ok) {
+                throw new Error('HTTP ' + response.status);
+            }
+            const html = await response.text();
+            this.nexuProcessContent.html(html);
+            this.nexuProcessLoading.addClass('d-none');
+            NexuProcessUi.initWithin(modalElement);
+            return true;
+        } catch (error) {
+            console.error('Impossible de charger l’interface Nexu', error);
+            this.nexuProcessLoading.addClass('d-none');
+            this.nexuProcessError
+                .removeClass('d-none')
+                .text("Impossible de charger l’interface de signature eIDAS.");
+            return false;
+        }
     }
 
     checkSignOptions() {
@@ -221,6 +284,26 @@ export class SignUi {
         return this.certTypeSelect.find("option:not(:disabled):not([unavailable])").length;
     }
 
+    getActiveImageStampOption() {
+        if (!this.certTypeSelect.length) {
+            return $();
+        }
+        return this.certTypeSelect.find("option[value='imageStamp']:not(:disabled):not([unavailable])");
+    }
+
+    hasActiveImageStampOption() {
+        return this.getActiveImageStampOption().length > 0;
+    }
+
+    applyInitialPreferredCertType() {
+        if (!this.hasActiveImageStampOption()) {
+            return;
+        }
+
+        this.certTypeSelect.val("imageStamp");
+        this.checkAfterChangeSignType();
+    }
+
     updateSelectableSignAlerts() {
         if (!this.certTypeSelect.length) {
             return;
@@ -245,7 +328,6 @@ export class SignUi {
         }
         this.toolsBar.toggleClass("es-tools-single-cert-type-mobile", this.getSelectableCertTypeCount() === 1);
         this.updateSelectableSignAlerts();
-        this.syncResponsiveStepNavigationState();
     }
 
     hasPendingSignaturePlacement() {
@@ -284,192 +366,42 @@ export class SignUi {
             && !selectedOption.is("[unavailable]");
     }
 
+    getSelectedCertTypeLabel() {
+        if (!this.hasValidSelectedCertType()) {
+            return "";
+        }
+
+        return this.certTypeSelect.find("option:selected").text().trim();
+    }
+
+    updateSignTypeLabel() {
+        if (!this.signTypeLabel.length) {
+            return;
+        }
+
+        const selectedCertTypeLabel = this.getSelectedCertTypeLabel();
+        this.signTypeLabel.text(selectedCertTypeLabel);
+        this.signTypeLabel.toggleClass("d-none", selectedCertTypeLabel === "");
+    }
+
     syncSignatureStepUi() {
         const signPlacementController = this.workspace?.signPlacementController;
         if (signPlacementController == null) {
-            this.syncResponsiveStepNavigationState();
             return;
         }
         if (this.currentSignType === 'hiddenVisa') {
-            signPlacementController.goStep3();
-            this.syncResponsiveStepNavigationState();
+            signPlacementController.goStep2();
             return;
         }
         if (typeof signPlacementController.refreshSteps === "function") {
             signPlacementController.refreshSteps();
-            this.syncResponsiveStepNavigationState();
             return;
         }
-        if (this.hasValidSelectedCertType() && this.hasPendingSignaturePlacement()) {
-            signPlacementController.goStep3();
-            this.syncResponsiveStepNavigationState();
-            return;
-        }
-        if (this.hasValidSelectedCertType()) {
+        if (this.hasPendingSignaturePlacement()) {
             signPlacementController.goStep2();
-            this.syncResponsiveStepNavigationState();
             return;
         }
         signPlacementController.goStep1();
-        this.syncResponsiveStepNavigationState();
-    }
-
-    initResponsiveStepNavigation() {
-        this.responsiveStepPrevButton = $("#step-nav-prev");
-        this.responsiveStepNextButton = $("#step-nav-next");
-        this.responsiveStepsContainer = this.toolsBar.find(".steps-horizontal-v2").first();
-
-        if (!this.responsiveStepsContainer.length
-            || !this.responsiveStepPrevButton.length
-            || !this.responsiveStepNextButton.length) {
-            return;
-        }
-
-        this.responsiveStepPrevButton
-            .off("click.signUiResponsiveSteps")
-            .on("click.signUiResponsiveSteps", e => {
-                e.preventDefault();
-                this.navigateResponsiveStep(-1);
-            });
-
-        this.responsiveStepNextButton
-            .off("click.signUiResponsiveSteps")
-            .on("click.signUiResponsiveSteps", e => {
-                e.preventDefault();
-                this.navigateResponsiveStep(1);
-            });
-
-        if (this.responsiveStepChangeHandler != null) {
-            document.removeEventListener("es-signrequest-step-change", this.responsiveStepChangeHandler);
-        }
-        this.responsiveStepChangeHandler = event => this.handleResponsiveStepChange(event);
-        document.addEventListener("es-signrequest-step-change", this.responsiveStepChangeHandler);
-
-        $(window)
-            .off("resize.signUiResponsiveSteps")
-            .on("resize.signUiResponsiveSteps", () => this.syncResponsiveStepNavigationState());
-
-        this.syncResponsiveStepNavigationState();
-    }
-
-    getResponsiveStepElements() {
-        if (!this.responsiveStepsContainer?.length) {
-            return [];
-        }
-
-        const hideSingleCertTypeStep1 = this.toolsBar.hasClass("es-tools-single-cert-type-mobile")
-            && window.matchMedia("(max-width: 991.98px)").matches;
-
-        return this.responsiveStepsContainer
-            .children('[id^="step-"]')
-            .toArray()
-            .map(element => $(element))
-            .filter(step => !(hideSingleCertTypeStep1 && step.attr("id") === "step-1"));
-    }
-
-    isResponsiveStepNavigationEnabled() {
-        return window.matchMedia("(max-width: 1600px)").matches && this.getResponsiveStepElements().length > 1;
-    }
-
-    getResponsiveVisibleStepIndex(steps = this.getResponsiveStepElements()) {
-        let visibleIndex = steps.findIndex(step => step.hasClass("es-mobile-visible"));
-        if (visibleIndex >= 0) {
-            return visibleIndex;
-        }
-
-        visibleIndex = steps.findIndex(step => step.hasClass("active"));
-        if (visibleIndex >= 0) {
-            return visibleIndex;
-        }
-
-        return steps.length > 0 ? 0 : -1;
-    }
-
-    applyResponsiveVisibleStep(targetStep, steps = this.getResponsiveStepElements()) {
-        if (targetStep == null || !steps.length) {
-            this.updateResponsiveStepNavigationButtons(steps);
-            return;
-        }
-
-        steps.forEach(step => step.removeClass("es-mobile-visible"));
-        targetStep.addClass("es-mobile-visible");
-        this.updateResponsiveStepNavigationButtons(steps);
-    }
-
-    updateResponsiveStepNavigationButtons(steps = this.getResponsiveStepElements()) {
-        if (!this.responsiveStepPrevButton?.length || !this.responsiveStepNextButton?.length) {
-            return;
-        }
-
-        const enabled = this.isResponsiveStepNavigationEnabled();
-        const visibleIndex = this.getResponsiveVisibleStepIndex(steps);
-        const hasPrevious = enabled && visibleIndex > 0;
-        const hasNext = enabled && visibleIndex >= 0 && visibleIndex < steps.length - 1;
-
-        this.responsiveStepPrevButton.toggleClass("d-none", !enabled);
-        this.responsiveStepNextButton.toggleClass("d-none", !enabled);
-        this.responsiveStepPrevButton.prop("disabled", !hasPrevious);
-        this.responsiveStepNextButton.prop("disabled", !hasNext);
-    }
-
-    syncResponsiveStepNavigationState() {
-        if (!this.responsiveStepsContainer?.length) {
-            return;
-        }
-
-        const steps = this.getResponsiveStepElements();
-        const enabled = window.matchMedia("(max-width: 1600px)").matches && steps.length > 1;
-
-        if (!enabled) {
-            this.responsiveStepsContainer.removeClass("es-mobile-step-view");
-            this.lastResponsiveActiveStepId = null;
-            steps.forEach(step => step.removeClass("es-mobile-visible"));
-            this.updateResponsiveStepNavigationButtons(steps);
-            return;
-        }
-
-        this.responsiveStepsContainer.addClass("es-mobile-step-view");
-
-        const activeStep = steps.find(step => step.hasClass("active")) ?? null;
-        const currentVisibleStep = steps.find(step => step.hasClass("es-mobile-visible")) ?? null;
-        const targetStep = currentVisibleStep ?? activeStep ?? steps[0] ?? null;
-
-        this.lastResponsiveActiveStepId = activeStep?.attr("id") ?? null;
-        this.applyResponsiveVisibleStep(targetStep, steps);
-    }
-
-    handleResponsiveStepChange(event) {
-        if (!this.responsiveStepsContainer?.length) {
-            return;
-        }
-
-        const stepId = event?.detail?.stepId ?? null;
-        const steps = this.getResponsiveStepElements();
-        const targetStep = stepId == null
-            ? null
-            : steps.find(step => step.attr("id") === stepId) ?? null;
-
-        if (!this.isResponsiveStepNavigationEnabled() || targetStep == null) {
-            this.syncResponsiveStepNavigationState();
-            return;
-        }
-
-        this.lastResponsiveActiveStepId = stepId;
-        this.responsiveStepsContainer.addClass("es-mobile-step-view");
-        this.applyResponsiveVisibleStep(targetStep, steps);
-    }
-
-    navigateResponsiveStep(direction) {
-        const steps = this.getResponsiveStepElements();
-        const currentIndex = this.getResponsiveVisibleStepIndex(steps);
-        const targetIndex = currentIndex + direction;
-
-        if (currentIndex < 0 || targetIndex < 0 || targetIndex >= steps.length) {
-            this.updateResponsiveStepNavigationButtons(steps);
-            return;
-        }
-
-        this.applyResponsiveVisibleStep(steps[targetIndex], steps);
     }
 
     initMobileCertTypeVisibility() {
@@ -480,7 +412,10 @@ export class SignUi {
         this.updateMobileCertTypeVisibility();
 
         this.certTypeObserver?.disconnect?.();
-        this.certTypeObserver = new MutationObserver(() => this.updateMobileCertTypeVisibility());
+        this.certTypeObserver = new MutationObserver(() => {
+            this.updateMobileCertTypeVisibility();
+            this.updateSignTypeLabel();
+        });
         this.certTypeObserver.observe(this.certTypeSelect.get(0), {
             childList: true,
             subtree: true,
@@ -493,17 +428,20 @@ export class SignUi {
             .on("resize.signUiCertTypeVisibility", () => this.updateMobileCertTypeVisibility());
 
         this.updateSelectableSignAlerts();
+        this.updateSignTypeLabel();
     }
 
     checkAfterChangeSignType() {
         let self = this;
-        if($("#certType").val() == null) {
+        const value = this.certTypeSelect.val();
+        if(value == null) {
             this.checkSignOptions();
             this.syncSignatureStepUi();
             this.updateMobileCertTypeVisibility();
+            this.updateSignTypeLabel();
             return;
         }
-        if($("#certType").val() === "nexuCert") {
+        if(value === "nexuCert") {
             this.nexu.checkNexuClient().then(function (e) {
                 console.info("Esup-DSS-Client est lancé !");
                 $("#certType > option[value='nexuCert']").remove('unavailable');
@@ -542,44 +480,20 @@ export class SignUi {
                 });
             });
         }
-        let value = this.certTypeSelect.val();
-        $("#alert-sign-present").hide();
         if (value !== "userCert") {
             this.signatureFlowController.setContextualPassword("");
         }
-        if (value === "nexuCert") {
-            $("#nexuCheck").removeClass('d-none');
-        } else {
-            $("#nexuCheck").addClass('d-none');
-        }
-        if (value === "imageStamp") {
-            $("#alert-sign-present").show();
-        }
+        $("#nexuCheck").toggleClass('d-none', value !== "nexuCert");
+        $("#alert-sign-present").toggle(value === "imageStamp");
         if (value === "sealCert") {
             this.ensureSealCertificateSelection();
-            $("#sealChoose").removeClass('d-none');
-        } else {
-            $("#sealChoose").addClass('d-none');
         }
+        $("#sealChoose").toggleClass('d-none', value !== "sealCert");
         this.syncSignatureStepUi();
         this.updateMobileCertTypeVisibility();
+        this.updateSignTypeLabel();
     }
 
-    launchNoInfiniteSign(next) {
-        return this.signatureFlowController.launchNoInfiniteSign(next);
-    }
-
-    launchSign(e) {
-        return this.signatureFlowController.launchSign(e);
-    }
-
-    reset() {
-        return this.signatureFlowController.reset();
-    }
-
-    redirect() {
-        document.location.href="/user/signrequests/" + this.signRequestId;
-    }
 
     copy() {
         let copyText = document.getElementById("exportUrl");
@@ -591,12 +505,12 @@ export class SignUi {
         textArea.remove();
     }
 
-    insertStep() {
+    insertStep(next = null) {
         console.info("check insert step");
         let signRequestId = this.signRequestId;
         let csrf = this.csrf;
         let step = new Step();
-        let recipientsEmails = $('#recipientsEmails').find(`[data-es-check-cert='true']`).prevObject[0].slim.getSelected();
+        let recipientsEmails = $('#recipientsEmails')[0]?.slim?.getSelected?.() ?? [];
         if(recipientsEmails.length === 0 ) {
             $("#infiniteFormSubmit").click();
             return;
@@ -605,11 +519,11 @@ export class SignUi {
             let recipient = new Recipient();
             recipient.email = email;
             let id = email.replaceAll("@", "_").replaceAll(".", "_");
-            let extInfos = $("div[id='recipient_" + id + "']");
-            recipient.name = extInfos.find("#name_" + id).val();
-            recipient.firstName = extInfos.find("#firstname_" + id).val();
-            recipient.phone = extInfos.find("#phone_" + id).val();
-            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked");
+            let extInfos = $("#recipient_" + id);
+            recipient.name = extInfos.find("#name_" + id).val() ?? "";
+            recipient.firstName = extInfos.find("#firstname_" + id).val() ?? "";
+            recipient.phone = extInfos.find("#phone_" + id).val() ?? "";
+            recipient.forceSms = extInfos.find("#forcesms_" + id).prop("checked") ?? false;
             step.recipients.push(recipient);
         });
 
@@ -634,7 +548,10 @@ export class SignUi {
             data: JSON.stringify(step),
             success: function() {
                 self.signatureFlowController.setContextualPassword("");
-                self.launchSign();
+                self.signatureFlowController.launchSign(next);
+            },
+            error: function() {
+                bootbox.alert("Une erreur s’est produite lors de l’ajout de l’étape supplémentaire.");
             }
         });
     }
