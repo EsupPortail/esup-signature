@@ -22,12 +22,28 @@
 
     const startHelp = setting => new SignRequestHelp(setting, isOtpHelp).autoStart();
     const startHelpFromUiMe = uiMe => startHelp(uiMe?.uiParams?.signRequestHelp ?? null);
-    const initialUiMe = readUiMe();
-    if (initialUiMe?.uiParams != null) {
-        startHelpFromUiMe(initialUiMe);
-    } else {
-        document.addEventListener('uiMeLoaded', ({detail}) => startHelpFromUiMe(detail), {once: true});
+
+    function waitForFreshUiMe(callback) {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            callback(readUiMe());
+            return;
+        }
+
+        function onUiMeLoaded(event) {
+            document.removeEventListener('globalUiReady', onGlobalUiReady);
+            callback(event.detail ?? null);
+        }
+
+        function onGlobalUiReady() {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            callback(readUiMe());
+        }
+
+        document.addEventListener('uiMeLoaded', onUiMeLoaded, {once: true});
+        document.addEventListener('globalUiReady', onGlobalUiReady, {once: true});
     }
+
+    waitForFreshUiMe(startHelpFromUiMe);
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <script>
@@ -101,11 +117,11 @@
                             <div id="commentsTools" th:if="${(signRequestFull.editable || signRequestFull.manager) && showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="d-flex text-start gap-1">
                                 <button th:if="${signRequestFull.manager && signRequestFull.formId == null && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
                                         class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
-                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Insérer emplacement</span>
+                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Emplacement</span>
                                 </button>
                                 <button th:if="${signRequestFull.editable}" id="addCommentButton"
-                                        class="d-none d-xl-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
-                                    <i class="fi fi-rr-comment"></i><span class="d-none d-xl-flex"> Annotation</span>
+                                        class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
+                                    <i class="fi fi-rr-comment"></i><span class="d-none d-xxxl-flex"> Annotation</span>
                                 </button>
                             </div>
                             <div class="border border-secondary-subtle ms-2 d-none d-lg-block" style="height: 25px;"></div>

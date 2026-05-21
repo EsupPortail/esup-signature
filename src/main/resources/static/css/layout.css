@@ -103,6 +103,21 @@ header {
     min-width: 0;
 }
 
+body.es-signrequest-page .es-main-content.es-signrequest-main-content {
+    box-sizing: border-box;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.es-signrequest-page .es-signrequest-main-content > #sidebar,
+body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
+    min-height: 0;
+}
+
+body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
+    height: auto;
+}
+
 .es-main-content-admin {
     height: calc(100vh - 172px) !important;
 }
@@ -314,7 +329,6 @@ header {
 .tools,
 .es-tools {
     width: calc(100vw - 380px);
-    top: 126px;
     z-index: 1029;
     position: absolute;
 }
@@ -394,16 +408,17 @@ header {
 
 #pdf-progress-bar {
     position: absolute;
-    inset: 0;
+    top: 0;
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     z-index: 4;
     opacity: 1;
-    -webkit-transition:opacity .5s linear;
-    -moz-transition: opacity .5s linear;
-    -o-transition:opacity .5s linear;
+    -webkit-transition:opacity 1s linear;
+    -moz-transition: opacity 1s linear;
+    -o-transition:opacity 1s linear;
     pointer-events: none;
 }
 

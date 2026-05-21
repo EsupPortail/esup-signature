@@ -1,8 +1,11 @@
+import {markIntroAsRead} from "./HelpState.js?version=@version@";
+
 export class SignRequestHelp {
 
     constructor(doneTour, isOtp) {
         this.doneTour = doneTour;
         this.isOtp = isOtp;
+        this.introReadMarked = false;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -12,15 +15,19 @@ export class SignRequestHelp {
     initListeners() {
         this.intro.onbeforechange(() => this.scrollTop());
         this.intro.onafterchange(() => this.modButtons());
-        let self = this;
-        this.intro.onexit(function () {
-            if(self.isOtp) {
-                $.get("/otp/users/mark-intro-as-read/signRequestHelp");
-            } else {
-                $.get("/user/users/mark-intro-as-read/signRequestHelp");
-            }
-        });
+        this.intro.onexit(() => this.markAsRead());
+        this.intro.oncomplete(() => this.markAsRead());
         $("#helpStartButton").on('click', () => this.start());
+    }
+
+    markAsRead() {
+        if (this.introReadMarked) {
+            return;
+        }
+
+        this.introReadMarked = true;
+        this.doneTour = true;
+        markIntroAsRead('signRequestHelp', this.isOtp);
     }
 
     initStep() {

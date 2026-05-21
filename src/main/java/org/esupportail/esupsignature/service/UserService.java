@@ -660,8 +660,7 @@ public class UserService {
 
     @Transactional
     public void disableIntro(String authUserEppn, String name) {
-        User authUser = getByEppn(authUserEppn);
-        authUser.getUiParams().put(UiParams.valueOf(name), "true");
+        setUiParams(authUserEppn, UiParams.valueOf(name), "true");
     }
 
     @Transactional
