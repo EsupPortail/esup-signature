@@ -1652,7 +1652,7 @@ public class SignRequestService {
                     if(recipient.getUser().getUserType().equals(UserType.external)) {
                         mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());
                     } else {
-                        mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest.getParentSignBook());
+						mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest);
                     }
                 }
 				return true;
