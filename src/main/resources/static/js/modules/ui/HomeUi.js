@@ -686,7 +686,7 @@ export class HomeUi {
                     const newOption = {
                         text: value,
                         value: value,
-                        html: '<i class="fa-solid fa-magnifying-glass"></i> ' + value
+                        html: '<i class="fi fi-rr-search"></i> ' + value
                     };
                     addedOptions.push(newOption);
                     return newOption;

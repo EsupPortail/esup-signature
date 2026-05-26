@@ -21,15 +21,31 @@
         help2.autoStart();
     }
 
-    const initialUiMe = readUiMe();
-    if (initialUiMe?.uiParams != null) {
-        startHelp(initialUiMe.uiParams.home2Help ?? null);
-    } else {
-        document.addEventListener('uiMeLoaded', function onUiMeLoaded(event) {
-            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
-            startHelp(event.detail?.uiParams?.home2Help ?? null);
-        }, {once: true});
+    function startHelpFromFreshUiMe(uiMe) {
+        startHelp(uiMe?.uiParams?.home2Help ?? null);
     }
+
+    function waitForFreshUiMe(callback) {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            callback(readUiMe());
+            return;
+        }
+
+        function onUiMeLoaded(event) {
+            document.removeEventListener('globalUiReady', onGlobalUiReady);
+            callback(event.detail ?? null);
+        }
+
+        function onGlobalUiReady() {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            callback(readUiMe());
+        }
+
+        document.addEventListener('uiMeLoaded', onUiMeLoaded, {once: true});
+        document.addEventListener('globalUiReady', onGlobalUiReady, {once: true});
+    }
+
+    waitForFreshUiMe(startHelpFromFreshUiMe);
 </script>
 <script th:inline="javascript" type="module">
     import {HomeUi} from '/js/modules/ui/HomeUi.js?version=@[(${versionApp})]@';

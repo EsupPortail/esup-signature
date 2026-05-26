@@ -22,15 +22,31 @@
 
     const startHelp = setting => new SignRequestHelp(setting, isOtpHelp).autoStart();
     const startHelpFromUiMe = uiMe => startHelp(uiMe?.uiParams?.signRequestHelp ?? null);
-    const initialUiMe = readUiMe();
-    if (initialUiMe?.uiParams != null) {
-        startHelpFromUiMe(initialUiMe);
-    } else {
-        document.addEventListener('uiMeLoaded', ({detail}) => startHelpFromUiMe(detail), {once: true});
+
+    function waitForFreshUiMe(callback) {
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            callback(readUiMe());
+            return;
+        }
+
+        function onUiMeLoaded(event) {
+            document.removeEventListener('globalUiReady', onGlobalUiReady);
+            callback(event.detail ?? null);
+        }
+
+        function onGlobalUiReady() {
+            document.removeEventListener('uiMeLoaded', onUiMeLoaded);
+            callback(readUiMe());
+        }
+
+        document.addEventListener('uiMeLoaded', onUiMeLoaded, {once: true});
+        document.addEventListener('globalUiReady', onGlobalUiReady, {once: true});
     }
+
+    waitForFreshUiMe(startHelpFromUiMe);
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
-<script>
+<script th:inline="javascript">
     // Include model attributs for online forms javascript
     /*<![CDATA[*/
     class User {
@@ -43,11 +59,25 @@
             this.email = email;
         }
     }
-    const user = new User("[[${user.id}]]", "[[${user.eppn}]]", "[[${user.name}]]", "[[${user.firstname}]]", "[[${user.email}]]");
-    const creator = new User("[[${signRequestLight.createBy.id}]]", "[[${signRequestLight.createBy.eppn}]]", "[[${signRequestLight.createBy.name}]]", "[[${signRequestLight.createBy.firstname}]]");
-    const currentStepNumber = "[[${signRequestFull.currentStepNumber}]]";
-    const supervisors = "[[${showSignRequest.supervisors}]]";
-    const isLastStep = "[[${showSignRequest.lastStep}]]";
+    const user = new User(
+        /*[[${user.id}]]*/ 0,
+        /*[[${user.eppn}]]*/ "",
+        /*[[${user.name}]]*/ "",
+        /*[[${user.firstname}]]*/ "",
+        /*[[${user.email}]]*/ ""
+    );
+    const creator = new User(
+        /*[[${signRequestLight.createBy.id}]]*/ 0,
+        /*[[${signRequestLight.createBy.eppn}]]*/ "",
+        /*[[${signRequestLight.createBy.name}]]*/ "",
+        /*[[${signRequestLight.createBy.firstname}]]*/ "",
+        ""
+    );
+    const currentStepNumber = /*[[${signRequestFull.currentStepNumber}]]*/ "";
+    const supervisors = /*[[${showSignRequest.supervisors}]]*/ "";
+    const isLastStep = /*[[${showSignRequest.lastStep}]]*/ false;
+    const signRequestProfilePath = /*[[${showSignRequest.urlProfil}]]*/ 'user';
+    const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
     /*]]>*/
 </script>
 
@@ -79,17 +109,129 @@
                                 <i th:es-postit-id="${postit.id}" class="fi fi-rr-copy"></i>
                             </button>
                             <p th:if="${postit.createBy.eppn != userEppn || postit.refuse}" class="postitarea" th:text="${postit.text}"></p>
-                            <form class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/comment/' + ${signRequestLight.id} + '/update/' + ${postit.id}" th:method="put">
-                                <textarea th:style="'color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="'postit-text-' + ${postit.id}" class="postitarea" th:text="${postit.text}"></textarea>
-                                <button type="submit" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
-                            </form>
-                            <form th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/comment/' + ${signRequestLight.id} + '/delete/' + ${postit.id}" th:method="delete">
-                                <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn"  title="Supprimer">
-                                    <i class="fi fi-rr-trash"></i>
-                                </button>
-                            </form>
+                            <div class="es-postit-edit-form" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:id="|postit-${postit.id}|" th:attr="data-postit-id=${postit.id}">
+                                <textarea th:style="'color: var(--bs-black); width: 100%;height: 75%;resize:none;background-color: ' + ${postit.postitColor}" name="comment" th:id="|postit-text-${postit.id}|" class="postitarea" th:text="${postit.text}"></textarea>
+                                <button type="button" th:attr="data-postit-id=${postit.id}" onclick="return window.postitSaveAjax(event, this);" class="btn btn-sm btn-dark float-end position-absolute es-postit-save-btn postit-save-ajax" title="Enregistrer"><i class="fi fi-rr-disk"></i></button>
+                            </div>
+                            <button type="button" th:if="${postit.createBy.eppn == userEppn && !postit.refuse}" th:attr="data-postit-id=${postit.id}" onclick="return window.postitDeleteAjax(event, this);" class="btn btn-sm btn-dark float-start position-absolute es-postit-delete-btn postit-delete-ajax"  title="Supprimer">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
                         </div>
                     </th:block>
+
+                    <script th:inline="javascript">
+                        /*<![CDATA[*/
+                        const _postitCsrfHeader = /*[[${_csrf.headerName}]]*/ 'X-CSRF-TOKEN';
+                        const _postitCsrfToken = /*[[${_csrf.token}]]*/ '';
+                        const _postitProfilePath = /*[[${showSignRequest.urlProfil}]]*/ 'user';
+                        const _postitSignRequestId = /*[[${signRequestLight.id}]]*/ 0;
+                        const _unevaluatedInlineMarker = '[' + '[';
+
+                        function _showPostitSnackbar(message, type) {
+                            if (typeof window.showSnackbar === 'function') {
+                                window.showSnackbar(message, type, {delay: type === 'dark' ? 2000 : 4000});
+                            } else {
+                                console[type === 'error' ? 'error' : 'info'](message);
+                            }
+                        }
+
+                        window.postitSaveAjax = async function(event, button) {
+                            if (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+                            const saveBtn = button || (event && event.target ? event.target.closest('.postit-save-ajax') : null);
+                            if (!saveBtn) return false;
+                            const container = saveBtn.closest('.es-postit-edit-form');
+                            if (!container) return false;
+                            const textarea = container.querySelector('textarea[name="comment"]') || container.querySelector('textarea');
+                            const postitId = saveBtn.dataset.postitId || container.dataset.postitId || (container.id || '').replace('postit-', '') || '';
+                            if (!postitId || /\$\{/.test(postitId) || postitId.includes(_unevaluatedInlineMarker)) return false;
+                            saveBtn.disabled = true;
+                            const updateUrl = '/' + _postitProfilePath + '/signrequests/comment-ajax/' + _postitSignRequestId + '/update/' + postitId;
+                            console.debug('postit updateUrl=', updateUrl);
+                            try {
+                                const resp = await fetch(updateUrl, {
+                                    method: 'POST',
+                                    redirect: 'error',
+                                    headers: {
+                                        [_postitCsrfHeader]: _postitCsrfToken,
+                                        'Accept': 'application/json',
+                                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                    body: new URLSearchParams({ comment: textarea ? textarea.value : '' }).toString()
+                                });
+                                if (!resp.ok) throw resp;
+                                const payload = await resp.json();
+                                saveBtn.classList.add('disabled');
+                                setTimeout(() => saveBtn.classList.remove('disabled'), 800);
+                                _showPostitSnackbar(payload.message || 'Post-it modifié', 'success');
+                            } catch (err) {
+                                try {
+                                    const payload = await err.json();
+                                    _showPostitSnackbar(payload.message || 'Erreur lors de la mise à jour du postit', 'error');
+                                } catch(e) {
+                                    console.error(e);
+                                    _showPostitSnackbar('Erreur lors de la mise à jour du postit', 'error');
+                                }
+                            } finally {
+                                saveBtn.disabled = false;
+                            }
+                            return false;
+                        };
+
+                        window.postitDeleteAjax = async function(event, button) {
+                            if (event) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+                            const delBtn = button || (event && event.target ? event.target.closest('.postit-delete-ajax') : null);
+                            if (!delBtn) return false;
+                            if (!confirm('Confirmez-vous la suppression ?')) return false;
+                            const postitId = delBtn.dataset.postitId || '';
+                            if (!postitId || /\$\{/.test(postitId) || postitId.includes(_unevaluatedInlineMarker)) return false;
+                            delBtn.disabled = true;
+                            const deleteUrl = '/' + _postitProfilePath + '/signrequests/comment-ajax/' + _postitSignRequestId + '/delete/' + postitId;
+                            console.debug('postit deleteUrl=', deleteUrl);
+                            try {
+                                const resp = await fetch(deleteUrl, {
+                                    method: 'POST',
+                                    redirect: 'error',
+                                    headers: { [_postitCsrfHeader]: _postitCsrfToken, 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' },
+                                    body: ''
+                                });
+                                if (!resp.ok) throw resp;
+                                const payload = await resp.json();
+                                delBtn.closest('.postit-global')?.remove();
+                                _showPostitSnackbar(payload.message || 'Post-it supprimé', 'dark');
+                            } catch (err) {
+                                try {
+                                    const payload = await err.json();
+                                    _showPostitSnackbar(payload.message || 'Erreur lors de la suppression du postit', 'error');
+                                } catch(e) {
+                                    console.error(e);
+                                    _showPostitSnackbar('Erreur lors de la suppression du postit', 'error');
+                                }
+                            } finally {
+                                delBtn.disabled = false;
+                            }
+                            return false;
+                        };
+
+                        document.addEventListener('click', function(e) {
+                            const saveBtn = e.target.closest('.postit-save-ajax');
+                            if (saveBtn) {
+                                window.postitSaveAjax(e, saveBtn);
+                                return;
+                            }
+                            const delBtn = e.target.closest('.postit-delete-ajax');
+                            if (delBtn) {
+                                window.postitDeleteAjax(e, delBtn);
+                            }
+                        });
+                        /*]]>*/
+                    </script>
                 </div>
 
                 <nav th:if="${user.userType.name() == 'external'}" id="sidebar" th:insert="~{fragments/sides/side-otp :: side-otp}" th:unless="${showSignRequest.workflow.disableSidebarForExternal}"></nav>
@@ -101,11 +243,11 @@
                             <div id="commentsTools" th:if="${(signRequestFull.editable || signRequestFull.manager) && showSignRequest.toSignDocumentContentType == 'application/pdf'}" class="d-flex text-start gap-1">
                                 <button th:if="${signRequestFull.manager && signRequestFull.formId == null && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}" id="addSpotButton"
                                         class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
-                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Insérer emplacement</span>
+                                    <i class="fi fi-rr-digital-signature"></i><span class="d-none d-xxxl-flex"> Emplacement</span>
                                 </button>
                                 <button th:if="${signRequestFull.editable}" id="addCommentButton"
-                                        class="d-none d-xl-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
-                                    <i class="fi fi-rr-comment"></i><span class="d-none d-xl-flex"> Annotation</span>
+                                        class="d-none d-lg-flex align-items-center btn btn-transparent text-warning-emphasis" style="max-height: 33px;">
+                                    <i class="fi fi-rr-comment"></i><span class="d-none d-xxxl-flex"> Annotation</span>
                                 </button>
                             </div>
                             <div class="border border-secondary-subtle ms-2 d-none d-lg-block" style="height: 25px;"></div>
@@ -236,7 +378,7 @@
                             const csrf = /*[[${_csrf}]]*/ {};
                             const originalDocuments = /*[[${showSignRequest.originalDocuments}]]*/ [];
                             const signedDocuments = /*[[${showSignRequest.signedDocuments}]]*/ [];
-                            [["#multipartFiles", originalDocuments], ["#signedFiles", signedDocuments]].forEach(([selector, documents]) => {
+                            Array.of(["#multipartFiles", originalDocuments], ["#signedFiles", signedDocuments]).forEach(([selector, documents]) => {
                                 const input = $(selector);
                                 if (input.length) {
                                     new FilesInput(input, maxUploadSize, csrf, documents, true);

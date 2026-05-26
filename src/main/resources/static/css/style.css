@@ -1871,6 +1871,14 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     width: 100%;
     border-left: 4px solid var(--color-dee2e6);
     border-radius: 6px;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.step-vertical-content.step-vertical-content-hover {
+    background-color: var(--bs-warning-bg-subtle) !important;
+    box-shadow:
+            0 0 0 2px rgba(var(--neon-warning), 0.30),
+            0 0 12px rgba(var(--neon-warning), 0.18);
 }
 
 .step-vertical.doc .step-vertical-content {

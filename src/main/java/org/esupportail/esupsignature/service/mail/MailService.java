@@ -309,12 +309,15 @@ public class MailService {
         }
     }
 
-    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
+    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
+        SignBook signBook = signRequest.getParentSignBook();
         final Context ctx = new Context(Locale.FRENCH);
         setTemplate(ctx, signBook);
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signrequests/" + signRequest.getId());
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
