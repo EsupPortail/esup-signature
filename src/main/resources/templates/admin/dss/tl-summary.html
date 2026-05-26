@@ -29,6 +29,7 @@
                                 </div>
                                 <div>
                                     <p><span th:text="#{label.keystore.synchronized.with}"></span>&nbsp;<a th:href="${currentOjUrl}" th:text="#{label.eu.oj.page}" target="_blank"></a></p>
+                                    <p><span th:text="#{label.keystore.file.location}"></span>&nbsp;<code th:text="${ojKeystorePath}"></code></p>
                                     <p th:if="${actualOjUrl == null}" class="text-danger" th:text="#{label.eu.oj.unable.retrieve}"></p>
                                     <p th:if="${actualOjUrl != null && actualOjUrl != currentOjUrl}" class="text-danger">
                                         <span th:text="#{label.eu.oj.keystore.outdated}"></span>&nbsp;

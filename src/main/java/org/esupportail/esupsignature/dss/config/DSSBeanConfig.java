@@ -7,6 +7,7 @@ import eu.europa.esig.dss.alert.SilentOnStatusAlert;
 import eu.europa.esig.dss.asic.cades.signature.ASiCWithCAdESService;
 import eu.europa.esig.dss.asic.xades.signature.ASiCWithXAdESService;
 import eu.europa.esig.dss.model.DSSException;
+import eu.europa.esig.dss.model.tsl.TrustServiceStatusAndInformationExtensions;
 import eu.europa.esig.dss.pades.signature.PAdESService;
 import eu.europa.esig.dss.pdf.IPdfObjFactory;
 import eu.europa.esig.dss.pdf.PdfSignatureFieldPositionChecker;
@@ -32,6 +33,7 @@ import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.validation.OCSPFirstRevocationDataLoadingStrategyFactory;
 import eu.europa.esig.dss.spi.validation.RevocationDataVerifier;
+import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.AIASource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
@@ -48,7 +50,11 @@ import eu.europa.esig.dss.tsl.alerts.handlers.log.LogOJUrlChangeAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLExpirationAlertHandler;
 import eu.europa.esig.dss.tsl.alerts.handlers.log.LogTLSignatureErrorAlertHandler;
 import eu.europa.esig.dss.tsl.cache.CacheCleaner;
+import eu.europa.esig.dss.tsl.function.GrantedOrRecognizedAtNationalLevelTrustAnchorPeriodPredicate;
 import eu.europa.esig.dss.tsl.function.OfficialJournalSchemeInformationURI;
+import eu.europa.esig.dss.tsl.function.TrustAnchorPeriodPredicate;
+import eu.europa.esig.dss.tsl.function.TypeOtherTSLPointer;
+import eu.europa.esig.dss.tsl.function.XMLOtherTSLPointer;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.tsl.source.LOTLSource;
 import eu.europa.esig.dss.xml.common.DocumentBuilderFactoryBuilder;
@@ -64,17 +70,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 
 import javax.xml.XMLConstants;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
@@ -83,15 +94,14 @@ public class DSSBeanConfig {
 
 	private static final Logger logger = LoggerFactory.getLogger(DSSBeanConfig.class);
 
-	private static final String KEYSTORE_TYPE = "PKCS12";
-	private static final String KEYSTORE_FILEPATH = "src/main/resources/keystore.p12";
-
 	private final DSSProperties dssProperties;
 	private final ProxyConfig proxyConfig;
+	private final ResourceLoader resourceLoader;
 
-	public DSSBeanConfig(DSSProperties dssProperties, @Autowired(required = false) ProxyConfig proxyConfig) {
+	public DSSBeanConfig(DSSProperties dssProperties, @Autowired(required = false) ProxyConfig proxyConfig, ResourceLoader resourceLoader) {
 		this.dssProperties = dssProperties;
 		this.proxyConfig = proxyConfig;
+		this.resourceLoader = resourceLoader;
 	}
 
 	@PostConstruct
@@ -221,30 +231,21 @@ public class DSSBeanConfig {
 
 	@Bean
 	public KeyStoreCertificateSource ojContentKeyStore() {
-		try {
-			Path keystorePath = Paths.get(KEYSTORE_FILEPATH);
-			if (Files.exists(keystorePath)) {
-				return new KeyStoreCertificateSource(keystorePath.toFile(), KEYSTORE_TYPE, "dss-password".toCharArray());
-			}
-			Path parentDirectory = keystorePath.getParent();
-			if (parentDirectory != null) {
-				Files.createDirectories(parentDirectory);
-			}
-			KeyStoreCertificateSource kscs = new KeyStoreCertificateSource((java.io.InputStream) null, KEYSTORE_TYPE, "dss-password".toCharArray());
-			try (OutputStream fos = Files.newOutputStream(keystorePath)) {
-				kscs.store(fos);
-			}
-			return new KeyStoreCertificateSource(keystorePath.toFile(), KEYSTORE_TYPE, "dss-password".toCharArray());
+		try (InputStream inputStream = openConfiguredResource(dssProperties.getOjContentKeystoreFilename())) {
+			return new KeyStoreCertificateSource(
+					inputStream,
+					dssProperties.getOjContentKeystoreType(),
+					dssProperties.getOjContentKeystorePassword().toCharArray());
 		} catch (IOException e) {
-			throw new DSSException("Unable to load the file " + KEYSTORE_FILEPATH, e);
+			throw new DSSException("Unable to load the file " + dssProperties.getOjContentKeystoreFilename(), e);
 		}
 	}
 
 	@Bean
-	public DSSFileLoader onlineLoader(File tlCacheDirectory, CommonsDataLoader trustAllDataLoader) {
+	public DSSFileLoader onlineLoader(File tlCacheDirectory, CommonsDataLoader dataLoader, CommonsDataLoader trustAllDataLoader) {
 		FileCacheDataLoader onlineFileLoader = new FileCacheDataLoader();
 		onlineFileLoader.setCacheExpirationTime(0);
-		onlineFileLoader.setDataLoader(trustAllDataLoader);
+		onlineFileLoader.setDataLoader(getTlDataLoader(dataLoader, trustAllDataLoader));
 		onlineFileLoader.setFileCacheDirectory(tlCacheDirectory);
 		return onlineFileLoader;
 	}
@@ -264,13 +265,31 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
+	public CommonTrustedCertificateSource trustedCertificateSource() {
+		CommonTrustedCertificateSource trustedCertificateSource = new CommonTrustedCertificateSource();
+		String trustedSourceKeystoreFilename = dssProperties.getTrustedSourceKeystoreFilename();
+		if (trustedSourceKeystoreFilename != null && !trustedSourceKeystoreFilename.isBlank()) {
+			try (InputStream inputStream = openConfiguredResource(trustedSourceKeystoreFilename)) {
+				KeyStoreCertificateSource keyStore = new KeyStoreCertificateSource(
+						inputStream,
+						dssProperties.getTrustedSourceKeystoreType(),
+						dssProperties.getTrustedSourceKeystorePassword().toCharArray());
+				trustedCertificateSource.importAsTrusted(keyStore);
+			} catch (IOException e) {
+				throw new DSSException("Unable to load the file " + trustedSourceKeystoreFilename, e);
+			}
+		}
+		return trustedCertificateSource;
+	}
+
+	@Bean
 	public TLValidationJob tlValidationJob(TrustedListsCertificateSource trustedListSource, LOTLSource europeanLOTL, DSSFileLoader offlineLoader, DSSFileLoader onlineLoader, CacheCleaner cacheCleaner) {
 		TLValidationJob tlValidationJob = new TLValidationJob();
 		if(!dssProperties.getMultiThreadTlValidation()) {
 			tlValidationJob.setExecutorService(Executors.newSingleThreadExecutor());
 		}
 		tlValidationJob.setTrustedListCertificateSource(trustedListSource);
-		tlValidationJob.setListOfTrustedListSources(europeanLOTL);
+		tlValidationJob.setListOfTrustedListSources(listOfTrustedListSources(europeanLOTL));
 		tlValidationJob.setOfflineDataLoader(offlineLoader);
 		tlValidationJob.setOnlineDataLoader(onlineLoader);
 		tlValidationJob.setLOTLAlerts(Arrays.asList(ojUrlAlert(europeanLOTL), lotlLocationAlert(europeanLOTL)));
@@ -292,8 +311,13 @@ public class DSSBeanConfig {
 
 	@Bean
 	public File tlCacheDirectory() {
-		String tmpDirectory = System.getProperty("java.io.tmpdir");
-		File tslCache = new File(tmpDirectory, "dss-tsl-loader");
+		File tslCache;
+		if (dssProperties.getTlLoaderCacheFolder() != null && !dssProperties.getTlLoaderCacheFolder().isBlank()) {
+			tslCache = new File(dssProperties.getTlLoaderCacheFolder());
+		} else {
+			String tmpDirectory = System.getProperty("java.io.tmpdir");
+			tslCache = new File(tmpDirectory, "dss-tsl-loader");
+		}
         logger.info("dss cache path : {}", tslCache.getAbsolutePath());
 		if (tslCache.mkdirs()) {
             logger.info("creating non existing cache folder : {}", tslCache.getAbsolutePath());
@@ -308,7 +332,46 @@ public class DSSBeanConfig {
 		lotlSource.setCertificateSource(ojContentKeyStore);
 		lotlSource.setSigningCertificatesAnnouncementPredicate(new OfficialJournalSchemeInformationURI(dssProperties.getOjUrl()));
 		lotlSource.setPivotSupport(true);
+		if (Boolean.TRUE.equals(dssProperties.getTlLoaderLotlUseSunsetDate())) {
+			lotlSource.setTrustAnchorValidityPredicate(new GrantedOrRecognizedAtNationalLevelTrustAnchorPeriodPredicate());
+		}
+		if (dssProperties.getTlLoaderLotlTlVersions() != null && !dssProperties.getTlLoaderLotlTlVersions().isEmpty()) {
+			lotlSource.setTLVersions(dssProperties.getTlLoaderLotlTlVersions());
+		}
 		return lotlSource;
+	}
+
+	public LOTLSource adesLOTL() throws IOException {
+		LOTLSource adesLOTL = new LOTLSource();
+		adesLOTL.setUrl(dssProperties.getTlLoaderAdesLotlUrl());
+		try (InputStream inputStream = openConfiguredResource(dssProperties.getTlLoaderAdesKeystoreFilename())) {
+			adesLOTL.setCertificateSource(new KeyStoreCertificateSource(
+					inputStream,
+					dssProperties.getTlLoaderAdesKeystoreType(),
+					dssProperties.getTlLoaderAdesKeystorePassword().toCharArray()));
+		}
+		adesLOTL.setMraSupport(true);
+		adesLOTL.setPivotSupport(false);
+		adesLOTL.setLotlPredicate(new XMLOtherTSLPointer().and(new TypeOtherTSLPointer(dssProperties.getTlLoaderAdesTslType())));
+		adesLOTL.setTlPredicate(new XMLOtherTSLPointer().and(new TypeOtherTSLPointer(dssProperties.getTlLoaderAdesTslType())).negate());
+		if (dssProperties.getTlLoaderAdesTslStatusList() != null && !dssProperties.getTlLoaderAdesTslStatusList().isEmpty()) {
+			adesLOTL.setTrustAnchorValidityPredicate(adesLOTLTrustAnchorValidityPredicate());
+		}
+		if (dssProperties.getTlLoaderAdesTlVersions() != null && !dssProperties.getTlLoaderAdesTlVersions().isEmpty()) {
+			adesLOTL.setTLVersions(dssProperties.getTlLoaderAdesTlVersions());
+		}
+		return adesLOTL;
+	}
+
+	@Bean
+	public TrustAnchorPeriodPredicate adesLOTLTrustAnchorValidityPredicate() {
+		return new TrustAnchorPeriodPredicate() {
+			@Override
+			public boolean test(TrustServiceStatusAndInformationExtensions trustServiceStatusAndInformationExtensions) {
+				return dssProperties.getTlLoaderAdesTslStatusList().stream()
+						.anyMatch(v -> v.equals(trustServiceStatusAndInformationExtensions.getStatus()));
+			}
+		};
 	}
 
 	@Bean
@@ -317,12 +380,12 @@ public class DSSBeanConfig {
 	}
 
 	@Bean
-	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource, RevocationDataVerifier revocationDataVerifier, SignProperties signProperties) {
+	public CertificateVerifier certificateVerifier(JdbcCacheOCSPSource jdbcCacheOCSPSource, JdbcCacheCRLSource jdbcCacheCRLSource, JdbcCacheAIASource jdbcCacheAIASource, TrustedListsCertificateSource trustedListSource, CommonTrustedCertificateSource trustedCertificateSource, RevocationDataVerifier revocationDataVerifier, SignProperties signProperties) {
 		CommonCertificateVerifier certificateVerifier = new CommonCertificateVerifier();
 		certificateVerifier.setCrlSource(jdbcCacheCRLSource);
 		certificateVerifier.setOcspSource(jdbcCacheOCSPSource);
 		certificateVerifier.setAIASource(jdbcCacheAIASource);
-		certificateVerifier.setTrustedCertSources(trustedListSource);
+		certificateVerifier.setTrustedCertSources(trustedListSource, trustedCertificateSource);
 		certificateVerifier.setRevocationDataVerifier(revocationDataVerifier);
 		certificateVerifier.setAlertOnMissingRevocationData(new ExceptionOnStatusAlert());
 		certificateVerifier.setRevocationDataLoadingStrategyFactory(new OCSPFirstRevocationDataLoadingStrategyFactory());
@@ -405,6 +468,68 @@ public class DSSBeanConfig {
 		dataLoader.setRedirectsEnabled(true);
 		dataLoader.setProxyConfig(proxyConfig);
 		return dataLoader;
+	}
+
+	private CommonsDataLoader getTlDataLoader(CommonsDataLoader dataLoader, CommonsDataLoader trustAllDataLoader) {
+		if (Boolean.TRUE.equals(dssProperties.getTlLoaderTrustAll())) {
+			return trustAllDataLoader;
+		}
+		return dataLoader;
+	}
+
+	public String getOjKeystorePath() throws IOException {
+		Resource resource = resolveConfiguredResource(dssProperties.getOjContentKeystoreFilename());
+		try {
+			return resource.getFile().getAbsolutePath();
+		} catch (IOException e) {
+			return resource.getDescription();
+		}
+	}
+
+	private LOTLSource[] listOfTrustedListSources(LOTLSource europeanLOTL) {
+		List<LOTLSource> lotlSources = new ArrayList<>();
+		lotlSources.add(europeanLOTL);
+		if (Boolean.TRUE.equals(dssProperties.getTlLoaderAdesEnabled())) {
+			try {
+				lotlSources.add(adesLOTL());
+			} catch (IOException e) {
+				throw new DSSException("Unable to load the file " + dssProperties.getTlLoaderAdesKeystoreFilename(), e);
+			}
+		}
+		return lotlSources.toArray(new LOTLSource[0]);
+	}
+
+	private Resource resolveConfiguredResource(String configuredPath) throws IOException {
+		if (configuredPath == null || configuredPath.isBlank()) {
+			throw new IOException("DSS OJ keystore path is not configured");
+		}
+		try {
+			Path fileSystemPath = Path.of(configuredPath);
+			if (Files.exists(fileSystemPath)) {
+				return requireReadableResource(new FileSystemResource(fileSystemPath), configuredPath);
+			}
+		} catch (InvalidPathException e) {
+			logger.debug("Configured DSS resource is not a plain filesystem path: {}", configuredPath);
+		}
+		Resource resource = resourceLoader.getResource(configuredPath);
+		if (!resource.exists() && !configuredPath.startsWith("classpath:")) {
+			resource = resourceLoader.getResource("classpath:" + configuredPath);
+		}
+		return requireReadableResource(resource, configuredPath);
+	}
+
+	private InputStream openConfiguredResource(String configuredPath) throws IOException {
+		return resolveConfiguredResource(configuredPath).getInputStream();
+	}
+
+	private Resource requireReadableResource(Resource resource, String configuredPath) throws IOException {
+		if (!resource.exists()) {
+			throw new IOException("Configured DSS resource does not exist: " + configuredPath);
+		}
+		if (!resource.isReadable()) {
+			throw new IOException("Configured DSS resource is not readable: " + configuredPath);
+		}
+		return resource;
 	}
 
 }
