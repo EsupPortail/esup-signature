@@ -40,7 +40,7 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
         if(StringUtils.isNotBlank(module)) {
             this.module += " --module " + module;
         }
-        logger.info("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
+        logger.debug("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
     }
 
     @Override
