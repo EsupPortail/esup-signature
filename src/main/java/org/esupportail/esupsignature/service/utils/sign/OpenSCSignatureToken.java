@@ -40,7 +40,7 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
         if(StringUtils.isNotBlank(module)) {
             this.module += " --module " + module;
         }
-        logger.debug("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
+        logger.info("OpenSC>>>Initialized with module parameter: {}", this.module.isEmpty() ? "none (will use default)" : this.module);
     }
 
     @Override
@@ -159,31 +159,46 @@ public class OpenSCSignatureToken implements SignatureTokenConnection {
 
     public byte[] launchProcess(String command) throws DSSException {
         Process process = null;
+
         try {
             ProcessBuilder processBuilder = new ProcessBuilder();
+
             String fullCommand = signProperties.getOpenscPathLinux() + command;
             logger.debug("OpenSC>>>Full command: {}", fullCommand);
+
             processBuilder.command("bash", "-c", fullCommand);
 
-            // Rediriger stderr vers stdout pour capturer tous les messages
-            processBuilder.redirectErrorStream(true);
+            // IMPORTANT: ne pas mélanger stdout/stderr
+            processBuilder.redirectErrorStream(false);
 
             process = processBuilder.start();
+
+            ByteArrayOutputStream stdout = new ByteArrayOutputStream();
+            IOUtils.copy(process.getInputStream(), stdout);
+
+            ByteArrayOutputStream stderr = new ByteArrayOutputStream();
+            IOUtils.copy(process.getErrorStream(), stderr);
+
             int exitVal = process.waitFor();
 
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            IOUtils.copy(process.getInputStream(), outputStream);
-            byte[] result = outputStream.toByteArray();
+            byte[] result = stdout.toByteArray();
+            String err = stderr.toString();
+
+            if (!err.isBlank()) {
+                logger.warn("OpenSC stderr:\n{}", err);
+            }
 
             if (exitVal == 0) {
                 logger.debug("OpenSC>>>Command executed successfully");
                 return result;
-            } else {
-                logger.error("OpenSC>>>Command failed with exit code: {}", exitVal);
-                String output = new String(result);
-                logger.error("OpenSC>>>Error output:\n{}", output);
-                throw new DSSException("OpenSC command failed with exit code " + exitVal + ": " + output);
             }
+
+            logger.error("OpenSC>>>Command failed with exit code: {}", exitVal);
+            logger.error("OpenSC>>>stderr:\n{}", err);
+            logger.error("OpenSC>>>stdout size: {}", result.length);
+
+            throw new DSSException("OpenSC command failed: " + err);
+
         } catch (InterruptedException | IOException e) {
             logger.error("OpenSC>>>Exception during command execution", e);
             throw new DSSException(e);
