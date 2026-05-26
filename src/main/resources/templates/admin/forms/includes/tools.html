@@ -11,29 +11,29 @@
 		<button id="fullwidth" title="Pleine largeur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark">
 			<i class="fi fi-rr-expand-arrows"></i>
 		</button>
-		<button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-transparent text-dark">
+		<button id="zoomout" title="Zoom arrière" class="d-flex justify-content-center btn btn-transparent text-dark">
 			<i class="fi fi-rr-zoom-out"></i>
 		</button>
 		<div class="zoom me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
-		<button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark">
+		<button id="zoomin" title="Zoom avant" class="d-flex justify-content-center btn btn-transparent text-dark">
 			<i class="fi fi-rr-zoom-in"></i>
 		</button>
 		<div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-		<button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark" aria-label="Précédent">
+		<button id="prev" title="Page précédente" class="d-flex justify-content-center btn btn-transparent text-dark" aria-label="Précédent">
 			<i class="fi fi-rr-angle-small-up" style="font-size: 20px;"></i>
 		</button>
 		<div class="d-none d-sm-flex me-1 p-1 pt-2 fw-bold" style="width: 128px;">
 			<span>Page </span>
 			<input type="text" id="page_num" aria-label="Numero de page" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 40px;"/> <span> / </span> <span id="page_count"></span>
 		</div>
-		<button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1" aria-label="Prochain">
+		<button id="next" title="Page suivante" class="d-flex justify-content-center btn btn-transparent text-dark me-1" aria-label="Prochain">
 			<i class="fi fi-rr-angle-small-down" style="font-size: 20px;"></i>
 		</button>
 		<th:block th:if="${form.workflow != null}">
 			<div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
 			<button id="addSpotButton"
 					th:title="${form.workflow.workflowSteps.size() > srpMap.entrySet().size()} ? 'Ajouter un emplacement de signature' : 'Plus d`emplacement disponible'"
-					class="d-flex align-items-center btn btn-warning text-dark"
+					class="d-flex justify-content-center btn btn-warning text-dark"
 					style="max-height: 33px;"
 					th:disabled="${form.workflow.workflowSteps.size() <= srpMap.entrySet().size()}">
 				<i class="fi fi-rr-digital-signature"></i><span class="d-none d-xl-flex">&nbsp;Inserer emplacement</span>

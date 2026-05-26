@@ -19,7 +19,7 @@
 		<java.version>17</java.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<dss.framework.version>6.4</dss.framework.version>
+		<dss.version>6.4</dss.version>
         <pdfbox.version>3.0.6</pdfbox.version>
 		<playwright.version>1.49.0</playwright.version>
 		<skipDockerCompose>true</skipDockerCompose>
@@ -327,42 +327,42 @@
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-model</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-i18n</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-validation</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-spi</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-token</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-service</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-signature-rest-client</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-signature-soap</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>joda-time</artifactId>
@@ -377,102 +377,107 @@
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-validation-rest</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-validation-rest-client</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-validation-soap</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-certificate-validation-rest</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-certificate-validation-rest-client</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-certificate-validation-soap</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-server-signing-soap</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-server-signing-rest</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-server-signing-rest-client</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-timestamp-remote-soap</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-timestamp-remote-rest</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-timestamp-remote-rest-client</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-tsl-validation</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pdfa</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-utils-google-guava</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-crl-parser-stream</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
 		</dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-cms-object</artifactId>
-            <version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
         </dependency>
         <dependency>
             <groupId>eu.europa.ec.joinup.sd-dss</groupId>
             <artifactId>dss-policy-jaxb</artifactId>
-            <version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
         </dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-signature-dto</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+			<artifactId>dss-policy-crypto-xml</artifactId>
+			<version>${dss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.joinup.sd-dss</groupId>
 			<artifactId>dss-pades-pdfbox</artifactId>
-			<version>${dss.framework.version}</version>
+			<version>${dss.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>pdfbox</artifactId>
@@ -844,7 +849,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0</version>
 				<configuration>
 					<excludes>
 						<exclude>**/*IT.java</exclude>
@@ -892,7 +896,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.0.0</version>
 				<configuration>
 					<includes>
 						<include>**/*IT.java</include>
