@@ -503,6 +503,11 @@ option[unavailable="unavailable"] {
     font-size: 20px;
 }
 
+.signButtons,
+.es-sign-buttons {
+    overflow-y: scroll;
+}
+
 .signButtons i:before,
 .es-sign-buttons i:before {
     font-size: 20px;

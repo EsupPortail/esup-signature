@@ -122,7 +122,8 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         if(summary == null) return true;
         boolean checkTl = false;
         for (LOTLInfo lotlInfo : summary.getLOTLInfos()) {
-            if(!lotlInfo.getParsingCacheInfo().isSynchronized()
+            if(!lotlInfo.getValidationCacheInfo().isValid()
+                || !lotlInfo.getParsingCacheInfo().isSynchronized()
                 || !lotlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }

@@ -357,6 +357,10 @@
         margin-left: 5px;
     }
 
+    #workspace {
+        margin-top: 0;
+        margin-bottom: 42px;
+    }
     /*.new-width-full {*/
     /*    width: calc(100vw);*/
     /*}*/
