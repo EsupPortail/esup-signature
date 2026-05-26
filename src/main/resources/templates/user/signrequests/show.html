@@ -255,26 +255,26 @@
                                     class="fi fi-rr-compress-alt"></i></button>
                             <button id="fullwidth" title="Pleine largeur" class="d-none d-xl-flex align-items-center btn btn-transparent text-dark d-none"><i
                                     class="fi fi-rr-expand-arrows"></i></button>
-                            <button id="zoomout" title="Zoom arrière" class="d-flex align-items-center btn btn-transparent text-dark"><i
+                            <button id="zoomout" title="Zoom arrière" class="d-flex justify-content-center btn btn-transparent text-dark"><i
                                     class="fi fi-rr-zoom-out"></i></button>
                             <div class="zoom me-1 p-1 pt-2 d-none d-xxl-inline fw-bold"><span id="zoom"></span> %</div>
-                            <button id="zoomin" title="Zoom avant" class="d-flex align-items-center btn btn-transparent text-dark"><i
+                            <button id="zoomin" title="Zoom avant" class="d-flex justify-content-center btn btn-transparent text-dark"><i
                                     class="fi fi-rr-zoom-in"></i></button>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="prev" title="Page précédente" class="d-flex align-items-center btn btn-transparent text-dark" aria-label="Précédent">
+                            <button id="prev" title="Page précédente" class="d-flex justify-content-center btn btn-transparent text-dark" aria-label="Précédent">
                                 <i class="fi fi-rr-angle-small-up"  style="font-size: 20px;"></i>
                             </button>
                             <div class="d-flex gap-1 align-items-center fw-bold">
                                 <span class="d-none d-sm-flex">Page </span>
                                 <input type="text" id="page_num" class="form-control fw-bold form-control-xs ms-1 border-1 border-dark text-center" style="width: 100%; min-width: 20px; max-width: 60px;">/<span id="page_count"></span>
                             </div>
-                            <button id="next" title="Page suivante" class="d-flex align-items-center btn btn-transparent text-dark me-1" aria-label="Prochain">
+                            <button id="next" title="Page suivante" class="d-flex justify-content-center btn btn-transparent text-dark me-1" aria-label="Prochain">
                                 <i class="fi fi-rr-angle-small-down"  style="font-size: 20px;"></i>
                             </button>
                         </div>
                         <div th:if="${signRequestFull.signable}" id="insert-btn-div" class="d-none d-lg-flex gap-1 align-items-center">
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-                            <button id="autoRotate" th:if="${signRequestFull.signable}" class="d-flex align-items-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
+                            <button id="autoRotate" th:if="${signRequestFull.signable}" class="d-flex justify-content-center btn btn-transparent text-dark d-flex justify-content-center align-items-center" title="Redresser automatiquement le document">
                                 <i class="fi fi-rr-navigation"></i>
                             </button>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
@@ -283,49 +283,49 @@
                                     id="addSignButton"
                                     role="button"
                                     title="Insérer une signature"
-                                    class="d-flex align-items-center btn btn-transparent text-success text-start">
+                                    class="d-flex justify-content-center btn btn-transparent text-success text-start">
                                 <i class="fi fi-rr-file-signature"></i>
                             </button>
                             <button th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}"
                                     id="addSignButton"
                                     role="button"
                                     title="Insérer un visa"
-                                    class="d-flex align-items-center btn btn-transparent text-success text-start">
+                                    class="d-flex justify-content-center btn btn-transparent text-success text-start">
                                 <i class="fi fi-rr-file-signature"></i>
                             </button>
                             <button th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}"
                                     id="addParaphButton2"
                                     role="button"
                                     title="Insérer un paraphe"
-                                    class="d-flex align-items-center btn btn-transparent text-success text-start">
+                                    class="d-flex justify-content-center btn btn-transparent text-success text-start">
                                 <i class="fi fi-rr-multiple-alt"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCheck" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCheck" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Insérer une coche"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-check"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addTimes" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addTimes" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Insérer une croix"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-cross"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCircle" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addCircle" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Insérer un cercle"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-circle"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addMinus" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addMinus" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Insérer un trait"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-minus"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addText" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" id="addText" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Insérer un texte"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-text"></i>
                             </button>
-                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="d-flex align-items-center btn btn-light text-dark  text-start"
+                            <button th:if="${showSignRequest.signatureIds.size() == 0 && signRequestFull.notSigned && signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" class="d-flex justify-content-center btn btn-light text-dark  text-start"
                                     title="Non disponible pour un visa caché"
                                     th:classappend="${signRequestFull.currentStepMultiSign || signRequestFull.currentStepSingleSignWithAnnotation} ? '' : 'disabled'">
                                 <i class="fi fi-rr-octagon-xmark"></i>
