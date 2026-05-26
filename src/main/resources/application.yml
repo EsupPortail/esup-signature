@@ -241,6 +241,7 @@ dss:
     check-revocation-for-untrusted-chains: false
     multi-thread-tl-validation: true
     accept-signature-field-overlap: false
+    tl-loader-ades-enabled: true
 
 fs:
 #    smb-login: esup-signature
