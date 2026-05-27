@@ -653,7 +653,9 @@ public class SignRequestService {
     @Transactional
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			if (!signRequest.getRecipientHasSigned().containsKey(recipient)) {
+				signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			}
 			if (isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
 					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);
@@ -1481,6 +1483,55 @@ public class SignRequestService {
 		}
 	}
 
+	@Transactional(readOnly = true)
+	public byte[] getLayeredPdfAtStep(Long signRequestId, int stepNumber) throws IOException, EsupSignatureException {
+		if (stepNumber < 0) {
+			throw new EsupSignatureException("Étape invalide : " + stepNumber);
+		}
+		SignRequest signRequest = getById(signRequestId);
+		// Même règle que les téléchargements "classiques"
+		if (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null
+				&& BooleanUtils.isTrue(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getForbidDownloadsBeforeEnd())
+				&& !signRequest.getStatus().equals(SignRequestStatus.completed)
+				&& !signRequest.getStatus().equals(SignRequestStatus.exported)
+				&& !signRequest.getStatus().equals(SignRequestStatus.refused)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.archived)
+				&& !signRequest.getArchiveStatus().equals(ArchiveStatus.cleaned)
+		) {
+			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
+		}
+
+		InputStream inputStream;
+		String contentType;
+		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
+			List<Document> documents = getToSignDocuments(signRequest.getId());
+			Document document;
+			if(!documents.isEmpty()) {
+				document = documents.get(0);
+			} else {
+				document = signRequest.getOriginalDocuments().get(0);
+			}
+			inputStream = document.getInputStream();
+			contentType = document.getContentType();
+		} else {
+			FsFile fsFile = getLastSignedFsFile(signRequest);
+			inputStream = fsFile.getInputStream();
+			contentType = fsFile.getContentType();
+		}
+
+		if (contentType == null || !contentType.toLowerCase(Locale.ROOT).contains("pdf")) {
+			// Pas de gestion des calques si ce n'est pas un PDF
+			return inputStream.readAllBytes();
+		}
+
+		byte[] pdfBytes = inputStream.readAllBytes();
+		if (stepNumber == 0) {
+			// Étape 0 = document "de base" sans calques ajoutés
+			return pdfService.removeOptionalContentAfterStep(pdfBytes, 0);
+		}
+		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
+	}
+
 	/**
      * Génère une réponse contenant un document prêt à être signé, ou un fichier signé avec un QR code,
      * et l'écrit dans la réponse HTTP fournie.
@@ -1652,7 +1703,7 @@ public class SignRequestService {
                     if(recipient.getUser().getUserType().equals(UserType.external)) {
                         mailService.sendSignRequestReplayAlertOtp(otpService.generateOtpForSignRequest(signRequest.getParentSignBook().getId(), recipient.getUser().getId(), recipient.getUser().getPhone(), true), signRequest.getParentSignBook());
                     } else {
-                        mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest.getParentSignBook());
+						mailService.sendSignRequestReplayAlert(Collections.singletonList(recipient.getUser().getEmail()), signRequest);
                     }
                 }
 				return true;

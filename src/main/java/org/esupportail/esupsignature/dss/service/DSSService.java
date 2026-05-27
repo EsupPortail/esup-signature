@@ -5,7 +5,6 @@ import eu.europa.esig.dss.model.tsl.LOTLInfo;
 import eu.europa.esig.dss.model.tsl.ParsingInfoRecord;
 import eu.europa.esig.dss.model.tsl.TLInfo;
 import eu.europa.esig.dss.model.tsl.TLValidationJobSummary;
-import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import eu.europa.esig.dss.spi.x509.KeyStoreCertificateSource;
 import eu.europa.esig.dss.tsl.job.TLValidationJob;
 import eu.europa.esig.dss.utils.Utils;
@@ -20,6 +19,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 
 @Service
@@ -33,14 +33,13 @@ public class DSSService {
     private final TLValidationJob tlValidationJob;
 
     private final KeyStoreCertificateSource ojContentKeyStore;
+    private final DSSBeanConfig dssBeanConfig;
 
-    private final CommonTrustedCertificateSource myTrustedCertificateSource;
-
-public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, KeyStoreCertificateSource ojContentKeyStore, CommonTrustedCertificateSource myTrustedCertificateSource) {
+public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, KeyStoreCertificateSource ojContentKeyStore, DSSBeanConfig dssBeanConfig) {
         this.dssProperties = dssProperties;
         this.tlValidationJob = tlValidationJob;
         this.ojContentKeyStore = ojContentKeyStore;
-        this.myTrustedCertificateSource = myTrustedCertificateSource;
+        this.dssBeanConfig = dssBeanConfig;
     }
 
     public LOTLInfo getLOTLInfoById(String lotlId) {
@@ -101,9 +100,15 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         return dssProperties.getOjUrl();
     }
 
+    public String getOjKeystorePath() throws IOException {
+        return dssBeanConfig.getOjKeystorePath();
+    }
+
     public void initializeOj() throws IOException {
+        if (ojContentKeyStore.getCertificates().isEmpty()) {
+            throw new IOException("Le keystore DSS de bootstrap est vide. Fournissez un keystore.p12 contenant les certificats JO/LOTL de confiance.");
+        }
         logger.info("Updating DSS OJ offline...");
-        ojContentKeyStore.addAllCertificatesToKeyStore(myTrustedCertificateSource.getCertificates());
         tlValidationJob.offlineRefresh();
         logger.info("Updating DSS OJ offline done.");
         if(refreshIsNeeded()) {
@@ -111,7 +116,7 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         }
     }
 
-    public void refreshOj() {
+    public void refreshOj() throws IOException {
         logger.info("Updating DSS OJ online...");
         tlValidationJob.onlineRefresh();
         logger.info("Updating DSS OJ online done.");
@@ -122,7 +127,8 @@ public DSSService(DSSProperties dssProperties, TLValidationJob tlValidationJob, 
         if(summary == null) return true;
         boolean checkTl = false;
         for (LOTLInfo lotlInfo : summary.getLOTLInfos()) {
-            if(!lotlInfo.getParsingCacheInfo().isSynchronized()
+            if(!lotlInfo.getValidationCacheInfo().isValid()
+                || !lotlInfo.getParsingCacheInfo().isSynchronized()
                 || !lotlInfo.getDownloadCacheInfo().isSynchronized()) {
                 checkTl = true;
             }

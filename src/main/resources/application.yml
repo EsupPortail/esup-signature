@@ -185,6 +185,8 @@ spring:
                     content:
                         enabled: true
                         paths: /**
+        error:
+            include-stacktrace: always
     mvc:
         static-path-pattern: /**
 
@@ -241,6 +243,7 @@ dss:
     check-revocation-for-untrusted-chains: false
     multi-thread-tl-validation: true
     accept-signature-field-overlap: false
+    tl-loader-ades-enabled: true
 
 fs:
 #    smb-login: esup-signature
@@ -286,8 +289,6 @@ server:
     servlet:
         session:
             tracking-modes: COOKIE
-    error:
-        include-stacktrace: always
     port: 8080
     tomcat:
         mbeanregistry:

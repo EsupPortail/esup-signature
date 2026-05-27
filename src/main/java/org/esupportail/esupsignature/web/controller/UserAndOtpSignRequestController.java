@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
 import org.esupportail.esupsignature.service.ui.UiFetchSignRequestService;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestContextDto;
@@ -54,12 +55,13 @@ public class UserAndOtpSignRequestController {
 
     private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
     private final UiFetchSignRequestService uiFetchSignRequestService;
+    private final PreAuthorizeService preAuthorizeService;
 
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
@@ -67,6 +69,7 @@ public class UserAndOtpSignRequestController {
         this.signBookService = signBookService;
         this.uiFetchService = uiFetchService;
         this.uiFetchSignRequestService = uiFetchSignRequestService;
+        this.preAuthorizeService = preAuthorizeService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -431,9 +434,14 @@ public class UserAndOtpSignRequestController {
             if(keepFollow) {
                 return "redirect:/user/signrequests/" + signRequestId;
             } else {
-                String path = httpServletRequest.getRequestURI();
-                String basePath = path.startsWith("/otp") ? "/otp-access/transferred" : "/user/signrequests/" + signRequestId;
-                return "redirect:" + basePath;
+                if(preAuthorizeService.checkUserViewRights(signRequestId, authUserEppn, authUserEppn)) {
+                    String path = httpServletRequest.getRequestURI();
+                    String basePath = path.startsWith("/otp") ? "/otp-access/transferred" : "/user/signrequests/" + signRequestId;
+                    return "redirect:" + basePath;
+                } else {
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Demande transférée, vous n'y avez plus accès"));
+                    return "redirect:/user";
+                }
             }
         } catch (EsupSignatureRuntimeException e) {
             redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non transférée : " + e.getMessage()));

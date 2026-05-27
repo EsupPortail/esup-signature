@@ -26,10 +26,10 @@
         <div class="alert p-3 m-0 bg-success-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${isCompletedRequest}">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
-        <a class="ms-1 d-flex align-items-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank" title="Télécharger le document signé">
+        <a class="ms-1 d-flex justify-content-center btn btn-success p-3 d-flex h-100" th:if="${isCompletedRequest}" tabindex="1" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank" title="Télécharger le document signé">
             <i class="fi fi-rr-download " style="margin-top: 0"></i> Télécharger le document signé
         </a>
-        <a class="ms-1 d-flex align-items-center btn btn-outline-success p-3 h-100"
+        <a class="ms-1 d-flex justify-content-center btn btn-outline-success p-3 h-100"
            th:if="${isCompletedRequest && showSignRequest.nextSignRequestId != null}"
            tabindex="1"
            th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${showSignRequest.nextSignRequestId}"

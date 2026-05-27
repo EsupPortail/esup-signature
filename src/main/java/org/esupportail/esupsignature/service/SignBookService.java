@@ -1639,7 +1639,6 @@ public class SignBookService {
                     workflowService.importWorkflow(signBook, workflow, workflowSteps, userEppn);
                     signRequestService.nextWorkFlowStep(signBook);
                 }
-//            dispatchSignRequestParams(signBookLight);
                 targetService.copyTargets(targets, signBook, targetEmails);
                 userPropertieService.createUserPropertieFromMails(userService.getByEppn(authUserEppn), workflowSteps);
                 if (pending != null && pending) {
@@ -2103,6 +2102,9 @@ public class SignBookService {
     public List<Long> startWorkflow(String id, MultipartFile[] multipartFiles, String createByEppn, String title, List<WorkflowStepDto> steps, List<String> targetEmails, List<String> targetUrls, Boolean scanSignatureFields, Boolean orderSignsByName, Boolean sendEmailAlert, String comment) throws EsupSignatureRuntimeException, EsupSignatureException {
         logger.info("starting workflow " + id + " by " + createByEppn);
         Workflow workflow = workflowService.getByIdOrToken(id);
+        if(workflow == null) {
+            throw new EsupSignatureException("workflow not found");
+        }
         User user = userService.createUserWithEppn(createByEppn);
         SignBook signBook = createSignBook(title, workflow, "", user.getEppn(), false, comment);
         signBook.getLiveWorkflow().setWorkflow(workflow);
@@ -2181,6 +2183,10 @@ public class SignBookService {
     @Transactional
     public boolean startLiveWorkflow(Long signBookId, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
+        if (!SignRequestStatus.draft.equals(signBook.getStatus()) && !SignRequestStatus.uploading.equals(signBook.getStatus())) {
+            logger.info("Circuit {} déjà démarré, deuxième lancement ignoré", signBook.getId());
+            return true;
+        }
         if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {

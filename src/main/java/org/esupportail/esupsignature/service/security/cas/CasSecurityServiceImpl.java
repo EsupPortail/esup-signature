@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -177,4 +178,10 @@ public class CasSecurityServiceImpl implements SecurityService {
 		return ldapUserDetailsService;
 	}
 
+	@Override
+	public AbstractConfigurationFilter getSingleSignOutFilter() {
+		CasSingleSignOutFilter singleSignOutFilter = new CasSingleSignOutFilter("/login/cas");
+		singleSignOutFilter.setIgnoreInitConfiguration(true);
+		return singleSignOutFilter;
+	}
 }
