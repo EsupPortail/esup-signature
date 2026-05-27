@@ -4,6 +4,11 @@ export class HomeUi {
         this.bootstrapUrl = bootstrapUrl;
         this.bootstrap = null;
         this.slimselect = null;
+        this.toSignRefreshIntervalMs = 60_000;
+        this.toSignRefreshTimerId = null;
+        this.toSignRefreshInFlight = false;
+        this.knownToSignListState = null;
+        this.highlightedToSignItems = null;
         this.startWhenDomReady();
     }
 
@@ -25,6 +30,10 @@ export class HomeUi {
         try {
             this.bootstrap = await this.loadBootstrap();
             this.renderHomeLists();
+            this.knownToSignListState = this.collectToSignListState(this.bootstrap?.toSignSignBooks || []);
+            this.highlightedToSignItems = {newSignBookIds: new Set(), newSignRequestIds: new Set()};
+            void this.refreshToSignCountersFromServer();
+            this.startAutoRefreshToSignList();
             this.initWorkflowDeleteForms();
             this.initFavoriteTriggers();
             this.initFavoriteToggles();
@@ -36,6 +45,218 @@ export class HomeUi {
         } finally {
             window.requestAnimationFrame(() => this.setHomeLoadingState(false));
         }
+    }
+
+    startAutoRefreshToSignList() {
+        const container = document.getElementById('to-sign-list');
+        if (container == null) {
+            return;
+        }
+
+        if (this.toSignRefreshTimerId != null) {
+            window.clearInterval(this.toSignRefreshTimerId);
+            this.toSignRefreshTimerId = null;
+        }
+
+        const tick = () => void this.refreshToSignListOnce();
+        this.toSignRefreshTimerId = window.setInterval(tick, this.toSignRefreshIntervalMs);
+
+        window.addEventListener('beforeunload', () => {
+            if (this.toSignRefreshTimerId != null) {
+                window.clearInterval(this.toSignRefreshTimerId);
+                this.toSignRefreshTimerId = null;
+            }
+        }, {once: true});
+    }
+
+    async refreshToSignListOnce() {
+        if (document.hidden) {
+            return;
+        }
+        if (this.toSignRefreshInFlight) {
+            return;
+        }
+        const container = document.getElementById('to-sign-list');
+        if (container == null) {
+            return;
+        }
+
+        const previousState = this.knownToSignListState ?? this.emptyToSignListState();
+        this.toSignRefreshInFlight = true;
+        try {
+            const bootstrap = await this.fetchJson(this.buildBootstrapUrl());
+            this.bootstrap = bootstrap;
+            const signBooks = this.bootstrap?.toSignSignBooks || [];
+            const currentState = this.collectToSignListState(signBooks);
+            const newItems = this.findNewToSignItems(previousState, currentState);
+            const didChange = !this.toSignListStatesEqual(previousState, currentState);
+
+            if (!didChange) {
+                // Persist highlight across refresh if nothing changed
+                this.highlightedToSignItems = this.highlightedToSignItems ?? {newSignBookIds: new Set(), newSignRequestIds: new Set()};
+            } else {
+                // Keep already-highlighted items that still exist, then add newly detected ones.
+                const existing = this.highlightedToSignItems ?? {newSignBookIds: new Set(), newSignRequestIds: new Set()};
+                this.highlightedToSignItems = {
+                    newSignBookIds: this.setUnion(
+                        this.setIntersect(existing.newSignBookIds, currentState.signBookIds),
+                        newItems.newSignBookIds
+                    ),
+                    newSignRequestIds: this.setUnion(
+                        this.setIntersect(existing.newSignRequestIds, currentState.signRequestIds),
+                        newItems.newSignRequestIds
+                    )
+                };
+            }
+            this.renderHomeSignBookList(
+                'to-sign-list',
+                signBooks,
+                'Aucun document à signer pour le moment',
+                this.highlightedToSignItems
+            );
+            this.knownToSignListState = currentState;
+            await this.refreshToSignCountersFromServer();
+        } catch (error) {
+            console.debug('Unable to refresh to-sign list', error);
+        } finally {
+            this.toSignRefreshInFlight = false;
+        }
+    }
+
+    emptyToSignListState() {
+        return {
+            signBookIds: new Set(),
+            signRequestIds: new Set()
+        };
+    }
+
+    toSignListStatesEqual(a, b) {
+        if (a === b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        return this.setEquals(a.signBookIds, b.signBookIds) && this.setEquals(a.signRequestIds, b.signRequestIds);
+    }
+
+    setEquals(a, b) {
+        if (a === b) {
+            return true;
+        }
+        if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) {
+            return false;
+        }
+        for (const v of a) {
+            if (!b.has(v)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    setIntersect(a, b) {
+        if (!(a instanceof Set) || !(b instanceof Set)) {
+            return new Set();
+        }
+        const out = new Set();
+        for (const v of a) {
+            if (b.has(v)) {
+                out.add(v);
+            }
+        }
+        return out;
+    }
+
+    setUnion(a, b) {
+        const out = new Set();
+        if (a instanceof Set) {
+            for (const v of a) {
+                out.add(v);
+            }
+        }
+        if (b instanceof Set) {
+            for (const v of b) {
+                out.add(v);
+            }
+        }
+        return out;
+    }
+
+    collectToSignListState(signBooks) {
+        const signBookIds = new Set();
+        const signRequestIds = new Set();
+        if (!Array.isArray(signBooks)) {
+            return {signBookIds, signRequestIds};
+        }
+        for (const signBook of signBooks) {
+            if (signBook?.id != null) {
+                signBookIds.add(String(signBook.id));
+            }
+            for (const signRequest of signBook.signRequests || []) {
+                if (signRequest?.id != null) {
+                    signRequestIds.add(String(signRequest.id));
+                }
+            }
+        }
+        return {signBookIds, signRequestIds};
+    }
+
+    findNewToSignItems(previousState, currentState) {
+        const previous = previousState ?? this.emptyToSignListState();
+        const current = currentState ?? this.emptyToSignListState();
+        return {
+            newSignBookIds: new Set([...current.signBookIds].filter(id => !previous.signBookIds.has(id))),
+            newSignRequestIds: new Set([...current.signRequestIds].filter(id => !previous.signRequestIds.has(id)))
+        };
+    }
+
+    isNewToSignSignBookRow(signBook, newItems) {
+        if (newItems == null || signBook == null) {
+            return false;
+        }
+        if (newItems.newSignBookIds.has(String(signBook.id))) {
+            return true;
+        }
+        const signRequests = signBook.signRequests || [];
+        if (signRequests.length === 1) {
+            return newItems.newSignRequestIds.has(String(signRequests[0].id));
+        }
+        return signRequests.some(signRequest => newItems.newSignRequestIds.has(String(signRequest.id)));
+    }
+
+    isNewToSignSignRequestRow(signRequest, newItems) {
+        return newItems != null
+            && signRequest?.id != null
+            && newItems.newSignRequestIds.has(String(signRequest.id));
+    }
+
+    async refreshToSignCountersFromServer() {
+        try {
+            const uiData = await this.fetchJson('/ws-secure/ui/ui-data');
+            const nbToSign = uiData?.counters?.nbToSign;
+            if (nbToSign == null) {
+                return null;
+            }
+            const count = Number(nbToSign) || 0;
+            this.updateToSignBadges(count);
+            return count;
+        } catch (error) {
+            console.debug('Unable to refresh to-sign counters', error);
+            return null;
+        }
+    }
+
+    updateToSignBadges(nbToSign) {
+        const count = Number(nbToSign) || 0;
+        ['home-badge-to-sign', 'navbar-badge-to-sign'].forEach(badgeId => {
+            const badge = document.getElementById(badgeId);
+            if (badge == null) {
+                return;
+            }
+            badge.textContent = String(count);
+            badge.classList.toggle('d-none', count === 0);
+        });
     }
 
     async loadBootstrap() {
@@ -60,7 +281,7 @@ export class HomeUi {
         this.renderHomeSignBookList('pending-list', this.bootstrap?.pendingSignBooks || [], 'Aucun document à signer pour le moment');
     }
 
-    renderHomeSignBookList(containerId, signBooks, emptyMessage) {
+    renderHomeSignBookList(containerId, signBooks, emptyMessage, newItems = null) {
         const container = document.getElementById(containerId);
         if (container == null) {
             return;
@@ -71,7 +292,8 @@ export class HomeUi {
             return;
         }
 
-        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(signBook)).join('');
+        const highlightItems = containerId === 'to-sign-list' ? newItems : null;
+        const rows = signBooks.map(signBook => this.renderHomeSignBookRows(signBook, highlightItems)).join('');
         container.innerHTML = `
             <div class="div-scrollable scrollbar-style rounded-3" style="max-height: 400px; overflow-x: hidden;">
                 <div class="d-flex col-12 mb-2">
@@ -94,7 +316,7 @@ export class HomeUi {
         this.bindRenderedHomeRows(container);
     }
 
-    renderHomeSignBookRows(signBook) {
+    renderHomeSignBookRows(signBook, newItems = null) {
         if (signBook == null || !Array.isArray(signBook.signRequests) || signBook.signRequests.length === 0) {
             return '';
         }
@@ -108,20 +330,23 @@ export class HomeUi {
         const workflowName = signBook.workflowName || '';
         const createDateLabel = signBook.createDateLabel || '';
         const listTitle = signBook.listTitle || subject;
+        const isNewRow = this.isNewToSignSignBookRow(signBook, newItems);
+        const highlightClass = isNewRow ? ' home-to-sign-row-new' : '';
 
         return `
             <tr title="${this.escapeHtml(description)}"
+                data-es-sign-book-id="${signBook.id}"
                 data-href="/user/signrequests/${encodeURIComponent(signBook.primarySignRequestId)}"
-                class="${multiple ? '' : 'clickable-row'}"
+                class="${multiple ? '' : 'clickable-row'}${highlightClass}"
                 ${multiple ? 'data-bs-toggle="collapse" data-bs-target="#' + this.escapeHtml(rowId) + '"' : ''}
                 style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
                 <td>
                     <div class="d-flex flex-row align-items-center justify-content-between gap-1">
                         ${signBook.viewedByCurrentUser
                             ? '<i class="fi fi-rr-circle text-transparent" title="Le document a été lu jusqu\'à la dernière page"></i>'
-                            : '<i class="fi fi-rr-circle text-danger" title="Le document n\'a pas été lu jusqu\'à la dernière page"></i>'}
+                            : '<i class="fi fi-rr-low-vision" title="Le document n\'a pas été lu jusqu\'à la dernière page"></i>'}
                         ${signBook.hasAttachments
-                            ? '<i class="fi fi-rr-clip text-dark" title="La demande contient des pièces jointes"></i>'
+                            ? '<i class="fi fi-rr-clip" title="La demande contient des pièces jointes"></i>'
                             : '<i class="fi fi-rr-clip text-transparent"></i>'}
                         ${this.renderPostitButton(signBook, dropdownId)}
                         ${this.renderPostitDropdown(signBook, dropdownId)}
@@ -138,13 +363,15 @@ export class HomeUi {
                 <td class="text-break d-none d-xxl-table-cell ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(workflowName)}</td>
                 <td class="text-break text-nowrap ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 120px;">${this.escapeHtml(createDateLabel)}</td>
             </tr>
-            ${multiple ? this.renderHomeSecondaryRow(signBook, rowId, description) : ''}
+            ${multiple ? this.renderHomeSecondaryRow(signBook, rowId, description, newItems) : ''}
         `;
     }
 
-    renderHomeSecondaryRow(signBook, rowId, description) {
-        const nestedRows = signBook.signRequests.map(signRequest => `
-            <tr class="clickable-row" data-href="/user/signrequests/${encodeURIComponent(signRequest.id)}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
+    renderHomeSecondaryRow(signBook, rowId, description, newItems = null) {
+        const nestedRows = signBook.signRequests.map(signRequest => {
+            const highlightClass = this.isNewToSignSignRequestRow(signRequest, newItems) ? ' home-to-sign-row-new' : '';
+            return `
+            <tr class="clickable-row${highlightClass}" data-es-sign-request-id="${signRequest.id}" data-href="/user/signrequests/${encodeURIComponent(signRequest.id)}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
                 <td style="width: 40px;">
                     <i class="fi fi-rr-file" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                 </td>
@@ -153,7 +380,8 @@ export class HomeUi {
                     ${this.renderStatusBadge(signRequest.status)}
                 </td>
             </tr>
-        `).join('');
+        `;
+        }).join('');
 
         return `
             <tr title="${this.escapeHtml(description)}">

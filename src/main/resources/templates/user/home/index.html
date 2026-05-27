@@ -156,9 +156,9 @@
                         </button>
                     </div>
                     <h5 class="ms-2 d-flex justify-content-start align-items-center gap-3">
-                        <i class="fi fi-rr-inbox-full text-secondary-emphasis"></i>
+                        <i id="home-to-sign-icon" class="fi fi-rr-inbox-full text-secondary-emphasis"></i>
                         <span>À signer</span>
-                        <span aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
+                        <span id="home-badge-to-sign" aria-hidden="true" title="Demandes à signer" class="badge rounded-pill bg-danger d-none d-md-inline" th:text="${nbToSign}" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"></span>
                     </h5>
                     <div>
                         <div id="to-sign-list" class="home-signbook-list-loading-shell">
