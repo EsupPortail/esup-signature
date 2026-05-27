@@ -34,6 +34,13 @@
                                                 <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
                                             </button>
                                         </li>
+                                        <li>
+                                            <a th:if="${signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
+                                               th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank" style="font-weight: revert;"
+                                               >
+                                                <i class="fi fi-rr-progress-download" style="margin-top: 10px;"></i> Télécharger le document original
+                                            </a>
+                                        </li>
                                     </th:block>
                                     <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
@@ -319,6 +326,14 @@
                                                         th:data-step="${stepNumber}">
                                                     <i class="fi fi-rr-layers"></i> Afficher les modifications seules
                                                 </button>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark w-100 text-left"
+                                                   th:href="@{'/ws-secure/global/get-layered-file/' + ${signRequestLight.id} + '/' + ${stepNumber}}"
+                                                   target="_blank"
+                                                   title="Télécharger le document à cette étape" style="font-weight: revert;">
+                                                    <i class="fi fi-rr-download"></i> Télécharger le document à cette étape
+                                                </a>
                                             </li>
                                         </th:block>
 

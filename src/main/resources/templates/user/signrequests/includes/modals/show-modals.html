@@ -459,12 +459,13 @@
                     <div class="modal-body">
                         <p class="alert alert-primary mb-1">
                             Cette action permet de créer une nouvelle demande signature en reprenant le même circuit. Le nouveau circuit sera cloné et redémarré de zéro, merci donc de déposer un document, corrigé, ne contenant pas les signatures faites via le circuit actuel.
+                            Vous pouvez aussi récupérer le document à l’étape souhaitée à l’aide des ... dans la barre de gauche.
                         </p>
                         <label for="multipartFiles1">
                             <b>Nouveau document</b>
                         </label>
                         <br>
-                        <input id="multipartFiles1" name="multipartFiles" type="file" multiple="multiple" />
+                        <input id="multipartFiles1" name="multipartFiles" type="file" multiple="multiple" required />
                         <script th:inline="javascript" type="module">
                             $("#multipartFiles1").fileinput({
                                     language: "fr",

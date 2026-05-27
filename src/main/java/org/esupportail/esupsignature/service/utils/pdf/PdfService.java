@@ -1468,6 +1468,35 @@ public class PdfService {
         return null;
     }
 
+    public byte[] removeOptionalContentAfterStep(byte[] pdfWithOcg, int stepNumber) throws IOException {
+        try (PDDocument doc = Loader.loadPDF(pdfWithOcg)) {
+            PDOptionalContentProperties ocProperties = doc.getDocumentCatalog().getOCProperties();
+            if (ocProperties == null) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                doc.save(out);
+                return out.toByteArray();
+            }
+
+            Set<String> hiddenLayerNames = new HashSet<>();
+            String[] groupNames = ocProperties.getGroupNames();
+            for (int i = 0; i < groupNames.length; i++) {
+                boolean displayLayer = i < stepNumber;
+                ocProperties.setGroupEnabled(groupNames[i], displayLayer);
+                if (!displayLayer) {
+                    hiddenLayerNames.add(groupNames[i]);
+                }
+            }
+
+            for (PDPage page : doc.getPages()) {
+                page.getAnnotations().removeIf(annotation -> hiddenLayerNames.contains(annotation.getAnnotationName()));
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            doc.save(out);
+            return out.toByteArray();
+        }
+    }
+
 //    public InputStream convertDocToPDF(InputStream doc) {
 //        try {
 //            Docx2PDFViaDocx4jConverter docx2PDFViaDocx4jConverter = Docx2PDFViaDocx4jConverter.getInstance();
