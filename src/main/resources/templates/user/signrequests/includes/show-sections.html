@@ -61,15 +61,10 @@
         <a target="_blank" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported}" class="d-flex justify-content-center btn btn-transparent text-dark" th:href="'/user/validation/document/' + ${signRequestLight.id}" title="Contrôler le document">
             <i class="fi fi-rr-audit"></i>
         </a>
-        <a th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
-           th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank"
-           title="Télécharger le document original">
-            <i class="fi fi-rr-progress-download" style="margin-top: 10px;"></i>
-        </a>
         <a th:if="${showSignRequest.workflow.authorizeClone && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" type="button"
-           class="btn-lg btn btn-floating bg-primary" data-bs-toggle="modal" title="Relancer cette demande"
+           class="d-flex justify-content-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Relancer cette demande"
            data-bs-target="#cloneModal">
-            <i class="fi fi-rr-refresh "style="margin-top: 10px;"></i>
+            <i class="fi fi-rr-refresh" style="margin-top: 10px;"></i>
         </a>
         <th:block id="openButtons" class="es-fixed-action-btns active"
                   th:if="${showSignRequest.viewRight && (signRequestLight.deleted || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}"
@@ -84,6 +79,11 @@
         </th:block>
     </div>
     <div class="d-flex flex-column gap-4">
+        <a th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
+           th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank"
+           title="Télécharger le document original">
+            <i class="fi fi-rr-progress-download" style="margin-top: 10px;"></i>
+        </a>
         <div th:if="${!showSignRequest.workflow.forbidDownloadsBeforeEnd && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
             <a tabindex="1" class="d-flex justify-content-center btn btn-transparent text-dark me-1 d-none d-sm-flex"
                th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank"
