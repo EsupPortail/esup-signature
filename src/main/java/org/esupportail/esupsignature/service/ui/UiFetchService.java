@@ -29,12 +29,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.context.MessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -71,8 +73,9 @@ public class UiFetchService {
     private final SessionRepositoryCustom sessionRepositoryCustom;
     private final UiFetchMapper uiFetchMapper;
     private final UiAdminFormMapper uiAdminFormMapper;
+    private final MessageSource messageSource;
 
-    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper) {
+    public UiFetchService(GlobalProperties globalProperties, SmsProperties smsProperties, SignRequestService signRequestService, SignBookService signBookService, WorkflowService workflowService, FormService formService, UserShareService userShareService, UserService userService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, RecipientService recipientService, TagService tagService, PreFillService preFillService, ReportService reportService, PreAuthorizeService preAuthorizeService, Environment environment, @Autowired(required = false) BuildProperties buildProperties, ValidationService validationService, CertificatService certificatService, @Autowired(required = false) DSSService dssService, SessionRepositoryCustom sessionRepositoryCustom, UiFetchMapper uiFetchMapper, UiAdminFormMapper uiAdminFormMapper, MessageSource messageSource) {
         this.globalProperties = globalProperties;
         this.smsProperties = smsProperties;
         this.signRequestService = signRequestService;
@@ -96,6 +99,7 @@ public class UiFetchService {
         this.sessionRepositoryCustom = sessionRepositoryCustom;
         this.uiFetchMapper = uiFetchMapper;
         this.uiAdminFormMapper = uiAdminFormMapper;
+        this.messageSource = messageSource;
     }
 
     public UiDataDto buildUiData(String userEppn, String authUserEppn, HttpSession httpSession) {
@@ -120,6 +124,59 @@ public class UiFetchService {
                 buildHomeSignBookItems(userEppn, authUserEppn, "toSign"),
                 buildHomeSignBookItems(userEppn, authUserEppn, "pending")
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<UiSearchResult> buildHomeSearchResults(String authUserEppn, List<UiSearchRequest> searchRequests) {
+        if (searchRequests == null || searchRequests.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> words = new ArrayList<>();
+        List<String> types = new ArrayList<>();
+        Set<Long> tagIds = new HashSet<>();
+
+        for (UiSearchRequest searchRequest : searchRequests) {
+            String value = searchRequest.getValue();
+            if (!StringUtils.hasText(value)) {
+                continue;
+            }
+            if (value.startsWith("tag:")) {
+                try {
+                    tagIds.add(Long.valueOf(value.split(":")[1]));
+                } catch (NumberFormatException e) {
+                    logger.warn("Tag de recherche invalide: {}", value);
+                }
+            } else if (value.startsWith("type:")) {
+                types.add(value.split(":")[1]);
+            } else if (!value.contains(":")) {
+                words.add(value);
+            }
+        }
+
+        List<UiSearchResult> searchResults = new ArrayList<>();
+        List<Workflow> workflows = List.of();
+        List<Form> forms = List.of();
+
+        if (types.isEmpty() || types.contains("workflow")) {
+            workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn).stream()
+                    .filter(workflow -> matchesTags(workflow.getTags(), tagIds) && matchesWords(workflow.getDescription(), words))
+                    .toList();
+            searchResults.addAll(workflows.stream().map(this::toWorkflowSearchResult).toList());
+        }
+
+        if (types.isEmpty() || types.contains("form")) {
+            forms = formService.getFormsByUser(authUserEppn, authUserEppn).stream()
+                    .filter(form -> matchesTags(form.getTags(), tagIds) && matchesWords(form.getDescription(), words))
+                    .toList();
+            searchResults.addAll(forms.stream().map(this::toFormSearchResult).toList());
+        }
+
+        if (types.isEmpty() || types.contains("signBookLight")) {
+            searchResults.addAll(buildSignBookSearchResults(authUserEppn, words, tagIds, workflows, forms));
+        }
+
+        return searchResults;
     }
 
     @Transactional(readOnly = true)
@@ -593,6 +650,106 @@ public class UiFetchService {
             return null;
         }
         return user.getFirstname() + " " + user.getName();
+    }
+
+    private List<UiSearchResult> buildSignBookSearchResults(String authUserEppn, List<String> words, Set<Long> tagIds, List<Workflow> workflows, List<Form> forms) {
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "createDate"));
+        List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, pageable).getContent();
+        Set<SignBook> signBooks = new LinkedHashSet<>();
+
+        if (words.isEmpty() && workflows.isEmpty() && forms.isEmpty()) {
+            signBooks.addAll(allSignBooks);
+        } else {
+            for (String word : words) {
+                signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, word, null, null, Pageable.unpaged()).getContent());
+            }
+            for (Workflow workflow : workflows) {
+                signBooks.addAll(allSignBooks.stream()
+                        .filter(signBook -> signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().equals(workflow))
+                        .toList());
+            }
+            for (Form form : forms) {
+                signBooks.addAll(allSignBooks.stream()
+                        .filter(signBook -> signBook.getLiveWorkflow().getWorkflow() != null && signBook.getLiveWorkflow().getWorkflow().equals(form.getWorkflow()))
+                        .toList());
+            }
+        }
+
+        return signBooks.stream()
+                .filter(signBook -> tagIds.isEmpty() || hasAllTags(getWorkflowTags(signBook), tagIds))
+                .map(this::toSignBookSearchResult)
+                .toList();
+    }
+
+    private UiSearchResult toWorkflowSearchResult(Workflow workflow) {
+        UiSearchResult searchResult = new UiSearchResult();
+        searchResult.setIcon("fi fi-rr-diagram-project project-diagram-color");
+        searchResult.setTitle(workflow.getDescription());
+        searchResult.setUrl("/user/start-workflow/" + workflow.getId());
+        searchResult.setTags(renderTags(workflow.getTags()));
+        return searchResult;
+    }
+
+    private UiSearchResult toFormSearchResult(Form form) {
+        UiSearchResult searchResult = new UiSearchResult();
+        searchResult.setIcon("fi fi-rr-poll-h file-alt-color");
+        searchResult.setTitle(form.getTitle());
+        searchResult.setUrl("/user/start-form/" + form.getId());
+        searchResult.setTags(renderTags(form.getTags()));
+        return searchResult;
+    }
+
+    private UiSearchResult toSignBookSearchResult(SignBook signBook) {
+        UiSearchResult searchResult = new UiSearchResult();
+        searchResult.setIcon("fi fi-rr-file");
+        searchResult.setTitle(signBook.getSubject());
+        searchResult.setUrl("/user/signbooks/" + signBook.getId());
+        searchResult.setDate(signBook.getCreateDate());
+        searchResult.setTags(renderTags(getWorkflowTags(signBook)));
+        String status = messageSource.getMessage("signbook.status." + signBook.getStatus().name(), null, Locale.ROOT);
+        String color = messageSource.getMessage("signbook.status.color." + signBook.getStatus().name(), null, Locale.ROOT);
+        String icon = messageSource.getMessage("signbook.status.icon." + signBook.getStatus().name(), null, Locale.ROOT);
+        String badge = "<div class='badge rounded-pill badge-status text-bg-" + color + "'><i class='fi " + icon + "'></i><span class='d-md-inline-flex'>" + status + "</span></div>";
+        searchResult.setStatus(badge);
+        return searchResult;
+    }
+
+    private List<Tag> getWorkflowTags(SignBook signBook) {
+        if (signBook.getLiveWorkflow() == null || signBook.getLiveWorkflow().getWorkflow() == null) {
+            return List.of();
+        }
+        return signBook.getLiveWorkflow().getWorkflow().getTags();
+    }
+
+    private boolean matchesWords(String source, List<String> words) {
+        return words.isEmpty() || words.stream().anyMatch(word -> source != null && source.toLowerCase(Locale.ROOT).contains(word.toLowerCase(Locale.ROOT)));
+    }
+
+    private boolean matchesTags(Collection<Tag> sourceTags, Set<Long> expectedTagIds) {
+        return expectedTagIds.isEmpty() || hasAllTags(sourceTags, expectedTagIds);
+    }
+
+    private boolean hasAllTags(Collection<Tag> sourceTags, Set<Long> expectedTagIds) {
+        Set<Long> sourceTagIds = sourceTags.stream()
+                .filter(Objects::nonNull)
+                .map(Tag::getId)
+                .filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toSet());
+        return sourceTagIds.containsAll(expectedTagIds);
+    }
+
+    private String renderTags(Collection<Tag> tags) {
+        StringBuilder renderedTags = new StringBuilder();
+        for (Tag tag : tags) {
+            if (tag != null) {
+                renderedTags.append("<span style=\"background-color: ")
+                        .append(tag.getColor())
+                        .append("\" class=\"badge\">")
+                        .append(tag.getName())
+                        .append("</span> ");
+            }
+        }
+        return renderedTags.toString();
     }
 
 }

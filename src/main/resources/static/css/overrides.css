@@ -364,6 +364,35 @@ body.home-page .home-list-loading-placeholder {
     height: 100%;
 }
 
+.home-to-sign-row-new {
+    --bs-table-bg-state: var(--bs-primary-bg-subtle);
+    --bs-table-bg: var(--bs-primary-bg-subtle);
+    --bs-table-accent-bg: var(--bs-primary-bg-subtle);
+    animation: home-to-sign-row-new-pulse 1.2s ease-in-out 4;
+}
+
+/* Table background is applied on td in bootstrap tables, not tr. */
+.home-to-sign-row-new > td {
+    --bs-table-bg-state: var(--bs-primary-bg-subtle);
+    --bs-table-bg: var(--bs-primary-bg-subtle);
+    --bs-table-accent-bg: var(--bs-primary-bg-subtle);
+    background-color: var(--bs-primary-bg-subtle) !important;
+    animation: home-to-sign-row-new-pulse 1.2s ease-in-out 4;
+}
+
+@keyframes home-to-sign-row-new-pulse {
+    0%, 100% {
+        --bs-table-bg-state: revert;
+        --bs-table-bg: revert;
+        --bs-table-accent-bg: revert;
+    }
+    50% {
+        --bs-table-bg-state: var(--bs-primary-bg-subtle);
+        --bs-table-bg: var(--bs-primary-bg-subtle);
+        --bs-table-accent-bg: var(--bs-primary-bg-subtle);
+    }
+}
+
 body.home-page.home-loading .home-list-loading-placeholder {
     background: linear-gradient(90deg, var(--color-rgba-248-249-250-09) 25%, var(--color-rgba-233-236-239-09) 37%, var(--color-rgba-248-249-250-09) 63%);
     background-size: 400% 100%;

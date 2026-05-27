@@ -12,12 +12,8 @@ import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.repository.DataRepository;
 import org.esupportail.esupsignature.repository.SignRequestRepository;
 import org.esupportail.esupsignature.service.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.data.domain.PageRequest;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -27,14 +23,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @RequestMapping("/user")
 @Controller
 public class HomeController {
 
-    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
     private final TagService tagService;
+    private final UiFetchService uiFetchService;
 
     @ModelAttribute("activeMenu")
     public String getActiveMenu() {
@@ -50,10 +48,9 @@ public class HomeController {
     private final DataRepository dataRepository;
     private final MessageService messageService;
     private final UserService userService;
-    private final MessageSource messageSource;
 
 
-    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, MessageService messageService, UserService userService, TagService tagService, MessageSource messageSource) {
+    public HomeController(GlobalProperties globalProperties, SignRequestRepository signRequestRepository, FormService formService, WorkflowService workflowService, SignRequestService signRequestService, SignBookService signBookService, DataRepository dataRepository, MessageService messageService, UserService userService, TagService tagService, UiFetchService uiFetchService) {
         this.globalProperties = globalProperties;
         this.signRequestRepository = signRequestRepository;
         this.formService = formService;
@@ -64,7 +61,7 @@ public class HomeController {
         this.messageService = messageService;
         this.userService = userService;
         this.tagService = tagService;
-        this.messageSource = messageSource;
+        this.uiFetchService = uiFetchService;
     }
 
     @GetMapping(value = {"", "/"})
@@ -143,115 +140,7 @@ public class HomeController {
     @PostMapping(value = "/search", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<UiSearchResult> search(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<UiSearchRequest> searchRequests) {
-        List<UiSearchResult> searchResults = new ArrayList<>();
-        if(!searchRequests.isEmpty()) {
-            List<String> words = new ArrayList<>();
-            List<String> types = new ArrayList<>();
-            Set<Long> tagIds = new HashSet<>();
-            List<Workflow> workflows = new ArrayList<>();
-            List<Form> forms = new ArrayList<>();
-            for (UiSearchRequest searchRequest : searchRequests) {
-                String value = searchRequest.getValue();
-                if (!StringUtils.hasText(value)) {
-                    continue;
-                }
-                if (value.startsWith("tag:")) {
-                    try {
-                        tagIds.add(Long.valueOf(value.split(":")[1]));
-                    } catch (NumberFormatException e) {
-                        logger.warn("Tag de recherche invalide: {}", value);
-                    }
-                } else if (value.startsWith("type:")) {
-                    types.add(value.split(":")[1]);
-                } else if (!value.contains(":")) {
-                    words.add(value);
-                }
-            }
-            if (types.isEmpty() || types.contains("workflow")) {
-                workflows = workflowService.getWorkflowsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(w -> (tagIds.isEmpty() || hasAllTags(w.getTags(), tagIds)) && (words.isEmpty() || words.stream().anyMatch(word -> w.getDescription() != null && w.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
-                for (Workflow workflow : workflows) {
-                    UiSearchResult searchResult = new UiSearchResult();
-                    searchResult.setIcon("fi fi-rr-diagram-project project-diagram-color");
-                    searchResult.setTitle(workflow.getDescription());
-                    searchResult.setUrl("/user/start-workflow/" + workflow.getId());
-                    for(Tag tag : workflow.getTags()) {
-                        searchResult.setTags(searchResult.getTags() +
-                                "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
-                    }
-                    searchResults.add(searchResult);
-                }
-            }
-            if (types.isEmpty() || types.contains("form")) {
-                forms = formService.getFormsByUser(authUserEppn, authUserEppn)
-                        .stream().filter(f -> (tagIds.isEmpty() || hasAllTags(f.getTags(), tagIds)) && (words.isEmpty() || words.stream().anyMatch(word -> f.getDescription() != null && f.getDescription().toLowerCase().contains(word.toLowerCase())))).toList();
-                for (Form form : forms) {
-                    UiSearchResult searchResult = new UiSearchResult();
-                    searchResult.setIcon("fi fi-rr-poll-h file-alt-color");
-                    searchResult.setTitle(form.getTitle());
-                    searchResult.setUrl("/user/start-form/" + form.getId());
-                    for(Tag tag : form.getTags()) {
-                        searchResult.setTags(searchResult.getTags() +
-                                "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
-                    }
-                    searchResults.add(searchResult);
-                }
-            }
-            if(types.isEmpty() || types.contains("signBookLight")) {
-                List<SignBook> signBooks = new ArrayList<>();
-                Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "createDate"));
-                List<SignBook> allSignBooks = signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, null, null, null, pageable).getContent();
-                if(words.isEmpty() && workflows.isEmpty() && forms.isEmpty()) {
-                    signBooks.addAll(allSignBooks);
-                } else {
-                    for (String word : words) {
-                        signBooks.addAll(signBookService.getSignBooks(authUserEppn, authUserEppn, "all", null, null, word, null, null, Pageable.unpaged()).getContent());
-                    }
-                    for (Workflow workflow : workflows) {
-                        signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(workflow)).toList());
-                    }
-                    for (Form form : forms) {
-                        signBooks.addAll(allSignBooks.stream().filter(sb -> sb.getLiveWorkflow().getWorkflow() != null && sb.getLiveWorkflow().getWorkflow().equals(form.getWorkflow())).toList());
-                    }
-                }
-                if(!tagIds.isEmpty()) {
-                    signBooks = signBooks.stream().filter(s -> s.getLiveWorkflow().getWorkflow() != null && hasAllTags(s.getLiveWorkflow().getWorkflow().getTags(), tagIds)).toList();
-                }
-                for (SignBook signBook : signBooks) {
-                    UiSearchResult searchResult = new UiSearchResult();
-                    searchResult.setIcon("fi fi-rr-file");
-                    searchResult.setTitle(signBook.getSubject());
-                    searchResult.setUrl("/user/signbooks/" + signBook.getId());
-                    searchResult.setDate(signBook.getCreateDate());
-                    if(signBook.getLiveWorkflow().getWorkflow() != null) {
-                        for (Tag tag : signBook.getLiveWorkflow().getWorkflow().getTags()) {
-                            searchResult.setTags(searchResult.getTags() +
-                                    "<span style=\"background-color: " + tag.getColor() + "\" class=\"badge\">" + tag.getName() + "</span> ");
-                        }
-                    }
-                    String status = messageSource.getMessage("signbook.status." + signBook.getStatus().name(), null, Locale.ROOT);
-                    String color = messageSource.getMessage("signbook.status.color." + signBook.getStatus().name(), null, Locale.ROOT);
-                    String icon = messageSource.getMessage("signbook.status.icon." + signBook.getStatus().name(), null, Locale.ROOT);
-                    String badge = "<div class='badge rounded-pill badge-status text-bg-" + color + "'><i class='fi " + icon + "'></i><span class='d-md-inline-flex'>" + status + "</span></div>";
-                    searchResult.setStatus(badge);
-                    searchResults.add(searchResult);
-                }
-            }
-        }
-        return searchResults;
-    }
-
-    private boolean hasAllTags(Collection<Tag> sourceTags, Set<Long> expectedTagIds) {
-        if (expectedTagIds.isEmpty()) {
-            return true;
-        }
-        Set<Long> sourceTagIds = new HashSet<>();
-        for (Tag tag : sourceTags) {
-            if (tag != null && tag.getId() != null) {
-                sourceTagIds.add(tag.getId());
-            }
-        }
-        return sourceTagIds.containsAll(expectedTagIds);
+        return uiFetchService.buildHomeSearchResults(authUserEppn, searchRequests);
     }
 
     @GetMapping(value = "/search-titles")
