@@ -26,39 +26,39 @@
                                     <i class="fi fi-rr-menu-dots"></i>
                                 </button>
 
-                                <ul class="dropdown-menu dropdown-menu-end p-1"  style="width:300px; text-wrap: auto; overflow: clip;">
+                                <ul class="dropdown-menu dropdown-menu-end p-1"  style="width:292px; text-wrap: auto; overflow: clip;">
                                     <th:block th:if="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
-                                            <button class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
+                                            <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                     data-step="0">
-                                                <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
+                                                <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
                                             </button>
                                         </li>
                                         <li>
-                                            <a th:if="${signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
-                                               th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank" style="font-weight: revert;"
+                                            <a th:if="${signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                               th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank" style="font-weight: revert; font-size: revert;"
                                                >
-                                                <i class="fi fi-rr-progress-download" style="margin-top: 10px;"></i> Télécharger le document original
+                                                <i class="fi fi-rr-progress-download"></i> Télécharger l'original
                                             </a>
                                         </li>
                                     </th:block>
                                     <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                         <li>
-                                            <a class="btn btn-transparent text-dark w-100 text-left"
+                                            <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
                                                title="Récupérer le document signé à cette étape">
-                                                <i class="fi fi-rr-download"></i> Télécharger
+                                                <i class="fi fi-rr-download"></i> Télécharger
                                             </a>
                                         </li>
                                     </th:block>
                                     <th:block th:if="${signRequestFull.updateAllowed  && signRequestFull.currentStepNumber == 1 && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
                                     <li>
-                                        <button class="btn btn-transparent text-dark w-100 text-left"
+                                        <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                 type="button"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#addStep"
                                                 data-step-number="0">
-                                            <i class="fi fi-rr-plus-small"></i> Ajouter une étape au début
+                                            <i class="fi fi-rr-plus-small"></i> Ajouter une étape au début
                                         </button>
                                     </li>
                                     </th:block>
@@ -80,7 +80,7 @@
                                     data-bs-target="#addStep"
                                     data-step-number="0"
                                     title="Ajouter la première étape">
-                                <i class="fi fi-rr-plus-small"></i> Ajouter la première étape
+                                <i class="fi fi-rr-plus-small"></i> Ajouter la première étape
                             </button>
                         </div>
                     </div>
@@ -302,37 +302,37 @@
                                             aria-expanded="false">
                                         <i class="fi fi-rr-menu-dots"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end p-1" style="width:300px; text-wrap: auto; overflow: clip;">
+                                    <ul class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
                                         <li>
                                             <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
-                                                <button class="btn btn-transparent text-dark w-100 text-left"
+                                                <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                         title="Envoyer un nouveau lien d'accès"
                                                         th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
                                                         th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
-                                                    <i class="fi fi-rr-link"></i> Renvoyer un lien d’accès à <span th:text="${recipient.user.email}"></span>
+                                                    <i class="fi fi-rr-link"></i> Renvoyer un lien d’accès à <span th:text="${recipient.user.email}"></span>
                                                 </button>
                                             </th:block>
                                         </li>
                                         <!-- Bouton visualisation document -->
                                         <th:block th:if="${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)}">
                                             <li>
-                                                <button class="display-layer-btn btn btn-transparent text-dark w-100 text-left"
+                                                <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                         th:data-step="${stepNumber}">
-                                                    <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
+                                                    <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
                                                 </button>
                                             </li>
                                             <li>
-                                                <button class="toggle-layer-btn btn btn-transparent text-dark w-100 text-left"
+                                                <button class="toggle-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                         th:data-step="${stepNumber}">
-                                                    <i class="fi fi-rr-layers"></i> Afficher les modifications seules
+                                                    <i class="fi fi-rr-layers"></i> Afficher les modifications
                                                 </button>
                                             </li>
                                             <li>
-                                                <a class="btn btn-transparent text-dark w-100 text-left"
+                                                <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                    th:href="@{'/ws-secure/global/get-layered-file/' + ${signRequestLight.id} + '/' + ${stepNumber}}"
                                                    target="_blank"
-                                                   title="Télécharger le document à cette étape" style="font-weight: revert;">
-                                                    <i class="fi fi-rr-download"></i> Télécharger le document à cette étape
+                                                   title="Télécharger le document à cette étape" style="font-weight: revert; font-size: revert;">
+                                                    <i class="fi fi-rr-download"></i> Télécharger le document à cette étape
                                                 </a>
                                             </li>
                                         </th:block>
@@ -340,28 +340,28 @@
                                         <!-- Lien téléchargement historique -->
                                         <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
                                             <li>
-                                                <a class="btn btn-transparent text-dark w-100 text-left"
+                                                <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                    th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
                                                    title="Récupérer le document signé à cette étape">
-                                                    <i class="fi fi-rr-download"></i> Télécharger
+                                                    <i class="fi fi-rr-download"></i> Télécharger
                                                 </a>
                                             </li>
                                         </th:block>
                                          <li th:if="${signRequestFull.updateAllowed && !isNextCompleted  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
-                                             <button class="btn btn-transparent text-dark w-100 text-left"
+                                             <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
                                                      data-bs-target="#addStep"
                                                      th:attr="data-step-number=${stepNumber}">
-                                                 <i class="fi fi-rr-plus-small"></i> Ajouter une étape après
+                                                 <i class="fi fi-rr-plus"></i> Ajouter une étape après
                                              </button>
                                          </li>
                                          <li th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}">
-                                             <button class="btn btn-transparent text-dark w-100 text-left"
+                                             <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
                                                      th:data-bs-target="'#modal-update-' + ${stepNumber}">
-                                                 <i class="fi fi-rr-pencil"></i> Modifier l'étape
+                                                 <i class="fi fi-rr-pencil"></i> Modifier l'étape
                                              </button>
                                          </li>
                                          <li th:if="${signRequestFull.updateAllowed && signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && showSignRequest.steps.size() > 1  && showSignRequest.steps.size() > signRequestFull.currentStepNumber  && stepNumber >= signRequestFull.currentStepNumber}">
@@ -370,9 +370,9 @@
                                                    th:method="delete">
                                                  <button type="submit"
                                                          onclick="return confirm('Voulez-vous vraiment supprimer cette étape ?');"
-                                                         class="btn btn-transparent text-danger w-100 text-left"
+                                                         class="d-flex align-items-center btn btn-transparent text-danger w-100 text-left"
                                                          >
-                                                     <i class="fi fi-rr-trash"></i> Supprimer l'étape
+                                                     <i class="fi fi-rr-trash"></i> Supprimer l'étape
                                                  </button>
                                              </form>
                                          </li>
