@@ -56,6 +56,7 @@ export class PdfViewer extends EventFactory {
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         this.currentOptionalContentConfig = null;
+        this._activeLayerView = null; // { stepNumber: number, solo: boolean } | null
         let self = this;
         $(document).ready(function() {
             if (!globalThis.pdfjsLib || !Promise.withResolvers) {
@@ -82,12 +83,12 @@ export class PdfViewer extends EventFactory {
         $('#autoRotate').on('click', e => this.autoRotate());
         $(document).on('click', '.display-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.showLayerByStep(stepNumber, false);
+            self.toggleLayerByStep(stepNumber, false);
         });
 
         $(document).on('click', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.showLayerByStep(stepNumber, true);
+            self.toggleLayerByStep(stepNumber, true);
         });
 
         $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
@@ -1435,9 +1436,63 @@ export class PdfViewer extends EventFactory {
                 });
             }
             this.optionalContentConfigPromise = Promise.resolve(config);
+            this._activeLayerView = { stepNumber, solo };
+            this.updateLayerButtonsState();
         } catch(err) {
             console.error('Erreur showLayerByStep:', err);
         }
+    }
+
+    updateLayerButtonsState() {
+        // Reset all button "on" states
+        const onClasses = ['active', 'bg-primary-subtle', 'text-primary', 'border', 'border-primary-subtle'];
+        $('.display-layer-btn, .toggle-layer-btn').each(function () {
+            onClasses.forEach(c => $(this).removeClass(c));
+        });
+
+        if (!this._activeLayerView) {
+            return;
+        }
+
+        const selector = this._activeLayerView.solo
+            ? `.toggle-layer-btn[data-step="${this._activeLayerView.stepNumber}"]`
+            : `.display-layer-btn[data-step="${this._activeLayerView.stepNumber}"]`;
+
+        const $btn = $(selector);
+        if ($btn.length) {
+            onClasses.forEach(c => $btn.addClass(c));
+        }
+    }
+
+    async showAllLayers() {
+        if (!this.pdfDoc) {
+            return;
+        }
+        try {
+            const config = await this.pdfDoc.getOptionalContentConfig();
+            if (!config) {
+                return;
+            }
+            for (const [id, group] of config) {
+                config.setVisibility(id, true);
+            }
+            this.optionalContentConfigPromise = Promise.resolve(config);
+            this._activeLayerView = null;
+            this.updateLayerButtonsState();
+        } catch(err) {
+            console.error('Erreur showAllLayers:', err);
+        }
+    }
+
+    async toggleLayerByStep(stepNumber, solo) {
+        // Si on reclique sur le même stepNumber déjà actif (même mode), on repasse sur tous les calques.
+        if (this._activeLayerView
+            && this._activeLayerView.solo === solo
+            && this._activeLayerView.stepNumber === stepNumber) {
+            await this.showAllLayers();
+            return;
+        }
+        await this.showLayerByStep(stepNumber, solo);
     }
 
     async highlightStep(stepNumber) {
