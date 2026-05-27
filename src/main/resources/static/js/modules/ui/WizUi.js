@@ -168,6 +168,10 @@ export class WizUi {
         $("#fast-form-close").attr("disabled", "disabled");
         $("#send-draft-button").attr("disabled", "disabled");
         $("#send-pending-button").attr("disabled", "disabled");
+        $("#end-workflow-sign").attr("disabled", "disabled");
+        $("#end-workflow-sign-start").attr("disabled", "disabled");
+        $("#save-step").attr("disabled", "disabled");
+        $("#wiz-end").attr("disabled", "disabled");
         $("#wiz-start-button").attr("disabled", "disabled");
         $('button[aria-label="Close"]').attr("disabled", "disabled");
     }
@@ -179,6 +183,10 @@ export class WizUi {
         $("#fast-form-close").removeAttr("disabled");
         $("#send-draft-button").removeAttr("disabled");
         $("#send-pending-button").removeAttr("disabled");
+        $("#end-workflow-sign").removeAttr("disabled");
+        $("#end-workflow-sign-start").removeAttr("disabled");
+        $("#save-step").removeAttr("disabled");
+        $("#wiz-end").removeAttr("disabled");
         $("#wiz-start-button").removeAttr("disabled");
         $('button[aria-label="Close"]').removeAttr("disabled")
     }
@@ -503,11 +511,17 @@ export class WizUi {
             $("#wiz-step-form-submit").click();
             return;
         }
+        if (self.end) {
+            this.disableButtons();
+        }
         let successCallback = function(html) {
             self.workflowSignNextStepDisplay(html)
             self.manageMinMaxLevels();
         };
         let errorCallback = function (data) {
+            if (self.end) {
+                self.enableButtons();
+            }
             $("#wiz-step-form-submit").click();
         };
         let url = '/user/wizard/wiz-add-step-' + mode +  '/' + elementId + '?end=' + self.end + '&start=' + self.start + '&close=' + self.close;

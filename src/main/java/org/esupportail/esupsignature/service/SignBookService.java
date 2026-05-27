@@ -2183,6 +2183,10 @@ public class SignBookService {
     @Transactional
     public boolean startLiveWorkflow(Long signBookId, String userEppn, String authUserEppn, Boolean start) throws EsupSignatureRuntimeException {
         SignBook signBook = getById(signBookId);
+        if (!SignRequestStatus.draft.equals(signBook.getStatus()) && !SignRequestStatus.uploading.equals(signBook.getStatus())) {
+            logger.info("Circuit {} déjà démarré, deuxième lancement ignoré", signBook.getId());
+            return true;
+        }
         if(!signBook.getLiveWorkflow().getLiveWorkflowSteps().isEmpty()) {
             signBook.getLiveWorkflow().setCurrentStep(signBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
             if(start != null && start) {

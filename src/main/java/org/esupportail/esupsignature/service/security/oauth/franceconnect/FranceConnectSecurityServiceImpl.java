@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth.franceconnect;
 
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -93,8 +94,13 @@ public class FranceConnectSecurityServiceImpl implements OidcOtpSecurityService 
 		return null;
 	}
 
-	
-    @Bean
+	@Override
+	public AbstractConfigurationFilter getSingleSignOutFilter() {
+		return null;
+	}
+
+
+	@Bean
     public OAuth2AuthorizedClientRepository authorizedClientRepository(
             OAuth2AuthorizedClientService authorizedClientService) {
         return new AuthenticatedPrincipalOAuth2AuthorizedClientRepository(authorizedClientService);
