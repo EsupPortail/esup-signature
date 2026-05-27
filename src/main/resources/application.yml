@@ -186,7 +186,7 @@ spring:
                         enabled: true
                         paths: /**
         error:
-            include-stacktrace: always
+            include-stacktrace: on_param
     mvc:
         static-path-pattern: /**
 
