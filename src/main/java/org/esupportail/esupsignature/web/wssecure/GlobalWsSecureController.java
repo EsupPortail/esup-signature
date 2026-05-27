@@ -8,6 +8,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Document;
 import org.esupportail.esupsignature.entity.SignRequest;
+import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
@@ -149,6 +150,22 @@ public class GlobalWsSecureController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header("Content-Disposition", "attachment; filename=document_v" + version + ".pdf")
+                .body(pdf);
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping("/get-layered-file/{id}/{stepNumber}")
+    public ResponseEntity<byte[]> downloadLayeredDocumentAtStep(
+            @PathVariable Long id,
+            @PathVariable int stepNumber,
+            @ModelAttribute("userEppn") String userEppn,
+            @ModelAttribute("authUserEppn") String authUserEppn
+    ) throws IOException, EsupSignatureException {
+        byte[] pdf = signRequestService.getLayeredPdfAtStep(id, stepNumber);
+        String safeFileName = "document_step_" + stepNumber + ".pdf";
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header("Content-Disposition", "attachment; filename=" + safeFileName)
                 .body(pdf);
     }
 

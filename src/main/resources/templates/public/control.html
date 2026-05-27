@@ -155,7 +155,7 @@
                             <h5 class="es-status-card__title mb-1">Le document a été refusé</h5>
                             <p class="es-status-card__description mb-2">Refus enregistré par :</p>
                             <ul class="mb-0" th:each="userHasRefused : ${usersHasRefused}">
-                                <li th:text="${userHasRefused.firstname} + ' ' + ${userHasRefused.name}"></li>
+                                <li th:text="${userHasRefused.firstname + ' ' + userHasRefused.name}"></li>
                             </ul>
                         </div>
                     </div>
