@@ -653,7 +653,9 @@ public class SignRequestService {
     @Transactional
 	public void pendingSignRequest(SignRequest signRequest, String authUserEppn) {
 		for (Recipient recipient : signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getRecipients()) {
-			signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			if (!signRequest.getRecipientHasSigned().containsKey(recipient)) {
+				signRequest.getRecipientHasSigned().put(recipient, actionService.getEmptyAction());
+			}
 			if (isSigned(signRequest, null) && !signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
 				if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().getValue() < 3) {
 					signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().setSignType(SignType.signature);

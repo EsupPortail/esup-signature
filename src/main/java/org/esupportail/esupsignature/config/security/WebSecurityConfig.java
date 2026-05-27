@@ -3,7 +3,9 @@ package org.esupportail.esupsignature.config.security;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apereo.cas.client.session.SingleSignOutHttpSessionListener;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.cas.CasJwtDecoder;
 import org.esupportail.esupsignature.config.security.jwt.CustomJwtAuthenticationConverter;
@@ -52,11 +54,13 @@ import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.util.StringUtils;
+import org.springframework.web.filter.GenericFilterBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,6 +153,11 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
+	public SingleSignOutHttpSessionListener singleSignOutHttpSessionListener() {
+		return new SingleSignOutHttpSessionListener();
+	}
+
+	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		List<SecurityService> activeSecurityServices = getActiveSecurityServices();
 		List<OidcOtpSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
@@ -170,8 +179,13 @@ public class WebSecurityConfig {
 		for(SecurityService securityService : activeSecurityServices) {
 			http.authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests.requestMatchers(securityService.getLoginUrl()).authenticated());
 			http.exceptionHandling(exceptionHandling -> exceptionHandling.defaultAuthenticationEntryPointFor(securityService.getAuthenticationEntryPoint(), PathPatternRequestMatcher.withDefaults().matcher(securityService.getLoginUrl())));
-			if(securityService.getAuthenticationProcessingFilter() != null) {
-			http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+			GenericFilterBean authenticationProcessingFilter = securityService.getAuthenticationProcessingFilter();
+			if(authenticationProcessingFilter != null) {
+				http.addFilterBefore(securityService.getAuthenticationProcessingFilter(), OAuth2AuthorizationRequestRedirectFilter.class);
+				AbstractConfigurationFilter singleSignOutFilter = securityService.getSingleSignOutFilter();
+				if(singleSignOutFilter != null) {
+					http.addFilterBefore(singleSignOutFilter, LogoutFilter.class);
+				}
 			}
 		}
 		if(globalProperties.getEnableSu()) {
@@ -185,12 +199,13 @@ public class WebSecurityConfig {
 			}
 		}
 		http.logout(logout -> logout.addLogoutHandler(logoutHandler).invalidateHttpSession(true)
-						.logoutUrl("/logout"
-						).logoutSuccessUrl("/logged-out"));
+						.logoutUrl("/logout").logoutSuccessUrl("/logged-out"));
 		http.csrf(csrf -> csrf.ignoringRequestMatchers(("/resources/**"))
 				.ignoringRequestMatchers("/ws/**")
 				.ignoringRequestMatchers("/nexu-sign/**")
-				.ignoringRequestMatchers("/h2-console/**"));
+				.ignoringRequestMatchers("/h2-console/**")
+				.ignoringRequestMatchers("/login/cas")
+				.ignoringRequestMatchers("/cas/slo"));
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);
 		return http.build();

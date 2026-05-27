@@ -9,6 +9,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.esupportail.esupsignature.entity.Action;
+import org.esupportail.esupsignature.entity.Recipient;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -16,6 +18,8 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -53,6 +57,21 @@ public class JpaTest {
         Metadata metadata =  metadataSources.buildMetadata();
         assertNotNull(metadata, "Les métadonnées Hibernate doivent être construites.");
         assertFalse(metadata.getEntityBindings().isEmpty(), "Les métadonnées Hibernate doivent contenir des entités mappées.");
+    }
+
+    @Test
+    public void testRecipientEqualityUsesPersistentIdentity() {
+        Recipient recipientFromWorkflow = new Recipient();
+        recipientFromWorkflow.setId(42L);
+
+        Recipient recipientFromRecipientMap = new Recipient();
+        recipientFromRecipientMap.setId(42L);
+
+        Map<Recipient, Action> recipientHasSigned = new HashMap<>();
+        recipientHasSigned.put(recipientFromWorkflow, new Action());
+        recipientHasSigned.put(recipientFromRecipientMap, new Action());
+
+        assertEquals(1, recipientHasSigned.size(), "Deux instances représentant le même destinataire ne doivent pas créer deux entrées dans la map.");
     }
 
 }
