@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.oauth.proconnect;
 
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -71,6 +72,11 @@ public class ProConnectSecurityServiceImpl implements OidcOtpSecurityService {
 
     @Override
     public UserDetailsService getUserDetailsService() {
+        return null;
+    }
+
+    @Override
+    public AbstractConfigurationFilter getSingleSignOutFilter() {
         return null;
     }
 

@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.security.shib;
 
 import jakarta.annotation.Resource;
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
 import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
@@ -103,6 +104,11 @@ public class ShibSecurityServiceImpl implements SecurityService {
 	@Override
 	public UserDetailsService getUserDetailsService() {
 		return databaseUserDetailsService;
+	}
+
+	@Override
+	public AbstractConfigurationFilter getSingleSignOutFilter() {
+		return null;
 	}
 
 	public AuthenticationManager shibAuthenticationManager() {

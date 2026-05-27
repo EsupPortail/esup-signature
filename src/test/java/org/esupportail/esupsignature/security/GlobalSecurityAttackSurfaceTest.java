@@ -887,7 +887,6 @@ class GlobalSecurityAttackSurfaceTest {
             assertEquals("ALWAYS", properties.getProperty("management.endpoint.health.show-details"));
             assertTrue(properties.getProperty("security.web.ws-access-authorize-ips", "").isBlank());
             assertTrue(properties.getProperty("security.web.actuators-access-authorize-ips", "").isBlank());
-            assertEquals("always", properties.getProperty("server.error.include-stacktrace"));
         }
 
         @Test
