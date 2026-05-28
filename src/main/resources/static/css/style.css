@@ -2284,11 +2284,10 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 
 .es-auth-page {
     display: flex;
-    align-items: center;
+    /*align-items: center;*/
     justify-content: center;
-    min-height: 60vh;
-    padding: 2rem 1rem;
-    margin-top: 30px;
+    /*padding: 2rem 1rem;*/
+    padding-top: 75px;
 }
 
 .es-auth-card {
@@ -2322,10 +2321,12 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 
 .es-auth-illustration--timeout {
     --es-auth-mask: url('/images/icons/rr-session-timeout.svg');
+    color: var(--bs-secondary);
 }
 
 .es-auth-illustration--login {
     --es-auth-mask: url('/images/icons/rr-login-lock.svg');
+    color: var(--bs-dark);
 }
 
 .es-auth-illustration--danger {
