@@ -403,8 +403,8 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 
 .not-viewed-position {
     position: fixed;
-    bottom: 100px;
-    left: 300px;
+    bottom: 50px;
+    right: 80px;
 }
 
 #pdf-progress-bar {

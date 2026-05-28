@@ -189,8 +189,8 @@ public class SignRequestService {
 	}
 
     @Transactional(readOnly = true)
-    public List<SignRequestTabProjectionDto> getSignRequestTabProjections(Long signBookId) {
-		return signRequestRepository.findTabProjectionsBySignBookId(signBookId);
+    public List<SignRequestTabProjectionDto> getSignRequestTabProjections(Long signBookId, String userEppn) {
+		return signRequestRepository.findTabProjectionsBySignBookId(signBookId, userEppn);
 	}
 
     @Transactional

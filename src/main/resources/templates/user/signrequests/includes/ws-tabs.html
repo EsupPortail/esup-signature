@@ -40,20 +40,22 @@
                th:href="${showSignRequest.urlProfil} + '/signrequests/' + ${signRequestTab.id}">
                 <div class="truncate">
                     <th:block th:unless="${signRequestTab.deleted}">
-                        <div class="d-flex align-items-center" >
-                            <span title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
+                        <div class="d-flex justify-content-start align-items-center gap-1" >
+                            <span class="d-flex" title="À signer" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}">
                                 <i class="fi fi-rr-memo" style="font-size: 18px;"></i>
                             </span>
-                            <span title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
+                            <span class="d-flex" title="Document signé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned}">
                                 <i class="fi fi-rr-memo-circle-check"></i>
                             </span>
-                            <span title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
+                            <span class="d-flex" title="Document refusé" th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
                                 <i class="fi fi-rr-document-circle-wrong"></i>
                             </span>
                             <span th:if="${signRequestTab.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft}">
                                 <i class="fi fi-rr-document"></i>
                             </span>
-                             <span class="text-uppercase p-0 m-0 es-signrequest-workspace-title" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                            <span class="d-flex justify-content-center align-content-center text-uppercase" th:text="${signRequestTab.title}" th:title="${signRequestTab.title}"></span>
+                            <span th:unless="${signRequestTab.viewedByCurrentUser}" class="d-flex badge badge-danger" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">Non lu</span>
+
                         </div>
                     </th:block>
                     <span title="Document supprimé" class="d-flex align-items-center text-white"  th:if="${signRequestTab.deleted}">

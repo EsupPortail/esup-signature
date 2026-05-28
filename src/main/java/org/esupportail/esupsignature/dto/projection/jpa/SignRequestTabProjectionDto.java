@@ -7,5 +7,6 @@ public interface SignRequestTabProjectionDto {
     String getTitle();
     SignRequestStatus getStatus();
     Boolean getDeleted();
+    Boolean getViewedByCurrentUser();
 }
 
