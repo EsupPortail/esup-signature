@@ -13,11 +13,14 @@
 
                     <h4>Vous êtes bien déconnecté(e)</h4>
 
-                    <p class="es-auth-description">
+                    <p class="es-auth-description" th:if="${otpLoggedOut}">
+                        Votre session a été fermée. Pour signer un autre document, utilisez le lien d'accès reçu par email.
+                    </p>
+                    <p class="es-auth-description" th:unless="${otpLoggedOut}">
                         Votre session a été fermée. Vous pouvez vous reconnecter pour reprendre votre activité.
                     </p>
 
-                    <div class="es-auth-form">
+                    <div class="es-auth-form" th:unless="${otpLoggedOut}">
                         <a href="/" class="es-auth-button">
                             Se reconnecter
                         </a>
