@@ -95,13 +95,16 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             select sr.id as id,
                    sr.title as title,
                    sr.status as status,
-                   sr.deleted as deleted
+                   sr.deleted as deleted,
+                   case when count(v) > 0 then true else false end as viewedByCurrentUser
             from SignBook sb
             join sb.signRequests sr
+            left join sr.viewedBy v on v.eppn = :userEppn
             where sb.id = :signBookId
+            group by sr.id, sr.title, sr.status, sr.deleted, index(sr)
             order by index(sr)
             """)
-    List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId);
+    List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId, @Param("userEppn") String userEppn);
 
     @Query("""
             select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate 

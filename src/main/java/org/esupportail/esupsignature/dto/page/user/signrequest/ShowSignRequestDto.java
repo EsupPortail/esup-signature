@@ -311,6 +311,7 @@ public class ShowSignRequestDto {
         private String title;
         private SignRequestStatus status;
         private boolean deleted;
+        private boolean viewedByCurrentUser;
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
@@ -320,6 +321,12 @@ public class ShowSignRequestDto {
         public void setStatus(SignRequestStatus status) { this.status = status; }
         public boolean isDeleted() { return deleted; }
         public void setDeleted(Boolean deleted) { this.deleted = Boolean.TRUE.equals(deleted); }
+        public boolean isViewedByCurrentUser() {
+            return viewedByCurrentUser;
+        }
+        public void setViewedByCurrentUser(boolean viewedByCurrentUser) {
+            this.viewedByCurrentUser = viewedByCurrentUser;
+        }
     }
 
     public static class AttachmentDto {

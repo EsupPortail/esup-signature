@@ -172,7 +172,7 @@ public class UiFetchSignRequestService {
         String lastSignedDocumentContentType = !signedDocProj.isEmpty()
                 ? signedDocProj.get(signedDocProj.size() - 1).getContentType() : null;
         List<ShowSignRequestDto.SignRequestTabDto> signRequestTabs = signRequestService
-                .getSignRequestTabProjections(signBook.getId()).stream().map(mapper::toSignRequestTabDto).toList();
+                .getSignRequestTabProjections(signBook.getId(), userEppn).stream().map(mapper::toSignRequestTabDto).toList();
         int nbSignRequestInSignBookParent = signRequestTabs.size();
         boolean lastStep = !steps.isEmpty() && currentStepNumber != null && currentStepNumber >= steps.size();
         Map<Long, ShowSignRequestDto.RecipientActionDto> recipientActions = new LinkedHashMap<>();

@@ -423,10 +423,10 @@ td {
 
 .nav-item.ws-tab a {
     opacity: 0.5;
-    font-size: small;
+    font-size: 14px;
     margin-top: 2px;
-    padding-left: 8px;
-    padding-right: 10px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
 
 .nav-item.ws-tab.active a {
@@ -482,7 +482,7 @@ option[unavailable="unavailable"] {
 }
 
 .nav-link.current {
-    pointer-events: none;
+    pointer-events: painted;
     color: var(--bs-black);
     font-weight: bold;
 }

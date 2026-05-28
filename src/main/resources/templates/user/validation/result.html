@@ -33,7 +33,7 @@
 <!--                                       th:href="@{/ws-secure/validation/download-simple-report}"-->
 <!--                                       role="button"-->
 <!--                                       th:if="${displayDownloadPdf && simpleReport != null}">-->
-<!--                                        <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>-->
+<!--                                        <i class="fi fi-rr-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>-->
 <!--                                    </a>-->
 <!--                                </div>-->
 <!--                            </div>-->
@@ -169,7 +169,7 @@
                                                 <a class="btn btn-light border-secondary-subtle"
                                                    th:href="@{/ws-secure/validation/download-simple-report}" role="button"
                                                    th:if="${displayDownloadPdf}">
-                                                    <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                                    <i class="fi fi-rr-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
                                                 </a>
                                             </div>
                                         </div>
@@ -202,7 +202,7 @@
                                                 <a class="btn btn-light border-secondary-subtle"
                                                    th:href="@{/ws-secure/validation/download-detailed-report}" role="button"
                                                    th:if="${displayDownloadPdf}">
-                                                    <i class="fa fa-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
+                                                    <i class="fi fi-rr-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>
                                                 </a>
                                             </div>
                                         </div>
@@ -240,7 +240,7 @@
                                                             <li>
                                                                 <a th:href="@{/ws-secure/validation/download-diagnostic-data}">
                                                                     <span th:text="#{label.diagnostic.data}"></span>
-                                                                    <i class="fa fa-download ms-1"></i>
+                                                                    <i class="fi fi-rr-download ms-1"></i>
                                                                 </a>
                                                             </li>
                                                         </ul>
@@ -255,7 +255,7 @@
                                                             <li th:each="cert : ${allCertificates}">
                                                                 <a th:href="@{|/ws-secure/validation/download-certificate?id=${cert.getId()}|}">
                                                                     <span th:text="${cert.getName()}"></span>
-                                                                    <i class="fa fa-download ms-1"></i>
+                                                                    <i class="fi fi-rr-download ms-1"></i>
                                                                 </a>
                                                             </li>
                                                         </ul>
