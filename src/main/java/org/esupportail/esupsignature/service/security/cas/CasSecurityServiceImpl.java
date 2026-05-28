@@ -24,6 +24,7 @@ import org.springframework.security.cas.authentication.CasAssertionAuthenticatio
 import org.springframework.security.cas.authentication.CasAuthenticationProvider;
 import org.springframework.security.cas.web.CasAuthenticationEntryPoint;
 import org.springframework.security.cas.web.CasAuthenticationFilter;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.ldap.search.FilterBasedLdapUserSearch;
@@ -31,6 +32,7 @@ import org.springframework.security.ldap.search.LdapUserSearch;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsService;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -54,10 +56,12 @@ public class CasSecurityServiceImpl implements SecurityService {
 	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
 	private final MappingGroupsRolesRepository mappingGroupsRolesRepository;
 	private final RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
+	private final JdbcIndexedSessionRepository sessionRepository;
+	private final SessionRegistry sessionRegistry;
 
 	private LdapUserDetailsService ldapUserDetailsService;
 
-    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy) {
+    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy, JdbcIndexedSessionRepository sessionRepository, SessionRegistry sessionRegistry) {
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.ldapGroupService = ldapGroupService;
@@ -69,6 +73,8 @@ public class CasSecurityServiceImpl implements SecurityService {
         this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
         this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
         this.registerSessionAuthenticationStrategy = registerSessionAuthenticationStrategy;
+        this.sessionRepository = sessionRepository;
+        this.sessionRegistry = sessionRegistry;
     }
 
     @Override
@@ -180,7 +186,7 @@ public class CasSecurityServiceImpl implements SecurityService {
 
 	@Override
 	public AbstractConfigurationFilter getSingleSignOutFilter() {
-		CasSingleSignOutFilter singleSignOutFilter = new CasSingleSignOutFilter("/login/cas");
+		CasSingleSignOutFilter singleSignOutFilter = new CasSingleSignOutFilter("/login/cas", sessionRepository, sessionRegistry);
 		singleSignOutFilter.setIgnoreInitConfiguration(true);
 		return singleSignOutFilter;
 	}

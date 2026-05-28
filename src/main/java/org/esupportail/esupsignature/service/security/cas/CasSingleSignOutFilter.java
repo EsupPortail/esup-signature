@@ -6,12 +6,15 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apereo.cas.client.session.SessionMappingStorage;
+import jakarta.servlet.http.HttpSession;
 import org.apereo.cas.client.session.SingleSignOutHandler;
 import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.apereo.cas.client.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -28,8 +31,12 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 
 	private final AtomicBoolean handlerInitialized = new AtomicBoolean(false);
 	private final SingleSignOutHandler singleSignOutHandler = new SingleSignOutHandler();
+	private final JdbcIndexedSessionRepository sessionRepository;
+	private final SessionRegistry sessionRegistry;
 
-	public CasSingleSignOutFilter(String logoutCallbackPath) {
+	public CasSingleSignOutFilter(String logoutCallbackPath, JdbcIndexedSessionRepository sessionRepository, SessionRegistry sessionRegistry) {
+		this.sessionRepository = sessionRepository;
+		this.sessionRegistry = sessionRegistry;
 		singleSignOutHandler.setLogoutCallbackPath(logoutCallbackPath);
 	}
 
@@ -45,85 +52,67 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 			throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
-		String ticket = request.getParameter("ticket");
 		String logoutRequest = request.getParameter("logoutRequest");
+		String sessionIndex = extractSessionIndex(logoutRequest);
+		HttpSession managedSession = getManagedSession(sessionIndex);
+		String managedSessionId = managedSession != null ? managedSession.getId() : null;
 
 		if (!handlerInitialized.getAndSet(true)) {
 			singleSignOutHandler.init();
 		}
 
 		if ("POST".equalsIgnoreCase(request.getMethod()) && "/login/cas".equals(request.getServletPath())) {
-			String sessionIndex = extractSessionIndex(logoutRequest);
-			logger.info("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}, sessionIndex: {}, mapping known: {}, storage size: {}",
+			logger.info("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}, sessionIndex: {}, managedSessionId: {}",
 					request.getRequestURI(),
 					logoutRequest != null,
-					ticket != null,
+					request.getParameter("ticket") != null,
 					sessionIndex,
-					hasMapping(sessionIndex),
-					getManagedSessionCount());
+					managedSessionId);
 		}
 
 		boolean continueChain = singleSignOutHandler.process(request, response);
 		if (!continueChain) {
+			if (managedSessionId != null) {
+				SessionInformation sessionInformation = sessionRegistry.getSessionInformation(managedSessionId);
+				if (sessionInformation != null) {
+					sessionInformation.expireNow();
+				}
+				sessionRepository.deleteById(managedSessionId);
+				logger.info("Deleted Spring Session [{}] after CAS single logout", managedSessionId);
+			}
 			logger.info("CAS single logout processed for [{}]", request.getRequestURI());
 			return;
-		}
-
-		if (ticket != null && request.getSession(false) != null) {
-			logger.info("CAS ticket [{}] recorded for session [{}], mapping known: {}, storage size: {}",
-					ticket,
-					request.getSession(false).getId(),
-					hasMapping(ticket),
-					getManagedSessionCount());
 		}
 
 		filterChain.doFilter(servletRequest, servletResponse);
 	}
 
 	private String extractSessionIndex(String logoutRequest) {
-		if (logoutRequest == null) {
-			return null;
-		}
-		String parsedLogoutRequest = logoutRequest;
-		if (!logoutRequest.contains("SessionIndex")) {
+		if (logoutRequest == null || !logoutRequest.contains("SessionIndex")) {
 			return null;
 		}
 		try {
-			return XmlUtils.getTextForElement(parsedLogoutRequest, "SessionIndex");
-		} catch (Exception e) {
+			return XmlUtils.getTextForElement(logoutRequest, "SessionIndex");
+		} catch (RuntimeException e) {
 			logger.warn("Unable to extract SessionIndex from CAS logoutRequest", e);
 			return null;
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private boolean hasMapping(String mappingId) {
+	private HttpSession getManagedSession(String mappingId) {
 		if (mappingId == null) {
-			return false;
+			return null;
 		}
 		try {
-			SessionMappingStorage storage = singleSignOutHandler.getSessionMappingStorage();
-			Field managedSessionsField = storage.getClass().getDeclaredField("MANAGED_SESSIONS");
+			Field managedSessionsField = singleSignOutHandler.getSessionMappingStorage().getClass().getDeclaredField("MANAGED_SESSIONS");
 			managedSessionsField.setAccessible(true);
-			Map<String, ?> managedSessions = (Map<String, ?>) managedSessionsField.get(storage);
-			return managedSessions.containsKey(mappingId);
-		} catch (Exception e) {
-			logger.warn("Unable to inspect CAS session mapping storage for mapping [{}]", mappingId, e);
-			return false;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private int getManagedSessionCount() {
-		try {
-			SessionMappingStorage storage = singleSignOutHandler.getSessionMappingStorage();
-			Field managedSessionsField = storage.getClass().getDeclaredField("MANAGED_SESSIONS");
-			managedSessionsField.setAccessible(true);
-			Map<String, ?> managedSessions = (Map<String, ?>) managedSessionsField.get(storage);
-			return managedSessions.size();
-		} catch (Exception e) {
-			logger.warn("Unable to inspect CAS session mapping storage size", e);
-			return -1;
+			Map<String, HttpSession> managedSessions =
+					(Map<String, HttpSession>) managedSessionsField.get(singleSignOutHandler.getSessionMappingStorage());
+			return managedSessions.get(mappingId);
+		} catch (ReflectiveOperationException e) {
+			logger.warn("Unable to resolve CAS-managed session for mapping [{}]", mappingId, e);
+			return null;
 		}
 	}
 }
