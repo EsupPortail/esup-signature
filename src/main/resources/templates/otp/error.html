@@ -6,27 +6,27 @@
 <main role="main">
     <div class="es-wrapper">
         <div id="content" class="es-content-full">
-            <div class="error-container">
-                <div class="alert alert-light">
-                    <div class="error-icon text-danger">
-                        <i class="fi fi-rr-octagon-xmark" style="font-size: 6em;"></i>
+            <div class="es-auth-page">
+                <div class="alert alert-light es-auth-card">
+                    <div class="es-auth-illustration es-auth-illustration--danger">
+                        <i class="fi fi-rr-octagon-xmark es-auth-illustration-icon"></i>
                     </div>
 
                     <h4>Une erreur s’est produite.</h4>
 
-                    <div class="error-message" th:utext="${errorMsg}">
+                    <div class="es-auth-message" th:utext="${errorMsg}">
                     </div>
 
                     <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
                         th:action="@{/logout}"
                         method="post"
-                        class="error-form">
-                        <button type="submit" class="btn btn-primary btn-lg">
+                        class="es-auth-form">
+                        <button type="submit" class="es-auth-button">
                             <i class="fa-solid fa-power-off"></i> Déconnexion
                         </button>
                     </form>
 
-                    <div class="error-info">
+                    <div class="es-auth-panel es-auth-panel--danger">
                         <p>Si le problème persiste, veuillez contacter le créateur de la demande (mentionné dans votre premier email).</p>
                     </div>
                 </div>
@@ -35,70 +35,5 @@
     </div>
 </main>
 <footer th:replace="~{fragments/footer-light :: footer}"></footer>
-
-<style>
-    .error-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 60vh;
-        padding: 2rem 1rem;
-        margin-top: 30px;
-    }
-
-    .error-icon {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 1.5rem;
-    }
-
-    .error-form {
-        margin-bottom: 2rem;
-    }
-
-    .btn-primary {
-        background: var(--bs-primary);
-        color: var(--bs-white);
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 6px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        width: 100%;
-    }
-
-    .btn-primary:hover {
-        background: var(--bs-primary);
-        box-shadow: 0 2px 8px var(--color-rgba-13-110-253-03);
-    }
-
-    .btn-primary:active {
-        background: var(--bs-primary);
-        transform: translateY(1px);
-    }
-
-    .error-info {
-        background: var(--color-f8f9fa);
-        border-left: 4px solid var(--bs-danger);
-        padding: 1.25rem;
-        border-radius: 6px;
-        text-align: left;
-    }
-
-    .error-info p {
-        font-size: 0.95rem;
-        color: var(--bs-secondary);
-        margin: 0.5rem 0;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 640px) {
-        .error-message {
-            font-size: 0.95rem;
-        }
-    }
-</style>
 </body>
 </html>
