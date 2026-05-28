@@ -383,8 +383,9 @@ public class CertificatService implements HealthIndicator {
 
     public boolean checkCertificatProblem(Set<String> roles) {
         if(!roles.contains("ROLE_ADMIN")) return false;
+        if(globalProperties.getSealCertificatProperties() == null || globalProperties.getSealCertificatProperties().isEmpty()) return false;
         boolean certificatProblem = false;
-        if(!isCertificatWasPresent && !sealCertificatPropertiesCache.asMap().isEmpty()) {
+        if(!isCertificatWasPresent && !sealCertificatPropertiesCache.asMap().isEmpty() && sealCertificatPropertiesCache.asMap().get("keys").isEmpty()) {
             return true;
         }
         List<DSSPrivateKeyEntry> dssPrivateKeyEntries = getSealCertificats();
