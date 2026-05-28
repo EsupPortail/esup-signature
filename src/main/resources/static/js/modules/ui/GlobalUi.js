@@ -1140,15 +1140,25 @@ export class GlobalUi {
         if (this.maxInactiveInterval == null || this.maxInactiveInterval <= 0) {
             return;
         }
-        setInterval(function(){
-            $("#timeoutModal").modal("show");
+        const timeoutModal = $("#timeoutModal");
+        if (!timeoutModal.length) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            document.dispatchEvent(new CustomEvent('esup-session-timeout'));
+            void fetch('/ws-secure/timeout-logout', {
+                method: 'POST',
+                headers: this.getCsrfHeaders(),
+                credentials: 'same-origin'
+            }).catch((error) => {
+                console.debug('Unable to force local logout on session timeout', error);
+            });
+            timeoutModal.modal("show");
         }, this.maxInactiveInterval * 1000);
-        $("#timeoutModal").on('hidden.bs.modal', function(){
-            if(window.location.pathname.includes("otp")) {
-                window.location.href = "/otp-access/session-expired";
-            } else {
-                location.reload();
-            }
+
+        timeoutModal.on('hidden.bs.modal', () => {
+            window.location.href = '/logged-out';
         });
     }
 

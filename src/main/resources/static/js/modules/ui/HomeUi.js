@@ -9,6 +9,7 @@ export class HomeUi {
         this.toSignRefreshInFlight = false;
         this.knownToSignListState = null;
         this.highlightedToSignItems = null;
+        document.addEventListener('esup-session-timeout', () => this.stopAutoRefreshToSignList());
         this.startWhenDomReady();
     }
 
@@ -53,20 +54,21 @@ export class HomeUi {
             return;
         }
 
-        if (this.toSignRefreshTimerId != null) {
-            window.clearInterval(this.toSignRefreshTimerId);
-            this.toSignRefreshTimerId = null;
-        }
+        this.stopAutoRefreshToSignList();
 
         const tick = () => void this.refreshToSignListOnce();
         this.toSignRefreshTimerId = window.setInterval(tick, this.toSignRefreshIntervalMs);
 
         window.addEventListener('beforeunload', () => {
-            if (this.toSignRefreshTimerId != null) {
-                window.clearInterval(this.toSignRefreshTimerId);
-                this.toSignRefreshTimerId = null;
-            }
+            this.stopAutoRefreshToSignList();
         }, {once: true});
+    }
+
+    stopAutoRefreshToSignList() {
+        if (this.toSignRefreshTimerId != null) {
+            window.clearInterval(this.toSignRefreshTimerId);
+            this.toSignRefreshTimerId = null;
+        }
     }
 
     async refreshToSignListOnce() {

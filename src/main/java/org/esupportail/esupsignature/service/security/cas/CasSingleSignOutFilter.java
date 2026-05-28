@@ -10,11 +10,9 @@ import jakarta.servlet.http.HttpSession;
 import org.apereo.cas.client.session.SingleSignOutHandler;
 import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.apereo.cas.client.util.XmlUtils;
+import org.esupportail.esupsignature.service.security.LocalSessionLogoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.session.SessionInformation;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -31,12 +29,10 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 
 	private final AtomicBoolean handlerInitialized = new AtomicBoolean(false);
 	private final SingleSignOutHandler singleSignOutHandler = new SingleSignOutHandler();
-	private final JdbcIndexedSessionRepository sessionRepository;
-	private final SessionRegistry sessionRegistry;
+	private final LocalSessionLogoutService localSessionLogoutService;
 
-	public CasSingleSignOutFilter(String logoutCallbackPath, JdbcIndexedSessionRepository sessionRepository, SessionRegistry sessionRegistry) {
-		this.sessionRepository = sessionRepository;
-		this.sessionRegistry = sessionRegistry;
+	public CasSingleSignOutFilter(String logoutCallbackPath, LocalSessionLogoutService localSessionLogoutService) {
+		this.localSessionLogoutService = localSessionLogoutService;
 		singleSignOutHandler.setLogoutCallbackPath(logoutCallbackPath);
 	}
 
@@ -62,7 +58,7 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 		}
 
 		if ("POST".equalsIgnoreCase(request.getMethod()) && "/login/cas".equals(request.getServletPath())) {
-			logger.info("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}, sessionIndex: {}, managedSessionId: {}",
+			logger.debug("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}, sessionIndex: {}, managedSessionId: {}",
 					request.getRequestURI(),
 					logoutRequest != null,
 					request.getParameter("ticket") != null,
@@ -73,14 +69,10 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 		boolean continueChain = singleSignOutHandler.process(request, response);
 		if (!continueChain) {
 			if (managedSessionId != null) {
-				SessionInformation sessionInformation = sessionRegistry.getSessionInformation(managedSessionId);
-				if (sessionInformation != null) {
-					sessionInformation.expireNow();
-				}
-				sessionRepository.deleteById(managedSessionId);
-				logger.info("Deleted Spring Session [{}] after CAS single logout", managedSessionId);
+				localSessionLogoutService.logoutSessionById(managedSessionId);
+				logger.debug("Deleted Spring Session [{}] after CAS single logout", managedSessionId);
 			}
-			logger.info("CAS single logout processed for [{}]", request.getRequestURI());
+			logger.debug("CAS single logout processed for [{}]", request.getRequestURI());
 			return;
 		}
 
