@@ -116,7 +116,7 @@ export class SignWorkspaceController {
             currentStepSingleSignWithAnnotation,
             signImageNumber,
             signImages,
-            userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf, this.signatureUiConfig);
+            userName, authUserName, signable, this.forcePageNum, this.isOtp, this.phone, this.csrf, this.signatureUiConfig, this.isPdf);
         this.signPlacementController.addEventListener("spotSaved", spotData => this.onSpotSaved(spotData));
         this.signPlacementController.addEventListener("spotDeleted", spotId => this.onSpotDeleted(spotId));
         this.currentSignRequestParamses = currentSignRequestParamses;

@@ -38,7 +38,7 @@
         </a>
         <div class="es-steps-responsive-nav" th:if="${signRequestFull.signable}">
             <div class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
-                <div id="step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                <div id="step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                     <div class="d-flex align-items-center gap-2">
                         <div class="step-horizontal-v2-icon">
                             1
@@ -46,7 +46,7 @@
                     </div>
                     <div class="step-horizontal-v2-content">
                         <div class="text-xs font-bold d-flex align-items-center gap-1">
-                            <div class="d-flex flex-nowrap" th:if="${showSignRequest.toSignDocumentContentType == 'application/pdf'}" style="flex: 1 1 0;">
+                            <div class="d-flex flex-nowrap" style="flex: 1 1 0;">
                                 <button tabindex="3" id="addSignButton2" role="button" class="btn p-3 btn-success pulse-success">
                                     <i class="fi fi-rr-file-signature"></i> Insérer une signature
                                 </button>
@@ -55,8 +55,8 @@
                     </div>
                 </div>
                 <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center active"
-                     th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa} ? ' justify-content-center' : ''">
-                    <div class="d-flex align-items-center gap-2" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
+                     th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || showSignRequest.toSignDocumentContentType != 'application/pdf'} ? ' justify-content-center' : ''">
+                    <div class="d-flex align-items-center gap-2" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="step-horizontal-v2-icon">
                             2
                         </div>
