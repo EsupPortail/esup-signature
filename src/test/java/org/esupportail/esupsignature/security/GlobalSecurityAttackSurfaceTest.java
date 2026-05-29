@@ -62,7 +62,6 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -408,9 +407,7 @@ class GlobalSecurityAttackSurfaceTest {
             String view = controller.auth("wrong-sms-link", "000000", new ConcurrentModel(), redirectAttributes, new MockHttpServletRequest());
 
             assertEquals("redirect:/otp-access/first/wrong-sms-link", view);
-            verify(smsService).sendSms(eq("otp-user@example.org"), eq("0600000000"), argThat(message ->
-                    message != null && message.contains("654321") && message.contains("code de connexion")
-            ));
+            verify(smsService).sendSms(eq("otp-user@example.org"), eq("0600000000"), eq("654321"));
             verify(otpService).setSmsSended("wrong-sms-link");
             assertNotNull(redirectAttributes.getFlashAttributes().get("message"));
         }
