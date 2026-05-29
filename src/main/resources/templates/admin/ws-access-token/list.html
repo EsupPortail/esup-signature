@@ -55,13 +55,13 @@
                                         </td>
                                         <td>
                                             <a th:href="'/admin/ws-access-token/toggle-public/' + ${wsAccessToken.getId()}" type="button" class="btn btn-transparent">
-                                                <i th:if="${wsAccessToken.publicAccess}" class="fa-solid fa-unlock text-dark" title="Verrouiller l'accès"></i>
-                                                <i th:unless="${wsAccessToken.publicAccess}" class="fa-solid fa-lock text-success" title="Autoriser l'accès sans le token"></i>
+                                                <i th:if="${wsAccessToken.publicAccess}" class="fi fi-rr-unlock text-dark" title="Verrouiller l'accès"></i>
+                                                <i th:unless="${wsAccessToken.publicAccess}" class="fi fi-rr-lock text-success" title="Autoriser l'accès sans le token"></i>
                                             </a>
                                         </td>
                                         <td class="text-center">
                                             <div class="dropdown position-relative" th:if="${wsAccessToken.id != null}">
-                                                <button type="button" th:id="'menu-toggle_' + ${wsAccessToken.id}" class="btn text-dark" th:title="'Actions ' + ${wsAccessToken.id}"
+                                                <button type="button" th:id="'menu-toggle_' + ${wsAccessToken.id}" class="btn text-dark"
                                                         th:data-bs-target="'#menu-' + ${wsAccessToken.id}" th:aria-controls="'menu-' + ${wsAccessToken.id}" data-bs-toggle="dropdown">
                                                     <i class="fi fi-rr-menu-dots-vertical"></i>
                                                 </button>
@@ -69,19 +69,19 @@
                                                     <li>
                                                         <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                            data-bs-toggle="modal" th:data-bs-target="'#modal-update-' + ${wsAccessToken.id}">
-                                                            <i class="fi fi-rr-pencil"></i> Modifier les paramètres
+                                                            <i class="fi fi-rr-pencil"></i> Modifier les paramètres
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Régénérer le token"
                                                            data-bs-toggle="modal" th:data-bs-target="'#modal-renew-' + ${wsAccessToken.id}">
-                                                            <i class="fa-solid fa-refresh pr-2"></i> Régénérer le token
+                                                            <i class="fi fi-rr-refresh"></i> Régénérer le token
                                                         </a>
                                                     </li>
                                                     <li>
                                                         <a class="btn btn-transparent text-dark text-left col-12" role="button" title="Supprimer"
                                                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${wsAccessToken.id}">
-                                                            <i class="fi fi-rr-trash pr-2"></i> Supprimer
+                                                            <i class="fi fi-rr-trash"></i> Supprimer
                                                         </a>
                                                     </li>
                                                 </ul>

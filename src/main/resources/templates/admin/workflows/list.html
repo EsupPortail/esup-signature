@@ -62,11 +62,11 @@
                                     </th:block>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${workflow.featured}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${workflow.featured}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${workflow.featured}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${workflow.publicUsage}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${workflow.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.roles}"></td>
@@ -80,12 +80,12 @@
                                         <li class="list-group-item py-1">
                                             <span th:text="${iterator.index + 1}" class="d-inline"></span>
                                             <th:block th:each="user : ${workflowStep.users}">
-                                                <i class="fa-solid fa-user"></i>
+                                                <i class="fi fi-rr-user"></i>
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fa-solid fa-hand"></i> À saisir à la création</span>
-                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fa-solid fa-warning"></i> Non configuré</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fi fi-rr-hand-paper"></i> À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fi fi-rr-triangle-warning"></i> Non configuré</span>
                                             <span th:if="${workflowStep.autoSign}"><i class="fi fi-rr-cloud-gear-automation"></i> Signature automatique</span>
                                         </li>
                                     </th:block>

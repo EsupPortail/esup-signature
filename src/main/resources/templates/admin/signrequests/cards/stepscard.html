@@ -5,8 +5,8 @@
 <!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto"*/-->
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.WorkflowMetaDto"*/-->
 <div id="stepscard" th:fragment="stepscard" class="d-none d-lg-block">
-    <div class="card text-bg-light m-2">
-        <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+    <div class="card border mb-2">
+        <div class="card-header">
             <h5 class="ms-4">Circuit</h5>
         </div>
         <div class="card-body">
@@ -48,8 +48,8 @@
                                     </th:block>
 
                                     <th:block th:if="${isCompleted  || (isCurrent  && isWorkflowFinished)}">
-                                        <i th:if="${!isRefused  && isVisa}" class="fa-solid fa-check"></i>
-                                        <i th:if="${!isRefused  && !isVisa}" class="fa-solid fa-signature"></i>
+                                        <i th:if="${!isRefused  && isVisa}" class="fi fi-rr-check"></i>
+                                        <i th:if="${!isRefused  && !isVisa}" class="fi fi-rr-attribution-pencil"></i>
                                         <i th:if="${isRefused}" class="fi fi-rr-cross-small"></i>
                                     </th:block>
                                 </div>
@@ -63,10 +63,10 @@
                                         <div class="d-flex align-items-center gap-2">
                                             <small th:if="${isAutoSign}" class="badge bg-info">Automatique</small>
                                             <span title="Tous les participants doivent signer" th:if="${liveWorkflowStep.allSignToComplete}" class="text-danger">
-                                                <i class="fa-solid fa-users"></i>
+                                                <i class="fi fi-rr-users-alt"></i>
                                             </span>
                                             <span title="Une signature suffit" th:unless="${liveWorkflowStep.allSignToComplete}">
-                                                <i class="fa-solid fa-user"></i>
+                                                <i class="fi fi-rr-user"></i>
                                             </span>
                                         </div>
                                     </div>
@@ -89,7 +89,7 @@
                                                             title="Envoyer un nouveau lien d'accès"
                                                             th:onclick="'event.stopPropagation(); $(\'#menu-' + ${recipient.id} + '\').toggle();'"
                                                             th:if="${isManager && recipient.user != null && recipient.user.userType != null && recipient.user.userType.name() == 'external' && isPending}">
-                                                        <i class="fa-solid fa-key"></i>
+                                                        <i class="fi fi-rr-key"></i>
                                                     </button>
                                                 </td>
                                             </tr>
@@ -127,7 +127,7 @@
                                  th:title="${target.targetUri}"
                                  th:class="'step-vertical' + ${(target.targetOk  || canShowTarget) ? ' complete' : ' div-disable'}">
                                 <div class="step-vertical-icon">
-                                    <i class="fa-solid fa-file-export"></i>
+                                    <i class="fi fi-rr-file-export"></i>
                                 </div>
                                 <div class="step-vertical-content bg-light p-2 rounded text-break">
                                     <b>Export vers</b>

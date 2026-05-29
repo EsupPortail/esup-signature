@@ -15,29 +15,9 @@
             <div class="es-main-content d-flex">
                 <div class="flex-grow-1">
                     <div class="col-12 col-xxl-10 mx-auto d-flex flex-column gap-2 gap-xxl-3 pb-3 m-2">
-                        <div id="validation-page-state" th:attr="data-current-certificate=${currentCertificate}" hidden></div>
-<!--                        <section class="bg-white rounded-3 shadow-sm border-0 p-3 p-xl-4">-->
-<!--                            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">-->
-<!--                                <div>-->
-<!--                                    <h4 class="mb-1 d-flex align-items-center gap-2">-->
-<!--                                        <i class="fi fi-rr-registration-paper text-secondary-emphasis"></i>-->
-<!--                                        <span>Résultats de la validation</span>-->
-<!--                                    </h4>-->
-<!--                                    <p class="text-secondary mb-0">Consultez le rapport de conformité, les signatures détectées et les informations techniques du document.</p>-->
-<!--                                </div>-->
-<!--                                <div class="d-flex flex-wrap gap-2 d-print-none">-->
-<!--                                    <button type="button" class="btn btn-light border-secondary-subtle" onclick="window.print();">-->
-<!--                                        <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>-->
-<!--                                    </button>-->
-<!--                                    <a class="btn btn-light border-secondary-subtle"-->
-<!--                                       th:href="@{/ws-secure/validation/download-simple-report}"-->
-<!--                                       role="button"-->
-<!--                                       th:if="${displayDownloadPdf && simpleReport != null}">-->
-<!--                                        <i class="fi fi-rr-download"></i>&nbsp;<span th:text="#{label.download.pdf}"></span>-->
-<!--                                    </a>-->
-<!--                                </div>-->
-<!--                            </div>-->
-<!--                        </section>-->
+                        <div id="validation-page-state" th:attr="data-current-certificate=${currentCertificate}" hidden>
+
+                        </div>
 
                         <section class="bg-white rounded-3 shadow-sm border-0 p-2 p-lg-3 d-print-none">
                             <ul class="nav nav-pills flex-wrap gap-2" id="tabsResult" role="tablist">
@@ -118,7 +98,7 @@
                                                     <tbody>
                                                     <th:block th:each="auditStep, iterator : ${auditTrail.auditSteps}">
                                                         <tr data-bs-toggle="collapse" th:data-bs-target="'#collapse-' + ${iterator.index}" style="cursor: pointer;" title="Cliquez ici pour afficher le détail">
-                                                            <td><i class="fa-solid fa-signature"></i></td>
+                                                            <td><i class="fi fi-rr-attribution-pencil"></i></td>
                                                             <td th:text="${#dates.format(auditStep.timeStampDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
                                                             <td th:text="${auditStep.firstname} + ' ' + ${auditStep.name}"></td>
                                                             <td th:text="${auditStep.email}"></td>
@@ -164,7 +144,7 @@
                                             </h5>
                                             <div id="simple-report-buttons" class="d-flex flex-wrap gap-2 d-print-none" role="toolbar">
                                                 <button type="button" class="btn btn-light border-secondary-subtle" onclick="window.print();">
-                                                    <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                                    <i class="fi fi-rr-print"></i>&nbsp;<span th:text="#{label.print}"></span>
                                                 </button>
                                                 <a class="btn btn-light border-secondary-subtle"
                                                    th:href="@{/ws-secure/validation/download-simple-report}" role="button"
@@ -192,12 +172,12 @@
                                             </h5>
                                             <div id="detailed-report-buttons" class="d-flex flex-wrap gap-2 d-print-none" role="toolbar">
                                                 <button type="button" class="btn btn-light border-secondary-subtle switch-annotations">
-                                                    <i class="icon fa fa-commenting-o"></i>&nbsp;
+                                                    <i class="icon fi fi-rr-comment-alt"></i>&nbsp;
                                                     <span class="label-show" th:text="#{label.annotations.show}"></span>
                                                     <span class="label-hide d-none" th:text="#{label.annotations.hide}"></span>
                                                 </button>
                                                 <button type="button" class="btn btn-light border-secondary-subtle" onclick="window.print();">
-                                                    <i class="fa fa-print"></i>&nbsp;<span th:text="#{label.print}"></span>
+                                                    <i class="fi fi-rr-print"></i>&nbsp;<span th:text="#{label.print}"></span>
                                                 </button>
                                                 <a class="btn btn-light border-secondary-subtle"
                                                    th:href="@{/ws-secure/validation/download-detailed-report}" role="button"

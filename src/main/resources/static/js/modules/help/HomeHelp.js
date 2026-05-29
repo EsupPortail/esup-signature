@@ -93,7 +93,7 @@ export class HomeHelp {
         if($.trim($("#newForm").html()) !== '') {
             this.intro.addStep({
                 element: '#newForm',
-                intro: "Les boutons <i class='fa-solid fa-file-alt ' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de remplir un formulaire.",
+                intro: "Les boutons <i class='fi fi-rr-poll-h ' style=\"font-family: 'Font Awesome 5 Free' !important\"></i> permettent de remplir un formulaire.",
                 position: 'right'
             });
         }

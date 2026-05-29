@@ -230,11 +230,11 @@ export class SignatureFlowController {
                                     message: "<div class='alert alert-secondary'><h4>Attention, vous allez signer sans appliquer d’image de signature</h4>Vous pouvez continuer mais, dans ce cas, un certificat électronique sera nécessaire.</div>",
                                     buttons: {
                                         cancel: {
-                                            label: '<i class="fa fa-undo"></i> Ajouter une signature',
+                                            label: '<i class="fi fi-rr-undo-alt"></i> Ajouter une signature',
                                             className: 'btn-primary'
                                         },
                                         confirm: {
-                                            label: '<i class="fa fa-arrow-right"></i> Continuer sans visuel',
+                                            label: '<i class="fi fi-rr-turn-right"></i> Continuer sans visuel',
                                             className: 'btn-secondary'
                                         }
                                     },
@@ -243,7 +243,7 @@ export class SignatureFlowController {
                                             this.checkAttachement().then(canContinue => {
                                                 if (canContinue) {
                                                     this.removeImageStampOptionTemporarily();
-                                                    this.confirmLaunchSignModal(forcePanel);
+                                                    this.confirmLaunchSignModal(true);
                                                 }
                                             });
                                         } else {
@@ -317,10 +317,10 @@ export class SignatureFlowController {
                     message: "Attention, il est demandé de joindre un document à cette étape avant de signer",
                     buttons: {
                         cancel: {
-                            label: '<i class="fa fa-times"></i> Retour'
+                            label: '<i class="fi fi-rr-undo-alt"></i> Retour'
                         },
                         confirm: {
-                            label: '<i class="fa fa-check"></i> Continuer sans pièce jointe'
+                            label: '<i class="fi fi-rr-turn-right"></i> Continuer sans pièce jointe'
                         }
                     },
                     callback: result => resolve(Boolean(result))

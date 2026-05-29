@@ -58,7 +58,7 @@
                             </th:block>
                         </select>
                         <button id="refresh-certType" type="button" class="btn btn-outline-secondary" title="Actualiser la liste des types de signature">
-                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <i class="fi fi-rr-refresh"></i>
                         </button>
                     </div>
                 </div>
@@ -149,13 +149,13 @@
                         <input th:if="${currentStepRepeatableSignType != null}" type="hidden" id="signTypeHidden" name="signType" th:value="${currentStepRepeatableSignType}">
                         <button type="button" id="launch-infinite-sign-button" class="mb-1 col-12 btn btn-success" title="Signer" th:value="${signBook.id}">
                         <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-signature"></i> Confirmer la signature et l’ajout de l’étape
+                            <i class="fi fi-rr-attribution-pencil"></i> Confirmer la signature et l’ajout de l’étape
                         </span>
                             <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                            <i class="fa-solid fa-check"></i> Confirmer le visa et l’ajout de l’étape
+                            <i class="fi fi-rr-check"></i> Confirmer le visa et l’ajout de l’étape
                         </span>
                             <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-check"></i> Confirmer la validation et l’ajout de l’étape
+                            <i class="fi fi-rr-check"></i> Confirmer la validation et l’ajout de l’étape
                         </span>
                         </button>
                     </form>
@@ -179,13 +179,13 @@
                     <button id="launchNoInfiniteSignButton" class="mt-1 col-12 btn btn-success" title="Signer"
                             th:value="${signBook.id}">
                         <span th:if="${currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-signature"></i> Signer le document sans ajout d’étape
+                            <i class="fi fi-rr-attribution-pencil"></i> Signer le document sans ajout d’étape
                         </span>
                         <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">
-                            <i class="fa-solid fa-check"></i> Viser le document sans ajout d’étape
+                            <i class="fi fi-rr-check"></i> Viser le document sans ajout d’étape
                         </span>
                         <span th:if="${currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
-                            <i class="fa-solid fa-check"></i> Valider le document sans ajout d’étape
+                            <i class="fi fi-rr-check"></i> Valider le document sans ajout d’étape
                         </span>
                     </button>
                 </div>
@@ -212,7 +212,7 @@
                         <span th:unless="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa || signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Signer et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).visa}">Viser et aller à la suivante </span>
                         <span th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">Valider et aller à la suivante </span>
-                        <i class="fa-solid fa-arrow-alt-circle-right"></i>
+                        <i class="fi fi-ss-arrow-circle-right"></i>
                     </button>
                 </div>
             </div>

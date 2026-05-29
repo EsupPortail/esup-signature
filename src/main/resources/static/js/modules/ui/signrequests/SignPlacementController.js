@@ -547,8 +547,8 @@ export class SignPlacementController extends EventFactory {
             ? this.isSignatureActionReady()
             : forceEnabled;
 
-        signLaunchButton.prop("disabled", !enabled);
-        signAdvancedLaunchButton.prop("disabled", !enabled);
+        signLaunchButton.prop("disabled", false);
+        signAdvancedLaunchButton.prop("disabled", false);
         this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
         this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
     }
