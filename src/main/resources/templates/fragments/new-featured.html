@@ -31,14 +31,14 @@
                     </button>
                 </div>
                 <div style="margin-top: -30px;" class="collapse rounded-0 border-0 text-start" th:if="${workflow.createBy.eppn == userEppn}" th:id="'menu-' + ${workflow.id}">
-                    <div class="inline-flex">
+                    <div class="d-flex align-items-center justify-content-start">
                         <form th:id="${'deleteWorkflow_' + workflow.id}" th:action="'/user/wizard/delete-workflow/' + ${workflow.id}" th:method="'delete'">
                         </form>
                         <button role="button" class="btn btn-sm workflow-button workflow-delete-button ms-1" title="Supprimer" type="button" th:data-id="${workflow.id}">
                             <i class="fi fi-rr-trash"></i>
                         </button>
                         <button class="btn btn-sm workflow-button workflow-update-button ms-2" title="Modifier" th:data-id="${workflow.id}" type="button">
-                            <i class="fa-solid fa-cog"></i>
+                            <i class="fi fi-rr-settings-sliders"></i>
                         </button>
                     </div>
                 </div>

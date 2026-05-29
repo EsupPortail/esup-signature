@@ -23,7 +23,7 @@
                     <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
                 </div>
                 <div class="flex-grow-1 overflow-scroll">
-                    <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
+                    <div class="m-2">
                         <div class="alert border-secondary-subtle" th:if="${user.replaceByUser != null}">
                             Vos demandes seront redirigées vers <b th:text="${user.replaceByUser.name + ' ' + user.replaceByUser.firstname}"></b>
                             <span th:if="${user.replaceBeginDate != null}"> du <b th:text="${#dates.format(user.replaceBeginDate, 'dd/MM/yyyy HH:mm')}"></b> au <b th:text="${#dates.format(user.replaceEndDate, 'dd/MM/yyyy HH:mm')}"></b></span>

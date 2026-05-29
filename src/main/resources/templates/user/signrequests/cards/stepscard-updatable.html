@@ -49,7 +49,7 @@
                         <th:block th:each="target : ${signBook.liveWorkflowTargets}">
                             <div class="step-horizontal-v2 d-flex gap-2 align-items-center" th:classappend="${target.targetOk} ? ' complete' : ' disabled'">
                                 <div class="step-horizontal-v2-icon">
-                                    <i class="fa-solid fa-file-export"></i>
+                                    <i class="fi fi-rr-file-export"></i>
                                 </div>
                                 <div class="step-horizontal-v2-content bg-light p-1 rounded">
                                     <p class="mb-0">Export : <span th:text="${target.targetUri}"></span></p>

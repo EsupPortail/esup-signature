@@ -118,7 +118,7 @@ export class Home2Help {
         if($.trim($("#myFavorites").html()) !== '') {
             this.intro.addStep({
                 element: '#myFavorites',
-                intro: "Vous pouvez ajouter les circuits et formulaires les plus souvent utilisés ici. Pour cela, parcourez toutes les procédures et cliquez sur l'étoile ! <i style=\"font-family: 'Font Awesome 5 Free'\" class=\"fa-solid fa-star text-warning\"></i>",
+                intro: "Vous pouvez ajouter les circuits et formulaires les plus souvent utilisés ici. Pour cela, parcourez toutes les procédures et cliquez sur l'étoile ! <i style=\"font-family: 'Font Awesome 5 Free'\" class=\"fi fi-rr-star text-warning\"></i>",
                 position: 'right'
             });
         }

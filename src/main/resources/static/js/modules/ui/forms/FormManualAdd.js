@@ -23,7 +23,7 @@ export class FormManualAdd {
         controlForm.find('.entry:not(:last) .btn-add-field')
             .removeClass('btn-add-field').addClass('btn-remove')
             .removeClass('btn-success').addClass('btn-danger')
-            .html('<span class="fa-solid fa-minus" aria-hidden="true"></span>');
+            .html('<span class="fi fi-rr-minus" aria-hidden="true"></span>');
     }
 
     removeField(e) {

@@ -58,9 +58,9 @@
                                 <i class="fi fi-rr-file"></i>
                                 <a th:href="'/user/signrequests/' + ${signRequestItem.id}" th:text="${signRequestItem.fileName}"></a>
                             </div>
-                            <span th:if="${signRequestItem.status == 'pending'}" th:title="#{signbook.status.pending}" class="fa-solid fa-clock text-warning"></span>
-                            <span th:if="${signRequestItem.status == 'completed'}" th:title="#{signbook.status.completed}" class="fa-solid fa-circle-check text-success"></span>
-                            <span th:if="${signRequestItem.status == 'refused'}" th:title="#{signbook.status.refused}" class="fa-solid fa-circle-check text-danger"></span>
+                            <span th:if="${signRequestItem.status == 'pending'}" th:title="#{signbook.status.pending}" class="fi fi-rr-clock text-warning"></span>
+                            <span th:if="${signRequestItem.status == 'completed'}" th:title="#{signbook.status.completed}" class="fi fi-rr-check-circle text-success"></span>
+                            <span th:if="${signRequestItem.status == 'refused'}" th:title="#{signbook.status.refused}" class="fi fi-rr-check-circle text-danger"></span>
                         </li>
                     </th:block>
                 </ul>
@@ -113,7 +113,7 @@
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:if="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Signer" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
-                            <i class="fa-solid fa-signature pr-2 text-success"></i> Signer
+                            <i class="fi fi-rr-attribution-pencil pr-2 text-success"></i> Signer
                         </a>
                     </li>
                     <li>

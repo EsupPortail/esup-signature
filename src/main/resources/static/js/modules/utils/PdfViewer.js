@@ -1042,15 +1042,15 @@ export class PdfViewer extends EventFactory {
                         display: {
                             viewMode: 'clock',
                             icons: {
-                                time: 'fa fa-clock',
+                                time: 'fi fi-rr-clock',
                                 date: 'fi fi-rr-calendar-day',
-                                up: 'fa fa-chevron-up',
-                                down: 'fa fa-chevron-down',
-                                previous: 'fa fa-chevron-left',
-                                next: 'fa fa-chevron-right',
+                                up: 'fi fi-rr-angle-small-up',
+                                down: 'fi fi-rr-angle-small-down',
+                                previous: 'fi fi-rr-angle-small-left',
+                                next: 'fi fi-rr-angle-small-right',
                                 today: 'fi fi-rr-calendar-check',
-                                clear: 'fa fa-trash-alt',
-                                close: 'fa fa-check'
+                                clear: 'fi fi-rr-trash',
+                                close: 'fi fi-rr-check'
                             },
                             components: {
                                 calendar: false,

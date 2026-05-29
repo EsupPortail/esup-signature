@@ -238,10 +238,10 @@ export class UserUi {
                 Keystore actuel : <a href="/ws-secure/ui/keystore"><span>${this.escapeHtml(keystoreFileName)}</span></a>
                 <br>
                 <button type="button" class="btn btn-sm btn-primary text-left" data-bs-toggle="modal" data-bs-target="#testKeystore">
-                    <i class="fa-solid fa-certificate"></i> Tester mon certificat
+                    <i class="fi fi-rr-badge"></i> Tester mon certificat
                 </button>
                 <button type="button" class="btn btn-sm btn-danger text-left" data-bs-toggle="modal" data-bs-target="#removeKeystore">
-                    <i class="fi fi-rr-trash"></i> Supprimer mon certificat
+                    <i class="fi fi-rr-trash"></i> Supprimer mon certificat
                 </button>
             </div>
         `;

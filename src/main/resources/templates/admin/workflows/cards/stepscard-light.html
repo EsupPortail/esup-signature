@@ -11,8 +11,8 @@
                     <div class="step-vertical-content bg-light p-2 rounded">
                         <div class="d-flex justify-content-between align-items-start gap-2">
                             <span class="step-type" th:text="#{'signbook.signtype.' + ${workflowStep.signType}}"></span>
-                            <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fa-solid fa-users"></i></span>
-                            <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fa-solid fa-user"></i></span>
+                            <span title="Tous les participants doivent signer" th:if="${workflowStep.allSignToComplete}"><i class="fi fi-rr-users-alt"></i></span>
+                            <span title="Une signature suffit" th:unless="${workflowStep.allSignToComplete}"><i class="fi fi-rr-user"></i></span>
                         </div>
                         <span th:if="${workflowStep.name != null && workflowStep.name != ''}" th:text="${workflowStep.name}"></span>
                         <ul class="mb-0">

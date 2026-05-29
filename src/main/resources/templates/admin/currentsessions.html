@@ -28,7 +28,7 @@
                                 <span th:text="${httpSessionsAlive.size()} + ' session(s) live'"></span>
                             </div>
                             <button id="toggleAnonymous" class="btn btn-sm btn-secondary">
-                                <i class="fa-solid fa-eye-slash"></i> Afficher les sessions anonymes
+                                <i class="fi fi-rr-eye-crossed"></i> Afficher les sessions anonymes
                             </button>
 
                             <script>
@@ -39,11 +39,11 @@
                                         $('tr.table-secondary').toggleClass('d-none');
 
                                         isHidden = !isHidden;
-                                        const icon = isHidden ? 'fa-eye-slash' : 'fa-eye';
-                                        const text = isHidden ? 'Afficher les sessions anonymes' : 'Masquer les sessions anonymes';
+                                        const icon = isHidden ? 'fi fi-rr-eye-crossed' : 'fi fi-rr-eye';
+                                        const text = isHidden ? ' Afficher les sessions anonymes' : ' Masquer les sessions anonymes';
 
-                                        $(this).find('i').attr('class', `fa-solid ${icon}`);
-                                        $(this).html(`<i class="fa-solid ${icon}"></i> ${text}`);
+                                        $(this).find('i').attr('class', `${icon}`);
+                                        $(this).html(`<i class="${icon}"></i> ${text}`);
                                     });
                                 });
                             </script>
@@ -77,7 +77,7 @@
                                     <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.lastRequest != null}" th:text="${#dates.format(httpSession.lastRequest, 'dd/MM/yyyy HH:mm:ss')}"></td>
                                     <td th:classappend="${live} ? 'bg-success-subtle' : ''" th:if="${httpSession.lastRequest != null}"><span th:text="${(#dates.createNow().toInstant().toEpochMilli() - httpSession.lastRequest.toInstant().toEpochMilli()) / 1000 / 60 + ' mins'}"></span></td>
                                     <td th:classappend="${live} ? 'bg-success-subtle' : ''">
-                                        <i th:class="${httpSession.expired} ? 'text-danger fa-solid fa-times-circle' : 'text-success fa-solid fa-check-circle'"></i>
+                                        <i th:class="${httpSession.expired} ? 'text-danger fi fi-rr-clock' : 'text-success fi fi-rr-check-circle'"></i>
                                     </td>
                                     <td th:classappend="${live} ? 'bg-success-subtle' : ''">
                                         <form th:action="'/admin/currentsessions'" th:method="'delete'"
