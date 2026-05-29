@@ -2841,6 +2841,7 @@ public class SignBookService {
         );
     }
 
+    @Transactional
     private String generateName(Long signRequestId, Workflow workflow, User user, Boolean target, Boolean archive, Long signBookId) {
         SignBook signBook;
         SignRequest signRequest = null;
@@ -2895,7 +2896,11 @@ public class SignBookService {
             template = globalProperties.getNamingTemplate();
         }
         if(template.contains("[id]")) {
-            template = template.replace("[id]", signBook.getId() + "");
+            if(signRequest != null) {
+                template = template.replace("[id]", signRequest.getId() + "");
+            } else {
+                template = template.replace("[id]", signBook.getId() + "");
+            }
         }
         if(template.contains("[title]")) {
             template = template.replace("[title]", signBook.getSubject());
