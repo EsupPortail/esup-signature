@@ -294,11 +294,11 @@ export class GlobalUi {
             <div style="width: 250px;" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
                 <div class="carousel-inner">${items}</div>
                 <button class="carousel-control-prev" href="#carouselSign" role="button" data-bs-slide="prev">
-                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-left"></i></span>
                     <span class="sr-only">Previous</span>
                 </button>
                 <button class="carousel-control-next" href="#carouselSign" role="button" data-bs-slide="next">
-                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-right"></i></span>
                     <span class="sr-only">Next</span>
                 </button>
             </div>
