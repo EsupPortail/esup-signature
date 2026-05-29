@@ -3,7 +3,7 @@
     <tr th:if="${statusFilter != 'empty' && signBook.primarySignRequest != null}" th:with="signRequest = ${signBook.primarySignRequest}" th:data-href="'/admin/signbooks/' + ${signBook.id}" data-bs-toggle="tooltip" th:title="${signBook.description}">
         <td class="w-20 d-none d-lg-table-cell">
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]"
-                th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"
+                th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}" th:data-es-signrequest-deleted="${signRequest.deleted}"
                 th:data-es-sign-type="${signBook.currentSignType}"
                 th:data-es-signbook-id="${signBook.id}">
         </td>

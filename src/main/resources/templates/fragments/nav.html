@@ -136,7 +136,7 @@
                                 class="btn btn-light btn-outline-dark ms-1 me-1"
                                 aria-label="Paramètres utilisateur"
                                 >
-                            <i class="fa-solid fa-power-off"></i> Déconnexion
+                            <i class="fa-solid fa-power-off"></i> Déconnexion
                         </button>
                     </form>
                 </li>
@@ -220,10 +220,10 @@
                 </tr>
                 </tbody>
             </table>
-            <a id="link-user-params" th:unless="${isUserOnSu}" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 mx-auto mt-2"
+            <a id="link-user-params" th:unless="${isUserOnSu}" class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center mx-auto mt-2"
                 aria-label="Paramètres utilisateur "
                 title="Paramètres" href="/user/users">
-                <i class="fi fi-rr-user-gear"></i> Modifier mes paramètres
+                <i class="fi fi-rr-user-gear"></i> Modifier mes paramètres
             </a>
             <form th:unless="${isUserOnSu}"
                 th:action="@{/logout}"
@@ -231,7 +231,7 @@
                 style="display:inline; width: 100%;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <button id="link-disconnect"
-                        class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center gap-2 mx-auto mt-2"
+                        class="btn btn-light border-secondary-subtle text-left rounded-5 d-flex align-items-center mx-auto mt-2"
                         aria-label="Paramètres utilisateur"
                         title="Déconnexion">
                     <i class="fi fi-rr-power"></i> Déconnexion
