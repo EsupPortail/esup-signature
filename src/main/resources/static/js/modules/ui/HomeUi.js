@@ -299,7 +299,7 @@ export class HomeUi {
         container.innerHTML = `
             <div class="div-scrollable scrollbar-style rounded-3" style="max-height: 400px; overflow-x: hidden;">
                 <div class="d-flex col-12 mb-2">
-                    <table class="table table-sm table-borderless table-striped table-hover table-light mb-0">
+                    <table class="table table-sm table-hover table-light mb-0">
                         <thead class="table-secondary">
                             <tr>
                                 <th style="width: 80px;"></th>
@@ -359,7 +359,7 @@ export class HomeUi {
                 </td>
                 <td class="text-break ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                     ${multiple
-                        ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fa-solid fa-caret-down"></i></span>'
+                        ? '<span>' + this.escapeHtml(listTitle) + ' <i class="fi fi-rr-angle-small-down"></i></span>'
                         : '<span>' + this.escapeHtml(subject) + '</span>'}
                 </td>
                 <td class="text-break d-none d-xxl-table-cell ${unreadClass}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(workflowName)}</td>
@@ -378,7 +378,7 @@ export class HomeUi {
                     <i class="fi fi-rr-file" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                 </td>
                 <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(signRequest.title || '')}</td>
-                <td style="min-width: 100px;">
+                <td style="width: 100px;">
                     ${this.renderStatusBadge(signRequest.status)}
                 </td>
             </tr>
@@ -387,11 +387,9 @@ export class HomeUi {
 
         return `
             <tr title="${this.escapeHtml(description)}">
-                <td></td>
-                <td></td>
-                <td colspan="4">
+                <td colspan="6" class="p-0 border-0">
                     <div class="collapse" id="${this.escapeHtml(rowId)}">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-sm table-hover mb-0">
                             ${nestedRows}
                         </table>
                     </div>
@@ -445,12 +443,12 @@ export class HomeUi {
 
     renderStatusBadge(status) {
         if (status === 'pending') {
-            return '<span class="badge rounded-pill bg-warning text-dark" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> À signer</span>';
+            return '<span class="badge rounded-pill badge-status text-warning-emphasis" style="background-color: var(--bs-warning-border-subtle); font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fi fi-rr-pending"></i> À signer</span>';
         }
         if (status === 'refused') {
-            return '<span class="badge rounded-pill bg-danger" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> Refusé</span>';
+            return '<span class="badge rounded-pill badge-status text-danger-emphasis" style="background-color: var(--bs-danger-border-subtle); font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fi fi-rr-cross-circle"></i> Refusé</span>';
         }
-        return '<span class="badge rounded-pill bg-success" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-check-circle"></i> Terminé</span>';
+        return '<span class="badge rounded-pill badge-status text-success-emphasis" style="background-color: var(--bs-success-border-subtle); font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fi fi-rr-flag"></i> Terminé</span>';
     }
 
     bindRenderedHomeRows(container) {

@@ -16,15 +16,6 @@
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-<!--                <div id="alertNexu" class="alert bg-light text-dark border-dark text-center" style="display: none;">-->
-<!--                    L'application Esup-DSS-Client n’a pas été détectée. Cette application est nécessaire pour le mode de signature qui vous est demandé.-->
-<!--                    <br>-->
-<!--                    Esup-DSS-Client disponible ici : <a target="_blank" href="https://github.com/EsupPortail/esup-dss-client/releases/latest">Esup-DSS-Client</a>-->
-<!--                    <br>-->
-<!--                    <button id="refresh-certType2" class="mt-2 mx-auto btn btn-secondary align-self-center">-->
-<!--                        <i class="fa-solid fa-sync-alt "></i><br> Cliquez ici après le lancement de Esup-DSS-Client-->
-<!--                    </button>-->
-<!--                </div>-->
                 <div id="visaFormConfirm" th:if="${signType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}">
                     <div class="alert alert-primary mb-1">
                         <p th:utext="'<p>La validation vous permet d’approuver le document et de le passer à l’étape suivante.</p><p>L’opération sera enregistrée mais aucune trace n’apparaîtra sur le document.</p>'"></p>
@@ -97,7 +88,7 @@
                         Vous avez la possibilité de demander la signature d’une personne supplémentaire avant l'étape suivante. Pour cela, cliquez sur le bouton "Ajouter une étape" ci-dessous.
                     </p>
                     <button id="enableInfinite" class="mb-2 w-100 btn btn-success" title="Signer" th:value="${signBook.id}">
-                        <i class="fa-solid fa-caret-down"></i> Ajouter une étape <i class="fa-solid fa-caret-down"></i>
+                        <i class="fi fi-rr-angle-small-down"></i> Ajouter une étape <i class="fi fi-rr-angle-small-down"></i>
                     </button>
                     <form id="infiniteForm" class="d-none">
                         <input type="submit" id="infiniteFormSubmit" class="d-none">
