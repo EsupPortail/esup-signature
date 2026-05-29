@@ -11,18 +11,19 @@
             <form th:if="${#authorization.expression('hasRole(''ROLE_OTP'')')}"
                   th:action="@{/logout}"
                   method="post"
+                  onsubmit="return confirm('Confirmez-vous la déconnexion ?');"
                   style="display:inline;">
                 <button id="link-disconnect2"
                         class="btn btn-light btn-outline-dark ms-1 me-1"
                         aria-label="Paramètres utilisateur"
-                        title="Déconnexion">
+                        >
                     <i class="fa-solid fa-power-off"></i> Déconnexion
                 </button>
             </form>
         </li>
         <li class="nav-item">
             <a id="link-help" rel="noreferrer" title="Aide en ligne" data-bs-toggle="modal"
-               data-bs-target="#helpModal" aria-label="Guide utilisateur" style="background-color: var(--color-blue-ish);" class="btn text-white d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur">
+               data-bs-target="#helpModal" aria-label="Guide utilisateur" class="btn text-white d-none d-md-inline" href="https://www.esup-portail.org/wiki/display/SIGN/Documentation+utilisateur">
                 <i class="fi fi-rr-interrogation" style="font-size: 24px; line-height: 33px;"></i>
             </a>
         </li>

@@ -19,6 +19,7 @@ package org.esupportail.esupsignature.web;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
@@ -205,22 +206,44 @@ public class IndexController {
 	}
 
 	@GetMapping("/logged-out")
-	public String loggedOut(HttpServletRequest httpServletRequest) {
+	public String loggedOut(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
 		String returnedState = httpServletRequest.getParameter("state");
 		String expectedState = null;
+        boolean otpLoggedOut = false;
 		if (returnedState != null && httpServletRequest.getCookies() != null) {
 			for (Cookie cookie : httpServletRequest.getCookies()) {
 				if ("logout_state".equals(cookie.getName())) {
 					expectedState = cookie.getValue();
 				}
+                if ("logout_user_type".equals(cookie.getName()) && "otp".equals(cookie.getValue())) {
+                    otpLoggedOut = true;
+                }
 			}
             if (!Objects.equals(returnedState, expectedState)) {
                 throw new IllegalStateException("Échec vérification du state !");
             }
+		} else if (httpServletRequest.getCookies() != null) {
+            for (Cookie cookie : httpServletRequest.getCookies()) {
+                if ("logout_user_type".equals(cookie.getName()) && "otp".equals(cookie.getValue())) {
+                    otpLoggedOut = true;
+                    break;
+                }
+            }
 		}
+        expireCookie(httpServletResponse, "logout_state");
+        expireCookie(httpServletResponse, "logout_user_type");
+        model.addAttribute("otpLoggedOut", otpLoggedOut);
 		httpServletRequest.getSession().invalidate();
 		return "logged-out";
 	}
+
+    private void expireCookie(HttpServletResponse httpServletResponse, String name) {
+        Cookie cookie = new Cookie(name, "");
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        httpServletResponse.addCookie(cookie);
+    }
 
     @GetMapping("/rgpd")
     public String rgpd() {
