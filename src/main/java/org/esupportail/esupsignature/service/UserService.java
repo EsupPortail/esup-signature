@@ -554,8 +554,8 @@ public class UserService {
                 if(user.getEppn().equals("creator")) {
                     personLightLdaps.add(getPersonLdapLightFromUser(user));
                 }
-                if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
-                    PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
+                PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
+                if(personLightLdaps.stream().noneMatch(existingPersonLightLdap -> existingPersonLightLdap != null && existingPersonLightLdap.getMail() != null && existingPersonLightLdap.getMail().equalsIgnoreCase(personLightLdap.getMail()))) {
                     if(user.getUserType().equals(UserType.group)) {
                         personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                     }
@@ -614,12 +614,14 @@ public class UserService {
             personLdap.setGivenName(currentReplaceByUser.getFirstname());
             personLdap.setDisplayName(user.getFirstname() + " " + user.getName() + " remplacé par " + currentReplaceByUser.getFirstname() + " " + currentReplaceByUser.getName());
             personLdap.setMail(currentReplaceByUser.getEmail());
+            personLdap.setEduPersonPrincipalName(user.getEppn());
         } else {
             personLdap.setUid(user.getEppn());
             personLdap.setSn(user.getName());
             personLdap.setGivenName(user.getFirstname());
             personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
             personLdap.setMail(user.getEmail());
+            personLdap.setEduPersonPrincipalName(user.getEppn());
         }
         return personLdap;
     }
