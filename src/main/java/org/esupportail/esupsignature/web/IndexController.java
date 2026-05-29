@@ -209,31 +209,34 @@ public class IndexController {
 	public String loggedOut(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Model model) {
 		String returnedState = httpServletRequest.getParameter("state");
 		String expectedState = null;
-        boolean otpLoggedOut = false;
-		if (returnedState != null && httpServletRequest.getCookies() != null) {
+		boolean hasOtpLogoutCookie = false;
+		if (httpServletRequest.getCookies() != null) {
 			for (Cookie cookie : httpServletRequest.getCookies()) {
 				if ("logout_state".equals(cookie.getName())) {
 					expectedState = cookie.getValue();
 				}
-                if ("logout_user_type".equals(cookie.getName()) && "otp".equals(cookie.getValue())) {
-                    otpLoggedOut = true;
-                }
+				if ("logout_user_type".equals(cookie.getName()) && "otp".equals(cookie.getValue())) {
+					hasOtpLogoutCookie = true;
+				}
 			}
-            if (!Objects.equals(returnedState, expectedState)) {
-                throw new IllegalStateException("Échec vérification du state !");
-            }
-		} else if (httpServletRequest.getCookies() != null) {
-            for (Cookie cookie : httpServletRequest.getCookies()) {
-                if ("logout_user_type".equals(cookie.getName()) && "otp".equals(cookie.getValue())) {
-                    otpLoggedOut = true;
-                    break;
-                }
-            }
 		}
-        expireCookie(httpServletResponse, "logout_state");
-        expireCookie(httpServletResponse, "logout_user_type");
-        model.addAttribute("otpLoggedOut", otpLoggedOut);
-		httpServletRequest.getSession().invalidate();
+		if (returnedState != null && !Objects.equals(returnedState, expectedState)) {
+			throw new IllegalStateException("Échec vérification du state !");
+		}
+
+		boolean otpLoggedOut = "true".equals(httpServletRequest.getParameter("otp")) || hasOtpLogoutCookie;
+		boolean requiresRedirect = httpServletRequest.getParameter("otp") == null && (returnedState != null || hasOtpLogoutCookie);
+
+		expireCookie(httpServletResponse, "logout_state");
+		expireCookie(httpServletResponse, "logout_user_type");
+		HttpSession httpSession = httpServletRequest.getSession(false);
+		if (httpSession != null) {
+			httpSession.invalidate();
+		}
+		if (requiresRedirect) {
+			return otpLoggedOut ? "redirect:/logged-out?otp=true" : "redirect:/logged-out";
+		}
+		model.addAttribute("otpLoggedOut", otpLoggedOut);
 		return "logged-out";
 	}
 

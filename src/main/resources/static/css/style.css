@@ -530,10 +530,12 @@ dd {
 }
 
 .truncate {
+    min-width: 0;
+    max-width: 10vw;
+    flex-shrink: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 10vw;
 }
 
 .form-switch.form-switch-md .form-check-input {
@@ -2301,22 +2303,6 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
     justify-content: center;
     margin-bottom: 1.5rem;
     color: var(--bs-primary);
-}
-
-.es-auth-illustration::before {
-    content: "";
-    display: inline-block;
-    width: 6rem;
-    height: 6rem;
-    background-color: currentColor;
-    -webkit-mask-image: var(--es-auth-mask);
-    mask-image: var(--es-auth-mask);
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
 }
 
 .es-auth-illustration--timeout {
