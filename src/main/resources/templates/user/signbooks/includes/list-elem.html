@@ -4,6 +4,7 @@
             <input type="checkbox" autocomplete="off" class="form-check-input sign-requests-ids" name="ids[]" th:value="${signRequest.id}"
                 th:id="'checkbox-signrequest-' + ${signRequest.id}"
                 th:data-es-signrequest-status="${signBook.status}"
+                th:data-es-signrequest-deleted="${signRequest.deleted}"
                 th:data-es-sign-type="${signBook.currentSignType}"
                 th:data-es-signbook-id="${signBook.id}" th:data-es-viewed="${signRequest.viewedByCurrentUser} ? 'true' : 'false'">
         </td>
@@ -112,51 +113,51 @@
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:if="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Signer" role="button" th:href="'/user/signrequests/' + ${signRequest.id}">
-                            <i class="fa-solid fa-signature pr-2 text-success"></i> Signer
+                            <i class="fa-solid fa-signature pr-2 text-success"></i> Signer
                         </a>
                     </li>
                     <li>
                         <a th:unless="${signRequest.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
-                            <i class="fi fi-rr-eye pr-2"></i> Consulter
+                            <i class="fi fi-rr-eye pr-2"></i> Consulter
                         </a>
                     </li>
                     <li>
                         <form th:if="${signBook.displayNotif}" th:action="'/user/signrequests/replay-notif/' + ${signRequest.id}" method="post">
                             <button type="submit" class="btn btn-transparent text-dark text-left col-12">
-                                <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
+                                <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
                             </button>
                         </form>
                     </li>
                     <li>
                         <a th:if="${!signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
-                            <i class="fi fi-rr-eye-crossed pr-2"></i> Masquer
+                            <i class="fi fi-rr-eye-crossed pr-2"></i> Masquer
                         </a>
                     </li>
                     <li>
                         <a th:if="${signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
-                            <i class="fi fi-rr-eye-crossed pr-2"></i> Afficher dans la liste
+                            <i class="fi fi-rr-eye-crossed pr-2"></i> Afficher dans la liste
                         </a>
                     </li>
                     <li>
                         <a target="_blank" th:if="${signRequest.canDownloadAll}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                             th:href="'/ws-secure/global/get-last-files/' + ${signBook.id}">
-                            <i class="fi fi-rr-download pr-2"></i> Télécharger tout
+                            <i class="fi fi-rr-download pr-2"></i> Télécharger tout
                         </a>
                     </li>
                     <li>
                         <a target="_blank" th:if="${signRequest.canDownload}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
                             th:href="'/ws-secure/global/get-last-file/' + ${signRequest.id}">
-                            <i class="fi fi-rr-download pr-2"></i> Télécharger
+                            <i class="fi fi-rr-download pr-2"></i> Télécharger
                         </a>
                     </li>
                     <li>
-                        <a th:if="${signBook.createByEppn == userEppn && signBook.deleted}" class="btn btn-transparent text-dark text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
-                            <i class="fi fi-rr-trash-restore pr-2"></i> Restaurer
+                        <a th:if="${signBook.createByEppn == userEppn && signBook.deleted}" class="btn btn-transparent text-primary text-left col-12" th:href="'/user/signbooks/restore/' + ${signBook.id}" role="button" title="Restaurer">
+                            <i class="fi fi-rr-trash-restore pr-2"></i> Restaurer
                         </a>
                     </li>
                     <li th:if="${signBook.deleteableByCurrentUser}">
-                        <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                        <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
+                            <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>
@@ -231,7 +232,7 @@
                 <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                     <li>
                         <a th:if="${signBook.createByEppn == userEppn}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${signBook.id}" role="button" title="Supprimer" data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signBook.id}">
-                            <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signBook.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
+                            <i class="fi fi-rr-trash pr-2"></i> <span th:text="${!signBook.deleted ? 'Mettre à la corbeille' : 'Supprimer de la corbeille'}"></span>
                         </a>
                     </li>
                 </ul>

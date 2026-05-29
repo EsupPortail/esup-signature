@@ -193,6 +193,16 @@ public class SignBookAdminController {
 		return new ResponseEntity<>(true, HttpStatus.OK);
 	}
 
+	@PostMapping(value = "/restore-multiple", consumes = {"application/json"})
+	@ResponseBody
+	public ResponseEntity<Boolean> restoreMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+		for(Long id : ids) {
+			signBookService.restore(id, authUserEppn);
+		}
+		redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Restauration effectuée"));
+		return new ResponseEntity<>(true, HttpStatus.OK);
+	}
+
 	@DeleteMapping(value = "/{id}", produces = "text/html")
 	public String delete(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
 		signBookService.delete(id, authUserEppn);

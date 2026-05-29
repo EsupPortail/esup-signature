@@ -492,6 +492,22 @@ public class SignBookController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/restore-multiple", consumes = {"application/json"})
+    @ResponseBody
+    public ResponseEntity<Boolean> restoreMultiple(@ModelAttribute("authUserEppn") String authUserEppn, @RequestBody List<Long> ids, RedirectAttributes redirectAttributes) {
+        for(Long id : ids) {
+            if(preAuthorizeService.signBookOwner(id, authUserEppn)) {
+                try {
+                    signBookService.restore(id, authUserEppn);
+                } catch (EsupSignatureRuntimeException e) {
+                    logger.warn("error while restoring signBook : " + id, e);
+                }
+            }
+        }
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Restauration effectuée"));
+        return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+
     @PostMapping(value = "/update-recipients/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(security = @SecurityRequirement(name = "x-api-key"), description = "Modifier les destinataires d'une étape de demande de signature")
     @PreAuthorize("@preAuthorizeService.signBookUpdate(#id, #authUserEppn)")

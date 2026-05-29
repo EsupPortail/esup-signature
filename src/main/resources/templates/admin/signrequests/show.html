@@ -139,7 +139,7 @@
                         <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
                             th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
                             data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
-                            <i th:if="${signRequestLight.deleted}" class="fa-solid fa-dumpster-fire "></i>
+                            <i th:if="${signRequestLight.deleted}" class="fi fi-rr-dumpster-fire"></i>
                             <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
                         </a>
                     </li>

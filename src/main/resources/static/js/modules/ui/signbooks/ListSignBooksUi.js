@@ -161,7 +161,9 @@ export class ListSignBooksUi {
         $('#statusFilter').on('change', e => this.buildUrlFilter());
         $('#dateFilter').on('change', e => this.buildUrlFilter());
         $('#deleteMultipleButton').on("click", e => this.deleteMultiple());
+        $('#restoreMultipleButton').on("click", e => this.restoreMultiple());
         $('#menuDeleteMultipleButton').on("click", e => this.deleteMultiple());
+        $('#menuRestoreMultipleButton').on("click", e => this.restoreMultiple());
         $('#downloadMultipleButton').on("click", e => this.downloadMultiple());
         $('#downloadMultipleButtonWithReport').on("click", e => this.downloadMultipleWithReport());
         $('#menuDownloadMultipleButton').on("click", e => this.downloadMultiple());
@@ -456,6 +458,27 @@ export class ListSignBooksUi {
             .replaceAll("'", '&#39;');
     }
 
+    hasMassSignableSelection(checkboxes) {
+        for (let i = 0; i < checkboxes.length; i++) {
+            let checkbox = checkboxes.eq(i);
+            if (checkbox.attr("data-es-signrequest-status") === 'pending' && checkbox.attr("data-es-signrequest-deleted") !== 'true') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    hasRestorableSelection(checkboxes) {
+        for (let i = 0; i < checkboxes.length; i++) {
+            if (checkboxes.eq(i).attr("data-es-signrequest-deleted") === 'true') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     checkNbCheckboxes() {
         let idDom = $('.sign-requests-ids:checked');
         if (idDom.length > 0) {
@@ -474,10 +497,19 @@ export class ListSignBooksUi {
             $('#menuDownloadMultipleButtonWithReport').addClass('d-none');
         }
 
-        if (idDom.length > 1 && this.launchMassSignButtonHide) {
+        if (this.hasRestorableSelection(idDom)) {
+            $('#restoreMultipleButton').removeClass('d-none');
+            $('#menuRestoreMultipleButton').removeClass('d-none');
+        } else {
+            $('#restoreMultipleButton').addClass('d-none');
+            $('#menuRestoreMultipleButton').addClass('d-none');
+        }
+
+        const shouldShowMassSignButton = idDom.length > 1 && (this.statusFilter !== 'deleted' || this.hasMassSignableSelection(idDom));
+        if (shouldShowMassSignButton && this.launchMassSignButtonHide) {
             $('#massSignModalButton').removeClass('d-none');
             this.launchMassSignButtonHide = false;
-        } else if (idDom.length < 2 && !this.launchMassSignButtonHide) {
+        } else if (!shouldShowMassSignButton && !this.launchMassSignButtonHide) {
             $('#massSignModalButton').addClass('d-none');
             this.launchMassSignButtonHide = true;
         }
@@ -527,6 +559,48 @@ export class ListSignBooksUi {
                         });
                         $.ajax({
                             url: "/" + self.mode + "/signbooks/delete-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            type: 'POST',
+                            dataType: 'json',
+                            contentType: "application/json",
+                            data: JSON.stringify(ids),
+                            success: function () {
+                                location.reload();
+                            }
+                        });
+                    }
+                }
+            );
+        }
+    }
+
+    restoreMultiple() {
+        let ids = [];
+        let i = 0;
+        $("input[name='ids[]']:checked").each(function () {
+            if ($(this).attr("data-es-signrequest-deleted") === 'true') {
+                ids[i] = $(this).attr("data-es-signbook-id");
+                i++;
+            }
+        });
+
+        if(ids.length > 0) {
+            let self = this;
+            bootbox.confirm("Confirmez vous la restauration de la sélection ?",
+                function(result) {
+                    if(result) {
+                        bootbox.dialog({
+                            closeButton : false,
+                            message : "<h5>Restauration en cours</h5>" +
+                                "<div class=\"text-center\">" +
+                                "<div id=\"signSpinner\" class=\"justify-content-center mx-auto\">\n" +
+                                "   <div class=\"spinner-border mx-auto\" role=\"status\" style=\"width: 3rem; height: 3rem;\">\n" +
+                                "       <span class=\"sr-only\">En cours...</span>\n" +
+                                "   </div>\n" +
+                                "</div> " +
+                                "</div> "
+                        });
+                        $.ajax({
+                            url: "/" + self.mode + "/signbooks/restore-multiple?" + self.csrf.parameterName + "=" + self.csrf.token,
                             type: 'POST',
                             dataType: 'json',
                             contentType: "application/json",
@@ -683,7 +757,7 @@ export class ListSignBooksUi {
         let nbNotViewed = 0;
         for (let i = 0; i < signRequestIds.length ; i++) {
             let checkbox = signRequestIds.eq(i);
-            if(checkbox.attr("data-es-signrequest-status") === 'pending') {
+            if(checkbox.attr("data-es-signrequest-status") === 'pending' && checkbox.attr("data-es-signrequest-deleted") !== 'true') {
                 ids.push(signRequestIds.eq(i).val());
             }
             if(checkbox.attr("data-es-viewed") === 'false') {
