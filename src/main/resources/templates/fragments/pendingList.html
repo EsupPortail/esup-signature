@@ -17,10 +17,10 @@
                     <tr th:if="${signBook.signRequests.size() > 0}" th:title="${signBook.description}" th:data-href="'/user/signrequests/' + ${signBook.signRequests.get(0).id}" th:class="${signBook.signRequests.size() < 2} ? 'clickable-row'" data-bs-toggle="collapse" th:data-bs-target="'#row_' + ${signBook.id}" th:with="signRequest = ${signBook.signRequests.get(0)}" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);">
                         <td>
                             <div class="d-flex flex-row align-items-center justify-content-between gap-1">
-                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-danger" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
-                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fa-solid fa-circle fa-2xs text-light" title="Le document a été lu jusqu'à la dernière page"></i>
-                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-dark" title="La demande contient des pièces jointes"></i>
-                                <i th:if="${signRequest.attachments.isEmpty()}" class="fa-solid fa-paperclip fa-xs text-light opacity-0"></i>
+                                <i th:unless="${signRequest.viewedBy.contains(user)}" class="fi fi-rr-low-vision" title="Le document n'a pas été lu jusqu'à la dernière page"></i>
+                                <i th:if="${signRequest.viewedBy.contains(user)}" class="fi fi-rr-circle text-transparent" title="Le document a été lu jusqu'à la dernière page"></i>
+                                <i th:unless="${signRequest.attachments.isEmpty()}" class="fi fi-rr-clip" title="La demande contient des pièces jointes"></i>
+                                <i th:if="${signRequest.attachments.isEmpty()}" class="fi fi-rr-clip text-transparent"></i>
                                 <button th:if="${signBook.postits.isEmpty() && signBook.description == null}" type="button" class="badge bg-light text-light border-0 opacity-0">0</button>
                                 <button onclick="event.stopPropagation();" title="Afficher les postits" th:if="${!signBook.postits.isEmpty() && signBook.description == null}"
                                         th:text="${signBook.postits.size()}" type="button"
@@ -53,7 +53,7 @@
                         <td th:classappend="${!signBook.signRequests.get(0).viewedBy.contains(user)} ? 'fw-bold' : ''" class="text-break" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem); min-width: 200px; overflow: hidden; text-overflow: ellipsis;">
                             <span th:if="${signBook.signRequests.size() > 1}">
                                 <span th:text="${signBook.signRequests.get(0).getOriginalDocuments().get(0).getFileName()} + ', ...'"></span>
-                                <i class="fa-solid fa-caret-down"></i>
+                                <i class="fi fi-rr-angle-small-down"></i>
                             </span>
                             <span th:if="${signBook.signRequests.size() == 1}" th:text="${signBook.subject}"></span>
                         </td>
@@ -65,9 +65,7 @@
                         </td>
                     </tr>
                     <tr th:title="${signBook.description}" th:if="${signBook.signRequests.size() > 1}">
-                        <td></td>
-                        <td></td>
-                        <td colspan="4">
+                        <td colspan="6">
                             <div class="collapse" th:id="'row_' + ${signBook.id}">
                                 <table class="table table-hover">
                                     <th:block th:each="signRequest : ${signBook.signRequests}">
@@ -76,10 +74,10 @@
                                                 <i class="fi fi-rr-file" style="font-size: clamp(0.75rem, 1.2vw, 0.875rem);"></i>
                                             </td>
                                             <td th:text="${signRequest.title}" style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></td>
-                                            <td style="min-width: 100px;">
-                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill bg-warning text-dark" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> À signer</span>
-                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill bg-danger" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-clock"></i> Refusé</span>
-                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill bg-success" style="font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fa-solid fa-check-circle"></i> Terminé</span>
+                                            <td style="width: 100px;">
+                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" class="badge rounded-pill badge-status text-warning-emphasis" style="background-color: var(--bs-warning-border-subtle); font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fi fi-rr-clock"></i> À signer</span>
+                                                <span th:if="${signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status text-danger-emphasis" style="background-color: var(--bs-danger-border-subtle); "><i class="fi fi-rr-clock"></i> Refusé</span>
+                                                <span th:if="${signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && signRequest.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" class="badge rounded-pill badge-status text-success-emphasis" style="background-color: var(--bs-success-border-subtle); font-size: clamp(0.65rem, 1vw, 0.75rem);"><i class="fi fi-rr-check-circle"></i> Terminé</span>
                                             </td>
                                         </tr>
                                     </th:block>

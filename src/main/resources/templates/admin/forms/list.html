@@ -66,25 +66,25 @@
                                     </th:block>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${form.featured}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${form.featured}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${form.featured}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td>
                                     <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${form.activeVersion}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
-                                    <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
+                                    <i th:if="${form.hideButton}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${form.hideButton}" class="fi fi-rr-minus text-secondary"></i>
                                 </td>
                                 <td class="clickable-td">
                                     <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${form.publicUsage}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${form.roles}"></td>

@@ -4,7 +4,7 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class SignPlacementController extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf, signatureUiConfig = null) {
+    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf, signatureUiConfig = null, showPlacementStep = true) {
         super();
         console.info("Starting sign positioning tools");
         this.userName = userName;
@@ -31,6 +31,7 @@ export class SignPlacementController extends EventFactory {
         this.id = 0;
         this.signsList = [];
         this.signatureStepRequested = false;
+        this.showPlacementStep = showPlacementStep !== false;
         this.currentScale;
         this.scrollTop = this.getCurrentScrollTop();
         this.signType = signType;
@@ -533,7 +534,7 @@ export class SignPlacementController extends EventFactory {
     }
 
     isSignatureActionReady() {
-        return this.isHiddenVisa() || this.hasPendingSignaturePlacement();
+        return this.isHiddenVisa() || !this.showPlacementStep || this.hasPendingSignaturePlacement();
     }
 
     syncSignatureActionButtons(forceEnabled = null) {
@@ -546,8 +547,8 @@ export class SignPlacementController extends EventFactory {
             ? this.isSignatureActionReady()
             : forceEnabled;
 
-        signLaunchButton.prop("disabled", !enabled);
-        signAdvancedLaunchButton.prop("disabled", !enabled);
+        signLaunchButton.prop("disabled", false);
+        signAdvancedLaunchButton.prop("disabled", false);
         this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
         this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
     }
@@ -557,8 +558,8 @@ export class SignPlacementController extends EventFactory {
     }
 
     requestSignatureStep() {
-        if (this.isHiddenVisa()) {
-            this.goStep2();
+        if (this.isHiddenVisa() || !this.showPlacementStep) {
+            this.goStep2({singleVisibleStep: true});
             return;
         }
         this.signatureStepRequested = true;
@@ -570,8 +571,8 @@ export class SignPlacementController extends EventFactory {
     }
 
     refreshSteps() {
-        if (this.isHiddenVisa()) {
-            this.goStep2();
+        if (this.isHiddenVisa() || !this.showPlacementStep) {
+            this.goStep2({singleVisibleStep: true});
             return;
         }
 
@@ -590,6 +591,10 @@ export class SignPlacementController extends EventFactory {
     }
 
     goStep1() {
+        if (!this.showPlacementStep) {
+            this.goStep2({singleVisibleStep: true});
+            return;
+        }
         const {
             step1,
             step2,
@@ -619,7 +624,7 @@ export class SignPlacementController extends EventFactory {
         step2.find(".step-horizontal-v2-icon").html("2");
     }
 
-    goStep2() {
+    goStep2({singleVisibleStep = false} = {}) {
         const {
             step1,
             step2,
@@ -643,7 +648,8 @@ export class SignPlacementController extends EventFactory {
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.syncSignatureActionButtons();
 
-        if (this.isHiddenVisa()) {
+        if (this.isHiddenVisa() || singleVisibleStep) {
+            this.setStepState(step1, false, false, true);
             refuseLaunchDiv.removeClass("es-refuse-slot-hidden");
             refuseLaunchDivResponsive.removeClass("d-none");
             this.setButtonVariant(refuseLaunchButton, "btn-danger");

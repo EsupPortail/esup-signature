@@ -96,6 +96,18 @@
     mask-size: contain;
 }
 
+.fi-rr-login-lock::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-login-lock.svg') no-repeat center;
+    mask: url('/images/icons/rr-login-lock.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
 .fi-rr-task-checklist::before {
     content: "";
     display: inline-block;

@@ -190,12 +190,12 @@ public class WorkflowAdminController {
 						 @RequestParam(name = "removeMissingRoles", defaultValue = "false") boolean removeMissingRoles,
 						 @RequestParam(name = "missingDashboardRoles", required = false) Set<String> missingDashboardRoles,
 						 @RequestParam(name = "removeMissingDashboardRoles", defaultValue = "false") boolean removeMissingDashboardRoles,
-						 RedirectAttributes redirectAttributes) {
+						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		User user = userService.getByEppn(authUserEppn);
 		if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn) || userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 			Workflow updateWorkflow = workflowService.update(workflow, user, types, managers, authUserEppn, missingRoles, removeMissingRoles, missingDashboardRoles, removeMissingDashboardRoles);
 			workflowService.addViewers(updateWorkflow.getId(), viewersEmails);
-			if(preAuthorizeService.workflowManager(workflow.getId(), authUserEppn)) {
+			if(httpServletRequest.getRequestURI().contains("/manager/") && preAuthorizeService.workflowManager(workflow.getId(), authUserEppn)) {
 				return "redirect:/manager/workflows/update/" + updateWorkflow.getId();
 			} else if(userService.getRoles(authUserEppn).contains("ROLE_ADMIN")) {
 				return "redirect:/admin/workflows/update/" + updateWorkflow.getId();

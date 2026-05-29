@@ -6,12 +6,17 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apereo.cas.client.session.SingleSignOutHandler;
 import org.apereo.cas.client.util.AbstractConfigurationFilter;
+import org.apereo.cas.client.util.XmlUtils;
+import org.esupportail.esupsignature.service.security.LocalSessionLogoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -24,8 +29,10 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 
 	private final AtomicBoolean handlerInitialized = new AtomicBoolean(false);
 	private final SingleSignOutHandler singleSignOutHandler = new SingleSignOutHandler();
+	private final LocalSessionLogoutService localSessionLogoutService;
 
-	public CasSingleSignOutFilter(String logoutCallbackPath) {
+	public CasSingleSignOutFilter(String logoutCallbackPath, LocalSessionLogoutService localSessionLogoutService) {
+		this.localSessionLogoutService = localSessionLogoutService;
 		singleSignOutHandler.setLogoutCallbackPath(logoutCallbackPath);
 	}
 
@@ -41,24 +48,63 @@ public class CasSingleSignOutFilter extends AbstractConfigurationFilter {
 			throws IOException, ServletException {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		String logoutRequest = request.getParameter("logoutRequest");
+		String sessionIndex = extractSessionIndex(logoutRequest);
+		HttpSession managedSession = getManagedSession(sessionIndex);
+		String managedSessionId = managedSession != null ? managedSession.getId() : null;
 
 		if (!handlerInitialized.getAndSet(true)) {
 			singleSignOutHandler.init();
 		}
 
 		if ("POST".equalsIgnoreCase(request.getMethod()) && "/login/cas".equals(request.getServletPath())) {
-			logger.info("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}",
+			logger.debug("CAS POST received on [{}], logoutRequest present: {}, ticket present: {}, sessionIndex: {}, managedSessionId: {}",
 					request.getRequestURI(),
-					request.getParameter("logoutRequest") != null,
-					request.getParameter("ticket") != null);
+					logoutRequest != null,
+					request.getParameter("ticket") != null,
+					sessionIndex,
+					managedSessionId);
 		}
 
 		boolean continueChain = singleSignOutHandler.process(request, response);
 		if (!continueChain) {
-			logger.info("CAS single logout processed for [{}]", request.getRequestURI());
+			if (managedSessionId != null) {
+				localSessionLogoutService.logoutSessionById(managedSessionId);
+				logger.debug("Deleted Spring Session [{}] after CAS single logout", managedSessionId);
+			}
+			logger.debug("CAS single logout processed for [{}]", request.getRequestURI());
 			return;
 		}
 
 		filterChain.doFilter(servletRequest, servletResponse);
+	}
+
+	private String extractSessionIndex(String logoutRequest) {
+		if (logoutRequest == null || !logoutRequest.contains("SessionIndex")) {
+			return null;
+		}
+		try {
+			return XmlUtils.getTextForElement(logoutRequest, "SessionIndex");
+		} catch (RuntimeException e) {
+			logger.warn("Unable to extract SessionIndex from CAS logoutRequest", e);
+			return null;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private HttpSession getManagedSession(String mappingId) {
+		if (mappingId == null) {
+			return null;
+		}
+		try {
+			Field managedSessionsField = singleSignOutHandler.getSessionMappingStorage().getClass().getDeclaredField("MANAGED_SESSIONS");
+			managedSessionsField.setAccessible(true);
+			Map<String, HttpSession> managedSessions =
+					(Map<String, HttpSession>) managedSessionsField.get(singleSignOutHandler.getSessionMappingStorage());
+			return managedSessions.get(mappingId);
+		} catch (ReflectiveOperationException e) {
+			logger.warn("Unable to resolve CAS-managed session for mapping [{}]", mappingId, e);
+			return null;
+		}
 	}
 }

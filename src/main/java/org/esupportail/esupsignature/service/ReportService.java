@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import jakarta.annotation.Resource;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.dto.page.user.report.ReportListViewDto;
 import org.esupportail.esupsignature.entity.Report;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.WsAccessToken;
@@ -17,8 +18,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReportService {
@@ -52,6 +56,18 @@ public class ReportService {
 
     public List<Report> getByUser(String userEppn) {
         return reportRepository.findByUserEppn(userEppn);
+    }
+
+    @Transactional(readOnly = true)
+    public ReportListViewDto buildReportListView(String userEppn) {
+        ReportListViewDto reportListViewDto = new ReportListViewDto();
+        reportListViewDto.setReports(
+                reportRepository.findByUserEppn(userEppn).stream()
+                        .sorted(Comparator.comparing(Report::getDate, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                        .map(this::toReportRowDto)
+                        .toList()
+        );
+        return reportListViewDto;
     }
 
     public Report createReport(String userEppn) {
@@ -102,5 +118,29 @@ public class ReportService {
     public void deleteAll(String authUserEppn) {
         List<Report> reports = reportRepository.findByUserEppn(authUserEppn);
         reportRepository.deleteAll(reports);
+    }
+
+    private ReportListViewDto.RowDto toReportRowDto(Report report) {
+        Map<ReportStatus, List<Long>> signRequestIdsByStatus = new EnumMap<>(ReportStatus.class);
+        report.getSignRequestReportStatusMap().forEach((signRequestId, reportStatus) ->
+                signRequestIdsByStatus.computeIfAbsent(reportStatus, key -> new ArrayList<>()).add(signRequestId)
+        );
+
+        ReportListViewDto.RowDto rowDto = new ReportListViewDto.RowDto();
+        rowDto.setId(report.getId());
+        rowDto.setDate(report.getDate());
+        rowDto.setStatuses(
+                signRequestIdsByStatus.entrySet().stream()
+                        .map(this::toStatusDto)
+                        .toList()
+        );
+        return rowDto;
+    }
+
+    private ReportListViewDto.StatusDto toStatusDto(Map.Entry<ReportStatus, List<Long>> signRequestIdsByStatus) {
+        ReportListViewDto.StatusDto statusDto = new ReportListViewDto.StatusDto();
+        statusDto.setStatus(signRequestIdsByStatus.getKey());
+        statusDto.setSignRequestIds(signRequestIdsByStatus.getValue().stream().sorted().toList());
+        return statusDto;
     }
 }

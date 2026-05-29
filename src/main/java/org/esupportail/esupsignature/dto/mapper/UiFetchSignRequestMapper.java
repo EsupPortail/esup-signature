@@ -46,41 +46,6 @@ import java.util.regex.Pattern;
 @Component
 public class UiFetchSignRequestMapper {
 
-    public AdminSignRequestShowViewDto.UserDto toAdminUserDto(User user) {
-        if (user == null) {
-            return null;
-        }
-        AdminSignRequestShowViewDto.UserDto dto = new AdminSignRequestShowViewDto.UserDto();
-        dto.setId(user.getId());
-        dto.setEppn(user.getEppn());
-        dto.setFirstname(user.getFirstname());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setPhone(user.getPhone());
-        dto.setUserType(user.getUserType() != null ? user.getUserType().name() : null);
-        return dto;
-    }
-
-    public AdminSignRequestShowViewDto.CommentDto toAdminCommentDto(Comment comment) {
-        AdminSignRequestShowViewDto.CommentDto dto = new AdminSignRequestShowViewDto.CommentDto();
-        dto.setId(comment.getId());
-        dto.setCreateBy(toAdminUserDto(comment.getCreateBy()));
-        dto.setCreateDate(comment.getCreateDate());
-        dto.setText(comment.getText());
-        return dto;
-    }
-
-    public AdminSignRequestShowViewDto.LogDto toAdminLogDto(Log log) {
-        AdminSignRequestShowViewDto.LogDto dto = new AdminSignRequestShowViewDto.LogDto();
-        dto.setLogDate(log.getLogDate());
-        dto.setEppn(log.getEppn());
-        dto.setAction(log.getAction());
-        dto.setInitialStatus(log.getInitialStatus());
-        dto.setFinalStatus(log.getFinalStatus());
-        dto.setComment(log.getComment());
-        return dto;
-    }
-
     public AdminSignRequestShowViewDto.CommentDto toAdminCommentDto(AdminCommentProjectionDto comment) {
         AdminSignRequestShowViewDto.CommentDto dto = new AdminSignRequestShowViewDto.CommentDto();
         dto.setId(comment.getId());
@@ -266,29 +231,12 @@ public class UiFetchSignRequestMapper {
         }).toList();
     }
 
-    public ShowSignRequestDto.DocumentDto toDocumentDto(Document document) {
-        ShowSignRequestDto.DocumentDto dto = new ShowSignRequestDto.DocumentDto();
-        dto.setId(document.getId());
-        dto.setFileName(document.getFileName());
-        dto.setSize(document.getSize());
-        dto.setContentType(document.getContentType());
-        return dto;
-    }
-
     public ShowSignRequestDto.DocumentDto toDocumentDto(DocumentProjectionDto document) {
         ShowSignRequestDto.DocumentDto dto = new ShowSignRequestDto.DocumentDto();
         dto.setId(document.getId());
         dto.setFileName(document.getFileName());
         dto.setSize(document.getSize());
         dto.setContentType(document.getContentType());
-        return dto;
-    }
-
-    public ShowSignRequestDto.AttachmentDto toAttachmentDto(Document attachment) {
-        ShowSignRequestDto.AttachmentDto dto = new ShowSignRequestDto.AttachmentDto();
-        dto.setId(attachment.getId());
-        dto.setFileName(attachment.getFileName());
-        dto.setCreateBy(attachment.getCreateBy() != null ? toAttachmentUserDto(attachment.getCreateBy()) : null);
         return dto;
     }
 
@@ -307,21 +255,13 @@ public class UiFetchSignRequestMapper {
         return dto;
     }
 
-    public ShowSignRequestDto.SignRequestTabDto toSignRequestTabDto(SignRequest signRequest) {
-        ShowSignRequestDto.SignRequestTabDto dto = new ShowSignRequestDto.SignRequestTabDto();
-        dto.setId(signRequest.getId());
-        dto.setTitle(signRequest.getTitle());
-        dto.setStatus(signRequest.getStatus());
-        dto.setDeleted(signRequest.getDeleted());
-        return dto;
-    }
-
     public ShowSignRequestDto.SignRequestTabDto toSignRequestTabDto(SignRequestTabProjectionDto signRequest) {
         ShowSignRequestDto.SignRequestTabDto dto = new ShowSignRequestDto.SignRequestTabDto();
         dto.setId(signRequest.getId());
         dto.setTitle(signRequest.getTitle());
         dto.setStatus(signRequest.getStatus());
         dto.setDeleted(signRequest.getDeleted());
+        dto.setViewedByCurrentUser(Boolean.TRUE.equals(signRequest.getViewedByCurrentUser()));
         return dto;
     }
 
@@ -500,14 +440,6 @@ public class UiFetchSignRequestMapper {
         dto.setId(recipient.getRecipientId());
         dto.setUser(toStepUserDto(recipient));
         dto.setSigned(recipient.getSigned());
-        return dto;
-    }
-
-    private ShowSignRequestDto.AttachmentUserDto toAttachmentUserDto(User user) {
-        ShowSignRequestDto.AttachmentUserDto dto = new ShowSignRequestDto.AttachmentUserDto();
-        dto.setEppn(user.getEppn());
-        dto.setFirstname(user.getFirstname());
-        dto.setName(user.getName());
         return dto;
     }
 

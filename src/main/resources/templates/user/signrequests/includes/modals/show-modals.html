@@ -488,23 +488,27 @@
                                     browseOnZoneClick: true,
                                     allowedFileTypes : [],
                                     previewFileIconSettings: {
-                                        'pdf': '<i class="fa-solid fa-file-pdf text-danger fa-xl"></i>',
-                                        'doc': '<i class="fa-solid fa-file-word text-primary fa-xl"></i>',
-                                        'xls': '<i class="fa-solid fa-file-excel text-success fa-xl"></i>',
-                                        'ppt': '<i class="fa-solid fa-file-powerpoint text-danger fa-xl"></i>',
-                                        'zip': '<i class="fa-solid fa-file-archive text-muted fa-xl"></i>',
-                                        'htm': '<i class="fa-solid fa-file-code text-info fa-xl"></i>',
-                                        'txt': '<i class="fa-solid fa-file-alt text-info fa-xl"></i>',
-                                        'mov': '<i class="fa-solid fa-file-video text-warning fa-xl"></i>',
-                                        'mp3': '<i class="fa-solid fa-file-audio text-warning fa-xl"></i>',
-                                        'jpg': '<i class="fa-solid fa-file-image text-danger fa-xl"></i>',
-                                        'gif': '<i class="fa-solid fa-file-image text-muted fa-xl"></i>',
-                                        'png': '<i class="fa-solid fa-file-image text-primary fa-xl"></i>',
-                                        'other': '<i class="fa-solid fa-file text-muted fa-xl"></i>'
+                                        'pdf': '<i class="fi fi-rr-file-pdf text-danger"></i>',
+                                        'doc': '<i class="fi fi-rr-file-word text-primary"></i>',
+                                        'xls': '<i class="fi fi-rr-file-excel text-success"></i>',
+                                        'ppt': '<i class="fi fi-rr-file-powerpoint text-danger"></i>',
+                                        'zip': '<i class="fi fi-rr-file-zipper text-warning"></i>',
+                                        'htm': '<i class="fi fi-rr-file-code text-info"></i>',
+                                        'txt': '<i class="fi fi-rr-text text-info"></i>',
+                                        'mov': '<i class="fi fi-rr-video-camera text-warning"></i>',
+                                        'mp3': '<i class="fi fi-rr-file-audio text-warning"></i>',
+                                        'jpg': '<i class="fi fi-rr-file-image text-danger"></i>',
+                                        'gif': '<i class="fi fi-rr-file-image text-muted"></i>',
+                                        'png': '<i class="fi fi-rr-file-image text-primary"></i>',
+                                        'signed': '<i class="fi fi-rr-document-signed text-success"></i>',
+                                        'other': '<i class="fi fi-rr-file text-muted"></i>'
                                     },
                                     previewFileExtSettings: {
                                         'other': function() {
                                             return true;
+                                        },
+                                        'signed': function(ext) {
+                                            return ext.match(/(sce)$/i);
                                         },
                                         'pdf': function(ext) {
                                             return ext.match(/(pdf)$/i);
@@ -924,7 +928,7 @@
                                         Valider la signature
                                     </button>
                                     <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                        <i class="fa-solid fa-trash"></i>
+                                        <i class="fi fi-rr-trash"></i>
                                     </button>
                                     <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Réinitialiser
@@ -936,16 +940,16 @@
                                     <div class="d-flex justify-content-center">
                                         <button type="button" id="crop-zoomout"
                                                 class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                            <i class="fa-solid fa-search-minus"></i></button>
+                                            <i class="fi fi-rr-zoom-out"></i></button>
                                         <button type="button" id="crop-zoomin"
                                                 class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                            <i class="fa-solid fa-search-plus"></i></button>
+                                            <i class="fi fi-rr-zoom-in"></i></button>
                                         <button type="button"
                                                 class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                data-deg="90"><i class="fa-solid fa-undo"></i></button>
+                                                data-deg="90"><i class="fi fi-rr-undo-alt"></i></button>
                                         <button type="button"
                                                 class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                data-deg="-90"><i class="fa-solid fa-redo"></i></button>
+                                                data-deg="-90"><i class="fi fi-rr-redo-alt"></i></button>
                                     </div>
                                     <div id="vanilla-crop" class="mt-2"></div>
                                 </div>
@@ -1133,11 +1137,11 @@
                         return `<div style="${imageHeight != null ? `height: ${hasActionButtons ? '210px' : '150px'};` : 'width: 250px;'}" id="${carouselId}" class="carousel slide border rounded border-secondary overflow-hidden bg-white"${extraAttributes}>
                                     <div class="carousel-inner">${items}</div>
                                     <button title="Signature précédente" class="carousel-control-prev" href="#${carouselId}" role="button" data-bs-slide="prev">
-                                        <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+                                        <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-left"></i></span>
                                         <span class="sr-only">Previous</span>
                                     </button>
                                     <button title="Signature suivante" class="carousel-control-next" href="#${carouselId}" role="button" data-bs-slide="next">
-                                        <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+                                        <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-right"></i></span>
                                         <span class="sr-only">Next</span>
                                     </button>
                                 </div>`;

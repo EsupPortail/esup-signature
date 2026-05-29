@@ -174,7 +174,7 @@ public class OtpAccessController {
                     if (phoneUtil.isValidNumber(number)) {
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
-                            smsService.sendSms(user.getEmail(), phone, "Votre code de connexion esup_signature : " + password);
+                            smsService.sendSms(user.getEmail(), phone, password);
                             otpService.setSmsSended(urlId);
                             userService.updatePhone(user.getEppn(), phone);
                             return ResponseEntity.ok().body("Code transmit sur votre mobile");
@@ -212,7 +212,7 @@ public class OtpAccessController {
             String newPassword = otpService.generateOtpPassword(urlId, otp.getPhoneNumber());
             logger.info("sending password by sms : " + newPassword + " to " + otp.getPhoneNumber());
             try {
-                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), "Votre code de connexion esup_signature : " + newPassword);
+                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), newPassword);
                 otpService.setSmsSended(urlId);
             } catch (Exception e) {
                 logger.error(e.getMessage());

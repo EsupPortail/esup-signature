@@ -76,8 +76,6 @@
     const currentStepNumber = /*[[${signRequestFull.currentStepNumber}]]*/ "";
     const supervisors = /*[[${showSignRequest.supervisors}]]*/ "";
     const isLastStep = /*[[${showSignRequest.lastStep}]]*/ false;
-    const signRequestProfilePath = /*[[${showSignRequest.urlProfil}]]*/ 'user';
-    const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
     /*]]>*/
 </script>
 
@@ -354,7 +352,10 @@
                             <input type="text" class="form-control" th:value="${showSignRequest.exportedDocumentURI}" disabled />
                         </div>
                     </th:block>
-                    <div th:if="${signRequestFull.signable && (showSignRequest.toSignDocumentContentType == null || showSignRequest.toSignDocumentContentType != 'application/pdf') && showSignRequest.originalDocuments.size() > 0}" id="workspace" class="alert rounded-bottom-0 light pt-1 border-0 justify-content-center es-signrequest-workspace-list">
+                    <div th:if="${(showSignRequest.toSignDocumentContentType == null || showSignRequest.toSignDocumentContentType != 'application/pdf') && showSignRequest.originalDocuments.size() > 0}" id="workspace" class="alert rounded-bottom-0 light pt-1 border-0 justify-content-center es-signrequest-workspace-list">
+                        <div th:if="${signRequestFull.signable}" class="alert alert-secondary p-2">
+                            Le document à signer n’est pas un PDF, il doit donc être signé à l’aide d’un certificat électronique
+                        </div>
                         <div class="card col-lg-12 mb-1">
                             <div class="card-body">
                                 <h5 class="text-center">Liste des documents à signer</h5>
@@ -388,14 +389,6 @@
                     </div>
                     <div th:if="${!signRequestFull.signable && showSignRequest.toSignDocumentContentType == null && showSignRequest.originalDocuments.size() > 0}" class="es-workspace alert alert-danger">
                         Un document de cette demande est corrompu. Merci de supprimer la demande et d’en émettre une nouvelle à l’aide d’un fichier valide.
-                    </div>
-                    <div th:if="${showSignRequest.toSignDocumentContentType != null && showSignRequest.toSignDocumentContentType != 'application/pdf' && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).archived || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned)}" class="es-workspace">
-                        <div class=" alert alert-success w-100">
-                            <p>Le document a bien été signé, vous pouvez le télécharger</p>
-                            <a tabindex="1" class="btn btn-lg btn-dark" th:href="'/ws-secure/global/get-last-file/' + ${signRequestLight.id}" target="_blank" title="Télécharger la dernière version du document">
-                                Télécharger la dernière version du document
-                            </a>
-                        </div>
                     </div>
                     <div th:if="${showSignRequest.toSignDocumentContentType == null && signRequestLight.deleted}" class="alert alert-danger">
                         <h4>La demande de signature a été supprimée</h4>

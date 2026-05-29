@@ -4,6 +4,8 @@ import {WizUi} from "./WizUi.js?version=@version@";
 export class GlobalUi {
 
     static modalFocusableSelector = 'button:not([disabled]), [href], input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])';
+    static sessionExpiresAtStorageKey = 'esupSessionExpiresAt';
+    static sessionTimedOutAtStorageKey = 'esupSessionTimedOutAt';
 
     constructor(authUserEppn, csrf, applicationEmail, maxSize, maxInactiveInterval) {
         console.info("Starting global UI");
@@ -27,6 +29,9 @@ export class GlobalUi {
         this.clickableTd = $(".clickable-td");
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
+        this.sessionTimeoutId = null;
+        this.sessionTimeoutTriggered = false;
+        this.sessionTimeoutStorageListener = null;
         this.initListeners();
         this.initBootBox();
         this.initSideBar();
@@ -289,11 +294,11 @@ export class GlobalUi {
             <div style="width: 250px;" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
                 <div class="carousel-inner">${items}</div>
                 <button class="carousel-control-prev" href="#carouselSign" role="button" data-bs-slide="prev">
-                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-left"></i></span>
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-left"></i></span>
                     <span class="sr-only">Previous</span>
                 </button>
                 <button class="carousel-control-next" href="#carouselSign" role="button" data-bs-slide="next">
-                    <span class="text-dark" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></span>
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-right"></i></span>
                     <span class="sr-only">Next</span>
                 </button>
             </div>
@@ -1136,19 +1141,108 @@ export class GlobalUi {
         document.dispatchEvent(new CustomEvent('globalUiReady'));
     }
 
+    getSharedSessionExpiresAt() {
+        const rawValue = window.localStorage.getItem(GlobalUi.sessionExpiresAtStorageKey);
+        if (rawValue == null) {
+            return null;
+        }
+        const expiresAt = Number.parseInt(rawValue, 10);
+        return Number.isFinite(expiresAt) ? expiresAt : null;
+    }
+
+    updateSharedSessionExpiration() {
+        const expiresAt = Date.now() + (this.maxInactiveInterval * 1000);
+        window.localStorage.setItem(GlobalUi.sessionExpiresAtStorageKey, String(expiresAt));
+        return expiresAt;
+    }
+
+    clearSessionTimeoutTimer() {
+        if (this.sessionTimeoutId != null) {
+            window.clearTimeout(this.sessionTimeoutId);
+            this.sessionTimeoutId = null;
+        }
+    }
+
+    bindSessionTimeoutStorageListener() {
+        if (this.sessionTimeoutStorageListener != null) {
+            return;
+        }
+        this.sessionTimeoutStorageListener = event => {
+            if (event.storageArea !== window.localStorage) {
+                return;
+            }
+            if (event.key === GlobalUi.sessionExpiresAtStorageKey) {
+                this.scheduleSessionTimeoutFromSharedExpiration();
+            }
+            if (event.key === GlobalUi.sessionTimedOutAtStorageKey && event.newValue != null) {
+                this.showSessionTimeoutModal();
+            }
+        };
+        window.addEventListener('storage', this.sessionTimeoutStorageListener);
+    }
+
+    scheduleSessionTimeoutFromSharedExpiration() {
+        this.clearSessionTimeoutTimer();
+        if (this.sessionTimeoutTriggered) {
+            return;
+        }
+        const expiresAt = this.getSharedSessionExpiresAt();
+        if (expiresAt == null) {
+            return;
+        }
+        const remainingMs = expiresAt - Date.now();
+        if (remainingMs <= 0) {
+            this.triggerSessionTimeout(true);
+            return;
+        }
+        this.sessionTimeoutId = window.setTimeout(() => {
+            this.triggerSessionTimeout(true);
+        }, remainingMs);
+    }
+
+    showSessionTimeoutModal() {
+        if (this.sessionTimeoutTriggered) {
+            return false;
+        }
+        this.sessionTimeoutTriggered = true;
+        this.clearSessionTimeoutTimer();
+        document.dispatchEvent(new CustomEvent('esup-session-timeout'));
+        $("#timeoutModal").modal("show");
+        return true;
+    }
+
+    triggerSessionTimeout(shouldBroadcast = true) {
+        if (!this.showSessionTimeoutModal()) {
+            return;
+        }
+        if (shouldBroadcast) {
+            window.localStorage.setItem(GlobalUi.sessionTimedOutAtStorageKey, String(Date.now()));
+        }
+        void fetch('/ws-secure/timeout-logout', {
+            method: 'POST',
+            headers: this.getCsrfHeaders(),
+            credentials: 'same-origin'
+        }).catch((error) => {
+            console.debug('Unable to force local logout on session timeout', error);
+        });
+    }
+
     sessionTimeout() {
         if (this.maxInactiveInterval == null || this.maxInactiveInterval <= 0) {
             return;
         }
-        setInterval(function(){
-            $("#timeoutModal").modal("show");
-        }, this.maxInactiveInterval * 1000);
-        $("#timeoutModal").on('hidden.bs.modal', function(){
-            if(window.location.pathname.includes("otp")) {
-                window.location.href = "/otp-access/session-expired";
-            } else {
-                location.reload();
-            }
+        const timeoutModal = $("#timeoutModal");
+        if (!timeoutModal.length) {
+            return;
+        }
+
+        this.sessionTimeoutTriggered = false;
+        this.bindSessionTimeoutStorageListener();
+        this.updateSharedSessionExpiration();
+        this.scheduleSessionTimeoutFromSharedExpiration();
+
+        timeoutModal.off('hidden.bs.modal.esupSessionTimeout').on('hidden.bs.modal.esupSessionTimeout', () => {
+            window.location.href = '/logged-out';
         });
     }
 

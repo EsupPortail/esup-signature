@@ -30,23 +30,15 @@
                 <div class="es-sidebar d-flex">
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="flex-grow-1">
+                <div class="flex-grow-1 overflow-scroll">
                     <div class="p-0 m-2">
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                    <h5 class="ms-4">Statut</h5>
-                </div>
-                <div class="card-body">
-                    <div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${signBookLight})}" class="mb-1"></div>
-                    <div class="text-center mb-1">
-                        <div class="badge rounded-pill badge-status bg-secondary" th:if="${signBookLight.archiveStatus != null && signBookLight.archiveStatus.name != 'none'}">
-                            <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signBookLight.archiveStatus}}"></span>
-                        </div>
-                    </div>
+            <div class="alert alert-light">
+                <div class="d-flex justify-content-start align-items-center gap-2">
+                    <h5 class="ms-4">Statut</h5><div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${signBookLight})}" class="mb-1"></div>
                 </div>
             </div>
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Liste des documents originaux</h5>
                 </div>
                 <div class="card-body">
@@ -55,8 +47,8 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Historique des modifications</h5>
                 </div>
                 <div class="card-body">
@@ -65,8 +57,8 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Liste des documents signés</h5>
                 </div>
                 <div class="card-body">
@@ -76,8 +68,8 @@
                 </div>
             </div>
             <div th:replace="~{admin/signrequests/cards/stepscard}"></div>
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span></h5>
                 </div>
                 <div class="card-body">
@@ -96,8 +88,8 @@
                 </div>
             </div>
 
-            <div class="card text-bg-light mb-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
                 </div>
                 <div class="card-body">
@@ -128,26 +120,26 @@
                 </div>
                     </div>
                 </div>
-            <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequestLight.createBy != null && signRequestLight.createBy.eppn == userEppn && signRequestLight.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
-                            <i class="fa-solid fa-trash-restore "></i>
-                        </a>
-                    </li>
-                    <li th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
-                            th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
-                            <i th:if="${signRequestLight.deleted}" class="fa-solid fa-dumpster-fire "></i>
-                            <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
-                        </a>
-                    </li>
-                </ul>
             </div>
+                <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li th:if="${signRequestLight.createBy != null && signRequestLight.createBy.eppn == userEppn && signRequestLight.deleted}">
+                            <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
+                                <i class="fi fi-rr-trash-restore"></i>
+                            </a>
+                        </li>
+                        <li th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}">
+                            <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
+                               th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                               data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
+                                <i th:if="${signRequestLight.deleted}" class="fi fi-rr-dumpster-fire"></i>
+                                <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
-        </div>
-    </div>
 </div>
 </main>
 <div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}"

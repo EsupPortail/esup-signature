@@ -267,10 +267,6 @@
         display: none;
     }
 
-    .not-viewed-position {
-        left: 50px;
-    }
-
     .pdf-alerts-btn {
         left: 16px;
         top:105px;
@@ -355,6 +351,10 @@
 
     #logo {
         margin-left: 5px;
+    }
+
+    .not-viewed-position {
+        display: none;
     }
 
     #workspace {
@@ -553,11 +553,6 @@
     #logo {
         float: right;
         height: 30px;
-    }
-
-    .not-viewed-position {
-        left: revert;
-        right: 0px;
     }
 
     .pdf-alerts {
