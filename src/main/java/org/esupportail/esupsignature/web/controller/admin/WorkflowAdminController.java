@@ -122,6 +122,7 @@ public class WorkflowAdminController {
 		var workflow = uiFetchService.buildAdminWorkflowTargetsWorkflowView(id);
 		model.addAttribute("workflow", workflow);
 		model.addAttribute("certificats", certificatService.getAllCertificats());
+		model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
 	        model.addAttribute("allSteps", workflow.getWorkflowSteps());
 		return "admin/workflows/steps";
 	}
@@ -262,9 +263,9 @@ public class WorkflowAdminController {
 	@PreAuthorize("@preAuthorizeService.workflowManager(#id, #authUserEppn) || hasRole('ROLE_ADMIN')")
 	public String addAutoStep(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
 							  @RequestParam(name="description", required = false) String description,
-							  @RequestParam(name="certificatId", required = false) Long certificatId) throws EsupSignatureRuntimeException {
+							  @RequestParam(name="certificatId", required = false) String certificatSelection) throws EsupSignatureRuntimeException {
 		WorkflowStepDto workflowStepDto = new WorkflowStepDto(SignType.signature, description, null, false, 1, false, false);
-		workflowStepService.addStep(id, workflowStepDto, -1, authUserEppn, false, true, certificatId);
+		workflowStepService.addStep(id, workflowStepDto, -1, authUserEppn, false, true, certificatSelection);
 		return "redirect:/admin/workflows/steps/" + id;
 	}
 
@@ -284,13 +285,13 @@ public class WorkflowAdminController {
 							 @RequestParam(name="attachmentAlert", required = false) Boolean attachmentAlert,
 							 @RequestParam(name="attachmentRequire", required = false) Boolean attachmentRequire,
 							 @RequestParam(name="autoSign", required = false) Boolean autoSign,
-							 @RequestParam(name="certificatId", required = false) Long certificatId,
+							 @RequestParam(name="certificatId", required = false) String certificatSelection,
 							 @RequestParam(name="minSignLevel", required = false) SignLevel minSignLevel,
 							 @RequestParam(name="maxSignLevel", required = false) SignLevel maxSignLevel,
 							 @RequestParam(name="sealVisa", required = false) Boolean sealVisa,
 							 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		try {
-			workflowStepService.updateStep(id, step, signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatId, minSignLevel, maxSignLevel, sealVisa);
+			workflowStepService.updateStep(id, step, signType, description, changeable, repeatable, multiSign, singleSignWithAnnotation, allSignToComplete, maxRecipients, attachmentAlert, attachmentRequire, autoSign, certificatSelection, minSignLevel, maxSignLevel, sealVisa);
 		} catch (EsupSignatureRuntimeException e) {
 			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
 		}
@@ -339,7 +340,7 @@ public class WorkflowAdminController {
 						  @PathVariable("id") Long id,
 						  @PathVariable("stepNumber") Integer stepNumber, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
 		Workflow workflow = workflowService.getById(id);
-		workflowStepService.removeStep(workflow, stepNumber);
+		workflowStepService.removeStep(id, stepNumber);
         String path = httpServletRequest.getRequestURI();
 		if (!path.startsWith("/admin")) {
 			return "redirect:/manager/workflows/steps/" + id;

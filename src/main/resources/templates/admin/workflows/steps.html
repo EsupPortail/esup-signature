@@ -132,15 +132,20 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label><strong>Description de l’étape:</strong></label>
-                                    <input name="description" type="text" class="form-control" />
+                                    <label for="description" class="form-label">Description de l’étape:</label>
+                                    <input id="description" name="description" type="text" class="form-control" />
                                 </div>
                                 <div class="form-group mb-3">
-                                    <label><strong>Choix du certificat</strong></label>
+                                    <label for="certificatId" class="form-label">Choix du certificat</label>
                                     <select class="slim-select-simple" name="certificatId" id="certificatId">
-                                        <option class="text-break" style="overflow: hidden;text-overflow: ellipsis;" value="" th:if="${globalProperties.sealCertificatConfigured}">Certificat cachet de l’établissement</option>
+                                        <th:block th:each="sealCertificatProperties : ${sealCertificatPropertieses}">
+                                            <option class="text-break"
+                                                    style="overflow: hidden;text-overflow: ellipsis;"
+                                                    th:value="${'seal:' + sealCertificatProperties.sealCertificatName}"
+                                                    th:text="${sealCertificatProperties.sealCertificatTitle != null && !#strings.isEmpty(sealCertificatProperties.sealCertificatTitle) ? sealCertificatProperties.sealCertificatTitle : sealCertificatProperties.sealCertificatName}"></option>
+                                        </th:block>
                                         <th:block th:each="certificat : ${certificats}">
-                                            <option th:text="${certificat.keystore.fileName}" th:value="${certificat.id}"></option>
+                                            <option th:text="${certificat.keystore.fileName}" th:value="${'cert:' + certificat.id}"></option>
                                         </th:block>
                                     </select>
                                 </div>

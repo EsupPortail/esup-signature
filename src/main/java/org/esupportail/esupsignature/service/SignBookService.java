@@ -1711,8 +1711,12 @@ public class SignBookService {
                                 }
                             } else {
                                 try {
+                                    String sealCertificatName = liveWorkflowStep.getWorkflowStep() != null
+                                            && StringUtils.hasText(liveWorkflowStep.getWorkflowStep().getSealCertificatName())
+                                            ? liveWorkflowStep.getWorkflowStep().getSealCertificatName()
+                                            : "default";
                                     signRequestParamsService.copySignRequestParams(signRequest1.getId(), signRequestParamses);
-                                    signRequestService.sign(signRequest1, "", "sealCert", "default", null, null,"system", "system", null, "", false);
+                                    signRequestService.sign(signRequest1, "", "sealCert", sealCertificatName, null, null,"system", "system", null, "", false);
                                 } catch (IOException | EsupSignatureRuntimeException e) {
                                     logger.error("auto sign fail", e);
                                     refuse(signRequest1.getId(), "Signature refusée par le système automatique", "system", "system");

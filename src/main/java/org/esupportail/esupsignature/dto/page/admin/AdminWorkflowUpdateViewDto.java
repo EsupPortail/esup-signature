@@ -307,6 +307,7 @@ public class AdminWorkflowUpdateViewDto {
         private Long id;
         private String description;
         private Boolean autoSign;
+        private String sealCertificatName;
         private SignType signType;
         private SignLevel minSignLevel;
         private SignLevel maxSignLevel;
@@ -367,6 +368,8 @@ public class AdminWorkflowUpdateViewDto {
         public void setDescription(String description) { this.description = description; }
         public Boolean getAutoSign() { return autoSign; }
         public void setAutoSign(Boolean autoSign) { this.autoSign = autoSign; }
+        public String getSealCertificatName() { return sealCertificatName; }
+        public void setSealCertificatName(String sealCertificatName) { this.sealCertificatName = sealCertificatName; }
         public SignType getSignType() { return signType; }
         public void setSignType(SignType signType) { this.signType = signType; }
         public SignLevel getMinSignLevel() { return minSignLevel; }

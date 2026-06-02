@@ -141,6 +141,7 @@ public class WorkflowViewDto {
         private Long id;
         private String description;
         private Boolean autoSign;
+        private String sealCertificatName;
         private SignType signType;
         private SignLevel minSignLevel;
         private SignLevel maxSignLevel;
@@ -217,6 +218,14 @@ public class WorkflowViewDto {
 
         public void setAutoSign(Boolean autoSign) {
             this.autoSign = autoSign;
+        }
+
+        public String getSealCertificatName() {
+            return sealCertificatName;
+        }
+
+        public void setSealCertificatName(String sealCertificatName) {
+            this.sealCertificatName = sealCertificatName;
         }
 
         public SignType getSignType() {
