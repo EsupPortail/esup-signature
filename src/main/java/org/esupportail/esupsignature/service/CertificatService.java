@@ -462,7 +462,7 @@ public class CertificatService implements HealthIndicator {
         if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
             certificatProblem = true;
         }
-        Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
+        Date lastDate = new DateTime().plusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
         for(Certificat certificat : getAllCertificats()) {
             if(certificat.getExpireDate().before(lastDate)) {
                 certificatProblem = true;
