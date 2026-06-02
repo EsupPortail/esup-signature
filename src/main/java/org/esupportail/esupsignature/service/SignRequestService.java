@@ -13,6 +13,7 @@ import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.dss.service.FOPService;
 import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestLightProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
 import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
 import org.esupportail.esupsignature.dto.ws.RecipientsActionsWsDto;
@@ -192,6 +193,11 @@ public class SignRequestService {
     public List<SignRequestTabProjectionDto> getSignRequestTabProjections(Long signBookId, String userEppn) {
 		return signRequestRepository.findTabProjectionsBySignBookId(signBookId, userEppn);
 	}
+
+	@Transactional(readOnly = true)
+	public List<SignRequestLightProjectionDto> getCloneSignRequestLightProjections(Long signRequestId) {
+	return signRequestRepository.findCloneLightProjectionsBySignRequestId(signRequestId);
+  }
 
     @Transactional
     public List<SignRequest> getSignRequests(long id) {
@@ -1011,6 +1017,13 @@ public class SignRequestService {
 		List<Long> commentsIds = signRequest.getComments().stream().map(Comment::getId).toList();
 		for (Long commentId : commentsIds) {
 			commentService.deleteComment(commentId, signRequest);
+		}
+		List<SignRequest> clonedSignRequests = signRequestRepository.findByClonedFromId(signRequestId);
+		if(!clonedSignRequests.isEmpty()) {
+			for (SignRequest clonedSignRequest : clonedSignRequests) {
+				clonedSignRequest.setClonedFrom(null);
+			}
+			signRequestRepository.saveAll(clonedSignRequests);
 		}
 		signBook.getSignRequests().remove(signRequest);
 		for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {

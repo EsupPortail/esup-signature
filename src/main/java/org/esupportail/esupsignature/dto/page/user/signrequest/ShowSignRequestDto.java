@@ -48,6 +48,7 @@ public class ShowSignRequestDto {
     private List<SealCertificatProperties> sealCertificatPropertieses;
     private List<StepDto> steps;
     private List<TargetDto> targets;
+    private List<SignRequestLightDto> clonedSignRequests;
     private Map<Long, RecipientActionDto> recipientActions;
     private List<SignRequestTabDto> signRequestTabs;
     private Integer liveWorkflowStepCount;
@@ -114,6 +115,8 @@ public class ShowSignRequestDto {
     public void setSteps(List<StepDto> steps) { this.steps = steps; }
     public List<TargetDto> getTargets() { return targets; }
     public void setTargets(List<TargetDto> targets) { this.targets = targets; }
+    public List<SignRequestLightDto> getClonedSignRequests() { return clonedSignRequests; }
+    public void setClonedSignRequests(List<SignRequestLightDto> clonedSignRequests) { this.clonedSignRequests = clonedSignRequests; }
     public Map<Long, RecipientActionDto> getRecipientActions() { return recipientActions; }
     public void setRecipientActions(Map<Long, RecipientActionDto> recipientActions) { this.recipientActions = recipientActions; }
     public List<SignRequestTabDto> getSignRequestTabs() { return signRequestTabs; }
@@ -161,6 +164,7 @@ public class ShowSignRequestDto {
     public List<SealCertificatProperties> sealCertificatPropertieses() { return sealCertificatPropertieses; }
     public List<StepDto> steps() { return steps; }
     public List<TargetDto> targets() { return targets; }
+    public List<SignRequestLightDto> clonedSignRequests() { return clonedSignRequests; }
     public Map<Long, RecipientActionDto> recipientActions() { return recipientActions; }
     public List<SignRequestTabDto> signRequestTabs() { return signRequestTabs; }
     public Integer liveWorkflowStepCount() { return liveWorkflowStepCount; }

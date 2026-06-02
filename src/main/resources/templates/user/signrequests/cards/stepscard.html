@@ -19,7 +19,7 @@
                             <th:block th:if="${signRequestLight.clonedFromId == null}">
                                 <b>Document original</b>
                             </th:block>
-                            <a th:if="${signRequestLight.clonedFromId != null}" target="_blank"
+                            <a th:if="${signRequestLight.clonedFromId != null}"
                                class="fw-bold text-decoration-none"
                                th:href="'/user/signrequests/' + ${signRequestLight.clonedFromId}">
                                 <i class="fi fi-rr-link"></i> Demande d'origine
@@ -481,10 +481,26 @@
                             <i class="fi fi-rr-triangle-warning"></i>
                         </div>
                         <div class="step-vertical-content bg-light d-flex align-items-center">
-                            <b>Procédure refusée</b>
-                            <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
-                                Les intervenants ont été informés par mail
-                            </p>
+                            <div>
+                                <b>Procédure refusée</b>
+                                <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
+                                    Les intervenants ont été informés par mail
+                                </p>
+                                <th:block th:if="${showSignRequest.clonedSignRequests != null && !showSignRequest.clonedSignRequests.isEmpty()}">
+                                    <p class="mb-1">Relances créées à partir de cette demande :</p>
+                                    <ul class="mb-0 ps-3">
+                                        <li th:each="clonedSignRequest : ${showSignRequest.clonedSignRequests}">
+                                            <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${clonedSignRequest.id}"
+                                               th:text="|Demande n°${clonedSignRequest.id}|"
+                                               class="text-decoration-none"></a>
+                                            <br>
+                                            <span th:if="${clonedSignRequest.createBy != null && !#strings.isEmpty(clonedSignRequest.createBy.eppn)}"
+                                                  class="text-muted small"
+                                                  th:text="'par ' + ${clonedSignRequest.createBy.firstname} + ' ' + ${clonedSignRequest.createBy.name}"></span>
+                                        </li>
+                                    </ul>
+                                </th:block>
+                            </div>
                         </div>
                     </div>
                 </th:block>
