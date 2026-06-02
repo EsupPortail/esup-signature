@@ -332,13 +332,15 @@
                                         <th:block th:if="${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)}">
                                             <li>
                                                 <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                                        th:data-step="${stepNumber}">
+                                                         th:data-step="${stepNumber}"
+                                                         th:data-layer-id="${'layer_' + liveWorkflowStep.id}">
                                                     <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
                                                 </button>
                                             </li>
                                             <li>
                                                 <button class="toggle-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                                        th:data-step="${stepNumber}">
+                                                         th:data-step="${stepNumber}"
+                                                         th:data-layer-id="${'layer_' + liveWorkflowStep.id}">
                                                     <i class="fi fi-rr-layers"></i> Afficher les modifications
                                                 </button>
                                             </li>
@@ -478,7 +480,7 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-triangle-warning"></i>
                         </div>
-                        <div class="step-vertical-content bg-light">
+                        <div class="step-vertical-content bg-light d-flex align-items-center">
                             <b>Procédure refusée</b>
                             <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
                                 Les intervenants ont été informés par mail

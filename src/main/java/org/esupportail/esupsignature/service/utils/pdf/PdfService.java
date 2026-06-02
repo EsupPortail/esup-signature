@@ -1477,13 +1477,13 @@ public class PdfService {
                 return out.toByteArray();
             }
 
+            List<String> applicationLayerNames = getApplicationLayerNamesInOrder(doc);
             Set<String> hiddenLayerNames = new HashSet<>();
-            List<String> groupNames = getOptionalContentGroupNamesInOrder(doc);
-            for (int i = 0; i < groupNames.size(); i++) {
+            for (int i = 0; i < applicationLayerNames.size(); i++) {
                 boolean displayLayer = i < stepNumber;
-                ocProperties.setGroupEnabled(groupNames.get(i), displayLayer);
+                ocProperties.setGroupEnabled(applicationLayerNames.get(i), displayLayer);
                 if (!displayLayer) {
-                    hiddenLayerNames.add(groupNames.get(i));
+                    hiddenLayerNames.add(applicationLayerNames.get(i));
                 }
             }
 
@@ -1514,6 +1514,21 @@ public class PdfService {
             groupNames.addAll(Arrays.asList(document.getDocumentCatalog().getOCProperties().getGroupNames()));
         }
         return groupNames;
+    }
+
+    private List<String> getApplicationLayerNamesInOrder(PDDocument document) {
+        return getOptionalContentGroupNamesInOrder(document).stream()
+                .filter(this::isApplicationLayerName)
+                .toList();
+    }
+
+    private boolean isApplicationLayerName(String layerName) {
+        if (!StringUtils.hasText(layerName)) {
+            return false;
+        }
+        return layerName.matches("layer_\\d+")
+                || layerName.matches("sign_\\d+_.*")
+                || layerName.matches("SignStep_\\d+_.*");
     }
 
     private void rewritePageAnnotationsWithoutHiddenLayers(PDPage page, Set<String> hiddenLayerNames) throws IOException {

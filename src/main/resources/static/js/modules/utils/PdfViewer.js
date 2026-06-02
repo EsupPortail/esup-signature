@@ -87,17 +87,20 @@ export class PdfViewer extends EventFactory {
         $('#autoRotate').on('click', e => this.autoRotate());
         $(document).on('click', '.display-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.toggleLayerByStep(stepNumber, false);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, false, layerId);
         });
 
         $(document).on('click', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.toggleLayerByStep(stepNumber, true);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, true, layerId);
         });
 
         $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.highlightStep(stepNumber);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.highlightStep(stepNumber, layerId);
         });
 
         $(document).on('mouseleave', '.toggle-layer-btn', (e) => {
@@ -106,7 +109,8 @@ export class PdfViewer extends EventFactory {
 
         $(document).on('mouseenter', '.toggle-layer-div', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.highlightStep(stepNumber);
+            const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            self.highlightStep(stepNumber, layerId);
         });
 
         $(document).on('mouseleave', '.toggle-layer-div', (e) => {
@@ -341,6 +345,107 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    async applyLinkAnnotationsVisibility() {
+        if (!this.pdfDoc) {
+            return;
+        }
+        const config = await Promise.resolve(this._optionalContentConfigPromise);
+        if (!config) {
+            return;
+        }
+
+        const visibleLayerNames = new Set();
+        for (const [id, group] of config) {
+            if (group?.visible) {
+                visibleLayerNames.add(group.name);
+            }
+        }
+
+        const tasks = [];
+        for (let pageNum = 1; pageNum <= this.numPages; pageNum++) {
+            tasks.push(this.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames));
+        }
+        await Promise.all(tasks);
+    }
+
+    async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
+        const pageContainer = document.getElementById(`page_${pageNum}`);
+        if (!pageContainer) {
+            return;
+        }
+        const annotationLayer = pageContainer.querySelector('.annotationLayer');
+        if (!annotationLayer) {
+            return;
+        }
+
+        const page = await this.pdfDoc.getPage(pageNum);
+        const annotations = await page.getAnnotations();
+        const annotationsById = new Map();
+        annotations.forEach(annotation => {
+            if (annotation?.id != null) {
+                annotationsById.set(String(annotation.id), annotation);
+            }
+        });
+
+        annotationLayer.querySelectorAll('section.linkAnnotation[data-annotation-id]').forEach(section => {
+            const annotation = annotationsById.get(String(section.dataset.annotationId));
+            if (!annotation) {
+                section.style.removeProperty('display');
+                return;
+            }
+
+            const layerIds = this.extractAnnotationLayerIds(annotation);
+            if (!layerIds.length) {
+                section.style.removeProperty('display');
+                return;
+            }
+
+            const shouldDisplay = layerIds.some(layerId => visibleLayerNames.has(layerId));
+            section.style.display = shouldDisplay ? '' : 'none';
+        });
+    }
+
+    extractAnnotationLayerIds(annotation) {
+        const layerIds = new Set();
+        if (!annotation) {
+            return [];
+        }
+
+        [annotation.annotationName, annotation.name, annotation.ocgName, annotation.layerName].forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                layerIds.add(value.trim());
+            }
+        });
+
+        [annotation.contents, annotation.contentsObj?.str, annotation.title].forEach(value => {
+            if (typeof value !== 'string' || !value.trim()) {
+                return;
+            }
+            try {
+                const parsed = JSON.parse(value);
+                if (parsed?.layer_id) {
+                    layerIds.add(String(parsed.layer_id).trim());
+                }
+            } catch (e) {
+                const match = value.match(/"layer_id"\s*:\s*"([^"]+)"/);
+                if (match?.[1]) {
+                    layerIds.add(match[1].trim());
+                }
+            }
+        });
+
+        return Array.from(layerIds);
+    }
+
+    isApplicationLayerName(layerName) {
+        if (typeof layerName !== 'string' || !layerName.trim()) {
+            return false;
+        }
+        return /^layer_\d+$/.test(layerName)
+            || /^sign_\d+_.+/.test(layerName)
+            || /^SignStep_\d+_.+/.test(layerName);
+    }
+
     checkCurrentPage(e) {
         if(this.renderedPages < this.numPages) return;
         let numPages = this.pdfDoc.numPages;
@@ -443,6 +548,7 @@ export class PdfViewer extends EventFactory {
                     // Si c'est un refresh OCG, ne pas lancer postRenderAll
                     if (self._isRefreshingOCG) {
                         self._isRefreshingOCG = false;
+                        self.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
@@ -664,6 +770,7 @@ export class PdfViewer extends EventFactory {
         }
         this.restoreScrolling();
         this.updateHorizontalOverflowState();
+        this.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur postRenderAll liens OCG:', err));
     }
 
     updateHorizontalOverflowState() {
@@ -1846,7 +1953,57 @@ export class PdfViewer extends EventFactory {
         return window.devicePixelRatio || 1;
     }
 
-    async showLayerByStep(stepNumber, solo) {
+    getApplicationLayers(config) {
+        const layers = [];
+        if (!config) {
+            return layers;
+        }
+        for (const [id, group] of config) {
+            if (group?.name && this.isApplicationLayerName(group.name)) {
+                layers.push({ id, name: group.name, visible: group.visible });
+            }
+        }
+        return layers;
+    }
+
+    resolveLayerName(stepNumber, requestedLayerName, layers) {
+        if (requestedLayerName) {
+            const exactMatch = layers.find(group => group.name === requestedLayerName);
+            if (exactMatch) {
+                return exactMatch.name;
+            }
+            const requestedLayerId = Number.parseInt(String(requestedLayerName).replace('layer_', ''), 10);
+            if (!Number.isNaN(requestedLayerId)) {
+                const compatibleMatch = layers.find(group => {
+                    const liveWorkflowStepId = this.extractStableLayerStepId(group.name);
+                    return liveWorkflowStepId === requestedLayerId;
+                });
+                if (compatibleMatch) {
+                    return compatibleMatch.name;
+                }
+            }
+
+            return null;
+        }
+        return layers[stepNumber - 1]?.name || null;
+    }
+
+    extractStableLayerStepId(layerName) {
+        if (typeof layerName !== 'string') {
+            return null;
+        }
+        let match = layerName.match(/^layer_(\d+)$/);
+        if (match) {
+            return Number.parseInt(match[1], 10);
+        }
+        match = layerName.match(/^sign_(\d+)_/);
+        if (match) {
+            return Number.parseInt(match[1], 10);
+        }
+        return null;
+    }
+
+    async showLayerByStep(stepNumber, solo, layerName = null) {
         if (!this.pdfDoc) {
             return;
         }
@@ -1855,23 +2012,26 @@ export class PdfViewer extends EventFactory {
             if (!config) {
                 return;
             }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
+            const allGroups = this.getApplicationLayers(config);
+            const resolvedLayerName = this.resolveLayerName(stepNumber, layerName, allGroups);
+            if (!resolvedLayerName && stepNumber !== 0) {
+                return;
             }
             if(solo) {
-                allGroups.forEach((group, index) => {
-                    const shouldBeVisible = (index + 1) === stepNumber;
+                allGroups.forEach((group) => {
+                    const shouldBeVisible = group.name === resolvedLayerName;
                     config.setVisibility(group.id, shouldBeVisible);
                 });
             } else {
-                allGroups.forEach((group, index) => {
-                    const shouldBeVisible = (index + 1) <= stepNumber;
+                allGroups.forEach((group) => {
+                    const selectedGroupIndex = allGroups.findIndex(candidate => candidate.name === resolvedLayerName);
+                    const currentGroupIndex = allGroups.findIndex(candidate => candidate.name === group.name);
+                    const shouldBeVisible = stepNumber === 0 ? false : (selectedGroupIndex >= 0 && currentGroupIndex <= selectedGroupIndex);
                     config.setVisibility(group.id, shouldBeVisible);
                 });
             }
             this.optionalContentConfigPromise = Promise.resolve(config);
-            this._activeLayerView = { stepNumber, solo };
+            this._activeLayerView = { stepNumber, solo, layerId: resolvedLayerName };
             this.updateLayerButtonsState();
         } catch(err) {
             console.error('Erreur showLayerByStep:', err);
@@ -1890,8 +2050,8 @@ export class PdfViewer extends EventFactory {
         }
 
         const selector = this._activeLayerView.solo
-            ? `.toggle-layer-btn[data-step="${this._activeLayerView.stepNumber}"]`
-            : `.display-layer-btn[data-step="${this._activeLayerView.stepNumber}"]`;
+            ? `.toggle-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`
+            : `.display-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`;
 
         const $btn = $(selector);
         if ($btn.length) {
@@ -1908,8 +2068,8 @@ export class PdfViewer extends EventFactory {
             if (!config) {
                 return;
             }
-            for (const [id, group] of config) {
-                config.setVisibility(id, true);
+            for (const group of this.getApplicationLayers(config)) {
+                config.setVisibility(group.id, true);
             }
             this.optionalContentConfigPromise = Promise.resolve(config);
             this._activeLayerView = null;
@@ -1919,18 +2079,18 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    async toggleLayerByStep(stepNumber, solo) {
+    async toggleLayerByStep(stepNumber, solo, layerId = null) {
         // Si on reclique sur le même stepNumber déjà actif (même mode), on repasse sur tous les calques.
         if (this._activeLayerView
             && this._activeLayerView.solo === solo
-            && this._activeLayerView.stepNumber === stepNumber) {
+            && this._activeLayerView.layerId === (layerId || this._activeLayerView.layerId)) {
             await this.showAllLayers();
             return;
         }
-        await this.showLayerByStep(stepNumber, solo);
+        await this.showLayerByStep(stepNumber, solo, layerId);
     }
 
-    async highlightStep(stepNumber) {
+    async highlightStep(stepNumber, layerId = null) {
         if (!this.highlighter) {
             console.error('highlightStep: LayerHighlighter non initialisé');
             return;
@@ -1942,19 +2102,19 @@ export class PdfViewer extends EventFactory {
                 console.warn('highlightStep: Aucun calque disponible');
                 return;
             }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
-            }
+            const allGroups = this.getApplicationLayers(config);
 
-            if (stepNumber < 1 || stepNumber > allGroups.length) {
-                console.warn(`highlightStep: Step ${stepNumber} hors limites (1-${allGroups.length})`);
+            const resolvedLayerName = this.resolveLayerName(stepNumber, layerId, allGroups);
+            const targetGroup = resolvedLayerName
+                ? allGroups.find(group => group.name === resolvedLayerName)
+                : null;
+            if (!targetGroup) {
+                console.warn(`highlightStep: layer introuvable pour step=${stepNumber}, layerId=${layerId}`);
                 return;
             }
-            const targetGroup = allGroups[stepNumber - 1];
             this.highlighter.clearHighlights();
             await this.highlighter.highlightLayer(targetGroup.id);
-            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${highlightColor}`);
+            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${this.highlighter.highlightColor}`);
         } catch(err) {
             console.error('highlightStep error:', err);
         }

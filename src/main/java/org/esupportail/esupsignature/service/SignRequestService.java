@@ -381,9 +381,7 @@ public class SignRequestService {
 			if(signRequest.getSignRequestParams().isEmpty() && visual) {
 				throw new EsupSignatureRuntimeException("Il faut apposer au moins un élément visuel");
 			}
-			String textDate = java.time.ZonedDateTime.now()
-					.format(java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-			String ocgName = "sign_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getId() + "_" + authUserEppn + "_" + textDate;
+			String ocgName = getCurrentStepLayerId(signRequest);
 			int nbSign = 0;
 			if (toSignDocuments.size() == 1 && toSignDocuments.get(0).isPdf() && visual) {
 				for(SignRequestParams signRequestParams : signRequest.getSignRequestParams()) {
@@ -453,7 +451,7 @@ public class SignRequestService {
 	public byte[] stampImagesOnFirstSign(SignRequest signRequest, List<SignRequestParams> signRequestParamses, String userEppn, String authUserEppn, byte[] filledInputStream, Date date, List<Log> lastSignLogs, SignRequestParams lastSignRequestParams) {
 		User signerUser = userService.getByEppn(userEppn);
 		boolean isViewed = signRequest.getViewedBy().contains(signerUser);
-		String ocgName = "SignStep_" + signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber() + "_" + System.currentTimeMillis();
+		String ocgName = getCurrentStepLayerId(signRequest);
 		if (signRequestParamses.size() > 1) {
 			for (SignRequestParams signRequestParams : signRequestParamses) {
 				if(signRequestParams.equals(lastSignRequestParams)) continue;
@@ -466,6 +464,17 @@ public class SignRequestService {
 			}
 		}
 		return filledInputStream;
+	}
+
+	private String getCurrentStepLayerId(SignRequest signRequest) {
+		LiveWorkflowStep currentStep = signRequest.getParentSignBook() != null
+				&& signRequest.getParentSignBook().getLiveWorkflow() != null
+				? signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep()
+				: null;
+		if (currentStep == null || currentStep.getId() == null) {
+			throw new EsupSignatureRuntimeException("Impossible de déterminer l'identifiant de calque pour l'étape courante");
+		}
+		return "layer_" + currentStep.getId();
 	}
 
 	/**
