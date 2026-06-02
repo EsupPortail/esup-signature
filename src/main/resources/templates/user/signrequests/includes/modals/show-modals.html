@@ -490,7 +490,7 @@
                                 <th:block th:each="liveWorkflowStep, iterator : ${showSignRequest.steps}">
                                     <th:block th:if="${(iterator.index + 1) < signRequestFull.currentStepNumber}">
                                         <option th:value="${iterator.index + 1}"
-                                                th:text="'Étape ' + (iterator.index + 1) + ' - ' + liveWorkflowStep.signType"></option>
+                                                th:text="'Étape ' + ${(iterator.index + 1) + ' - ' + liveWorkflowStep.signType}"></option>
                                     </th:block>
                                 </th:block>
                             </select>

@@ -1478,22 +1478,120 @@ public class PdfService {
             }
 
             Set<String> hiddenLayerNames = new HashSet<>();
-            String[] groupNames = ocProperties.getGroupNames();
-            for (int i = 0; i < groupNames.length; i++) {
+            List<String> groupNames = getOptionalContentGroupNamesInOrder(doc);
+            for (int i = 0; i < groupNames.size(); i++) {
                 boolean displayLayer = i < stepNumber;
-                ocProperties.setGroupEnabled(groupNames[i], displayLayer);
+                ocProperties.setGroupEnabled(groupNames.get(i), displayLayer);
                 if (!displayLayer) {
-                    hiddenLayerNames.add(groupNames[i]);
+                    hiddenLayerNames.add(groupNames.get(i));
                 }
             }
 
             for (PDPage page : doc.getPages()) {
-                page.getAnnotations().removeIf(annotation -> hiddenLayerNames.contains(annotation.getAnnotationName()));
+                rewritePageAnnotationsWithoutHiddenLayers(page, hiddenLayerNames);
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             doc.save(out);
             return out.toByteArray();
+        }
+    }
+
+    private List<String> getOptionalContentGroupNamesInOrder(PDDocument document) {
+        List<String> groupNames = new ArrayList<>();
+        COSBase ocgs = document.getDocumentCatalog().getOCProperties().getCOSObject().getDictionaryObject(COSName.OCGS);
+        if (ocgs instanceof COSArray optionalContentGroups) {
+            for (COSBase ocg : optionalContentGroups) {
+                if (ocg instanceof COSDictionary optionalContentGroupDictionary) {
+                    String name = optionalContentGroupDictionary.getString(COSName.NAME);
+                    if (StringUtils.hasText(name)) {
+                        groupNames.add(name.trim());
+                    }
+                }
+            }
+        }
+        if (groupNames.isEmpty()) {
+            groupNames.addAll(Arrays.asList(document.getDocumentCatalog().getOCProperties().getGroupNames()));
+        }
+        return groupNames;
+    }
+
+    private void rewritePageAnnotationsWithoutHiddenLayers(PDPage page, Set<String> hiddenLayerNames) throws IOException {
+        List<PDAnnotation> keptAnnotations = new ArrayList<>();
+        for (PDAnnotation annotation : page.getAnnotations()) {
+            if (!isAnnotationInHiddenLayer(annotation, hiddenLayerNames)) {
+                keptAnnotations.add(annotation);
+            }
+        }
+        COSArray annotations = new COSArray();
+        for (PDAnnotation keptAnnotation : keptAnnotations) {
+            annotations.add(keptAnnotation.getCOSObject());
+        }
+        page.getCOSObject().setItem(COSName.ANNOTS, annotations);
+    }
+
+    private boolean isAnnotationInHiddenLayer(PDAnnotation annotation, Set<String> hiddenLayerNames) {
+        if (hiddenLayerNames == null || hiddenLayerNames.isEmpty()) {
+            return false;
+        }
+        Set<String> annotationLayerIds = getAnnotationLayerIds(annotation);
+        return annotationLayerIds.stream().anyMatch(hiddenLayerNames::contains);
+    }
+
+    private Set<String> getAnnotationLayerIds(PDAnnotation annotation) {
+        Set<String> layerIds = new HashSet<>();
+        if (annotation == null) {
+            return layerIds;
+        }
+
+        if (StringUtils.hasText(annotation.getAnnotationName())) {
+            layerIds.add(annotation.getAnnotationName().trim());
+        }
+
+        String contents = annotation.getContents();
+        if (StringUtils.hasText(contents)) {
+            Matcher matcher = Pattern.compile("\"layer_id\"\\s*:\\s*\"([^\"]+)\"").matcher(contents);
+            while (matcher.find()) {
+                if (StringUtils.hasText(matcher.group(1))) {
+                    layerIds.add(matcher.group(1).trim());
+                }
+            }
+        }
+
+        COSBase optionalContent = annotation.getCOSObject().getDictionaryObject(COSName.OC);
+        collectOptionalContentLayerNames(optionalContent, layerIds);
+
+        return layerIds;
+    }
+
+    private void collectOptionalContentLayerNames(COSBase optionalContent, Set<String> layerIds) {
+        if (optionalContent == null || layerIds == null) {
+            return;
+        }
+
+        if (optionalContent instanceof COSDictionary optionalContentDictionary) {
+            String name = optionalContentDictionary.getString(COSName.NAME);
+            if (StringUtils.hasText(name)) {
+                layerIds.add(name.trim());
+            }
+
+            COSBase ocgs = optionalContentDictionary.getDictionaryObject(COSName.OCGS);
+            if (ocgs != null && ocgs != optionalContent) {
+                collectOptionalContentLayerNames(ocgs, layerIds);
+            }
+
+            COSBase ocg = optionalContentDictionary.getDictionaryObject(COSName.OCG);
+            if (ocg != null && ocg != optionalContent) {
+                collectOptionalContentLayerNames(ocg, layerIds);
+            }
+
+            return;
+        }
+
+        if (optionalContent instanceof COSArray optionalContentArray) {
+            for (COSBase cosBase : optionalContentArray) {
+                collectOptionalContentLayerNames(cosBase, layerIds);
+            }
         }
     }
 

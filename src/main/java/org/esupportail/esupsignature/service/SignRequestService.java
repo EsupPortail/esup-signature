@@ -1134,8 +1134,11 @@ public class SignRequestService {
 				if (!"".equals(data.getForm().getPreFillType()) && signRequest.getParentSignBook().getLiveWorkflow() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getUsers().contains(user)) {
 					prefilledFields = preFillService.getPreFilledFieldsByServiceName(data.getForm().getPreFillType(), fields, user, signRequest);
 					for (Field field : prefilledFields) {
+						WorkflowStep currentWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null
+								? signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep()
+								: null;
 						if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() == null
-								|| !field.getWorkflowSteps().contains(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep())) {
+								|| !containsWorkflowStep(field.getWorkflowSteps(), currentWorkflowStep)) {
 							field.setDefaultValue("");
 						}
 					}
@@ -1152,7 +1155,7 @@ public class SignRequestService {
 				field.setDefaultValue(data.getDatas().get(field.getName()));
 			}
 			for(WorkflowStep workflowStep : field.getWorkflowSteps()) {
-				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> workflowStep.equals(l.getWorkflowStep())).findFirst();
+				Optional<LiveWorkflowStep> liveWorkflowStep = signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps().stream().filter(l -> sameWorkflowStep(workflowStep, l.getWorkflowStep())).findFirst();
 				if(liveWorkflowStep.isPresent()) {
 					if(liveWorkflowStep.get().getRecipients().stream().anyMatch(recipient -> recipient.getUser().getEppn().equals(userEppn))
 						&& liveWorkflowStep.get().equals(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep())) {
@@ -1167,6 +1170,23 @@ public class SignRequestService {
 			}
 		}
 		return prefilledFields;
+	}
+
+	private boolean containsWorkflowStep(List<WorkflowStep> workflowSteps, WorkflowStep targetWorkflowStep) {
+		if (workflowSteps == null || workflowSteps.isEmpty() || targetWorkflowStep == null) {
+			return false;
+		}
+		return workflowSteps.stream().anyMatch(workflowStep -> sameWorkflowStep(workflowStep, targetWorkflowStep));
+	}
+
+	private boolean sameWorkflowStep(WorkflowStep workflowStep1, WorkflowStep workflowStep2) {
+		if (workflowStep1 == null || workflowStep2 == null) {
+			return false;
+		}
+		if (workflowStep1.getId() != null && workflowStep2.getId() != null) {
+			return workflowStep1.getId().equals(workflowStep2.getId());
+		}
+		return workflowStep1.equals(workflowStep2);
 	}
 
 	/**
@@ -1556,6 +1576,10 @@ public class SignRequestService {
 			throw new EsupSignatureException("Téléchargement interdit avant la fin du circuit pour : " + signRequestId);
 		}
 
+		if (stepNumber == 0 && signRequest.getOriginalDocuments() != null && !signRequest.getOriginalDocuments().isEmpty()) {
+			return signRequest.getOriginalDocuments().get(0).getInputStream().readAllBytes();
+		}
+
 		InputStream inputStream;
 		String contentType;
 		if (!signRequest.getParentSignBook().getArchiveStatus().equals(ArchiveStatus.cleaned)) {
@@ -1580,10 +1604,6 @@ public class SignRequestService {
 		}
 
 		byte[] pdfBytes = inputStream.readAllBytes();
-		if (stepNumber == 0) {
-			// Étape 0 = document "de base" sans calques ajoutés
-			return pdfService.removeOptionalContentAfterStep(pdfBytes, 0);
-		}
 		return pdfService.removeOptionalContentAfterStep(pdfBytes, stepNumber);
 	}
 
