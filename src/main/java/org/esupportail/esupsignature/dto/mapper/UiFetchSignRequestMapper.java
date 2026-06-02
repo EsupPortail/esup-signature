@@ -77,6 +77,7 @@ public class UiFetchSignRequestMapper {
     public ShowSignRequestDto.SignRequestLightDto toSignRequestLightDto(SignRequest signRequest) {
         ShowSignRequestDto.SignRequestLightDto dto = new ShowSignRequestDto.SignRequestLightDto();
         dto.setId(signRequest.getId());
+        dto.setClonedFromId(signRequest.getClonedFrom() != null ? signRequest.getClonedFrom().getId() : null);
         dto.setStatus(signRequest.getStatus());
         dto.setDeleted(signRequest.getDeleted());
         dto.setToken(signRequest.getToken());

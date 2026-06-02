@@ -51,8 +51,14 @@ public class SignRequestController {
 
     @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #authUserEppn)")
     @PostMapping(value = "/clone/{id}")
-    public String clone(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles, @RequestParam(value = "comment") String comment, RedirectAttributes redirectAttributes) throws EsupSignatureException {
-        Long cloneId = signBookService.clone(id, multipartFiles, comment, authUserEppn);
+    public String clone(@ModelAttribute("authUserEppn") String authUserEppn,
+                        @PathVariable("id") Long id,
+                        @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
+                        @RequestParam(value = "documentSource", required = false) String documentSource,
+                        @RequestParam(value = "sourceStepNumber", required = false) Integer sourceStepNumber,
+                        @RequestParam(value = "comment") String comment,
+                        RedirectAttributes redirectAttributes) throws EsupSignatureException {
+        Long cloneId = signBookService.clone(id, documentSource, sourceStepNumber, multipartFiles, comment, authUserEppn);
         redirectAttributes.addFlashAttribute("messageInfos", "La demandes a bien été refusée");
         return "redirect:/user/signrequests/" + cloneId;
     }

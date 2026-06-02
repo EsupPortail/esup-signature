@@ -640,6 +640,61 @@ public class SignRequestService {
 		}
 	}
 
+
+	/**
+	 * Ajoute un document à une demande de signature à partir d'un tableau de bytes.
+	 */
+	@Transactional
+	public void addDocToSignRequestFromBytes(SignRequest signRequest, byte[] bytes, String fileName, String contentType, boolean scanSignatureFields, boolean orderSignsByName, int docNumber, List<SignRequestParams> signRequestParamses, String signRequestParamsDetectionPattern, boolean keepSignFields) throws EsupSignatureIOException {
+		if(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && StringUtils.hasText(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern()) && !StringUtils.hasText(signRequestParamsDetectionPattern)) {
+			signRequestParamsDetectionPattern = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getSignRequestParamsDetectionPattern();
+		}
+		try {
+			if(bytes != null && bytes.length > 0) {
+				String pdfaCheck = null;
+				InputStream inputStream = new ByteArrayInputStream(bytes);
+				if (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("pdf") && (scanSignatureFields || StringUtils.hasText(signRequestParamsDetectionPattern))) {
+					if(!keepSignFields) {
+						bytes = pdfService.normalizePDF(bytes, true, false);
+					}
+					pdfaCheck = smallCheckPDFA(bytes);
+					List<SignRequestParams> toAddSignRequestParams = new ArrayList<>();
+					if(signRequestParamses == null || signRequestParamses.isEmpty()) {
+						ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+						toAddSignRequestParams = signRequestParamsService.scanSignatureFields(new ByteArrayInputStream(bytes), outputStream, docNumber, signRequestParamsDetectionPattern, true, orderSignsByName);
+						bytes = outputStream.toByteArray();
+					} else {
+						for (SignRequestParams signRequestParams : signRequestParamses) {
+							toAddSignRequestParams.add(signRequestParamsService.createSignRequestParams(signRequestParams.getSignPageNumber(), signRequestParams.getxPos(), signRequestParams.getyPos()));
+						}
+					}
+					signRequest.getSignRequestParams().addAll(toAddSignRequestParams);
+					Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
+					if(reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty()) {
+						inputStream = pdfService.removeSignField(new ByteArrayInputStream(bytes), signRequest.getParentSignBook().getLiveWorkflow().getWorkflow(), keepSignFields);
+					}
+				} else if(contentType != null && contentType.contains("image")) {
+					bytes = pdfService.jpegToPdf(new ByteArrayInputStream(bytes), fileName).readAllBytes();
+					contentType = "application/pdf";
+					inputStream = new ByteArrayInputStream(bytes);
+				}
+				Document document = documentService.createDocument(inputStream, signRequest.getCreateBy(), fileName, contentType);
+				document.setPdfaCheck(pdfaCheck);
+				signRequest.getOriginalDocuments().add(document);
+				document.setParentId(signRequest.getId());
+			} else {
+				logger.warn("file size is 0");
+				throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers");
+			}
+		} catch (IOException e) {
+			logger.warn("error on adding files", e);
+			throw new EsupSignatureIOException("Erreur lors de l'ajout des fichiers", e);
+		} catch (EsupSignatureRuntimeException e) {
+			logger.warn("error on converting files", e);
+			throw new EsupSignatureIOException("Erreur lors de la conversion du document", e);
+		}
+	}
+
 	/**
      * Met à jour une demande de signature en la définissant comme en attente de signature.
      * Affecte une action vide à chaque destinataire de l'étape courante.

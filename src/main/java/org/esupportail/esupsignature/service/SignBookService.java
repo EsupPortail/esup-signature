@@ -3312,11 +3312,69 @@ public class SignBookService {
         }
         newSignBook.getLiveWorkflow().setCurrentStep(newSignBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
         SignRequest newSignRequest = signRequestService.createSignRequest(signRequest.getTitle(), newSignBook, authUserEppn, authUserEppn);
+        newSignRequest.setClonedFrom(signRequest);
         signRequestService.addDocsToSignRequest(newSignRequest, true, false, 0, new ArrayList<>(), null, false, multipartFiles);
         pendingSignBook(newSignBook, null, authUserEppn, authUserEppn, false, true);
         signRequestService.addAttachement(null, globalProperties.getRootUrl() + "/user/signrequests/" + id, newSignRequest.getId(), authUserEppn);
         return newSignRequest.getId();
     }
+
+
+
+  /**
+   * Clone une demande en permettant de choisir la source du document : upload ou une version existante.
+   * documentSource : null or "UPLOAD" | "EXISTING_STEP" | "ARCHIVE_VERSION"
+   */
+  @Transactional
+  public Long clone(Long id, String documentSource, Integer sourceStepNumber, MultipartFile[] multipartFiles, String comment, String authUserEppn) throws EsupSignatureException {
+    SignRequest signRequest = signRequestService.getById(id);
+    SignBook signBook = signRequest.getParentSignBook();
+    if(signBook.getLiveWorkflow().getWorkflow() != null && ! signBook.getLiveWorkflow().getWorkflow().getAuthorizeClone()) {
+      throw new RuntimeException("clonage non autorisé pour : " + id);
+    }
+    String name = "Demande simple";
+    if(signBook.getLiveWorkflow().getWorkflow() != null) name = signBook.getLiveWorkflow().getWorkflow().getName();
+    SignBook newSignBook = createSignBook(
+        signBook.getSubject(),
+        signBook.getLiveWorkflow().getWorkflow(),
+        name,
+        authUserEppn,
+        true,
+        comment
+    );
+    for(LiveWorkflowStep liveWorkflowStep : signBook.getLiveWorkflow().getLiveWorkflowSteps()) {
+      newSignBook.getLiveWorkflow().getLiveWorkflowSteps().add(liveWorkflowStepService.cloneLiveWorkflowStep(newSignBook, null, liveWorkflowStep));
+    }
+    newSignBook.getLiveWorkflow().setCurrentStep(newSignBook.getLiveWorkflow().getLiveWorkflowSteps().get(0));
+    SignRequest newSignRequest = signRequestService.createSignRequest(signRequest.getTitle(), newSignBook, authUserEppn, authUserEppn);
+    newSignRequest.setClonedFrom(signRequest);
+    try {
+      if(documentSource == null || "UPLOAD".equals(documentSource)) {
+        // comportement existant
+        signRequestService.addDocsToSignRequest(newSignRequest, true, false, 0, new ArrayList<>(), null, false, multipartFiles);
+      } else if("EXISTING_STEP".equals(documentSource)) {
+        int step = sourceStepNumber != null ? sourceStepNumber : 0;
+        byte[] bytes = signRequestService.getLayeredPdfAtStep(id, step);
+        signRequestService.addDocToSignRequestFromBytes(newSignRequest, bytes, "document_step_" + step + ".pdf", "application/pdf", true, false, 0, new ArrayList<>(), null, false);
+      } else if("ARCHIVE_VERSION".equals(documentSource)) {
+        int version = sourceStepNumber != null ? sourceStepNumber : 0;
+        try {
+          byte[] bytes = signRequestService.getDocumentFromArchive(id, version);
+          signRequestService.addDocToSignRequestFromBytes(newSignRequest, bytes, "document_archive_v" + version + ".pdf", "application/pdf", true, false, 0, new ArrayList<>(), null, false);
+        } catch (InterruptedException e) {
+          throw new EsupSignatureException(e.getMessage(), e);
+        }
+      } else {
+        // fallback
+        signRequestService.addDocsToSignRequest(newSignRequest, true, false, 0, new ArrayList<>(), null, false, multipartFiles);
+      }
+    } catch (IOException e) {
+      throw new EsupSignatureException(e.getMessage(), e);
+    }
+    pendingSignBook(newSignBook, null, authUserEppn, authUserEppn, false, true);
+    signRequestService.addAttachement(null, globalProperties.getRootUrl() + "/user/signrequests/" + id, newSignRequest.getId(), authUserEppn);
+    return newSignRequest.getId();
+  }
 
     @Transactional
     public List<ExternalAuth> getExternalAuths(Long id, List<OidcOtpSecurityService> securityServices) {

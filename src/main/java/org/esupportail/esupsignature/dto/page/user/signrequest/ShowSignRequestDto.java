@@ -257,6 +257,7 @@ public class ShowSignRequestDto {
 
     public static class SignRequestLightDto {
         private Long id;
+        private Long clonedFromId;
         private SignRequestStatus status;
         private Boolean deleted;
         private String token;
@@ -278,6 +279,8 @@ public class ShowSignRequestDto {
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+        public Long getClonedFromId() { return clonedFromId; }
+        public void setClonedFromId(Long clonedFromId) { this.clonedFromId = clonedFromId; }
         public SignRequestStatus getStatus() { return status; }
         public void setStatus(SignRequestStatus status) { this.status = status; }
         public Boolean getDeleted() { return deleted; }
