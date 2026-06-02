@@ -165,6 +165,9 @@ public class UiFetchSignRequestService {
         var workflowMeta = mapper.toWorkflowMetaDto(workflow);
         List<ShowSignRequestDto.StepDto> steps = signBookService.getLiveWorkflowStepDtos(signBook.getId());
         List<ShowSignRequestDto.TargetDto> targets = signBookService.getLiveWorkflowTargetDtos(signBook.getId());
+        List<ShowSignRequestDto.SignRequestLightDto> clonedSignRequests = signRequest.getStatus() == SignRequestStatus.refused
+                ? signRequestService.getCloneSignRequestLightProjections(id).stream().map(mapper::toSignRequestLightDto).toList()
+                : List.of();
         List<ShowSignRequestDto.AttachmentDto> attachments = signRequestService.getAttachmentProjections(id).stream().map(mapper::toAttachmentDto).toList();
         var signedDocProj = signRequestService.getSignedDocumentProjections(id);
         List<ShowSignRequestDto.DocumentDto> originalDocuments = signRequestService.getOriginalDocumentProjections(id).stream().map(mapper::toDocumentDto).toList();
@@ -267,6 +270,7 @@ public class UiFetchSignRequestService {
         context.setLastStep(lastStep);
         context.setSteps(steps);
         context.setTargets(targets);
+        context.setClonedSignRequests(clonedSignRequests);
         context.setAttachments(attachments);
         context.setOriginalDocuments(originalDocuments);
         context.setSignedDocuments(signedDocuments);
@@ -374,6 +378,7 @@ public class UiFetchSignRequestService {
         dto.setSealCertificatPropertieses(context.getSealCertificatPropertieses());
         dto.setSteps(context.getSteps());
         dto.setTargets(context.getTargets());
+        dto.setClonedSignRequests(context.getClonedSignRequests());
         dto.setRecipientActions(context.getRecipientActions());
         dto.setSignRequestTabs(context.getSignRequestTabs());
         dto.setLiveWorkflowStepCount(context.getSteps() != null ? context.getSteps().size() : 0);

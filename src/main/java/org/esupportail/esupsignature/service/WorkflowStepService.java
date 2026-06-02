@@ -137,7 +137,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void updateStep(Long id, Integer workflowStepNumber, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, Long certificatId, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
+    public void updateStep(Long id, Integer workflowStepNumber, SignType signType, String description, Boolean changeable, Boolean repeatable, Boolean multiSign, Boolean singleSignWithAnnotation, Boolean allSignToComplete, Integer maxRecipients, Boolean attachmentAlert, Boolean attachmentRequire, Boolean autoSign, String certificatSelection, SignLevel minSignLevel, SignLevel maxSignLevel, Boolean sealVisa) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowRepository.findById(id).orElseThrow();
         Long workflowStepId = workflow.getWorkflowSteps().get(workflowStepNumber).getId();
         if(autoSign == null) autoSign = false;
@@ -169,11 +169,10 @@ public class WorkflowStepService {
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
             workflowStep.getUsers().clear();
-        }
-        if(certificatId != null) {
-            workflowStep.setCertificat(certificatService.getById(certificatId));
+            certificatService.applyWorkflowStepCertificateSelection(workflowStep, certificatSelection);
         } else {
             workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(null);
         }
         if(maxRecipients != null) {
             workflowStep.setMaxRecipients(maxRecipients);
@@ -189,7 +188,7 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void addStep(Long workflowId, WorkflowStepDto step, Integer stepNumber,  String authUserEppn, boolean saveFavorite, Boolean autoSign, Long certificatId) throws EsupSignatureRuntimeException {
+    public void addStep(Long workflowId, WorkflowStepDto step, Integer stepNumber,  String authUserEppn, boolean saveFavorite, Boolean autoSign, String certificatSelection) throws EsupSignatureRuntimeException {
         Workflow workflow = workflowRepository.findById(workflowId).get();
         WorkflowStep workflowStep = createWorkflowStep("", step.getAllSignToComplete(), step.getSignType(), step.getChangeable(), step.getRecipients().toArray(RecipientWsDto[]::new));
         workflowStep.setDescription(step.getDescription());
@@ -200,11 +199,10 @@ public class WorkflowStepService {
         workflowStep.setAttachmentAlert(step.getAttachmentAlert());
         workflowStep.setAutoSign(autoSign);
         if(autoSign) {
-            if(certificatId != null) {
-                workflowStep.setCertificat(certificatService.getById(certificatId));
-            } else {
-                workflowStep.setCertificat(null);
-            }
+            certificatService.applyWorkflowStepCertificateSelection(workflowStep, certificatSelection);
+        } else {
+            workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(null);
         }
         if (stepNumber == -1) {
             workflow.getWorkflowSteps().add(workflowStep);
@@ -217,9 +215,12 @@ public class WorkflowStepService {
     }
 
     @Transactional
-    public void removeStep(Workflow workflow, Integer stepNumber) {
-        WorkflowStep workflowStep = workflow.getWorkflowSteps().get(stepNumber);
-        workflow.getWorkflowSteps().remove(workflowStep);
+    public void removeStep(Long workflowId, Integer stepNumber) {
+        Workflow managedWorkflow = workflowRepository.findById(workflowId).orElseThrow();
+
+        WorkflowStep workflowStep = managedWorkflow.getWorkflowSteps().get(stepNumber);
+        managedWorkflow.getWorkflowSteps().remove(workflowStep);
+
         List<Field> fields = fieldService.getFieldsByWorkflowStep(workflowStep);
         for(Field field : fields) {
             field.getWorkflowSteps().remove(workflowStep);

@@ -505,6 +505,9 @@ public class UpgradeService {
         entityManager.createNativeQuery(
                 "DROP TABLE IF EXISTS form_sign_request_params;"
         ).executeUpdate();
+        entityManager.createNativeQuery(
+                "alter table field drop constraint if exists field_type_check;"
+        ).executeUpdate();
         logger.info("#### Legacy form_sign_request_params cleanup completed ####");
     }
 

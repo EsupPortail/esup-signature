@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.repository;
 
 import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.DocumentProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestLightProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
 import org.esupportail.esupsignature.entity.Comment;
@@ -105,6 +106,26 @@ public interface SignRequestRepository extends CrudRepository<SignRequest, Long>
             order by index(sr)
             """)
     List<SignRequestTabProjectionDto> findTabProjectionsBySignBookId(@Param("signBookId") Long signBookId, @Param("userEppn") String userEppn);
+
+    @Query("""
+            select s.id as id,
+                   parent.id as clonedFromId,
+                   s.status as status,
+                   s.deleted as deleted,
+                   s.token as token,
+                   cb.id as createById,
+                   cb.eppn as createByEppn,
+                   cb.firstname as createByFirstname,
+                   cb.name as createByName
+            from SignRequest s
+            join s.clonedFrom parent
+            left join s.createBy cb
+            where parent.id = :signRequestId
+            order by s.createDate desc, s.id desc
+            """)
+    List<SignRequestLightProjectionDto> findCloneLightProjectionsBySignRequestId(@Param("signRequestId") Long signRequestId);
+
+    List<SignRequest> findByClonedFromId(Long clonedFromId);
 
     @Query("""
             select s.id as id, s.title as title, s.status as status, s.createDate as createDate, s.createBy.eppn as createByEppn, sb.endDate as endDate 

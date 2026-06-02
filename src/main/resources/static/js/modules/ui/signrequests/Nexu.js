@@ -150,6 +150,10 @@ export class Nexu {
     }
 
     static getDataToSign(certificateData) {
+        // mark that certificate retrieval flow ended (we got a callback)
+        Nexu._retrieving = false;
+        try { if (Nexu._retrievingTimeoutId) { clearTimeout(Nexu._retrievingTimeoutId); Nexu._retrievingTimeoutId = null; } } catch (er) {}
+        console.debug('getDataToSign called - cleared _retrieving flag');
         if(certificateData.response == null) {
             const merror = {
                 errorMessage: "Erreur au moment de lire le certificat"
@@ -228,6 +232,26 @@ export class Nexu {
     static error(error) {
         console.error(error);
         Nexu.find('#bar').removeClass('progress-bar-success active').addClass('progress-bar-danger');
+        // if user explicitly cancelled the operation, don't flood with error reports
+        try {
+            const jsonResp = error && error.responseJSON ? error.responseJSON : null;
+                if (jsonResp != null && (jsonResp.error === 'user.cancel' || (jsonResp.errorMessage && jsonResp.errorMessage.includes('The user has cancelled')))) {
+                Nexu.find('#errorText').html("Opération annulée par l'utilisateur");
+                Nexu.find('#error').show();
+                Nexu.find('#success').hide();
+                // set cooldown to avoid immediate re-trigger (increase to 30s to be conservative)
+                Nexu._userCanceled = true;
+                Nexu._cancelCooldownUntil = Date.now() + (30 * 1000);
+                console.debug('User cancelled - setting cooldown until', new Date(Nexu._cancelCooldownUntil).toISOString());
+                // ensure we are not considered retrieving anymore
+                Nexu._retrieving = false;
+                console.debug('Cleared _retrieving due to user cancel');
+                return;
+            }
+        } catch (e) {
+            // ignore
+        }
+
         if (error!= null) {
             if (error.responseJSON !=null) {
                 let jsonResp = error.responseJSON;
@@ -279,14 +303,66 @@ export class Nexu {
         }
         Nexu.find("#error").show();
         Nexu.find("#success").hide();
-        $.ajax({
-            type: "POST",
-            url: Nexu.rootUrl + "/nexu-sign/error?massSignReportId=" + Nexu.massSignReportId + "&ids=" + Nexu.ids,
-            crossDomain: true,
-            dataType: "json",
-            async: true,
-            cache: false,
-        });
+        try {
+            // avoid flooding the backend when many errors happen (one report per ids set)
+            Nexu._reportedErrorKeys = Nexu._reportedErrorKeys || new Set();
+            const idsParam = Array.isArray(Nexu.ids) ? Nexu.ids.join(',') : (Nexu.ids ?? '');
+            const key = (Nexu.massSignReportId ?? '') + '::' + idsParam;
+            if (Nexu._reportedErrorKeys.has(key)) {
+                console.debug('Error already reported for', key);
+                return;
+            }
+            Nexu._reportedErrorKeys.add(key);
+            // clear key after 5 minutes so we can report again later if needed
+            setTimeout(() => { Nexu._reportedErrorKeys.delete(key); }, 5 * 60 * 1000);
+
+            const url = Nexu.rootUrl + '/nexu-sign/error';
+            const payload = new URLSearchParams();
+            if (Nexu.massSignReportId != null && Nexu.massSignReportId !== '') payload.append('massSignReportId', Nexu.massSignReportId);
+            if (idsParam !== '') payload.append('ids', idsParam);
+
+            // Prefer navigator.sendBeacon for reliability and to avoid socket exhaustion in the browser
+            if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+                try {
+                    const blob = new Blob([payload.toString()], { type: 'application/x-www-form-urlencoded' });
+                    const sent = navigator.sendBeacon(url, blob);
+                    console.debug('sendBeacon result', sent, url, payload.toString());
+                    return;
+                } catch (e) {
+                    console.warn('sendBeacon failed, will fallback to fetch', e);
+                }
+            }
+
+            // fallback to fetch with keepalive which is better than many simultaneous ajax requests
+            if (typeof fetch === 'function') {
+                try {
+                    fetch(url, {
+                        method: 'POST',
+                        body: payload.toString(),
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        mode: 'cors',
+                        credentials: 'same-origin',
+                        keepalive: true
+                    }).then(resp => console.debug('error report resp', resp.status)).catch(err => console.warn('error reporting failed', err));
+                    return;
+                } catch (e) {
+                    console.warn('fetch reporting failed, will fallback to ajax', e);
+                }
+            }
+
+            // final fallback to jQuery ajax (old behavior), but with short timeout and no concurrency
+            $.ajax({
+                type: 'POST',
+                url: url + '?' + payload.toString(),
+                crossDomain: true,
+                dataType: 'json',
+                async: true,
+                cache: false,
+                timeout: 5000
+            }).always(function() { console.debug('legacy error report sent'); });
+        } catch (e) {
+            console.warn('Unable to report error to server', e);
+        }
     }
 
     static updateProgressBar(action, percent) {
@@ -355,10 +431,73 @@ export class Nexu {
         console.info("loading esup-dss-client script : " + url);
         Nexu.find("#current-doc-num").html("1");
 
+        // coordination between tabs: use BroadcastChannel when available and localStorage as fallback
+        const LS_KEY = 'esup-dss-client-ready';
+        let bc = null;
+        try {
+            if (typeof BroadcastChannel !== 'undefined') {
+                bc = new BroadcastChannel('esup-dss-client');
+                bc.onmessage = function(ev) {
+                    try {
+                        if (ev && ev.data === 'nexu-ready') {
+                            console.info('Received nexu-ready from other tab');
+                            startCertificateRetrieval();
+                        }
+                    } catch (e) {
+                        console.warn('Error handling broadcast message', e);
+                    }
+                };
+            }
+        } catch (e) {
+            // ignore
+        }
+
         const startCertificateRetrieval = () => {
-            Nexu.waitForClientFunction("nexu_get_certificates")
+            // Give more time to the client to attach functions
+            // if a user recently cancelled, avoid immediate re-trigger
+            if (Nexu._userCanceled && Nexu._cancelCooldownUntil && Date.now() < Nexu._cancelCooldownUntil) {
+                console.debug('Skipping certificate retrieval due to recent user cancel');
+                return;
+            }
+            if (Nexu._retrieving) {
+                console.debug('Certificate retrieval already in progress, skipping duplicate start');
+                return;
+            }
+
+            Nexu.waitForClientFunction("nexu_get_certificates", 40, 200)
                 .then(getCertificates => {
-                    getCertificates(Nexu.getDataToSign, Nexu.error);
+                    try {
+                        // mark retrieving to avoid duplicate requests from multiple tabs
+                        Nexu._retrieving = true;
+                        // set a watchdog to avoid stuck retrieving state if client never calls back
+                        try {
+                            if (Nexu._retrievingTimeoutId) {
+                                clearTimeout(Nexu._retrievingTimeoutId);
+                            }
+                            Nexu._retrievingTimeoutId = setTimeout(() => {
+                                if (Nexu._retrieving) {
+                                    Nexu._retrieving = false;
+                                    console.warn('Clearing stale _retrieving flag after timeout');
+                                }
+                            }, 2 * 60 * 1000); // 2 minutes watchdog
+                        } catch (e) {
+                            // ignore
+                        }
+                        console.debug('Marked _retrieving = true before calling getCertificates');
+                        getCertificates(Nexu.getDataToSign, Nexu.error);
+                        // notify other tabs that client is ready
+                        try {
+                            if (bc) bc.postMessage('nexu-ready');
+                            if (window.localStorage) localStorage.setItem(LS_KEY, '1');
+                        } catch (e) {
+                            // ignore
+                        }
+                    } catch (e) {
+                        Nexu._retrieving = false;
+                        try { if (Nexu._retrievingTimeoutId) { clearTimeout(Nexu._retrievingTimeoutId); Nexu._retrievingTimeoutId = null; } } catch (er) {}
+                        console.error('Error while calling getCertificates', e);
+                        console.debug('Cleared _retrieving due to exception in getCertificates');
+                    }
                 })
                 .catch(error => {
                     console.error("Esup-DSS-Client API unavailable", error);
@@ -371,13 +510,49 @@ export class Nexu {
             return;
         }
 
-        $.getScript(url).done(function() {
-            startCertificateRetrieval();
-        }).fail(function(jqXHR, textStatus, errorThrown) {
-            const details = errorThrown || textStatus || "chargement du script impossible";
-            Nexu.error({
-                errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
-            });
+        // Try to fetch script as text first to inspect its content (helps debugging refactors where script may not expose globals)
+        $.ajax({
+            type: "GET",
+            url: url,
+            crossDomain: true,
+            dataType: "text",
+            cache: false,
+            success: function(data) {
+                try {
+                    if (typeof data === 'string' && data.includes('nexu_get_certificates')) {
+                        // inject script content to ensure it executes in global scope
+                        const script = document.createElement('script');
+                        script.type = 'text/javascript';
+                        script.text = data;
+                        document.head.appendChild(script);
+                        startCertificateRetrieval();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Unable to inject fetched script:', e);
+                }
+
+                // fallback to standard getScript which will try to load/execute the remote file
+                $.getScript(url).done(function() {
+                    startCertificateRetrieval();
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    const details = errorThrown || textStatus || "chargement du script impossible";
+                    Nexu.error({
+                        errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
+                    });
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                // If fetching as text fails, still try to load script tag
+                $.getScript(url).done(function() {
+                    startCertificateRetrieval();
+                }).fail(function(jqXHR2, textStatus2, errorThrown2) {
+                    const details = errorThrown2 || textStatus2 || "chargement du script impossible";
+                    Nexu.error({
+                        errorMessage: "Impossible de charger le script Esup-DSS-Client : " + details
+                    });
+                });
+            }
         });
     }
 

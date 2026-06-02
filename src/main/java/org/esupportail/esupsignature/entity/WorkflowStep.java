@@ -98,6 +98,11 @@ public class WorkflowStep {
     private Certificat certificat;
 
     /**
+     * Nom du certificat cachet configuré à utiliser si cette étape est automatique.
+     */
+    private String sealCertificatName;
+
+    /**
      * Type de signature utilisé pour cette étape.
      */
     @NotNull
@@ -262,6 +267,14 @@ public class WorkflowStep {
 
     public void setCertificat(Certificat certificat) {
         this.certificat = certificat;
+    }
+
+    public String getSealCertificatName() {
+        return sealCertificatName;
+    }
+
+    public void setSealCertificatName(String sealCertificatName) {
+        this.sealCertificatName = sealCertificatName;
     }
 
     public SignLevel getMinSignLevel() {

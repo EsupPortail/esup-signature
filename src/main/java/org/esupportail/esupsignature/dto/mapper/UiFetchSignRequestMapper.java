@@ -9,6 +9,7 @@ import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepProjecti
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowStepRecipientProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.LiveWorkflowTargetProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignBookViewerProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.SignRequestLightProjectionDto;
 import org.esupportail.esupsignature.dto.projection.jpa.SignRequestTabProjectionDto;
 import org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto;
 import org.esupportail.esupsignature.dto.page.user.signrequest.CommentFrontDto;
@@ -77,11 +78,32 @@ public class UiFetchSignRequestMapper {
     public ShowSignRequestDto.SignRequestLightDto toSignRequestLightDto(SignRequest signRequest) {
         ShowSignRequestDto.SignRequestLightDto dto = new ShowSignRequestDto.SignRequestLightDto();
         dto.setId(signRequest.getId());
+        dto.setClonedFromId(signRequest.getClonedFrom() != null ? signRequest.getClonedFrom().getId() : null);
         dto.setStatus(signRequest.getStatus());
         dto.setDeleted(signRequest.getDeleted());
         dto.setToken(signRequest.getToken());
         dto.setCreateBy(signRequest.getCreateBy() != null ? toSignRequestUserDto(signRequest.getCreateBy()) : null);
         dto.setLinks(signRequest.getLinks() != null ? new ArrayList<>(signRequest.getLinks()) : new ArrayList<>());
+        return dto;
+    }
+
+    public ShowSignRequestDto.SignRequestLightDto toSignRequestLightDto(SignRequestLightProjectionDto signRequest) {
+        ShowSignRequestDto.SignRequestLightDto dto = new ShowSignRequestDto.SignRequestLightDto();
+        dto.setId(signRequest.getId());
+        dto.setClonedFromId(signRequest.getClonedFromId());
+        dto.setStatus(signRequest.getStatus());
+        dto.setDeleted(signRequest.getDeleted());
+        dto.setToken(signRequest.getToken());
+        if (signRequest.getCreateById() != null || signRequest.getCreateByEppn() != null
+                || signRequest.getCreateByFirstname() != null || signRequest.getCreateByName() != null) {
+            ShowSignRequestDto.SignRequestUserDto createBy = new ShowSignRequestDto.SignRequestUserDto();
+            createBy.setId(signRequest.getCreateById());
+            createBy.setEppn(signRequest.getCreateByEppn());
+            createBy.setFirstname(signRequest.getCreateByFirstname());
+            createBy.setName(signRequest.getCreateByName());
+            dto.setCreateBy(createBy);
+        }
+        dto.setLinks(List.of());
         return dto;
     }
 

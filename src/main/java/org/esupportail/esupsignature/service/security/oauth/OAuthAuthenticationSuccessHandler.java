@@ -60,7 +60,7 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 			if (authentication instanceof OAuth2AuthenticationToken oauth2Token) {
 				String registrationId = oauth2Token.getAuthorizedClientRegistrationId();
 				httpServletRequest.getSession().setAttribute("securityServiceName", registrationId);
-				newAuth = new OAuth2AuthenticationToken(oauth2Token.getPrincipal(), simpleGrantedAuthorities, oauth2Token.getAuthorizedClientRegistrationId());
+				newAuth = new OAuth2AuthenticationToken(oauth2Token.getPrincipal(), simpleGrantedAuthorities, registrationId);
 			} else {
 				httpServletRequest.getSession().setAttribute("securityServiceName", "sms");
 				newAuth = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(), authentication.getCredentials(), simpleGrantedAuthorities);
