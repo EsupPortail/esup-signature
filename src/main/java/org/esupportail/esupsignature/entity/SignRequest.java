@@ -76,6 +76,9 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequest clonedFrom;
+
     @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
     @JoinTable(
@@ -243,6 +246,14 @@ public class SignRequest {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public SignRequest getClonedFrom() {
+        return clonedFrom;
+    }
+
+    public void setClonedFrom(SignRequest clonedFrom) {
+        this.clonedFrom = clonedFrom;
     }
 
     public List<Comment> getComments() {

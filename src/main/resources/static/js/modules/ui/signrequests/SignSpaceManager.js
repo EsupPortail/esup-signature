@@ -49,6 +49,9 @@ export class SignSpaceManager {
 					}
 					signSpaceDiv.remove();
 				}
+				if (this.shouldHideSpotSignSpace(currentSignRequestParams)) {
+					continue;
+				}
 				const spotId = this.options.findSpotIdForSignParams(currentSignRequestParams);
 				const deleteBtnHtml = this.options.isManager() && spotId != null
 					? "<button type='button' class='slot-delete-btn btn btn-sm btn-danger' title='Supprimer l’emplacement'><i class='fi fi-rr-trash'></i></button>"
@@ -440,7 +443,24 @@ export class SignSpaceManager {
 		});
 	}
 
+	isSpotParamAlreadyUsed(signParams) {
+		const spotId = this.options.findSpotIdForSignParams(signParams);
+		return spotId != null && signParams?.ready === true;
+	}
+
+	isSpotFromPreviousStep(signParams) {
+		const spotId = this.options.findSpotIdForSignParams(signParams);
+		if (spotId == null) {
+			return false;
+		}
+		const spotStep = parseInt(signParams?.stepNumber, 10);
+		const currentStep = parseInt(this.options.getCurrentStepNumber(), 10);
+		return Number.isFinite(spotStep)
+			&& Number.isFinite(currentStep)
+			&& spotStep < currentStep;
+	}
+
+	shouldHideSpotSignSpace(signParams) {
+		return this.isSpotParamAlreadyUsed(signParams) || this.isSpotFromPreviousStep(signParams);
+	}
 }
-
-
-

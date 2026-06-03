@@ -22,6 +22,12 @@ import org.esupportail.esupsignature.service.utils.sign.NexuService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import eu.europa.esig.dss.alert.exception.AlertException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -105,11 +111,11 @@ public class NexuProcessController implements Serializable {
 	@PreAuthorize("@preAuthorizeService.signRequestSign(#id, #userEppn, #authUserEppn)")
 	@PostMapping(value = "/get-data-to-sign")
 	@ResponseBody
-	public GetDataToSignResponse getDataToSign(@ModelAttribute("userEppn") String userEppn,
-											   @ModelAttribute("authUserEppn") String authUserEppn,
-											   @RequestBody @Valid DataToSignParams dataToSignParams,
-											   @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
-											   @RequestParam("id") Long id) throws EsupSignatureRuntimeException, IOException {
+	public ResponseEntity<?> getDataToSign(@ModelAttribute("userEppn") String userEppn,
+										   @ModelAttribute("authUserEppn") String authUserEppn,
+										   @RequestBody @Valid DataToSignParams dataToSignParams,
+										   @RequestParam(value = "massSignReportId", required = false) Long massSignReportId,
+										   @RequestParam("id") Long id) throws IOException {
 		logger.info("get data to sign for signRequest: " + id);
 		try {
 			SignatureDocumentForm abstractSignatureForm = nexuService.getSignatureForm(id, userEppn, new Date());
@@ -120,14 +126,30 @@ public class NexuProcessController implements Serializable {
 			ToBeSigned dataToSign = nexuService.getDataToSign(id, userEppn, abstractSignatureForm);
 			responseJson.setDataToSign(dataToSign.getBytes());
 			nexuService.saveNexuSignature(id, abstractSignatureForm, userEppn);
-			return responseJson;
+			return ResponseEntity.ok(responseJson);
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			// build stacktrace string
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			String trace = sw.toString();
+
+			// Log as WARN for DSS alert exceptions or expired certificate messages, otherwise as ERROR
+			if (e instanceof AlertException || (e.getMessage() != null && e.getMessage().toLowerCase().contains("expired"))) {
+				logger.warn("Error on signature creation (alert): {}", e.getMessage());
+			} else {
+				logger.error(e.getMessage(), e);
+			}
+
 			if(massSignReportId != null) {
 				reportService.addSignRequestToReport(massSignReportId, id, ReportStatus.nexuError);
 			}
 			signRequestService.cleanSignRequestParams(id);
-			throw new EsupSignatureRuntimeException(e.getMessage());
+
+			Map<String, Object> body = new HashMap<>();
+			body.put("errorMessage", e.getMessage());
+			body.put("trace", trace);
+
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
 		}
 	}
 

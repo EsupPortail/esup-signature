@@ -47,6 +47,7 @@ public class WorkflowController {
         var workflow = uiFetchService.buildWorkflowView(id, userEppn);
         model.addAttribute("workflow", workflow);
         model.addAttribute("certificats", certificatService.getAllCertificats());
+        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
         model.addAttribute("workflowRole", "user");
         model.addAttribute("allSteps", workflow.getWorkflowSteps());
         return "user/workflows/show";
@@ -132,9 +133,8 @@ public class WorkflowController {
     public String addStep(@ModelAttribute("userEppn") String userEppn,
                           @PathVariable("id") Long id,
                           @PathVariable("stepNumber") Integer stepNumber) {
-        Workflow workflow = workflowService.getById(id);
-        workflowStepService.removeStep(workflow, stepNumber);
-        return "redirect:/user/workflows/" + workflow.getId();
+        workflowStepService.removeStep(id, stepNumber);
+        return "redirect:/user/workflows/" + id;
     }
 
     @DeleteMapping(value = "/{id}", produces = "text/html")

@@ -24,6 +24,7 @@ import org.esupportail.esupsignature.entity.Certificat;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureKeystoreException;
+import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.repository.AppliVersionRepository;
 import org.esupportail.esupsignature.repository.CertificatRepository;
 import org.esupportail.esupsignature.repository.WorkflowStepRepository;
@@ -125,6 +126,74 @@ public class CertificatService implements HealthIndicator {
         List<Certificat> certificats = new ArrayList<>();
         certificatRepository.findAll().forEach(certificats::add);
         return certificats;
+    }
+
+    public boolean hasConfiguredSealCertificat(String sealCertificatName) {
+        return StringUtils.hasText(sealCertificatName) && globalProperties.getSealCertificatProperties().containsKey(sealCertificatName);
+    }
+
+    public String getDefaultSealCertificatName() {
+        if(globalProperties.getSealCertificatProperties().containsKey("default")) {
+            return "default";
+        }
+        return globalProperties.getSealCertificatProperties().keySet().stream().findFirst().orElse(null);
+    }
+
+    public String resolveWorkflowStepSealCertificatName(WorkflowStep workflowStep) {
+        if(workflowStep == null || workflowStep.getCertificat() != null || globalProperties.getSealCertificatProperties().isEmpty()) {
+            return null;
+        }
+        if(hasConfiguredSealCertificat(workflowStep.getSealCertificatName())) {
+            return workflowStep.getSealCertificatName();
+        }
+        return getDefaultSealCertificatName();
+    }
+
+    public String getSealCertificatDisplayName(String sealCertificatName) {
+        if(!hasConfiguredSealCertificat(sealCertificatName)) {
+            return null;
+        }
+        SealCertificatProperties sealCertificatProperties = globalProperties.getSealCertificatProperties().get(sealCertificatName);
+        if(sealCertificatProperties != null && StringUtils.hasText(sealCertificatProperties.getSealCertificatTitle())) {
+            return sealCertificatProperties.getSealCertificatTitle();
+        }
+        return sealCertificatName;
+    }
+
+    public void applyWorkflowStepCertificateSelection(WorkflowStep workflowStep, String certificatSelection) {
+        if(workflowStep == null) {
+            return;
+        }
+        if(!StringUtils.hasText(certificatSelection)) {
+            workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(getDefaultSealCertificatName());
+            return;
+        }
+        if(certificatSelection.startsWith("cert:")) {
+            workflowStep.setCertificat(getById(Long.parseLong(certificatSelection.substring("cert:".length()))));
+            workflowStep.setSealCertificatName(null);
+            return;
+        }
+        if(certificatSelection.startsWith("seal:")) {
+            String sealCertificatName = certificatSelection.substring("seal:".length());
+            if(!hasConfiguredSealCertificat(sealCertificatName)) {
+                throw new EsupSignatureRuntimeException("Certificat cachet inconnu : " + sealCertificatName);
+            }
+            workflowStep.setCertificat(null);
+            workflowStep.setSealCertificatName(sealCertificatName);
+            return;
+        }
+        try {
+            workflowStep.setCertificat(getById(Long.parseLong(certificatSelection)));
+            workflowStep.setSealCertificatName(null);
+        } catch (NumberFormatException e) {
+            if(hasConfiguredSealCertificat(certificatSelection)) {
+                workflowStep.setCertificat(null);
+                workflowStep.setSealCertificatName(certificatSelection);
+            } else {
+                throw new EsupSignatureRuntimeException("Sélection de certificat invalide : " + certificatSelection, e);
+            }
+        }
     }
 
     @Transactional
@@ -393,7 +462,7 @@ public class CertificatService implements HealthIndicator {
         if(isCertificatWasPresent && dssPrivateKeyEntries.isEmpty()) {
             certificatProblem = true;
         }
-        Date lastDate = new DateTime().minusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
+        Date lastDate = new DateTime().plusDays(globalProperties.getNbDaysBeforeCertifWarning()).toDate();
         for(Certificat certificat : getAllCertificats()) {
             if(certificat.getExpireDate().before(lastDate)) {
                 certificatProblem = true;

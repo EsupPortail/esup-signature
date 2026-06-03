@@ -100,6 +100,9 @@ public class LiveWorkflowStepService {
 
     public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
+        if (workflowStep == null) {
+            workflowStep = step.getWorkflowStep();
+        }
         liveWorkflowStep.setWorkflowStep(workflowStep);
         if(StringUtils.hasText(step.getDescription())) {
             liveWorkflowStep.setDescription(step.getDescription());

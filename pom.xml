@@ -12,7 +12,7 @@
 	</parent>
 	<groupId>org.esupportail</groupId>
 	<artifactId>esup-signature</artifactId>
-	<version>1.37.6-SNAPSHOT</version>
+	<version>1.37.7-SNAPSHOT</version>
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
@@ -627,7 +627,7 @@
 		<dependency>
 			<groupId>org.verapdf</groupId>
 			<artifactId>validation-model</artifactId>
-			<version>1.28.1</version>
+			<version>1.28.2</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>jaxb-api</artifactId>

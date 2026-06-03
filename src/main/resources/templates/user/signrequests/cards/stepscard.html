@@ -12,10 +12,18 @@
                 <th:block th:if="${!signRequestFull.hasDocumentsHistory && showSignRequest.steps.size() > 0}">
                     <div class="step-vertical doc">
                         <div class="step-vertical-icon">
-                            <i class="fi fi-rr-document"></i>
+                            <i th:if="${signRequestLight.clonedFromId == null}" class="fi fi-rr-document"></i>
+                            <i th:if="${signRequestLight.clonedFromId != null}" class="fi fi-rr-clone"></i>
                         </div>
-                        <div class="step-vertical-content bg-light p-1 rounded">
-                            <b>Document original</b>
+                        <div class="step-vertical-content bg-light p-1 rounded d-flex align-items-center justify-content-between">
+                            <th:block th:if="${signRequestLight.clonedFromId == null}">
+                                <b>Document original</b>
+                            </th:block>
+                            <a th:if="${signRequestLight.clonedFromId != null}"
+                               class="fw-bold text-decoration-none"
+                               th:href="'/user/signrequests/' + ${signRequestLight.clonedFromId}">
+                                <i class="fi fi-rr-link"></i> Demande d'origine
+                            </a>
                             <div class="wv-100 dropdown float-end">
                                 <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
                                         type="button"
@@ -28,17 +36,24 @@
 
                                 <ul class="dropdown-menu dropdown-menu-end p-1"  style="width:292px; text-wrap: auto; overflow: clip;">
                                     <th:block th:if="${!signRequestFull.hasDocumentsHistory}">
-                                        <li>
-                                            <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                                    data-step="0">
-                                                <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <a th:if="${signRequestLight.createBy.eppn == userEppn}" tabindex="1" class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                               th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank" style="font-weight: revert; font-size: revert;"
-                                               >
+                                        <li th:if="${signRequestLight.createBy.eppn == userEppn}">
+                                            <a tabindex="1" class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                               th:href="'/ws-secure/global/get-original-file/' + ${signRequestLight.id}" target="_blank" style="font-weight: revert; font-size: revert;">
                                                 <i class="fi fi-rr-progress-download"></i> Télécharger l'original
+                                            </a>
+                                        </li>
+                                        <th:block th:if="${signRequestLight.clonedFromId == null}">
+                                            <li>
+                                                <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                                        data-step="0">
+                                                    <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
+                                                </button>
+                                            </li>
+                                        </th:block>
+                                        <li th:if="${signRequestLight.clonedFromId != null}">
+                                            <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
+                                               th:href="'/user/signrequests/' + ${signRequestLight.clonedFromId}">
+                                                <i class="fi fi-rr-link"></i> Voir la demande d'origine
                                             </a>
                                         </li>
                                     </th:block>
@@ -317,13 +332,15 @@
                                         <th:block th:if="${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)}">
                                             <li>
                                                 <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                                        th:data-step="${stepNumber}">
+                                                         th:data-step="${stepNumber}"
+                                                         th:data-layer-id="${'layer_' + liveWorkflowStep.id}">
                                                     <i class="fi fi-rr-land-layer-location"></i> Voir le document à cette étape
                                                 </button>
                                             </li>
                                             <li>
                                                 <button class="toggle-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
-                                                        th:data-step="${stepNumber}">
+                                                         th:data-step="${stepNumber}"
+                                                         th:data-layer-id="${'layer_' + liveWorkflowStep.id}">
                                                     <i class="fi fi-rr-layers"></i> Afficher les modifications
                                                 </button>
                                             </li>
@@ -463,11 +480,27 @@
                         <div class="step-vertical-icon">
                             <i class="fi fi-rr-triangle-warning"></i>
                         </div>
-                        <div class="step-vertical-content bg-light">
-                            <b>Procédure refusée</b>
-                            <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
-                                Les intervenants ont été informés par mail
-                            </p>
+                        <div class="step-vertical-content bg-light d-flex align-items-center">
+                            <div>
+                                <b>Procédure refusée</b>
+                                <p th:if="${showSignRequest.workflow.sendAlertToAllRecipients}">
+                                    Les intervenants ont été informés par mail
+                                </p>
+                                <th:block th:if="${showSignRequest.clonedSignRequests != null && !showSignRequest.clonedSignRequests.isEmpty()}">
+                                    <p class="mb-1">Relances créées à partir de cette demande :</p>
+                                    <ul class="mb-0 ps-3">
+                                        <li th:each="clonedSignRequest : ${showSignRequest.clonedSignRequests}">
+                                            <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${clonedSignRequest.id}"
+                                               th:text="|Demande n°${clonedSignRequest.id}|"
+                                               class="text-decoration-none"></a>
+                                            <br>
+                                            <span th:if="${clonedSignRequest.createBy != null && !#strings.isEmpty(clonedSignRequest.createBy.eppn)}"
+                                                  class="text-muted small"
+                                                  th:text="'par ' + ${clonedSignRequest.createBy.firstname} + ' ' + ${clonedSignRequest.createBy.name}"></span>
+                                        </li>
+                                    </ul>
+                                </th:block>
+                            </div>
                         </div>
                     </div>
                 </th:block>

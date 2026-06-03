@@ -80,6 +80,7 @@ public class ShowSignRequestContextDto {
     // ---- Collections DTO pré-mappées ----
     private List<ShowSignRequestDto.StepDto> steps;
     private List<ShowSignRequestDto.TargetDto> targets;
+    private List<ShowSignRequestDto.SignRequestLightDto> clonedSignRequests;
     private List<ShowSignRequestDto.AttachmentDto> attachments;
     private List<ShowSignRequestDto.DocumentDto> originalDocuments;
     private List<ShowSignRequestDto.DocumentDto> signedDocuments;
@@ -226,6 +227,8 @@ public class ShowSignRequestContextDto {
     public void setSteps(List<ShowSignRequestDto.StepDto> steps) { this.steps = steps; }
     public List<ShowSignRequestDto.TargetDto> getTargets() { return targets; }
     public void setTargets(List<ShowSignRequestDto.TargetDto> targets) { this.targets = targets; }
+    public List<ShowSignRequestDto.SignRequestLightDto> getClonedSignRequests() { return clonedSignRequests; }
+    public void setClonedSignRequests(List<ShowSignRequestDto.SignRequestLightDto> clonedSignRequests) { this.clonedSignRequests = clonedSignRequests; }
     public List<ShowSignRequestDto.AttachmentDto> getAttachments() { return attachments; }
     public void setAttachments(List<ShowSignRequestDto.AttachmentDto> attachments) { this.attachments = attachments; }
     public List<ShowSignRequestDto.DocumentDto> getOriginalDocuments() { return originalDocuments; }

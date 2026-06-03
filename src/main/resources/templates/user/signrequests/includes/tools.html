@@ -23,6 +23,22 @@
         <div class="alert p-3 m-0 bg-danger-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}">
             <i class="fi fi-rr-flag"></i> Signature refusée
         </div>
+        <div class="dropdown" th:if="${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused && showSignRequest.clonedSignRequests != null && !showSignRequest.clonedSignRequests.isEmpty()}">
+            <button class="btn btn-secondary p-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fi fi-rr-clone"></i> Voir les demandes relancées</button>
+            <ul class="dropdown-menu">
+                <li th:each="clonedSignRequest : ${showSignRequest.clonedSignRequests}">
+                    <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/' + ${clonedSignRequest.id}"
+                       class="btn btn-transparent text-dark d-flex align-items-center gap-2" style="min-width: 300px;">
+                        <i class="fi fi-rr-document"></i>
+                        <div class="d-flex flex-column align-items-start">
+                            <span th:text="'Demande n°' + ${clonedSignRequest.id}"></span>
+                            <span class="text-muted small" th:text="'créée par ' + ${clonedSignRequest.createBy.firstname} + ' ' + ${clonedSignRequest.createBy.name}"></span>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
         <div class="alert p-3 m-0 bg-success-subtle d-lg-flex d-none align-items-center h-100" style="pointer-events: none;" th:if="${isCompletedRequest}">
             <i class="fi fi-rr-flag"></i> Vous avez signé ce document
         </div>
@@ -66,7 +82,7 @@
                          th:styleappend="'flex:0 0 auto;'">
                         <div id="signActionButtons" class="input-group d-flex align-items-center justify-content-center p-1 bg-secondary-subtle rounded-2">
                             <button tabindex="1" id="signLaunchButton" role="button"
-                                    class="btn" style="margin-right: 2px; width: 230px; height: 58px;"
+                                    class="btn" style="width: 230px; height: 58px;"
                                     th:classappend="${(signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' es-quick-sign-action' : '') + (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa ? ' btn-success pulse-success' : (signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).visa ? ' d-none' : ' btn-secondary d-none'))}"
                                     th:styleappend="''">
                                 <div class="d-flex flex-column justify-content-start">
@@ -80,7 +96,7 @@
                                 </div>
                             </button>
                             <button th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" tabindex="1" id="signAdvancedLaunchButton" role="button"
-                                    class="btn p-3 d-none" style="height: 58px;">
+                                    class="btn p-3 d-none" style="margin-left: 2px; height: 58px;">
                                 <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i> Personnaliser
                             </button>
                         </div>

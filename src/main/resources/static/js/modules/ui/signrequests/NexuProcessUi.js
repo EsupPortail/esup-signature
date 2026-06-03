@@ -69,6 +69,18 @@ export class NexuProcessUi {
 
     startNexu() {
         const {addExtra, ids, urlProfil, massSignReportId, rootUrl} = this.getConfig();
+        // reset client-side Nexu flags so that after a user cancel the flow can be retried
+        try {
+            if (typeof Nexu !== 'undefined') {
+                Nexu._userCanceled = false;
+                Nexu._cancelCooldownUntil = 0;
+                Nexu._retrieving = false;
+                Nexu._reportedErrorKeys = Nexu._reportedErrorKeys || new Set();
+                console.debug('Nexu flags reset before starting new Nexu instance');
+            }
+        } catch (e) {
+            console.warn('Unable to reset Nexu flags', e);
+        }
         this.nexu = new Nexu(addExtra, ids, 'nexuSign', urlProfil, massSignReportId, rootUrl, this.rootElement);
     }
 

@@ -85,6 +85,7 @@ public class UiWorkflowMapper {
         dto.setId(workflowStep.getId());
         dto.setDescription(workflowStep.getDescription());
         dto.setAutoSign(workflowStep.getAutoSign());
+        dto.setSealCertificatName(workflowStep.getSealCertificatName());
         dto.setSignType(workflowStep.getSignType());
         dto.setMinSignLevel(workflowStep.getMinSignLevel());
         dto.setMaxSignLevel(workflowStep.getMaxSignLevel());

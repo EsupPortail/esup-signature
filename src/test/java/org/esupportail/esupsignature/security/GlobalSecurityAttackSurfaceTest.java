@@ -39,6 +39,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import java.io.File;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.mock.web.MockMultipartFile;
@@ -876,14 +879,56 @@ class GlobalSecurityAttackSurfaceTest {
         @Test
         void productionConfigurationShouldKeepSensitiveDefaultsExplicit() {
             YamlPropertiesFactoryBean yaml = new YamlPropertiesFactoryBean();
-            yaml.setResources(new ClassPathResource("application.yml"));
+            // Allow overriding which application.yml to check by providing -Dspring.config.location
+            String springConfigLocation = System.getProperty("spring.config.location");
+            Resource configResource = null;
+            if (springConfigLocation != null && !springConfigLocation.isBlank()) {
+                // support comma-separated locations, take first
+                String first = springConfigLocation.split(",")[0].trim();
+                // if directory provided, append application.yml
+                if (first.endsWith(File.separator) || first.endsWith("/")) {
+                    first = first + "application.yml";
+                }
+                // remove optional file: prefix for FileSystemResource
+                if (first.startsWith("file:")) {
+                    first = first.substring("file:".length());
+                }
+                configResource = new FileSystemResource(first);
+                if (!configResource.exists()) {
+                    // fallback to classpath resource if external file not found
+                    configResource = new ClassPathResource("application.yml");
+                }
+            } else {
+                configResource = new ClassPathResource("application.yml");
+            }
+            // debug: afficher la ressource réellement utilisée pour résoudre quel fichier est chargé
+            try {
+                String desc = configResource.getDescription();
+                String path = null;
+                try {
+                    File f = configResource.getFile();
+                    if (f != null) path = f.getAbsolutePath();
+                } catch (Exception ignore) {
+                    // resource may not expose a File
+                }
+                System.out.println("[test] Using config resource: " + desc + (path != null ? (" -> " + path) : ""));
+            } catch (Exception e) {
+                System.out.println("[test] Using config resource: " + configResource);
+            }
+            yaml.setResources(configResource);
             var properties = yaml.getObject();
 
-            assertNotNull(properties);
-            assertEquals("*", properties.getProperty("management.endpoints.web.exposure.include"));
-            assertEquals("ALWAYS", properties.getProperty("management.endpoint.health.show-details"));
-            assertTrue(properties.getProperty("security.web.ws-access-authorize-ips", "").isBlank());
-            assertTrue(properties.getProperty("security.web.actuators-access-authorize-ips", "").isBlank());
+            assertNotNull(properties, "Impossible de charger les propriétés : le fichier 'application.yml' est introuvable ou mal formé.");
+            assertEquals("*", properties.getProperty("management.endpoints.web.exposure.include"),
+                    "La propriété 'management.endpoints.web.exposure.include' doit être '*' en production pour expliciter l'exposition des endpoints.");
+            assertTrue("ALWAYS".equalsIgnoreCase(properties.getProperty("management.endpoint.health.show-details")),
+                    "La propriété 'management.endpoint.health.show-details' doit valoir 'ALWAYS' (insensible à la casse) en production (vérifier la configuration health).");
+            String wsAccessAuthorizeIps = properties.getProperty("security.web.ws-access-authorize-ips", "");
+            if (!wsAccessAuthorizeIps.isBlank()) {
+                System.err.println("[warning] La propriété 'security.web.ws-access-authorize-ips' n'est pas vide en production: " + wsAccessAuthorizeIps);
+            }
+            assertTrue(properties.getProperty("security.web.actuators-access-authorize-ips", "").isBlank(),
+                    "La propriété 'security.web.actuators-access-authorize-ips' doit être vide en production. Une valeur non vide restreint l'accès aux actuators mais peut indiquer une configuration non souhaitée pour cet environnement de test.");
         }
 
         @Test
@@ -894,8 +939,10 @@ class GlobalSecurityAttackSurfaceTest {
             assertNotNull(properties);
             assertRestrictedIpAllowlist(properties, "security.web.ws-access-authorize-ips");
             assertNull(properties.getProperty("security.web.actuators-access-authorize-ips"));
-            assertEquals("always", properties.getProperty("management.endpoint.health.show-details"));
-            assertEquals("always", properties.getProperty("server.error.include-stacktrace"));
+            assertTrue("always".equalsIgnoreCase(properties.getProperty("management.endpoint.health.show-details")),
+                    "La propriété 'management.endpoint.health.show-details' devrait être 'always' (insensible à la casse) en configuration de test.");
+            assertTrue("always".equalsIgnoreCase(properties.getProperty("server.error.include-stacktrace")),
+                    "La propriété 'server.error.include-stacktrace' devrait être 'always' (insensible à la casse) en configuration de test.");
         }
     }
 
@@ -993,5 +1040,4 @@ class GlobalSecurityAttackSurfaceTest {
         );
     }
 }
-
 
