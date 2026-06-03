@@ -81,11 +81,13 @@ public class LdapGroupService implements GroupService {
                 logger.debug("no allGroupsSearchFilter found");
             }
             logger.debug(formattedFilter);
+            if(ldapProperties.getGroupSearchBase() != null) {
             groups = ldapTemplate.search(LdapQueryBuilder.query().attributes("cn", "description").base(ldapProperties.getGroupSearchBase()).filter(formattedFilter),
                     (ContextMapper<Map.Entry<String, String>>) ctx -> {
                         DirContextAdapter searchResultContext = (DirContextAdapter) ctx;
                         return new AbstractMap.SimpleEntry<>(searchResultContext.getStringAttribute("cn"), searchResultContext.getStringAttribute("description"));
                     });
+            }
         }
         return groups;
     }
