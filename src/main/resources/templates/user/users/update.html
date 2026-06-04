@@ -54,7 +54,6 @@
 </script>
 
 <script type="text/javascript">
-// Mobile sign functionality
 $(document).ready(function() {
     var checkInterval = null;
     var currentToken = null;
@@ -66,6 +65,10 @@ $(document).ready(function() {
     var reloadNoticeKey = 'esup-mobile-sign-reloaded';
     var modalElement = document.getElementById('mobileSignModal');
     var mobileSignModal = modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+    var canvasElement = document.getElementById('canvas');
+    var signPadElement = document.getElementById('signPad');
+    var signPadLabelElement = document.getElementById('signPadLabel');
+    var eraseButton = document.getElementById('erase');
 
     restoreReloadNotice();
 
@@ -95,112 +98,31 @@ $(document).ready(function() {
         });
     });
 
+    function lockLocalDrawing() {
+        if (canvasElement) {
+            canvasElement.style.pointerEvents = 'none';
+            canvasElement.style.opacity = '0.6';
+        }
+        if (signPadLabelElement) {
+            signPadLabelElement.textContent = 'Une signature mobile a été chargée. Réinitialisez la signature pour dessiner à nouveau ici.';
+        }
+    }
+
+    function unlockLocalDrawing() {
+        if (canvasElement) {
+            canvasElement.style.pointerEvents = '';
+            canvasElement.style.opacity = '';
+        }
+        if (signPadLabelElement) {
+            signPadLabelElement.textContent = 'Vous pouvez dessiner une signature dans le rectangle ci dessous';
+        }
+    }
+
     function startSignaturePolling() {
         stopPolling();
         checkInterval = setInterval(function() {
             pollTokenStatus();
         }, 3000);
-    }
-
-    function pollTokenStatus() {
-        if (!currentToken) {
-            return;
-        }
-
-        $.ajax({
-            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/status',
-            type: 'GET',
-            success: function(response) {
-                if (response.used) {
-                    scheduleReload();
-                    return;
-                }
-                if (response.previewAvailable && !previewApplied && !previewRequested) {
-                    fetchSignaturePreview();
-                    return;
-                }
-                if (!response.valid) {
-                    stopPolling();
-                    showModalStatus(response.message || 'Ce lien n’est plus valide. Veuillez générer un nouveau QR code.', 'warning');
-                }
-            }
-        });
-    }
-
-    function fetchSignaturePreview() {
-        if (!currentToken || previewApplied || previewRequested) {
-            return;
-        }
-
-        previewRequested = true;
-        $.ajax({
-            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/preview',
-            type: 'GET',
-            success: function(response) {
-                previewRequested = false;
-                if (response && response.success && response.signImageBase64) {
-                    applySignaturePreview(response.signImageBase64);
-                    return;
-                }
-                showModalStatus('La signature mobile a été détectée mais son aperçu est indisponible.', 'warning');
-            },
-            error: function(xhr) {
-                previewRequested = false;
-                var message = 'Erreur lors de la récupération de la signature mobile.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                }
-                showModalStatus(message, 'warning');
-            }
-        });
-    }
-
-    function stopPolling() {
-        if (checkInterval) {
-            clearInterval(checkInterval);
-            checkInterval = null;
-        }
-    }
-
-    function scheduleReload() {
-        if (reloadScheduled) {
-            return;
-        }
-
-        reloadScheduled = true;
-        stopPolling();
-        sessionStorage.setItem(reloadNoticeKey, '1');
-        showModalStatus('Signature enregistrée. La page va être actualisée.', 'success');
-        if (mobileSignModal) {
-            mobileSignModal.hide();
-        }
-        window.setTimeout(function() {
-            window.location.reload();
-        }, 600);
-    }
-
-    function restoreReloadNotice() {
-        if (sessionStorage.getItem(reloadNoticeKey) !== '1') {
-            return;
-        }
-
-        sessionStorage.removeItem(reloadNoticeKey);
-        $('#signImageForm').before(
-            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
-            '<i class="fi fi-rr-check-circle me-2"></i> Votre signature mobile a bien été ajoutée.' +
-            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>' +
-            '</div>'
-        );
-    }
-
-    function showPreviewNotice() {
-        $('#mobileSignPreviewNotice').remove();
-        $('#signImageForm').before(
-            '<div id="mobileSignPreviewNotice" class="alert alert-info alert-dismissible fade show" role="alert">' +
-            '<i class="fi fi-rr-smartphone me-2"></i> Votre signature mobile a été chargée dans l’aperçu. Utilisez maintenant le bouton d’enregistrement pour l’ajouter à vos signatures.' +
-            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>' +
-            '</div>'
-        );
     }
 
     function clearPreviewState() {
@@ -209,6 +131,7 @@ $(document).ready(function() {
         previewSignatureBase64 = null;
         $('#mobileSignToken').val('');
         $('#mobileSignPreviewNotice').remove();
+        unlockLocalDrawing();
     }
 
     function applySignaturePreview(signImageBase64) {
@@ -226,6 +149,7 @@ $(document).ready(function() {
         previewSignatureBase64 = signImageBase64;
         $('#mobileSignToken').val(currentToken || '');
         window.userUi.applyMobileSignaturePreview(signImageBase64);
+        lockLocalDrawing();
         showPreviewNotice();
         showModalStatus('Signature reçue. Vérifiez l’aperçu sur cette page puis utilisez le bouton d’enregistrement.', 'success');
         if (mobileSignModal) {
@@ -238,25 +162,6 @@ $(document).ready(function() {
         reloadScheduled = false;
     }
 
-    function showModalStatus(message, level) {
-        $('#mobileSignModalStatus')
-            .removeClass('d-none alert-success alert-danger alert-warning')
-            .addClass('alert-' + level)
-            .text(message);
-    }
-
-    window.addEventListener('storage', function(event) {
-        if (event.key === crossTabReloadKey && event.newValue) {
-            scheduleReload();
-        }
-    });
-
-    window.addEventListener('message', function(event) {
-        if (event.origin === window.location.origin && event.data && event.data.type === crossTabReloadKey) {
-            scheduleReload();
-        }
-    });
-
     $('#signImageBase64').on('input change', function() {
         if (!previewApplied || !previewSignatureBase64) {
             return;
@@ -266,6 +171,10 @@ $(document).ready(function() {
         if (currentSignatureValue !== previewSignatureBase64) {
             clearPreviewState();
         }
+    });
+
+    $('#erase').on('click', function() {
+        clearPreviewState();
     });
 });
 </script>
