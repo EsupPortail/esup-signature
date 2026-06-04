@@ -5,6 +5,7 @@ import NotificationCenter from "../modules/ui/NotificationCenter.js?version=@ver
 
 let activeKeyboardPlacementId = null;
 const activeKeyboardPlacementNamespace = ".signRequestParamsKeyboardActive";
+let activeMobileSignParams = null;
 
 export class SignRequestParams extends EventFactory {
 
@@ -86,11 +87,16 @@ export class SignRequestParams extends EventFactory {
         this.signType = signType;
         this.userSignaturePad = null;
         this.canvasBtn = null;
+        this.mobileCanvasBtn = null;
         this.canvas = null;
         this.padMargin = 0;
         this.inside = true;
         this.isLight = light;
         this.resizeNamespace = ".signRequestParamsResize-" + this.id;
+        this.mobileSignToken = null;
+        this.mobileSignPollingInterval = null;
+        this.mobilePreviewRequested = false;
+        this.mobilePreviewApplied = false;
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
@@ -179,7 +185,12 @@ export class SignRequestParams extends EventFactory {
         this.canvasBtn.on("mousedown", function(){
             self.#enableCanvas();
         });
+        this.mobileCanvasBtn = $("#mobileCanvasBtn_" + this.id);
+        this.mobileCanvasBtn.on("mousedown", function() {
+            self.#startMobileSignatureFlow();
+        });
         $("#signImageBtn_" + this.id).on("mousedown", () => this.#toggleSignModal());
+        this.#ensureMobileSignModalListeners();
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
@@ -467,6 +478,7 @@ export class SignRequestParams extends EventFactory {
 
         if(this.isOtp && this.isSign) {
             $("#canvasBtn_" + this.id).remove();
+            $("#mobileCanvasBtn_" + this.id).remove();
             this.#toggleExtra();
             this.#toggleText();
             if(this.userName.length < 2) {
@@ -805,6 +817,186 @@ export class SignRequestParams extends EventFactory {
             this.userSignaturePad.destroy();
             this.userSignaturePad = null;
         }
+    }
+
+    #getMobileSignModalElement() {
+        return document.getElementById("signRequestMobileSignModal");
+    }
+
+    #getMobileSignModal() {
+        const modalElement = this.#getMobileSignModalElement();
+        return modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+    }
+
+    #ensureMobileSignModalListeners() {
+        const modalElement = this.#getMobileSignModalElement();
+        if (modalElement == null || modalElement.dataset.mobileSignBound === "true") {
+            return;
+        }
+
+        modalElement.addEventListener("hidden.bs.modal", () => {
+            if (activeMobileSignParams != null) {
+                activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
+                activeMobileSignParams = null;
+            }
+        });
+        modalElement.dataset.mobileSignBound = "true";
+    }
+
+    #resetMobileSignStatus() {
+        $("#signRequestMobileSignModalStatus")
+            .addClass("d-none")
+            .removeClass("alert-success alert-danger alert-warning")
+            .empty();
+    }
+
+    #showMobileSignStatus(message, level) {
+        $("#signRequestMobileSignModalStatus")
+            .removeClass("d-none alert-success alert-danger alert-warning")
+            .addClass("alert-" + level)
+            .text(message);
+    }
+
+    #stopMobileSignaturePolling() {
+        if (this.mobileSignPollingInterval != null) {
+            window.clearInterval(this.mobileSignPollingInterval);
+            this.mobileSignPollingInterval = null;
+        }
+    }
+
+    resetMobileSignatureFlow({clearToken = false} = {}) {
+        this.#stopMobileSignaturePolling();
+        this.mobilePreviewRequested = false;
+        this.mobilePreviewApplied = false;
+        if (clearToken) {
+            this.mobileSignToken = null;
+        }
+        this.#resetMobileSignStatus();
+    }
+
+    #startMobileSignaturePolling() {
+        this.#stopMobileSignaturePolling();
+        this.mobileSignPollingInterval = window.setInterval(() => {
+            this.#pollMobileTokenStatus();
+        }, 3000);
+    }
+
+    #ensureCanvasReadyForMobilePreview() {
+        if (this.userSignaturePad == null) {
+            this.#enableCanvas();
+            return;
+        }
+        this.cross.draggable("disable");
+        this.canvas.show();
+        this.canvas.css("cursor", "pointer");
+        this.cross.css("background-image", "");
+    }
+
+    #applyMobileSignaturePreview(signImageBase64) {
+        if (!signImageBase64) {
+            return;
+        }
+
+        this.#ensureCanvasReadyForMobilePreview();
+        this.userSignaturePad.loadImage(signImageBase64);
+        this.mobilePreviewApplied = true;
+        this.mobilePreviewRequested = false;
+        this.#showMobileSignStatus("Signature recue. Verifiez l'apercu dans le document.", "success");
+        NotificationCenter.showSnackbar("Signature mobile chargee dans le document", "success", {delay: 3000});
+        this.#getMobileSignModal()?.hide();
+    }
+
+    #fetchMobileSignaturePreview() {
+        if (!this.mobileSignToken || this.mobilePreviewRequested || this.mobilePreviewApplied) {
+            return;
+        }
+
+        this.mobilePreviewRequested = true;
+        $.ajax({
+            url: "/public/mobile-sign/" + encodeURIComponent(this.mobileSignToken) + "/preview",
+            type: "GET",
+            success: response => {
+                this.mobilePreviewRequested = false;
+                if (response && response.success && response.signImageBase64) {
+                    this.#applyMobileSignaturePreview(response.signImageBase64);
+                    return;
+                }
+                this.#showMobileSignStatus("La signature mobile a ete detectee mais son apercu est indisponible.", "warning");
+            },
+            error: xhr => {
+                this.mobilePreviewRequested = false;
+                let message = "Erreur lors de la recuperation de la signature mobile.";
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                this.#showMobileSignStatus(message, "warning");
+            }
+        });
+    }
+
+    #pollMobileTokenStatus() {
+        if (!this.mobileSignToken) {
+            return;
+        }
+
+        $.ajax({
+            url: "/public/mobile-sign/" + encodeURIComponent(this.mobileSignToken) + "/status",
+            type: "GET",
+            success: response => {
+                if (response.used) {
+                    this.#stopMobileSignaturePolling();
+                    this.#showMobileSignStatus("Ce lien a deja ete utilise. Generez-en un nouveau si besoin.", "warning");
+                    return;
+                }
+                if (response.previewAvailable && !this.mobilePreviewApplied && !this.mobilePreviewRequested) {
+                    this.#fetchMobileSignaturePreview();
+                    return;
+                }
+                if (!response.valid) {
+                    this.#stopMobileSignaturePolling();
+                    this.#showMobileSignStatus(response.message || "Ce lien n'est plus valide. Veuillez en generer un nouveau.", "warning");
+                }
+            },
+            error: () => {
+                this.#stopMobileSignaturePolling();
+                this.#showMobileSignStatus("Erreur lors de la verification du lien mobile.", "warning");
+            }
+        });
+    }
+
+    #startMobileSignatureFlow() {
+        if (this.isOtp) {
+            return;
+        }
+
+        if (activeMobileSignParams != null && activeMobileSignParams !== this) {
+            activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
+        }
+        activeMobileSignParams = this;
+        this.resetMobileSignatureFlow({clearToken: true});
+
+        $.ajax({
+            url: "/user/users/mobile-sign/generate-token",
+            type: "GET",
+            success: response => {
+                if (!(response && response.qrcodeUrl && response.token)) {
+                    this.#showMobileSignStatus("Erreur lors de la generation du lien mobile. Veuillez reessayer.", "danger");
+                    return;
+                }
+
+                this.mobileSignToken = response.token;
+                $("#signRequestQrcodeImage").attr("src", response.qrcodeUrl);
+                $("#signRequestMobileSignUrl").attr("href", response.url).text(response.url);
+                this.#resetMobileSignStatus();
+                this.#getMobileSignModal()?.show();
+                this.#startMobileSignaturePolling();
+                this.#pollMobileTokenStatus();
+            },
+            error: () => {
+                this.#showMobileSignStatus("Erreur lors de la generation du lien mobile. Veuillez reessayer.", "danger");
+                this.#getMobileSignModal()?.show();
+            }
+        });
     }
 
     #createTools() {
@@ -1165,6 +1357,10 @@ export class SignRequestParams extends EventFactory {
     }
 
     #deleteSign() {
+        this.resetMobileSignatureFlow({clearToken: true});
+        if (activeMobileSignParams === this) {
+            activeMobileSignParams = null;
+        }
         this.setSlotDeleteButtonsEnabled(true);
         this.#deleteAllPagesSigns();
         this.cross.attr("remove", "true");
@@ -1913,6 +2109,7 @@ export class SignRequestParams extends EventFactory {
         }
         $("#signColorPicker_" + this.id).hide();
         $("#canvasBtn_" + this.id).remove();
+        $("#mobileCanvasBtn_" + this.id).remove();
         $("#displayMoreTools_" + this.id).remove();
 
     }
@@ -2081,12 +2278,14 @@ export class SignRequestParams extends EventFactory {
         }
         if(!this.firstLaunch) {
             this.canvasBtn.show();
+            this.mobileCanvasBtn.show();
         }
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
         this.#deactivateKeyboardPlacement();
         this.canvasBtn.removeClass("d-none");
+        this.mobileCanvasBtn.removeClass("d-none");
         this.#computeBgColor();
     }
 
