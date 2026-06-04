@@ -57,22 +57,31 @@
 $(document).ready(function() {
     var checkInterval = null;
     var currentToken = null;
-    var reloadScheduled = false;
     var previewApplied = false;
     var previewRequested = false;
     var previewSignatureBase64 = null;
-    var crossTabReloadKey = 'esup-mobile-sign-saved';
-    var reloadNoticeKey = 'esup-mobile-sign-reloaded';
+
     var modalElement = document.getElementById('mobileSignModal');
     var mobileSignModal = modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
     var canvasElement = document.getElementById('canvas');
-    var signPadElement = document.getElementById('signPad');
     var signPadLabelElement = document.getElementById('signPadLabel');
-    var eraseButton = document.getElementById('erase');
 
-    restoreReloadNotice();
+    function stopPolling() {
+        if (checkInterval !== null) {
+            window.clearInterval(checkInterval);
+            checkInterval = null;
+        }
+    }
+
+    function showModalStatus(message, type) {
+        var statusElement = $('#mobileSignModalStatus');
+        statusElement.removeClass('d-none alert-success alert-danger alert-warning');
+        statusElement.addClass('alert-' + type);
+        statusElement.text(message);
+    }
 
     $('#drawOnMobileBtn').on('click', function() {
+        clearPreviewState({clearToken: true});
         resetModalStatus();
         $.ajax({
             url: '/user/users/mobile-sign/generate-token',
@@ -80,7 +89,6 @@ $(document).ready(function() {
             success: function(response) {
                 if (response && response.qrcodeUrl && response.token) {
                     currentToken = response.token;
-                    clearPreviewState();
                     $('#qrcodeImage').attr('src', response.qrcodeUrl);
                     $('#mobileSignUrl').attr('href', response.url).text(response.url);
                     if (mobileSignModal) {
@@ -89,10 +97,16 @@ $(document).ready(function() {
                     startSignaturePolling();
                     pollTokenStatus();
                 } else {
+                    if (mobileSignModal) {
+                        mobileSignModal.show();
+                    }
                     showModalStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
                 }
             },
             error: function() {
+                if (mobileSignModal) {
+                    mobileSignModal.show();
+                }
                 showModalStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
             }
         });
@@ -120,17 +134,21 @@ $(document).ready(function() {
 
     function startSignaturePolling() {
         stopPolling();
-        checkInterval = setInterval(function() {
+        checkInterval = window.setInterval(function() {
             pollTokenStatus();
         }, 3000);
     }
 
-    function clearPreviewState() {
+    function clearPreviewState(options) {
+        var shouldClearToken = options && options.clearToken === true;
+        stopPolling();
         previewApplied = false;
         previewRequested = false;
         previewSignatureBase64 = null;
+        if (shouldClearToken) {
+            currentToken = null;
+        }
         $('#mobileSignToken').val('');
-        $('#mobileSignPreviewNotice').remove();
         unlockLocalDrawing();
     }
 
@@ -150,7 +168,6 @@ $(document).ready(function() {
         $('#mobileSignToken').val(currentToken || '');
         window.userUi.applyMobileSignaturePreview(signImageBase64);
         lockLocalDrawing();
-        showPreviewNotice();
         showModalStatus('Signature reçue. Vérifiez l’aperçu sur cette page puis utilisez le bouton d’enregistrement.', 'success');
         if (mobileSignModal) {
             mobileSignModal.hide();
@@ -159,7 +176,66 @@ $(document).ready(function() {
 
     function resetModalStatus() {
         $('#mobileSignModalStatus').addClass('d-none').removeClass('alert-success alert-danger alert-warning').empty();
-        reloadScheduled = false;
+    }
+
+    function fetchSignaturePreview() {
+        if (!currentToken || previewRequested || previewApplied) {
+            return;
+        }
+
+        previewRequested = true;
+        $.ajax({
+            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/preview',
+            type: 'GET',
+            success: function(response) {
+                previewRequested = false;
+                if (response && response.success && response.signImageBase64) {
+                    applySignaturePreview(response.signImageBase64);
+                    return;
+                }
+                showModalStatus('La signature mobile a été détectée, mais son aperçu est indisponible.', 'warning');
+            },
+            error: function(xhr) {
+                previewRequested = false;
+                var message = 'Erreur lors de la récupération de la signature mobile.';
+                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                showModalStatus(message, 'warning');
+            }
+        });
+    }
+
+    function pollTokenStatus() {
+        if (!currentToken) {
+            return;
+        }
+
+        $.ajax({
+            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/status',
+            type: 'GET',
+            success: function(response) {
+                if (response && response.used) {
+                    stopPolling();
+                    showModalStatus('Ce lien a déjà été utilisé. Générez-en un nouveau si besoin.', 'warning');
+                    return;
+                }
+
+                if (response && response.previewAvailable && !previewApplied && !previewRequested) {
+                    fetchSignaturePreview();
+                    return;
+                }
+
+                if (response && response.valid === false) {
+                    stopPolling();
+                    showModalStatus(response.message || 'Ce lien n’est plus valide. Veuillez en générer un nouveau.', 'warning');
+                }
+            },
+            error: function() {
+                stopPolling();
+                showModalStatus('Erreur lors de la vérification du lien mobile.', 'warning');
+            }
+        });
     }
 
     $('#signImageBase64').on('input change', function() {
@@ -176,6 +252,16 @@ $(document).ready(function() {
     $('#erase').on('click', function() {
         clearPreviewState();
     });
+
+    if (modalElement && modalElement.dataset.mobileSignBound !== 'true') {
+        modalElement.addEventListener('hidden.bs.modal', function() {
+            stopPolling();
+            previewRequested = false;
+            currentToken = null;
+            resetModalStatus();
+        });
+        modalElement.dataset.mobileSignBound = 'true';
+    }
 });
 </script>
 <body>
