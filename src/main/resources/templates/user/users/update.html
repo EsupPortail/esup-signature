@@ -50,7 +50,224 @@
 <script th:inline="javascript" type="module">
     import {UserUi} from '/js/modules/ui/users/UserUi.js?version=@[(${versionApp})]@';
     const signatureUiConfig = /*[[${signatureUiConfig}]]*/ null;
-    new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]], signatureUiConfig);
+    window.userUi = new UserUi([[${user.firstname + ' ' + user.name}]], [[${user.favoriteSignRequestParams}]], [[${signImages}]], [[${user.userType.name()}]], [[${user.defaultSignImageNumber}]], signatureUiConfig);
+</script>
+
+<script type="text/javascript">
+// Mobile sign functionality
+$(document).ready(function() {
+    var checkInterval = null;
+    var currentToken = null;
+    var reloadScheduled = false;
+    var previewApplied = false;
+    var previewRequested = false;
+    var previewSignatureBase64 = null;
+    var crossTabReloadKey = 'esup-mobile-sign-saved';
+    var reloadNoticeKey = 'esup-mobile-sign-reloaded';
+    var modalElement = document.getElementById('mobileSignModal');
+    var mobileSignModal = modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+
+    restoreReloadNotice();
+
+    $('#drawOnMobileBtn').on('click', function() {
+        resetModalStatus();
+        $.ajax({
+            url: '/user/users/mobile-sign/generate-token',
+            type: 'GET',
+            success: function(response) {
+                if (response && response.qrcodeUrl && response.token) {
+                    currentToken = response.token;
+                    clearPreviewState();
+                    $('#qrcodeImage').attr('src', response.qrcodeUrl);
+                    $('#mobileSignUrl').attr('href', response.url).text(response.url);
+                    if (mobileSignModal) {
+                        mobileSignModal.show();
+                    }
+                    startSignaturePolling();
+                    pollTokenStatus();
+                } else {
+                    showModalStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
+                }
+            },
+            error: function() {
+                showModalStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
+            }
+        });
+    });
+
+    function startSignaturePolling() {
+        stopPolling();
+        checkInterval = setInterval(function() {
+            pollTokenStatus();
+        }, 3000);
+    }
+
+    function pollTokenStatus() {
+        if (!currentToken) {
+            return;
+        }
+
+        $.ajax({
+            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/status',
+            type: 'GET',
+            success: function(response) {
+                if (response.used) {
+                    scheduleReload();
+                    return;
+                }
+                if (response.previewAvailable && !previewApplied && !previewRequested) {
+                    fetchSignaturePreview();
+                    return;
+                }
+                if (!response.valid) {
+                    stopPolling();
+                    showModalStatus(response.message || 'Ce lien n’est plus valide. Veuillez générer un nouveau QR code.', 'warning');
+                }
+            }
+        });
+    }
+
+    function fetchSignaturePreview() {
+        if (!currentToken || previewApplied || previewRequested) {
+            return;
+        }
+
+        previewRequested = true;
+        $.ajax({
+            url: '/public/mobile-sign/' + encodeURIComponent(currentToken) + '/preview',
+            type: 'GET',
+            success: function(response) {
+                previewRequested = false;
+                if (response && response.success && response.signImageBase64) {
+                    applySignaturePreview(response.signImageBase64);
+                    return;
+                }
+                showModalStatus('La signature mobile a été détectée mais son aperçu est indisponible.', 'warning');
+            },
+            error: function(xhr) {
+                previewRequested = false;
+                var message = 'Erreur lors de la récupération de la signature mobile.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                showModalStatus(message, 'warning');
+            }
+        });
+    }
+
+    function stopPolling() {
+        if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+        }
+    }
+
+    function scheduleReload() {
+        if (reloadScheduled) {
+            return;
+        }
+
+        reloadScheduled = true;
+        stopPolling();
+        sessionStorage.setItem(reloadNoticeKey, '1');
+        showModalStatus('Signature enregistrée. La page va être actualisée.', 'success');
+        if (mobileSignModal) {
+            mobileSignModal.hide();
+        }
+        window.setTimeout(function() {
+            window.location.reload();
+        }, 600);
+    }
+
+    function restoreReloadNotice() {
+        if (sessionStorage.getItem(reloadNoticeKey) !== '1') {
+            return;
+        }
+
+        sessionStorage.removeItem(reloadNoticeKey);
+        $('#signImageForm').before(
+            '<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+            '<i class="fi fi-rr-check-circle me-2"></i> Votre signature mobile a bien été ajoutée.' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>' +
+            '</div>'
+        );
+    }
+
+    function showPreviewNotice() {
+        $('#mobileSignPreviewNotice').remove();
+        $('#signImageForm').before(
+            '<div id="mobileSignPreviewNotice" class="alert alert-info alert-dismissible fade show" role="alert">' +
+            '<i class="fi fi-rr-smartphone me-2"></i> Votre signature mobile a été chargée dans l’aperçu. Utilisez maintenant le bouton d’enregistrement pour l’ajouter à vos signatures.' +
+            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>' +
+            '</div>'
+        );
+    }
+
+    function clearPreviewState() {
+        previewApplied = false;
+        previewRequested = false;
+        previewSignatureBase64 = null;
+        $('#mobileSignToken').val('');
+        $('#mobileSignPreviewNotice').remove();
+    }
+
+    function applySignaturePreview(signImageBase64) {
+        if (!signImageBase64) {
+            return;
+        }
+
+        if (!window.userUi || typeof window.userUi.applyMobileSignaturePreview !== 'function') {
+            showModalStatus('Signature reçue mais impossible de l’afficher automatiquement sur cette page.', 'warning');
+            return;
+        }
+
+        previewApplied = true;
+        previewRequested = false;
+        previewSignatureBase64 = signImageBase64;
+        $('#mobileSignToken').val(currentToken || '');
+        window.userUi.applyMobileSignaturePreview(signImageBase64);
+        showPreviewNotice();
+        showModalStatus('Signature reçue. Vérifiez l’aperçu sur cette page puis utilisez le bouton d’enregistrement.', 'success');
+        if (mobileSignModal) {
+            mobileSignModal.hide();
+        }
+    }
+
+    function resetModalStatus() {
+        $('#mobileSignModalStatus').addClass('d-none').removeClass('alert-success alert-danger alert-warning').empty();
+        reloadScheduled = false;
+    }
+
+    function showModalStatus(message, level) {
+        $('#mobileSignModalStatus')
+            .removeClass('d-none alert-success alert-danger alert-warning')
+            .addClass('alert-' + level)
+            .text(message);
+    }
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === crossTabReloadKey && event.newValue) {
+            scheduleReload();
+        }
+    });
+
+    window.addEventListener('message', function(event) {
+        if (event.origin === window.location.origin && event.data && event.data.type === crossTabReloadKey) {
+            scheduleReload();
+        }
+    });
+
+    $('#signImageBase64').on('input change', function() {
+        if (!previewApplied || !previewSignatureBase64) {
+            return;
+        }
+
+        var currentSignatureValue = $(this).val() || '';
+        if (currentSignatureValue !== previewSignatureBase64) {
+            clearPreviewState();
+        }
+    });
+});
 </script>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
@@ -251,10 +468,14 @@
                                 <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
                                     <i class="fi fi-rr-eraser"></i> Réinitialiser la signature
                                 </button>
+                                <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark float-right">
+                                    <i class="fi fi-rr-smartphone"></i> Dessiner sur mobile
+                                </button>
                             </div>
                         </div>
                     </div>
                     <input type="hidden" th:field="*{signImageBase64}"/>
+                    <input type="hidden" id="mobileSignToken" name="mobileSignToken"/>
                 </div>
                 <div class="alert rounded-3 border-secondary-subtle mb-1 col-lg-12">
                     <h5>Mes paramètres de signature</h5>
@@ -415,6 +636,33 @@
         </div>
     </div>
 </div>
+
+<div data-bs-focus="false" class="modal fade" id="mobileSignModal" role="dialog" aria-labelledby="mobileSignModal" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Dessiner sur mobile</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="mobileSignModalStatus" class="alert d-none" role="alert"></div>
+                <p>Scannez ce QR code avec votre appareil mobile pour dessiner votre signature :</p>
+                <div id="qrcodeContainer" class="text-center mb-3">
+                    <img id="qrcodeImage" src="" alt="QR Code" style="max-width: 200px; margin: 0 auto; display: block;" />
+                </div>
+                <p class="text-muted small">Ou ouvrez ce lien sur votre mobile : <a id="mobileSignUrl" href="" target="_blank">Lien de signature mobile</a></p>
+                <div class="alert alert-info mt-3">
+                    <i class="fi fi-rr-clock me-2"></i>
+                    <strong>Attention :</strong> Ce lien est valable 5 minutes uniquement.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

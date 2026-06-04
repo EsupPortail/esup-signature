@@ -643,10 +643,14 @@ export class SignatureFlowController {
                     recipientId: signUi.normalizeInteger(originalParams.recipientId, null),
                 };
                 if(originalParams.userSignaturePad != null) {
-                    if(originalParams.userSignaturePad.signaturePad.isEmpty()) {
+                    const hasDrawnSignature = !originalParams.userSignaturePad.signaturePad.isEmpty();
+                    const hasLoadedSignatureImage = Boolean(originalParams.userSignaturePad.signImageBase64Val);
+                    if(!hasDrawnSignature && !hasLoadedSignatureImage) {
                         signaturesCheck = false;
-                    } else {
+                    } else if (hasDrawnSignature) {
                         originalParams.userSignaturePad.save();
+                        paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
+                    } else {
                         paramToSend.imageBase64 = originalParams.userSignaturePad.signImageBase64Val;
                     }
                 }

@@ -51,6 +51,8 @@ export class UserSignaturePad {
                 if (Array.isArray(this.cachedData) && this.cachedData.length > 0) {
                     this.signaturePad.fromData(this.cachedData);
                     this.hidePlaceholder();
+                } else if (this.signImageBase64Val) {
+                    this.hidePlaceholder();
                 } else {
                     this.showPlaceholder();
                 }
@@ -87,6 +89,7 @@ export class UserSignaturePad {
     save() {
         let imageBase64 = this.signaturePad.toDataURL("image/png");
         this.pendingDirtyState = false;
+        this.setCanvasBackground('');
         this.updateSignImage(imageBase64);
         this.hidePlaceholder();
     }
@@ -96,6 +99,7 @@ export class UserSignaturePad {
         this.pendingDirtyState = false;
         this.signaturePad.clear();
         this.cachedData = [];
+        this.setCanvasBackground('');
         this.updateSignImage('');
         this.showPlaceholder();
     }
@@ -132,6 +136,42 @@ export class UserSignaturePad {
         this.signImageBase64.val(value);
         this.signImageBase64Val = value || null;
         this.dispatchDirtyRefresh();
+    }
+
+    setCanvasBackground(imageBase64) {
+        if (imageBase64) {
+            this.canvas.css({
+                backgroundImage: `url("${imageBase64}")`,
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: 'contain'
+            });
+            return;
+        }
+
+        this.canvas.css({
+            backgroundImage: '',
+            backgroundPosition: '',
+            backgroundRepeat: '',
+            backgroundSize: '',
+            background: ''
+        });
+    }
+
+    loadImage(imageBase64) {
+        if (!imageBase64) {
+            this.clear();
+            this.firstClear = true;
+            return;
+        }
+
+        this.pendingDirtyState = false;
+        this.firstClear = false;
+        this.cachedData = [];
+        this.signaturePad.clear();
+        this.setCanvasBackground(imageBase64);
+        this.updateSignImage(imageBase64);
+        this.hidePlaceholder();
     }
 
     getPlaceholderElements() {
