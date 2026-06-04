@@ -68,7 +68,10 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
+                if (!self.url) {
+                    throw new Error("PdfViewer: self.url est vide");
+                }
+                let loadingTask = globalThis.pdfjsLib.getDocument({ url: self.url });
                 loadingTask.promise.then(function(pdf) {
                     self.startRender(pdf)
                 });
