@@ -61,9 +61,14 @@
                         <button id="saveSignature" type="button" class="btn btn-outline-primary">
                             <i class="fi fi-rr-disk me-1"></i>Sauvegarder la signature
                         </button>
-                        <button id="erase" type="button" class="btn btn-outline-secondary">
-                            <i class="fi fi-rr-eraser me-1"></i>Effacer
-                        </button>
+                        <div class="d-flex flex-column gap-2">
+                            <button id="erase" type="button" class="btn btn-outline-secondary">
+                                <i class="fi fi-rr-eraser me-1"></i>Effacer
+                            </button>
+                            <button id="finish" type="button" class="btn btn-outline-success d-none">
+                                <i class="fi fi-rr-check me-1"></i>Terminer
+                            </button>
+                        </div>
                     </div>
 
                     <div id="messageContainer" class="alert d-none mt-3 mb-0" role="alert"></div>
@@ -105,9 +110,11 @@
         }
 
         var signPadTip = document.getElementById('signPadTip');
+        var signPadContainer = document.getElementById('signPad');
         var validateButton = document.getElementById('validate');
         var saveSignatureButton = document.getElementById('saveSignature');
         var eraseButton = document.getElementById('erase');
+        var finishButton = document.getElementById('finish');
         var countdownElement = document.getElementById('countdown');
         var messageContainer = document.getElementById('messageContainer');
         var signaturePad = new SignaturePad(canvas, {
@@ -139,6 +146,21 @@
             validateButton.disabled = disabled;
             saveSignatureButton.disabled = disabled;
             eraseButton.disabled = disabled;
+            finishButton.disabled = disabled;
+        }
+
+        function showFinishButton() {
+            saveSignatureButton.classList.add('d-none');
+            finishButton.classList.remove('d-none');
+        }
+
+        function finishSignatureFlow() {
+            signPadContainer.classList.add('d-none');
+            validateButton.classList.add('d-none');
+            saveSignatureButton.classList.add('d-none');
+            eraseButton.disabled = true;
+            finishButton.disabled = true;
+            showMessage('Signature transmise. Vous pouvez fermer l’onglet.', 'success');
         }
 
         function resizeCanvas() {
@@ -307,6 +329,7 @@
                 'success',
                 function() {
                     setButtonsDisabled(false);
+                    showFinishButton();
                 }
             );
         });
@@ -324,6 +347,10 @@
                     }, 800);
                 }
             );
+        });
+
+        finishButton.addEventListener('click', function() {
+            finishSignatureFlow();
         });
 
         window.addEventListener('resize', resizeCanvas);
