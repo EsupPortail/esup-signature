@@ -71,6 +71,9 @@ export class PdfViewer extends EventFactory {
                 if (!self.url) {
                     throw new Error("PdfViewer: self.url est vide");
                 }
+                if (globalThis.pdfjsLib.GlobalWorkerOptions) {
+                    globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/build/pdf.worker.min.mjs';
+                }
                 let loadingTask = globalThis.pdfjsLib.getDocument({ url: self.url });
                 loadingTask.promise.then(function(pdf) {
                     self.startRender(pdf)
@@ -2018,6 +2021,7 @@ export class PdfViewer extends EventFactory {
             const allGroups = this.getApplicationLayers(config);
             const resolvedLayerName = this.resolveLayerName(stepNumber, layerName, allGroups);
             if (!resolvedLayerName && stepNumber !== 0) {
+                // console.warn(`showLayerByStep: layer introuvable pour step=${stepNumber}, layerName=${layerName}`);
                 return;
             }
             if(solo) {
@@ -2112,7 +2116,7 @@ export class PdfViewer extends EventFactory {
                 ? allGroups.find(group => group.name === resolvedLayerName)
                 : null;
             if (!targetGroup) {
-                console.warn(`highlightStep: layer introuvable pour step=${stepNumber}, layerId=${layerId}`);
+                // console.warn(`highlightStep: layer introuvable pour step=${stepNumber}, layerId=${layerId}`);
                 return;
             }
             this.highlighter.clearHighlights();
