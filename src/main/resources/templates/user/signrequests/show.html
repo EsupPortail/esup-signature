@@ -276,7 +276,13 @@
                                 <i class="fi fi-rr-navigation"></i>
                             </button>
                             <div class="border border-secondary-subtle ms-2 me-2 d-none d-lg-block" style="height: 25px;"></div>
-
+                            <button th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}"
+                                    id="drawSignButton"
+                                    role="button"
+                                    title="Dessiner une signature"
+                                    class="d-flex justify-content-center btn btn-success text-start">
+                                <i class="fi fi-rr-pen-swirl"></i>
+                            </button>
                             <button th:if="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).signature}"
                                     id="addSignButton"
                                     role="button"

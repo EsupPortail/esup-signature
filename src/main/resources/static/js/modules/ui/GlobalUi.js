@@ -317,10 +317,11 @@ export class GlobalUi {
         container.innerHTML = `
             <div class="alert alert-secondary">
                 Keystore PKCS12 :
-                <br>
+                <p style="max-width: 250px;">
                 <a href="/ws-secure/ui/keystore">
                     <span>${this.escapeHtml(keystoreFileName)}</span>
                 </a>
+                </p>
             </div>
         `;
     }

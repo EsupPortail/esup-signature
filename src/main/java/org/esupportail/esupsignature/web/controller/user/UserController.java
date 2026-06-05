@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -49,8 +50,9 @@ public class UserController {
     private final ExtValueService extValueService;
     private final RecipientService recipientService;
 	private final GlobalProperties globalProperties;
+    private final MobileSignTokenService mobileSignTokenService;
 
-	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties) {
+	public UserController(@Autowired(required=false) UserKeystoreService userKeystoreService, FormService formService, UserService userService, SignBookService signBookService, UserPropertieService userPropertieService, FieldPropertieService fieldPropertieService, MessageService messageService, UserListService userListService, ExtValueService extValueService, RecipientService recipientService, GlobalProperties globalProperties, MobileSignTokenService mobileSignTokenService) {
 		this.userKeystoreService = userKeystoreService;
         this.formService = formService;
         this.userService = userService;
@@ -62,6 +64,7 @@ public class UserController {
         this.extValueService = extValueService;
         this.recipientService = recipientService;
 		this.globalProperties = globalProperties;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     @GetMapping
@@ -86,14 +89,17 @@ public class UserController {
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+						 @RequestParam(value = "mobileSignToken", required=false) String mobileSignToken,
 						 @RequestParam(value = "signRequestParamsJsonString", required=false) String signRequestParamsJsonString,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		if(returnToHomeAfterSign == null) returnToHomeAfterSign = false;
 		userService.updateUserAndSignRequestParams(authUserEppn, signImageBase64, saveSignRequestParams, returnToHomeAfterSign, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, signRequestParamsJsonString);
+        mobileSignTokenService.consumePendingSignaturePreview(mobileSignToken, authUserEppn, signImageBase64);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;
     }
+
 
 	@PostMapping
 	public String update(@ModelAttribute("authUserEppn") String authUserEppn, @RequestParam(value = "signImageBase64", required=false) String signImageBase64,
@@ -103,8 +109,10 @@ public class UserController {
 						 @RequestParam(value = "emailAlertHour", required=false) Integer emailAlertHour,
 						 @RequestParam(value = "emailAlertDay", required=false) DayOfWeek emailAlertDay,
 						 @RequestParam(value = "multipartKeystore", required=false) MultipartFile multipartKeystore,
+						 @RequestParam(value = "mobileSignToken", required=false) String mobileSignToken,
 						 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws Exception {
 		userService.updateUser(authUserEppn, name, firstname, signImageBase64, emailAlertFrequency, emailAlertHour, emailAlertDay, multipartKeystore, null, false);
+        mobileSignTokenService.consumePendingSignaturePreview(mobileSignToken, authUserEppn, signImageBase64);
 		redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Vos paramètres ont été enregistrés"));
 		String referer = httpServletRequest.getHeader(HttpHeaders.REFERER);
 		return "redirect:" + referer;

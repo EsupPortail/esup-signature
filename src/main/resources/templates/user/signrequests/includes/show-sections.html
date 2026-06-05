@@ -40,7 +40,8 @@
             <span id="attachment-badge"
                   th:text="${showSignRequest.attachments.size() + signRequestLight.links.size()}"
                   class="badge rounded-pill bg-primary"
-                  th:classappend="${showSignRequest.attachments != null && showSignRequest.attachments.size() + signRequestLight.links.size() > 0} ? '' : ' d-none'"></span>
+                  th:classappend="${showSignRequest.attachments != null && showSignRequest.attachments.size() + signRequestLight.links.size() > 0} ? '' : ' d-none'"
+                  style="margin-bottom: -10px; z-index: 1;"></span>
             <i class="fi fi-rr-clip"></i> <span class="d-none"> Pièces jointes </span>
         </button>
         <button class="d-flex justify-content-center btn btn-transparent text-dark" data-bs-toggle="modal" title="Ajouter un post-it"

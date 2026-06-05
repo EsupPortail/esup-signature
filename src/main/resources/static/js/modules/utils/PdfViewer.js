@@ -21,7 +21,6 @@ export class PdfViewer extends EventFactory {
         this.pageNum = 1;
         this.eventBus = new EventBus({dispatchToDOM: false});
         this._optionalContentConfigPromise = null;
-        this._isRefreshingOCG = false;
         const testUrl = new URL(window.location.href);
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
@@ -68,9 +67,15 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
-                loadingTask.promise.then(function(pdf) {
-                    self.startRender(pdf)
+                if (!self.url) {
+                    throw new Error("PdfViewer: self.url est vide");
+                }
+                if (globalThis.pdfjsLib.GlobalWorkerOptions) {
+                    globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
+                }
+                let loadingTask = globalThis.pdfjsLib.getDocument({ url: self.url });
+                loadingTask.promise.then(async function(pdf) {
+                    await self.startRender(pdf)
                 });
             }
         });
@@ -474,7 +479,7 @@ export class PdfViewer extends EventFactory {
         this.fireEvent("scaleChange", ['in']);
     }
 
-    startRender(pdf) {
+    async startRender(pdf) {
         if (pdf != null && this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
@@ -503,7 +508,16 @@ export class PdfViewer extends EventFactory {
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
 
-        this._optionalContentConfigPromise = this.pdfDoc.getOptionalContentConfig();
+        try {
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
+            this._optionalContentConfigPromise = Promise.resolve(config);
+        } catch (e) {
+            console.error("Error getting optional content config: " + e);
+            this._optionalContentConfigPromise = Promise.resolve(null);
+        }
 
         for (let i = 1; i <= this.numPages; i++) {
             this.renderQueue.push(i);
@@ -521,8 +535,11 @@ export class PdfViewer extends EventFactory {
 
             let self = this;
             this.pdfDoc.getPage(pageNum).then(page => {
-                return self.renderTask(page, pageNum, self._optionalContentConfigPromise, renderCycleId);
-            }).then(function() {
+                return self.renderTask(page, pageNum, self._optionalContentConfigPromise.catch(e => {
+                    console.error("Error in optionalContentConfigPromise: " + e);
+                    return null;
+                }), renderCycleId);
+            }).then(async function() {
                 self.activeRenders--;
                 if (renderCycleId !== self.renderCycleId) {
                     if (self.activeRenders === 0 && self.pendingRender) {
@@ -530,7 +547,7 @@ export class PdfViewer extends EventFactory {
                         const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
                         self.pendingRender = false;
                         self.pendingRenderPdf = null;
-                        self.startRender(pendingPdf);
+                        await self.startRender(pendingPdf);
                     }
                     return;
                 }
@@ -542,7 +559,7 @@ export class PdfViewer extends EventFactory {
                         const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
                         self.pendingRender = false;
                         self.pendingRenderPdf = null;
-                        self.startRender(pendingPdf);
+                        await self.startRender(pendingPdf);
                         return;
                     }
                     // Si c'est un refresh OCG, ne pas lancer postRenderAll
@@ -563,7 +580,7 @@ export class PdfViewer extends EventFactory {
                     self.processRenderQueue(renderCycleId);
                 }
             })
-                .catch(err => {
+                .catch(async err => {
                     if (renderCycleId !== self.renderCycleId) {
                         self.activeRenders--;
                         if (self.activeRenders === 0 && self.pendingRender) {
@@ -571,7 +588,7 @@ export class PdfViewer extends EventFactory {
                             const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
                             self.pendingRender = false;
                             self.pendingRenderPdf = null;
-                            self.startRender(pendingPdf);
+                            await self.startRender(pendingPdf);
                         }
                         return;
                     }
@@ -583,7 +600,7 @@ export class PdfViewer extends EventFactory {
                         const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
                         self.pendingRender = false;
                         self.pendingRenderPdf = null;
-                        self.startRender(pendingPdf);
+                        await self.startRender(pendingPdf);
                         return;
                     }
                     self.processRenderQueue(renderCycleId);
@@ -2008,13 +2025,17 @@ export class PdfViewer extends EventFactory {
             return;
         }
         try {
-            const config = await this.pdfDoc.getOptionalContentConfig();
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
             if (!config) {
                 return;
             }
             const allGroups = this.getApplicationLayers(config);
             const resolvedLayerName = this.resolveLayerName(stepNumber, layerName, allGroups);
             if (!resolvedLayerName && stepNumber !== 0) {
+                console.warn(`showLayerByStep: layer introuvable pour step=${stepNumber}, layerName=${layerName}`);
                 return;
             }
             if(solo) {
@@ -2064,7 +2085,10 @@ export class PdfViewer extends EventFactory {
             return;
         }
         try {
-            const config = await this.pdfDoc.getOptionalContentConfig();
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
             if (!config) {
                 return;
             }
@@ -2097,7 +2121,10 @@ export class PdfViewer extends EventFactory {
         }
 
         try {
-            const config = await Promise.resolve(this._optionalContentConfigPromise);
+            const config = await Promise.resolve(this._optionalContentConfigPromise).catch(e => {
+                console.error("Error resolving optionalContentConfigPromise: " + e);
+                return null;
+            });
             if (!config) {
                 console.warn('highlightStep: Aucun calque disponible');
                 return;

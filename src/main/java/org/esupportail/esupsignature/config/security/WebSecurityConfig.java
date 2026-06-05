@@ -205,7 +205,8 @@ public class WebSecurityConfig {
 				.ignoringRequestMatchers("/nexu-sign/**")
 				.ignoringRequestMatchers("/h2-console/**")
 				.ignoringRequestMatchers("/login/cas")
-				.ignoringRequestMatchers("/cas/slo"));
+				.ignoringRequestMatchers("/cas/slo")
+				.ignoringRequestMatchers("/public/mobile-sign/**"));
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 		setAuthorizeRequests(http);
 		return http.build();

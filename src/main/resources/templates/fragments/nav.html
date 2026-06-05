@@ -7,7 +7,7 @@
 <!--/*@thymesVar id="keystoreFileName" type="java.lang.String"*/-->
 <header id="header" th:fragment="nav" class="fixed-top" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <nav id="navbar" data-bs-theme="dark" class="nav nav-pills navbar navbar-expand-sm" th:classappend="|${(isUserOnSu && user.name != null) ? 'bg-striped' : ''} ${#authorization.expression('hasAuthority(''ROLE_PREVIOUS_ADMINISTRATOR'')') ? 'bg-danger' : 'bg-dark'}">
-        <a tabindex="0" id="link-accueil" type="button"
+        <a tabindex="0" id="link-accueil" type="button" th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}"
             href="/user" class="btn btn-transparent text-left d-flex d-sm-none align-items-center">
             <i class="fi fi-rr-home" ></i></a>
         <a th:if="${#authorization.expression('hasRole(''ROLE_USER'')')}" href="/" class="navbar-brand d-flex flex-row justify-content-start ms-2 pe-2" aria-label="Esup-Signature">
@@ -208,10 +208,11 @@
                     <td id="navbar-keystore-content">
                         <div th:unless="${keystoreFileName == null}" class="alert alert-secondary">
                             Keystore PKCS12 :
-                            <br>
+                            <p style="max-width: 300px;">
                             <a href="/ws-secure/ui/keystore">
                                 <span th:text="${keystoreFileName}"></span>
                             </a>
+                            </p>
                         </div>
                         <div th:if="${keystoreFileName == null}" class="text-secondary">
                             pas de magasin de certificats

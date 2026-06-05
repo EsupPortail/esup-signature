@@ -15,12 +15,7 @@ import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.WsAccessToken;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
 import org.esupportail.esupsignature.repository.WsAccessTokenRepository;
-import org.esupportail.esupsignature.service.AuditTrailService;
-import org.esupportail.esupsignature.service.LogService;
-import org.esupportail.esupsignature.service.SignBookService;
-import org.esupportail.esupsignature.service.SignRequestService;
-import org.esupportail.esupsignature.service.UserService;
-import org.esupportail.esupsignature.service.WsAccessTokenService;
+import org.esupportail.esupsignature.service.*;
 import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
@@ -59,6 +54,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributesModelMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -622,8 +618,9 @@ class GlobalSecurityAttackSurfaceTest {
             PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService);
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-public-token");
@@ -654,8 +651,10 @@ class GlobalSecurityAttackSurfaceTest {
             PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService);
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
             when(auditTrailService.getAuditTrailByToken("missing-token")).thenReturn(null);
 
             String view = controller.controlToken("missing-token", new ConcurrentModel());
@@ -676,7 +675,9 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
 
             AuditTrail auditTrail = new AuditTrail();
             auditTrail.setToken("known-token");
@@ -716,7 +717,10 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-1");
             when(auditTrailService.getAuditTrailFromCheksum("checksum-1")).thenReturn(null);
@@ -741,7 +745,10 @@ class GlobalSecurityAttackSurfaceTest {
             ValidationService validationService = mock(ValidationService.class);
             SignService signService = mock(SignService.class);
 
-            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
             MockMultipartFile multipartFile = new MockMultipartFile("multipartFile", "test.pdf", "application/pdf", "payload".getBytes());
             when(fileService.getFileChecksum(multipartFile.getInputStream())).thenReturn("checksum-2");
             when(auditTrailService.getAuditTrailFromCheksum("checksum-2")).thenReturn(null);
@@ -752,6 +759,121 @@ class GlobalSecurityAttackSurfaceTest {
             assertEquals("public/control", view);
             assertEquals(Boolean.TRUE, model.getAttribute("error"));
             verify(validationService).validate(any(), eq(null));
+        }
+
+        @Test
+        void mobileSignStatusShouldExposeUsedStateSeparatelyFromExpiration() {
+            LogService logService = mock(LogService.class);
+            SignRequestService signRequestService = mock(SignRequestService.class);
+            AuditTrailService auditTrailService = mock(AuditTrailService.class);
+            FileService fileService = mock(FileService.class);
+            UserService userService = mock(UserService.class);
+            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
+            ValidationService validationService = mock(ValidationService.class);
+            SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
+            when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
+            when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
+            when(mobileSignTokenService.isTokenUsed("mobile-token")).thenReturn(true);
+            when(mobileSignTokenService.isTokenExpired("mobile-token")).thenReturn(false);
+            when(mobileSignTokenService.getTokenExpirationDate("mobile-token")).thenReturn(new java.util.Date(123L));
+
+            ResponseEntity<Map<String, Object>> response = controller.checkTokenStatus("mobile-token");
+
+            assertEquals(200, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertEquals(Boolean.TRUE, response.getBody().get("exists"));
+            assertEquals(Boolean.FALSE, response.getBody().get("valid"));
+            assertEquals(Boolean.TRUE, response.getBody().get("used"));
+            assertEquals(Boolean.FALSE, response.getBody().get("expired"));
+            assertEquals(123L, response.getBody().get("expiresAtEpochMillis"));
+            assertEquals("Signature enregistrée", response.getBody().get("message"));
+        }
+
+        @Test
+        void mobileSignStatusShouldExposePendingPreviewAvailability() {
+            LogService logService = mock(LogService.class);
+            SignRequestService signRequestService = mock(SignRequestService.class);
+            AuditTrailService auditTrailService = mock(AuditTrailService.class);
+            FileService fileService = mock(FileService.class);
+            UserService userService = mock(UserService.class);
+            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
+            ValidationService validationService = mock(ValidationService.class);
+            SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
+            when(mobileSignTokenService.tokenExists("mobile-token")).thenReturn(true);
+            when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(true);
+            when(mobileSignTokenService.isTokenUsed("mobile-token")).thenReturn(false);
+            when(mobileSignTokenService.isTokenExpired("mobile-token")).thenReturn(false);
+            when(mobileSignTokenService.hasPendingSignaturePreview("mobile-token")).thenReturn(true);
+
+            ResponseEntity<Map<String, Object>> response = controller.checkTokenStatus("mobile-token");
+
+            assertEquals(200, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertEquals(Boolean.TRUE, response.getBody().get("previewAvailable"));
+        }
+
+        @Test
+        void mobileSignPreviewShouldExposePendingImageForValidToken() {
+            LogService logService = mock(LogService.class);
+            SignRequestService signRequestService = mock(SignRequestService.class);
+            AuditTrailService auditTrailService = mock(AuditTrailService.class);
+            FileService fileService = mock(FileService.class);
+            UserService userService = mock(UserService.class);
+            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
+            ValidationService validationService = mock(ValidationService.class);
+            SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
+            when(mobileSignTokenService.getPendingSignaturePreview("mobile-token")).thenReturn("data:image/png;base64,abc123");
+
+            ResponseEntity<Map<String, Object>> response = controller.getSignaturePreview("mobile-token");
+
+            assertEquals(200, response.getStatusCode().value());
+            assertNotNull(response.getBody());
+            assertEquals(Boolean.TRUE, response.getBody().get("success"));
+            assertEquals("data:image/png;base64,abc123", response.getBody().get("signImageBase64"));
+        }
+
+        @Test
+        void mobileSignPageShouldExposeUsedStateWithoutFlaggingExpiration() {
+            LogService logService = mock(LogService.class);
+            SignRequestService signRequestService = mock(SignRequestService.class);
+            AuditTrailService auditTrailService = mock(AuditTrailService.class);
+            FileService fileService = mock(FileService.class);
+            UserService userService = mock(UserService.class);
+            var xsltService = mock(org.esupportail.esupsignature.dss.service.XSLTService.class);
+            PreAuthorizeService preAuthorizeService = mock(PreAuthorizeService.class);
+            ValidationService validationService = mock(ValidationService.class);
+            SignService signService = mock(SignService.class);
+            MobileSignTokenService mobileSignTokenService = mock(MobileSignTokenService.class);
+
+            PublicController controller = publicController(logService, signRequestService, auditTrailService, fileService, userService, xsltService, preAuthorizeService, validationService, signService, mobileSignTokenService);
+
+            when(mobileSignTokenService.validateToken("mobile-token")).thenReturn(false);
+            when(mobileSignTokenService.isTokenUsed("mobile-token")).thenReturn(true);
+            when(mobileSignTokenService.getTokenExpirationDate("mobile-token")).thenReturn(new java.util.Date(456L));
+
+            ConcurrentModel model = new ConcurrentModel();
+            String view = controller.showMobileSignPage("mobile-token", model);
+
+            assertEquals("public/mobile-sign", view);
+            assertEquals("mobile-token", model.getAttribute("token"));
+            assertEquals(Boolean.TRUE, model.getAttribute("used"));
+            assertEquals(Boolean.FALSE, model.getAttribute("expired"));
+            assertEquals(456L, model.getAttribute("expiresAtEpochMillis"));
         }
     }
 
@@ -978,10 +1100,10 @@ class GlobalSecurityAttackSurfaceTest {
     }
 
     private PublicController publicController(LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService,
-                                             FileService fileService, UserService userService,
-                                             org.esupportail.esupsignature.dss.service.XSLTService xsltService,
-                                             PreAuthorizeService preAuthorizeService, ValidationService validationService,
-                                             SignService signService) {
+                                              FileService fileService, UserService userService,
+                                              org.esupportail.esupsignature.dss.service.XSLTService xsltService,
+                                              PreAuthorizeService preAuthorizeService, ValidationService validationService,
+                                              SignService signService, MobileSignTokenService mobileSignTokenService) {
         return new PublicController(
                 null,
                 logService,
@@ -992,7 +1114,8 @@ class GlobalSecurityAttackSurfaceTest {
                 xsltService,
                 preAuthorizeService,
                 validationService,
-                signService
+                signService,
+                mobileSignTokenService
         );
     }
 

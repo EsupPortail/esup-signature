@@ -617,6 +617,11 @@ public class UiFetchService {
         dto.setEmail(user.getEmail());
         dto.setSignImageIds(user.getSignImagesIds());
         dto.setSignImages(getSignImages(signRequestId, userEppn, authUserEppn, httpSession));
+        try {
+            dto.setDefaultSignImage(userService.getDefaultImage64(authUserEppn));
+        } catch (IOException e) {
+            logger.warn("unable to get default sign image", e);
+        }
         return dto;
     }
 

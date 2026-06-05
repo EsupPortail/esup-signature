@@ -10,6 +10,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.service.AuditTrailService;
 import org.esupportail.esupsignature.service.LogService;
+import org.esupportail.esupsignature.service.MobileSignTokenService;
 import org.esupportail.esupsignature.service.SignRequestService;
 import org.esupportail.esupsignature.service.UserService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
@@ -18,6 +19,7 @@ import org.esupportail.esupsignature.service.utils.sign.SignService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -26,7 +28,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -44,8 +49,9 @@ public class PublicController {
     private final PreAuthorizeService preAuthorizeService;
     private final ValidationService validationService;
     private final SignService signService;
+    private final MobileSignTokenService mobileSignTokenService;
 
-    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, SignService signService) {
+    public PublicController(@Autowired(required = false) BuildProperties buildProperties, LogService logService, SignRequestService signRequestService, AuditTrailService auditTrailService, FileService fileService, UserService userService, XSLTService xsltService, PreAuthorizeService preAuthorizeService, ValidationService validationService, SignService signService, MobileSignTokenService mobileSignTokenService) {
         this.buildProperties = buildProperties;
         this.logService = logService;
         this.signRequestService = signRequestService;
@@ -56,6 +62,7 @@ public class PublicController {
         this.preAuthorizeService = preAuthorizeService;
         this.validationService = validationService;
         this.signService = signService;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     @GetMapping(value = "/control")
@@ -156,5 +163,123 @@ public class PublicController {
                 model.addAttribute("simpleReport", xsltService.generateShortReport(reports.getXmlSimpleReport()));
             }
         }
+    }
+
+    // Mobile sign endpoints
+    
+    @GetMapping("/mobile-sign/{token}")
+    public String showMobileSignPage(@PathVariable String token, Model model) {
+        boolean valid = mobileSignTokenService.validateToken(token);
+        boolean used = mobileSignTokenService.isTokenUsed(token);
+        boolean expired = !used && !valid;
+        Date expirationDate = mobileSignTokenService.getTokenExpirationDate(token);
+
+        model.addAttribute("token", token);
+        model.addAttribute("expired", expired);
+        model.addAttribute("used", used);
+        model.addAttribute("expiresAtEpochMillis", expirationDate != null ? expirationDate.getTime() : null);
+        return "public/mobile-sign";
+    }
+
+    @PostMapping("/mobile-sign/{token}/save")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveSignature(
+            @PathVariable String token,
+            @RequestParam(value = "signImageBase64", required = false) String signImageBase64) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        if (mobileSignTokenService.validateToken(token)) {
+            boolean success = mobileSignTokenService.saveSignatureAndMarkTokenUsed(token, signImageBase64);
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Signature enregistrée avec succès. Vous pouvez fermer cette fenêtre et retourner à votre espace utilisateur.");
+                response.put("reloadParent", true);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Erreur lors de l'enregistrement de la signature");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } else {
+            response.put("success", false);
+            response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/mobile-sign/{token}/preview")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> saveSignaturePreview(
+            @PathVariable String token,
+            @RequestParam(value = "signImageBase64", required = false) String signImageBase64) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (mobileSignTokenService.validateToken(token)) {
+            boolean success = mobileSignTokenService.saveSignaturePreview(token, signImageBase64);
+            if (success) {
+                response.put("success", true);
+                response.put("message", "Signature transmise. Revenez sur votre ordinateur pour la vérifier, puis utilisez le bouton d'enregistrement si elle vous convient.");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Erreur lors de la transmission de la signature");
+                return ResponseEntity.badRequest().body(response);
+            }
+        } else {
+            response.put("success", false);
+            response.put("message", "Token invalide ou expiré. Veuillez générer un nouveau QR code.");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/mobile-sign/{token}/preview")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getSignaturePreview(@PathVariable String token) {
+        Map<String, Object> response = new HashMap<>();
+        String signImageBase64 = mobileSignTokenService.getPendingSignaturePreview(token);
+
+        if (signImageBase64 == null) {
+            response.put("success", false);
+            response.put("message", "Aucune signature temporaire n'est disponible pour ce lien.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("success", true);
+        response.put("signImageBase64", signImageBase64);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/mobile-sign/{token}/status")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> checkTokenStatus(@PathVariable String token) {
+        Map<String, Object> response = new HashMap<>();
+        boolean valid = mobileSignTokenService.validateToken(token);
+        boolean used = mobileSignTokenService.isTokenUsed(token);
+        boolean expired = mobileSignTokenService.isTokenExpired(token);
+        Date expirationDate = mobileSignTokenService.getTokenExpirationDate(token);
+
+        response.put("exists", mobileSignTokenService.tokenExists(token));
+        response.put("valid", valid);
+        response.put("used", used);
+        response.put("expired", expired);
+        response.put("previewAvailable", mobileSignTokenService.hasPendingSignaturePreview(token));
+        response.put("previewTimestamp", mobileSignTokenService.getPendingSignaturePreviewTimestamp(token));
+        if (expirationDate != null) {
+            response.put("expiresAtEpochMillis", expirationDate.getTime());
+        }
+
+        if (valid) {
+            response.put("message", "Token valide");
+        } else if (used) {
+            response.put("message", "Signature enregistrée");
+        } else if (expired) {
+            response.put("message", "Token expiré");
+        } else {
+            response.put("message", "Token invalide");
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

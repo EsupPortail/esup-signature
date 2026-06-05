@@ -291,7 +291,7 @@ export class UserUi {
             $("#submitUserParamsForm").click();
             return;
         }
-        if(this.userSignaturePad.signaturePad.isEmpty() && this.userSignatureCrop.signImageBase64 === null) {
+        if(this.userSignaturePad.signaturePad.isEmpty() && this.userSignatureCrop.signImageBase64 === null && !this.userSignaturePad.signImageBase64Val) {
             $("#signImageBase64").val("");
         }
         if(isFetchModalContext && formElement) {
@@ -299,6 +299,16 @@ export class UserUi {
             return;
         }
         userParamsForm.submit();
+    }
+
+    applyMobileSignaturePreview(imageBase64) {
+        if (!imageBase64) {
+            return;
+        }
+
+        this.userSignatureCrop.reset();
+        this.userSignaturePad.loadImage(imageBase64);
+        this.refreshSignaturePadLayout();
     }
 
     resetSignatureModal(event) {

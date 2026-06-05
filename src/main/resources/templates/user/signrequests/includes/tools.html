@@ -70,7 +70,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center active"
+                <div id="step-2" class="step-horizontal-v2 d-flex gap-2 justify-content-center align-items-center active"
                      th:classappend="${signRequestFull.currentSignType == T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa || showSignRequest.toSignDocumentContentType != 'application/pdf'} ? ' justify-content-center' : ''">
                     <div class="d-flex align-items-center gap-2" th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa && showSignRequest.toSignDocumentContentType == 'application/pdf'}">
                         <div class="step-horizontal-v2-icon">
@@ -97,7 +97,7 @@
                             </button>
                             <button th:if="${signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).visa && signRequestFull.currentSignType != T(org.esupportail.esupsignature.entity.enums.SignType).hiddenVisa}" tabindex="1" id="signAdvancedLaunchButton" role="button"
                                     class="btn p-3 d-none" style="margin-left: 2px; height: 58px;">
-                                <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i> Personnaliser
+                                <i class="fi fi-rr-customize" style="margin-top: 0; border: 0"></i> Plus de paramètres
                             </button>
                         </div>
                         <div th:id="'refuseLaunchDiv'"
