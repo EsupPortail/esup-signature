@@ -66,6 +66,50 @@ $(document).ready(function() {
     var mobileSignModal = modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
     var canvasElement = document.getElementById('canvas');
     var signPadLabelElement = document.getElementById('signPadLabel');
+    var localSignaturePad = null;
+
+    function isTouchDevice() {
+        return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+    }
+
+    function initLocalMobileSignaturePad() {
+        const canvas = document.getElementById("canvasMobile");
+        if (!canvas) return;
+
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+
+        if (localSignaturePad && typeof localSignaturePad.destroy === 'function') {
+            localSignaturePad.destroy();
+        }
+
+        localSignaturePad = new SignaturePad(canvas);
+
+        const eraseButton = document.getElementById("eraseMobile");
+        const validateButton = document.getElementById("validateMobile");
+
+        if (eraseButton) {
+            $(eraseButton).off("click").on("click", () => {
+                localSignaturePad.clear();
+            });
+        }
+
+        if (validateButton) {
+            $(validateButton).off("click").on("click", () => {
+                if (localSignaturePad.isEmpty()) {
+                    alert("Veuillez dessiner votre signature.");
+                    return;
+                }
+                const signImageBase64 = localSignaturePad.toDataURL("image/png");
+                applySignaturePreview(signImageBase64);
+                mobileSignModal?.hide();
+            });
+        }
+    }
 
     function stopPolling() {
         if (checkInterval !== null) {
@@ -84,6 +128,19 @@ $(document).ready(function() {
     $('#drawOnMobileBtn').on('click', function() {
         clearPreviewState({clearToken: true});
         resetModalStatus();
+
+        if (isTouchDevice()) {
+            $('#mobileSignModalLocal').removeClass('d-none');
+            $('#mobileSignModalQR').addClass('d-none');
+            if (mobileSignModal) {
+                mobileSignModal.show();
+            }
+            return;
+        }
+
+        $('#mobileSignModalLocal').addClass('d-none');
+        $('#mobileSignModalQR').removeClass('d-none');
+
         const urlParams = new URLSearchParams(window.location.search);
         const isOtp = window.location.pathname.startsWith('/otp');
         const tokenUrl = isOtp ? '/otp/users/mobile-sign/generate-token' : '/user/users/mobile-sign/generate-token';
@@ -267,7 +324,16 @@ $(document).ready(function() {
     });
 
     if (modalElement && modalElement.dataset.mobileSignBound !== 'true') {
+        modalElement.addEventListener('shown.bs.modal', function() {
+            if (isTouchDevice()) {
+                initLocalMobileSignaturePad();
+            }
+        });
         modalElement.addEventListener('hidden.bs.modal', function() {
+            if (localSignaturePad && typeof localSignaturePad.destroy === 'function') {
+                localSignaturePad.destroy();
+            }
+            localSignaturePad = null;
             if (previewApplied) {
                 // If a preview was applied, we keep the token and polling to allow multiple sends
                 return;
@@ -435,30 +501,16 @@ $(document).ready(function() {
                                         </div>
                                     </div>
                                 </label>
-                                <div class="mx-auto mb-1" style="width: 600px;">
+                                <div class="mx-auto mb-1" style="width: 100%; max-width: 600px;">
                                     <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
                                 </div>
                                 <br/>
                                 <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
-                                <div id="signPad" class="mx-auto" style="width: 600px; position: relative;">
-                                    <div id="signPadTip" style="
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        color: var(--color-rgba-0-0-0-02); /* Texte transparent */
-                                        font-size: 48px;
-                                        font-family: Arial, sans-serif;
-                                        pointer-events: none; /* Empêche l'interaction avec le texte */
-                                        user-select: none; /* Rend le texte non sélectionnable */
-                                    ">
+                                <div id="signPad" class="mx-auto border border-dark-subtle rounded bg-white">
+                                    <div id="signPadTip" class="signature-pad-background">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" width="600" height="300" style="border: 1px solid var(--bs-black);"></canvas>
+                                    <canvas id="canvas"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>
@@ -489,7 +541,7 @@ $(document).ready(function() {
                                     <i class="fi fi-rr-eraser"></i> Réinitialiser la signature
                                 </button>
                                 <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark float-right">
-                                    <i class="fi fi-rr-smartphone"></i> Dessiner sur mobile
+                                    <i class="fi fi-rr-pen-swirl"></i> Dessiner sur mobile
                                 </button>
                             </div>
                         </div>
@@ -666,14 +718,33 @@ $(document).ready(function() {
             </div>
             <div class="modal-body text-center">
                 <div id="mobileSignModalStatus" class="alert d-none" role="alert"></div>
-                <p>Scannez ce QR code avec votre appareil mobile pour dessiner votre signature :</p>
-                <div id="qrcodeContainer" class="text-center mb-3">
-                    <img id="qrcodeImage" src="" alt="QR Code" style="max-width: 200px; margin: 0 auto; display: block;" />
+                <div id="mobileSignModalLocal" class="d-none">
+                    <div id="signPadMobile" class="mobile-sign-pad mb-3 border border-dark-subtle rounded bg-white">
+                        <canvas id="canvasMobile" style="touch-action: none;"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <button id="validateMobile" type="button" class="btn btn-primary">
+                            <i class="fi fi-rr-check me-1"></i>Valider
+                        </button>
+                        <button id="eraseMobile" type="button" class="btn btn-outline-secondary">
+                            <i class="fi fi-rr-eraser me-1"></i>Effacer
+                        </button>
+                    </div>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fi fi-rr-pen-swirl me-2"></i>
+                        Dessinez votre signature ci-dessus puis validez pour l'utiliser.
+                    </div>
                 </div>
-                <p class="text-muted small">Ou ouvrez ce lien sur votre mobile : <a id="mobileSignUrl" href="" target="_blank">Lien de signature mobile</a></p>
-                <div class="alert alert-info mt-3">
-                    <i class="fi fi-rr-clock me-2"></i>
-                    <strong>Attention :</strong> Ce lien est valable 5 minutes uniquement.
+                <div id="mobileSignModalQR">
+                    <p>Scannez ce QR code avec votre appareil mobile pour dessiner votre signature :</p>
+                    <div id="qrcodeContainer" class="text-center mb-3">
+                        <img id="qrcodeImage" src="" alt="QR Code" style="max-width: 200px; margin: 0 auto; display: block;" />
+                    </div>
+                    <p class="text-muted small">Ou ouvrez ce lien sur votre mobile : <a id="mobileSignUrl" href="" target="_blank">Lien de signature mobile</a></p>
+                    <div class="alert alert-info mt-3">
+                        <i class="fi fi-rr-clock me-2"></i>
+                        <strong>Attention :</strong> Ce lien est valable 5 minutes uniquement.
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

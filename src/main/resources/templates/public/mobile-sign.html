@@ -9,9 +9,6 @@
     }
 
     #signPad.mobile-sign-pad {
-        width: min(600px, 100%);
-        height: auto;
-        aspect-ratio: 2 / 1;
         margin: 0 auto 1rem;
     }
 
@@ -33,7 +30,7 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3" style="margin-top: 50px;">
+    <div class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
         <div class="mobile-sign-shell mx-auto p-2 w-100">
             <div class="alert alert-light es-status-card es-status-card--primary mb-2" th:if="${!expired && !used}">
                 <div class="es-status-card__body">
@@ -48,7 +45,7 @@
 
             <div class="alert alert-light es-status-card es-status-card--neutral mb-2" th:if="${!expired && !used}">
                 <div class="es-status-card__body">
-                    <div id="signPad" class="mobile-sign-pad mb-3">
+                    <div id="signPad" class="mobile-sign-pad mb-3 border border-dark-subtle rounded bg-white">
                         <div id="signPadTip" class="signature-pad-background">Dessinez votre signature ici</div>
                         <canvas id="canvas"></canvas>
                     </div>

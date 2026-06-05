@@ -41,9 +41,6 @@
             <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Dessiner ma signature'>
                 <i class="fi fi-rr-drawer-alt"></i>
             </button>
-            <button type="button" id="mobileCanvasBtn_x" class="btn btn-sm btn-light" title="Dessiner ma signature sur mobile">
-                <i class="fi fi-rr-smartphone"></i>
-            </button>
             <button type="button" id="textReduce_x"
                     title="Agrandir le text"
                     class="btn btn-sm btn-light"
@@ -72,6 +69,9 @@
                     class="btn btn-sm btn-light"
                     style="z-index: 3;">
                 <i class="fi fi-rr-right"></i>
+            </button>
+            <button type="button" id="mobileCanvasBtn_x" class="btn btn-sm btn-light" title="Dessiner ma signature sur mobile">
+                <i class="fi fi-rr-pen-swirl"></i>
             </button>
             <button type="button" id="displayMoreTools_x"
                     title="Plus d'outils"
@@ -187,30 +187,5 @@
     <button id="end-button" th:unless="${showSignRequest.viewedByCurrentUser}" class="btn not-viewed jumping not-viewed-position" title="Pour valider la lecture du document, il faut le faire défiler jusqu'à la dernière page">
         <i class="fi fi-rr-arrow-down-to-dotted-line fa-2x d-none d-sm-block"></i>
     </button>
-    <div data-bs-focus="false" class="modal fade" id="signRequestMobileSignModal" role="dialog" aria-labelledby="signRequestMobileSignModal" aria-hidden="true" style="z-index: 1060;">
-        <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title">Dessiner sur mobile</h3>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-                </div>
-                <div class="modal-body text-center">
-                    <div id="signRequestMobileSignModalStatus" class="alert d-none" role="alert"></div>
-                    <p>Scannez ce QR code avec votre appareil mobile pour dessiner votre signature.</p>
-                    <div id="signRequestQrcodeContainer" class="text-center mb-3">
-                        <img id="signRequestQrcodeImage" src="" alt="QR Code" style="max-width: 200px; margin: 0 auto; display: block;" />
-                    </div>
-                    <p class="text-muted small">Ou ouvrez ce lien sur votre mobile : <a id="signRequestMobileSignUrl" href="" target="_blank">Lien de signature mobile</a></p>
-                    <div class="alert alert-info mt-3 mb-0">
-                        <i class="fi fi-rr-smartphone me-2"></i>
-                        Sur mobile, utilisez le bouton <strong>Envoyer vers mon ordinateur</strong> pour charger la signature dans la fenêtre en cours.
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
 </div>

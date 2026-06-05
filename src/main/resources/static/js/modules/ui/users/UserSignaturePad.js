@@ -13,8 +13,9 @@ export class UserSignaturePad {
         this.cachedData = [];
         this.pendingDirtyState = false;
         this.initListeners();
-        this.resizeCanvas();
         this.cachedWidth = null;
+        this.cachedHeight = null;
+        this.resizeCanvas();
     }
 
     initListeners() {
@@ -37,11 +38,12 @@ export class UserSignaturePad {
     }
 
     resizeCanvas() {
-        if(this.canvas[0].offsetWidth !== this.cachedWidth ) {
+        if(this.canvas[0].offsetWidth !== this.cachedWidth || this.canvas[0].offsetHeight !== this.cachedHeight) {
             if (typeof this.signaturePad != 'undefined') {
                 this.cachedData = this.signaturePad.toData();
             }
-            this.cachedWidth = this.canvas[0].offsetWidth;  
+            this.cachedWidth = this.canvas[0].offsetWidth;
+            this.cachedHeight = this.canvas[0].offsetHeight;
             let ratio = Math.max(window.devicePixelRatio || 1, 1);
             this.canvas[0].width = this.canvas[0].offsetWidth * ratio;
             this.canvas[0].height = this.canvas[0].offsetHeight * ratio;
