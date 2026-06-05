@@ -2288,12 +2288,14 @@ export class SignRequestParams extends EventFactory {
         }
         if(!this.firstLaunch) {
             this.canvasBtn.show();
+            this.mobileCanvasBtn.show();
         }
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
         this.#deactivateKeyboardPlacement();
         this.canvasBtn.removeClass("d-none");
+        this.mobileCanvasBtn.removeClass("d-none");
         this.#computeBgColor();
     }
 
