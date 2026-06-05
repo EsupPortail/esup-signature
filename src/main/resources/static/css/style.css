@@ -162,6 +162,17 @@ body.es-signrequest-page #tools #signActionButtons > #signAdvancedLaunchButton {
     white-space: nowrap;
 }
 
+
+body.es-signrequest-page #tools #signActionButtons > #signLaunchButton:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -5px;
+    border: 2px dashed var(--bs-secondary);
+    opacity: 0.5;
+    height: 100%;
+}
+
 body.es-signrequest-page.es-signrequest-sidepanel-open #signButtons {
     opacity: 0;
     pointer-events: none;

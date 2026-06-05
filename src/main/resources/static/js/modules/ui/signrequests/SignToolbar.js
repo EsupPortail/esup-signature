@@ -33,6 +33,14 @@ export class SignToolbar {
             { selector: "#addSpotButton2", event: "click", handler: () => this.callbacks.onAddSpot() },
             { selector: "#addSignButton", event: "click", handler: () => this.callbacks.onAddSign() },
             {
+                selector: "#drawSignButton",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onRequestSignatureStep();
+                    this.callbacks.onAddSign();
+                }
+            },
+            {
                 selector: "#addSignButton2",
                 event: "click",
                 handler: () => {

@@ -376,7 +376,7 @@ export class SignPlacementController extends EventFactory {
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
-        if (this.isOtp) {
+        if (this.isOtp || (signImageNumber != null && signImageNumber >= 0 && this.signImages?.length > 1)) {
             const selection = await this.waitForOtpSelection();
             const selectedSignImageNumber = selection?.selectedSignImageNumber != null ? parseInt(selection.selectedSignImageNumber, 10) : null;
             if (selectedSignImageNumber == null || Number.isNaN(selectedSignImageNumber)) {
@@ -482,7 +482,7 @@ export class SignPlacementController extends EventFactory {
         return {
             step1: $("#step-1"),
             step2: $("#step-2"),
-            addSignButton2: $("#addSignButton2"),
+            addSignButton2: $("#addSignButton2, #drawSignButton"),
             insertBtn: $("#insert-btn"),
             refuseLaunchButton: $("#refuseLaunchButton"),
             signLaunchButton: $("#signLaunchButton"),

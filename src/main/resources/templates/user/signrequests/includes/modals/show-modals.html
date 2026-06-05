@@ -908,8 +908,7 @@
                             <img id="signRequestQrcodeImage" src="" alt="QR Code" style="max-width: 200px; margin: 0 auto; display: block;" />
                         </div>
                         <p class="text-muted small">Ou ouvrez ce lien sur votre mobile : <a id="signRequestMobileSignUrl" href="" target="_blank">Lien de signature mobile</a></p>
-                        <div class="alert alert-info mt-3 mb-0">
-                            <i class="fi fi-rr-pen-swirl me-2"></i>
+                        <div class="alert alert-light mt-3 mb-0">
                             Sur mobile, utilisez le bouton <strong>Envoyer vers mon ordinateur</strong> pour charger la signature dans la fenêtre en cours.
                         </div>
                     </div>
@@ -921,7 +920,7 @@
         </div>
     </div>
 
-    <div id="add-sign-image" class="modal" th:if="${user.userType.name() == 'external'}" th:data-sign-request-id="${signRequestLight.id}">
+    <div id="add-sign-image" class="modal" th:data-sign-request-id="${signRequestLight.id}">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -937,7 +936,7 @@
                         <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
                         <input type="hidden" id="modalMobileSignToken" name="mobileSignToken" value="">
 
-                        <div class="row g-3 align-items-start">
+                        <div class="row g-3 align-items-start" th:if="${user.userType.name() == 'external'}">
                             <div class="col-12 col-lg-6">
                                 <label class="form-label" for="firstname">
                                     <strong>Prénom</strong>
@@ -950,6 +949,11 @@
                                 </label>
                                 <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
                             </div>
+                        </div>
+
+                        <div class="" th:if="${user.userType.name() != 'external'}">
+                            <input type="hidden" class="form-control" id="firstname" name="firstname" value="" required="required"/>
+                            <input type="hidden" class="form-control" id="name" name="name" value="" required="required"/>
                         </div>
 
 
@@ -1002,23 +1006,23 @@
                                             Dessinez votre signature ici
                                         </div>
                                         <canvas id="canvas"></canvas>
-                                        <div class="mt-2">
-                                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Valider la signature
-                                            </button>
-                                            <button id="cancel-new-sign-btn" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Annuler
-                                            </button>
-                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark">
-                                                <i class="fi fi-rr-trash"></i> Effacer
-                                            </button>
-                                            <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark">
-                                                <i class="fi fi-rr-pen-swirl"></i> Dessiner sur mobile
-                                            </button>
-                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                                Réinitialiser
-                                            </button>
-                                        </div>
+                                    </div>
+                                    <div class="mt-4">
+                                        <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Valider la signature
+                                        </button>
+                                        <button id="cancel-new-sign-btn" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Annuler
+                                        </button>
+                                        <button id="erase" type="button" class="btn btn-light btn-outline-dark">
+                                            <i class="fi fi-rr-trash"></i> Effacer
+                                        </button>
+                                        <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark">
+                                            <i class="fi fi-rr-pen-swirl"></i> Dessiner sur mobile
+                                        </button>
+                                        <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                            Réinitialiser
+                                        </button>
                                     </div>
                                 </div>
                                 <div id="sign-crop-draw" class="mx-auto mt-3">
@@ -1559,14 +1563,20 @@
                             const signPadLabel = document.getElementById('signPadLabel');
                             if (signPad) signPad.classList.add('d-none');
                             if (signPadLabel) signPadLabel.classList.add('d-none');
-                            if (cancelNewSignBtn) cancelNewSignBtn.classList.add('d-none');
+                            if (cancelNewSignBtn) {
+                                cancelNewSignBtn.classList.add('d-none');
+                                cancelNewSignBtn.parentElement.classList.add('d-none');
+                            }
                         } else {
                             modalSignaturesContainer.classList.add('d-none');
                             const signPad = document.getElementById('signPad');
                             const signPadLabel = document.getElementById('signPadLabel');
                             if (signPad) signPad.classList.remove('d-none');
                             if (signPadLabel) signPadLabel.classList.remove('d-none');
-                            if (cancelNewSignBtn) cancelNewSignBtn.classList.add('d-none');
+                            if (cancelNewSignBtn) {
+                                cancelNewSignBtn.classList.add('d-none');
+                                cancelNewSignBtn.parentElement.classList.remove('d-none');
+                            }
                             if (window.userUi && typeof window.userUi.refreshSignaturePadLayout === 'function') {
                                 window.userUi.refreshSignaturePadLayout();
                             }
@@ -1608,7 +1618,7 @@
                     }
 
                     function setActionButtonsDisabled(disabled) {
-                        document.querySelectorAll('#saveButton, #drawOnMobileBtn, #signWithGeneratedButton, .sign-with-image-btn, .delete-sign-btn').forEach(button => {
+                        document.querySelectorAll('#saveButton, #drawOnMobileBtn, #signWithGeneratedButton, #erase, #cancel-new-sign-btn, .sign-with-image-btn, .delete-sign-btn').forEach(button => {
                             button.disabled = disabled;
                         });
                     }
@@ -1626,10 +1636,15 @@
                         const cropDiv = document.getElementById('crop-div');
                         const vanillaUpload = document.getElementById('vanilla-upload');
                         if (signPad) {
+                            signPad.classList.remove('d-none');
                             signPad.style.display = '';
                         }
                         if (signPadLabel) {
+                            signPadLabel.classList.remove('d-none');
                             signPadLabel.style.display = '';
+                        }
+                        if (cancelNewSignBtn) {
+                            cancelNewSignBtn.parentElement.classList.remove('d-none');
                         }
                         if (cropDiv) {
                             cropDiv.style.display = 'none';
@@ -1772,6 +1787,14 @@
                     });
                     eraseButton?.addEventListener('click', () => clearMobilePreviewState());
                     cancelNewSignBtn?.addEventListener('click', () => {
+                        const signPadLabel = document.getElementById('signPadLabel');
+                        if (signPadLabel) signPadLabel.classList.add('d-none');
+                        const signPad = document.getElementById('signPad');
+                        if (signPad) signPad.classList.add('d-none');
+                        if (cancelNewSignBtn) {
+                            cancelNewSignBtn.classList.add('d-none');
+                            cancelNewSignBtn.parentElement.classList.add('d-none');
+                        }
                         renderModalSignatures(currentUserSignatureState);
                         updateSaveButtonState();
                     });
@@ -1807,7 +1830,10 @@
                             const signPadLabel = document.getElementById('signPadLabel');
                             if (signPad) signPad.classList.remove('d-none');
                             if (signPadLabel) signPadLabel.classList.remove('d-none');
-                            if (cancelNewSignBtn) cancelNewSignBtn.classList.remove('d-none');
+                            if (cancelNewSignBtn) {
+                                cancelNewSignBtn.classList.remove('d-none');
+                                cancelNewSignBtn.parentElement.classList.remove('d-none');
+                            }
                             updateSaveButtonState();
                             if (window.userUi && typeof window.userUi.refreshSignaturePadLayout === 'function') {
                                 window.userUi.refreshSignaturePadLayout();
