@@ -83,8 +83,11 @@ $(document).ready(function() {
     $('#drawOnMobileBtn').on('click', function() {
         clearPreviewState({clearToken: true});
         resetModalStatus();
+        const urlParams = new URLSearchParams(window.location.search);
+        const isOtp = window.location.pathname.startsWith('/otp');
+        const tokenUrl = isOtp ? '/otp/users/mobile-sign/generate-token' : '/user/users/mobile-sign/generate-token';
         $.ajax({
-            url: '/user/users/mobile-sign/generate-token',
+            url: tokenUrl,
             type: 'GET',
             success: function(response) {
                 if (response && response.qrcodeUrl && response.token) {
@@ -415,7 +418,7 @@ $(document).ready(function() {
                                 </div>
                                 <br/>
                                 <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
-                                <div id="signPad">
+                                <div id="signPad" class="mx-auto" style="width: 600px; position: relative;">
                                     <div id="signPadTip" style="
                                         position: absolute;
                                         top: 0;
@@ -433,7 +436,7 @@ $(document).ready(function() {
                                     ">
                                         Dessinez votre signature ici
                                     </div>
-                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
+                                    <canvas id="canvas" width="600" height="300" style="border: 1px solid var(--bs-black);"></canvas>
                                     <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
                                         Valider la signature
                                     </button>

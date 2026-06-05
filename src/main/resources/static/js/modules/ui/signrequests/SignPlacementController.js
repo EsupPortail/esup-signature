@@ -4,9 +4,10 @@ import {UserUi} from '../users/UserUi.js?version=@version@';
 
 export class SignPlacementController extends EventFactory {
 
-    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf, signatureUiConfig = null, showPlacementStep = true) {
+    constructor(signType, currentSignRequestParamses, currentStepMultiSign, currentStepSingleSignWithAnnotation, signImageNumber, signImages, userName, authUserName, signable, forceResetSignPos, isOtp, phone, csrf, signatureUiConfig = null, showPlacementStep = true, signRequestId = null) {
         super();
         console.info("Starting sign positioning tools");
+        this.signRequestId = signRequestId;
         this.userName = userName;
         this.authUserName = authUserName;
         this.signImages = signImages;
@@ -369,6 +370,7 @@ export class SignPlacementController extends EventFactory {
         if (this.userUI == null) {
             this.userUI = new UserUi(undefined, undefined, undefined, undefined, undefined, this.signatureUiConfig);
         }
+        window.userUi = this.userUI;
         $("#add-sign-image").modal("show");
     }
 
@@ -395,7 +397,7 @@ export class SignPlacementController extends EventFactory {
         let signRequestParams = null;
 
         if (signImageNumber === 999999) {
-            signRequestParams = new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            signRequestParams = new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
             signRequestParams.changeSignSize({
                 w: signRequestParams.originalWidth,
                 h: signRequestParams.originalHeight
@@ -405,7 +407,7 @@ export class SignPlacementController extends EventFactory {
                 alert("Impossible d'ajouter plusieurs signatures sur cette étape");
                 return;
             }
-            signRequestParams = new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, isVisaPlacement, this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            signRequestParams = new SignRequestParams(this.isOtp, isParaph ? null : initialSignRequestParamsModel, id, this.currentScale, isParaph ? 1 : page, this.userName, this.authUserName, restore, true, isVisaPlacement, this.isOtp, this.phone, false, this.signImages, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
             if (!isParaph) {
                 this.setSingleSignInsertionState(id, isParaph);
             }
@@ -414,7 +416,7 @@ export class SignPlacementController extends EventFactory {
                 alert("Impossible d'ajouter des annotations sur cette étape");
                 return;
             }
-            signRequestParams = new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig);
+            signRequestParams = new SignRequestParams(this.isOtp, initialSignRequestParamsModel, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, this.isOtp, this.phone, false, null, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
         }
 
         this.signRequestParamses.set(id, signRequestParams);

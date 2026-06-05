@@ -886,122 +886,159 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-light mb-2" th:if="${signRequestFull.signImages == null || signRequestFull.signImages.size() <= 2}">
-                        Vous n’avez pas encore d’image de signature dans votre profil. Merci de saisir à minima vos nom et prénom. Vous pouvez aussi dessiner une signature ci-dessous ou importer une image.
-                    </div>
-                    <div class="alert alert-light mb-2">
-                        Le visuel ci-dessous correspond à l’image générée côté serveur à partir de vos informations de profil.
-                    </div>
                     <form id="userParamsForm" enctype="multipart/form-data">
                         <input type="hidden" id="user-params-id" name="id" value=""/>
                         <input type="submit" class="d-none" id="submitUserParamsForm" />
                         <input type="hidden" id="signImageBase64" name="signImageBase64" value="">
+                        <input type="hidden" id="modalMobileSignToken" name="mobileSignToken" value="">
 
                         <div class="row g-3 align-items-start">
                             <div class="col-12 col-lg-6">
-                                <label class="form-label" for="name">
-                                    <strong>Nom</strong>
-                                </label>
-                                <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
-                                <label class="form-label mt-2" for="firstname">
+                                <label class="form-label" for="firstname">
                                     <strong>Prénom</strong>
                                 </label>
                                 <input type="text" class="form-control" id="firstname" name="firstname" value="" required="required"/>
                             </div>
                             <div class="col-12 col-lg-6">
-                                <div class="form-label d-block">
-                                    <strong>Aperçu du visuel nom / prénom</strong>
-                                </div>
-                                <div id="generated-signature-preview" class="border rounded bg-white d-flex align-items-center justify-content-center text-center p-3" style="min-height: 150px;">
-                                    <img id="generated-signature-preview-image" class="img-fluid d-none" alt="Aperçu du visuel nom / prénom" style="max-height: 130px;"/>
-                                    <div id="generated-signature-preview-empty" class="text-muted">Aucun visuel généré disponible pour le moment.</div>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-center mt-3">
-                                <button type="button" id="signWithGeneratedButton" class="btn btn-primary">
-                                    <i class="fi fi-rr-check"></i> Signer avec nom/prénom
-                                </button>
+                                <label class="form-label" for="name">
+                                    <strong>Nom</strong>
+                                </label>
+                                <input type="text" class="form-control" id="name" name="name" value="" required="required"/>
                             </div>
                         </div>
 
-                        <div id="modal-signatures-container" class="alert alert-light mt-3 mb-2 d-none"></div>
 
-                        <h4 class="border border-1 mt-2 p-3 d-flex align-items-center" data-bs-toggle="collapse" href="#sign-div" role="button" aria-expanded="false" aria-controls="sign-div">
-                            <strong>Ajouter une signature</strong> <i class="fi fi-rr-plus"></i>
-                        </h4>
-                        <div id="sign-div" class="alert alert-light collapse">
-                            <div class="sign-pad-content">
-                                <label class="form-label">
-                                    <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
-                                    <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
-                                            type="button"
-                                            class="btn btn-sm btn-transparent">
-                                        <i class="fi fi-rr-info text-info"></i>
-                                    </button>
-                                    <div class="collapse" id="collapseHelpSignImage">
-                                        <div class="alert alert-info">
-                                            <small> Après avoir sélectionné une image, vous pourrez ajuster sa
-                                                taille pour
-                                                que la signature entre dans le carré blanc. La résolution de l'image sera de 600*300 pixels.
-                                            </small>
+                        <ul class="nav nav-tabs mt-4" id="signTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-pane" type="button" role="tab" aria-controls="preview-pane" aria-selected="true">
+                                    <i class="fi fi-rr-text"></i> Texte
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="draw-tab" data-bs-toggle="tab" data-bs-target="#draw-pane" type="button" role="tab" aria-controls="draw-pane" aria-selected="false">
+                                    <i class="fi fi-rr-signature"></i> Dessiner
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-pane" type="button" role="tab" aria-controls="upload-pane" aria-selected="false">
+                                    <i class="fi fi-rr-upload"></i> Image importée
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content border-start border-end border-bottom p-3 bg-light-subtle" id="signTabsContent">
+                            <!-- Onglet 1: Prévisualisation -->
+                            <div class="tab-pane fade show active" id="preview-pane" role="tabpanel" aria-labelledby="preview-tab" tabindex="0">
+                                <div class="row justify-content-center">
+                                    <div class="col-12 col-lg-8">
+                                        <div class="form-label d-block text-center">
+                                            <strong>Aperçu du visuel nom / prénom</strong>
+                                        </div>
+                                        <div id="generated-signature-preview" class="border rounded bg-white d-flex align-items-center justify-content-center text-center p-3" style="min-height: 150px;">
+                                            <img id="generated-signature-preview-image" class="img-fluid d-none" alt="Aperçu du visuel nom / prénom" style="max-height: 130px;"/>
+                                            <div id="generated-signature-preview-empty" class="text-muted">Aucun visuel généré disponible pour le moment.</div>
+                                        </div>
+                                        <div class="d-flex justify-content-center mt-3">
+                                            <button type="button" id="signWithGeneratedButton" class="btn btn-success">
+                                                <i class="fi fi-rr-text"></i> Signer avec nom/prénom
+                                            </button>
                                         </div>
                                     </div>
-                                </label>
-                                <div class="mx-auto mb-1" style="width: 600px;">
-                                    <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
-                                </div>
-                                <br/>
-                                <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci dessous</label>
-                                <div id="signPad">
-                                    <div id="signPadTip" style="
-                                        position: absolute;
-                                        top: 0;
-                                        left: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        color: var(--color-rgba-0-0-0-02);
-                                        font-size: 48px;
-                                        font-family: Arial, sans-serif;
-                                        pointer-events: none;
-                                        user-select: none;
-                                    ">
-                                        Dessinez votre signature ici
-                                    </div>
-                                    <canvas id="canvas" style="border: 1px solid var(--bs-black);"></canvas>
-                                    <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
-                                        Valider la signature
-                                    </button>
-                                    <button id="erase" type="button" class="btn btn-light btn-outline-dark float-left">
-                                        <i class="fi fi-rr-trash"></i>
-                                    </button>
-                                    <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
-                                        Réinitialiser
-                                    </button>
                                 </div>
                             </div>
-                            <div id="sign-crop" class="mx-auto">
-                                <div id="crop-div" class="alert rounded-3 border-secondary-subtle text-dark text-center" style="display: none;">
-                                    <div class="d-flex justify-content-center">
-                                        <button type="button" id="crop-zoomout"
-                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                            <i class="fi fi-rr-zoom-out"></i></button>
-                                        <button type="button" id="crop-zoomin"
-                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
-                                            <i class="fi fi-rr-zoom-in"></i></button>
-                                        <button type="button"
-                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                data-deg="90"><i class="fi fi-rr-undo-alt"></i></button>
-                                        <button type="button"
-                                                class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
-                                                data-deg="-90"><i class="fi fi-rr-redo-alt"></i></button>
+
+                            <!-- Onglet 2: Pavé de dessin -->
+                            <div class="tab-pane fade" id="draw-pane" role="tabpanel" aria-labelledby="draw-tab" tabindex="0">
+                                <div class="sign-pad-content text-center">
+                                    <div id="modal-signatures-container" class="alert alert-light mt-3 mb-2 d-none" style="position: relative; z-index: 2;"></div>
+                                    <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci-dessous</label>
+                                    <div id="signPad" class="mx-auto" style="width: 600px; position: relative; z-index: 1;">
+                                        <div id="signPadTip" style="
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            width: 100%;
+                                            height: 100%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            color: var(--color-rgba-0-0-0-02);
+                                            font-size: 48px;
+                                            font-family: Arial, sans-serif;
+                                            pointer-events: none;
+                                            user-select: none;
+                                        ">
+                                            Dessinez votre signature ici
+                                        </div>
+                                        <canvas id="canvas" width="600" height="300" style="border: 1px solid var(--bs-black);"></canvas>
+                                        <div class="mt-2">
+                                            <button id="validate" type="button" class="btn btn-light btn-outline-dark d-none">
+                                                Valider la signature
+                                            </button>
+                                            <button id="cancel-new-sign-btn" type="button" class="btn btn-light btn-outline-dark d-none">
+                                                Annuler
+                                            </button>
+                                            <button id="erase" type="button" class="btn btn-light btn-outline-dark">
+                                                <i class="fi fi-rr-trash"></i> Effacer
+                                            </button>
+                                            <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark">
+                                                <i class="fi fi-rr-smartphone"></i> Dessiner sur mobile
+                                            </button>
+                                            <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
+                                                Réinitialiser
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div id="vanilla-crop" class="mt-2"></div>
+                                </div>
+                                <div id="sign-crop-draw" class="mx-auto mt-3">
+                                    <!-- Conteneur pour le crop si nécessaire après dessin -->
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-center">
+
+                            <!-- Onglet 3: Formulaire d'upload -->
+                            <div class="tab-pane fade" id="upload-pane" role="tabpanel" aria-labelledby="upload-tab" tabindex="0">
+                                <div class="text-center">
+                                    <label class="form-label">
+                                        <strong>Vous pouvez choisir une image provenant de votre ordinateur</strong>
+                                        <button data-bs-target="#collapseHelpSignImage" data-bs-toggle="collapse"
+                                                type="button"
+                                                class="btn btn-sm btn-transparent">
+                                            <i class="fi fi-rr-info text-info"></i>
+                                        </button>
+                                        <div class="collapse" id="collapseHelpSignImage">
+                                            <div class="alert alert-info">
+                                                <small> Après avoir sélectionné une image, vous pourrez ajuster sa
+                                                    taille pour
+                                                    que la signature entre dans le carré blanc. La résolution de l'image sera de 600*300 pixels.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    <div class="mx-auto mb-3" style="max-width: 600px;">
+                                        <input type="file" class="form-control" id="vanilla-upload" value="Choose a file" accept="image/*" aria-describedby="inputGroupFileAddon01"/>
+                                    </div>
+                                </div>
+                                <div id="sign-crop" class="mx-auto">
+                                    <div id="crop-div" class="alert rounded-3 border-secondary-subtle text-dark text-center" style="display: none;">
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" id="crop-zoomout"
+                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                                <i class="fi fi-rr-zoom-out"></i></button>
+                                            <button type="button" id="crop-zoomin"
+                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block">
+                                                <i class="fi fi-rr-zoom-in"></i></button>
+                                            <button type="button"
+                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                                    data-deg="90"><i class="fi fi-rr-undo-alt"></i></button>
+                                            <button type="button"
+                                                    class="btn btn-light btn-outline-dark ms-1 d-none d-lg-block vanilla-rotate"
+                                                    data-deg="-90"><i class="fi fi-rr-redo-alt"></i></button>
+                                        </div>
+                                        <div id="vanilla-crop" class="mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center pt-3">
                                 <button type="button" id="saveButton" class="btn btn-success">
                                     <i class="fi fi-rr-disk"></i> Enregistrer la signature
                                 </button>
@@ -1018,18 +1055,83 @@
                     const userParamsIdInput = document.getElementById('user-params-id');
                     const generatedSignaturePreviewImage = document.getElementById('generated-signature-preview-image');
                     const generatedSignaturePreviewEmpty = document.getElementById('generated-signature-preview-empty');
-                    const signDivElement = document.getElementById('sign-div');
+                    const signDivElement = document.getElementById('draw-pane');
                     const eraseButton = document.getElementById('erase');
+                    const cancelNewSignBtn = document.getElementById('cancel-new-sign-btn');
+                    const drawOnMobileButton = document.getElementById('drawOnMobileBtn');
                     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
                     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
                     const currentUserType = /*[[${user.userType.name()}]]*/ 'user';
                     const userType = currentUserType === 'external' ? 'otp' : 'user';
                     const addSignImageModal = document.getElementById('add-sign-image');
-                    const signRequestId = addSignImageModal?.dataset.signRequestId || null;
+                    const modalMobileSignToken = document.getElementById('modalMobileSignToken');
+                    const mobileSignModalElement = document.getElementById('signRequestMobileSignModal');
+                    const previewTab = document.getElementById('preview-tab');
+                    const drawTab = document.getElementById('draw-tab');
+                    const uploadTab = document.getElementById('upload-tab');
+                    const mobileSignModal = mobileSignModalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(mobileSignModalElement) : null;
+                        const signRequestId = addSignImageModal?.dataset.signRequestId || null;
+                        if (signRequestId) {
+                            addSignImageModal.addEventListener('shown.bs.modal', () => {
+                                const activeTab = document.querySelector('#signTabs .nav-link.active');
+                                if (activeTab && activeTab.id === 'draw-tab') {
+                                    window.dispatchEvent(new Event('resize'));
+                                }
+                            });
+
+                            document.querySelectorAll('#signTabs button[data-bs-toggle="tab"]').forEach(tabEl => {
+                                tabEl.addEventListener('shown.bs.tab', (event) => {
+                                    if (event.target.id === 'draw-tab') {
+                                        window.dispatchEvent(new Event('resize'));
+                                    }
+                                });
+                            });
+                        }
                     const modalSignaturesContainer = document.getElementById('modal-signatures-container');
                     const navbarUserSignaturesContent = document.getElementById('navbar-user-signatures-content');
                     const initialSignImages = /*[[${signRequestFull.signImages}]]*/ [];
                     let currentUserSignatureState = null;
+                    let mobileCheckInterval = null;
+                    let currentMobileToken = null;
+                    let mobilePreviewApplied = false;
+                    let mobilePreviewRequested = false;
+                    let mobilePreviewSignatureBase64 = null;
+
+                    function updateSaveButtonState() {
+                        const activeTab = document.querySelector('#signTabs .nav-link.active');
+                        const signPad = document.getElementById('signPad');
+                        if (activeTab.id === 'preview-tab' || (activeTab.id === 'draw-tab' && signPad && signPad.classList.contains('d-none'))) {
+                            saveButton.classList.add('d-none');
+                        } else {
+                            saveButton.classList.remove('d-none');
+                            saveButton.innerHTML = '<i class="fi fi-rr-check"></i> Utiliser cette signature';
+                        }
+                    }
+
+                    function autoSave() {
+                        if (nameInput.value !== "" && firstnameInput.value !== "") {
+                            const formData = new FormData(userParamsForm);
+                            const submitUrl = '/ws-secure/ui/profile';
+                            if (signRequestId) {
+                                formData.append('signRequestId', signRequestId);
+                            }
+                            fetch(submitUrl, {
+                                method: 'POST',
+                                headers: {
+                                    [csrfHeader]: csrfToken,
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                },
+                                body: formData
+                            })
+                            .then(async response => {
+                                if (response.ok) {
+                                    updateLiveUserState(await response.json());
+                                    dispatchDocumentEvent('userSignatureUpdated', currentUserSignatureState);
+                                }
+                            });
+                        }
+                    }
 
                     function readUiMe() {
                         try {
@@ -1088,7 +1190,13 @@
                     function getGeneratedSignaturePreviewSrc(userState = currentUserSignatureState) {
                         const generatedIndex = userState?.generatedSignImageNumber;
                         const generatedImage = generatedIndex != null ? userState?.signImages?.[generatedIndex] : null;
-                        return generatedImage ? `data:image/png;charset=utf-8;base64, ${generatedImage}` : null;
+                        if (generatedImage) {
+                            return `data:image/png;charset=utf-8;base64, ${generatedImage}`;
+                        }
+                        if (userState?.defaultSignImage) {
+                            return `data:image/png;charset=utf-8;base64, ${userState.defaultSignImage}`;
+                        }
+                        return null;
                     }
 
                     function updateGeneratedSignaturePreview(userState = currentUserSignatureState) {
@@ -1115,13 +1223,161 @@
                         return isValid;
                     }
 
+                    function stopMobileSignaturePolling() {
+                        if (mobileCheckInterval !== null) {
+                            window.clearInterval(mobileCheckInterval);
+                            mobileCheckInterval = null;
+                        }
+                    }
+
+                    function resetMobileSignStatus() {
+                        $('#signRequestMobileSignModalStatus')
+                            .addClass('d-none')
+                            .removeClass('alert-success alert-danger alert-warning')
+                            .empty();
+                    }
+
+                    function showMobileSignStatus(message, level) {
+                        $('#signRequestMobileSignModalStatus')
+                            .removeClass('d-none alert-success alert-danger alert-warning')
+                            .addClass('alert-' + level)
+                            .text(message);
+                    }
+
+                    function lockLocalDrawing() {
+                        const canvasElement = document.getElementById('canvas');
+                        const signPadLabelElement = document.getElementById('signPadLabel');
+                        if (canvasElement) {
+                            canvasElement.style.pointerEvents = 'none';
+                            canvasElement.style.opacity = '0.6';
+                        }
+                        if (signPadLabelElement) {
+                            signPadLabelElement.textContent = 'Une signature mobile a été chargée. Réinitialisez la signature pour dessiner à nouveau ici.';
+                        }
+                    }
+
+                    function unlockLocalDrawing() {
+                        const canvasElement = document.getElementById('canvas');
+                        const signPadLabelElement = document.getElementById('signPadLabel');
+                        if (canvasElement) {
+                            canvasElement.style.pointerEvents = '';
+                            canvasElement.style.opacity = '';
+                        }
+                        if (signPadLabelElement) {
+                            signPadLabelElement.textContent = 'Vous pouvez dessiner une signature dans le rectangle ci dessous';
+                        }
+                    }
+
+                    function clearMobilePreviewState(options = {}) {
+                        stopMobileSignaturePolling();
+                        mobilePreviewApplied = false;
+                        mobilePreviewRequested = false;
+                        mobilePreviewSignatureBase64 = null;
+                        if (options.clearToken) {
+                            currentMobileToken = null;
+                        }
+                        if (modalMobileSignToken) {
+                            modalMobileSignToken.value = '';
+                        }
+                        unlockLocalDrawing();
+                    }
+
+                    function applyMobileSignaturePreview(signImageBase64) {
+                        if (!signImageBase64) {
+                            return;
+                        }
+
+                        if (!window.userUi || typeof window.userUi.applyMobileSignaturePreview !== 'function') {
+                            showMobileSignStatus('Signature reçue mais impossible de l’afficher automatiquement dans cette fenêtre.', 'warning');
+                            return;
+                        }
+
+                        mobilePreviewApplied = true;
+                        mobilePreviewRequested = false;
+                        mobilePreviewSignatureBase64 = signImageBase64;
+                        if (modalMobileSignToken) {
+                            modalMobileSignToken.value = currentMobileToken || '';
+                        }
+                        window.userUi.applyMobileSignaturePreview(signImageBase64);
+                        lockLocalDrawing();
+                        showMobileSignStatus('Signature reçue. Vérifiez l’aperçu puis enregistrez votre signature.', 'success');
+                        mobileSignModal?.hide();
+                    }
+
+                    function fetchMobileSignaturePreview() {
+                        if (!currentMobileToken || mobilePreviewRequested || mobilePreviewApplied) {
+                            return;
+                        }
+
+                        mobilePreviewRequested = true;
+                        $.ajax({
+                            url: '/public/mobile-sign/' + encodeURIComponent(currentMobileToken) + '/preview',
+                            type: 'GET',
+                            success: function(response) {
+                                mobilePreviewRequested = false;
+                                if (response && response.success && response.signImageBase64) {
+                                    applyMobileSignaturePreview(response.signImageBase64);
+                                    return;
+                                }
+                                showMobileSignStatus('La signature mobile a été détectée, mais son aperçu est indisponible.', 'warning');
+                            },
+                            error: function(xhr) {
+                                mobilePreviewRequested = false;
+                                let message = 'Erreur lors de la récupération de la signature mobile.';
+                                if (xhr && xhr.responseJSON && xhr.responseJSON.message) {
+                                    message = xhr.responseJSON.message;
+                                }
+                                showMobileSignStatus(message, 'warning');
+                            }
+                        });
+                    }
+
+                    function pollMobileTokenStatus() {
+                        if (!currentMobileToken) {
+                            return;
+                        }
+
+                        $.ajax({
+                            url: '/public/mobile-sign/' + encodeURIComponent(currentMobileToken) + '/status',
+                            type: 'GET',
+                            success: function(response) {
+                                if (response && response.used) {
+                                    stopMobileSignaturePolling();
+                                    showMobileSignStatus('Ce lien a déjà été utilisé. Générez-en un nouveau si besoin.', 'warning');
+                                    return;
+                                }
+
+                                if (response && response.previewAvailable && !mobilePreviewApplied && !mobilePreviewRequested) {
+                                    fetchMobileSignaturePreview();
+                                    return;
+                                }
+
+                                if (response && response.valid === false) {
+                                    stopMobileSignaturePolling();
+                                    showMobileSignStatus(response.message || 'Ce lien n’est plus valide. Veuillez en générer un nouveau.', 'warning');
+                                }
+                            },
+                            error: function() {
+                                stopMobileSignaturePolling();
+                                showMobileSignStatus('Erreur lors de la vérification du lien mobile.', 'warning');
+                            }
+                        });
+                    }
+
+                    function startMobileSignaturePolling() {
+                        stopMobileSignaturePolling();
+                        mobileCheckInterval = window.setInterval(function() {
+                            pollMobileTokenStatus();
+                        }, 3000);
+                    }
+
                     function setPendingUserSignatureAction(selectionMode, selectedSignImageNumber = '') {
                         userParamsForm.dataset.selectionMode = selectionMode;
                         userParamsForm.dataset.selectedSignImageNumber = selectedSignImageNumber;
                     }
 
-                    function triggerUserParamsPrepared(selectionMode, selectedSignImageNumber = '') {
-                        if (!validateIdentityFields()) {
+                    function triggerUserParamsPrepared(selectionMode, selectedSignImageNumber = '', skipValidation = false) {
+                        if (!skipValidation && !validateIdentityFields()) {
                             return;
                         }
                         setPendingUserSignatureAction(selectionMode, selectedSignImageNumber);
@@ -1175,22 +1431,30 @@
                                 : '';
                             const sizeAttr = imageHeight != null ? `height="${imageHeight}"` : `width="${imageWidth}"`;
                             if (hasActionButtons) {
-                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${deleteButton}${signButton}</div></div></div></div>`;
+                                return `<div class="carousel-item${index === activeIndex ? ' active' : ''} h-100"><div class="h-100 bg-white"><div class="position-relative h-100 d-flex align-items-center justify-content-center px-5 pb-5 pt-2 overflow-hidden"><img ${sizeAttr} class="img-fluid" style="max-height: ${imageHeight}px; width: auto; object-fit: contain;" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /><div class="d-flex justify-content-center gap-2" style="position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 5; width: max-content;">${signButton}${deleteButton}</div></div></div></div>`;
                             }
                             return `<div class="carousel-item${index === activeIndex ? ' active' : ''} text-center"><img ${sizeAttr} class="bg-white" src="/ws-secure/ui/signatures/${signImageId}" alt="sign image" /></div>`;
                         }).join('');
 
                         const extraAttributes = imageHeight == null ? ' data-bs-ride="carousel"' : '';
-                        return `<div style="${imageHeight != null ? `height: ${hasActionButtons ? '210px' : '150px'};` : 'width: 250px;'}" id="${carouselId}" class="carousel slide border rounded border-secondary overflow-hidden bg-white"${extraAttributes}>
-                                    <div class="carousel-inner">${items}</div>
-                                    <button title="Signature précédente" class="carousel-control-prev" href="#${carouselId}" role="button" data-bs-slide="prev">
-                                        <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-left"></i></span>
-                                        <span class="sr-only">Previous</span>
-                                    </button>
-                                    <button title="Signature suivante" class="carousel-control-next" href="#${carouselId}" role="button" data-bs-slide="next">
-                                        <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-right"></i></span>
-                                        <span class="sr-only">Next</span>
-                                    </button>
+                        const carouselStyle = carouselId === 'carouselSign2' ? `width: 600px; height: 300px; margin: 0 auto;` : `${imageHeight != null ? `height: ${hasActionButtons ? '210px' : '150px'};` : 'width: 250px;'}`;
+                        let addSignButton = '';
+                        if (carouselId === 'carouselSign2') {
+                            addSignButton = `<div class="mt-2 text-center"><button type="button" id="add-new-sign-btn" class="btn btn-success text-white"><i class="fi fi-rr-plus"></i> Ajouter une signature</button></div>`;
+                        }
+                        return `<div>
+                                    <div style="${carouselStyle}" id="${carouselId}" class="carousel slide border rounded border-secondary overflow-hidden bg-white"${extraAttributes}>
+                                        <div class="carousel-inner h-100">${items}</div>
+                                        <button title="Signature précédente" class="carousel-control-prev" href="#${carouselId}" role="button" data-bs-slide="prev">
+                                            <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-left"></i></span>
+                                            <span class="sr-only">Previous</span>
+                                        </button>
+                                        <button title="Signature suivante" class="carousel-control-next" href="#${carouselId}" role="button" data-bs-slide="next">
+                                            <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-small-right"></i></span>
+                                            <span class="sr-only">Next</span>
+                                        </button>
+                                    </div>
+                                    ${addSignButton}
                                 </div>`;
                     }
 
@@ -1200,10 +1464,24 @@
                         }
                         const signImageIds = userState?.signImageIds || [];
                         if (signImageIds.length > 0) {
-                            modalSignaturesContainer.innerHTML = `<h4 class="text-start"><strong>Mes Signatures</strong></h4>${buildCarouselHtml('carouselSign2', signImageIds, null, 145, true, true, activeIndex)}`;
-                            modalSignaturesContainer.classList.remove('d-none');
+                            modalSignaturesContainer.innerHTML = `${buildCarouselHtml('carouselSign2', signImageIds, null, 250, true, true, activeIndex)}`;
+                            modalSignaturesContainer.classList.remove('d-none', 'alert', 'alert-light');
+                            modalSignaturesContainer.style.display = 'block';
+                            const signPad = document.getElementById('signPad');
+                            const signPadLabel = document.getElementById('signPadLabel');
+                            if (signPad) signPad.classList.add('d-none');
+                            if (signPadLabel) signPadLabel.classList.add('d-none');
+                            if (cancelNewSignBtn) cancelNewSignBtn.classList.add('d-none');
                         } else {
                             modalSignaturesContainer.classList.add('d-none');
+                            const signPad = document.getElementById('signPad');
+                            const signPadLabel = document.getElementById('signPadLabel');
+                            if (signPad) signPad.classList.remove('d-none');
+                            if (signPadLabel) signPadLabel.classList.remove('d-none');
+                            if (cancelNewSignBtn) cancelNewSignBtn.classList.add('d-none');
+                            if (window.userUi && typeof window.userUi.refreshSignaturePadLayout === 'function') {
+                                window.userUi.refreshSignaturePadLayout();
+                            }
                         }
                     }
 
@@ -1242,14 +1520,14 @@
                     }
 
                     function setActionButtonsDisabled(disabled) {
-                        document.querySelectorAll('#saveButton, #signWithGeneratedButton, .sign-with-image-btn, .delete-sign-btn').forEach(button => {
+                        document.querySelectorAll('#saveButton, #drawOnMobileBtn, #signWithGeneratedButton, .sign-with-image-btn, .delete-sign-btn').forEach(button => {
                             button.disabled = disabled;
                         });
                     }
 
                     function resetSaveButton() {
                         setActionButtonsDisabled(false);
-                        saveButton.innerHTML = '<i class="fi fi-rr-disk"></i> Enregistrer la signature';
+                        updateSaveButtonState();
                     }
 
                     function resetCustomSignatureInputs() {
@@ -1271,6 +1549,7 @@
                         if (vanillaUpload) {
                             vanillaUpload.value = '';
                         }
+                        clearMobilePreviewState({clearToken: true});
                     }
 
                     function collapseSignDiv() {
@@ -1310,18 +1589,119 @@
                         name: nameInput?.value || '',
                         email: '',
                         signImageIds: [],
-                        signImages: initialSignImages
+                        signImages: initialSignImages,
+                        defaultSignImage: null
                     });
 
                     updateLiveUserState(currentUserSignatureState);
 
                     readUiMe() && hydrateModalFromUiMe(readUiMe());
+                    updateSaveButtonState();
                     document.addEventListener('uiMeLoaded', ({detail}) => hydrateModalFromUiMe(detail));
-                    addSignImageModal?.addEventListener('shown.bs.modal', () => updateGeneratedSignaturePreview(currentUserSignatureState));
+                    addSignImageModal?.addEventListener('shown.bs.modal', () => {
+                        const firstTab = document.querySelector('#signTabs .nav-link:first-child');
+                        if (firstTab) {
+                            bootstrap.Tab.getOrCreateInstance(firstTab).show();
+                        }
+                        if (window.userUi && typeof window.userUi.resetSignatureModal === 'function') {
+                            window.userUi.resetSignatureModal();
+                        }
+                        renderModalSignatures(currentUserSignatureState);
+                        if (currentUserSignatureState?.signImageIds?.length === 0) {
+                            const drawTab = document.getElementById('draw-tab');
+                            if (drawTab) {
+                                bootstrap.Tab.getOrCreateInstance(drawTab).show();
+                            }
+                        }
+                        updateGeneratedSignaturePreview(currentUserSignatureState);
+                        updateSaveButtonState();
+                    });
+                    [previewTab, drawTab, uploadTab].forEach(tab => {
+                        tab?.addEventListener('shown.bs.tab', () => {
+                            updateSaveButtonState();
+                        });
+                    });
+                    [nameInput, firstnameInput].forEach(input => {
+                       input?.addEventListener('input', () => {
+                           autoSave();
+                       });
+                    });
                     signWithGeneratedButton?.addEventListener('click', () => triggerUserParamsPrepared('generated', '999998'));
                     saveButton.addEventListener('click', () => setPendingUserSignatureAction('custom', ''));
+                    drawOnMobileButton?.addEventListener('click', () => {
+                        clearMobilePreviewState({clearToken: true});
+                        resetMobileSignStatus();
+                        const tokenUrl = signRequestId ? `/${userType}/signrequests/${signRequestId}/generate-mobile-token` : '/user/users/mobile-sign/generate-token';
+                        $.ajax({
+                            url: tokenUrl,
+                            type: 'GET',
+                            success: function(response) {
+                                if (response && response.qrcodeUrl && response.token) {
+                                    currentMobileToken = response.token;
+                                    $('#signRequestQrcodeImage').attr('src', response.qrcodeUrl);
+                                    $('#signRequestMobileSignUrl').attr('href', response.url).text(response.url);
+                                    mobileSignModal?.show();
+                                    startMobileSignaturePolling();
+                                    pollMobileTokenStatus();
+                                } else {
+                                    mobileSignModal?.show();
+                                    showMobileSignStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
+                                }
+                            },
+                            error: function() {
+                                mobileSignModal?.show();
+                                showMobileSignStatus('Erreur lors de la génération du lien mobile. Veuillez réessayer.', 'danger');
+                            }
+                        });
+                    });
                     userParamsForm.addEventListener('submit', e => e.preventDefault());
+                    document.getElementById('signImageBase64')?.addEventListener('input', event => {
+                        if (!mobilePreviewApplied || !mobilePreviewSignatureBase64) {
+                            return;
+                        }
+                        if ((event.target.value || '') !== mobilePreviewSignatureBase64) {
+                            clearMobilePreviewState();
+                        }
+                    });
+                    document.getElementById('signImageBase64')?.addEventListener('change', event => {
+                        if (!mobilePreviewApplied || !mobilePreviewSignatureBase64) {
+                            return;
+                        }
+                        if ((event.target.value || '') !== mobilePreviewSignatureBase64) {
+                            clearMobilePreviewState();
+                        }
+                    });
+                    eraseButton?.addEventListener('click', () => clearMobilePreviewState());
+                    cancelNewSignBtn?.addEventListener('click', () => {
+                        renderModalSignatures(currentUserSignatureState);
+                        updateSaveButtonState();
+                    });
+                    addSignImageModal?.addEventListener('hidden.bs.modal', () => {
+                        clearMobilePreviewState({clearToken: true});
+                        resetMobileSignStatus();
+                    });
+                    mobileSignModalElement?.addEventListener('hidden.bs.modal', () => {
+                        stopMobileSignaturePolling();
+                        mobilePreviewRequested = false;
+                        currentMobileToken = null;
+                        resetMobileSignStatus();
+                    });
                     modalSignaturesContainer?.addEventListener('click', async event => {
+                        const addNewSignBtn = event.target.closest('#add-new-sign-btn');
+                        if (addNewSignBtn) {
+                            event.preventDefault();
+                            modalSignaturesContainer.classList.add('d-none');
+                            const signPad = document.getElementById('signPad');
+                            const signPadLabel = document.getElementById('signPadLabel');
+                            if (signPad) signPad.classList.remove('d-none');
+                            if (signPadLabel) signPadLabel.classList.remove('d-none');
+                            if (cancelNewSignBtn) cancelNewSignBtn.classList.remove('d-none');
+                            updateSaveButtonState();
+                            if (window.userUi && typeof window.userUi.refreshSignaturePadLayout === 'function') {
+                                window.userUi.refreshSignaturePadLayout();
+                            }
+                            return;
+                        }
                         const deleteButton = event.target.closest('.delete-sign-btn');
                         if (deleteButton) {
                             event.preventDefault();
@@ -1375,6 +1755,9 @@
                                 } else {
                                     const lastImageIndex = hasCustomImagePayload && userState?.signImageIds?.length > 0 ? userState.signImageIds.length - 1 : 0;
                                     updateLiveUserState(userState, { modalActiveIndex: lastImageIndex });
+                                    if (hasCustomImagePayload && userState?.signImageIds?.length > 0) {
+                                        triggerUserParamsPrepared('existing', userState.signImageIds.length - 1, true);
+                                    }
                                 }
                                 resetSaveButton();
                                 if (!isSelectionAction) {

@@ -33,22 +33,21 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3">
+    <div class="es-content-full-fixed d-flex flex-column align-content-center gap-1 gap-xxl-3" style="margin-top: 50px;">
         <div class="mobile-sign-shell mx-auto p-2 w-100">
             <div class="alert alert-light es-status-card es-status-card--primary mb-2" th:if="${!expired && !used}">
                 <div class="es-status-card__body">
                     <h5 class="es-status-card__title mb-1">Dessiner votre signature</h5>
                     <p class="es-status-card__description mb-0">Utilisez votre doigt ou un stylet pour dessiner votre signature, puis envoyez-la à votre ordinateur pour vérification ou sauvegardez-la directement.</p>
+                    <div id="statusContainer" class="alert alert-info text-center" role="status">
+                        <i class="fi fi-rr-clock me-1"></i>
+                        <span>Ce lien est valide pendant encore <strong id="countdown">05:00</strong>.</span>
+                    </div>
                 </div>
             </div>
 
             <div class="alert alert-light es-status-card es-status-card--neutral mb-2" th:if="${!expired && !used}">
                 <div class="es-status-card__body">
-                    <div id="statusContainer" class="alert alert-info text-center mb-3" role="status">
-                        <i class="fi fi-rr-clock me-2"></i>
-                        <span>Ce lien est valide pendant encore <strong id="countdown">05:00</strong>.</span>
-                    </div>
-
                     <div id="signPad" class="mobile-sign-pad mb-3">
                         <div id="signPadTip" class="signature-pad-background">Dessinez votre signature ici</div>
                         <canvas id="canvas"></canvas>

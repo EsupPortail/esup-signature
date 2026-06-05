@@ -9,16 +9,18 @@ public class UserSignatureStateDto {
     private String email;
     private List<Long> signImageIds;
     private List<String> signImages;
+    private String defaultSignImage;
 
     public UserSignatureStateDto() {
     }
 
-    public UserSignatureStateDto(String firstname, String name, String email, List<Long> signImageIds, List<String> signImages) {
+    public UserSignatureStateDto(String firstname, String name, String email, List<Long> signImageIds, List<String> signImages, String defaultSignImage) {
         this.firstname = firstname;
         this.name = name;
         this.email = email;
         this.signImageIds = signImageIds;
         this.signImages = signImages;
+        this.defaultSignImage = defaultSignImage;
     }
 
     public String getFirstname() {
@@ -59,6 +61,14 @@ public class UserSignatureStateDto {
 
     public void setSignImages(List<String> signImages) {
         this.signImages = signImages;
+    }
+
+    public String getDefaultSignImage() {
+        return defaultSignImage;
+    }
+
+    public void setDefaultSignImage(String defaultSignImage) {
+        this.defaultSignImage = defaultSignImage;
     }
 }
 

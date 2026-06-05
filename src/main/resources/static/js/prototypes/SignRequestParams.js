@@ -9,7 +9,7 @@ let activeMobileSignParams = null;
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null) {
+    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null, signRequestId = null) {
         super();
         const explicitModelSignImageNumber = Number.parseInt(signRequestParamsModel?.signImageNumber, 10);
         Object.defineProperty(this, "signatureUiConfig", {
@@ -71,7 +71,7 @@ export class SignRequestParams extends EventFactory {
         this.textareaExtra = null;
         this.textareaPart = null;
         this.textPart = null;
-        this.signRequestId = null;
+        this.signRequestId = signRequestId;
         this.spotStepNumber = null;
         this.spotRecipientId = null;
         this.signColorPicker = null;
@@ -965,18 +965,15 @@ export class SignRequestParams extends EventFactory {
     }
 
     #startMobileSignatureFlow() {
-        if (this.isOtp) {
-            return;
-        }
-
         if (activeMobileSignParams != null && activeMobileSignParams !== this) {
             activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
         }
         activeMobileSignParams = this;
         this.resetMobileSignatureFlow({clearToken: true});
 
+        let url = (this.isOtp ? "/otp" : "/user") + "/signrequests/" + this.signRequestId + "/generate-mobile-token";
         $.ajax({
-            url: "/user/users/mobile-sign/generate-token",
+            url: url,
             type: "GET",
             success: response => {
                 if (!(response && response.qrcodeUrl && response.token)) {
@@ -2196,6 +2193,7 @@ export class SignRequestParams extends EventFactory {
         if (this.userUI == null) {
             this.userUI = new UserUi(undefined, undefined, undefined, undefined, undefined, this.signatureUiConfig);
         }
+        window.userUi = this.userUI;
         $("#add-sign-image").modal("show");
     }
 
