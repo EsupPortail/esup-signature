@@ -981,7 +981,7 @@
                                             <button id="erase" type="button" class="btn btn-light btn-outline-dark">
                                                 <i class="fi fi-rr-trash"></i> Effacer
                                             </button>
-                                            <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark">
+                                            <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark d-none d-lg-inline-block">
                                                 <i class="fi fi-rr-smartphone"></i> Dessiner sur mobile
                                             </button>
                                             <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
@@ -1096,6 +1096,7 @@
                     let mobilePreviewApplied = false;
                     let mobilePreviewRequested = false;
                     let mobilePreviewSignatureBase64 = null;
+                    let lastReceivedPreviewTimestamp = null;
 
                     function updateSaveButtonState() {
                         const activeTab = document.querySelector('#signTabs .nav-link.active');
@@ -1269,10 +1270,18 @@
                     }
 
                     function clearMobilePreviewState(options = {}) {
+                        if (mobilePreviewApplied && (options.clearToken || options.clearToken === undefined)) {
+                            // If a preview was applied, we keep the token and polling to allow multiple sends
+                            // unless it's a forced reset (e.g. error or user explicitly wants to restart)
+                            if (!options.force) {
+                                return;
+                            }
+                        }
                         stopMobileSignaturePolling();
                         mobilePreviewApplied = false;
                         mobilePreviewRequested = false;
                         mobilePreviewSignatureBase64 = null;
+                        lastReceivedPreviewTimestamp = null;
                         if (options.clearToken) {
                             currentMobileToken = null;
                         }
@@ -1301,11 +1310,13 @@
                         window.userUi.applyMobileSignaturePreview(signImageBase64);
                         lockLocalDrawing();
                         showMobileSignStatus('Signature reçue. Vérifiez l’aperçu puis enregistrez votre signature.', 'success');
+                        // stopMobileSignaturePolling();  // Keep polling to allow multiple sends
+                        startMobileSignaturePolling(); // Restart polling after applying preview to be sure it's running
                         mobileSignModal?.hide();
                     }
 
                     function fetchMobileSignaturePreview() {
-                        if (!currentMobileToken || mobilePreviewRequested || mobilePreviewApplied) {
+                        if (!currentMobileToken || mobilePreviewRequested) {
                             return;
                         }
 
@@ -1347,9 +1358,11 @@
                                     return;
                                 }
 
-                                if (response && response.previewAvailable && !mobilePreviewApplied && !mobilePreviewRequested) {
-                                    fetchMobileSignaturePreview();
-                                    return;
+                                if (response && response.previewAvailable && !mobilePreviewRequested) {
+                                    if (response.previewTimestamp != null && response.previewTimestamp !== lastReceivedPreviewTimestamp) {
+                                        lastReceivedPreviewTimestamp = response.previewTimestamp;
+                                        fetchMobileSignaturePreview();
+                                    }
                                 }
 
                                 if (response && response.valid === false) {
@@ -1677,10 +1690,14 @@
                         updateSaveButtonState();
                     });
                     addSignImageModal?.addEventListener('hidden.bs.modal', () => {
-                        clearMobilePreviewState({clearToken: true});
+                        clearMobilePreviewState({clearToken: true, force: true});
                         resetMobileSignStatus();
                     });
                     mobileSignModalElement?.addEventListener('hidden.bs.modal', () => {
+                        if (mobilePreviewApplied) {
+                            // If a preview was applied, we keep the token and polling to allow multiple sends
+                            return;
+                        }
                         stopMobileSignaturePolling();
                         mobilePreviewRequested = false;
                         currentMobileToken = null;

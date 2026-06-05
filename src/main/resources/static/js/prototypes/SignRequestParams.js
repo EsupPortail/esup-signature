@@ -97,6 +97,7 @@ export class SignRequestParams extends EventFactory {
         this.mobileSignPollingInterval = null;
         this.mobilePreviewRequested = false;
         this.mobilePreviewApplied = false;
+        this.lastReceivedPreviewTimestamp = null;
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
@@ -836,6 +837,9 @@ export class SignRequestParams extends EventFactory {
 
         modalElement.addEventListener("hidden.bs.modal", () => {
             if (activeMobileSignParams != null) {
+                if (activeMobileSignParams.mobilePreviewApplied) {
+                    return;
+                }
                 activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
                 activeMobileSignParams = null;
             }
@@ -864,10 +868,15 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    resetMobileSignatureFlow({clearToken = false} = {}) {
+    resetMobileSignatureFlow({clearToken = false, force = false} = {}) {
+        if (this.mobilePreviewApplied && (clearToken || clearToken === undefined) && !force) {
+            // If a preview was applied, we keep the token and polling
+            return;
+        }
         this.#stopMobileSignaturePolling();
         this.mobilePreviewRequested = false;
         this.mobilePreviewApplied = false;
+        this.lastReceivedPreviewTimestamp = null;
         if (clearToken) {
             this.mobileSignToken = null;
         }
@@ -903,11 +912,12 @@ export class SignRequestParams extends EventFactory {
         this.mobilePreviewRequested = false;
         this.#showMobileSignStatus("Signature recue. Verifiez l'apercu dans le document.", "success");
         NotificationCenter.showSnackbar("Signature mobile chargee dans le document", "success", {delay: 3000});
+        this.#startMobileSignaturePolling(); // Restart polling after applying preview
         this.#getMobileSignModal()?.hide();
     }
 
     #fetchMobileSignaturePreview() {
-        if (!this.mobileSignToken || this.mobilePreviewRequested || this.mobilePreviewApplied) {
+        if (!this.mobileSignToken || this.mobilePreviewRequested) {
             return;
         }
 
@@ -948,9 +958,11 @@ export class SignRequestParams extends EventFactory {
                     this.#showMobileSignStatus("Ce lien a deja ete utilise. Generez-en un nouveau si besoin.", "warning");
                     return;
                 }
-                if (response.previewAvailable && !this.mobilePreviewApplied && !this.mobilePreviewRequested) {
-                    this.#fetchMobileSignaturePreview();
-                    return;
+                if (response.previewAvailable && !this.mobilePreviewRequested) {
+                    if (response.previewTimestamp != null && response.previewTimestamp !== this.lastReceivedPreviewTimestamp) {
+                        this.lastReceivedPreviewTimestamp = response.previewTimestamp;
+                        this.#fetchMobileSignaturePreview();
+                    }
                 }
                 if (!response.valid) {
                     this.#stopMobileSignaturePolling();
@@ -2276,14 +2288,12 @@ export class SignRequestParams extends EventFactory {
         }
         if(!this.firstLaunch) {
             this.canvasBtn.show();
-            this.mobileCanvasBtn.show();
         }
         if(this.textareaExtra != null) {
             this.textareaExtra.addClass("sign-textarea-lock");
         }
         this.#deactivateKeyboardPlacement();
         this.canvasBtn.removeClass("d-none");
-        this.mobileCanvasBtn.removeClass("d-none");
         this.#computeBgColor();
     }
 

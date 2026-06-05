@@ -265,6 +265,7 @@ public class PublicController {
         response.put("used", used);
         response.put("expired", expired);
         response.put("previewAvailable", mobileSignTokenService.hasPendingSignaturePreview(token));
+        response.put("previewTimestamp", mobileSignTokenService.getPendingSignaturePreviewTimestamp(token));
         if (expirationDate != null) {
             response.put("expiresAtEpochMillis", expirationDate.getTime());
         }
