@@ -307,7 +307,6 @@ export class SignWorkspaceController {
 
     resetRequestedSignatureStep() {
         this.signPlacementController?.clearRequestedSignatureStep?.();
-        this.signPlacementController?.refreshSteps?.();
     }
 
     hasCertifiedVisualSignature() {
@@ -339,7 +338,7 @@ export class SignWorkspaceController {
 
     activateSignPlacement(signRequestParams, signNum) {
         if (signRequestParams == null) {
-            this.resetRequestedSignatureStep();
+            this.signPlacementController?.clearRequestedSignatureStep?.();
             return;
         }
         if (Number.isFinite(signNum)) {
@@ -474,13 +473,13 @@ export class SignWorkspaceController {
 
     async addSign(forceSignNumber) {
         if (this.hasCertifiedVisualSignature()) {
-            this.resetRequestedSignatureStep();
+            this.signPlacementController?.clearRequestedSignatureStep?.();
             bootbox.alert("Ce document contient déjà une signature électronique certifiée, il n’est donc pas possible d’ajouter d'autre visuel de signature.");
             return;
         }
         // const certTypeSelect = $("#certType");
         // if (!this.hasValidSelectedCertType(certTypeSelect)) {
-        //     this.resetRequestedSignatureStep();
+        //     this.signPlacementController?.clearRequestedSignatureStep?.();
         //     if (!this.missingCertTypeAlertShown) {
         //         this.missingCertTypeAlertShown = true;
         //         bootbox.alert("<div class='alert alert-info mb-0'>Merci de choisir un type de signature dans la liste déroulante avant de cliquer sur un emplacement de signature.</div>", () => {

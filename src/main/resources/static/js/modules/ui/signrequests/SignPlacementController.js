@@ -376,10 +376,14 @@ export class SignPlacementController extends EventFactory {
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
-        if (this.isOtp || (signImageNumber != null && signImageNumber >= 0 && this.signImages?.length > 1)) {
+        if (this.isOtp || this.signatureStepRequested || (signImageNumber != null && signImageNumber >= 0 && signImageNumber < 999997 && this.signImages?.length > 1)) {
             const selection = await this.waitForOtpSelection();
+            if (this.signatureStepRequested) {
+                this.signatureStepRequested = false;
+            }
             const selectedSignImageNumber = selection?.selectedSignImageNumber != null ? parseInt(selection.selectedSignImageNumber, 10) : null;
             if (selectedSignImageNumber == null || Number.isNaN(selectedSignImageNumber)) {
+                this.refreshSteps?.();
                 return;
             }
             this.applyUserSignatureState(selection);
