@@ -376,7 +376,16 @@ export class SignPlacementController extends EventFactory {
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
-        if (this.isOtp || this.signatureStepRequested || (signImageNumber != null && signImageNumber >= 0 && signImageNumber < 999997 && this.signImages?.length > 1)) {
+        let realSignImagesCount = 0;
+        if (Array.isArray(this.signImages)) {
+            let totalImages = this.signImages.filter(i => i !== "" && i !== null).length;
+            let specialImagesCount = 0;
+            if (this.generatedSignImageNumber != null) specialImagesCount++;
+            if (this.parapheSignImageNumber != null) specialImagesCount++;
+            realSignImagesCount = Math.max(0, totalImages - specialImagesCount);
+        }
+
+        if (this.isOtp || this.signatureStepRequested || (signImageNumber != null && signImageNumber >= 0 && realSignImagesCount > 1)) {
             const selection = await this.waitForOtpSelection();
             if (this.signatureStepRequested) {
                 this.signatureStepRequested = false;
