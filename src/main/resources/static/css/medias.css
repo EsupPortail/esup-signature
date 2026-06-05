@@ -87,9 +87,13 @@
         justify-content: center;
     }
 
-    .step-horizontal-v2 {
-        padding-right: 0 !important;
+    .step-horizontal-v2-content {
+        padding-left: 54px;
     }
+
+    /*.step-horizontal-v2 {*/
+    /*    padding-right: 20px !important;*/
+    /*}*/
 
     body.es-signrequest-page #tools #step-1 .step-horizontal-v2-content,
     body.es-signrequest-page #tools #step-2 .step-horizontal-v2-content {
@@ -474,6 +478,29 @@
     }
 }
 
+@media (max-width: 640px) {
+
+    .es-auth-page {
+        padding: 1rem;
+    }
+
+    .es-auth-description,
+    .es-auth-message,
+    .es-auth-panel p {
+        font-size: 0.95rem;
+    }
+
+    .signin-captcha-controls {
+        flex-direction: column;
+    }
+    .es-content-full {
+        margin-top: 40px;
+    }
+    .main-content, .es-main-content {
+        margin-top: -40px !important;
+    }
+}
+
 @media (max-width: 576px) {
 
     /*body.es-signrequest-page #tools #signActionButtons > .es-quick-sign-action {*/
@@ -538,6 +565,10 @@
     .content-full-fixed,
     .es-content-full-fixed {
         width: 100% ;
+    }
+
+    .es-content-full {
+        margin-top: 40px;
     }
 
     .content,

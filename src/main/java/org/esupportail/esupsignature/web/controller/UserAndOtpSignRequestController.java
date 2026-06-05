@@ -56,12 +56,13 @@ public class UserAndOtpSignRequestController {
     private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
     private final UiFetchSignRequestService uiFetchSignRequestService;
     private final PreAuthorizeService preAuthorizeService;
+    private final MobileSignTokenService mobileSignTokenService;
 
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
         this.userService = userService;
@@ -70,6 +71,7 @@ public class UserAndOtpSignRequestController {
         this.uiFetchService = uiFetchService;
         this.uiFetchSignRequestService = uiFetchSignRequestService;
         this.preAuthorizeService = preAuthorizeService;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -465,6 +467,40 @@ public class UserAndOtpSignRequestController {
         } else {
             return "redirect:" + basePath + redirect;
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/generate-mobile-token")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> generateToken(@ModelAttribute("userEppn") String userEppn,
+                                                             @ModelAttribute("authUserEppn") String authUserEppn,
+                                                             @PathVariable("id") Long id) {
+        try {
+            String token = mobileSignTokenService.createToken(authUserEppn);
+            String mobileSignUrl = buildMobileSignUrl(token);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("url", mobileSignUrl);
+            response.put("qrcodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + java.net.URLEncoder.encode(mobileSignUrl, "UTF-8"));
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error generating mobile sign token: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private String buildMobileSignUrl(String token) {
+        String baseUrl = globalProperties.getRootUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = "http://" + globalProperties.getDomain();
+        }
+        // Make sure baseUrl doesn't end with /
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + "/public/mobile-sign/" + token;
     }
 
     private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {

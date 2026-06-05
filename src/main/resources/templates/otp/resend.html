@@ -21,8 +21,8 @@
 
                     <form th:action="@{/otp-access/resend}" method="post" th:object="${otp}" class="expired-form">
                         <input type="hidden" th:field="*{urlId}" />
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            Renvoyer un nouveau lien
+                        <button type="submit" class="btn btn-primary">
+                            Faire un nouvel essai d’envoi de lien
                         </button>
                     </form>
 

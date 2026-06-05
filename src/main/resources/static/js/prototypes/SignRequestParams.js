@@ -9,7 +9,7 @@ let activeMobileSignParams = null;
 
 export class SignRequestParams extends EventFactory {
 
-    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null) {
+    constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null, signRequestId = null) {
         super();
         const explicitModelSignImageNumber = Number.parseInt(signRequestParamsModel?.signImageNumber, 10);
         Object.defineProperty(this, "signatureUiConfig", {
@@ -71,7 +71,7 @@ export class SignRequestParams extends EventFactory {
         this.textareaExtra = null;
         this.textareaPart = null;
         this.textPart = null;
-        this.signRequestId = null;
+        this.signRequestId = signRequestId;
         this.spotStepNumber = null;
         this.spotRecipientId = null;
         this.signColorPicker = null;
@@ -97,6 +97,7 @@ export class SignRequestParams extends EventFactory {
         this.mobileSignPollingInterval = null;
         this.mobilePreviewRequested = false;
         this.mobilePreviewApplied = false;
+        this.lastReceivedPreviewTimestamp = null;
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
@@ -182,9 +183,10 @@ export class SignRequestParams extends EventFactory {
         });
         $("#watermark_" + this.id).on("mousedown", e => this.#toggleWatermark(e));
         this.canvasBtn = $("#canvasBtn_" + this.id);
-        this.canvasBtn.on("mousedown", function(){
-            self.#enableCanvas();
-        });
+        this.canvasBtn.remove();
+        // this.canvasBtn.on("mousedown", function(){
+        //     self.#enableCanvas();
+        // });
         this.mobileCanvasBtn = $("#mobileCanvasBtn_" + this.id);
         this.mobileCanvasBtn.on("mousedown", function() {
             self.#startMobileSignatureFlow();
@@ -657,7 +659,9 @@ export class SignRequestParams extends EventFactory {
         $(spotSelector).remove();
 
         // Figer totalement l'objet edition avant de le transformer en spot visuel.
-        try { this.cross.draggable("destroy"); } catch (e) {}
+        if (this.cross.hasClass("ui-draggable")) {
+            try { this.cross.draggable("destroy"); } catch (e) {}
+        }
         try { this.cross.resizable("destroy"); } catch (e) {}
         this.tools && this.tools.remove();
         this.border && this.border.remove();
@@ -799,7 +803,9 @@ export class SignRequestParams extends EventFactory {
     }
 
     #enableCanvas() {
-        this.cross.draggable("disable");
+        if (this.cross.hasClass("ui-draggable")) {
+            this.cross.draggable("disable");
+        }
         this.canvas.show();
         this.canvas.css("cursor", "pointer");
         this.cross.css("background-image", "");
@@ -808,7 +814,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #disableCanvas() {
-        if(this.signType != null) {
+        if(this.signType != null && this.cross.hasClass("ui-draggable")) {
             this.cross.draggable("enable");
         }
         this.canvas.hide();
@@ -834,8 +840,21 @@ export class SignRequestParams extends EventFactory {
             return;
         }
 
+        modalElement.addEventListener("shown.bs.modal", () => {
+            if (this.isTouchDevice()) {
+                this.#initLocalMobileSignaturePad();
+            }
+        });
+
         modalElement.addEventListener("hidden.bs.modal", () => {
+            if (this.localSignaturePad && typeof this.localSignaturePad.destroy === 'function') {
+                this.localSignaturePad.destroy();
+            }
+            this.localSignaturePad = null;
             if (activeMobileSignParams != null) {
+                if (activeMobileSignParams.mobilePreviewApplied) {
+                    return;
+                }
                 activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
                 activeMobileSignParams = null;
             }
@@ -864,10 +883,15 @@ export class SignRequestParams extends EventFactory {
         }
     }
 
-    resetMobileSignatureFlow({clearToken = false} = {}) {
+    resetMobileSignatureFlow({clearToken = false, force = false} = {}) {
+        if (this.mobilePreviewApplied && (clearToken || clearToken === undefined) && !force) {
+            // If a preview was applied, we keep the token and polling
+            return;
+        }
         this.#stopMobileSignaturePolling();
         this.mobilePreviewRequested = false;
         this.mobilePreviewApplied = false;
+        this.lastReceivedPreviewTimestamp = null;
         if (clearToken) {
             this.mobileSignToken = null;
         }
@@ -886,7 +910,9 @@ export class SignRequestParams extends EventFactory {
             this.#enableCanvas();
             return;
         }
-        this.cross.draggable("disable");
+        if (this.cross.hasClass("ui-draggable")) {
+            this.cross.draggable("disable");
+        }
         this.canvas.show();
         this.canvas.css("cursor", "pointer");
         this.cross.css("background-image", "");
@@ -903,11 +929,12 @@ export class SignRequestParams extends EventFactory {
         this.mobilePreviewRequested = false;
         this.#showMobileSignStatus("Signature recue. Verifiez l'apercu dans le document.", "success");
         NotificationCenter.showSnackbar("Signature mobile chargee dans le document", "success", {delay: 3000});
+        this.#startMobileSignaturePolling(); // Restart polling after applying preview
         this.#getMobileSignModal()?.hide();
     }
 
     #fetchMobileSignaturePreview() {
-        if (!this.mobileSignToken || this.mobilePreviewRequested || this.mobilePreviewApplied) {
+        if (!this.mobileSignToken || this.mobilePreviewRequested) {
             return;
         }
 
@@ -948,9 +975,11 @@ export class SignRequestParams extends EventFactory {
                     this.#showMobileSignStatus("Ce lien a deja ete utilise. Generez-en un nouveau si besoin.", "warning");
                     return;
                 }
-                if (response.previewAvailable && !this.mobilePreviewApplied && !this.mobilePreviewRequested) {
-                    this.#fetchMobileSignaturePreview();
-                    return;
+                if (response.previewAvailable && !this.mobilePreviewRequested) {
+                    if (response.previewTimestamp != null && response.previewTimestamp !== this.lastReceivedPreviewTimestamp) {
+                        this.lastReceivedPreviewTimestamp = response.previewTimestamp;
+                        this.#fetchMobileSignaturePreview();
+                    }
                 }
                 if (!response.valid) {
                     this.#stopMobileSignaturePolling();
@@ -964,19 +993,66 @@ export class SignRequestParams extends EventFactory {
         });
     }
 
-    #startMobileSignatureFlow() {
-        if (this.isOtp) {
-            return;
+    isTouchDevice() {
+        return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+    }
+
+    #initLocalMobileSignaturePad() {
+        const canvas = document.getElementById("canvasMobile");
+        if (!canvas) return;
+
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+
+        if (this.localSignaturePad && typeof this.localSignaturePad.destroy === 'function') {
+            this.localSignaturePad.destroy();
         }
 
+        this.localSignaturePad = new SignaturePad(canvas);
+
+        const eraseButton = document.getElementById("eraseMobile");
+        const validateButton = document.getElementById("validateMobile");
+
+        if (eraseButton) {
+            $(eraseButton).off("click").on("click", () => {
+                this.localSignaturePad.clear();
+            });
+        }
+
+        if (validateButton) {
+            $(validateButton).off("click").on("click", () => {
+                if (this.localSignaturePad.isEmpty()) {
+                    alert("Veuillez dessiner votre signature.");
+                    return;
+                }
+                const signImageBase64 = this.localSignaturePad.toDataURL("image/png");
+                this.#applyMobileSignaturePreview(signImageBase64);
+                this.#getMobileSignModal()?.hide();
+            });
+        }
+    }
+
+    #startMobileSignatureFlow() {
         if (activeMobileSignParams != null && activeMobileSignParams !== this) {
             activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
         }
         activeMobileSignParams = this;
         this.resetMobileSignatureFlow({clearToken: true});
 
+        if (this.isTouchDevice()) {
+            $("#signRequestMobileSignModalLocal").removeClass("d-none");
+            $("#signRequestMobileSignModalQR").addClass("d-none");
+            this.#getMobileSignModal()?.show();
+            return;
+        }
+
+        let url = (this.isOtp ? "/otp" : "/user") + "/signrequests/" + this.signRequestId + "/generate-mobile-token";
         $.ajax({
-            url: "/user/users/mobile-sign/generate-token",
+            url: url,
             type: "GET",
             success: response => {
                 if (!(response && response.qrcodeUrl && response.token)) {
@@ -2196,6 +2272,7 @@ export class SignRequestParams extends EventFactory {
         if (this.userUI == null) {
             this.userUI = new UserUi(undefined, undefined, undefined, undefined, undefined, this.signatureUiConfig);
         }
+        window.userUi = this.userUI;
         $("#add-sign-image").modal("show");
     }
 
@@ -2269,7 +2346,9 @@ export class SignRequestParams extends EventFactory {
             this.#enableCrossResizable();
         }
         $("#extraTools_" + this.id).addClass("d-none");
-        this.cross.draggable("enable");
+        if (this.cross.hasClass("ui-draggable")) {
+            this.cross.draggable("enable");
+        }
         this.cross.addClass("hide-handles");
         this.tools.addClass("d-none");
         if(this.userSignaturePad != null) {
@@ -2348,14 +2427,20 @@ export class SignRequestParams extends EventFactory {
             self.fontSize = self.fontSize - 1
             self.#resizeText();
         });
-        this.cross.draggable("enable");
+        if (this.cross.hasClass("ui-draggable")) {
+            this.cross.draggable("enable");
+        }
         this.textareaPart.css('pointer-events', 'none');
         this.textareaPart.focusout(function (){
-            self.cross.draggable("enable");
+            if (self.cross.hasClass("ui-draggable")) {
+                self.cross.draggable("enable");
+            }
             self.textareaPart.css('pointer-events', 'none');
         });
         this.cross.mouseup(function (){
-            self.cross.draggable("disable");
+            if (self.cross.hasClass("ui-draggable")) {
+                self.cross.draggable("disable");
+            }
             self.textareaPart.css('pointer-events', 'auto');
             self.textareaPart.focus();
         });

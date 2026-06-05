@@ -4,7 +4,7 @@ export class SignToolbar {
         this.eventNamespace = options.eventNamespace ?? ".esupSignToolbar";
         this.rootSelector = options.rootSelector ?? "#tools";
         this.priorityContainers = options.priorityContainers ?? ["#tools", ".es-nav-tools"];
-        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#signAdvancedLaunchButton", "#addParaphButton2", "#refuseLaunchButton"];
+        this.primaryFocusSelectors = options.primaryFocusSelectors ?? ["#addSignButton2", "#signLaunchButton", "#signAdvancedLaunchButton", "#refuseLaunchButton"];
         this.focusRetryDelay = options.focusRetryDelay ?? 80;
         this.focusableSelector = options.focusableSelector ?? [
             "a[href]",
@@ -27,27 +27,112 @@ export class SignToolbar {
             onAddText: options.onAddText ?? (() => {})
         };
         this.bindings = [
-            { selector: "#addCommentButton", event: "click", handler: () => this.callbacks.onAddComment() },
-            { selector: "#addCommentButton2", event: "click", handler: () => this.callbacks.onAddComment() },
-            { selector: "#addSpotButton", event: "click", handler: () => this.callbacks.onAddSpot() },
-            { selector: "#addSpotButton2", event: "click", handler: () => this.callbacks.onAddSpot() },
-            { selector: "#addSignButton", event: "click", handler: () => this.callbacks.onAddSign() },
             {
-                selector: "#addSignButton2",
+                selector: "#addCommentButton",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddComment();
+                }
+            },
+            {
+                selector: "#addCommentButton2",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddComment();
+                }
+            },
+            {
+                selector: "#addSpotButton",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddSpot();
+                }
+            },
+            {
+                selector: "#addSpotButton2",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddSpot();
+                }
+            },
+            {
+                selector: "#addSignButton",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddSign();
+                }
+            },
+            {
+                selector: "#drawSignButton",
                 event: "click",
                 handler: () => {
                     this.callbacks.onRequestSignatureStep();
                     this.callbacks.onAddSign();
                 }
             },
-            { selector: "#addSignButton3", event: "click", handler: () => this.callbacks.onAddSign() },
-            { selector: "#addParaphButton", event: "click", handler: () => this.callbacks.onAddParaph() },
-            { selector: "#addParaphButton2", event: "click", handler: () => this.callbacks.onAddParaph() },
-            { selector: "#addCheck", event: "click", handler: () => this.callbacks.onAddCheck() },
-            { selector: "#addTimes", event: "click", handler: () => this.callbacks.onAddTimes() },
-            { selector: "#addCircle", event: "click", handler: () => this.callbacks.onAddCircle() },
-            { selector: "#addMinus", event: "click", handler: () => this.callbacks.onAddMinus() },
-            { selector: "#addText", event: "click", handler: () => this.callbacks.onAddText() }
+            {
+                selector: "#addSignButton2",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddSign();
+                }
+            },
+            {
+                selector: "#addSignButton3",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddSign();
+                }
+            },
+            {
+                selector: "#addParaphButton",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddParaph();
+                }
+            },
+            {
+                selector: "#addParaphButton2",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddParaph();
+                }
+            },
+            {
+                selector: "#addCheck",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddCheck();
+                }
+            },
+            {
+                selector: "#addTimes",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddTimes();
+                }
+            },
+            {
+                selector: "#addCircle",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddCircle();
+                }
+            },
+            {
+                selector: "#addMinus",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddMinus();
+                }
+            },
+            {
+                selector: "#addText",
+                event: "click",
+                handler: () => {
+                    this.callbacks.onAddText();
+                }
+            }
         ];
     }
 

@@ -76,6 +76,11 @@ public class MobileSignTokenService {
         return tokenData != null && !tokenData.isUsed() && !tokenData.isExpired() && tokenData.hasPendingSignaturePreview();
     }
 
+    public Long getPendingSignaturePreviewTimestamp(String token) {
+        MobileSignTokenData tokenData = tokenCache.get(token);
+        return (tokenData != null) ? tokenData.getPendingSignaturePreviewTimestamp() : null;
+    }
+
     public String getPendingSignaturePreview(String token) {
         MobileSignTokenData tokenData = tokenCache.get(token);
         if (tokenData == null || tokenData.isUsed() || tokenData.isExpired()) {
@@ -103,6 +108,7 @@ public class MobileSignTokenService {
             return false;
         }
         tokenData.setPendingSignaturePreview(signImageBase64);
+        tokenData.setPendingSignaturePreviewTimestamp(System.currentTimeMillis());
         return true;
     }
 
@@ -118,7 +124,6 @@ public class MobileSignTokenService {
             return false;
         }
 
-        tokenData.setPendingSignaturePreview(null);
         tokenData.setUsed(true);
         return true;
     }
@@ -147,6 +152,7 @@ public class MobileSignTokenService {
                 user.setDefaultSignImageNumber(999998);
             }
             tokenData.setPendingSignaturePreview(null);
+            tokenData.setPendingSignaturePreviewTimestamp(null);
             tokenData.setUsed(true);
             logger.info("Saved mobile signature for user: {}", userEppn);
             return true;
@@ -160,6 +166,7 @@ public class MobileSignTokenService {
         MobileSignTokenData tokenData = tokenCache.get(token);
         if (tokenData != null) {
             tokenData.setPendingSignaturePreview(null);
+            tokenData.setPendingSignaturePreviewTimestamp(null);
             tokenData.setUsed(true);
             tokenCache.put(token, tokenData);
         }
@@ -183,6 +190,7 @@ public class MobileSignTokenService {
         private final Date expirationDate;
         private boolean used = false;
         private String pendingSignaturePreview;
+        private Long pendingSignaturePreviewTimestamp;
 
         public MobileSignTokenData(String token, String userEppn, Date expirationDate) {
             this.token = token;
@@ -216,6 +224,14 @@ public class MobileSignTokenService {
 
         public void setPendingSignaturePreview(String pendingSignaturePreview) {
             this.pendingSignaturePreview = pendingSignaturePreview;
+        }
+
+        public Long getPendingSignaturePreviewTimestamp() {
+            return pendingSignaturePreviewTimestamp;
+        }
+
+        public void setPendingSignaturePreviewTimestamp(Long pendingSignaturePreviewTimestamp) {
+            this.pendingSignaturePreviewTimestamp = pendingSignaturePreviewTimestamp;
         }
 
         public boolean hasPendingSignaturePreview() {
