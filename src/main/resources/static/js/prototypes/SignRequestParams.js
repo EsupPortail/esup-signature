@@ -902,7 +902,7 @@ export class SignRequestParams extends EventFactory {
         this.#stopMobileSignaturePolling();
         this.mobileSignPollingInterval = window.setInterval(() => {
             this.#pollMobileTokenStatus();
-        }, 3000);
+        }, 2000);
     }
 
     #ensureCanvasReadyForMobilePreview() {

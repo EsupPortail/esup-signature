@@ -2,7 +2,6 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.service.utils.file.FileService;
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +21,6 @@ public class MobileSignTokenService {
     
     private static final long TOKEN_VALIDITY_MINUTES = 5;
     
-    // In-memory cache: token -> MobileSignTokenData
     private final Map<String, MobileSignTokenData> tokenCache = new ConcurrentHashMap<>();
     
     private final UserService userService;
@@ -38,7 +36,6 @@ public class MobileSignTokenService {
     }
 
     public String createToken(String userEppn) {
-        // Invalidate any existing token for this user
         tokenCache.entrySet().removeIf(entry -> entry.getValue().getUserEppn().equals(userEppn));
 
         String token = UUID.randomUUID().toString();
@@ -97,11 +94,6 @@ public class MobileSignTokenService {
         return new Date(tokenData.getExpirationDate().getTime());
     }
 
-    public String getUserEppnByToken(String token) {
-        MobileSignTokenData tokenData = tokenCache.get(token);
-        return tokenData != null && tokenData.isValid() ? tokenData.getUserEppn() : null;
-    }
-
     public boolean saveSignaturePreview(String token, String signImageBase64) {
         MobileSignTokenData tokenData = tokenCache.get(token);
         if (tokenData == null || !tokenData.isValid() || !StringUtils.hasText(signImageBase64)) {
@@ -112,20 +104,19 @@ public class MobileSignTokenService {
         return true;
     }
 
-    public boolean consumePendingSignaturePreview(String token, String userEppn, String signImageBase64) {
+    public void consumePendingSignaturePreview(String token, String userEppn, String signImageBase64) {
         MobileSignTokenData tokenData = tokenCache.get(token);
         if (tokenData == null || !tokenData.isValid()) {
-            return false;
+            return;
         }
         if (!StringUtils.hasText(userEppn) || !userEppn.equals(tokenData.getUserEppn())) {
-            return false;
+            return;
         }
         if (!StringUtils.hasText(signImageBase64) || !signImageBase64.equals(tokenData.getPendingSignaturePreview())) {
-            return false;
+            return;
         }
 
         tokenData.setUsed(true);
-        return true;
     }
 
     @Transactional
@@ -140,9 +131,6 @@ public class MobileSignTokenService {
             if (user == null) {
                 return false;
             }
-
-            // Use the same persistence flow as the standard profile update.
-            Hibernate.initialize(user.getSignImages());
             user.getSignImages().add(documentService.createDocument(
                     fileService.base64Transparence(signImageBase64),
                     user,
@@ -162,17 +150,6 @@ public class MobileSignTokenService {
         return false;
     }
 
-    public void markTokenAsUsed(String token) {
-        MobileSignTokenData tokenData = tokenCache.get(token);
-        if (tokenData != null) {
-            tokenData.setPendingSignaturePreview(null);
-            tokenData.setPendingSignaturePreviewTimestamp(null);
-            tokenData.setUsed(true);
-            tokenCache.put(token, tokenData);
-        }
-    }
-
-    // Scheduled task to clean up expired tokens every minute
     @Scheduled(fixedRate = 60000)
     public void cleanupExpiredTokens() {
         try {
@@ -183,7 +160,6 @@ public class MobileSignTokenService {
         }
     }
 
-    // Inner class to hold token data
     private static class MobileSignTokenData {
         private final String token;
         private final String userEppn;

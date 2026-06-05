@@ -877,7 +877,7 @@
     </script>
 
     <div data-bs-focus="false" class="modal fade" id="signRequestMobileSignModal" role="dialog" aria-labelledby="signRequestMobileSignModal" aria-hidden="true" style="z-index: 1060;">
-        <div class="modal-dialog modal-md" role="document">
+        <div class="modal-dialog modal-md border shadow" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Dessiner sur mobile</h3>
@@ -924,7 +924,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">Configuration de la signature</h3>
+                    <h3 class="modal-title"><i class="fi fi-rr-pen-swirl"></i> Configurez l’apparence de votre signature</h3>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
                             aria-label="Close">
                     </button>
@@ -959,13 +959,13 @@
 
                         <ul class="nav nav-tabs mt-4 flex-column flex-md-row" id="signTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-pane" type="button" role="tab" aria-controls="preview-pane" aria-selected="true">
+                                <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview-pane" type="button" role="tab" aria-controls="preview-pane" aria-selected="false">
                                     <i class="fi fi-rr-text"></i> Texte
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="draw-tab" data-bs-toggle="tab" data-bs-target="#draw-pane" type="button" role="tab" aria-controls="draw-pane" aria-selected="false">
-                                    <i class="fi fi-rr-signature"></i> Dessiner
+                                <button class="nav-link active" id="draw-tab" data-bs-toggle="tab" data-bs-target="#draw-pane" type="button" role="tab" aria-controls="draw-pane" aria-selected="true">
+                                    <i class="fi fi-rr-pen-swirl"></i> Dessiner
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -977,7 +977,7 @@
 
                         <div class="tab-content border-start border-end border-bottom p-3 bg-light-subtle" id="signTabsContent">
                             <!-- Onglet 1: Prévisualisation -->
-                            <div class="tab-pane fade show active" id="preview-pane" role="tabpanel" aria-labelledby="preview-tab" tabindex="0">
+                            <div class="tab-pane fade" id="preview-pane" role="tabpanel" aria-labelledby="preview-tab" tabindex="0">
                                 <div class="row justify-content-center">
                                     <div class="col-12 col-lg-8">
                                         <div class="form-label d-block text-center">
@@ -997,7 +997,7 @@
                             </div>
 
                             <!-- Onglet 2: Pavé de dessin -->
-                            <div class="tab-pane fade" id="draw-pane" role="tabpanel" aria-labelledby="draw-tab" tabindex="0">
+                            <div class="tab-pane fade show active" id="draw-pane" role="tabpanel" aria-labelledby="draw-tab" tabindex="0">
                                 <div class="sign-pad-content text-center">
                                     <div id="modal-signatures-container" class="alert alert-light mt-3 mb-2 d-none" style="position: relative; z-index: 2;"></div>
                                     <label id="signPadLabel" class="form-label">Vous pouvez dessiner une signature dans le rectangle ci-dessous</label>
@@ -1018,7 +1018,7 @@
                                             <i class="fi fi-rr-trash"></i> Effacer
                                         </button>
                                         <button id="drawOnMobileBtn" type="button" class="btn btn-light btn-outline-dark">
-                                            <i class="fi fi-rr-pen-swirl"></i> Dessiner sur mobile
+                                            <i class="fi fi-rr-qrcode"></i> Dessiner sur mobile
                                         </button>
                                         <button id="reset" type="button" class="btn btn-light btn-outline-dark d-none">
                                             Réinitialiser
@@ -1179,8 +1179,14 @@
 
                     function updateSaveButtonState() {
                         const activeTab = document.querySelector('#signTabs .nav-link.active');
+                        if (!activeTab) return;
                         const signPad = document.getElementById('signPad');
-                        if (activeTab.id === 'preview-tab' || (activeTab.id === 'draw-tab' && signPad && signPad.classList.contains('d-none'))) {
+                        const vanillaUpload = document.getElementById('vanilla-upload');
+                        const cropDiv = document.getElementById('crop-div');
+                        
+                        if (activeTab.id === 'preview-tab' || (activeTab.id === 'draw-tab' && (!signPad || signPad.classList.contains('d-none') || signPad.style.display === 'none'))) {
+                            saveButton.classList.add('d-none');
+                        } else if (activeTab.id === 'upload-tab' && (!vanillaUpload || vanillaUpload.value === '') && (!cropDiv || cropDiv.style.display === 'none')) {
                             saveButton.classList.add('d-none');
                         } else {
                             saveButton.classList.remove('d-none');
@@ -1460,7 +1466,7 @@
                         stopMobileSignaturePolling();
                         mobileCheckInterval = window.setInterval(function() {
                             pollMobileTokenStatus();
-                        }, 3000);
+                        }, 2000);
                     }
 
                     function setPendingUserSignatureAction(selectionMode, selectedSignImageNumber = '') {
@@ -1532,7 +1538,7 @@
                         const carouselStyle = carouselId === 'carouselSign2' ? `width: 600px; height: 300px; margin: 0 auto;` : `${imageHeight != null ? `height: ${hasActionButtons ? '210px' : '150px'};` : 'width: 250px;'}`;
                         let addSignButton = '';
                         if (carouselId === 'carouselSign2') {
-                            addSignButton = `<div class="mt-2 text-center"><button type="button" id="add-new-sign-btn" class="btn btn-success text-white"><i class="fi fi-rr-plus"></i> Ajouter une signature</button></div>`;
+                            addSignButton = `<div class="mt-2 text-center"><button type="button" id="add-new-sign-btn" class="btn btn-success text-white"><i class="fi fi-rr-pen-swirl"></i> Dessiner une nouvelle signature</button></div>`;
                         }
                         return `<div>
                                     <div style="${carouselStyle}" id="${carouselId}" class="carousel slide border rounded border-secondary overflow-hidden bg-white"${extraAttributes}>
@@ -1561,8 +1567,14 @@
                             modalSignaturesContainer.style.display = 'block';
                             const signPad = document.getElementById('signPad');
                             const signPadLabel = document.getElementById('signPadLabel');
-                            if (signPad) signPad.classList.add('d-none');
-                            if (signPadLabel) signPadLabel.classList.add('d-none');
+                            if (signPad) {
+                                signPad.classList.add('d-none');
+                                signPad.style.display = 'none';
+                            }
+                            if (signPadLabel) {
+                                signPadLabel.classList.add('d-none');
+                                signPadLabel.style.display = 'none';
+                            }
                             if (cancelNewSignBtn) {
                                 cancelNewSignBtn.classList.add('d-none');
                                 cancelNewSignBtn.parentElement.classList.add('d-none');
@@ -1571,8 +1583,14 @@
                             modalSignaturesContainer.classList.add('d-none');
                             const signPad = document.getElementById('signPad');
                             const signPadLabel = document.getElementById('signPadLabel');
-                            if (signPad) signPad.classList.remove('d-none');
-                            if (signPadLabel) signPadLabel.classList.remove('d-none');
+                            if (signPad) {
+                                signPad.classList.remove('d-none');
+                                signPad.style.display = 'block';
+                            }
+                            if (signPadLabel) {
+                                signPadLabel.classList.remove('d-none');
+                                signPadLabel.style.display = 'block';
+                            }
                             if (cancelNewSignBtn) {
                                 cancelNewSignBtn.classList.add('d-none');
                                 cancelNewSignBtn.parentElement.classList.remove('d-none');
@@ -1581,6 +1599,7 @@
                                 window.userUi.refreshSignaturePadLayout();
                             }
                         }
+                        updateSaveButtonState();
                     }
 
                     function renderNavbarSignatures(userState) {
@@ -1628,22 +1647,25 @@
                         updateSaveButtonState();
                     }
 
-                    function resetCustomSignatureInputs() {
+                    function resetCustomSignatureInputs(forceShowPad = false) {
                         eraseButton?.click();
                         document.getElementById('signImageBase64').value = '';
                         const signPad = document.getElementById('signPad');
                         const signPadLabel = document.getElementById('signPadLabel');
                         const cropDiv = document.getElementById('crop-div');
                         const vanillaUpload = document.getElementById('vanilla-upload');
-                        if (signPad) {
-                            signPad.classList.remove('d-none');
-                            signPad.style.display = '';
-                        }
-                        if (signPadLabel) {
-                            signPadLabel.classList.remove('d-none');
-                            signPadLabel.style.display = '';
+                        if (forceShowPad) {
+                            if (signPad) {
+                                signPad.classList.remove('d-none');
+                                signPad.style.display = 'block';
+                            }
+                            if (signPadLabel) {
+                                signPadLabel.classList.remove('d-none');
+                                signPadLabel.style.display = 'block';
+                            }
                         }
                         if (cancelNewSignBtn) {
+                            cancelNewSignBtn.classList.add('d-none');
                             cancelNewSignBtn.parentElement.classList.remove('d-none');
                         }
                         if (cropDiv) {
@@ -1652,6 +1674,7 @@
                         if (vanillaUpload) {
                             vanillaUpload.value = '';
                         }
+                        updateSaveButtonState();
                         clearMobilePreviewState({clearToken: true});
                     }
 
@@ -1679,6 +1702,7 @@
                                 alert('Erreur lors de la suppression de la signature');
                                 return;
                             }
+                            resetCustomSignatureInputs(true);
                             updateLiveUserState(await response.json());
                             dispatchDocumentEvent('userSignatureDeleted', currentUserSignatureState);
                         } catch (error) {
@@ -1702,19 +1726,18 @@
                     updateSaveButtonState();
                     document.addEventListener('uiMeLoaded', ({detail}) => hydrateModalFromUiMe(detail));
                     addSignImageModal?.addEventListener('shown.bs.modal', () => {
-                        const firstTab = document.querySelector('#signTabs .nav-link:first-child');
+                        const firstTab = document.querySelector('#draw-tab');
                         if (firstTab) {
                             bootstrap.Tab.getOrCreateInstance(firstTab).show();
                         }
+                        resetCustomSignatureInputs();
+                        renderModalSignatures(currentUserSignatureState);
+                        const drawPane = document.getElementById('draw-pane');
+                        if (drawPane) {
+                            drawPane.classList.add('show', 'active');
+                        }
                         if (window.userUi && typeof window.userUi.resetSignatureModal === 'function') {
                             window.userUi.resetSignatureModal();
-                        }
-                        renderModalSignatures(currentUserSignatureState);
-                        if (currentUserSignatureState?.signImageIds?.length === 0) {
-                            const drawTab = document.getElementById('draw-tab');
-                            if (drawTab) {
-                                bootstrap.Tab.getOrCreateInstance(drawTab).show();
-                            }
                         }
                         updateGeneratedSignaturePreview(currentUserSignatureState);
                         updateSaveButtonState();
@@ -1722,6 +1745,9 @@
                     [previewTab, drawTab, uploadTab].forEach(tab => {
                         tab?.addEventListener('shown.bs.tab', () => {
                             updateSaveButtonState();
+                            if (tab.id === 'draw-tab') {
+                                window.dispatchEvent(new Event('resize'));
+                            }
                         });
                     });
                     [nameInput, firstnameInput].forEach(input => {
@@ -1828,8 +1854,14 @@
                             modalSignaturesContainer.classList.add('d-none');
                             const signPad = document.getElementById('signPad');
                             const signPadLabel = document.getElementById('signPadLabel');
-                            if (signPad) signPad.classList.remove('d-none');
-                            if (signPadLabel) signPadLabel.classList.remove('d-none');
+                            if (signPad) {
+                                signPad.classList.remove('d-none');
+                                signPad.style.display = 'block';
+                            }
+                            if (signPadLabel) {
+                                signPadLabel.classList.remove('d-none');
+                                signPadLabel.style.display = 'block';
+                            }
                             if (cancelNewSignBtn) {
                                 cancelNewSignBtn.classList.remove('d-none');
                                 cancelNewSignBtn.parentElement.classList.remove('d-none');
@@ -1892,6 +1924,7 @@
                                     selectedSignImageNumber = parseInt(userParamsForm.dataset.selectedSignImageNumber, 10);
                                 } else {
                                     const lastImageIndex = hasCustomImagePayload && userState?.signImageIds?.length > 0 ? userState.signImageIds.length - 1 : 0;
+                                    resetCustomSignatureInputs(true);
                                     updateLiveUserState(userState, { modalActiveIndex: lastImageIndex });
                                     if (hasCustomImagePayload && userState?.signImageIds?.length > 0) {
                                         triggerUserParamsPrepared('existing', userState.signImageIds.length - 1, true);
@@ -1899,7 +1932,6 @@
                                 }
                                 resetSaveButton();
                                 if (!isSelectionAction) {
-                                    resetCustomSignatureInputs();
                                     collapseSignDiv();
                                     dispatchDocumentEvent('resetUserSignatureModal', {form: userParamsForm});
                                 }
