@@ -406,6 +406,17 @@ export class UserUi {
             });
     }
 
+    recenterSignRequestParamsPreview() {
+        if (typeof this.signRequestParams?.centerOnCurrentViewport !== 'function') {
+            return;
+        }
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this.signRequestParams?.centerOnCurrentViewport();
+            });
+        });
+    }
+
     buildSerializableSignRequestParams() {
         const params = this.signRequestParams ?? this.signRequestParamsDefault ?? {};
         return {
@@ -477,6 +488,7 @@ export class UserUi {
         this.signRequestParams.generatedSignImageNumber = generatedSignImageNumber;
         this.signRequestParams.parapheSignImageNumber = parapheSignImageNumber;
         this.bindSignRequestParamsPreviewUi();
+        this.recenterSignRequestParamsPreview();
 
         if (Number.isFinite(Number.parseInt(fallbackSignImageNumber, 10))) {
             this.signRequestParams.changeSignImage(fallbackSignImageNumber).catch(error => {
