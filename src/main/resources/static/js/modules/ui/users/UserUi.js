@@ -301,6 +301,7 @@ export class UserUi {
     initializeSignRequestParamsPreviewStorage(previewParams, signImageNumber) {
         const resolvedPreviewParams = previewParams ?? {};
         const hasExtraText = String(resolvedPreviewParams.extraText ?? '') !== '';
+        const previewSignScale = this.computePreviewSignScale(resolvedPreviewParams);
         const previewStorage = {
             addWatermark: resolvedPreviewParams.addWatermark === true,
             addExtra: resolvedPreviewParams.addExtra === true,
@@ -315,6 +316,7 @@ export class UserUi {
         Object.entries(previewStorage).forEach(([key, value]) => {
             localStorage.setItem(key, JSON.stringify(value));
         });
+        localStorage.setItem('zoom', String(previewSignScale));
 
         const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
         if (Number.isFinite(normalizedSignImageNumber)) {
@@ -344,7 +346,7 @@ export class UserUi {
     }
 
     computePreviewSignScale(previewParams) {
-        const explicitScale = Number.parseFloat(previewParams?.signScale * 2);
+        const explicitScale = Number.parseFloat(previewParams?.signScale / .75);
         if (Number.isFinite(explicitScale) && explicitScale > 0) {
             return explicitScale;
         }
