@@ -247,8 +247,245 @@ export class UserUi {
         `;
     }
 
+    resolveSpecialSignImageNumbers() {
+        const signImages = Array.isArray(this.signImages) ? this.signImages : [];
+        if (signImages.length === 0) {
+            return {
+                generatedSignImageNumber: null,
+                parapheSignImageNumber: null
+            };
+        }
+
+        const uiMe = this.readSessionJson('uiMe');
+        const userImageIds = Array.isArray(uiMe?.userImagesIds) ? uiMe.userImagesIds : null;
+        if (userImageIds != null) {
+            const generatedSignImageNumber = signImages.length > userImageIds.length
+                ? userImageIds.length
+                : null;
+            return {
+                generatedSignImageNumber,
+                parapheSignImageNumber: generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
+                    ? generatedSignImageNumber + 1
+                    : null
+            };
+        }
+
+        if (signImages.length === 1) {
+            return {
+                generatedSignImageNumber: 0,
+                parapheSignImageNumber: null
+            };
+        }
+
+        return {
+            generatedSignImageNumber: signImages.length - 2,
+            parapheSignImageNumber: signImages.length - 1
+        };
+    }
+
+    teardownSignRequestParamsPreview() {
+        if (this.signRequestParams?.resizeNamespace) {
+            $(window).off("resize" + this.signRequestParams.resizeNamespace);
+        }
+        $(document).off(".userSignRequestParamsPreview");
+
+        if (typeof this.signRequestParams?.resetMobileSignatureFlow === 'function') {
+            this.signRequestParams.resetMobileSignatureFlow({clearToken: true, force: true});
+        }
+
+        $("#pdf .cross").remove();
+        $("#pdf > input[id^='canvas_']").remove();
+        this.signRequestParams = null;
+    }
+
+    initializeSignRequestParamsPreviewStorage(previewParams, signImageNumber) {
+        const resolvedPreviewParams = previewParams ?? {};
+        const hasExtraText = String(resolvedPreviewParams.extraText ?? '') !== '';
+        const previewStorage = {
+            addWatermark: resolvedPreviewParams.addWatermark === true,
+            addExtra: resolvedPreviewParams.addExtra === true,
+            extraOnTop: resolvedPreviewParams.extraOnTop !== false,
+            extraType: resolvedPreviewParams.extraType === true,
+            extraName: resolvedPreviewParams.extraName === true,
+            extraDate: resolvedPreviewParams.extraDate === true,
+            extraText: hasExtraText,
+            addImage: true
+        };
+
+        Object.entries(previewStorage).forEach(([key, value]) => {
+            localStorage.setItem(key, JSON.stringify(value));
+        });
+
+        const normalizedSignImageNumber = Number.parseInt(signImageNumber, 10);
+        if (Number.isFinite(normalizedSignImageNumber)) {
+            localStorage.setItem('signNumber', String(normalizedSignImageNumber));
+        }
+    }
+
+    applySignRequestParamsPreviewText(previewParams) {
+        if (this.signRequestParams == null) {
+            return;
+        }
+
+        const extraText = String(previewParams?.extraText ?? '');
+        if (extraText === '') {
+            return;
+        }
+
+        const textarea = $("#textExtra_" + this.signRequestParams.id);
+        if (!textarea.length) {
+            return;
+        }
+
+        this.signRequestParams.savedText = extraText;
+        this.signRequestParams.extraText = extraText;
+        this.signRequestParams.isExtraText = false;
+        textarea.val(extraText).trigger("input");
+    }
+
+    computePreviewSignScale(previewParams) {
+        const explicitScale = Number.parseFloat(previewParams?.signScale);
+        if (Number.isFinite(explicitScale) && explicitScale > 0) {
+            return explicitScale;
+        }
+
+        const width = Number.parseFloat(previewParams?.signWidth);
+        const height = Number.parseFloat(previewParams?.signHeight);
+        let computedScale = null;
+
+        if (previewParams?.addExtra === true && previewParams?.extraOnTop === false) {
+            computedScale = height / 100;
+        } else {
+            computedScale = width / 200;
+        }
+
+        return Number.isFinite(computedScale) && computedScale > 0 ? computedScale : 1;
+    }
+
+    closePreviewExtraTools() {
+        const signRequestParams = this.signRequestParams;
+        if (signRequestParams?.id == null) {
+            return;
+        }
+
+        $("#extraTools_" + signRequestParams.id).addClass("d-none");
+        if (signRequestParams.cross?.hasClass("ui-resizable")) {
+            try {
+                signRequestParams.cross.resizable("enable");
+            } catch (e) {
+                console.debug('Unable to re-enable preview resizing', e);
+            }
+        }
+    }
+
+    bindSignRequestParamsPreviewUi() {
+        const signRequestParams = this.signRequestParams;
+        if (signRequestParams?.id == null) {
+            return;
+        }
+
+        const previewId = signRequestParams.id;
+        $(document).off(".userSignRequestParamsPreview");
+
+        $(document).on("mousedown.userSignRequestParamsPreview", event => {
+            const target = $(event.target);
+            if (target.closest("#cross_" + previewId).length || target.closest("#crossTools_" + previewId).length) {
+                return;
+            }
+            this.closePreviewExtraTools();
+        });
+
+        $("#displayMoreTools_" + previewId).off(".userSignRequestParamsPreview")
+            .on("mousedown.userSignRequestParamsPreview", () => {
+                window.setTimeout(() => {
+                    const extraTools = $("#extraTools_" + previewId);
+                    if (extraTools.hasClass("d-none")) {
+                        this.closePreviewExtraTools();
+                    }
+                }, 0);
+            });
+    }
+
+    buildSerializableSignRequestParams() {
+        const params = this.signRequestParams ?? this.signRequestParamsDefault ?? {};
+        return {
+            pdSignatureFieldName: params.pdSignatureFieldName ?? null,
+            signImageNumber: Number.isFinite(Number.parseInt(params.signImageNumber, 10)) ? Number.parseInt(params.signImageNumber, 10) : 0,
+            signPageNumber: Number.isFinite(Number.parseInt(params.signPageNumber, 10)) ? Number.parseInt(params.signPageNumber, 10) : 1,
+            signDocumentNumber: Number.isFinite(Number.parseInt(params.signDocumentNumber, 10)) ? Number.parseInt(params.signDocumentNumber, 10) : 0,
+            signWidth: Number.isFinite(Number.parseInt(params.signWidth, 10)) ? Number.parseInt(params.signWidth, 10) : 200,
+            signHeight: Number.isFinite(Number.parseInt(params.signHeight, 10)) ? Number.parseInt(params.signHeight, 10) : 100,
+            xPos: 0,
+            yPos: 0,
+            rotate: Number.isFinite(Number.parseInt(params.rotate, 10)) ? Number.parseInt(params.rotate, 10) : 0,
+            extraText: String(params.extraText ?? ''),
+            isExtraText: params.isExtraText === true,
+            addWatermark: params.addWatermark === true,
+            allPages: params.allPages === true,
+            addImage: params.addImage !== false,
+            addExtra: params.addExtra === true,
+            extraType: params.extraType === true,
+            extraName: params.extraName === true,
+            extraDate: params.extraDate === true,
+            extraOnTop: params.extraOnTop !== false,
+            textPart: params.textPart ?? null,
+            signScale: Number.isFinite(Number.parseFloat(params.signScale)) ? Number.parseFloat(params.signScale) : 1,
+            red: Number.isFinite(Number.parseInt(params.red, 10)) ? Number.parseInt(params.red, 10) : 0,
+            green: Number.isFinite(Number.parseInt(params.green, 10)) ? Number.parseInt(params.green, 10) : 0,
+            blue: Number.isFinite(Number.parseInt(params.blue, 10)) ? Number.parseInt(params.blue, 10) : 0,
+            fontSize: Number.isFinite(Number.parseInt(params.fontSize, 10)) ? Number.parseInt(params.fontSize, 10) : 16,
+            recipientId: params.recipientId ?? null
+        };
+    }
+
     enableSignRequestParams() {
-        this.signRequestParams = new SignRequestParams(false, this.signRequestParamsDefault, 0, 1, 1, this.userName, this.userName, false, true, false, false, null, true, this.signImages, undefined, undefined, undefined, this.signatureUiConfig);
+        this.teardownSignRequestParamsPreview();
+
+        const previewParams = this.signRequestParamsDefault ?? {};
+        const normalizedPreviewParams = {
+            ...previewParams,
+            signScale: this.computePreviewSignScale(previewParams)
+        };
+        const initialSignImageNumber = Number.parseInt(normalizedPreviewParams?.signImageNumber, 10);
+        const fallbackSignImageNumber = Number.isFinite(initialSignImageNumber)
+            ? initialSignImageNumber
+            : this.defaultSignImageNumber;
+        this.initializeSignRequestParamsPreviewStorage(normalizedPreviewParams, fallbackSignImageNumber);
+
+        this.signRequestParams = new SignRequestParams(
+            this.userType === 'otp',
+            normalizedPreviewParams,
+            0,
+            1,
+            1,
+            this.userName,
+            this.userName,
+            true,
+            true,
+            false,
+            false,
+            null,
+            false,
+            this.signImages,
+            0,
+            undefined,
+            undefined,
+            this.signatureUiConfig
+        );
+
+        const {generatedSignImageNumber, parapheSignImageNumber} = this.resolveSpecialSignImageNumbers();
+        this.signRequestParams.generatedSignImageNumber = generatedSignImageNumber;
+        this.signRequestParams.parapheSignImageNumber = parapheSignImageNumber;
+        this.bindSignRequestParamsPreviewUi();
+
+        if (Number.isFinite(Number.parseInt(fallbackSignImageNumber, 10))) {
+            this.signRequestParams.changeSignImage(fallbackSignImageNumber).catch(error => {
+                console.debug('Unable to initialize signature preview image', error);
+            }).finally(() => this.applySignRequestParamsPreviewText(normalizedPreviewParams));
+            return;
+        }
+
+        this.applySignRequestParamsPreviewText(normalizedPreviewParams);
     }
 
     clearLocalStorage() {
@@ -270,6 +507,7 @@ export class UserUi {
             this.enableSignRequestParams();
         } else {
             this.saveSignRequestParams = true;
+            this.teardownSignRequestParamsPreview();
             $("#signRequestParamsFormDiv").addClass("d-none");
             $("#signRequestParamsCleanDiv").removeClass("d-none");
         }
@@ -282,10 +520,11 @@ export class UserUi {
         const formElement = userParamsForm.get(0);
         const isFetchModalContext = userParamsForm.closest("#add-sign-image").length > 0;
         if(!this.saveSignRequestParams) {
-            this.signRequestParams.xPos = 0;
-            this.signRequestParams.yPos = 0;
-            let signRequestParams = JSON.stringify(this.signRequestParams);
+            let signRequestParams = JSON.stringify(this.buildSerializableSignRequestParams());
             $("#sign-request-params").val(signRequestParams);
+            sessionStorage.setItem("favoriteSignRequestParams", signRequestParams);
+        } else {
+            sessionStorage.setItem("favoriteSignRequestParams", "null");
         }
         if($("#name").val() === "" || $("#firstname").val() === "") {
             $("#submitUserParamsForm").click();
