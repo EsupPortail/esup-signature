@@ -180,6 +180,67 @@ export class SignRequestParams extends EventFactory {
         return Number.isFinite(parsedFontSize) ? parsedFontSize : 16;
     }
 
+    #getExtraBaseFontSize() {
+        const parsedFontSize = Number.parseInt(this.signatureUiConfig?.defaultFontSize, 10);
+        return Number.isFinite(parsedFontSize) ? parsedFontSize : 12;
+    }
+
+    #getExtraRenderedFontSize() {
+        return Math.max(1, Math.round(this.#getExtraBaseFontSize() * this.currentScale * this.signScale));
+    }
+
+    #getMaxRenderedExtraDateText() {
+        return "le 88/88/8888 88:88:88 +88:88";
+    }
+
+    #reserveExtraDateSpace() {
+        const dateDiv = document.getElementById("extraDateDiv_" + this.id);
+        const extraContainer = this.divExtra?.[0];
+        if (!dateDiv || !extraContainer) {
+            return false;
+        }
+        if (!this.addExtra || !this.extraDate || dateDiv.style.display === "none") {
+            if (dateDiv.style.minHeight !== "") {
+                dateDiv.style.minHeight = "";
+                return true;
+            }
+            return false;
+        }
+
+        const availableWidth = extraContainer.clientWidth;
+        if (!Number.isFinite(availableWidth) || availableWidth <= 0) {
+            return false;
+        }
+
+        const computedDateStyle = window.getComputedStyle(dateDiv);
+        const measureNode = document.createElement("span");
+        measureNode.style.position = "absolute";
+        measureNode.style.visibility = "hidden";
+        measureNode.style.pointerEvents = "none";
+        measureNode.style.display = "block";
+        measureNode.style.left = "0";
+        measureNode.style.top = "0";
+        measureNode.style.width = `${availableWidth}px`;
+        measureNode.style.minHeight = "";
+        measureNode.style.whiteSpace = "normal";
+        measureNode.style.fontFamily = this.divExtra.css("font-family") || "LiberationSans-Regular, sans-serif";
+        measureNode.style.fontSize = `${this.#getExtraRenderedFontSize()}px`;
+        measureNode.style.fontWeight = computedDateStyle.fontWeight;
+        measureNode.style.lineHeight = computedDateStyle.lineHeight;
+        measureNode.innerHTML = `${this.#getMaxRenderedExtraDateText()}<br/>`;
+
+        extraContainer.appendChild(measureNode);
+        const reservedHeight = Math.ceil(measureNode.getBoundingClientRect().height);
+        measureNode.remove();
+
+        const nextMinHeight = reservedHeight > 0 ? `${reservedHeight}px` : "";
+        if (dateDiv.style.minHeight !== nextMinHeight) {
+            dateDiv.style.minHeight = nextMinHeight;
+            return true;
+        }
+        return false;
+    }
+
     #getExternalSignatureParams() {
         return this.signatureUiConfig?.externalSignatureParams ?? null;
     }
@@ -244,7 +305,7 @@ export class SignRequestParams extends EventFactory {
                     self.cross.css('height', Math.round(self.signHeight * self.currentScale * self.getBrowserZoom()) + 'px');
                     if(self.addExtra) {
                         self.divExtra.css("width", self.extraWidth * self.currentScale * self.getBrowserZoom() + "px");
-                        self.divExtra.css("font-size", Math.round(10 * self.currentScale * self.signScale * self.getBrowserZoom()) -1 + "px");
+                        self.divExtra.css("font-size", self.#getExtraRenderedFontSize() + "px");
                     }
                     self.lastWidth = w;
                     self.lastHeight = h;
@@ -2043,6 +2104,19 @@ export class SignRequestParams extends EventFactory {
 
     #refreshDate() {
         $("#extraDateDiv_" + this.id).html("le " + moment().format('DD/MM/YYYY HH:mm:ss Z') + "<br/>");
+        if(this.divExtra != null && this.addExtra && this.extraDate) {
+            if(window.__isResizingCross === true) {
+                this.#reserveExtraDateSpace();
+                return;
+            }
+            const previousHeight = this.divExtra[0]?.offsetHeight ?? 0;
+            const dateReserveChanged = this.#reserveExtraDateSpace();
+            const nextHeight = this.divExtra[0]?.offsetHeight ?? 0;
+            if(dateReserveChanged || previousHeight !== nextHeight) {
+                this.#updateSize();
+                this.#refreshAllPagesSigns();
+            }
+        }
     }
 
     #toggleType() {
@@ -2197,29 +2271,32 @@ export class SignRequestParams extends EventFactory {
 
     #refreshExtraDiv() {
         if(this.divExtra != null && !this.light) {
+            const isResizing = window.__isResizingCross === true;
+            const previousHeight = this.divExtra[0]?.offsetHeight ?? 0;
             let maxLines = 2;
             if(this.extraOnTop) maxLines = 1;
             if(!this.extraName) maxLines++;
             if(!this.extraDate) maxLines++;
             if(!this.extraType) maxLines++;
-            let fontSize = this.fontSize * this.currentScale * this.signScale;
-            this.divExtra.css("font-size", Math.floor(fontSize) - 1);
+            const fontSize = this.#getExtraRenderedFontSize();
+            this.divExtra.css("font-size", fontSize + "px");
             let text = this.textareaExtra.val();
             let lines = text.split(/\r|\r\n|\n/);
-            text = "";
             if(lines.length > maxLines) {
-                lines.pop();
+                lines = lines.slice(0, maxLines);
             }
+            text = "";
+            const textAreaWidth = this.textareaExtra[0]?.clientWidth ?? 0;
+            const fontFamily = this.divExtra.css("font-family") || "LiberationSans-Regular, sans-serif";
             for(let i = 0; i < lines.length; i++) {
                 let c = document.createElement("canvas");
                 let ctx = c.getContext("2d");
-                ctx.font = fontSize + "px";
+                ctx.font = `${fontSize}px ${fontFamily}`;
                 let txt = lines[i];
-                if(ctx.measureText(txt).width < (parseInt(this.textareaExtra.css("width")))) {
+                if(ctx.measureText(txt).width <= textAreaWidth) {
                     text += txt;
                     this.stringLength = txt.length;
                 } else {
-                    console.log("text length : " + ctx.measureText(txt).width + " " + this.textareaExtra.css("width"));
                     text += txt.substring(0, this.stringLength);
                 }
                 if(i < lines.length - 1) {
@@ -2235,6 +2312,11 @@ export class SignRequestParams extends EventFactory {
             }
             if(this.light) {
                 this.divExtra.css("font-size", "unset");
+            }
+            const dateReserveChanged = this.#reserveExtraDateSpace();
+            const nextHeight = this.divExtra[0]?.offsetHeight ?? 0;
+            if(!isResizing && (dateReserveChanged || previousHeight !== nextHeight)) {
+                this.#updateSize();
             }
         }
         this.#refreshAllPagesSigns();
@@ -2401,8 +2483,12 @@ export class SignRequestParams extends EventFactory {
             }
         }
         if(this.addExtra) {
-            this.divExtra.css("width", this.extraWidth * scale + "px");
-            this.divExtra.css("font-size", Math.round(10 * scale * this.signScale) + "px");
+            if(this.extraOnTop) {
+                this.divExtra.css("width", Math.round(this.originalWidth * this.signScale * scale) + "px");
+            } else {
+                this.divExtra.css("width", this.extraWidth * scale + "px");
+            }
+            this.divExtra.css("font-size", this.#getExtraRenderedFontSize() + "px");
         }
         if(this.divExtra != null) {
             this.#refreshExtraDiv();
