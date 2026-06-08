@@ -384,8 +384,7 @@ export class SignPlacementController extends EventFactory {
             if (this.parapheSignImageNumber != null) specialImagesCount++;
             realSignImagesCount = Math.max(0, totalImages - specialImagesCount);
         }
-
-        if (this.isOtp || this.signatureStepRequested || (signImageNumber != null && signImageNumber >= 0 && realSignImagesCount > 1)) {
+        if (this.isOtp || this.signatureStepRequested) {
             const selection = await this.waitForOtpSelection();
             if (this.signatureStepRequested) {
                 this.signatureStepRequested = false;
