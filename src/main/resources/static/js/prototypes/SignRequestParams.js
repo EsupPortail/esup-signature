@@ -1477,7 +1477,7 @@ export class SignRequestParams extends EventFactory {
             },
             stop: function(event, ui) {
                 self.signScale = self.#getNewScale(ui);
-                if(self.signImageNumber > 0) {
+                if(self.signImageNumber >= 0) {
                     localStorage.setItem("zoom", self.signScale);
                 }
                 if (ui.position.left !== self.initialPosition.left || ui.position.top !== self.initialPosition.top) {
