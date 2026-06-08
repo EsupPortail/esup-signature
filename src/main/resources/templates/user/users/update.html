@@ -570,7 +570,13 @@ $(document).ready(function() {
                             <br>
                             Ne pas oublier d’enregistrer vos paramètres en bas à droite !
                         </p>
-                        <div th:replace="~{fragments/signrequestparams :: signrequestparam}"></div>
+                        <div id="workspace" tabindex="0" class="alert rounded-bottom-0 light border-0 justify-content-center es-workspace-pdf workspace-margin-top " style="overflow-x: auto; min-height: 500px;">
+                            <form id="signForm" action="">
+                                <div tabindex="0" id="pdf" style="opacity: 1; cursor: default; display: flex; flex-direction: column; align-items: center; position: relative; width: 800px; height: 600px; background-color: white; border: 1px solid #ccc;">
+                                    <div id="page_1" page-num="1" class="drop-shadows pdf-page ui-droppable" style="width: 100%; height: 100%; position: relative;"></div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -633,6 +639,29 @@ $(document).ready(function() {
                             </a>
                         </li>
                     </ul>
+                </div>
+
+                <div id="crossTools_x" class="badge bg-light position-absolute cross-tools d-none">
+                    <div id="defaultTools_x">
+                        <button id="canvasBtn_x" type='button' class="btn btn-sm btn-light" title='Dessiner ma signature'><i class="fi fi-rr-drawer-alt"></i></button>
+                        <button type="button" id="signPrevImage_x" title="Signature précédente" class="btn btn-sm btn-light" style="z-index: 3;"><i class="fi fi-rr-left"></i></button>
+                        <button type="button" id="signNextImage_x" title="Signature suivante" class="btn btn-sm btn-light" style="z-index: 3;"><i class="fi fi-rr-right"></i></button>
+                        <button type="button" id="displayMoreTools_x" title="Plus d'outils" class="btn btn-sm btn-light" style="z-index: 3;"><i class="fi fi-rr-menu-dots-vertical"></i></button>
+                    </div>
+                    <div id="extraTools_x" class="alert p-2 opacity-100 bg-light border-secondary-subtle extra-tools d-flex flex-column d-none text-start gap-1" onclick="event.stopPropagation();">
+                        <input id="signColorPicker_x" value='#000000' class="d-none"/>
+                        <button type="button" id="watermark_x" title="Filigrane" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-background"></i> Filigrane</button>
+                        <hr style="margin: 1px;">
+                        <button type="button" id="signExtra_x" title="Ajouter les informations complémentaires (nom, date et heure...)" class="btn btn-sm btn-light text-start d-none" style="z-index: 3;"><i class="fi fi-rr-receipt"></i> Textes complémentaires</button>
+                        <button type="button" id="extraType_x" title="Afficher/Masquer le type de signature" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-shield-plus"></i> Type de signature</button>
+                        <button type="button" id="extraName_x" title="Afficher/Masquer le nom" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-user"></i> Prénom et nom</button>
+                        <button type="button" id="extraDate_x" title="Afficher/Masquer la date" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-clock"></i> Date de signature</button>
+                        <button type="button" id="extraText_x" title="Ajouter/Masquer un texte libre" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-text"></i> Texte libre</button>
+                        <hr style="margin: 1px;">
+                        <button type="button" id="signExtraOnTop_x" title="Placer le texte en haut" class="btn btn-sm btn-light text-start" disabled style="z-index: 3;"><i class="fi fi-rr-arrow-to-top"></i> <span>Texte en haut</span></button>
+                        <button type="button" id="signExtraRight_x" title="Placer le texte à droite" class="btn btn-sm btn-light text-start" disabled style="z-index: 3;"><i class="fi fi-rr-arrow-to-right"></i> <span>Texte à droite</span></button>
+                        <button type="button" id="signImage_x" title="Masquer l'image de votre signature" class="btn btn-sm btn-light text-start" style="z-index: 3;"><i class="fi fi-rr-eye-crossed"></i> Masquer l'image</button>
+                    </div>
                 </div>
             </div>
         </div>
