@@ -265,7 +265,8 @@ export class SignRequestParams extends EventFactory {
             ["#allPages_", () => this.#toggleAllPages()],
             ["#signImage_", () => this.#toggleImage()],
             ["#signExtra_", () => this.#toggleExtra()],
-            ["#signExtraOnTop_", () => this.#toggleExtraOnTop()],
+            ["#signExtraOnTop_", () => this.#setExtraLayout(true)],
+            ["#signExtraRight_", () => this.#setExtraLayout(false)],
             ["#extraType_", () => this.#toggleType()],
             ["#extraName_", () => this.#toggleName()],
             ["#extraDate_", () => this.#toggleDate()],
@@ -1471,9 +1472,10 @@ export class SignRequestParams extends EventFactory {
                 }
             },
             stop: function(event, ui) {
-                console.log(ui);
                 self.signScale = self.#getNewScale(ui);
-                localStorage.setItem("zoom", self.signScale);
+                if(self.signImageNumber > 0) {
+                    localStorage.setItem("zoom", self.signScale);
+                }
                 if (ui.position.left !== self.initialPosition.left || ui.position.top !== self.initialPosition.top) {
                     self.#afterDropRefresh(ui);
                 }
@@ -1931,6 +1933,7 @@ export class SignRequestParams extends EventFactory {
                 $("#signImage_" + this.id).addClass("btn-outline-dark");
                 $("#signExtra_" + this.id).attr("disabled", true);
                 $("#signExtraOnTop_" + this.id).attr("disabled", true);
+                $("#signExtraRight_" + this.id).attr("disabled", true);
                 $("#signPrevImage_" + this.id).attr("disabled", true);
                 $("#signNextImage_" + this.id).attr("disabled", true);
                 if(!this.isShare) {
@@ -1956,6 +1959,7 @@ export class SignRequestParams extends EventFactory {
             $("#signImage_" + this.id).removeClass("btn-outline-dark");
             $("#signExtra_" + this.id).attr("disabled", false);
             $("#signExtraOnTop_" + this.id).attr("disabled", false);
+            $("#signExtraRight_" + this.id).attr("disabled", false);
             $("#signPrevImage_" + this.id).attr("disabled", false);
             $("#signNextImage_" + this.id).attr("disabled", false);
             if(this.restoreExtraOnTop) {
@@ -1978,6 +1982,7 @@ export class SignRequestParams extends EventFactory {
         let self = this;
         const signImageButton = $("#signImage_" + this.id);
         const extraOnTopButton = $("#signExtraOnTop_" + this.id);
+        const extraRightButton = $("#signExtraRight_" + this.id);
         if(this.addExtra) {
             $("#signExtra_" + this.id).addClass("btn-outline-dark");
             signImageButton.attr("disabled", false);
@@ -1985,9 +1990,8 @@ export class SignRequestParams extends EventFactory {
                 signImageButton.addClass("btn-outline-dark");
             }
             extraOnTopButton.removeAttr("disabled");
-            if(this.extraOnTop) {
-                extraOnTopButton.addClass("btn-outline-dark");
-            }
+            extraRightButton.removeAttr("disabled");
+            this.#refreshExtraLayoutButtons();
             if(this.divExtra == null) {
                 this.typeSign = "Signature";
                 if (this.isVisa) this.typeSign = "Visa";
@@ -2020,6 +2024,9 @@ export class SignRequestParams extends EventFactory {
             signImageButton.removeClass("btn-outline-dark");
             $("#signExtra_" + this.id).removeClass("btn-outline-dark");
             extraOnTopButton.attr("disabled", true);
+            extraRightButton.attr("disabled", true);
+            extraOnTopButton.removeClass("btn-outline-dark");
+            extraRightButton.removeClass("btn-outline-dark");
             if(this.divExtra != null) {
                 this.divExtra.addClass("d-none");
             }
@@ -2034,9 +2041,29 @@ export class SignRequestParams extends EventFactory {
     }
 
     #toggleExtraOnTop() {
+        this.#setExtraLayout(!this.extraOnTop);
+    }
+
+    #refreshExtraLayoutButtons() {
+        const extraOnTopButton = $("#signExtraOnTop_" + this.id);
+        const extraRightButton = $("#signExtraRight_" + this.id);
+
+        if(this.extraOnTop) {
+            extraOnTopButton.addClass("btn-outline-dark");
+            extraRightButton.removeClass("btn-outline-dark");
+        } else {
+            extraOnTopButton.removeClass("btn-outline-dark");
+            extraRightButton.addClass("btn-outline-dark");
+        }
+    }
+
+    #setExtraLayout(extraOnTop) {
         if(this.divExtra != null) {
-            const extraOnTopButton = $("#signExtraOnTop_" + this.id);
-            if(!this.extraOnTop) {
+            if(this.extraOnTop === extraOnTop) {
+                this.#refreshExtraLayoutButtons();
+                return;
+            }
+            if(extraOnTop) {
                 if(this.addWatermark) {
                     this.cross.removeClass("watermark-height")
                     this.cross.addClass("watermark-width")
@@ -2061,8 +2088,6 @@ export class SignRequestParams extends EventFactory {
                 }
                 this.divExtra.addClass("div-extra-top");
                 this.divExtra.removeClass("div-extra-right");
-                extraOnTopButton.addClass("btn-outline-dark");
-                extraOnTopButton.children().next().text("Au dessus");
                 if(this.isLight) {
                     this.canvas.css("top", "");
                     this.cross.css("background-position", "center bottom");
@@ -2076,8 +2101,6 @@ export class SignRequestParams extends EventFactory {
                     this.cross.addClass("watermark-height")
                     this.cross.removeClass("watermark-width")
                 }
-                extraOnTopButton.removeClass("btn-outline-dark");
-                extraOnTopButton.children().next().text("À droite");
                 this.divExtra.addClass("d-none");
                 this.signHeight -= this.extraHeight;
                 this.extraHeight = 0;
@@ -2110,6 +2133,7 @@ export class SignRequestParams extends EventFactory {
                     this.signScale=2;
                 }
             }
+            this.#refreshExtraLayoutButtons();
             if(!this.firstLaunch && !this.isShare) {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
@@ -2348,6 +2372,7 @@ export class SignRequestParams extends EventFactory {
             $("#watermark_" + this.id).hide();
         }
         $("#signExtraOnTop_" + this.id).hide();
+        $("#signExtraRight_" + this.id).hide();
         $("#allPages_" + this.id).hide();
         if(this.signColorPicker != null) {
             // this.signColorPicker.spectrum("destroy");
