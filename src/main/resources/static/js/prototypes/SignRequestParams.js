@@ -161,10 +161,11 @@ export class SignRequestParams extends EventFactory {
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
         if (!light && this.cross != null && this.cross.length) {
-            if(this.textareaExtra != null && explicitModelUiState?.extraText !== "") {
-                this.savedText = explicitModelUiState.extraText;
-                this.extraText = explicitModelUiState.extraText;
-                this.textareaExtra.val(explicitModelUiState.extraText);
+            const explicitExtraText = explicitModelUiState?.extraText;
+            if(this.textareaExtra != null && explicitExtraText != null && explicitExtraText !== "") {
+                this.savedText = explicitExtraText;
+                this.extraText = explicitExtraText;
+                this.textareaExtra.val(explicitExtraText);
                 this.#refreshExtraDiv();
             }
             this.applyCurrentSignRequestParams();
@@ -1276,6 +1277,22 @@ export class SignRequestParams extends EventFactory {
             this.addImage = true;
             this.#toggleImage();
         }
+    }
+
+    syncExtraLayoutFromState() {
+        if (this.divExtra == null || !this.addExtra) {
+            return;
+        }
+
+        if (this.extraOnTop) {
+            this.divExtra.addClass("div-extra-top");
+            this.divExtra.removeClass("div-extra-right");
+        } else {
+            this.divExtra.addClass("div-extra-right");
+            this.divExtra.removeClass("div-extra-top");
+        }
+
+        this.#refreshExtraDiv();
     }
 
     #getNewScale(ui) {

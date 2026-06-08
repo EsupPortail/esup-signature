@@ -465,7 +465,7 @@ export class UserUi {
 
         this.signRequestParams = new SignRequestParams(
             this.userType === 'otp',
-            normalizedPreviewParams,
+            null,
             0,
             1,
             1,

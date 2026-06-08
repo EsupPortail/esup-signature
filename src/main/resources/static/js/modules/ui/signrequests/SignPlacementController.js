@@ -437,6 +437,9 @@ export class SignPlacementController extends EventFactory {
 
         if (signImageNumber != null && signImageNumber !== 999999 && (!isVisaPlacement || isParaph)) {
             await signRequestParams.changeSignImage(signImageNumber);
+            if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
+                signRequestParams.syncExtraLayoutFromState();
+            }
             if (currentSignRequestParams == null && typeof signRequestParams.centerOnCurrentViewport === "function") {
                 signRequestParams.centerOnCurrentViewport();
             }
