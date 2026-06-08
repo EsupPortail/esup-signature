@@ -1237,6 +1237,7 @@ export class SignRequestParams extends EventFactory {
                 $("#signImage_" + this.id).attr("disabled", true);
             }
         }
+        this.#syncExtraLayoutButtons();
     }
 
     #applyExplicitModelUiState(explicitModelUiState) {
@@ -1278,10 +1279,12 @@ export class SignRequestParams extends EventFactory {
             this.addImage = true;
             this.#toggleImage();
         }
+        this.#syncExtraLayoutButtons();
     }
 
     syncExtraLayoutFromState() {
         if (this.divExtra == null || !this.addExtra) {
+            this.#syncExtraLayoutButtons();
             return;
         }
 
@@ -1294,6 +1297,7 @@ export class SignRequestParams extends EventFactory {
         }
 
         this.#refreshExtraDiv();
+        this.#syncExtraLayoutButtons();
     }
 
     #getNewScale(ui) {
@@ -1932,14 +1936,13 @@ export class SignRequestParams extends EventFactory {
                 this.cross.css('background-size', 0);
                 $("#signImage_" + this.id).addClass("btn-outline-dark");
                 $("#signExtra_" + this.id).attr("disabled", true);
-                $("#signExtraOnTop_" + this.id).attr("disabled", true);
-                $("#signExtraRight_" + this.id).attr("disabled", true);
                 $("#signPrevImage_" + this.id).attr("disabled", true);
                 $("#signNextImage_" + this.id).attr("disabled", true);
                 if(!this.isShare) {
                     localStorage.setItem('addImage', false);
                 }
                 this.addImage = !this.addImage;
+                this.#syncExtraLayoutButtons();
                 this.#refreshExtraDiv()
                 this.#updateSize();
             }
@@ -1958,14 +1961,13 @@ export class SignRequestParams extends EventFactory {
             this.cross.css('background-size', (this.signWidth - this.extraWidth) * this.currentScale);
             $("#signImage_" + this.id).removeClass("btn-outline-dark");
             $("#signExtra_" + this.id).attr("disabled", false);
-            $("#signExtraOnTop_" + this.id).attr("disabled", false);
-            $("#signExtraRight_" + this.id).attr("disabled", false);
             $("#signPrevImage_" + this.id).attr("disabled", false);
             $("#signNextImage_" + this.id).attr("disabled", false);
             if(this.restoreExtraOnTop) {
                 this.restoreExtraOnTop = false;
                 this.#toggleExtraOnTop();
             }
+            this.#syncExtraLayoutButtons();
             if(!this.isShare) {
                 localStorage.setItem('addExtra', true);
                 localStorage.setItem('addImage', true);
@@ -1981,17 +1983,12 @@ export class SignRequestParams extends EventFactory {
         this.addExtra = !this.addExtra;
         let self = this;
         const signImageButton = $("#signImage_" + this.id);
-        const extraOnTopButton = $("#signExtraOnTop_" + this.id);
-        const extraRightButton = $("#signExtraRight_" + this.id);
         if(this.addExtra) {
             $("#signExtra_" + this.id).addClass("btn-outline-dark");
             signImageButton.attr("disabled", false);
             if(!this.addImage) {
                 signImageButton.addClass("btn-outline-dark");
             }
-            extraOnTopButton.removeAttr("disabled");
-            extraRightButton.removeAttr("disabled");
-            this.#refreshExtraLayoutButtons();
             if(this.divExtra == null) {
                 this.typeSign = "Signature";
                 if (this.isVisa) this.typeSign = "Visa";
@@ -2023,16 +2020,13 @@ export class SignRequestParams extends EventFactory {
             signImageButton.attr("disabled", true);
             signImageButton.removeClass("btn-outline-dark");
             $("#signExtra_" + this.id).removeClass("btn-outline-dark");
-            extraOnTopButton.attr("disabled", true);
-            extraRightButton.attr("disabled", true);
-            extraOnTopButton.removeClass("btn-outline-dark");
-            extraRightButton.removeClass("btn-outline-dark");
             if(this.divExtra != null) {
                 this.divExtra.addClass("d-none");
             }
             this.signHeight -= this.extraHeight;
             this.extraHeight = 0;
         }
+        this.#syncExtraLayoutButtons();
         this.#updateSize();
         if(!this.firstLaunch && !this.isShare) {
             localStorage.setItem('addExtra', this.addExtra);
@@ -2055,6 +2049,34 @@ export class SignRequestParams extends EventFactory {
             extraOnTopButton.removeClass("btn-outline-dark");
             extraRightButton.addClass("btn-outline-dark");
         }
+    }
+
+    #hasActiveExtraContent() {
+        return this.extraType || this.extraName || this.extraDate || !this.isExtraText;
+    }
+
+    #syncExtraLayoutButtons() {
+        const extraOnTopButton = $("#signExtraOnTop_" + this.id);
+        const extraRightButton = $("#signExtraRight_" + this.id);
+        const hasActiveExtraContent = this.#hasActiveExtraContent();
+
+        if(!hasActiveExtraContent) {
+            if(this.divExtra != null && !this.extraOnTop) {
+                this.#setExtraLayout(true);
+                return;
+            }
+            this.extraOnTop = true;
+            if(this.divExtra != null) {
+                this.divExtra.addClass("div-extra-top");
+                this.divExtra.removeClass("div-extra-right");
+            }
+        }
+
+        this.#refreshExtraLayoutButtons();
+
+        const shouldDisable = !this.addExtra || !hasActiveExtraContent;
+        extraOnTopButton.attr("disabled", shouldDisable);
+        extraRightButton.attr("disabled", shouldDisable);
     }
 
     #setExtraLayout(extraOnTop) {
@@ -2138,6 +2160,7 @@ export class SignRequestParams extends EventFactory {
                 localStorage.setItem('extraOnTop', this.extraOnTop);
             }
         }
+        this.#syncExtraLayoutButtons();
         if(!this.isLight) {
             this.#refreshAllPagesSigns();
         }
@@ -2179,6 +2202,7 @@ export class SignRequestParams extends EventFactory {
             $("#extraType_" + this.id).addClass("btn-outline-dark");
         }
         this.extraType = !this.extraType;
+        this.#syncExtraLayoutButtons();
         this.#updateSize();
         this.#refreshExtraDiv();
         if(!this.firstLaunch && !this.isShare) {
@@ -2206,6 +2230,7 @@ export class SignRequestParams extends EventFactory {
             $("#extraName_" + this.id).addClass("btn-outline-dark");
         }
         this.extraName = !this.extraName;
+        this.#syncExtraLayoutButtons();
         this.#updateSize();
         this.#refreshExtraDiv();
         if(!this.firstLaunch && !this.isShare) {
@@ -2233,6 +2258,7 @@ export class SignRequestParams extends EventFactory {
             $("#extraDate_" + this.id).addClass("btn-outline-dark");
         }
         this.extraDate = !this.extraDate;
+        this.#syncExtraLayoutButtons();
         this.#updateSize();
         this.#refreshExtraDiv();
         if(!this.firstLaunch && !this.isShare) {
@@ -2267,6 +2293,7 @@ export class SignRequestParams extends EventFactory {
             this.textareaExtra.val(this.savedText);
         }
         this.isExtraText = !this.isExtraText;
+        this.#syncExtraLayoutButtons();
         this.#updateSize();
         this.#refreshExtraDiv();
         if(!this.firstLaunch && !this.isShare) {
