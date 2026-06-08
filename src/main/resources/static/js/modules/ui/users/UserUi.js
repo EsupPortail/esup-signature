@@ -346,7 +346,7 @@ export class UserUi {
     }
 
     computePreviewSignScale(previewParams) {
-        const explicitScale = Number.parseFloat(previewParams?.signScale / .75);
+        const explicitScale = Number.parseFloat(previewParams?.signScale);
         if (Number.isFinite(explicitScale) && explicitScale > 0) {
             return explicitScale;
         }
@@ -370,7 +370,7 @@ export class UserUi {
             return;
         }
 
-        $("#extraTools_" + signRequestParams.id).addClass("d-none");
+        this.applySignRequestParamsPreviewChrome();
         if (signRequestParams.cross?.hasClass("ui-resizable")) {
             try {
                 signRequestParams.cross.resizable("enable");
@@ -388,24 +388,21 @@ export class UserUi {
 
         const previewId = signRequestParams.id;
         $(document).off(".userSignRequestParamsPreview");
+        this.applySignRequestParamsPreviewChrome();
+    }
 
-        $(document).on("mousedown.userSignRequestParamsPreview", event => {
-            const target = $(event.target);
-            if (target.closest("#cross_" + previewId).length || target.closest("#crossTools_" + previewId).length) {
-                return;
-            }
-            this.closePreviewExtraTools();
-        });
+    applySignRequestParamsPreviewChrome() {
+        const signRequestParams = this.signRequestParams;
+        if (signRequestParams?.id == null) {
+            return;
+        }
 
-        $("#displayMoreTools_" + previewId).off(".userSignRequestParamsPreview")
-            .on("mousedown.userSignRequestParamsPreview", () => {
-                window.setTimeout(() => {
-                    const extraTools = $("#extraTools_" + previewId);
-                    if (extraTools.hasClass("d-none")) {
-                        this.closePreviewExtraTools();
-                    }
-                }, 0);
-            });
+        const previewId = signRequestParams.id;
+        $("#defaultTools_" + previewId).hide();
+        // $("#textExtra_" + previewId).disable();
+        $("#extraTools_" + previewId)
+            .removeClass("d-none")
+            .css({right: "30px", top: "40px"});
     }
 
     recenterSignRequestParamsPreview() {
@@ -469,7 +466,7 @@ export class UserUi {
             this.userType === 'otp',
             null,
             0,
-            1,
+            2,
             1,
             this.userName,
             this.userName,
@@ -490,15 +487,20 @@ export class UserUi {
         this.signRequestParams.generatedSignImageNumber = generatedSignImageNumber;
         this.signRequestParams.parapheSignImageNumber = parapheSignImageNumber;
         this.bindSignRequestParamsPreviewUi();
+        this.applySignRequestParamsPreviewChrome();
         this.recenterSignRequestParamsPreview();
 
         if (Number.isFinite(Number.parseInt(fallbackSignImageNumber, 10))) {
             this.signRequestParams.changeSignImage(fallbackSignImageNumber).catch(error => {
                 console.debug('Unable to initialize signature preview image', error);
-            }).finally(() => this.applySignRequestParamsPreviewText(normalizedPreviewParams));
+            }).finally(() => {
+                this.applySignRequestParamsPreviewChrome();
+                this.applySignRequestParamsPreviewText(normalizedPreviewParams);
+            });
             return;
         }
 
+        this.applySignRequestParamsPreviewChrome();
         this.applySignRequestParamsPreviewText(normalizedPreviewParams);
     }
 
