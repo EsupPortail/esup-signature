@@ -59,7 +59,11 @@ export class SignRequestParams extends EventFactory {
         this.isSign = isSign;
         this.isVisa = isVisa;
         this.signScale = 0.5 * this.getBrowserZoom();
-        localStorage.setItem("zoom", this.signScale);
+        if(localStorage.getItem("zoom") != null) {
+            this.signScale = localStorage.getItem("zoom");
+        } else {
+            localStorage.setItem("zoom", this.signScale);
+        }
         this.firstLaunch = true;
         this.firstCrossAlert = true;
         this.cross = null;
