@@ -420,7 +420,7 @@
                 }
                 container.innerHTML = '';
                 try {
-                    const pdf = await pdfjsLib.getDocument(getAttachmentInlineUrl(attachmentId)).promise;
+                    const pdf = await pdfjsLib.getDocument({url : getAttachmentInlineUrl(attachmentId)}).promise;
                     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
                         const page = await pdf.getPage(pageNumber);
                         const canvas = document.createElement('canvas');
@@ -434,7 +434,7 @@
                         container.appendChild(canvas);
                     }
                 } catch (error) {
-                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                    alert(error.message);                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
                 }
             }
 
