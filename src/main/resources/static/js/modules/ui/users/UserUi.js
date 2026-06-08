@@ -344,7 +344,7 @@ export class UserUi {
     }
 
     computePreviewSignScale(previewParams) {
-        const explicitScale = Number.parseFloat(previewParams?.signScale);
+        const explicitScale = Number.parseFloat(previewParams?.signScale * 2);
         if (Number.isFinite(explicitScale) && explicitScale > 0) {
             return explicitScale;
         }

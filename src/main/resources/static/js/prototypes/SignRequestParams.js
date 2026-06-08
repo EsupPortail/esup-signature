@@ -12,6 +12,19 @@ export class SignRequestParams extends EventFactory {
     constructor(isOtp, signRequestParamsModel, id, scale, page, userName, authUserName, restore, isSign, isVisa, isElec, phone, light, signImages, scrollTop, csrf, signType, signatureUiConfig = null, signRequestId = null) {
         super();
         const explicitModelSignImageNumber = Number.parseInt(signRequestParamsModel?.signImageNumber, 10);
+        const explicitModelSignScale = Number.parseFloat(signRequestParamsModel?.signScale);
+        const explicitModelUiState = signRequestParamsModel != null
+            ? {
+                addWatermark: signRequestParamsModel?.addWatermark === true,
+                addExtra: signRequestParamsModel?.addExtra === true,
+                extraOnTop: signRequestParamsModel?.extraOnTop !== false,
+                extraType: signRequestParamsModel?.extraType === true,
+                extraName: signRequestParamsModel?.extraName === true,
+                extraDate: signRequestParamsModel?.extraDate === true,
+                extraText: String(signRequestParamsModel?.extraText ?? ""),
+                addImage: signRequestParamsModel?.addImage !== false
+            }
+            : null;
         Object.defineProperty(this, "signatureUiConfig", {
             value: signatureUiConfig,
             writable: true,
@@ -58,11 +71,15 @@ export class SignRequestParams extends EventFactory {
         this.restore = restore;
         this.isSign = isSign;
         this.isVisa = isVisa;
-        this.signScale = 0.5 * this.getBrowserZoom();
-        if(localStorage.getItem("zoom") != null) {
-            this.signScale = localStorage.getItem("zoom");
-        } else {
-            localStorage.setItem("zoom", this.signScale);
+        this.signScale = Number.isFinite(explicitModelSignScale) && explicitModelSignScale > 0
+            ? explicitModelSignScale
+            : 0.5 * this.getBrowserZoom();
+        if(!(Number.isFinite(explicitModelSignScale) && explicitModelSignScale > 0)) {
+            if(localStorage.getItem("zoom") != null) {
+                this.signScale = parseFloat(localStorage.getItem("zoom"));
+            } else {
+                localStorage.setItem("zoom", this.signScale);
+            }
         }
         this.firstLaunch = true;
         this.firstCrossAlert = true;
@@ -114,7 +131,7 @@ export class SignRequestParams extends EventFactory {
             this.green = 0;
             this.blue = 0;
             this.addImage = true;
-            if(restore && !isVisa) {
+            if((restore && !isVisa) || (explicitModelUiState != null && isSign && !isVisa)) {
                 this.addExtra = false;
                 this.addWatermark = false;
                 this.extraText = "";
@@ -127,6 +144,9 @@ export class SignRequestParams extends EventFactory {
             this.#initCross();
             if(!restore && isSign) {
                 this.#restoreFromFavorite();
+            }
+            if(explicitModelUiState != null && isSign) {
+                this.#applyExplicitModelUiState(explicitModelUiState);
             }
         }
         this.stringLength = 1;
@@ -141,6 +161,12 @@ export class SignRequestParams extends EventFactory {
             this.yPos = (mid - this.offset) / scale / this.getBrowserZoom();
         }
         if (!light && this.cross != null && this.cross.length) {
+            if(this.textareaExtra != null && explicitModelUiState?.extraText !== "") {
+                this.savedText = explicitModelUiState.extraText;
+                this.extraText = explicitModelUiState.extraText;
+                this.textareaExtra.val(explicitModelUiState.extraText);
+                this.#refreshExtraDiv();
+            }
             this.applyCurrentSignRequestParams();
             this.refreshVisualState();
         }
@@ -1147,6 +1173,47 @@ export class SignRequestParams extends EventFactory {
             if(!this.addExtra) {
                 $("#signImage_" + this.id).attr("disabled", true);
             }
+        }
+    }
+
+    #applyExplicitModelUiState(explicitModelUiState) {
+        if (explicitModelUiState == null || !this.isSign || this.isVisa) {
+            return;
+        }
+
+        if (explicitModelUiState.addWatermark) {
+            this.addWatermark = false;
+            this.#toggleWatermark();
+        }
+
+        if (explicitModelUiState.addExtra) {
+            this.addExtra = false;
+            this.#toggleExtra();
+            if (!explicitModelUiState.extraOnTop && this.divExtra != null && this.extraOnTop) {
+                this.#toggleExtraOnTop();
+            }
+            if (explicitModelUiState.extraType) {
+                this.extraType = false;
+                this.#toggleType();
+            }
+            if (explicitModelUiState.extraName) {
+                this.extraName = false;
+                this.#toggleName();
+            }
+            if (explicitModelUiState.extraText !== "") {
+                this.savedText = explicitModelUiState.extraText;
+                this.isExtraText = false;
+                this.#toggleText();
+            }
+            if (explicitModelUiState.extraDate) {
+                this.extraDate = false;
+                this.#toggleDate();
+            }
+        }
+
+        if (explicitModelUiState.addImage === false && this.addExtra && this.addImage) {
+            this.addImage = true;
+            this.#toggleImage();
         }
     }
 
@@ -2290,7 +2357,7 @@ export class SignRequestParams extends EventFactory {
         this.signWidth = Math.round(this.originalWidth * this.signScale) + this.extraWidth;
         this.signHeight = Math.round(this.originalHeight * this.signScale) + this.extraHeight;
 
-        if (this.addExtra) {
+        if (this.addExtra && this.divExtra != null) {
             if (!this.extraOnTop) {
                 this.divExtra.css('width', Math.round(this.extraWidth * this.currentScale) + "px");
             } else {
@@ -2301,7 +2368,7 @@ export class SignRequestParams extends EventFactory {
         if (this.addImage) {
             this.cross.css('background-size', Math.round(ui.size.width - this.extraWidth * this.currentScale) + "px");
         }
-        if (this.addExtra) {
+        if (this.addExtra && this.divExtra != null) {
             this.#refreshExtraDiv();
         }
         this.canvas.css("width", (this.signWidth - this.extraWidth - this.padMargin) * this.currentScale);

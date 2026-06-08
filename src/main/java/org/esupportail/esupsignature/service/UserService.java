@@ -426,7 +426,7 @@ public class UserService {
                 signRequestParams.setExtraDate(signRequestParamsJson.getExtraDate());
                 signRequestParams.setExtraOnTop(signRequestParamsJson.getExtraOnTop());
                 signRequestParams.setTextPart(signRequestParamsJson.getTextPart());
-                signRequestParams.setSignScale(signRequestParamsJson.getSignScale());
+                signRequestParams.setSignScale(signRequestParamsJson.getSignScale() / 2);
                 signRequestParams.setRed(signRequestParamsJson.getRed());
                 signRequestParams.setGreen(signRequestParamsJson.getGreen());
                 signRequestParams.setBlue(signRequestParamsJson.getBlue());
