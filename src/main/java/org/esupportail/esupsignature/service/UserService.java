@@ -413,6 +413,7 @@ public class UserService {
                 signRequestParams.setyPos(signRequestParamsJson.getyPos());
                 signRequestParams.setSignImageNumber(signRequestParamsJson.getSignImageNumber());
                 signRequestParams.setAddWatermark(signRequestParamsJson.getAddWatermark());
+                signRequestParams.setAddImage(signRequestParamsJson.getAddImage());
                 signRequestParams.setAddExtra(signRequestParamsJson.getAddExtra());
                 signRequestParams.setIsExtraText(signRequestParamsJson.getIsExtraText());
                 if(signRequestParamsJson.getIsExtraText()) {
@@ -424,6 +425,13 @@ public class UserService {
                 signRequestParams.setExtraName(signRequestParamsJson.getExtraName());
                 signRequestParams.setExtraDate(signRequestParamsJson.getExtraDate());
                 signRequestParams.setExtraOnTop(signRequestParamsJson.getExtraOnTop());
+                signRequestParams.setTextPart(signRequestParamsJson.getTextPart());
+                signRequestParams.setSignScale(signRequestParamsJson.getSignScale());
+                signRequestParams.setExtraText(signRequestParamsJson.getExtraText());
+                signRequestParams.setRed(signRequestParamsJson.getRed());
+                signRequestParams.setGreen(signRequestParamsJson.getGreen());
+                signRequestParams.setBlue(signRequestParamsJson.getBlue());
+                signRequestParams.setFontSize(signRequestParamsJson.getFontSize());
             } catch (JsonProcessingException e) {
                 logger.warn("no signRequestParams returned", e);
             }
