@@ -107,7 +107,7 @@ body.es-signrequest-page #tools .step-horizontal-v2 {
 }
 
 body.es-signrequest-page #tools .step-horizontal-v2-content {
-    width: 100%;
+    /*width: 100%;*/
     min-width: 0;
 }
 
