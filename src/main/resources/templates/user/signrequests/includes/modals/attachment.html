@@ -153,9 +153,14 @@
                         </div>
                         <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
                             <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                                <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-out" title="Zoom arrière" th:attr="data-attachment-id=${attachment.id}">-</button>
+                                    <span class="badge text-bg-light js-pdf-zoom-value" style="width: 100px;" th:attr="data-attachment-id=${attachment.id}">150%</span>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-in" title="Zoom avant" th:attr="data-attachment-id=${attachment.id}">+</button>
+                                </div>
                                 <div th:id="'pdfContainer_' + ${attachment.id}"
                                      class="js-pdf-container d-flex flex-column align-items-center"
-                                     style="height: 100%; overflow: auto;"></div>
+                                     style="height: calc(100% - 48px); overflow: auto;"></div>
                             </th:block>
                             <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
                                 <div class="alert alert-info">
@@ -190,6 +195,11 @@
             const feedback = document.getElementById('attachment-feedback');
             const previewModalsContainer = document.getElementById('attachment-preview-modals');
             const attachmentBadge = document.getElementById('attachment-badge');
+            const DEFAULT_PDF_SCALE = 1.5;
+            const MIN_PDF_SCALE = 0.5;
+            const MAX_PDF_SCALE = 2.5;
+            const PDF_SCALE_STEP = 0.25;
+            const pdfPreviewState = new Map();
 
             function escapeHtml(value) {
                 return String(value ?? '')
@@ -275,6 +285,95 @@
                     }
                 `;
                 document.head.appendChild(style);
+            }
+
+            function getPdfPreviewState(modalElement) {
+                if (!modalElement) {
+                    return null;
+                }
+                const attachmentId = modalElement.dataset.attachmentId;
+                if (!attachmentId) {
+                    return null;
+                }
+                if (!pdfPreviewState.has(attachmentId)) {
+                    pdfPreviewState.set(attachmentId, {
+                        pdf: null,
+                        scale: DEFAULT_PDF_SCALE,
+                        loadingPromise: null,
+                        renderPromise: null
+                    });
+                }
+                return pdfPreviewState.get(attachmentId);
+            }
+
+            function updatePdfZoomLabel(modalElement, scale) {
+                const zoomLabel = modalElement?.querySelector('.js-pdf-zoom-value');
+                if (!zoomLabel || typeof scale !== 'number' || Number.isNaN(scale)) {
+                    return;
+                }
+                zoomLabel.textContent = `${Math.round(scale * 100)}%`;
+            }
+
+            async function loadPdfDocument(modalElement) {
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
+                    return null;
+                }
+                if (state.pdf) {
+                    return state.pdf;
+                }
+                if (!state.loadingPromise) {
+                    const attachmentId = modalElement.dataset.attachmentId;
+                    state.loadingPromise = pdfjsLib.getDocument({ url: getAttachmentInlineUrl(attachmentId) }).promise
+                        .then((pdf) => {
+                            state.pdf = pdf;
+                            return pdf;
+                        })
+                        .finally(() => {
+                            state.loadingPromise = null;
+                        });
+                }
+                return state.loadingPromise;
+            }
+
+            async function renderPdfPages(modalElement) {
+                const container = modalElement?.querySelector('.js-pdf-container');
+                const state = getPdfPreviewState(modalElement);
+                if (!container || !state) {
+                    return;
+                }
+                const pdf = await loadPdfDocument(modalElement);
+                if (!pdf) {
+                    return;
+                }
+
+                updatePdfZoomLabel(modalElement, state.scale);
+                container.innerHTML = '';
+                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                    const page = await pdf.getPage(pageNumber);
+                    const viewport = page.getViewport({ scale: state.scale });
+                    const { pageWrapper, canvas, linksLayer } = createPdfPreviewPage(pageNumber, viewport);
+                    const context = canvas.getContext('2d');
+                    await page.render({ canvasContext: context, viewport }).promise;
+                    await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
+                    container.appendChild(pageWrapper);
+                }
+            }
+
+            async function changePdfZoom(modalElement, delta) {
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
+                    return;
+                }
+                const nextScale = Math.min(MAX_PDF_SCALE, Math.max(MIN_PDF_SCALE, Number((state.scale + delta).toFixed(2))));
+                if (nextScale === state.scale) {
+                    return;
+                }
+                state.scale = nextScale;
+                if (state.renderPromise) {
+                    await state.renderPromise;
+                }
+                await renderPdfPreview(modalElement, { force: true });
             }
 
             function createPdfPreviewPage(pageNumber, viewport) {
@@ -507,7 +606,12 @@
                                 </div>
                                 <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
                                     ${isPdfFile(attachment.fileName)
-                                        ? `<div id="pdfContainer_${attachment.id}" class="js-pdf-container d-flex flex-column align-items-center" style="height: 100%; overflow: auto;"></div>`
+                                        ? `<div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-out" title="Zoom arrière" data-attachment-id="${attachment.id}">-</button>
+                                                <span class="badge text-bg-light js-pdf-zoom-value" data-attachment-id="${attachment.id}">${Math.round(DEFAULT_PDF_SCALE * 100)}%</span>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-in" title="Zoom avant" data-attachment-id="${attachment.id}">+</button>
+                                           </div>
+                                           <div id="pdfContainer_${attachment.id}" class="js-pdf-container d-flex flex-column align-items-center" style="height: calc(100% - 48px); overflow: auto;"></div>`
                                         : `<div class="alert alert-info">Aperçu indisponible pour ce format. <a href="${getAttachmentInlineUrl(attachment.id)}" target="_blank">Télécharger le document</a></div>`}
                                 </div>
                             </div>
@@ -552,32 +656,37 @@
                 });
             }
 
-            async function renderPdfPreview(modalElement) {
-                if (!modalElement || modalElement.dataset.pdfLoaded === 'true' || !isPdfFile(modalElement.dataset.fileName)) {
+            async function renderPdfPreview(modalElement, options = {}) {
+                if (!modalElement || !isPdfFile(modalElement.dataset.fileName)) {
                     return;
                 }
-                modalElement.dataset.pdfLoaded = 'true';
-                const attachmentId = modalElement.dataset.attachmentId;
-                const container = modalElement.querySelector('.js-pdf-container');
-                if (!container) {
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
                     return;
                 }
-                container.innerHTML = '';
+                if (modalElement.dataset.pdfLoaded === 'true' && !options.force) {
+                    updatePdfZoomLabel(modalElement, state.scale);
+                    return;
+                }
+                if (state.renderPromise && !options.force) {
+                    return state.renderPromise;
+                }
+                if (state.renderPromise && options.force) {
+                    await state.renderPromise;
+                }
                 try {
                     ensurePdfPreviewLinkStyles();
-                    const pdf = await pdfjsLib.getDocument({url : getAttachmentInlineUrl(attachmentId)}).promise;
-                    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-                        const page = await pdf.getPage(pageNumber);
-                        const viewport = page.getViewport({ scale: 1.5 });
-                        const { pageWrapper, canvas, linksLayer } = createPdfPreviewPage(pageNumber, viewport);
-                        const context = canvas.getContext('2d');
-                        await page.render({ canvasContext: context, viewport }).promise;
-                        await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
-                        container.appendChild(pageWrapper);
-                    }
+                    state.renderPromise = renderPdfPages(modalElement);
+                    await state.renderPromise;
+                    modalElement.dataset.pdfLoaded = 'true';
                 } catch (error) {
                     alert(error.message);
-                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                    const container = modalElement.querySelector('.js-pdf-container');
+                    if (container) {
+                        container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                    }
+                } finally {
+                    state.renderPromise = null;
                 }
             }
 
@@ -592,6 +701,21 @@
             }
 
             document.querySelectorAll('.js-attachment-preview-modal').forEach(setupPreviewModal);
+
+            document.addEventListener('click', async (event) => {
+                const zoomInButton = event.target.closest('.js-pdf-zoom-in');
+                if (zoomInButton) {
+                    const modalElement = zoomInButton.closest('.js-attachment-preview-modal');
+                    await changePdfZoom(modalElement, PDF_SCALE_STEP);
+                    return;
+                }
+
+                const zoomOutButton = event.target.closest('.js-pdf-zoom-out');
+                if (zoomOutButton) {
+                    const modalElement = zoomOutButton.closest('.js-attachment-preview-modal');
+                    await changePdfZoom(modalElement, -PDF_SCALE_STEP);
+                }
+            });
 
             window.openPdfModal = function (attachmentId) {
                 const modalElement = document.getElementById(`pdfModal${attachmentId}`);
