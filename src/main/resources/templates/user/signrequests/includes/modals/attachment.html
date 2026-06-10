@@ -283,6 +283,11 @@
                         cursor: pointer;
                         pointer-events: auto;
                     }
+                    .pdf-preview-link > a {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -463,12 +468,14 @@
                         continue;
                     }
 
+                    const linkAnnotationElement = document.createElement('div');
+                    linkAnnotationElement.className = 'pdf-preview-link linkAnnotation';
+                    linkAnnotationElement.style.left = `${left}px`;
+                    linkAnnotationElement.style.top = `${top}px`;
+                    linkAnnotationElement.style.width = `${width}px`;
+                    linkAnnotationElement.style.height = `${height}px`;
+
                     const linkElement = document.createElement('a');
-                    linkElement.className = 'pdf-preview-link';
-                    linkElement.style.left = `${left}px`;
-                    linkElement.style.top = `${top}px`;
-                    linkElement.style.width = `${width}px`;
-                    linkElement.style.height = `${height}px`;
 
                     if (linkUrl) {
                         linkElement.href = linkUrl;
@@ -490,7 +497,8 @@
                         });
                     }
 
-                    linksLayer.appendChild(linkElement);
+                    linkAnnotationElement.appendChild(linkElement);
+                    linksLayer.appendChild(linkAnnotationElement);
                 }
             }
 
