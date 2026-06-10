@@ -251,6 +251,150 @@
                 return String(fileName || '').toLowerCase().endsWith('.pdf');
             }
 
+            function ensurePdfPreviewLinkStyles() {
+                if (document.getElementById('pdf-preview-link-style')) {
+                    return;
+                }
+                const style = document.createElement('style');
+                style.id = 'pdf-preview-link-style';
+                style.textContent = `
+                    .pdf-preview-page {
+                        position: relative;
+                    }
+                    .pdf-preview-links-layer {
+                        position: absolute;
+                        inset: 0;
+                        z-index: 2;
+                        pointer-events: none;
+                    }
+                    .pdf-preview-link {
+                        position: absolute;
+                        display: block;
+                        cursor: pointer;
+                        pointer-events: auto;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            function createPdfPreviewPage(pageNumber, viewport) {
+                const pageWrapper = document.createElement('div');
+                pageWrapper.className = 'pdf-preview-page';
+                pageWrapper.dataset.pageNumber = String(pageNumber);
+                pageWrapper.style.width = `${viewport.width}px`;
+                pageWrapper.style.height = `${viewport.height}px`;
+                pageWrapper.style.marginBottom = '10px';
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.display = 'block';
+                canvas.style.width = `${viewport.width}px`;
+                canvas.style.height = `${viewport.height}px`;
+
+                const linksLayer = document.createElement('div');
+                linksLayer.className = 'pdf-preview-links-layer';
+                linksLayer.setAttribute('aria-hidden', 'false');
+
+                pageWrapper.appendChild(canvas);
+                pageWrapper.appendChild(linksLayer);
+
+                return { pageWrapper, canvas, linksLayer };
+            }
+
+            function getSafePdfExternalLink(annotation) {
+                const candidate = annotation?.url || annotation?.unsafeUrl || '';
+                if (!candidate) {
+                    return '';
+                }
+                try {
+                    const parsedUrl = new URL(candidate, window.location.origin);
+                    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsedUrl.protocol)
+                        ? parsedUrl.href
+                        : '';
+                } catch (error) {
+                    return '';
+                }
+            }
+
+            async function resolvePdfInternalDestination(pdf, destination) {
+                if (!destination) {
+                    return null;
+                }
+                const explicitDestination = typeof destination === 'string'
+                    ? await pdf.getDestination(destination)
+                    : destination;
+                if (!Array.isArray(explicitDestination) || explicitDestination.length === 0) {
+                    return null;
+                }
+                const pageRef = explicitDestination[0];
+                if (typeof pageRef === 'number') {
+                    return pageRef + 1;
+                }
+                if (pageRef && typeof pageRef === 'object') {
+                    const pageIndex = await pdf.getPageIndex(pageRef);
+                    return pageIndex + 1;
+                }
+                return null;
+            }
+
+            async function renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, scrollContainer) {
+                if (!page || !pdf || !viewport || !linksLayer) {
+                    return;
+                }
+
+                const annotations = await page.getAnnotations({ intent: 'display' });
+                for (const annotation of annotations) {
+                    if (annotation?.subtype !== 'Link' || !Array.isArray(annotation.rect)) {
+                        continue;
+                    }
+
+                    const linkUrl = getSafePdfExternalLink(annotation);
+                    const targetPageNumber = linkUrl ? null : await resolvePdfInternalDestination(pdf, annotation.dest);
+                    if (!linkUrl && !targetPageNumber) {
+                        continue;
+                    }
+
+                    const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(annotation.rect);
+                    const left = Math.min(x1, x2);
+                    const top = Math.min(y1, y2);
+                    const width = Math.abs(x2 - x1);
+                    const height = Math.abs(y2 - y1);
+                    if (!width || !height) {
+                        continue;
+                    }
+
+                    const linkElement = document.createElement('a');
+                    linkElement.className = 'pdf-preview-link';
+                    linkElement.style.left = `${left}px`;
+                    linkElement.style.top = `${top}px`;
+                    linkElement.style.width = `${width}px`;
+                    linkElement.style.height = `${height}px`;
+
+                    if (linkUrl) {
+                        linkElement.href = linkUrl;
+                        linkElement.target = '_blank';
+                        linkElement.rel = 'noopener noreferrer';
+                        linkElement.title = linkUrl;
+                        linkElement.setAttribute('aria-label', `Ouvrir le lien ${linkUrl}`);
+                    } else {
+                        linkElement.href = '#';
+                        linkElement.title = `Aller a la page ${targetPageNumber}`;
+                        linkElement.setAttribute('aria-label', `Aller a la page ${targetPageNumber}`);
+                        linkElement.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const targetPage = scrollContainer?.querySelector(`[data-page-number="${targetPageNumber}"]`);
+                            targetPage?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        });
+                    }
+
+                    linksLayer.appendChild(linkElement);
+                }
+            }
+
             function getAttachmentDownloadUrl(attachmentId) {
                 return `/${urlProfil}/signrequests/get-attachment/${signRequestId}/${attachmentId}`;
             }
@@ -420,21 +564,20 @@
                 }
                 container.innerHTML = '';
                 try {
+                    ensurePdfPreviewLinkStyles();
                     const pdf = await pdfjsLib.getDocument({url : getAttachmentInlineUrl(attachmentId)}).promise;
                     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
                         const page = await pdf.getPage(pageNumber);
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
                         const viewport = page.getViewport({ scale: 1.5 });
-                        canvas.width = viewport.width;
-                        canvas.height = viewport.height;
-                        canvas.style.display = 'block';
-                        canvas.style.marginBottom = '10px';
+                        const { pageWrapper, canvas, linksLayer } = createPdfPreviewPage(pageNumber, viewport);
+                        const context = canvas.getContext('2d');
                         await page.render({ canvasContext: context, viewport }).promise;
-                        container.appendChild(canvas);
+                        await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
+                        container.appendChild(pageWrapper);
                     }
                 } catch (error) {
-                    alert(error.message);                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                    alert(error.message);
+                    container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
                 }
             }
 

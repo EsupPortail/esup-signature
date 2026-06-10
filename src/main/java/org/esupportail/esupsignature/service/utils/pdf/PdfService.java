@@ -52,6 +52,7 @@ import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.LogService;
@@ -1091,6 +1092,21 @@ public class PdfService {
                                 pdField.setValue(value);
                             } catch (Exception e) {
                                 logger.warn("error on set value " + filedName + ", cause : " +e.getMessage());
+                            }
+                            if(isLastStep && form != null && StringUtils.hasText(value)) {
+                                Field formField = form.getFields().stream().filter(f -> f.getName().equals(filedName)).findFirst().orElse(null);
+                                if(formField != null && formField.getType().equals(FieldType.link)) {
+                                    for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                                        PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+                                        pdAnnotationLink.setRectangle(pdAnnotationWidget.getRectangle());
+                                        PDActionURI actionURI = new PDActionURI();
+                                        actionURI.setURI(value);
+                                        pdAnnotationLink.setAction(actionURI);
+                                        pdAnnotationLink.setPrinted(true);
+                                        int pageNum = pageNrByAnnotDict.getOrDefault(pdField.getPartialName(), 0);
+                                        pdDocument.getPage(pageNum).getAnnotations().add(pdAnnotationLink);
+                                    }
+                                }
                             }
                         }
                     }
