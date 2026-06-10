@@ -171,9 +171,9 @@ public class DataService {
     public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
-            return pdfService.fill(inputStream, data.getDatas(), false, true);
+            return pdfService.fill(inputStream, data.getDatas(), false, form);
         } else if(form.getDocument() != null) {
-            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow(), false), data.getDatas(), false, true);
+            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow(), false), data.getDatas(), false, form);
         } else {
             logger.error("no pdf model");
         }

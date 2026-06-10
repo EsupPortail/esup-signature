@@ -142,7 +142,8 @@ public class FormService {
             list = list.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
         }
         if(selectedTags != null && !selectedTags.isEmpty()) {
-            list = list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+            List<Long> selectedTagIds = selectedTags.stream().map(Tag::getId).toList();
+            list = list.stream().filter(f -> f.getTags().stream().map(Tag::getId).collect(Collectors.toSet()).containsAll(selectedTagIds)).toList();
         }
 		return list;
 	}
@@ -527,7 +528,8 @@ public class FormService {
             resultForms = formsManaged.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
         }
         if(selectedTags != null && !selectedTags.isEmpty()) {
-            resultForms = formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+            List<Long> selectedTagIds = selectedTags.stream().map(Tag::getId).toList();
+            resultForms = formsManaged.stream().filter(f -> f.getTags().stream().map(Tag::getId).collect(Collectors.toSet()).containsAll(selectedTagIds)).toList();
         }
 		return resultForms;
 	}
