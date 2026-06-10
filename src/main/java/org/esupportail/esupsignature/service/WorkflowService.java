@@ -551,7 +551,8 @@ public class WorkflowService {
                             Comparator.naturalOrder()))
                     .collect(Collectors.toList());
         } else {
-            return workflows.stream().filter(w -> new HashSet<>(w.getTags()).containsAll(selectedTags))
+            List<Long> selectedTagIds = selectedTags.stream().map(Tag::getId).toList();
+            return workflows.stream().filter(w -> w.getTags().stream().map(Tag::getId).collect(Collectors.toSet()).containsAll(selectedTagIds))
                     .sorted(Comparator.comparing(
                             w -> Optional.ofNullable(w.getDescription()).orElse("").toLowerCase(),
                             Comparator.naturalOrder()))

@@ -60,8 +60,9 @@ public class WorkflowAdminController {
 	private final PreAuthorizeService preAuthorizeService;
 	private final List<ExternalAuth> externalAuths;
 	private final UiFetchService uiFetchService;
+	private final TagService tagService;
 
-	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, UiFetchService uiFetchService) {
+	public WorkflowAdminController(TargetService targetService, UserService userService, RecipientService recipientService, SignBookService signBookService, WorkflowService workflowService, WorkflowStepService workflowStepService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, List<ExternalAuth> externalAuths, UiFetchService uiFetchService, TagService tagService) {
 		this.targetService = targetService;
 		this.userService = userService;
 		this.recipientService = recipientService;
@@ -72,15 +73,22 @@ public class WorkflowAdminController {
 		this.preAuthorizeService = preAuthorizeService;
         this.externalAuths = externalAuths;
 		this.uiFetchService = uiFetchService;
+		this.tagService = tagService;
     }
 
 	@GetMapping
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(name = "displayWorkflowType", required = false) DisplayWorkflowType displayWorkflowType,
-                       @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
+                       @RequestParam(name = "selectedTags", required = false) List<Long> selectedTagsIds,
                        Model model, HttpServletRequest httpServletRequest) {
 		String path = httpServletRequest.getRequestURI();
 		String workflowRole = path.startsWith("/admin") ? "admin" : "manager";
+		List<Tag> selectedTags = new ArrayList<>();
+		if(selectedTagsIds != null && !selectedTagsIds.isEmpty()) {
+			for(Long tagId : selectedTagsIds) {
+				selectedTags.add(tagService.getById(tagId));
+			}
+		}
 		var view = uiFetchService.buildAdminWorkflowListView(authUserEppn, workflowRole, displayWorkflowType, selectedTags);
 		model.addAttribute("displayWorkflowType", view.displayWorkflowType());
 		model.addAttribute("workflowRole", view.workflowRole());
