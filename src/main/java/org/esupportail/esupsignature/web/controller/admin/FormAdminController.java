@@ -57,8 +57,9 @@ public class FormAdminController {
 	private final PreAuthorizeService preAuthorizeService;
 	private final UiFetchService uiFetchService;
 	private final GlobalProperties globalProperties;
+	private final TagService tagService;
 
-	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties) {
+	public FormAdminController(FormService formService, UserService userService, DataExportService dataExportService, FieldService fieldService, ObjectMapper objectMapper, PreAuthorizeService preAuthorizeService, UiFetchService uiFetchService, GlobalProperties globalProperties, TagService tagService) {
 		this.formService = formService;
 		this.userService = userService;
 		this.dataExportService = dataExportService;
@@ -67,15 +68,22 @@ public class FormAdminController {
 		this.preAuthorizeService = preAuthorizeService;
 		this.uiFetchService = uiFetchService;
 		this.globalProperties = globalProperties;
+		this.tagService = tagService;
     }
 
 	@GetMapping()
 	public String list(@ModelAttribute("authUserEppn") String authUserEppn,
-                       @RequestParam(name = "selectedTags", required = false) List<Tag> selectedTags,
+                       @RequestParam(name = "selectedTags", required = false) List<Long> selectedTagsIds,
                        @RequestParam(name = "activeVersion", required = false) Boolean activeVersion,
                        Model model, HttpServletRequest httpServletRequest) {
 		String path = httpServletRequest.getRequestURI();
 		String workflowRole = path.startsWith("/admin") ? "admin" : "manager";
+		List<Tag> selectedTags = new ArrayList<>();
+		if(selectedTagsIds != null && !selectedTagsIds.isEmpty()) {
+			for(Long tagId : selectedTagsIds) {
+				selectedTags.add(tagService.getById(tagId));
+			}
+		}
 		var view = uiFetchService.buildAdminFormListView(authUserEppn, workflowRole, selectedTags, activeVersion);
 		model.addAttribute("forms", view.forms());
 		model.addAttribute("roles", view.roles());

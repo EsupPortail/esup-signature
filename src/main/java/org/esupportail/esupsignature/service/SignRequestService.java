@@ -353,10 +353,10 @@ public class SignRequestService {
 		List<Document> toSignDocuments = getToSignDocuments(signRequest.getId());
 		SignType signType = signRequest.getCurrentSignType();
 		byte[] filledInputStream;
-		boolean isForm = false;
+		Form form = null;
 		if(!isNextWorkFlowStep(signRequest.getParentSignBook())) {
 			if(data != null && data.getForm() != null) {
-				Form form = data.getForm();
+				form = data.getForm();
 				for (Field field : form.getFields()) {
 					if ("default".equals(field.getExtValueServiceName()) && "system".equals(field.getExtValueType())) {
 						if (field.getExtValueReturn().equals("id")) {
@@ -365,14 +365,13 @@ public class SignRequestService {
 						}
 					}
 				}
-				isForm = true;
 			}
 		}
 		byte[] bytes = toSignDocuments.get(0).getInputStream().readAllBytes();
 		Reports reports = validationService.validate(new ByteArrayInputStream(bytes), null);
 		if(formDataMap != null && !formDataMap.isEmpty() && toSignDocuments.get(0).isPdf()
 				&& (reports == null || reports.getSimpleReport().getSignatureIdList().isEmpty())) {
-			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), isForm);
+			filledInputStream = pdfService.fill(toSignDocuments.get(0).getInputStream(), formDataMap, isStepAllSignDone(signRequest.getParentSignBook()), form);
 		} else {
 			filledInputStream = toSignDocuments.get(0).getInputStream().readAllBytes();
 		}

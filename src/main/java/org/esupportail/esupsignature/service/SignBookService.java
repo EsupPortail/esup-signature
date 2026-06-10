@@ -2339,13 +2339,23 @@ public class SignBookService {
         calendar.set(9999, Calendar.DECEMBER, 31);
         Date endDateFilter = calendar.getTime();
         List<SignBook> signBooksToSign = signBookRepository.findToSign(user, null, null, null, startDateFilter, endDateFilter, Pageable.unpaged()).getContent();
-        List<SignBook> signBooks = signBooksToSign.stream().filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending)).sorted(Comparator.comparingLong(SignBook::getId)).collect(Collectors.toList());
+        Comparator<SignBook> signBookRecencyComparator = Comparator
+            .comparing(SignBook::getCreateDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(SignBook::getId, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .reversed();
+        List<SignBook> signBooks = signBooksToSign.stream()
+            .filter(signRequest -> signRequest.getStatus().equals(SignRequestStatus.pending))
+            .sorted(signBookRecencyComparator)
+            .collect(Collectors.toList());
         if(!userEppn.equals(authUserEppn)) {
             signBooks = signBooks.stream().filter(signRequest -> userShareService.checkShareForSignRequest(userEppn, authUserEppn, signRequest, ShareType.sign)).toList();
         }
         int indexOfSignRequest = signBooks.indexOf(currentSignRequest.getParentSignBook());
         if (indexOfSignRequest + 1 >= signBooks.size()) {
-            return signBooks.stream().filter(signBook -> !signBook.getId().equals(currentSignRequest.getParentSignBook().getId())).min(Comparator.comparingLong(SignBook::getId)).orElse(null);
+            return signBooks.stream()
+                .filter(signBook -> !signBook.getId().equals(currentSignRequest.getParentSignBook().getId()))
+                .findFirst()
+                .orElse(null);
         } else {
             if (currentSignRequest.getParentSignBook().getSignRequests().size() == 1) {
                 return signBooks.get(indexOfSignRequest + 1);
@@ -2370,12 +2380,23 @@ public class SignBookService {
     public SignRequest getNextSignRequest(Long signRequestId, Long nextSignBookId) {
         SignBook nextSignBook = getById(nextSignBookId);
         SignRequest currentSignRequest = signRequestService.getById(signRequestId);
-        Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream().filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId)).findAny();
+        Comparator<SignRequest> signRequestRecencyComparator = Comparator
+            .comparing(SignRequest::getCreateDate, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .thenComparing(SignRequest::getId, Comparator.nullsFirst(Comparator.naturalOrder()))
+            .reversed();
+        Optional<SignRequest> nextSignRequest = currentSignRequest.getParentSignBook().getSignRequests().stream()
+            .filter(s -> s.getStatus().equals(SignRequestStatus.pending) && !s.getId().equals(signRequestId))
+            .sorted(signRequestRecencyComparator)
+            .findFirst();
         if(nextSignRequest.isPresent()) {
             return nextSignRequest.get();
         }
         if(nextSignBook != null) {
-            return nextSignBook.getSignRequests().get(0);
+            return nextSignBook.getSignRequests().stream()
+                .filter(s -> s.getStatus().equals(SignRequestStatus.pending))
+                .sorted(signRequestRecencyComparator)
+                .findFirst()
+                .orElse(null);
         }
         return null;
     }

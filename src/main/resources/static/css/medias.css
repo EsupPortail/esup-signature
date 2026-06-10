@@ -208,6 +208,10 @@
         display: flex !important;
     }
 
+    .es-content-full-fixed {
+        margin-top: 40px;
+    }
+
     .navbar-brand {
         width: revert;
         margin-right: 0px;
@@ -481,7 +485,8 @@
 @media (max-width: 640px) {
 
     .es-auth-page {
-        padding: 1rem;
+        padding-right: 1rem;
+        padding-left:  1rem;
     }
 
     .es-auth-description,
@@ -494,7 +499,7 @@
         flex-direction: column;
     }
     .es-content-full {
-        margin-top: 40px;
+        /*margin-top: 40px;*/
     }
     .main-content, .es-main-content {
         margin-top: -40px !important;
@@ -568,7 +573,7 @@
     }
 
     .es-content-full {
-        margin-top: 40px;
+        /*margin-top: 40px;*/
     }
 
     .content,

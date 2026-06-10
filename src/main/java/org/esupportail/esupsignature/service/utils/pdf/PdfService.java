@@ -1004,10 +1004,10 @@ public class PdfService {
      * @param pdfFile Le flux du fichier PDF original
      * @param datas Les données à insérer dans le formulaire
      * @param isLastStep Indique si c'est la dernière étape de remplissage
-     * @param isForm Indique si le fichier doit être traité comme un formulaire
+     * @param form Indique si le fichier doit être traité comme un formulaire
      * @return Le fichier PDF modifié en tant que tableau de bytes
      */
-    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
+    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, Form form) {
         ByteArrayOutputStream interimOut = new ByteArrayOutputStream();
         try {
             PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
@@ -1094,7 +1094,7 @@ public class PdfService {
                             }
                         }
                     }
-                    if (!pdField.isReadOnly() && !isForm) {
+                    if (!pdField.isReadOnly() && form != null) {
                         pdField.setReadOnly(true);
                     }
                 }

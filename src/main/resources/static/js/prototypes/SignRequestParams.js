@@ -1486,8 +1486,6 @@ export class SignRequestParams extends EventFactory {
                 const dragRect = this.getBoundingClientRect();
                 self.#updatePlacementState(dragRect);
                 window.__isResizingCross = false;
-                // self.#simulateDrag(1, 1);
-                // self.#simulateDrag(-1, -1);
                 self.#refreshAllPagesSigns();
             }
         });

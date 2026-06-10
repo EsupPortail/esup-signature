@@ -6,8 +6,10 @@ export class SignatureFlowController {
         this.contextualPassword = "";
         this.contextualSignAll = false;
         this.gotoNextStorageKey = "esup-signature.gotoNext";
+        this.gotoNextToolbarToggleSelector = ".js-sign-goto-next-switch";
         this.removedImageStampOption = null;
         this.skipRestoreOnNextSignModalHide = false;
+        this.initGotoNextToolbarPreferenceBinding();
         this.initSignModalLifecycle();
         this.initRefuseModalLifecycle();
     }
@@ -29,12 +31,51 @@ export class SignatureFlowController {
         }
     }
 
-    syncGotoNextPreference(checkboxSelector) {
+    syncGotoNextPreference(checkboxSelector, value = this.getStoredGotoNextPreference()) {
         const gotoNextCheckbox = $(checkboxSelector);
         if (!gotoNextCheckbox.length) {
             return;
         }
-        gotoNextCheckbox.prop("checked", this.getStoredGotoNextPreference());
+        gotoNextCheckbox.prop("checked", value);
+    }
+
+    syncGotoNextToolbarButtons(value = this.getStoredGotoNextPreference()) {
+        const gotoNextButtons = $(this.gotoNextToolbarToggleSelector);
+        if (!gotoNextButtons.length) {
+            return;
+        }
+
+        const title = value
+            ? "Désactiver l'ouverture automatique de la demande suivante"
+            : "Activer l'ouverture automatique de la demande suivante";
+
+        gotoNextButtons
+            .toggleClass("active", value)
+            // .toggleClass("text-primary", value)
+            .toggleClass("text-dark", !value)
+            .attr("aria-pressed", String(value))
+            .attr("title", title);
+    }
+
+    syncAllGotoNextPreferences(value = this.getStoredGotoNextPreference()) {
+        this.syncGotoNextPreference("#signGotoNext", value);
+        this.syncGotoNextToolbarButtons(value);
+    }
+
+    initGotoNextToolbarPreferenceBinding() {
+        const gotoNextButtons = $(this.gotoNextToolbarToggleSelector);
+        if (!gotoNextButtons.length) {
+            return;
+        }
+
+        this.syncGotoNextToolbarButtons();
+        gotoNextButtons.off("click.signatureFlowController");
+        gotoNextButtons.on("click.signatureFlowController", event => {
+            event.preventDefault();
+            const nextValue = !this.getStoredGotoNextPreference();
+            this.storeGotoNextPreference(nextValue);
+            this.syncAllGotoNextPreferences(nextValue);
+        });
     }
 
     initGotoNextPreferenceBinding(checkboxSelector, onChange = null) {
@@ -48,6 +89,7 @@ export class SignatureFlowController {
         gotoNextCheckbox.on("change.signatureFlowController", event => {
             const isChecked = $(event.currentTarget).is(':checked');
             this.storeGotoNextPreference(isChecked);
+            this.syncAllGotoNextPreferences(isChecked);
             if (typeof onChange === "function") {
                 onChange(isChecked, $(event.currentTarget));
             }
@@ -391,9 +433,13 @@ export class SignatureFlowController {
         if (triggerElement.closest("#signModal").length) {
             const signGotoNext = $("#signGotoNext");
             if (signGotoNext.length && signGotoNext.is(':checked')) {
-                return signGotoNext.attr("data-es-next-url") ?? null;
+                return this.getGotoNextUrl();
             }
             return null;
+        }
+
+        if (this.getStoredGotoNextPreference()) {
+            return this.getGotoNextUrl();
         }
 
         return null;
@@ -402,6 +448,22 @@ export class SignatureFlowController {
     shouldPersistGotoNextPreference(trigger = null) {
         const triggerElement = trigger?.currentTarget != null ? $(trigger.currentTarget) : $();
         return triggerElement.closest("#signModal").length > 0;
+    }
+
+    getGotoNextUrl() {
+        const signGotoNext = $("#signGotoNext");
+        const signGotoNextUrl = signGotoNext.attr("data-es-next-url");
+        if (signGotoNextUrl != null && signGotoNextUrl !== "") {
+            return signGotoNextUrl;
+        }
+
+        const nextSignButton = $("#nextSignBookButton");
+        const nextSignButtonUrl = nextSignButton.attr("href");
+        if (nextSignButtonUrl != null && nextSignButtonUrl !== "") {
+            return nextSignButtonUrl;
+        }
+
+        return null;
     }
 
     setContextualPassword(password) {
