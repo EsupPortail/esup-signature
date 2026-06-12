@@ -152,7 +152,7 @@
                                             th:action="'/' + ${workflowRole} + '/workflows/remove-step/' + ${workflow.id} + '/' + ${iterator.index}"
                                             th:method="delete">
                                             <button th:id="${iterator.index}" type="button" title="Supprimer l'étape"
-                                                    class="btn btn-danger del-step-btn position-relative" style="left: -270px; bottom: -0px">
+                                                    class="btn btn-danger del-step-btn" style="left: -270px; bottom: -0px">
                                                 <i class="fi fi-rr-trash"></i>
                                             </button>
                                         </form>

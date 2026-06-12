@@ -110,6 +110,7 @@
                                     isPending=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending},
                                     isRefused=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused},
                                     isDraft=${signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft},
+                                    isEditableStatus=${isDraft || isPending},
                                     isWorkflowFinished=${showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).completed
                                          || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).exported
                                          || showSignRequest.signBookLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).cleaned
@@ -308,8 +309,16 @@
                                         </table>
                                     </th:block>
                                 </div>
-                                <div class="wv-100 dropdown dropdown-center float-end">
-                                    <button class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
+                                <th:block th:with="canResendLink=${isCurrent && signRequestFull.manager && isPending && !liveWorkflowStep.recipients.?[user.userType.name() == 'external'].isEmpty()},
+                                                   canShowLayerActions=${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)},
+                                                   canDownloadHistory=${signRequestFull.hasDocumentsHistory},
+                                                   canAddStep=${signRequestFull.updateAllowed && !isNextCompleted && isEditableStatus},
+                                                   canUpdateStep=${signRequestFull.updateAllowed && isEditableStatus && stepNumber >= signRequestFull.currentStepNumber},
+                                                   canDeleteStep=${signRequestFull.updateAllowed && signRequestFull.manager && isEditableStatus && showSignRequest.steps.size() > 1 && showSignRequest.steps.size() > signRequestFull.currentStepNumber && stepNumber >= signRequestFull.currentStepNumber},
+                                                   hasStepMenu=${canResendLink || canShowLayerActions || canDownloadHistory || canAddStep || canUpdateStep || canDeleteStep}">
+                                <div class="wv-100 dropdown dropdown-center float-end" th:classappend="${hasStepMenu ? '' : ' pb-1'}">
+                                    <button th:if="${hasStepMenu}"
+                                            class="btn btn-sm btn-transparent text-dark border-secondary-subtle"
                                             type="button"
                                             data-bs-toggle="dropdown"
                                             data-bs-popper="static"
@@ -317,19 +326,18 @@
                                             aria-expanded="false">
                                         <i class="fi fi-rr-menu-dots"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
-                                        <li>
-                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
+                                    <ul th:if="${hasStepMenu}" class="dropdown-menu dropdown-menu-end p-1" style="width:292px; text-wrap: auto; overflow: clip;">
+                                        <th:block th:each="recipient : ${liveWorkflowStep.recipients}" th:with="recipientAction=${showSignRequest.recipientActions.get(recipient.id)}">
+                                            <li th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
                                                 <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                         title="Envoyer un nouveau lien d'accès"
-                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'"
-                                                        th:if="${isCurrent  && signRequestFull.manager  && recipient.user.userType.name() == 'external'  && isPending}">
+                                                        th:onclick="'$(\'#menu-' + ${recipient.id} + '\').toggle();'">
                                                     <i class="fi fi-rr-link"></i> Renvoyer un lien d’accès à <span th:text="${recipient.user.email}"></span>
                                                 </button>
-                                            </th:block>
-                                        </li>
+                                            </li>
+                                        </th:block>
                                         <!-- Bouton visualisation document -->
-                                        <th:block th:if="${!signRequestFull.hasDocumentsHistory && (isCompleted || isWorkflowFinished)}">
+                                        <th:block th:if="${canShowLayerActions}">
                                             <li>
                                                 <button class="display-layer-btn d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                          th:data-step="${stepNumber}"
@@ -355,7 +363,7 @@
                                         </th:block>
 
                                         <!-- Lien téléchargement historique -->
-                                        <th:block th:unless="${!signRequestFull.hasDocumentsHistory}">
+                                        <th:block th:if="${canDownloadHistory}">
                                             <li>
                                                 <a class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                    th:href="@{'/ws-secure/global/get-documents-history/' + ${signRequestLight.id} + '/documents/' + ${iterator.index}}"
@@ -364,7 +372,7 @@
                                                 </a>
                                             </li>
                                         </th:block>
-                                         <li th:if="${signRequestFull.updateAllowed && !isNextCompleted  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)}">
+                                         <li th:if="${canAddStep}">
                                              <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
@@ -373,7 +381,7 @@
                                                  <i class="fi fi-rr-plus"></i> Ajouter une étape après
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${canUpdateStep}">
                                              <button class="d-flex align-items-center btn btn-transparent text-dark w-100 text-left"
                                                      type="button"
                                                      data-bs-toggle="modal"
@@ -381,7 +389,7 @@
                                                  <i class="fi fi-rr-pencil"></i> Modifier l'étape
                                              </button>
                                          </li>
-                                         <li th:if="${signRequestFull.updateAllowed && signRequestFull.manager  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && showSignRequest.steps.size() > 1  && showSignRequest.steps.size() > signRequestFull.currentStepNumber  && stepNumber >= signRequestFull.currentStepNumber}">
+                                         <li th:if="${canDeleteStep}">
                                              <form th:id="'del_' + ${iterator.index}"
                                                    th:action="'/user/signbooks/remove-live-step/' + ${showSignRequest.signBookLight.id} + '/' + ${iterator.index}"
                                                    th:method="delete">
@@ -395,6 +403,7 @@
                                          </li>
                                     </ul>
                                 </div>
+                                </th:block>
                             </div>
                             <div th:if="${signRequestFull.updateAllowed  && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft  || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending)  && stepNumber >= signRequestFull.currentStepNumber}"
                                  data-bs-focus="false"
