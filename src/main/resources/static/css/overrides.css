@@ -853,3 +853,17 @@ input, textarea, select {
 .step-vertical-content {
     background-color: var(--bs-white) !important;
 }
+
+:is(.linkAnnotation, .buttonWidgetAnnotation.pushButton):not(.hasBorder) > a:hover {
+    opacity: 0.5 !important;
+    border-radius: 4px !important;
+    border: 0px solid #0000EE !important;
+    background-color: #0000EE33 !important;
+}
+
+:is(.linkAnnotation, .buttonWidgetAnnotation.pushButton):not(.hasBorder) > a {
+    opacity: 0.5 !important;
+    border-radius: 4px !important;
+    /*border: 1px solid #0000EE33 !important;*/
+    /*background-color: #00000008 !important;*/
+}

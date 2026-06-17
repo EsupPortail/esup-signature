@@ -554,7 +554,7 @@ export class SignPlacementController extends EventFactory {
         return this.isHiddenVisa() || !this.showPlacementStep || this.hasPendingSignaturePlacement();
     }
 
-    syncSignatureActionButtons(forceEnabled = null) {
+    syncSignatureActionButtons(forceEnabled = null, skipFocus = false) {
         const {
             signLaunchButton,
             signAdvancedLaunchButton
@@ -568,6 +568,9 @@ export class SignPlacementController extends EventFactory {
         signAdvancedLaunchButton.prop("disabled", false);
         this.setButtonVariant(signLaunchButton, enabled ? "btn-success" : "btn-secondary");
         this.setButtonVariant(signAdvancedLaunchButton, enabled ? "btn-success" : "btn-secondary");
+        if(enabled && !skipFocus) {
+            signLaunchButton.focus();
+        }
     }
 
     isHiddenVisa() {
@@ -632,7 +635,7 @@ export class SignPlacementController extends EventFactory {
         addSignButton2.addClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-danger");
-        this.syncSignatureActionButtons(false);
+        this.syncSignatureActionButtons(false, true);
 
         this.setStepState(step1, true, false, false);
         this.setStepState(step2, false, false, true);
@@ -663,7 +666,7 @@ export class SignPlacementController extends EventFactory {
         addSignButton2.removeClass("pulse-success");
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
-        this.syncSignatureActionButtons();
+        this.syncSignatureActionButtons(null, singleVisibleStep);
 
         if (this.isHiddenVisa() || singleVisibleStep) {
             this.setStepState(step1, false, false, true);
