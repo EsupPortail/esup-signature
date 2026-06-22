@@ -96,7 +96,13 @@
                         <th class="d-none d-xl-table-cell">
                             <div class="d-flex text-center">
                                 <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
-                                <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fi fi-rr-sort-alt"></i></a>
+                                <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
+                                    <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                        <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                        <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                        <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                    </a>
+                                </th:block>
                             </div>
                         </th>
                         <th class="d-none d-xl-table-cell">
@@ -109,16 +115,34 @@
     <!--                                    </th:block>-->
     <!--                                </select>-->
                         </th>
-                        <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
+                        <th class="d-none d-xxxl-table-cell">
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
+                                <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                    Date dernière modification&nbsp;
+                                    <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                    <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                    <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                </a>
+                            </th:block>
+                        </th>
                         <th class="d-none d-md-table-cell">
-                            <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
-                                <option data-placeholder="true"></option>
-                                <option value="all">Tout</option>
-                                <option value="deleted">Supprimé</option>
-                                <th:block th:each="status : ${statuses}">
-                                    <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
+                            <div class="d-flex text-center">
+                                <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
+                                    <option data-placeholder="true"></option>
+                                    <option value="all">Tout</option>
+                                    <option value="deleted">Supprimé</option>
+                                    <th:block th:each="status : ${statuses}">
+                                        <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
+                                    </th:block>
+                                </select>
+                                <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
+                                    <a sd:pagination-sort="status" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                        <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                        <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                        <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                    </a>
                                 </th:block>
-                            </select>
+                            </div>
                         </th>
                         <th class=""><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
                         <th >Actions</th>
