@@ -765,7 +765,7 @@ export class WizUi {
             $("#send-form-submit").click();
             self.enableButtons();
         };
-        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + $('#send-form').find('[name="title"]').val() + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
+        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + encodeURIComponent($('#send-form').find('[name="title"]').val()) + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
     }
 
     sendSteps(url, stepsSources, successCallback, errorCallback) {
