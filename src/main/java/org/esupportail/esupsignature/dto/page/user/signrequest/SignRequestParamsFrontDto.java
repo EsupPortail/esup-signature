@@ -1,5 +1,7 @@
 package org.esupportail.esupsignature.dto.page.user.signrequest;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SignRequestParamsFrontDto {
 
     private Long id;
@@ -46,9 +48,13 @@ public class SignRequestParamsFrontDto {
     public void setSignWidth(Integer signWidth) { this.signWidth = signWidth; }
     public Integer getSignHeight() { return signHeight; }
     public void setSignHeight(Integer signHeight) { this.signHeight = signHeight; }
+    @JsonProperty("xPos")
     public Integer getXPos() { return xPos; }
+    @JsonProperty("xPos")
     public void setXPos(Integer xPos) { this.xPos = xPos; }
+    @JsonProperty("yPos")
     public Integer getYPos() { return yPos; }
+    @JsonProperty("yPos")
     public void setYPos(Integer yPos) { this.yPos = yPos; }
     public String getExtraText() { return extraText; }
     public void setExtraText(String extraText) { this.extraText = extraText; }
