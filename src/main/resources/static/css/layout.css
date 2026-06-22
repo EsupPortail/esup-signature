@@ -336,7 +336,7 @@ body.es-signrequest-page .es-signrequest-main-content > .es-workspace {
 
 .tools-admin,
 .es-tools-admin {
-    top: 128px;
+    /*top: 128px;*/
     margin-top: 8px;
 }
 
