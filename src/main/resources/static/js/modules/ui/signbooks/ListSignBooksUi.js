@@ -742,12 +742,43 @@ export class ListSignBooksUi {
         for (let i = 0 ; i < filters.length ; i++) {
             currentParams.set(filters.eq(i).attr('id'), filters.eq(i).val());
         }
+
+        if (!this.hasEffectiveFilterChange(currentParams)) {
+            return;
+        }
+
         const queryString = currentParams.toString();
         const targetUrl = "/" + this.mode + "/signbooks" + (queryString !== "" ? "?" + queryString : "");
         const currentUrl = window.location.pathname + window.location.search;
         if (targetUrl !== currentUrl) {
             document.location.href = targetUrl;
         }
+    }
+
+    hasEffectiveFilterChange(targetParams) {
+        const currentParams = new URLSearchParams(window.location.search);
+        const filterNames = new Set();
+        $('select.sign-request-filter, input.sign-request-filter').each(function () {
+            const filterName = $(this).attr('id');
+            if (filterName != null && filterName !== '') {
+                filterNames.add(filterName);
+            }
+        });
+
+        for (const filterName of filterNames) {
+            if (this.normalizeFilterValue(currentParams.get(filterName)) !== this.normalizeFilterValue(targetParams.get(filterName))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    normalizeFilterValue(value) {
+        if (value == null || value === '' || value === 'all' || value === '%') {
+            return '';
+        }
+        return value;
     }
 
     launchMassSign() {
