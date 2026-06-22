@@ -25,7 +25,7 @@
                 </div>
                 <div class="flex-grow-1">
                     <div class="p-0 m-2">
-                    <div class="input-group mb-3">
+                    <div class="input-group mb-3 admin-list-filters admin-list-filters-loading">
                         <span class="input-group-text">Filtrer</span>
                         <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
                             <th:block th:each="tag : ${allTags}">
@@ -39,12 +39,32 @@
                             <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
                         </select>
                     </div>
-                    <div class="table-fix-head scrollbar-style rounded-3">
-                        <table class="table table-light table-striped table-hover table-borderless">
+                    <div class="table-fix-head scrollbar-style rounded-3 admin-list-table-wrap">
+                        <table id="formsListTable" class="table table-light table-striped table-hover table-borderless admin-list-table">
+                            <colgroup>
+                                <col style="width: 72px;">
+                                <col style="width: 16%;">
+                                <col style="width: 20%;">
+                                <col style="width: 12%;">
+                                <col style="width: 86px;">
+                                <col style="width: 15%;">
+                                <col style="width: 72px;">
+                                <col style="width: 112px;">
+                                <col style="width: 86px;">
+                                <col style="width: 72px;">
+                                <col style="width: 12%;">
+                                <col style="width: 88px;">
+                            </colgroup>
                             <thead class="table-secondary">
                             <tr>
                                 <th>Id</th>
-                                <th class="w-25">Titre</th>
+                                <th>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-dark text-decoration-none js-sort-name" data-table-id="formsListTable" data-col-index="1">
+                                        Nom&nbsp;<i class="fi fi-rr-sort-alt" aria-hidden="true"></i>
+                                    </button>
+                                    <input type="search" class="form-control form-control-sm mt-1 js-search-name" data-table-id="formsListTable" data-col-index="1" placeholder="Rechercher">
+                                </th>
+                                <th>Titre</th>
                                 <th>Tags</th>
                                 <th>À la une</th>
                                 <th>Circuit associé</th>
@@ -59,6 +79,7 @@
                             <tbody>
                             <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
                                 <td><input type="text" th:value="${form.id}" disabled></td>
+                                <td class="clickable-td" th:text="${form.name}"></td>
                                 <td class="clickable-td" th:text="${form.title}"></td>
                                 <td th:class="${form.id != null}? 'clickable-td' : ''">
                                     <th:block th:each="tag : ${form.tags}">
@@ -233,6 +254,114 @@
                 navigateWithFilters({ activeVersion: this.value });
             });
         }
+    })();
+</script>
+<style>
+    .admin-list-table-wrap {
+        overflow-x: auto;
+    }
+
+    .admin-list-filters select.slim-select-simple[multiple] {
+        height: 38px;
+        min-height: 38px;
+        overflow: hidden;
+    }
+
+    .admin-list-filters .ss-main {
+        min-height: 38px;
+    }
+
+    .admin-list-filters-loading {
+        visibility: hidden;
+    }
+
+    .admin-list-table {
+        min-width: 1080px;
+        table-layout: fixed;
+    }
+
+    .admin-list-table th,
+    .admin-list-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .admin-list-table td {
+        white-space: nowrap;
+    }
+
+    .admin-list-table .badge,
+    .admin-list-table .list-group-item {
+        white-space: normal;
+    }
+
+    @media (max-width: 1199.98px) {
+        .admin-list-table {
+            min-width: 960px;
+        }
+    }
+</style>
+<script>
+    (() => {
+        const showFiltersWhenReady = () => {
+            document.querySelectorAll('.admin-list-filters-loading').forEach(filters => {
+                const selects = filters.querySelectorAll('select.slim-select-simple');
+                let attempts = 0;
+                const reveal = () => {
+                    const ready = Array.from(selects).every(select => select.nextElementSibling?.classList.contains('ss-main'));
+                    if (ready || attempts >= 60) {
+                        filters.classList.remove('admin-list-filters-loading');
+                        return;
+                    }
+                    attempts++;
+                    requestAnimationFrame(reveal);
+                };
+                reveal();
+            });
+        };
+
+        showFiltersWhenReady();
+
+        const normalize = value => value.trim().toLocaleLowerCase();
+
+        document.querySelectorAll('.js-search-name').forEach(input => {
+            const table = document.getElementById(input.dataset.tableId);
+            const columnIndex = Number(input.dataset.colIndex);
+            if (!table || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            input.addEventListener('input', () => {
+                const search = normalize(input.value);
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cell = row.cells[columnIndex];
+                    row.classList.toggle('d-none', search !== '' && !normalize(cell ? cell.textContent : '').includes(search));
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-sort-name').forEach(button => {
+            const table = document.getElementById(button.dataset.tableId);
+            const columnIndex = Number(button.dataset.colIndex);
+            if (!table || !table.tBodies.length || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            button.addEventListener('click', () => {
+                const tbody = table.tBodies[0];
+                const direction = button.dataset.direction === 'asc' ? -1 : 1;
+                button.dataset.direction = direction === 1 ? 'asc' : 'desc';
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.className = direction === 1 ? 'fi fi-rr-sort-amount-down' : 'fi fi-rr-sort-amount-up';
+                }
+
+                Array.from(tbody.rows)
+                    .sort((a, b) => direction * normalize(a.cells[columnIndex]?.textContent || '').localeCompare(normalize(b.cells[columnIndex]?.textContent || ''), 'fr'))
+                    .forEach(row => tbody.appendChild(row));
+            });
+        });
     })();
 </script>
 <div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">

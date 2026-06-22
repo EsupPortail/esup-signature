@@ -110,184 +110,186 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1">
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
-                </li>
-            </ul>
-            <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
-                Merci de configurer un circuit pour ce formulaire
-            </div>
-            <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
-                Ce formulaire ne contient pas de modèle
-            </div>
-            <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: calc(100vh - 200px);">
-                <table class="table table-borderless table-striped table-hover table-light">
-                <thead class="table-secondary">
-                    <tr>
-                        <th class="align-middle th-fixed">Nom</th>
-                        <th class="align-middle th-fixed">Description</th>
-                        <th class="align-middle th-fixed">Type</th>
-                        <th class="align-middle th-fixed text-nowrap">
-                            <label class="d-flex flex-column gap-1 mb-0" for="toggleAllFavorisable">
-                                <span>Favorisable</span>
-                                <input id="toggleAllFavorisable" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed text-nowrap">
-                            <label class="d-flex flex-column gap-1 mb-0" for="toggleAllRequired">
-                                <span>Requis</span>
-                                <input id="toggleAllRequired" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed text-nowrap">
-                            <label class="d-flex flex-column gap-1 mb-0" for="toggleAllReadOnly">
-                                <span>Lecture seule</span>
-                                <input id="toggleAllReadOnly" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed text-nowrap">
-                            <label class="d-flex flex-column gap-1 mb-0" for="toggleAllPrefill">
-                                <span>Pré-remplissage</span>
-                                <input id="toggleAllPrefill" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed text-nowrap">
-                            <label class="d-flex flex-column gap-1 mb-0" for="toggleAllSearch">
-                                <span>Auto-completion</span>
-                                <input id="toggleAllSearch" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed">Nom du service</th>
-                        <th class="align-middle th-fixed">Type de données</th>
-                        <th class="align-middle th-fixed">Attribut retourné</th>
-                        <th class="align-middle th-fixed">
-                            <label class="d-flex flex-column gap-1 mb-0" for="workflowStepsBulkInput">
-                                <span>Étapes autorisées</span>
-                                <select th:if="${workflow != null}" id="workflowStepsBulkInput" class="slim-select-simple slim-select-no-hack" multiple size="3" data-placeholder="Choisir des étapes" title="Choisir les étapes à appliquer à toutes les lignes">
-                                    <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                                        <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}"></option>
-                                    </th:block>
-                                </select>
-                            </label>
-                        </th>
-                        <th class="align-middle th-fixed"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                <th:block th:each="field : ${form.fields}">
-                    <tr>
-                        <form th:name="field-update" th:id="${field.id}" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'post'">
-                        <td><span th:text="${field.name}"></span></td>
-                        <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
-                        <td>
-                            <select name="fieldType" class="form-select">
-                                <th:block th:each="fieldType : ${T(org.esupportail.esupsignature.entity.enums.FieldType).values()}">
-                                    <option th:value="${fieldType}" th:text="${fieldType.name()}" th:selected="${fieldType == field.type}"></option>
-                                </th:block>
-                            </select>
-                        </td>
-                        <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" class="form-check-input js-field-favorisable" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
-                        <td><input type="checkbox" class="form-check-input js-field-required" name="required" th:value="true" th:checked="${field.required}"/></td>
-                        <td><input type="checkbox" class="form-check-input js-field-readonly" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
-                        <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" class="form-check-input js-field-prefill" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
-                        <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" class="form-check-input js-field-search" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
-                        <td>
-                            <select class="slim-select-simple slim-select-no-hack" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
-                                <option value=""></option>
-                                <th:block th:each="service : ${preFillTypes}">
-                                    <option th:selected="${field.extValueServiceName == service.key || field.searchServiceName == service.key}" th:value="${service.key}" th:text="${service.key}"></option>
-                                </th:block>
-                            </select>
-                        </td>
-                        <td>
-                            <select class="slim-select-simple slim-select-no-hack" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
-                                <th:block th:if="${field.extValueType != ''}">
-                                    <option th:value="${field.extValueType}" th:text="${field.extValueType}" selected></option>
-                                </th:block>
-                                <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
-                                    <option th:value="${field.searchType}" th:text="${field.searchType}" selected></option>
-                                </th:block>
-                            </select>
-                        </td>
-                        <td>
-                            <th:block th:if="${field.extValueType != ''}">
-                                <input type="text" class="form-control" name="valueReturn" th:value="${field.extValueReturn}" size="7"/>
-                            </th:block>
-                            <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
-                                <input type="text" class="form-control" name="valueReturn" th:value="${field.searchReturn}" size="7"/>
-                            </th:block>
-                            <th:block th:if="${field.extValueType == '' && field.searchType == ''}">
-                                <input type="text" class="form-control" name="valueReturn" size="7"/>
-                            </th:block>
-                        </td>
-                        <td>
-                            <select th:if="${workflow != null}" th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple slim-select-no-hack js-workflow-steps-select" multiple size="3" data-placeholder="Choisir des étapes">
-                                <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
-                                    <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}" th:selected="${#lists.contains(field.workflowStepIds, workflowStep.id)}"></option>
-                                </th:block>
-                            </select>
-                        </td>
-                        </form>
-                        <td>
-                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-sm btn-danger">
-                                <i class="fi fi-rr-trash"></i>
-                            </button>
-                            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
-                                            <div class="modal-header">
-                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
-                                                        aria-label="Close">
+                    <div class="p-0 m-2">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
+                            </li>
+                        </ul>
+                        <div th:if="${form.workflow == null}" class="alert alert-warning mt-1">
+                            Merci de configurer un circuit pour ce formulaire
+                        </div>
+                        <div th:unless="${form.fields.size() > 0}" class="alert alert-warning">
+                            Ce formulaire ne contient pas de modèle
+                        </div>
+                        <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: calc(100vh - 200px);">
+                            <table class="table table-borderless table-striped table-hover table-light">
+                                <thead class="table-secondary">
+                                <tr>
+                                    <th class="align-middle th-fixed">Nom</th>
+                                    <th class="align-middle th-fixed">Description</th>
+                                    <th class="align-middle th-fixed">Type</th>
+                                    <th class="align-middle th-fixed text-nowrap">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="toggleAllFavorisable">
+                                            <span>Favorisable</span>
+                                            <input id="toggleAllFavorisable" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed text-nowrap">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="toggleAllRequired">
+                                            <span>Requis</span>
+                                            <input id="toggleAllRequired" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed text-nowrap">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="toggleAllReadOnly">
+                                            <span>Lecture seule</span>
+                                            <input id="toggleAllReadOnly" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed text-nowrap">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="toggleAllPrefill">
+                                            <span>Pré-remplissage</span>
+                                            <input id="toggleAllPrefill" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed text-nowrap">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="toggleAllSearch">
+                                            <span>Auto-completion</span>
+                                            <input id="toggleAllSearch" type="checkbox" class="form-check-input m-0" title="Cocher ou décocher toute la colonne"/>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed">Nom du service</th>
+                                    <th class="align-middle th-fixed">Type de données</th>
+                                    <th class="align-middle th-fixed">Attribut retourné</th>
+                                    <th class="align-middle th-fixed">
+                                        <label class="d-flex flex-column gap-1 mb-0" for="workflowStepsBulkInput">
+                                            <span>Étapes autorisées</span>
+                                            <select th:if="${workflow != null}" id="workflowStepsBulkInput" class="slim-select-simple slim-select-no-hack" multiple size="3" data-placeholder="Choisir des étapes" title="Choisir les étapes à appliquer à toutes les lignes">
+                                                <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                                                    <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}"></option>
+                                                </th:block>
+                                            </select>
+                                        </label>
+                                    </th>
+                                    <th class="align-middle th-fixed"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <th:block th:each="field : ${form.fields}">
+                                    <tr>
+                                        <form th:name="field-update" th:id="${field.id}" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/update'" th:method="'post'">
+                                            <td><span th:text="${field.name}"></span></td>
+                                            <td><input type="text" class="form-control" name="description" th:value="${field.description}"/></td>
+                                            <td>
+                                                <select name="fieldType" class="form-select">
+                                                    <th:block th:each="fieldType : ${T(org.esupportail.esupsignature.entity.enums.FieldType).values()}">
+                                                        <option th:value="${fieldType}" th:text="${fieldType.name()}" th:selected="${fieldType == field.type}"></option>
+                                                    </th:block>
+                                                </select>
+                                            </td>
+                                            <td><input th:disabled="${field.type.name != 'text'}" type="checkbox" class="form-check-input js-field-favorisable" name="favorisable" th:value="true" th:checked="${field.favorisable}"/></td>
+                                            <td><input type="checkbox" class="form-check-input js-field-required" name="required" th:value="true" th:checked="${field.required}"/></td>
+                                            <td><input type="checkbox" class="form-check-input js-field-readonly" name="readOnly" th:value="true" th:checked="${field.readOnly}"/></td>
+                                            <td><input th:id="'prefillCheckbox_' + ${field.id}" type="checkbox" class="form-check-input js-field-prefill" name="prefill" th:value="true" th:checked="${field.extValueServiceName != null && field.extValueServiceName != ''}"/></td>
+                                            <td><input th:id="'searchCheckbox_' + ${field.id}" type="checkbox" class="form-check-input js-field-search" name="search" th:value="true" th:checked="${field.searchServiceName != null && field.searchServiceName != ''}"/></td>
+                                            <td>
+                                                <select class="slim-select-simple slim-select-no-hack" th:id="'valueServiceName_' + ${field.id}" name="valueServiceName" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
+                                                    <option value=""></option>
+                                                    <th:block th:each="service : ${preFillTypes}">
+                                                        <option th:selected="${field.extValueServiceName == service.key || field.searchServiceName == service.key}" th:value="${service.key}" th:text="${service.key}"></option>
+                                                    </th:block>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select class="slim-select-simple slim-select-no-hack" th:id="'valueType_' + ${field.id}" name="valueType" th:disabled="${(field.extValueServiceName == null && field.searchServiceName == null) || (field.extValueServiceName == '' && field.searchServiceName == '')}">
+                                                    <th:block th:if="${field.extValueType != ''}">
+                                                        <option th:value="${field.extValueType}" th:text="${field.extValueType}" selected></option>
+                                                    </th:block>
+                                                    <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
+                                                        <option th:value="${field.searchType}" th:text="${field.searchType}" selected></option>
+                                                    </th:block>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <th:block th:if="${field.extValueType != ''}">
+                                                    <input type="text" class="form-control" name="valueReturn" th:value="${field.extValueReturn}" size="7"/>
+                                                </th:block>
+                                                <th:block th:if="${field.extValueType == '' && field.searchType != ''}">
+                                                    <input type="text" class="form-control" name="valueReturn" th:value="${field.searchReturn}" size="7"/>
+                                                </th:block>
+                                                <th:block th:if="${field.extValueType == '' && field.searchType == ''}">
+                                                    <input type="text" class="form-control" name="valueReturn" size="7"/>
+                                                </th:block>
+                                            </td>
+                                            <td>
+                                                <select th:if="${workflow != null}" th:id="'workflowStepsIds_' + ${field.id}"  name="workflowStepsIds" class="slim-select-simple slim-select-no-hack js-workflow-steps-select" multiple size="3" data-placeholder="Choisir des étapes">
+                                                    <th:block th:each="workflowStep, iterator : ${workflow.workflowSteps}">
+                                                        <option th:value="${workflowStep.id}" th:text="${iterator.index + 1}" th:selected="${#lists.contains(field.workflowStepIds, workflowStep.id)}"></option>
+                                                    </th:block>
+                                                </select>
+                                            </td>
+                                        </form>
+                                        <td>
+                                            <button type="button" data-bs-toggle="modal" data-bs-target="#modal-warning" th:attr="data-bs-target='#modal-warning' + ${field.id}" class="btn btn-sm btn-danger">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning' + ${field.id}">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields/' + ${field.id} + '/delete'" th:method="delete">
+                                                            <div class="modal-header">
+                                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
+                                                                        aria-label="Close">
 
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-danger text-center">
-                                                    Attention la suppression d'un champ entraine la suppression definitive des données qui lui sont associées !
-                                                    <br>
-                                                    Confirmez-vous la suppression ?
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="alert alert-danger text-center">
+                                                                    Attention la suppression d'un champ entraine la suppression definitive des données qui lui sont associées !
+                                                                    <br>
+                                                                    Confirmez-vous la suppression ?
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-outline pull-left"
+                                                                        data-bs-dismiss="modal">Non
+                                                                </button>
+                                                                <button type="submit"
+                                                                        class="btn btn-outline pull-left btn-danger">
+                                                                    Oui
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline pull-left"
-                                                        data-bs-dismiss="modal">Non
-                                                </button>
-                                                <button type="submit"
-                                                        class="btn btn-outline pull-left btn-danger">
-                                                    Oui
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
 
-                        </td>
-                    </tr>
-                </th:block>
-                </tbody>
-            </table>
-            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
-            <div class="es-sign-buttons es-fixed-action-btns active">
-                <ul class="list-unstyled">
-                    <li>
-                        <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn btn-transparent text-dark"><i class="fi fi-rr-plus"></i></a></li>
-                    <li>
-                        <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn btn-transparent text-dark">
-                            <i class="fi fi-rr-disk"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a th:if="${form.document == null}" title="Ajouter un champ" data-bs-toggle="modal" data-bs-target="#newManualForm" class="btn btn-transparent text-dark"><i class="fi fi-rr-plus"></i></a></li>
+                        <li>
+                            <a id="saveButton" title="Enregistrer les modifications" type="button" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-disk"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

@@ -31,19 +31,20 @@
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
                 <div class="flex-grow-1">
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
-                        </li>
-                    </ul>
-                    <div class="es-main-content-admin overflow-auto p-2">
-                        <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
+                    <div class="p-0 m-2">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'"><i class="fi fi-rr-pen-field"></i> Configuration des champs</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'"><i class="fi fi-rr-digital-signature"></i> Configuration des signatures</a>
+                            </li>
+                        </ul>
+                        <div class="es-main-content-admin overflow-auto p-2">
+                            <form id="formUpdate" th:action="'/' + ${workflowRole} + '/forms'" th:object="${form}" th:method="'put'">
                                 <input type="hidden" th:field="*{id}">
                                 <div class="accordion" id="accordionExample">
                                     <div class="accordion-item">
@@ -230,6 +231,7 @@
                                     </div>
                                 </div>
                             </form>
+                        </div>
                     </div>
                 </div>
                 <div class="es-sign-buttons es-fixed-action-btns active">

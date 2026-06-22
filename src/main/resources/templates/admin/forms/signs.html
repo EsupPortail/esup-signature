@@ -24,7 +24,7 @@
                     <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                     <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
                 </div>
-                <div class="flex-grow-1 d-flex flex-column es-spot-add-admin-scope">
+                <div class="flex-grow-1 d-flex flex-column es-spot-add-admin-scope p-0 m-2">
                     <ul class="nav nav-tabs">
                         <li class="nav-item">
                             <a class="nav-link" th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
