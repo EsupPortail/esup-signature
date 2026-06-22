@@ -16,7 +16,7 @@
 	<name>esup-signature</name>
 	<properties>
 		<startClass>org.esupportail.esupsignature.EsupSignatureApplication</startClass>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<bouncycastle.version>1.84</bouncycastle.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<dss.version>6.4</dss.version>
