@@ -315,14 +315,16 @@ public class UiFetchSignRequestMapper {
         dto.setAttachmentRequire(context.isAttachmentRequire());
         dto.setManager(context.isManager());
         dto.setUpdateAllowed(updateAllowed);
-        dto.setCommentDeleteAllowed(context.isManager()
-                && (context.getSignRequestStatus() == SignRequestStatus.draft
-                    || context.getSignRequestStatus() == SignRequestStatus.pending));
+        dto.setCommentDeleteAllowed(context.isManager() && isCommentDeleteStatusAllowed(context));
         dto.setHasDocumentsHistory(context.isHasDocumentsHistory());
         return dto;
     }
 
     public List<CommentFrontDto> toCommentFrontDtos(List<Comment> comments) {
+        return toCommentFrontDtos(comments, null);
+    }
+
+    public List<CommentFrontDto> toCommentFrontDtos(List<Comment> comments, ShowSignRequestContextDto context) {
         if (comments == null || comments.isEmpty()) {
             return List.of();
         }
@@ -334,9 +336,26 @@ public class UiFetchSignRequestMapper {
                     dto.setStepNumber(comment.getStepNumber());
                     dto.setPosX(comment.getPosX());
                     dto.setPosY(comment.getPosY());
+                    dto.setDeleteAllowed(isCommentDeleteAllowed(comment, context));
                     return dto;
                 })
                 .toList();
+    }
+
+    private boolean isCommentDeleteAllowed(Comment comment, ShowSignRequestContextDto context) {
+        if (comment == null || context == null || !isCommentDeleteStatusAllowed(context)) {
+            return false;
+        }
+        boolean managerAllowed = context.isManager();
+        boolean creatorAllowed = comment.getCreateBy() != null
+                && Objects.equals(comment.getCreateBy().getEppn(), context.getAuthUserEppn());
+        return managerAllowed || creatorAllowed;
+    }
+
+    private boolean isCommentDeleteStatusAllowed(ShowSignRequestContextDto context) {
+        return context != null
+                && (context.getSignRequestStatus() == SignRequestStatus.draft
+                    || context.getSignRequestStatus() == SignRequestStatus.pending);
     }
 
     public List<SignRequestParamsFrontDto> toSignRequestParamsFrontDtos(List<SignRequestParams> signRequestParamses) {
@@ -519,4 +538,3 @@ public class UiFetchSignRequestMapper {
         return "*".repeat(phone.length() - 4) + phone.substring(phone.length() - 4);
     }
 }
-

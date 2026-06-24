@@ -348,7 +348,7 @@ export class CommentManager {
                         postitButton.css("background-color", "var(--bs-warning-bg-subtle)");
                         postitDiv.off('mouseup' + postitNamespace);
                         if(status === "draft" || status === "pending") {
-                            let deletable = postitDiv.attr('es-comment-delete') === "true";
+                            let deletable = comment.deleteAllowed === true || postitDiv.attr('es-comment-delete') === "true";
                             let buttons = {
                                 cancel: {
                                     label: 'Fermer',
@@ -610,7 +610,6 @@ export class CommentManager {
     }
 
 }
-
 
 
 
