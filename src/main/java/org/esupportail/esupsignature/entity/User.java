@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
@@ -25,19 +26,24 @@ public class User {
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
 
+	@Size(max = 255)
 	private String name;
 
+	@Size(max = 255)
 	private String firstname;
 	
     @Column(unique=true)
     @NotNull
+    @Size(max = 255)
     private String eppn;
 
     @Column(unique=true)
     @NotNull
+    @Size(max = 255)
     private String email;
 
     @Column(unique=true)
+    @Size(max = 255)
     private String phone;
 
     @Transient
@@ -54,6 +60,7 @@ public class User {
     @JsonIgnore
     private Map<UiParams, String> uiParams = new LinkedHashMap<>();
 
+    @Size(max = 255)
     private String formMessages = "";
 
     @Enumerated(EnumType.STRING)
@@ -93,21 +100,38 @@ public class User {
     @Enumerated(EnumType.STRING)
     private DayOfWeek emailAlertDay;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date lastSendAlertDate = new Date(0);
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
     @JsonIgnore
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_transmitted_sign_request_ids",
+            joinColumns = @JoinColumn(name = "user_id"),
+            indexes = {
+                    @Index(name = "idx_user_transmitted_sign_request_id", columnList = "transmitted_sign_request_ids")
+            }
+    )
+    @Column(name = "transmitted_sign_request_ids")
+    private Set<Long> transmittedSignRequestIds = new HashSet<>();
+
+    @JsonIgnore
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            indexes = {
+                    @Index(name = "idx_user_roles_role", columnList = "roles")
+            }
+    )
+    @Column(name = "roles")
     private Set<String> roles = new HashSet<>();
 
     @JsonIgnore
     @ManyToOne
     private User replaceByUser;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceBeginDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date replaceEndDate;
 
     @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
@@ -120,6 +144,7 @@ public class User {
 
     private Boolean forceSms = false;
 
+    @Size(max = 255)
     private String accessToken;
 
 	public Long getId() {
@@ -309,12 +334,16 @@ public class User {
         this.emailAlertFrequency = emailAlertFrequency;
     }
 
-    public Set<String> getRoles() {
-        return roles;
+    public Set<Long> getTransmittedSignRequestIds() {
+        return transmittedSignRequestIds;
     }
 
-    public List<String> getRolesCopy() {
-        return new ArrayList<>(roles);
+    public void setTransmittedSignRequestIds(Set<Long> transmittedSignRequestIds) {
+        this.transmittedSignRequestIds = transmittedSignRequestIds;
+    }
+
+    public Set<String> getRoles() {
+        return roles;
     }
 
     public void setRoles(Set<String> roles) {

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="logs" type="java.util.List<org.esupportail.esupsignature.entity.Log>"*/-->
-<!--/*@thymesVar id="comments" type="java.util.List<org.esupportail.esupsignature.entity.Comment>"*/-->
+<!--/*@thymesVar id="adminSignRequestView" type="org.esupportail.esupsignature.dto.page.admin.AdminSignRequestShowViewDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signbook.SignBookLightDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <script th:inline="javascript" type="module">
     import {default as FilesInput} from '/js/modules/utils/FilesInput.js?version=@[(${versionApp})]@';
@@ -13,51 +14,31 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
                 <li class="breadcrumb-item"><a href="/admin/signrequests">Liste
                     des demandes</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Demande
-                    de signature : <span th:text="${signRequest.token}"></span>
+                    de signature : <span th:text="${signRequestLight.token}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${signRequest.createBy.eppn == userEppn && signRequest.deleted}">
-                        <a th:href="'/admin/signbooks/restore/' + ${signRequest.parentSignBook.id}" role="button" class="btn-floating btn-lg bg-primary" title="Restaurer">
-                            <i class="fa-solid fa-trash-restore fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}">
-                        <a id="trashLaunchButton" role="button" class="btn-floating btn-lg bg-danger"
-                            th:title="${!signRequest.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
-                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequest.id}">
-                            <i th:if="${signRequest.deleted}" class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                            <i th:if="${!signRequest.deleted}" class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
-                    <h5 class="ms-4">Statut</h5>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
                 </div>
-                <div class="card-body">
-                    <div th:insert="~{user/signbooks/includes/status :: status(signBook=${signRequest.parentSignBook})}" class="mb-1"></div>
-                    <div class="text-center mb-1">
-                        <div class="badge rounded-pill badge-status bg-secondary" th:if="${signRequest.parentSignBook.archiveStatus != null && signRequest.parentSignBook.archiveStatus.name != 'none'}">
-                            <i class="fi fi-rr-box"></i> <span th:text="#{'signbook.archivestatus.' + ${signRequest.parentSignBook.archiveStatus}}"></span>
-                        </div>
-                    </div>
+                <div class="flex-grow-1 overflow-scroll">
+                    <div class="p-0 m-2">
+            <div class="alert alert-light">
+                <div class="d-flex justify-content-start align-items-center gap-2">
+                    <h5 class="ms-4">Statut</h5><div th:insert="~{user/signbooks/includes/status :: status(signBookLight=${signBookLight})}" class="mb-1"></div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Liste des documents originaux</h5>
                 </div>
                 <div class="card-body">
@@ -66,8 +47,8 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Historique des modifications</h5>
                 </div>
                 <div class="card-body">
@@ -76,8 +57,8 @@
                     </div>
                 </div>
             </div>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Liste des documents signés</h5>
                 </div>
                 <div class="card-body">
@@ -87,30 +68,28 @@
                 </div>
             </div>
             <div th:replace="~{admin/signrequests/cards/stepscard}"></div>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Commentaires <span th:text="'(' + ${#lists.size(comments)} + ')'"></span></h5>
                 </div>
                 <div class="card-body">
                     <ul class="list-group">
-                        <th:block th:each="comment : ${signRequest.comments}">
-                            <div class="d-flex w-100 justify-content-between">
-                                <li href="#" class="list-group-item list-group-item-action">
-                                    De : <span class="mb-1" th:text="${comment.createBy.eppn}"></span> -
-                                    <small>
-                                        le : <span
-                                            th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </small>
-                                    <p th:if="${comment.text != null}" th:text="${comment.text}"></p>
-                                </li>
-                            </div>
+                        <th:block th:each="comment : ${comments}">
+                            <li class="list-group-item list-group-item-action">
+                                De : <span class="mb-1" th:text="${comment.createBy != null ? comment.createBy.eppn : ''}"></span> -
+                                <small>
+                                    le : <span
+                                        th:text="${#dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                </small>
+                                <p th:if="${comment.text != null}" th:text="${comment.text}"></p>
+                            </li>
                         </th:block>
                     </ul>
                 </div>
             </div>
 
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+            <div class="card border mb-2">
+                <div class="card-header">
                     <h5 class="ms-4">Logs (<span th:text="(${#lists.size(logs)})"></span>)</h5>
                 </div>
                 <div class="card-body">
@@ -139,15 +118,35 @@
                         </tbody>
                     </table>
                 </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+                <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li th:if="${signRequestLight.createBy != null && signRequestLight.createBy.eppn == userEppn && signRequestLight.deleted}">
+                            <a th:href="'/admin/signbooks/restore/' + ${signBookLight.id}" role="button" class="btn btn-transparent text-dark" title="Restaurer">
+                                <i class="fi fi-rr-trash-restore"></i>
+                            </a>
+                        </li>
+                        <li th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}">
+                            <a id="trashLaunchButton" role="button" class="btn btn-transparent text-dark"
+                               th:title="${!signRequestLight.deleted ? 'Mettre à la corbeille' : 'Supprimer définitivement de la corbeille'}"
+                               data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${signRequestLight.id}">
+                                <i th:if="${signRequestLight.deleted}" class="fi fi-rr-dumpster-fire"></i>
+                                <i th:if="${!signRequestLight.deleted}" class="fi fi-rr-trash "></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+</div>
 </main>
-<div th:if="${@preAuthorizeService.signRequestOwner(signRequest.id, authUserEppn)}"
-     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequest.id}">
+<div th:if="${@preAuthorizeService.signRequestManager(signRequestLight.id, authUserEppn)}"
+     data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${signRequestLight.id}">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="command" th:action="'/admin/signbooks/'+ ${signRequest.parentSignBook.id}" th:method="delete">
+            <form id="command" th:action="'/admin/signbooks/'+ ${signBookLight.id}" th:method="delete">
                 <div class="modal-header">
                     <h2>Attention</h2>
                     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
@@ -155,8 +154,8 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div th:unless="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
-                    <div th:if="${signRequest.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
+                    <div th:unless="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression de cette demande ?</div>
+                    <div th:if="${signRequestLight.deleted}" class="alert alert-danger">Confirmez-vous la suppression définitivement de cette demande ?</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary float-start" data-bs-dismiss="modal">Non</button>

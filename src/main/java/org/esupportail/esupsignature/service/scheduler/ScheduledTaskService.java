@@ -6,6 +6,7 @@ import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
+import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureMailException;
 import org.esupportail.esupsignature.repository.SignBookRepository;
@@ -138,7 +139,7 @@ public class ScheduledTaskService {
      * - L'état du processus d'archivage est enregistré, y compris les éventuelles erreurs
      *   survenues lors du traitement.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    @Scheduled(initialDelay = 12000, fixedRate = 3600000)
 	public void scanAllSignbooksToArchive() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			taskService.initArchive();
@@ -176,7 +177,7 @@ public class ScheduledTaskService {
      *
      * En cas d'erreur, les événements seront enregistrés dans les journaux pour analyse.
      */
-    @Scheduled(initialDelay = 12000, fixedRate = 300000)
+    @Scheduled(initialDelay = 12000, fixedRate = 3600000)
 	public void scanAllSignbooksToClean() {
 		if(globalProperties.getEnableScheduledCleanup()) {
 			taskService.initCleanning("scheduler");
@@ -200,8 +201,16 @@ public class ScheduledTaskService {
     @Scheduled(initialDelay = 12000, fixedRate = 300000)
 	@Transactional
 	public void sendAllEmailAlerts() throws EsupSignatureMailException {
-		List<User> users = userService.getAllLdapUsers();
+    List<User> users = userService.getAllUsers();
 		for(User user : users) {
+      if (user.getUserType() == null
+          || UserType.external.equals(user.getUserType())
+          || UserType.system.equals(user.getUserType())
+          || UserType.group.equals(user.getUserType())
+          || user.getEmail() == null
+          || user.getEmail().isBlank()) {
+        continue;
+      }
 			logger.trace("check email alert for " + user.getEppn());
 			if(userService.checkEmailAlert(user)) {
 				signBookService.sendEmailAlertSummary(user.getEppn());
@@ -238,7 +247,11 @@ public class ScheduledTaskService {
 		taskService.initDssRefresh();
 	}
 
-	@Scheduled(cron="00 02 02 * * *")
+	/**
+	 *
+	 * @throws IOException
+	 */
+    @Scheduled(cron="00 02 02 * * *")
 	public void cleanAllSignRequestDocuments() throws IOException {
 		if(globalProperties.getDocumentsHistoryDelay() > -1) {
 			List<SignRequest> signRequests = signRequestRepository.findSignRequestsByCleanDocumentsHistoryDateIsNull();
@@ -248,6 +261,7 @@ public class ScheduledTaskService {
 					signRequestService.cleanSignRequestDocumentsHistory(signRequest.getId());
 				}
 			}
+			logger.info("clean history ended");
 		}
 	}
 

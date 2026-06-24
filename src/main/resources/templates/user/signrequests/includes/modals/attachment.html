@@ -1,185 +1,812 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-<!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
-<!--/*@thymesVar id="attachments" type="java.util.List<Document>"*/-->
+<!--/*@thymesVar id="showSignRequest" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto"*/-->
+<!--/*@thymesVar id="signRequestFull" type="org.esupportail.esupsignature.dto.page.user.signrequest.SignRequestFullDto"*/-->
+<!--/*@thymesVar id="signRequestLight" type="org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto.SignRequestLightDto"*/-->
 <div th:fragment="attachment">
-<div data-bs-focus="false" class="modal fade" id="attachment"  role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="attachmentLabel"><i class="fi fi-rr-clip"></i> Pièces jointes</h4>
-                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
-            </div>
-            <div class="modal-body">
-                <div th:if="${attachments != null && attachments.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 30vh;">
-                <table class="table table-borderless table-striped table-hover rounded-3">
-                    <thead class="table-secondary">
-                    <tr>
-                        <td>Fichier</td>
-                        <td>Créateur</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </thead>
-                    <th:block th:each="attachment : ${attachments}">
-                        <tr>
-                            <td th:text="${attachment.fileName}"></td>
-                            <td><span th:if="${attachment.createBy != null}" th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span></td>
-                            <td>
-                                <button type="button" class="btn btn-info float-end" title="Voir"
-                                        th:onclick="'openPdfModal(' + ${attachment.id} + ')'">
-                                    <i class="fi fi-rr-eye"></i>
-                                </button>
-
-                                <script>
-                                    function openPdfModal(attachmentId) {
-                                        const modal = document.getElementById('pdfModal' + attachmentId);
-                                        const bsModal = new bootstrap.Modal(modal, {
-                                            backdrop: 'static',
-                                            keyboard: false
-                                        });
-                                        bsModal.show();
-                                    }
-                                </script>
-                            </td>
-                            <td>
-                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment/' + ${signRequest.id} + '/' + ${attachment.id}"
-                                   target="_blank" class="btn btn-primary float-end" title="Télécharger">
-                                    <i class="fi fi-rr-download"></i>
-                                </a>
-                            </td>
-                            <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequest.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-attachment/' + ${signRequest.id} + '/' + ${attachment.id}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
-                                </form>
-                            </td>
-                            <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn) || signRequest.createBy.eppn == userEppn}">
-                            </td>
-                        </tr>
-                    </th:block>
-                </table>
+    <div data-bs-focus="false" class="modal fade" id="attachment" role="dialog" aria-labelledby="attachmentLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="attachmentLabel"><i class="fi fi-rr-clip"></i>&nbsp;Pièces jointes</h4>
+                    <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div th:if="${signRequest.links.size() > 0}" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="height: 15vh;">
-                <table class="table table-borderless table-striped table-hover">
-                    <thead class="table-secondary">
-                    <tr>
-                        <td>Liens</td>
-                        <td></td>
-                    </tr>
-                    </thead>
-                    <th:block th:each="link, iterator : ${signRequest.links}">
-                        <tr>
-                            <td>
-                                <a th:href="${link}" target="_blank" th:text="${link}"></a>
-                            </td>
-                            <td th:if="${signRequest.createBy.eppn == userEppn}">
-                                <form th:action="'/' + ${urlProfil} + '/signrequests/remove-link/' + ${signRequest.id} + '/' + ${iterator.index}" th:method="delete">
-                                    <button type="submit" onclick="return confirm('Confirmez-vous la suppression ?');" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;"><i class="fi fi-rr-trash"></i></button>
-                                </form>
-                            </td>
-                            <td th:unless="${signRequest.createBy.eppn == userEppn}">
-                                <button type="button" title="Suppression à la charge du créateur de la demande" onclick="alert('Suppression à la charge du créateur de la demande');" class="btn btn-secondary float-end" style="bottom: 10px;" disabled><i class="fi fi-rr-trash"></i></button>
-                            </td>
-                        </tr>
-                    </th:block>
-                </table>
+                <div class="modal-body">
+                    <div id="attachment-table-wrapper"
+                         class="table-fix-head scrollbar-style rounded-3 p-0 m-2"
+                         style="height: 30vh;"
+                         th:styleappend="${showSignRequest.attachments != null && showSignRequest.attachments.size() > 0} ? '' : 'display: none;'">
+                        <table class="table table-borderless table-striped table-hover rounded-3">
+                            <thead class="table-secondary">
+                            <tr>
+                                <td>Fichier</td>
+                                <td>Créateur</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </thead>
+                            <tbody id="attachments-tbody">
+                            <th:block th:each="attachment : ${showSignRequest.attachments}">
+                                <tr th:id="'attachment-row-' + ${attachment.id}">
+                                    <td th:text="${attachment.fileName}"></td>
+                                    <td>
+                                        <span th:if="${attachment.createBy != null}"
+                                              th:text="${attachment.createBy.firstname} + ' ' + ${attachment.createBy.name}"></span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-info float-end" title="Voir"
+                                                th:onclick="'openPdfModal(' + ${attachment.id} + ')'">
+                                            <i class="fi fi-rr-eye"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                           target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                                            <i class="fi fi-rr-download"></i>
+                                        </a>
+                                    </td>
+                                    <td th:if="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}">
+                                        <form class="js-remove-attachment-form"
+                                              th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-attachment/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                              method="post"
+                                              th:attr="data-attachment-id=${attachment.id}">
+                                            <input type="hidden" name="_method" value="delete">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td th:unless="${(attachment != null && attachment.createBy != null && attachment.createBy.eppn == userEppn && signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending) || signRequestLight.createBy.eppn == userEppn}"></td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="links-table-wrapper"
+                         class="table-fix-head scrollbar-style rounded-3 p-0 m-2"
+                         style="height: 15vh;"
+                         th:styleappend="${signRequestLight.links.size() > 0} ? '' : 'display: none;'">
+                        <table class="table table-borderless table-striped table-hover">
+                            <thead class="table-secondary">
+                            <tr>
+                                <td>Liens</td>
+                                <td></td>
+                            </tr>
+                            </thead>
+                            <tbody id="links-tbody">
+                            <th:block th:each="link, iterator : ${signRequestLight.links}">
+                                <tr th:id="'link-row-' + ${iterator.index}">
+                                    <td>
+                                        <a th:href="${link}" target="_blank" th:text="${link}"></a>
+                                    </td>
+                                    <td>
+                                        <form class="js-remove-link-form"
+                                              th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/remove-link/' + ${signRequestLight.id} + '/' + ${iterator.index}"
+                                              method="post"
+                                              th:attr="data-link-index=${iterator.index}">
+                                            <input type="hidden" name="_method" value="delete">
+                                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                                <i class="fi fi-rr-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </th:block>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="attachment-empty-state"
+                         class="alert alert-secondary"
+                         th:styleappend="${showSignRequest.attachments.size() == 0 && signRequestLight.links.size() == 0} ? '' : 'display: none;'">
+                        Aucune pièce jointe
+                    </div>
+
+                    <form id="add-attachment-form"
+                          th:action="'/' + ${showSignRequest.urlProfil} + '/signrequests/add-attachment/' + ${signRequestLight.id}"
+                          method="post"
+                          enctype="multipart/form-data"
+                          th:if="${signRequestFull.editable && (signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending || signRequestLight.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).draft)  && (user.userType.name() != 'external' || showSignRequest.workflow.externalCanEditAttachments)}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <hr/>
+                        <div class="form-group mb-3">
+                            <h5>Ajouter une pièce jointe</h5>
+                            <div class="custom-file mb-3">
+                                <input aria-describedby="inputGroupLabel03" class="form-control"
+                                       data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
+                                       type="file">
+                            </div>
+                            <div class="hr mb-3">OU</div>
+                            <div class="form-group mt-2">
+                                <label for="attachment-link-input">Ajouter un lien</label>
+                                <input id="attachment-link-input" class="form-control" type="text" name="link">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            <button type="submit" class="btn btn-success" id="add-attachment-submit">Ajouter</button>
+                        </div>
+                    </form>
+
+                    <div id="attachment-feedback" class="mt-3"></div>
                 </div>
-                <div th:if="${attachments.size() == 0 && signRequest.links.size() == 0}" class="alert alert-secondary">Aucune pièce jointe pour le moment</div>
-                <hr/>
-                <form th:action="'/' + ${urlProfil} + '/signrequests/add-attachment/' + ${signRequest.id} + '?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data" th:if="${editable || (signBook.liveWorkflow.workflow != null && signBook.liveWorkflow.workflow.externalCanEditAttachments)}">
-                    <div class="form-group mb-3">
-                        <h5>Ajouter une pièce jointe</h5>
-                        <div class="custom-file mb-3">
-                            <input aria-describedby="inputGroupLabel03" class="form-control"
-                                data-buttontext="Choisir fichier" id="inputGroupFile03" name="multipartFiles"
-                                type="file">
-                        </div>
-                        <div class="hr mb-3">OU</div>
-                        <div class="form-group mt-2">
-                            <label>Ajouter un lien</label>
-                            <input class="form-control" type="text" name="link">
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                        <button type="submit" class="btn btn-success">Ajouter</button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-</div>
-    <th:block th:each="attachment : ${attachments}">
-        <div class="modal fade modal-pdf" th:id="'pdfModal' + ${attachment.id}" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-xl modal-pdf" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" th:text="${attachment.fileName}"></h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
-                        <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
-                            <div th:id="'pdfContainer_' + ${attachment.id}" class="d-flex flex-column align-items-center" style="height: 100%; overflow: auto;"></div>
 
-                            <script type="module">
-                                const modalId = 'pdfModal' + '[[${attachment.id}]]';
-                                const modal = document.getElementById(modalId);
-                                let pdfLoaded = false;
-
-                                modal.addEventListener('shown.bs.modal', () => {
-                                    if (pdfLoaded) return;
-                                    pdfLoaded = true;
-
-                                    pdfjsLib.getDocument('/' + '[[${urlProfil}]]' + '/signrequests/get-attachment-inline/' + '[[${signRequest.id}]]' + '/' + '[[${attachment.id}]]').promise.then(pdf => {
-                                        const container = document.getElementById('pdfContainer_' + '[[${attachment.id}]]');
-                                        let currentPage = 1;
-                                        const totalPages = pdf.numPages;
-
-                                        const renderPage = (pageNum) => {
-                                            if (pageNum > totalPages) return;
-
-                                            pdf.getPage(pageNum).then(page => {
-                                                const canvas = document.createElement('canvas');
-                                                const context = canvas.getContext('2d');
-                                                const viewport = page.getViewport({ scale: 1.5 });
-                                                canvas.width = viewport.width;
-                                                canvas.height = viewport.height;
-                                                canvas.style.display = 'block';
-                                                canvas.style.marginBottom = '10px';
-
-                                                page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
-                                                    container.appendChild(canvas);
-                                                    renderPage(pageNum + 1);
-                                                });
-                                            });
-                                        };
-
-                                        renderPage(1);
-
-                                        container.addEventListener('scroll', () => {
-                                            if (container.scrollTop + container.clientHeight >= container.scrollHeight - 500) {
-                                                currentPage++;
-                                                renderPage(currentPage);
-                                            }
-                                        });
-                                    });
-                                });
-                            </script>
-                        </th:block>
-                        <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
-                            <div class="alert alert-info">
-                                Aperçu indisponible pour ce format.
-                                <a th:href="'/' + ${urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequest.id} + '/' + ${attachment.id}"
-                                   target="_blank">Télécharger le document</a>
-                            </div>
-                        </th:block>
+    <div id="attachment-preview-modals">
+        <th:block th:each="attachment : ${showSignRequest.attachments}">
+            <div class="modal fade modal-pdf js-attachment-preview-modal"
+                 th:id="'pdfModal' + ${attachment.id}"
+                 tabindex="-1"
+                 role="dialog"
+                 th:attr="data-attachment-id=${attachment.id},data-file-name=${attachment.fileName}">
+                <div class="modal-dialog modal-xl modal-pdf" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" th:text="${attachment.fileName}"></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
+                            <th:block th:if="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                                <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-out" title="Zoom arrière" th:attr="data-attachment-id=${attachment.id}">-</button>
+                                    <span class="badge text-bg-light js-pdf-zoom-value" style="width: 100px;" th:attr="data-attachment-id=${attachment.id}">150%</span>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-in" title="Zoom avant" th:attr="data-attachment-id=${attachment.id}">+</button>
+                                </div>
+                                <div th:id="'pdfContainer_' + ${attachment.id}"
+                                     class="js-pdf-container d-flex flex-column align-items-center"
+                                     style="height: calc(100% - 48px); overflow: auto;"></div>
+                            </th:block>
+                            <th:block th:unless="${attachment.fileName.toLowerCase().endsWith('.pdf')}">
+                                <div class="alert alert-info">
+                                    Aperçu indisponible pour ce format.
+                                    <a th:href="'/' + ${showSignRequest.urlProfil} + '/signrequests/get-attachment-inline/' + ${signRequestLight.id} + '/' + ${attachment.id}"
+                                       target="_blank">Télécharger le document</a>
+                                </div>
+                            </th:block>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </th:block>
+        </th:block>
+    </div>
+
+    <script th:inline="javascript">
+        (() => {
+            const urlProfil = /*[[${showSignRequest.urlProfil}]]*/ 'user';
+            const signRequestId = /*[[${signRequestLight.id}]]*/ 0;
+            const csrfParameterName = /*[[${_csrf.parameterName}]]*/ '_csrf';
+            const csrfToken = /*[[${_csrf.token}]]*/ '';
+            const userEppn = /*[[${userEppn}]]*/ '';
+            const signRequestCreatorEppn = /*[[${signRequestLight.createBy.eppn}]]*/ '';
+            const signRequestStatus = /*[[${signRequestLight.status != null ? signRequestLight.status.name() : ''}]]*/ '';
+
+            const attachmentsTbody = document.getElementById('attachments-tbody');
+            const linksTbody = document.getElementById('links-tbody');
+            const attachmentTableWrapper = document.getElementById('attachment-table-wrapper');
+            const linksTableWrapper = document.getElementById('links-table-wrapper');
+            const emptyState = document.getElementById('attachment-empty-state');
+            const addAttachmentForm = document.getElementById('add-attachment-form');
+            const feedback = document.getElementById('attachment-feedback');
+            const previewModalsContainer = document.getElementById('attachment-preview-modals');
+            const attachmentBadge = document.getElementById('attachment-badge');
+            const DEFAULT_PDF_SCALE = 1.5;
+            const MIN_PDF_SCALE = 0.5;
+            const MAX_PDF_SCALE = 2.5;
+            const PDF_SCALE_STEP = 0.25;
+            const pdfPreviewState = new Map();
+
+            function escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function showMessage(type, message) {
+                const normalizedType = ['success', 'error', 'warn', 'info', 'custom'].includes(type) ? type : 'info';
+                const sanitizedMessage = escapeHtml(message);
+                if (typeof window.showSnackbar === 'function') {
+                    if (feedback) {
+                        feedback.innerHTML = '';
+                    }
+                    window.showSnackbar(sanitizedMessage, normalizedType, {
+                        delay: normalizedType === 'success' ? 2000 : 4000
+                    });
+                    return;
+                }
+                if (!feedback) {
+                    return;
+                }
+                const alertClass = normalizedType === 'error' ? 'danger' : 'success';
+                feedback.innerHTML = `
+                    <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+                        ${sanitizedMessage}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>`;
+            }
+
+            function updateAttachmentBadge() {
+                if (!attachmentBadge) {
+                    return;
+                }
+                const count = (attachmentsTbody?.children.length || 0) + (linksTbody?.children.length || 0);
+                attachmentBadge.textContent = String(count);
+                attachmentBadge.classList.toggle('d-none', count === 0);
+            }
+
+            function updateEmptyState() {
+                const hasAttachments = !!attachmentsTbody && attachmentsTbody.children.length > 0;
+                const hasLinks = !!linksTbody && linksTbody.children.length > 0;
+                if (attachmentTableWrapper) {
+                    attachmentTableWrapper.style.display = hasAttachments ? '' : 'none';
+                }
+                if (linksTableWrapper) {
+                    linksTableWrapper.style.display = hasLinks ? '' : 'none';
+                }
+                if (emptyState) {
+                    emptyState.style.display = (!hasAttachments && !hasLinks) ? '' : 'none';
+                }
+                updateAttachmentBadge();
+            }
+
+            function isPdfFile(fileName) {
+                return String(fileName || '').toLowerCase().endsWith('.pdf');
+            }
+
+            function ensurePdfPreviewLinkStyles() {
+                if (document.getElementById('pdf-preview-link-style')) {
+                    return;
+                }
+                const style = document.createElement('style');
+                style.id = 'pdf-preview-link-style';
+                style.textContent = `
+                    .pdf-preview-page {
+                        position: relative;
+                    }
+                    .pdf-preview-links-layer {
+                        position: absolute;
+                        inset: 0;
+                        z-index: 2;
+                        pointer-events: none;
+                    }
+                    .pdf-preview-link {
+                        position: absolute;
+                        display: block;
+                        cursor: pointer;
+                        pointer-events: auto;
+                    }
+                    .pdf-preview-link > a {
+                        display: block;
+                        width: 100%;
+                        height: 100%;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            function getPdfPreviewState(modalElement) {
+                if (!modalElement) {
+                    return null;
+                }
+                const attachmentId = modalElement.dataset.attachmentId;
+                if (!attachmentId) {
+                    return null;
+                }
+                if (!pdfPreviewState.has(attachmentId)) {
+                    pdfPreviewState.set(attachmentId, {
+                        pdf: null,
+                        scale: DEFAULT_PDF_SCALE,
+                        loadingPromise: null,
+                        renderPromise: null
+                    });
+                }
+                return pdfPreviewState.get(attachmentId);
+            }
+
+            function updatePdfZoomLabel(modalElement, scale) {
+                const zoomLabel = modalElement?.querySelector('.js-pdf-zoom-value');
+                if (!zoomLabel || typeof scale !== 'number' || Number.isNaN(scale)) {
+                    return;
+                }
+                zoomLabel.textContent = `${Math.round(scale * 100)}%`;
+            }
+
+            async function loadPdfDocument(modalElement) {
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
+                    return null;
+                }
+                if (state.pdf) {
+                    return state.pdf;
+                }
+                if (!state.loadingPromise) {
+                    const attachmentId = modalElement.dataset.attachmentId;
+                    state.loadingPromise = pdfjsLib.getDocument({ url: getAttachmentInlineUrl(attachmentId) }).promise
+                        .then((pdf) => {
+                            state.pdf = pdf;
+                            return pdf;
+                        })
+                        .finally(() => {
+                            state.loadingPromise = null;
+                        });
+                }
+                return state.loadingPromise;
+            }
+
+            async function renderPdfPages(modalElement) {
+                const container = modalElement?.querySelector('.js-pdf-container');
+                const state = getPdfPreviewState(modalElement);
+                if (!container || !state) {
+                    return;
+                }
+                const pdf = await loadPdfDocument(modalElement);
+                if (!pdf) {
+                    return;
+                }
+
+                updatePdfZoomLabel(modalElement, state.scale);
+                container.innerHTML = '';
+                for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+                    const page = await pdf.getPage(pageNumber);
+                    const viewport = page.getViewport({ scale: state.scale });
+                    const { pageWrapper, canvas, linksLayer } = createPdfPreviewPage(pageNumber, viewport);
+                    const context = canvas.getContext('2d');
+                    await page.render({ canvasContext: context, viewport }).promise;
+                    await renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, container);
+                    container.appendChild(pageWrapper);
+                }
+            }
+
+            async function changePdfZoom(modalElement, delta) {
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
+                    return;
+                }
+                const nextScale = Math.min(MAX_PDF_SCALE, Math.max(MIN_PDF_SCALE, Number((state.scale + delta).toFixed(2))));
+                if (nextScale === state.scale) {
+                    return;
+                }
+                state.scale = nextScale;
+                if (state.renderPromise) {
+                    await state.renderPromise;
+                }
+                await renderPdfPreview(modalElement, { force: true });
+            }
+
+            function createPdfPreviewPage(pageNumber, viewport) {
+                const pageWrapper = document.createElement('div');
+                pageWrapper.className = 'pdf-preview-page';
+                pageWrapper.dataset.pageNumber = String(pageNumber);
+                pageWrapper.style.width = `${viewport.width}px`;
+                pageWrapper.style.height = `${viewport.height}px`;
+                pageWrapper.style.marginBottom = '10px';
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.display = 'block';
+                canvas.style.width = `${viewport.width}px`;
+                canvas.style.height = `${viewport.height}px`;
+
+                const linksLayer = document.createElement('div');
+                linksLayer.className = 'pdf-preview-links-layer';
+                linksLayer.setAttribute('aria-hidden', 'false');
+
+                pageWrapper.appendChild(canvas);
+                pageWrapper.appendChild(linksLayer);
+
+                return { pageWrapper, canvas, linksLayer };
+            }
+
+            function getSafePdfExternalLink(annotation) {
+                const candidate = annotation?.url || annotation?.unsafeUrl || '';
+                if (!candidate) {
+                    return '';
+                }
+                try {
+                    const parsedUrl = new URL(candidate, window.location.origin);
+                    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsedUrl.protocol)
+                        ? parsedUrl.href
+                        : '';
+                } catch (error) {
+                    return '';
+                }
+            }
+
+            async function resolvePdfInternalDestination(pdf, destination) {
+                if (!destination) {
+                    return null;
+                }
+                const explicitDestination = typeof destination === 'string'
+                    ? await pdf.getDestination(destination)
+                    : destination;
+                if (!Array.isArray(explicitDestination) || explicitDestination.length === 0) {
+                    return null;
+                }
+                const pageRef = explicitDestination[0];
+                if (typeof pageRef === 'number') {
+                    return pageRef + 1;
+                }
+                if (pageRef && typeof pageRef === 'object') {
+                    const pageIndex = await pdf.getPageIndex(pageRef);
+                    return pageIndex + 1;
+                }
+                return null;
+            }
+
+            async function renderPdfLinkAnnotations(page, pdf, viewport, linksLayer, scrollContainer) {
+                if (!page || !pdf || !viewport || !linksLayer) {
+                    return;
+                }
+
+                const annotations = await page.getAnnotations({ intent: 'display' });
+                for (const annotation of annotations) {
+                    if (annotation?.subtype !== 'Link' || !Array.isArray(annotation.rect)) {
+                        continue;
+                    }
+
+                    const linkUrl = getSafePdfExternalLink(annotation);
+                    const targetPageNumber = linkUrl ? null : await resolvePdfInternalDestination(pdf, annotation.dest);
+                    if (!linkUrl && !targetPageNumber) {
+                        continue;
+                    }
+
+                    const [x1, y1, x2, y2] = viewport.convertToViewportRectangle(annotation.rect);
+                    const left = Math.min(x1, x2);
+                    const top = Math.min(y1, y2);
+                    const width = Math.abs(x2 - x1);
+                    const height = Math.abs(y2 - y1);
+                    if (!width || !height) {
+                        continue;
+                    }
+
+                    const linkAnnotationElement = document.createElement('div');
+                    linkAnnotationElement.className = 'pdf-preview-link linkAnnotation';
+                    linkAnnotationElement.style.left = `${left}px`;
+                    linkAnnotationElement.style.top = `${top}px`;
+                    linkAnnotationElement.style.width = `${width}px`;
+                    linkAnnotationElement.style.height = `${height}px`;
+
+                    const linkElement = document.createElement('a');
+
+                    if (linkUrl) {
+                        linkElement.href = linkUrl;
+                        linkElement.target = '_blank';
+                        linkElement.rel = 'noopener noreferrer';
+                        linkElement.title = linkUrl;
+                        linkElement.setAttribute('aria-label', `Ouvrir le lien ${linkUrl}`);
+                    } else {
+                        linkElement.href = '#';
+                        linkElement.title = `Aller a la page ${targetPageNumber}`;
+                        linkElement.setAttribute('aria-label', `Aller a la page ${targetPageNumber}`);
+                        linkElement.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            const targetPage = scrollContainer?.querySelector(`[data-page-number="${targetPageNumber}"]`);
+                            targetPage?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        });
+                    }
+
+                    linkAnnotationElement.appendChild(linkElement);
+                    linksLayer.appendChild(linkAnnotationElement);
+                }
+            }
+
+            function getAttachmentDownloadUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/get-attachment/${signRequestId}/${attachmentId}`;
+            }
+
+            function getAttachmentInlineUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/get-attachment-inline/${signRequestId}/${attachmentId}`;
+            }
+
+            function getRemoveAttachmentUrl(attachmentId) {
+                return `/${urlProfil}/signrequests/remove-attachment/${signRequestId}/${attachmentId}`;
+            }
+
+            function getRemoveLinkUrl(linkIndex) {
+                return `/${urlProfil}/signrequests/remove-link/${signRequestId}/${linkIndex}`;
+            }
+
+            function canDeleteAttachment(attachment) {
+                const attachmentCreatorEppn = attachment && attachment.createBy ? attachment.createBy.eppn : null;
+                return (attachmentCreatorEppn === userEppn && signRequestStatus === 'pending') || signRequestCreatorEppn === userEppn;
+            }
+
+            function creatorDisplayName(createBy) {
+                if (!createBy) {
+                    return '';
+                }
+                return `${createBy.firstname || ''} ${createBy.name || ''}`.trim();
+            }
+
+            function createAttachmentRow(attachment) {
+                const tr = document.createElement('tr');
+                tr.id = `attachment-row-${attachment.id}`;
+                const deleteCellHtml = canDeleteAttachment(attachment)
+                    ? `
+                        <form class="js-remove-attachment-form"
+                              action="${getRemoveAttachmentUrl(attachment.id)}"
+                              method="post"
+                              data-attachment-id="${attachment.id}">
+                            <input type="hidden" name="_method" value="delete">
+                            <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
+                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
+                        </form>`
+                    : '';
+                tr.innerHTML = `
+                    <td>${escapeHtml(attachment.fileName)}</td>
+                    <td>${escapeHtml(creatorDisplayName(attachment.createBy))}</td>
+                    <td>
+                        <button type="button" class="btn btn-info float-end" title="Voir" onclick="openPdfModal(${attachment.id})">
+                            <i class="fi fi-rr-eye"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <a href="${getAttachmentDownloadUrl(attachment.id)}" target="_blank" class="btn btn-primary float-end" title="Télécharger">
+                            <i class="fi fi-rr-download"></i>
+                        </a>
+                    </td>
+                    <td>${deleteCellHtml}</td>`;
+                return tr;
+            }
+
+            function createLinkRow(link, index) {
+                const tr = document.createElement('tr');
+                tr.id = `link-row-${index}`;
+                const linkValue = escapeHtml(link);
+                tr.innerHTML = `
+                    <td>
+                        <a href="${linkValue}" target="_blank">${linkValue}</a>
+                    </td>
+                    <td>
+                        <form class="js-remove-link-form"
+                              action="${getRemoveLinkUrl(index)}"
+                              method="post"
+                              data-link-index="${index}">
+                            <input type="hidden" name="_method" value="delete">
+                            <input type="hidden" name="${escapeHtml(csrfParameterName)}" value="${escapeHtml(csrfToken)}">
+                            <button type="submit" class="btn btn-danger float-end" title="Supprimer" style="bottom: 10px;">
+                                <i class="fi fi-rr-trash"></i>
+                            </button>
+                        </form>
+                    </td>`;
+                return tr;
+            }
+
+            function renderLinks(links) {
+                if (!linksTbody) {
+                    return;
+                }
+                linksTbody.innerHTML = '';
+                (links || []).forEach((link, index) => {
+                    linksTbody.appendChild(createLinkRow(link, index));
+                });
+                updateEmptyState();
+            }
+
+            function createAttachmentModalElement(attachment) {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div class="modal fade modal-pdf js-attachment-preview-modal"
+                         id="pdfModal${attachment.id}"
+                         tabindex="-1"
+                         role="dialog"
+                         data-attachment-id="${attachment.id}"
+                         data-file-name="${escapeHtml(attachment.fileName)}">
+                        <div class="modal-dialog modal-xl modal-pdf" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">${escapeHtml(attachment.fileName)}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body modal-pdf bg-dark-subtle" style="width:100%; height: 90vh;">
+                                    ${isPdfFile(attachment.fileName)
+                                        ? `<div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-out" title="Zoom arrière" data-attachment-id="${attachment.id}">-</button>
+                                                <span class="badge text-bg-light js-pdf-zoom-value" data-attachment-id="${attachment.id}">${Math.round(DEFAULT_PDF_SCALE * 100)}%</span>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm js-pdf-zoom-in" title="Zoom avant" data-attachment-id="${attachment.id}">+</button>
+                                           </div>
+                                           <div id="pdfContainer_${attachment.id}" class="js-pdf-container d-flex flex-column align-items-center" style="height: calc(100% - 48px); overflow: auto;"></div>`
+                                        : `<div class="alert alert-info">Aperçu indisponible pour ce format. <a href="${getAttachmentInlineUrl(attachment.id)}" target="_blank">Télécharger le document</a></div>`}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                return wrapper.firstElementChild;
+            }
+
+            function ensureAttachmentModal(attachment) {
+                if (!previewModalsContainer || document.getElementById(`pdfModal${attachment.id}`)) {
+                    return;
+                }
+                const modalElement = createAttachmentModalElement(attachment);
+                previewModalsContainer.appendChild(modalElement);
+                setupPreviewModal(modalElement);
+            }
+
+            async function fetchJson(url, options = {}) {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        ...(options.headers || {})
+                    }
+                });
+                const contentType = response.headers.get('content-type') || '';
+                const payload = contentType.includes('application/json') ? await response.json() : { message: await response.text() };
+                if (!response.ok) {
+                    throw new Error(payload.message || 'Une erreur est survenue');
+                }
+                return payload;
+            }
+
+            async function submitDeleteForm(form) {
+                const body = new URLSearchParams(new FormData(form));
+                return fetchJson(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: body.toString()
+                });
+            }
+
+            async function renderPdfPreview(modalElement, options = {}) {
+                if (!modalElement || !isPdfFile(modalElement.dataset.fileName)) {
+                    return;
+                }
+                const state = getPdfPreviewState(modalElement);
+                if (!state) {
+                    return;
+                }
+                if (modalElement.dataset.pdfLoaded === 'true' && !options.force) {
+                    updatePdfZoomLabel(modalElement, state.scale);
+                    return;
+                }
+                if (state.renderPromise && !options.force) {
+                    return state.renderPromise;
+                }
+                if (state.renderPromise && options.force) {
+                    await state.renderPromise;
+                }
+                try {
+                    ensurePdfPreviewLinkStyles();
+                    state.renderPromise = renderPdfPages(modalElement);
+                    await state.renderPromise;
+                    modalElement.dataset.pdfLoaded = 'true';
+                } catch (error) {
+                    alert(error.message);
+                    const container = modalElement.querySelector('.js-pdf-container');
+                    if (container) {
+                        container.innerHTML = '<div class="alert alert-danger m-3">Impossible de charger l’aperçu du document.</div>';
+                    }
+                } finally {
+                    state.renderPromise = null;
+                }
+            }
+
+            function setupPreviewModal(modalElement) {
+                if (!modalElement || modalElement.dataset.previewReady === 'true') {
+                    return;
+                }
+                modalElement.dataset.previewReady = 'true';
+                modalElement.addEventListener('shown.bs.modal', () => {
+                    renderPdfPreview(modalElement);
+                });
+            }
+
+            document.querySelectorAll('.js-attachment-preview-modal').forEach(setupPreviewModal);
+
+            document.addEventListener('click', async (event) => {
+                const zoomInButton = event.target.closest('.js-pdf-zoom-in');
+                if (zoomInButton) {
+                    const modalElement = zoomInButton.closest('.js-attachment-preview-modal');
+                    await changePdfZoom(modalElement, PDF_SCALE_STEP);
+                    return;
+                }
+
+                const zoomOutButton = event.target.closest('.js-pdf-zoom-out');
+                if (zoomOutButton) {
+                    const modalElement = zoomOutButton.closest('.js-attachment-preview-modal');
+                    await changePdfZoom(modalElement, -PDF_SCALE_STEP);
+                }
+            });
+
+            window.openPdfModal = function (attachmentId) {
+                const modalElement = document.getElementById(`pdfModal${attachmentId}`);
+                if (!modalElement) {
+                    return;
+                }
+                setupPreviewModal(modalElement);
+                const modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+                modal.show();
+            };
+
+            if (addAttachmentForm) {
+                addAttachmentForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    try {
+                        const payload = await fetchJson(addAttachmentForm.action, {
+                            method: 'POST',
+                            body: new FormData(addAttachmentForm)
+                        });
+                        (payload.addedAttachments || []).forEach((attachment) => {
+                            if (attachmentsTbody) {
+                                attachmentsTbody.appendChild(createAttachmentRow(attachment));
+                            }
+                            ensureAttachmentModal(attachment);
+                        });
+                        if (Array.isArray(payload.links)) {
+                            renderLinks(payload.links);
+                        }
+                        addAttachmentForm.reset();
+                        updateEmptyState();
+                        showMessage('success', payload.message || 'La pièce jointe a bien été ajoutée');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de l’ajout');
+                    }
+                });
+            }
+
+            document.addEventListener('submit', async (event) => {
+                const removeAttachmentForm = event.target.closest('.js-remove-attachment-form');
+                if (removeAttachmentForm) {
+                    event.preventDefault();
+                    if (!confirm('Confirmez-vous la suppression ?')) {
+                        return;
+                    }
+                    try {
+                        const payload = await submitDeleteForm(removeAttachmentForm);
+                        const attachmentId = payload.attachmentId || removeAttachmentForm.dataset.attachmentId;
+                        document.getElementById(`attachment-row-${attachmentId}`)?.remove();
+                        document.getElementById(`pdfModal${attachmentId}`)?.remove();
+                        updateEmptyState();
+                        showMessage('success', payload.message || 'La pièce jointe a été supprimée');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de la suppression');
+                    }
+                    return;
+                }
+
+                const removeLinkForm = event.target.closest('.js-remove-link-form');
+                if (removeLinkForm) {
+                    event.preventDefault();
+                    if (!confirm('Confirmez-vous la suppression ?')) {
+                        return;
+                    }
+                    try {
+                        const payload = await submitDeleteForm(removeLinkForm);
+                        if (Array.isArray(payload.links)) {
+                            renderLinks(payload.links);
+                        }
+                        showMessage('success', payload.message || 'Le lien a été supprimé');
+                    } catch (error) {
+                        showMessage('error', error.message || 'Erreur lors de la suppression');
+                    }
+                }
+            });
+
+            updateEmptyState();
+        })();
+    </script>
 </div>
 </html>
+
+
+

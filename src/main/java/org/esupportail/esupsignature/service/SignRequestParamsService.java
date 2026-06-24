@@ -19,8 +19,8 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.contentstream.operator.Operator;
+import org.apache.pdfbox.util.Matrix;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.entity.SignRequest;
 import org.esupportail.esupsignature.entity.SignRequestParams;
@@ -36,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,6 +60,7 @@ import java.util.stream.Collectors;
 public class SignRequestParamsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SignRequestParamsService.class);
+    private static final int NO_MCID = Integer.MIN_VALUE;
 
     private final SignRequestParamsRepository signRequestParamsRepository;
     private final PdfService pdfService;
@@ -124,10 +126,11 @@ public class SignRequestParamsService {
      */
     public SignRequestParams createFromPdf(String name, PDRectangle pdRectangle, int signPageNumber, PDPage pdPage, boolean scaleDimensions) {
         SignRequestParams signRequestParams = new SignRequestParams();
+        PDRectangle pageBox = pdPage.getCropBox();
         signRequestParams.setSignImageNumber(0);
         signRequestParams.setPdSignatureFieldName(name);
-        signRequestParams.setxPos(Math.round(pdRectangle.getLowerLeftX() / globalProperties.getFixFactor()));
-        signRequestParams.setyPos(Math.round((pdPage.getBBox().getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
+        signRequestParams.setxPos(Math.round((pdRectangle.getLowerLeftX() - pageBox.getLowerLeftX()) / globalProperties.getFixFactor()));
+        signRequestParams.setyPos(Math.round((pageBox.getLowerLeftY() + pageBox.getHeight() - pdRectangle.getLowerLeftY() - pdRectangle.getHeight()) / globalProperties.getFixFactor()));
         float scaleWidth = pdRectangle.getWidth() / 200f;
         float scaleHeight = pdRectangle.getHeight() / 100f;
         float scale = Math.min(scaleWidth, scaleHeight);
@@ -209,7 +212,7 @@ public class SignRequestParamsService {
                                 }
                             }
                             if (!isOverlapping) {
-                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, false);
+                                SignRequestParams signRequestParams = createFromPdf(signFieldName, signRect, pageNrByAnnotDict.get(signFieldName) + 1, pdPage, true);
                                 signRequestParamsList.add(signRequestParams);
                             } else {
                                 logger.warn("Signature field " + signFieldName + " is overlapping with another annotation");
@@ -286,34 +289,25 @@ public class SignRequestParamsService {
                     try {
                         PDResources resources = pdPage.getResources();
                         if(resources != null) {
-                            List<COSName> xObjectNames = new ArrayList<>((Collection) resources.getXObjectNames());
-                            List<String> imagesToRemove = new ArrayList<>();
+                            List<ImageOccurrence> imageOccurrences = findImageOccurrences(pdPage);
+                            Set<String> imagesToRemove = new HashSet<>();
+                            Set<Integer> imageTokenIndexesToRemove = new HashSet<>();
 
-                            for(COSName xObjectName : xObjectNames) {
-                                PDXObject xObject = resources.getXObject(xObjectName);
-                                if(xObject instanceof PDImageXObject) {
-                                    String imageName = xObjectName.getName();
-
-                                    // Trouver le MCID associé à cette image
-                                    Integer mcid = findMcidForImage(pdPage, imageName);
-
-                                    if(mcid != null) {
-                                        String altText = mcidToAltText.get(mcid);
-
-                                        if(altText != null && pattern.matcher(altText).find()) {
-                                            PDRectangle pdRectangle = getImagePositionOnPage(pdPage, imageName);
-                                            if(pdRectangle != null) {
-                                                SignRequestParams signRequestParams = createFromPdf(imageName, pdRectangle, i, pdPage, true);
-                                                signRequestParamsList.add(signRequestParams);
-                                                imagesToRemove.add(imageName);
-                                                break;
-                                            }
-                                        }
-                                    }
+                            for(ImageOccurrence imageOccurrence : imageOccurrences) {
+                                if(imageOccurrence.getMcid() == null) {
+                                    continue;
+                                }
+                                String altText = mcidToAltText.get(imageOccurrence.getMcid());
+                                if(altText != null && pattern.matcher(altText).find()) {
+                                    SignRequestParams signRequestParams = createFromPdf(imageOccurrence.getImageName(), imageOccurrence.getRectangle(), i, pdPage, true);
+                                    signRequestParamsList.add(signRequestParams);
+                                    imagesToRemove.add(imageOccurrence.getImageName());
+                                    imageTokenIndexesToRemove.add(imageOccurrence.getDoTokenIndex());
+                                    break;
                                 }
                             }
 
-                            if(!imagesToRemove.isEmpty()) {
+                            if(!imageTokenIndexesToRemove.isEmpty()) {
                                 try {
                                     PDFStreamParser parser = new PDFStreamParser(pdPage);
                                     List<?> tokens = parser.parse();
@@ -323,12 +317,11 @@ public class SignRequestParamsService {
                                         Object token = tokens.get(t);
                                         boolean skip = false;
 
-                                        if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && t > 0) {
-                                            Object previous = tokens.get(t - 1);
-                                            if(previous instanceof COSName && imagesToRemove.contains(((COSName) previous).getName())) {
+                                        if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && imageTokenIndexesToRemove.contains(t)) {
+                                            if(!newTokens.isEmpty() && newTokens.get(newTokens.size() - 1) instanceof COSName) {
                                                 newTokens.remove(newTokens.size() - 1);
-                                                skip = true;
                                             }
+                                            skip = true;
                                         }
 
                                         if(!skip) {
@@ -348,7 +341,9 @@ public class SignRequestParamsService {
                                     COSDictionary xObjects = (COSDictionary) resDictionary.getDictionaryObject(COSName.XOBJECT);
                                     if(xObjects != null) {
                                         for(String imageName : imagesToRemove) {
-                                            xObjects.removeItem(COSName.getPDFName(imageName));
+                                            if(!hasImageReference(newTokens, imageName)) {
+                                                xObjects.removeItem(COSName.getPDFName(imageName));
+                                            }
                                         }
                                     }
                                 } catch(IOException e) {
@@ -383,31 +378,75 @@ public class SignRequestParamsService {
         }
     }
 
-    private Integer findMcidForImage(PDPage pdPage, String imageName) throws IOException {
+    private List<ImageOccurrence> findImageOccurrences(PDPage pdPage) throws IOException {
         PDFStreamParser parser = new PDFStreamParser(pdPage);
         List<?> tokens = parser.parse();
+        List<ImageOccurrence> imageOccurrences = new ArrayList<>();
+        List<COSBase> arguments = new ArrayList<>();
+        Deque<Matrix> matrixStack = new ArrayDeque<>();
+        Deque<Integer> mcidStack = new ArrayDeque<>();
+        Matrix currentMatrix = new Matrix();
+
         for(int t = 0; t < tokens.size(); t++) {
             Object token = tokens.get(t);
-            if(token instanceof Operator && "Do".equals(((Operator) token).getName()) && t > 0) {
-                Object previous = tokens.get(t - 1);
-                if(previous instanceof COSName && ((COSName) previous).getName().equals(imageName)) {
-                    for(int j = t - 1; j >= Math.max(0, t - 50); j--) {
-                        if(tokens.get(j) instanceof Operator && "BDC".equals(((Operator) tokens.get(j)).getName())) {
-                            if(j > 0 && tokens.get(j - 1) instanceof COSDictionary) {
-                                COSDictionary dict = (COSDictionary) tokens.get(j - 1);
-                                COSBase mcidValue = dict.getDictionaryObject(COSName.MCID);
-                                if(mcidValue instanceof COSInteger) {
-                                    int mcid = ((COSInteger) mcidValue).intValue();
-                                    logger.info("Found MCID " + mcid + " for image " + imageName);
-                                    return mcid;
-                                }
-                            }
+            if(token instanceof COSBase) {
+                arguments.add((COSBase) token);
+                continue;
+            }
+            if(!(token instanceof Operator operator)) {
+                arguments.clear();
+                continue;
+            }
+
+            switch(operator.getName()) {
+                case "q":
+                    matrixStack.push(currentMatrix.clone());
+                    break;
+                case "Q":
+                    currentMatrix = matrixStack.isEmpty() ? new Matrix() : matrixStack.pop();
+                    break;
+                case "cm":
+                    if(arguments.size() == 6 && arguments.stream().allMatch(COSNumber.class::isInstance)) {
+                        currentMatrix.concatenate(new Matrix(
+                                ((COSNumber) arguments.get(0)).floatValue(),
+                                ((COSNumber) arguments.get(1)).floatValue(),
+                                ((COSNumber) arguments.get(2)).floatValue(),
+                                ((COSNumber) arguments.get(3)).floatValue(),
+                                ((COSNumber) arguments.get(4)).floatValue(),
+                                ((COSNumber) arguments.get(5)).floatValue()
+                        ));
+                    }
+                    break;
+                case "BMC":
+                    mcidStack.push(NO_MCID);
+                    break;
+                case "BDC":
+                    Integer mcid = extractMcid(arguments);
+                    mcidStack.push(mcid != null ? mcid : NO_MCID);
+                    break;
+                case "EMC":
+                    if(!mcidStack.isEmpty()) {
+                        mcidStack.pop();
+                    }
+                    break;
+                case "Do":
+                    if(arguments.size() == 1 && arguments.get(0) instanceof COSName xObjectName) {
+                        PDXObject xObject = pdPage.getResources().getXObject(xObjectName);
+                        if(xObject instanceof PDImageXObject) {
+                            Integer currentMcid = getCurrentMcid(mcidStack);
+                            PDRectangle pdRectangle = getRectangleFromMatrix(currentMatrix);
+                            imageOccurrences.add(new ImageOccurrence(xObjectName.getName(), currentMcid, pdRectangle, t));
+                            logger.info("Found image {} with MCID {} at {}", xObjectName.getName(), currentMcid, pdRectangle);
                         }
                     }
-                }
+                    break;
+                default:
+                    break;
             }
+
+            arguments.clear();
         }
-        return null;
+        return imageOccurrences;
     }
 
     private void buildMcidToAltTextMap(PDStructureElement elem, Map<Integer, String> map) {
@@ -467,31 +506,81 @@ public class SignRequestParamsService {
         }
     }
 
-    private PDRectangle getImagePositionOnPage(PDPage pdPage, String imageName) throws IOException {
-        Iterator<PDStream> contentStreams = pdPage.getContentStreams();
-        while(contentStreams.hasNext()) {
-            PDStream contentStream = contentStreams.next();
-            byte[] content = contentStream.toByteArray();
-            String contentStr = new String(content);
-            Pattern doPattern = Pattern.compile("/" + Pattern.quote(imageName) + "\\s+Do");
-            Matcher doMatcher = doPattern.matcher(contentStr);
-            if(!doMatcher.find()) {
-                continue;
-            }
-            int doPosition = doMatcher.start();
-            String beforeDo = contentStr.substring(Math.max(0, doPosition - 1000), doPosition);
-            Pattern matrixPattern = Pattern.compile("([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+([\\d.\\-]+)\\s+cm");
-            Matcher matrixMatcher = matrixPattern.matcher(beforeDo);
-            if(matrixMatcher.find()) {
-                float a = Float.parseFloat(matrixMatcher.group(1));
-                float d = Float.parseFloat(matrixMatcher.group(4));
-                float e = Float.parseFloat(matrixMatcher.group(5));
-                float f = Float.parseFloat(matrixMatcher.group(6));
-                return new PDRectangle(e, f, a, d);
+    private Integer extractMcid(List<COSBase> arguments) {
+        if(arguments.size() < 2 || !(arguments.get(1) instanceof COSDictionary dict)) {
+            return null;
+        }
+        COSBase mcidValue = dict.getDictionaryObject(COSName.MCID);
+        if(mcidValue instanceof COSInteger) {
+            return ((COSInteger) mcidValue).intValue();
+        }
+        return null;
+    }
+
+    private Integer getCurrentMcid(Deque<Integer> mcidStack) {
+        for(Integer mcid : mcidStack) {
+            if(mcid != null && mcid != NO_MCID) {
+                return mcid;
             }
         }
-
         return null;
+    }
+
+    private PDRectangle getRectangleFromMatrix(Matrix matrix) {
+        Point2D.Float p1 = matrix.transformPoint(0, 0);
+        Point2D.Float p2 = matrix.transformPoint(1, 0);
+        Point2D.Float p3 = matrix.transformPoint(0, 1);
+        Point2D.Float p4 = matrix.transformPoint(1, 1);
+
+        float minX = Math.min(Math.min(p1.x, p2.x), Math.min(p3.x, p4.x));
+        float maxX = Math.max(Math.max(p1.x, p2.x), Math.max(p3.x, p4.x));
+        float minY = Math.min(Math.min(p1.y, p2.y), Math.min(p3.y, p4.y));
+        float maxY = Math.max(Math.max(p1.y, p2.y), Math.max(p3.y, p4.y));
+
+        return new PDRectangle(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    private boolean hasImageReference(List<Object> tokens, String imageName) {
+        for(int t = 1; t < tokens.size(); t++) {
+            Object token = tokens.get(t);
+            if(token instanceof Operator && "Do".equals(((Operator) token).getName())) {
+                Object previous = tokens.get(t - 1);
+                if(previous instanceof COSName && imageName.equals(((COSName) previous).getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static final class ImageOccurrence {
+        private final String imageName;
+        private final Integer mcid;
+        private final PDRectangle rectangle;
+        private final int doTokenIndex;
+
+        private ImageOccurrence(String imageName, Integer mcid, PDRectangle rectangle, int doTokenIndex) {
+            this.imageName = imageName;
+            this.mcid = mcid;
+            this.rectangle = rectangle;
+            this.doTokenIndex = doTokenIndex;
+        }
+
+        private String getImageName() {
+            return imageName;
+        }
+
+        private Integer getMcid() {
+            return mcid;
+        }
+
+        private PDRectangle getRectangle() {
+            return rectangle;
+        }
+
+        private int getDoTokenIndex() {
+            return doTokenIndex;
+        }
     }
 
     private boolean rectanglesOverlap(PDRectangle rect1, PDRectangle rect2) {
@@ -539,6 +628,7 @@ public class SignRequestParamsService {
             signRequestParams.setAllPages(requestParams.getAllPages());
             signRequestParams.setExtraOnTop(requestParams.getExtraOnTop());
             signRequestParams.setFontSize(requestParams.getFontSize());
+            signRequestParams.setRecipient(requestParams.getRecipient());
             signRequest.getSignRequestParams().add(signRequestParams);
         }
     }

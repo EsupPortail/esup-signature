@@ -1,7 +1,7 @@
 package org.esupportail.esupsignature.web.controller.admin;
 
 import jakarta.annotation.Resource;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.service.WorkflowService;
 import org.esupportail.esupsignature.service.WsAccessTokenService;
 import org.springframework.stereotype.Controller;
@@ -43,21 +43,21 @@ public class WsAccessTokenController {
     public String create(@ModelAttribute("authUserEppn") String authUserEppn,
                          @RequestParam String appName, @RequestParam List<Long> workflowIds, RedirectAttributes redirectAttributes) {
         wsAccessTokenService.createToken(appName, workflowIds);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Token ajouté"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Token ajouté"));
         return "redirect:/admin/ws-access-token";
     }
 
     @PutMapping("/{wsAccessTokenId}")
     public String update(@PathVariable Long wsAccessTokenId, @RequestParam String appName, @RequestParam List<Long> workflowIds, RedirectAttributes redirectAttributes) {
         wsAccessTokenService.updateToken(wsAccessTokenId, appName, workflowIds);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Modification effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Modification effectuée"));
         return "redirect:/admin/ws-access-token";
     }
 
     @PutMapping("/renew/{wsAccessTokenId}")
     public String renew(@PathVariable Long wsAccessTokenId, RedirectAttributes redirectAttributes) {
         wsAccessTokenService.renew(wsAccessTokenId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Régénération effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Régénération effectuée"));
         return "redirect:/admin/ws-access-token";
     }
 
@@ -70,9 +70,9 @@ public class WsAccessTokenController {
     @GetMapping("/reset")
     public String reset(@ModelAttribute("authUserEppn") String authUserEppn, RedirectAttributes redirectAttributes) {
         if(wsAccessTokenService.createDefaultWsAccessToken()) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Reset effectué"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Reset effectué"));
         } else {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Reset impossible car il existe des règles"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Reset impossible car il existe des règles"));
         }
         return "redirect:/admin/ws-access-token";
     }
@@ -80,7 +80,7 @@ public class WsAccessTokenController {
     @DeleteMapping("/{wsAccessTokenId}")
     public String delete(@PathVariable Long wsAccessTokenId, RedirectAttributes redirectAttributes) {
         wsAccessTokenService.delete(wsAccessTokenId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Suppression effectuée"));
+        redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Suppression effectuée"));
         return "redirect:/admin/ws-access-token";
     }
 

@@ -31,13 +31,10 @@ public class UserShare {
 
     private Boolean allSignRequests = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date beginDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate = new Date();
 
     @ElementCollection(targetClass = ShareType.class, fetch = FetchType.EAGER)

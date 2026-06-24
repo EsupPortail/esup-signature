@@ -35,14 +35,12 @@ public class Workflow {
 
     private Integer counter;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
     @ManyToOne
     private User createBy;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -67,6 +65,8 @@ public class Workflow {
 
     private String documentsSourceUri;
 
+    private Boolean unzip;
+
     private Boolean forbidDownloadsBeforeEnd = false;
 
     @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
@@ -85,6 +85,9 @@ public class Workflow {
     @ManyToMany
     private List<User> viewers = new ArrayList<>();
 
+    @ManyToMany
+    private List<User> sharedToUsers = new ArrayList<>();
+
     private Boolean fromCode;
 
     private String namingTemplate;
@@ -94,6 +97,8 @@ public class Workflow {
     private Boolean ownerSystem = false;
 
     private Boolean disableDeleteByCreator = false;
+
+    private Boolean disableUpdateByCreator = false;
 
     private Boolean sealAtEnd = false;
 
@@ -114,7 +119,6 @@ public class Workflow {
 
     private Boolean authorizeClone = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private Date startArchiveDate;
 
@@ -259,6 +263,14 @@ public class Workflow {
         this.documentsSourceUri = documentsSourceUri;
     }
 
+    public Boolean getUnzip() {
+        return unzip;
+    }
+
+    public void setUnzip(Boolean unzip) {
+        this.unzip = unzip;
+    }
+
     public List<Target> getTargets() {
         return targets;
     }
@@ -379,12 +391,28 @@ public class Workflow {
         this.disableDeleteByCreator = disableDeleteByCreator;
     }
 
+    public Boolean getDisableUpdateByCreator() {
+        return disableUpdateByCreator;
+    }
+
+    public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
+        this.disableUpdateByCreator = disableUpdateByCreator;
+    }
+
     public List<User> getViewers() {
         return viewers;
     }
 
     public void setViewers(List<User> viewers) {
         this.viewers = viewers;
+    }
+
+    public List<User> getSharedToUsers() {
+        return sharedToUsers;
+    }
+
+    public void setSharedToUsers(List<User> sharedToUsers) {
+        this.sharedToUsers = sharedToUsers;
     }
 
     public Boolean getSealAtEnd() {

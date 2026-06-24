@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml"lang="fr" >
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.entity.SignBook"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
@@ -13,70 +13,57 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main" th:style="${infiniteScrolling} ? '' : 'padding-bottom: 0px;'">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item active">Tableau de bord</li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active">Toutes les demandes</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li>
-                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn-floating btn-lg bg-primary">
-                            <i class="fa-solid fa-search fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="deleteMultipleButton" class="btn-floating btn-lg bg-danger d-none">
-                            <i class="fa-solid fa-trash-alt fa-2xl"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a type="button" id="downloadMultipleButton" class="btn-floating btn-lg bg-primary d-none">
-                            <i class="fa-solid fa-download fa-2xl"></i>
-                        </a>
-                    </li>
-
-                </ul>
-            </div>
-            <div id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2" style="outline: none;">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                </div>
+                <div class="flex-grow-1">
+            <div id="listSignRequestTable" class="table-fix-head scrollbar-style rounded-3 p-0 m-2" style="outline: none;">
                 <div id="loader" class="loader" style="position: fixed; left: 50%; top: 40%; z-index:100000000; display: none;"></div>
                     <table class="table table-light table-borderless table-hover">
                         <thead class="table-secondary">
                     <tr style="z-index: 2;">
                         <th class="w-20 d-none d-lg-table-cell">
                             <div class="dropdown position-relative">
-                                <button type="button" id="menu-toggle_multiple" class="btn" title="Menu global" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-ellipsis-v"></i>
+                                <button type="button" id="menu-toggle_multiple" class="btn" data-bs-target="#menu-multiple" aria-controls="menu-multiple" data-bs-toggle="dropdown">
+                                    <i class="fi fi-rr-menu-dots-vertical"></i>
                                 </button>
                                 <ul class="dropdown-menu position-absolute ps-2 pe-2 mt-2" id="menu-multiple">
                                     <li>
                                         <button id="selectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
-                                            <i class="fa-regular fa-check-square"></i> Tout sélectionner
+                                            <i class="fi fi-rr-angle-square-down"></i> Tout sélectionner
                                         </button>
                                     </li>
                                     <li>
                                         <button id="unSelectAllButton" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button">
-                                            <i class="fa-regular fa-minus-square"></i> Tout dé-sélectionner
+                                            <i class="fi fi-rr-square-minus"></i> Tout dé-sélectionner
                                         </button>
                                     </li>
                                     <li>
-                                        <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-trash-alt pr-2"></i> Supprimer la sélection</button>
+                                        <button id="menuDeleteMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fi fi-rr-trash"></i> Supprimer la sélection</button>
                                     </li>
                                     <li>
-                                        <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection</button>
+                                        <button id="menuRestoreMultipleButton" class="btn btn-transparent text-primary text-left col-12 d-none"><i class="fi fi-rr-trash-restore-alt"></i> Restaurer la sélection</button>
                                     </li>
                                     <li>
-                                        <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fa-solid fa-download pr-2"></i> Télécharger la sélection avec rapports</button>
+                                        <button id="menuDownloadMultipleButton" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fi fi-rr-download"></i> Télécharger la sélection</button>
+                                    </li>
+                                    <li>
+                                        <button id="menuDownloadMultipleButtonWithReport" class="btn btn-transparent text-dark text-left col-12 d-none"><i class="fi fi-rr-download"></i> Télécharger la sélection avec rapports</button>
                                     </li>
                                 </ul>
                             </div>
                         </th>
                         <th class="d-none d-xxl-table-cell text-center" style="width: 10%;">
-<!--                            <select style="width: 200px;" id="workflowFilter" name="workflowFilter" class="slim-select-filter sign-request-filter" data-placeholder="Circuit" data-allow-deselect="true">-->
+<!--                            <select style="width: 200px;" id="workflowFilter" name="workflowFilter" class="slim-select-filter sign-signRequestLight-filter" data-placeholder="Circuit" data-allow-deselect="true">-->
 <!--                                <option data-placeholder="true"></option>-->
 <!--                                <option value="all">Tout</option>-->
 <!--                                <th:block th:each="workflow : ${workflowNames}">-->
@@ -90,7 +77,7 @@
                         </th>
                         <th class="text-center" style="width: 10%;">
                             <input class="form-control sign-request-filter" th:value="${docTitleFilter}" type="text" placeholder="Titre des documents" id="docTitleFilter">
-    <!--                                <select id="docTitleFilter" class="slim-select-filter sign-request-filter" data-placeholder="Titre des documents" data-allow-deselect="true">-->
+    <!--                                <select id="docTitleFilter" class="slim-select-filter sign-signRequestLight-filter" data-placeholder="Titre des documents" data-allow-deselect="true">-->
     <!--                                    <option data-placeholder="true"></option>-->
     <!--                                    <option value="all">Tout</option>-->
     <!--                                    <th:block th:each="docTitle : ${docTitles}">-->
@@ -104,17 +91,23 @@
                                     <option data-placeholder="true"></option>
                                     <option value="all">Tout</option>
                                 </select>
-<!--                                <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createBy"><i class="fa-solid fa-sort"></i></a>-->
                             </div>
                         </th>
                         <th class="d-none d-xl-table-cell">
                             <div class="d-flex text-center">
                                 <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}">
-                                <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fa-solid fa-sort"></i></a>
+                                <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
+                                    <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                        <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                        <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                        <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                    </a>
+                                </th:block>
                             </div>
                         </th>
                         <th class="d-none d-xl-table-cell">
-    <!--                                <select id="recipientsFilter" class="slim-select-filter sign-request-filter" data-placeholder="Participants" data-allow-deselect="true">-->
+                            Participants
+    <!--                                <select id="recipientsFilter" class="slim-select-filter sign-signRequestLight-filter" data-placeholder="Participants" data-allow-deselect="true">-->
     <!--                                    <option data-placeholder="true"></option>-->
     <!--                                    <option value="all">Tout</option>-->
     <!--                                    <th:block th:each="signRequestRecipient : ${signRequestRecipients}">-->
@@ -122,16 +115,34 @@
     <!--                                    </th:block>-->
     <!--                                </select>-->
                         </th>
-                        <th class="d-none d-xxxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
+                        <th class="d-none d-xxxl-table-cell">
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
+                                <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                    Date dernière modification&nbsp;
+                                    <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                    <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                    <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                </a>
+                            </th:block>
+                        </th>
                         <th class="d-none d-md-table-cell">
-                            <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
-                                <option data-placeholder="true"></option>
-                                <option value="all">Tout</option>
-                                <option value="deleted">Supprimé</option>
-                                <th:block th:each="status : ${statuses}">
-                                    <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
+                            <div class="d-flex text-center">
+                                <select id="statusFilter" name="statusFilter" class="slim-select-filter sign-request-filter spinner-borders" data-placeholder="Statut">
+                                    <option data-placeholder="true"></option>
+                                    <option value="all">Tout</option>
+                                    <option value="deleted">Supprimé</option>
+                                    <th:block th:each="status : ${statuses}">
+                                        <option th:value="${status.name}" th:selected="${statusFilter == status.name}" th:text="#{'signbook.status.' + ${status.name}}"></option>
+                                    </th:block>
+                                </select>
+                                <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
+                                    <a sd:pagination-sort="status" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                        <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                        <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                        <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                    </a>
                                 </th:block>
-                            </select>
+                            </div>
                         </th>
                         <th class=""><a class="sorted" sd:pagination-sort="archiveStatus"></a></th>
                         <th >Actions</th>
@@ -143,7 +154,7 @@
                     <tfoot>
                         <tr th:if="${infiniteScrolling}">
                             <td colspan="100%">
-                                <a id="more-sign-request" href="javascript:void(0);" >Afficher plus d’éléments</a>
+                                <button type="button" id="more-sign-request" class="btn btn-transparent text-dark">Afficher plus</button>
                             </td>
                         </tr>
                         <tr th:unless="${infiniteScrolling}">
@@ -151,6 +162,33 @@
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+                </div>
+            <div id="signButtons" class="es-sign-buttons es-fixed-action-btns active">
+                <ul id="buttonList" class="list-unstyled">
+                    <li>
+                        <a type="button" data-bs-toggle="modal" data-bs-target="#searchModal" class="btn btn-transparent text-dark">
+                            <i class="fi fi-rr-search"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a type="button" id="downloadMultipleButton" class="btn btn-transparent text-dark d-none">
+                            <i class="fi fi-rr-download"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a type="button" id="restoreMultipleButton" class="btn btn-transparent text-primary d-none">
+                            <i class="fi fi-rr-trash-restore-alt"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a type="button" id="deleteMultipleButton" class="btn btn-transparent text-danger d-none">
+                            <i class="fi fi-rr-trash"></i>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
             </div>
         </div>
     </div>
@@ -178,7 +216,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
                 <button id="launchMassSignButton"
                         class="btn btn-success" title="Signer" autofocus>
-                    Lancer la signature en masse <i class="fa-solid fa-arrow-alt-circle-right"></i>
+                    Lancer la signature en masse <i class="fi fi-ss-arrow-circle-right"></i>
                 </button>
             </div>
         </div>

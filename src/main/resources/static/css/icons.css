@@ -3,10 +3,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-digital-signature.svg') no-repeat center;
-    background-size: contain;
-    text-transform: none;
-    line-height: 1;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-digital-signature.svg') no-repeat center;
+    mask: url('/images/icons/rr-digital-signature.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-rr-log-file::before {
@@ -14,8 +15,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-log-file.svg') no-repeat center;
-    background-size: contain;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-log-file.svg') no-repeat center;
+    mask: url('/images/icons/rr-log-file.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
     text-transform: none;
     line-height: 1;
 }
@@ -25,8 +29,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/tr-log-file.svg') no-repeat center;
-    background-size: contain;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/tr-log-file.svg') no-repeat center;
+    mask: url('/images/icons/tr-log-file.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-tr-api-cloud::before {
@@ -34,8 +41,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/tr-api-cloud.svg') no-repeat center;
-    background-size: contain;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/tr-api-cloud.svg') no-repeat center;
+    mask: url('/images/icons/tr-api-cloud.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-rr-api-cloud::before {
@@ -43,8 +53,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-api-cloud.svg') no-repeat center;
-    background-size: contain;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-api-cloud.svg') no-repeat center;
+    mask: url('/images/icons/rr-api-cloud.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-tr-digital-key::before {
@@ -52,8 +65,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/tr-digital-key.svg') no-repeat center;
-    background-size: contain;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/tr-digital-key.svg') no-repeat center;
+    mask: url('/images/icons/tr-digital-key.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-rr-infinite-cycle::before {
@@ -61,7 +77,11 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
+    mask: url('/images/icons/rr-infinite-cycle.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-rr-session-timeout::before {
@@ -69,7 +89,23 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-session-timeout.svg') no-repeat center;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-session-timeout.svg') no-repeat center;
+    mask: url('/images/icons/rr-session-timeout.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+.fi-rr-login-lock::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-login-lock.svg') no-repeat center;
+    mask: url('/images/icons/rr-login-lock.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 
 .fi-rr-task-checklist::before {
@@ -77,5 +113,21 @@
     display: inline-block;
     width: 1.0005em;
     height: 1em;
-    background: url('/images/icons/rr-task-checklist.svg') no-repeat center;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-task-checklist.svg') no-repeat center;
+    mask: url('/images/icons/rr-task-checklist.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+.fi-rr-mouse-scroll::before {
+    content: "";
+    display: inline-block;
+    width: 1.0005em;
+    height: 1em;
+    background-color: currentColor;
+    -webkit-mask: url('/images/icons/rr-mouse-scroll.svg') no-repeat center;
+    mask: url('/images/icons/rr-mouse-scroll.svg') no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }

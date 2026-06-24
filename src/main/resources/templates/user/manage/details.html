@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
-<!--/*@thymesVar id="signBook" type="org.esupportail.esupsignature.entity.SignBook"*/-->
+<!--/*@thymesVar id="signBookLight" type="org.esupportail.esupsignature.dto.page.user.signbook.SignBookFullDto"*/-->
 <!--/*@thymesVar id="signRequest" type="org.esupportail.esupsignature.entity.SignRequest"*/-->
 <!--/*@thymesVar id="signRequests" type="org.springframework.data.domain.Page<esupportail.esupsignature.entity.SignRequest>"*/-->
 <!--/*@thymesVar id="statusFilter" type="org.esupportail.esupsignature.entity.enums.SignRequestStatus"*/-->
@@ -13,35 +13,17 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/user/manage">Espace superviseurs</a></li>
-                <li class="breadcrumb-item active"><span th:text="${workflow.description}"></span></li>
+                <li class="breadcrumb-item text-uppercase d-flex align-items-center"><a href="/user/manage"><i class="fi fi-rr-list-check"></i> Espace superviseurs</a></li>
+                <li class="breadcrumb-item active"><span th:text="${workflow.description}"></span> <span class="mb-0" th:if="${hided}">(Demandes masquées)</span></li>
             </ol>
         </nav>
-        <div id="content" class="content-fixed-breadcrumb">
-            <div id="signButtons" class="fixed-action-btns active">
-                <ul id="buttonList" class="list-unstyled">
-                    <li th:if="${hided}">
-                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes non masquées">
-                            <i class="fi fi-rr-eye fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li th:unless="${hided}">
-                        <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn-floating btn-lg bg-primary" title="Afficher les demandes masquées">
-                            <i class="fi fi-rr-eye-crossed fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn-floating btn-lg bg-primary">
-                            <i class="fi fi-rr-file-csv fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="d-flex align-items-center justify-content-center"><h5 class="text-center" th:text="'Circuit : ' + ${workflow.description}"></h5> <h5 th:if="${hided}">(Demandes masquées)</h5></div>
-            <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="flex-grow-1">
+                    <div class="table-fix-head scrollbar-style rounded-3 p-0 m-2">
                 <table class="table table-light table-borderless table-hover">
                     <thead class="table-secondary">
                     <tr style="z-index: 2;">
@@ -61,7 +43,13 @@
                         <th class="d-none d-xl-table-cell">
                             <div class="d-flex text-center">
                                 <input type="date" id="dateFilter" name="dateFilter" placeholder="Date de création" title="Date de création" class="form-control date sign-request-filter" th:value="${dateFilter}" onchange="submit();">
-                                <a class="sorted my-auto text-center ms-1" sd:pagination-sort="createDate"><i class="fa-solid fa-sort"></i></a>
+                                <th:block th:with="order=${signBooks.sort.getOrderFor('createDate')}">
+                                    <a sd:pagination-sort="createDate" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                        <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                        <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                        <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                    </a>
+                                </th:block>
                             </div>
                         </th>
                         <th class="d-none d-lg-table-cell">
@@ -70,7 +58,16 @@
                                 <option value="all">Tout</option>
                             </select>
                         </th>
-                        <th class="d-none d-xxl-table-cell"><a class="sorted" sd:pagination-sort="endDate">Date dernière modification</a></th>
+                        <th class="d-none d-xxl-table-cell">
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('endDate')}">
+                                <a sd:pagination-sort="endDate" class="sorted" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                    Date dernière modification&nbsp;
+                                    <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                    <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                    <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                </a>
+                            </th:block>
+                        </th>
                         <th class="d-none d-md-table-cell">
                             <div class="d-flex text-center">
                             <select class="slim-select-filter sign-request-filter" name="statusFilter" id="statusFilter" onchange="submit();">
@@ -85,7 +82,13 @@
                                             th:text="#{'signbook.status.' + ${status}}"></option>
                                 </th:block>
                             </select>
-                            <a class="sorted my-auto text-center ms-1" sd:pagination-sort="status"><i class="fa-solid fa-sort"></i></a>
+                            <th:block th:with="order=${signBooks.sort.getOrderFor('status')}">
+                                <a sd:pagination-sort="status" class="sorted my-auto text-center ms-1" th:classappend="${order == null ? 'text-dark' : 'text-primary'}" style="text-decoration: none;">
+                                    <i th:if="${order != null && order.direction.name() == 'ASC'}" class="fi fi-rr-sort-amount-down"></i>
+                                    <i th:if="${order != null && order.direction.name() == 'DESC'}" class="fi fi-rr-sort-amount-up"></i>
+                                    <i th:if="${order == null}" class="fi fi-rr-sort-alt"></i>
+                                </a>
+                            </th:block>
                             </div>
                         </th>
                         <th >Actions</th>
@@ -97,71 +100,60 @@
                         <tr th:data-href="'/user/signbooks/' + ${signBook.id}">
 <!--                                    <td class="w-20 d-none d-lg-table-cell">-->
 <!--                                        <input type="checkbox" class="form-check-input" class="sign-requests-ids" name="ids[]" th:value="${signRequest.id}" th:data-es-signrequest-status="${signRequest.status}"-->
-<!--                                               th:data-es-sign-type="${signBook.liveWorkflow.currentStep != null ? signBook.liveWorkflow.currentStep.signType : ''}"-->
-<!--                                               th:data-es-signbook-id="${signBook.id}">-->
+<!--                                               th:data-es-sign-type="${signBookLight.liveWorkflow.currentStep != null ? signBookLight.liveWorkflow.currentStep.signType : ''}"-->
+<!--                                               th:data-es-signbook-id="${signBookLight.id}">-->
 <!--                                    </td>-->
                             <td class="clickable-td text-break"><i class="fi fi-rr-file"></i> <span th:text="${signBook.subject}"></span></td>
-                            <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createBy.firstname} + ' ' + ${signBook.createBy.name}"></td>
-                            <td class="clickable-td d-none d-xl-table-cell"><span th:text="${#dates.format(signBook.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                            <td class="clickable-td d-none d-lg-table-cell" th:text="${signBook.createByDisplayName}"></td>
+                            <td class="clickable-td d-none d-xl-table-cell"><span th:text="${signBook.primarySignRequest != null ? signBook.primarySignRequest.createDateLabel : ''}"></span>
                             </td>
-                            <td class="d-none d-lg-table-cell">
-                                <div class="dropdown">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" th:id="'dropdownMenuButton-' + ${signBook.id}" data-bs-toggle="dropdown">
-                                        <i class="fi fi-rr-queue-alt"></i> Participants
-                                    </button>
-                                    <ul class="dropdown-menu" th:aria-labelledby="'dropdownMenuButton-' + ${signBook.id}">
-                                        <th:block th:each="liveWorkflowStep, iterator : ${signBook.liveWorkflow.liveWorkflowSteps}">
-                                            <th:block th:each="recipient : ${liveWorkflowStep.recipients}">
-                                                <li class="dropdown-item" th:title="${recipient.user.email}" style="display: inline-flex;">
-                                                    <span class="badge rounded-pill rounded-5 text-bg-primary" th:text="${iterator.index + 1}" style="font-size: 13px; line-height: 12px;"></span> 
-                                                    <span class="me-1" th:if="${!#strings.isEmpty(recipient.user.firstname) && !#strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.firstname + ' ' + recipient.user.name}"></span>
-                                                    <span class="me-1" th:if="${#strings.isEmpty(recipient.user.firstname) && #strings.isEmpty(recipient.user.name)}" style="word-break: break-all" th:text="${recipient.user.email}"></span>
-                                                    <div th:switch="${recipient.signed}" th:if="${signBook.signRequests.size() == 1}">
-                                                        <th:block th:case="true">
-                                                            <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}" title="A signé le document" class="fa-solid fa-check-circle text-success"></i>
-                                                            <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).refused}"  title="A refusé le document" class="fa-solid fa-times-circle text-danger"></i>
-                                                        </th:block>
-                                                        <th:block th:case="false">
-                                                            <i th:if="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="En attente de signature" class="fa-solid fa-clock text-warning"></i>
-                                                            <i th:if="${signBook.status != T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending}" title="N'a pas signé le document" class="fa-solid fa-minus-circle text-secondary"></i>
-                                                        </th:block>
-                                                    </div>
-                                                </li>
-                                            </th:block>
-                                        </th:block>
-                                    </ul>
+                            <td class="d-none d-lg-table-cell no-row-navigation">
+                                <div th:with="currentParticipantStep=${signBook.currentParticipantStep}">
+                                    <select class="participant-step-select"
+                                            aria-label="Participants"
+                                            th:id="'participantStepSelect-manage-' + ${signBook.id}"
+                                            th:title="${currentParticipantStep != null ? currentParticipantStep.recipientsSummary : 'Participants'}">
+                                        <option th:each="participantStep : ${signBook.participantSteps}"
+                                                th:with="isCurrentStep=${currentParticipantStep != null and participantStep.stepNumber == currentParticipantStep.stepNumber},
+                                                         statusIcon=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.icon.' + participantStep.statusKey) : ''},
+                                                         statusTitle=${participantStep.statusKey != null ? #messages.msg('signbook.participant.status.title.' + participantStep.statusKey) : ''}"
+                                                th:value="${participantStep.stepNumber}"
+                                                th:selected="${isCurrentStep}"
+                                                th:text="${'Étape ' + participantStep.stepNumber + ' - ' + (participantStep.recipientsSummary != null ? participantStep.recipientsSummary : '')}"
+                                                th:attr="data-step-number=${participantStep.stepNumber},data-summary=${participantStep.recipientsSummary},data-current-step=${isCurrentStep},data-current-label=#{signbook.participant.current},data-status-icon=${statusIcon},data-status-title=${statusTitle}">
+                                        </option>
+                                    </select>
                                 </div>
                             </td>
                             <td class="clickable-td d-none d-xxl-table-cell">
-                                <span th:if="${signBook.endDate != null}" th:text="${#dates.format(signBook.endDate, 'dd/MM/yyyy HH:mm')}"></span>
-                                <span th:unless="${signBook.endDate != null && signBook.signRequests.size() == 1 && (signBook.signRequests.get(0).lastSignedDocument == null || signBook.signRequests.get(0).lastSignedDocument.createDate == null)}"
-                                    th:text="${#dates.format(signBook.signRequests.get(0).lastSignedDocument.createDate, 'dd/MM/yyyy HH:mm')}"></span>
+                                <span th:if="${signBook.endDateLabel != null}" th:text="${signBook.endDateLabel}"></span>
+                                <span th:unless="${signBook.endDateLabel != null}" th:text="${signBook.lastSignedDocumentDateLabel}"></span>
                             </td>
                             <td class="clickable-td d-none d-md-table-cell"
                                 style="width: 150px;">
-                                <div th:replace="~{user/signbooks/includes/status :: status(signBook=${signBook})}"></div>
+                                <div th:with="refusedCommentTitle=${signBook.refusedCommentTitle}" th:replace="~{user/signbooks/includes/status :: status(signBookLight=${signBook})}"></div>
                             </td>
                             <td>
                                 <div class="dropdown position-relative">
                                     <button type="button" th:id="'menu-toggle_' + ${signBook.id}" class="btn text-dark" th:title="'Actions ' + ${signBook.subject}" th:data-bs-target="'#menu-' + ${signBook.id}" th:aria-controls="'menu-' + ${signBook.id}" data-bs-toggle="dropdown">
-                                        <i class="fa-solid fa-ellipsis-v"></i>
+                                        <i class="fi fi-rr-menu-dots-vertical"></i>
                                     </button>
                                     <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${signBook.id}">
                                         <li>
-                                            <a th:unless="${signBook.status == T(org.esupportail.esupsignature.entity.enums.SignRequestStatus).pending && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
+                                            <a th:unless="${signBook.status == 'pending' && statusFilter == 'toSign'}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/' + ${signBook.id}">
                                                 <i class="fi fi-rr-eye pr-2"></i> Consulter
                                             </a>
                                         </li>
                                         <li>
-                                            <form th:if="${signBook.displayNotif}" th:action="'/user/signrequests/replay-notif/' + ${signBook.signRequests.get(0).id}" method="post">
+                                            <form th:if="${signBook.displayNotif && signBook.primarySignRequest != null}" th:action="'/user/signrequests/replay-notif/' + ${signBook.primarySignRequest.id}" method="post">
                                                 <button type="submit" class="btn btn-transparent text-dark text-left col-12">
                                                     <i class="fi fi-rr-bullhorn"></i> <span class="d-none d-xxl-inline">Relancer</span>
                                                 </button>
                                             </form>
                                         </li>
                                         <li>
-                                            <a target="_blank" th:if="${signBook.signRequests.size() == 1}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                                                th:href="'/user/manage/workflow/' + ${workflow.id} + '/get-last-file/' + ${signBook.signRequests.get(0).id}">
+                                            <a target="_blank" th:if="${signBook.signRequestCount == 1 && signBook.primarySignRequest != null}" class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                                                th:href="'/user/manage/workflow/' + ${workflow.id} + '/get-last-file/' + ${signBook.primarySignRequest.id}">
                                                 <i class="fi fi-rr-download pr-2"></i> Télécharger
                                             </a>
                                         </li>
@@ -171,7 +163,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a th:if="${!signBook.hidedBy.contains(user)}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
+                                            <a th:if="${!signBook.hiddenByCurrentUser}" class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button" th:href="'/user/signbooks/toggle/' + ${signBook.id} + '?statusFilter=' + ${statusFilter}">
                                                 <i class="fi fi-rr-eye-crossed pr-2"></i> Masquer
                                             </a>
                                         </li>
@@ -219,6 +211,32 @@
                     </tr>
                     </tfoot>
                 </table>
+                    </div>
+                </div>
+                <div id="signButtons" class="es-fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li th:if="${hided}">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes non masquées">
+                                <i class="fi fi-rr-eye " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li th:unless="${hided}">
+                            <a th:href="'/user/manage/workflow/' + ${workflow.id} + '/signbooks?hided=true'" type="button" class="btn btn-transparent text-dark" title="Afficher les demandes masquées">
+                                <i class="fi fi-rr-eye-crossed " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:unless="${form != null}" th:href="'user/manage/workflow/' + ${workflow.id} + '/datas/csv'" type="button" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-file-csv " style="margin-top: 10px;"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a th:if="${form != null}" th:href="'/user/manage/form/' + ${form.id} + '/datas/csv'" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-file-csv"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

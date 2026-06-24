@@ -190,21 +190,9 @@ public class OtpService {
     }
 
     private String randomOtpPassword() {
-        try {
-            SecureRandom randomGenerator = SecureRandom.getInstance("SHA1PRNG");
-            HashSet<Integer> set = new HashSet<>();
-            while(set.size() < 6 - 3) {
-                set.add(randomGenerator.nextInt(9));
-            }
-            StringBuilder builder = new StringBuilder();
-            for (Integer i : set) {
-                builder.append(i);
-            }
-            return builder + Strings.padStart((1000 - randomGenerator.nextInt(999)) + "", 3, '0');
-        } catch (NoSuchAlgorithmException e) {
-            logger.error(e.getMessage());
-        }
-        return null;
+        SecureRandom random = new SecureRandom();
+        int otp = random.nextInt(1_000_000);
+        return String.format("%06d", otp);
     }
 
     private String hashPassword(String password) {

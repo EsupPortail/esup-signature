@@ -1,49 +1,100 @@
+import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
+
 export class WorkflowUi {
 
     constructor() {
-        console.info("Starting workflow UI");
-        this.initListeners();
+        console.info('Starting workflow UI');
+        this.form = null;
+        this.isInitialized = false;
+        window.workflowUi = this;
+
+        if (document.documentElement.dataset.globalUiReady === 'true') {
+            queueMicrotask(() => this.initListeners());
+            return;
+        }
+
+        document.addEventListener('globalUiReady', () => this.initListeners(), { once: true });
     }
 
     initListeners() {
-        $(document).ready(e => this.initDeleteListener());
-        $(document).ready(e => this.initMultiSignListener());
-        $("#delete-button").on("click", e => this.confirmDelete());
-        $("#autoSign").on('change', function(){
-           if($(this).is(":checked")) {
-               let id = $(this).attr("data-es-step-id");
-               bootbox.confirm('Attention tous les paramètres de cette étape seront perdus après la validation', function (result){
-                   if(result) {
-                       $("#cert_" + id).removeClass("d-none");
-                       $("#conf_" + id).addClass("d-none");
-                       $("#table_" + id).addClass("d-none");
-
-                   } else {
-                       $("#autoSign").click();
-                   }
-               });
-           } else {
-               let id = $(this).attr("data-es-step-id");
-               $("#cert_" + id).addClass("d-none");
-               $("#conf_" + id).removeClass("d-none");
-               $("#table_" + id).removeClass("d-none");
-           }
+        this.initDirtyIndicator();
+        $(document).ready(() => this.initDeleteListener());
+        $(document).ready(() => this.initMultiSignListener());
+        $('#delete-button').on('click', () => this.confirmDelete());
+        $('#autoSign').on('change', function () {
+            if ($(this).is(':checked')) {
+                const id = $(this).attr('data-es-step-id');
+                bootbox.confirm('Attention tous les paramètres de cette étape seront perdus après la validation', function (result) {
+                    if (result) {
+                        $('#cert_' + id).removeClass('d-none');
+                        $('#conf_' + id).addClass('d-none');
+                        $('#table_' + id).addClass('d-none');
+                    } else {
+                        $('#autoSign').click();
+                    }
+                });
+            } else {
+                const id = $(this).attr('data-es-step-id');
+                $('#cert_' + id).addClass('d-none');
+                $('#conf_' + id).removeClass('d-none');
+                $('#table_' + id).removeClass('d-none');
+            }
         });
-        let self = this;
+
+        const self = this;
         $(document).ready(function () {
+            const $signTypeSelects = $('select[id^="signType-"]');
 
-            $('select[id^="signType-"]').each(function () {
+            $signTypeSelects.each(function () {
                 const stepId = $(this).attr('id').split('signType-')[1];
                 self.toggleVisibility(stepId, $(this).val());
             });
 
-            $('select[id^="signType-"]').on('change', function () {
+            $signTypeSelects.on('change', function () {
                 const stepId = $(this).attr('id').split('signType-')[1];
                 self.toggleVisibility(stepId, $(this).val());
             });
         });
+
         this.manageMinMaxLevels();
     }
+
+    initDirtyIndicator() {
+        if (this.isInitialized) {
+            return;
+        }
+
+        this.form = document.getElementById('updateSignBook')
+            || document.getElementById('formUpdate')
+            || document.getElementById('params');
+        const saveButton = document.getElementById('saveButton');
+
+        if (!this.form || !saveButton) {
+            return;
+        }
+
+        this.isInitialized = true;
+
+        attachDirtyIndicator({
+            form: this.form,
+            saveButton
+        });
+    }
+
+    submitForm() {
+        if (!this.form) {
+            return true;
+        }
+
+        if (this.form.requestSubmit) {
+            this.form.requestSubmit();
+        } else {
+            this.form.submit();
+        }
+
+        return false;
+    }
+
 
     toggleVisibility(stepId, selectedVal) {
         const $signTypeDiv = $('#signTypeDiv-' + stepId);
@@ -64,9 +115,9 @@ export class WorkflowUi {
 
     toggleAnnotationOption(element) {
         let annotationOption;
-        let idSuffix = element.id.split('-')[1]; // Récupère le numéro (ex: '1', '2', etc.)
-        if(idSuffix === undefined) {
-            annotationOption = document.getElementById(`singleSignWithAnnotation`);
+        const idSuffix = element.id.split('-')[1];
+        if (idSuffix === undefined) {
+            annotationOption = document.getElementById('singleSignWithAnnotation');
         } else {
             annotationOption = document.getElementById(`singleSignWithAnnotation-${idSuffix}`);
         }
@@ -76,40 +127,40 @@ export class WorkflowUi {
     }
 
     confirmDelete() {
-        bootbox.confirm("Voulez-vous vraiment supprimer ce circuit ?", function (result){
-            if(result) {
-                $("#delete").submit();
+        bootbox.confirm('Voulez-vous vraiment supprimer ce circuit ?', function (result) {
+            if (result) {
+                $('#delete').submit();
             }
-        })
+        });
     }
 
     initMultiSignListener() {
-        let self = this;
-        $(".multi-sign-btn").each(function(){
-            $(this).on("click", e => self.toggleAnnotationOption(e.currentTarget));
+        const self = this;
+        $('.multi-sign-btn').each(function () {
+            $(this).on('click', e => self.toggleAnnotationOption(e.currentTarget));
         });
     }
 
     initDeleteListener() {
-        let self = this;
-        $(".del-step-btn").each(function(){
-            $(this).on("click", e => self.launchDelete(e));
+        const self = this;
+        $('.del-step-btn').each(function () {
+            $(this).on('click', e => self.launchDelete(e));
         });
     }
 
     launchDelete(e) {
-        bootbox.confirm('Voulez-vous vraiment supprimer cette étape ?<br>Tous les liens avec les champs de formulaires seront supprimés', function(result){
-            if(result) {
-                $('#del_' + $(e.currentTarget).attr("id")).submit();
+        bootbox.confirm('Voulez-vous vraiment supprimer cette étape ?<br>Tous les liens avec les champs de formulaires seront supprimés', function (result) {
+            if (result) {
+                $('#del_' + $(e.currentTarget).attr('id')).submit();
             }
         });
     }
 
     manageMinMaxLevels() {
         const signLevelMap = {
-            'simple': 2,
-            'advanced': 3,
-            'qualified': 4
+            simple: 2,
+            advanced: 3,
+            qualified: 4
         };
 
         document.querySelectorAll('select[id^="minSignLevel-"]').forEach(minSelect => {
@@ -124,16 +175,12 @@ export class WorkflowUi {
                     option.disabled = optionValueNum < minValueNum;
                 });
 
-                // Ajuste la valeur actuelle si elle est inférieure au min
                 if ((signLevelMap[maxSelect.value] || 0) < minValueNum) {
                     maxSelect.value = minSelect.value;
                 }
             };
 
-            // Initial update au chargement
             updateMaxOptions();
-
-            // Update au changement
             minSelect.removeEventListener('change', updateMaxOptions);
             minSelect.addEventListener('change', updateMaxOptions);
         });

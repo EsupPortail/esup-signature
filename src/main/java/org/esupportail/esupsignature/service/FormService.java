@@ -62,9 +62,8 @@ public class FormService {
 	private final WebUtilsService webUtilsService;
 	private final LiveWorkflowStepRepository liveWorkflowStepRepository;
 	private final ObjectMapper objectMapper;
-	private final TagService tagService;
 
-	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper, TagService tagService) {
+	public FormService(ApplicationContext applicationContext, FormRepository formRepository, PdfService pdfService, UserShareService userShareService, FieldService fieldService, WorkflowRepository workflowRepository, DocumentService documentService, FieldPropertieService fieldPropertieService, UserService userService, SignRequestParamsService signRequestParamsService, DataRepository dataRepository, WebUtilsService webUtilsService, LiveWorkflowStepRepository liveWorkflowStepRepository, ObjectMapper objectMapper) {
         this.applicationContext = applicationContext;
         this.formRepository = formRepository;
         this.pdfService = pdfService;
@@ -79,7 +78,6 @@ public class FormService {
         this.webUtilsService = webUtilsService;
         this.liveWorkflowStepRepository = liveWorkflowStepRepository;
         this.objectMapper = objectMapper;
-		this.tagService = tagService;
 	}
 
     public Form getById(Long formId) {
@@ -99,28 +97,34 @@ public class FormService {
 
 	@Transactional
 	public List<Form> getFormsByUser(String userEppn, String authUserEppn){
-		Set<Form> forms = new HashSet<>();
+		Set<Long> formIds = new HashSet<>();
 		if(userEppn.equals(authUserEppn)) {
-            forms.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)));
+	            formIds.addAll(formRepository.findAuthorizedFormsByRoles(userService.getRoles(userEppn)).stream()
+	                    .map(Form::getId)
+	                    .collect(Collectors.toSet()));
 		} else {
 			List<UserShare> userShares = userShareService.getUserShares(userEppn, Collections.singletonList(authUserEppn), ShareType.create);
 			for(UserShare userShare : userShares) {
 				if(userShare.getForm() != null && !userShare.getForm().getDeleted()){
-					forms.add(userShare.getForm());
+					formIds.add(userShare.getForm().getId());
 				}
 			}
 		}
+		if(formIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<Form> forms = formRepository.findByIdInWithWorkflowTags(formIds);
 		for(Form form : forms) {
 			form.setMessageToDisplay(getHelpMessage(userEppn, form));
 		}
-		return new ArrayList<>(forms).stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
+		return forms.stream().sorted(Comparator.comparingLong(Form::getId)).collect(Collectors.toList());
 	}
 
 	@Transactional
-	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form generateForm(MultipartFile multipartFile, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		byte[] bytes = multipartFile.getInputStream().readAllBytes();
 		Document document = documentService.createDocument(new ByteArrayInputStream(bytes), userService.getSystemUser(), multipartFile.getOriginalFilename(), multipartFile.getContentType());
-		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn);
+		Form form = createForm(document, name, title, workflowId, prefillType, roleNames, publicUsage, null, null, authUserEppn, managerRole);
 		updateSignRequestParams(form.getId(), new ByteArrayInputStream(bytes));
 		return form;
 	}
@@ -138,7 +142,8 @@ public class FormService {
             list = list.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
         }
         if(selectedTags != null && !selectedTags.isEmpty()) {
-            list = list.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+            List<Long> selectedTagIds = selectedTags.stream().map(Tag::getId).toList();
+            list = list.stream().filter(f -> f.getTags().stream().map(Tag::getId).collect(Collectors.toSet()).containsAll(selectedTagIds)).toList();
         }
 		return list;
 	}
@@ -174,9 +179,11 @@ public class FormService {
 				for(Field field : form.getFields()) {
 					field.getWorkflowSteps().clear();
 				}
-                for(WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
-                    workflowStep.getSignRequestParams().clear();
-                }
+				if(form.getWorkflow() != null) {
+					for (WorkflowStep workflowStep : form.getWorkflow().getWorkflowSteps()) {
+						workflowStep.getSignRequestParams().clear();
+					}
+				}
 			}
 			form.setWorkflow(updateForm.getWorkflow());
 		}
@@ -187,16 +194,6 @@ public class FormService {
 		form.getAuthorizedShareTypes().clear();
 		form.setActiveVersion(updateForm.getActiveVersion());
 		form.setIsFeatured(updateForm.getIsFeatured());
-        form.getTags().clear();
-		for(Tag tag : updateForm.getTags()) {
-			Tag checkTag;
-			try {
-				checkTag = tagService.getById(tag.getId());
-			} catch (Exception e) {
-				checkTag = tagService.createTag(tag.getName(), tag.getColor());
-			}
-			form.getTags().add(checkTag);
-		}
 		List<ShareType> shareTypes = new ArrayList<>();
 		if(types != null) {
 			for (String type : types) {
@@ -268,7 +265,7 @@ public class FormService {
 	}
 
 	@Transactional
-	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn) throws IOException, EsupSignatureRuntimeException {
+	public Form createForm(Document document, String name, String title, Long workflowId, String prefillType, List<String> roleNames, Boolean publicUsage, String[] fieldNames, String[] fieldTypes, String authUserEppn, String managerRole) throws IOException, EsupSignatureRuntimeException {
 		Workflow workflow = workflowRepository.findById(workflowId).orElse(null);
 		Form form = new Form();
 		form.setName(name);
@@ -309,6 +306,9 @@ public class FormService {
 		}
 		if(fieldTypes != null) {
 			form.setPdfDisplay(false);
+		}
+		if(managerRole != null) {
+			form.setManagerRole(managerRole);
 		}
 		formRepository.save(form);
 		return form;
@@ -463,6 +463,18 @@ public class FormService {
 		return formRepository.findFormByNameAndDeletedIsNullOrDeletedIsFalse(name);
 	}
 
+	@Transactional(readOnly = true)
+	public Form getActiveFormByWorkflowId(Long workflowId) {
+		return formRepository.findByWorkflowIdEquals(workflowId).stream()
+				.filter(form -> !Boolean.TRUE.equals(form.getDeleted()))
+				.filter(form -> Boolean.TRUE.equals(form.getActiveVersion()))
+				.findFirst()
+				.orElseGet(() -> formRepository.findByWorkflowIdEquals(workflowId).stream()
+						.filter(form -> !Boolean.TRUE.equals(form.getDeleted()))
+						.findFirst()
+						.orElse(null));
+	}
+
 	@Transactional
 	public List<Form> getFormByManagersContains(String eppn) {
 		User user = userService.getByEppn(eppn);
@@ -516,7 +528,8 @@ public class FormService {
             resultForms = formsManaged.stream().filter(f -> f.getActiveVersion().equals(activeVersion)).toList();
         }
         if(selectedTags != null && !selectedTags.isEmpty()) {
-            resultForms = formsManaged.stream().filter(f -> new HashSet<>(f.getTags()).containsAll(selectedTags)).toList();
+            List<Long> selectedTagIds = selectedTags.stream().map(Tag::getId).toList();
+            resultForms = formsManaged.stream().filter(f -> f.getTags().stream().map(Tag::getId).collect(Collectors.toSet()).containsAll(selectedTagIds)).toList();
         }
 		return resultForms;
 	}

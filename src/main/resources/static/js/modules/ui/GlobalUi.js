@@ -3,14 +3,20 @@ import {WizUi} from "./WizUi.js?version=@version@";
 
 export class GlobalUi {
 
+    static modalFocusableSelector = 'button:not([disabled]), [href], input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])';
+    static sessionExpiresAtStorageKey = 'esupSessionExpiresAt';
+    static sessionTimedOutAtStorageKey = 'esupSessionTimedOutAt';
+
     constructor(authUserEppn, csrf, applicationEmail, maxSize, maxInactiveInterval) {
         console.info("Starting global UI");
         this.checkBrowser();
         this.checkOS();
+        this.authUserEppn = authUserEppn;
         this.csrf = csrf;
         this.maxSize = maxSize;
         this.maxInactiveInterval = maxInactiveInterval;
         this.applicationEmail = applicationEmail;
+        this.globalProperties = this.readSessionJson("globalProperties");
         this.sideBarStatus = localStorage.getItem('sideBarStatus');
         this.sideBar = $('#sidebar');
         this.sideBar2 = $('#sidebar2');
@@ -23,6 +29,9 @@ export class GlobalUi {
         this.clickableTd = $(".clickable-td");
         this.markAsReadButtons = $('button[id^="markAsReadButton_"]');
         this.markHelpAsReadButtons = $('button[id^="markHelpAsReadButton_"]');
+        this.sessionTimeoutId = null;
+        this.sessionTimeoutTriggered = false;
+        this.sessionTimeoutStorageListener = null;
         this.initListeners();
         this.initBootBox();
         this.initSideBar();
@@ -31,25 +40,388 @@ export class GlobalUi {
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         window.__isResizingCross = false;
+        window.esupFocusModalContent = (modal, options = {}) => GlobalUi.focusModalContent(modal, options);
+    }
+
+    static isFocusableElementVisible(element) {
+        if (element == null || element.getClientRects().length === 0) {
+            return false;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== 'none'
+            && style.visibility !== 'hidden'
+            && !element.hasAttribute('hidden')
+            && element.getAttribute('aria-hidden') !== 'true';
+    }
+
+    static getFocusableElements(container) {
+        if (container == null) {
+            return [];
+        }
+        return Array.from(container.querySelectorAll(GlobalUi.modalFocusableSelector)).filter(element => GlobalUi.isFocusableElementVisible(element));
+    }
+
+    static getModalFocusTargetSelectors(modal) {
+        const focusTargets = modal?.getAttribute('data-es-focus-target');
+        if (focusTargets == null || focusTargets === '') {
+            return [];
+        }
+        return focusTargets.split(',').map(selector => selector.trim()).filter(Boolean);
+    }
+
+    static findModalFocusCandidate(modal) {
+        for (const selector of GlobalUi.getModalFocusTargetSelectors(modal)) {
+            const element = modal.querySelector(selector);
+            if (GlobalUi.isFocusableElementVisible(element) && !element.disabled) {
+                return element;
+            }
+        }
+
+        const focusableElements = GlobalUi.getFocusableElements(modal);
+        const autofocusElement = focusableElements.find(element => element.hasAttribute('autofocus'));
+        if (autofocusElement != null) {
+            return autofocusElement;
+        }
+
+        const primaryControl = focusableElements.find(element => element.matches('input:not([type="hidden"]), select, textarea, button:not(.btn-close), [role="button"]'));
+        return primaryControl ?? focusableElements[0] ?? null;
+    }
+
+    static focusModalContent(modal, options = {}) {
+        if (modal == null) {
+            return false;
+        }
+        const attempts = options.attempts ?? 20;
+        const delay = options.delay ?? 80;
+        const tryFocus = remainingAttempts => {
+            const candidate = GlobalUi.findModalFocusCandidate(modal);
+            if (candidate != null) {
+                candidate.focus({preventScroll: true});
+                return true;
+            }
+            if (remainingAttempts <= 0) {
+                if (!modal.hasAttribute('tabindex')) {
+                    modal.setAttribute('tabindex', '-1');
+                }
+                modal.focus({preventScroll: true});
+                return false;
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
+    }
+
+    readSessionJson(key) {
+        try {
+            const rawValue = sessionStorage.getItem(key);
+            return rawValue ? JSON.parse(rawValue) : null;
+        } catch (e) {
+            console.debug("Unable to parse sessionStorage key", key, e);
+            return null;
+        }
+    }
+
+    async fetchUiJson(url) {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ' for ' + url);
+        }
+        return response.json();
+    }
+
+    async refreshUiFetchData() {
+        try {
+            const uiData = await this.fetchUiJson('/ws-secure/ui/ui-data');
+            this.applyUiData(uiData);
+        } catch (error) {
+            console.debug('Unable to refresh UI data', error);
+        }
+    }
+
+    getCsrfHeaders() {
+        const headers = {
+            'X-Requested-With': 'XMLHttpRequest'
+        };
+        const headerName = this.csrf?.headerName || document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+        const token = this.csrf?.token || document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        if (headerName && token) {
+            headers[headerName] = token;
+        }
+        return headers;
+    }
+
+    stringifyClientError(error) {
+        if (error == null) {
+            return null;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error.stack) {
+            return error.stack;
+        }
+        if (error.message) {
+            return error.message;
+        }
+        try {
+            return JSON.stringify(error);
+        } catch (e) {
+            return String(error);
+        }
+    }
+
+    reportClientSideError(clientSideError) {
+        return $.ajax({
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            url: '/log',
+            dataType: 'json',
+            headers: this.getCsrfHeaders(),
+            data: JSON.stringify(clientSideError)
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.debug('Unable to send client-side error log', jqXHR?.status, textStatus, errorThrown);
+        });
+    }
+
+    applyUiData(uiData) {
+        if (uiData == null) {
+            return;
+        }
+        sessionStorage.setItem('uiData', JSON.stringify(uiData));
+        if (uiData.preferences != null) {
+            sessionStorage.setItem('uiPreferences', JSON.stringify(uiData.preferences));
+        }
+        this.applyUiConfig(uiData.config ?? null);
+        this.applyUiForCurrentUser(uiData.currentUser ?? null);
+        this.applyUiCounters(uiData.counters ?? null);
+        if (uiData.adminStatus != null) {
+            this.applyAdminUiStatus(uiData.adminStatus, uiData.counters);
+        }
+    }
+
+    setElementText(id, value) {
+        const element = document.getElementById(id);
+        if (element != null && value != null) {
+            element.textContent = value;
+        }
+    }
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+    }
+
+    setElementVisibility(id, visible, displayClass = 'd-none') {
+        const element = document.getElementById(id);
+        if (element != null) {
+            element.classList.toggle(displayClass, !visible);
+        }
+    }
+
+    toggleStatusClasses(element, isAlert, successClass = 'text-success', alertClass = 'text-danger') {
+        if (element == null) {
+            return;
+        }
+        element.classList.toggle(alertClass, Boolean(isAlert));
+        element.classList.toggle(successClass, !Boolean(isAlert));
+    }
+
+    updateUserAvatar(user) {
+        const avatar = document.getElementById('navbar-user-avatar');
+        if (avatar == null || user == null) {
+            return;
+        }
+        const firstInitial = user.firstname ? user.firstname.substring(0, 1) : '';
+        const lastInitial = user.name ? user.name.substring(0, 1) : '';
+        const initials = (firstInitial + lastInitial).toUpperCase() || '?';
+        const userId = Number.isFinite(Number(user.id)) ? Number(user.id) : 0;
+        const hue = Math.abs(userId) % 360;
+        avatar.textContent = initials;
+        avatar.style.backgroundColor = 'hsl(' + hue + ', 70%, 60%)';
+    }
+
+    renderSuUsers(suUsers, user, authUser) {
+        const divider = document.getElementById('navbar-su-users-divider');
+        const list = document.getElementById('navbar-su-users-list');
+        if (list == null) {
+            return;
+        }
+        const canShow = Array.isArray(suUsers) && suUsers.length > 0 && user?.eppn != null && user.eppn === authUser?.eppn;
+        if (divider != null) {
+            divider.classList.toggle('d-none', !canShow);
+        }
+        if (!canShow) {
+            list.innerHTML = '';
+            return;
+        }
+        list.innerHTML = suUsers
+            .filter(suUser => suUser != null && suUser.eppn != null && suUser.eppn !== user?.eppn)
+            .map(suUser => `
+                <a role="button" href="/user/users/shares/change?eppn=${encodeURIComponent(suUser.eppn)}&userShareId=${encodeURIComponent(suUser.userShareId ?? '')}" class="btn text-white btn-transparent text-left m-1 gap-2" style="width: 250px;">
+                    <i class="fi fi-rr-users"></i>
+                    <span class="nav-item-label">${this.escapeHtml(((suUser.firstname ?? '') + ' ' + (suUser.name ?? '')).trim())}</span>
+                </a>
+            `)
+            .join('');
+    }
+
+    renderUserSignatures(signImageIds) {
+        const container = document.getElementById('navbar-user-signatures-content');
+        if (container == null) {
+            return;
+        }
+        if (!Array.isArray(signImageIds) || signImageIds.length === 0 || signImageIds[0] == null) {
+            container.innerHTML = '<div class="text-secondary">pas d’image de signature personalisée</div>';
+            return;
+        }
+        const items = signImageIds.map((signImageId, index) => `
+            <div class="carousel-item${index === 0 ? ' active' : ''}">
+                <img width="250" src="/ws-secure/ui/signatures/${encodeURIComponent(signImageId)}" alt="sign image" />
+            </div>
+        `).join('');
+        container.innerHTML = `
+            <div style="width: 250px;" id="carouselSign" class="carousel slide border rounded border-secondary" data-bs-ride="carousel">
+                <div class="carousel-inner">${items}</div>
+                <button class="carousel-control-prev" href="#carouselSign" role="button" data-bs-slide="prev">
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-left"></i></span>
+                    <span class="sr-only">Previous</span>
+                </button>
+                <button class="carousel-control-next" href="#carouselSign" role="button" data-bs-slide="next">
+                    <span class="text-dark" aria-hidden="true"><i class="fi fi-rr-angle-right"></i></span>
+                    <span class="sr-only">Next</span>
+                </button>
+            </div>
+        `;
+    }
+
+    renderKeystore(keystoreFileName) {
+        const container = document.getElementById('navbar-keystore-content');
+        if (container == null) {
+            return;
+        }
+        if (keystoreFileName == null || keystoreFileName === '') {
+            container.innerHTML = '<div class="text-secondary">pas de magasin de certificats</div>';
+            return;
+        }
+        container.innerHTML = `
+            <div class="alert alert-secondary">
+                Keystore PKCS12 :
+                <p style="max-width: 250px;">
+                <a href="/ws-secure/ui/keystore">
+                    <span>${this.escapeHtml(keystoreFileName)}</span>
+                </a>
+                </p>
+            </div>
+        `;
+    }
+
+    applyUiForCurrentUser(currentUser) {
+        if (currentUser == null) {
+            return;
+        }
+        sessionStorage.setItem('uiMe', JSON.stringify(currentUser));
+        const user = currentUser.user || null;
+        const displayName = user != null
+            ? ((user.firstname && user.name) ? (user.firstname + ' ' + user.name) : user.email)
+            : null;
+        this.setElementText('navbar-user-display-name', displayName);
+        this.setElementText('navbar-user-info-name', user?.name ?? null);
+        this.setElementText('navbar-user-info-firstname', user?.firstname ?? null);
+        this.setElementText('navbar-user-info-email', user?.email ?? null);
+        this.setElementText('navbar-user-info-eppn', user?.eppn ?? null);
+        this.setElementText('navbar-security-service-name', currentUser.securityServiceName ?? null);
+        this.updateUserAvatar(user);
+        this.renderSuUsers(currentUser.suUsers || [], currentUser.user || null, currentUser.authUser || null);
+        this.renderUserSignatures(currentUser.userImagesIds || []);
+        this.renderKeystore(currentUser.keystoreFileName ?? null);
+        document.dispatchEvent(new CustomEvent('uiMeLoaded', {detail: currentUser}));
+    }
+
+    applyUiCounters(counters) {
+        if (counters == null) {
+            return;
+        }
+        sessionStorage.setItem('uiCounters', JSON.stringify(counters));
+        this.setElementText('navbar-badge-to-sign', counters.nbToSign);
+        this.setElementVisibility('footer-certificat-problem', counters.certificatProblem === true);
+        document.dispatchEvent(new CustomEvent('uiCountersLoaded', {detail: counters}));
+    }
+
+    applyUiConfig(config) {
+        if (config == null) {
+            return;
+        }
+        sessionStorage.setItem('uiConfig', JSON.stringify(config));
+        if (config.globalProperties != null) {
+            this.globalProperties = config.globalProperties;
+            sessionStorage.setItem('globalProperties', JSON.stringify(config.globalProperties));
+        }
+        if (config.enableSms != null) {
+            sessionStorage.setItem('enableSms', JSON.stringify(config.enableSms));
+        }
+        if (config.smsRequired != null) {
+            sessionStorage.setItem('smsRequired', JSON.stringify(config.smsRequired));
+        }
+        if (config.applicationEmail != null) {
+            this.applicationEmail = config.applicationEmail;
+        }
+        if (config.maxInactiveInterval != null) {
+            this.maxInactiveInterval = config.maxInactiveInterval;
+        }
+        this.setElementText('footer-version-app', config.versionApp ?? null);
+        if (config.profile != null) {
+            this.setElementText('footer-profile', ' - ' + config.profile);
+        }
+        if (config.maxInactiveInterval != null) {
+            this.setElementText('timeout-modal-minutes', Math.floor(config.maxInactiveInterval / 60));
+        }
+        const newVersionLink = document.getElementById('footer-new-version-link');
+        if (newVersionLink != null && config.globalProperties?.newVersion != null) {
+            newVersionLink.textContent = 'Nouvelle version diponible : ' + config.globalProperties.newVersion;
+            newVersionLink.setAttribute('href', 'https://github.com/EsupPortail/esup-signature/releases/tag/' + config.globalProperties.newVersion);
+        }
+        document.dispatchEvent(new CustomEvent('uiConfigLoaded', {detail: config}));
+    }
+
+    applyAdminUiStatus(status, counters) {
+        if (status == null) {
+            return;
+        }
+        sessionStorage.setItem('adminUiStatus', JSON.stringify(status));
+        const isAlert = status.dssStatus == null || status.dssStatus === true;
+        this.setElementText('admin-side-nb-sessions', status.nbSessions);
+        this.setElementText('admin-index-nb-sessions', status.nbSessions);
+        this.toggleStatusClasses(document.getElementById('admin-side-dss-icon'), isAlert);
+        this.toggleStatusClasses(document.getElementById('admin-side-dss-label'), isAlert, 'text-success', 'text-danger');
+        this.toggleStatusClasses(document.getElementById('admin-index-dss-icon'), isAlert);
+        this.toggleStatusClasses(document.getElementById('admin-index-dss-label'), isAlert, 'text-success', 'text-danger');
+        const hasCertificatProblem = counters?.certificatProblem === true;
+        this.setElementVisibility('navbar-admin-dss-alert', isAlert || hasCertificatProblem, 'd-none');
+        document.dispatchEvent(new CustomEvent('adminUiStatusLoaded', {detail: status}));
     }
 
     initListeners() {
         let applicationEmail = this.applicationEmail;
-        window.onerror = function (msg, url, lineNo, columnNo, error) {
+        window.onerror = (msg, url, lineNo, columnNo, error) => {
             let clientSideError = {
-                msg: msg,
-                url: url,
-                lineNumber: lineNo,
-                columnNumber: columnNo,
-                error: error
+                msg: typeof msg === 'string' ? msg : msg?.message || String(msg),
+                url: url || window.location.href,
+                lineNumber: lineNo || null,
+                columnNumber: columnNo || null,
+                error: this.stringifyClientError(error)
             };
-            $.ajax({
-                type: 'POST',
-                contentType : 'application/json; charset=utf-8',
-                url: "/log",
-                dataType: "json",
-                data: JSON.stringify(clientSideError)
-            });
+            this.reportClientSideError(clientSideError);
             alert("Une erreur s'est produite au niveau de l'affichage.\n" +
                 "Merci de contacter le gestionnaire de cette application : \n" +
                 applicationEmail + "\n" +
@@ -71,18 +443,14 @@ export class GlobalUi {
             }
         }, { once: true });
 
+        document.addEventListener('show.bs.modal', function (e) {
+            const modal = e.target;
+            modal._returnFocusElement = e.relatedTarget || document.activeElement;
+        });
+
         document.addEventListener('shown.bs.modal', function (e) {
             const modal = e.target;
-            const focusable = Array.from(
-                modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-            ).filter(el => !el.disabled && el.offsetParent !== null && el.hasAttribute("autofocus"));
-
-            if (focusable) {
-                const last = focusable.at(-1);
-                if (last) {
-                    last.focus();
-                }
-            }
+            GlobalUi.focusModalContent(modal);
             function escHandler(event) {
                 if (event.key === 'Escape' || event.key === 'Esc') {
                     const instance = bootstrap.Modal.getOrCreateInstance(modal);
@@ -111,6 +479,11 @@ export class GlobalUi {
                 document.removeEventListener('keydown', modal._escHandler);
                 delete modal._escHandler;
             }
+            const returnFocusElement = modal._returnFocusElement;
+            delete modal._returnFocusElement;
+            if (GlobalUi.isFocusableElementVisible(returnFocusElement) && !returnFocusElement.disabled) {
+                window.requestAnimationFrame(() => returnFocusElement.focus({preventScroll: true}));
+            }
         });
 
         $(document).on("refreshClickableTd", e => this.refreshClickableTd());
@@ -122,6 +495,9 @@ export class GlobalUi {
             $("#user-toggle").click();
         });
         this.clickableRow.off('click').on('click', function(e) {
+            if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                return;
+            }
             let url = $(this).closest('tr').attr('data-href');
             if (e.ctrlKey || e.metaKey) {
                 window.open(url, '_blank');
@@ -146,8 +522,9 @@ export class GlobalUi {
         });
 
         $("#display-side-btn").on('click', function(e) {
-           $("#sidebar").toggleClass("sidebar-mobile");
+           $("#sidebar").toggleClass("es-sidebar-mobile").toggleClass("sidebar-mobile");
         });
+
         $(window).on("resize", (e) => {
             const w = window.innerWidth;
             const h = window.innerHeight;
@@ -272,6 +649,18 @@ export class GlobalUi {
     }
 
     initTooltips() {
+        $(".rounded-circle").tooltip({
+            placement: 'left',
+            disabled: false,
+            show: { effect: "fade", duration: 500 },
+            hide: { effect: "fade", duration: 500 }
+        });
+        $("button").tooltip({
+            placement: 'left',
+            disabled: false,
+            show: { effect: "fade", duration: 500 },
+            hide: { effect: "fade", duration: 500 }
+        });
         $("#new-scroll").tooltip({
             disabled: false,
             show: { effect: "fade", duration: 500 },
@@ -370,7 +759,7 @@ export class GlobalUi {
         $("#second-tools").collapse('hide');
         var clickover = $(event.target);
         if(clickover.attr("id") !== "display-side-btn" && clickover.parent().attr("id") !== "display-side-btn" && clickover.parent().parent().attr("id") !== "display-side-btn") {
-            $("#sidebar").removeClass("sidebar-mobile");
+            $("#sidebar").removeClass("es-sidebar-mobile").removeClass("sidebar-mobile");
         }
         $("div[id^='menu-']").each(function() {
             var _opened = $(this).hasClass("collapse show");
@@ -497,23 +886,23 @@ export class GlobalUi {
     }
 
     showSideBar() {
-        console.debug("debug - " + "show side");
-        this.sideBar.removeClass('active');
-        this.sideBar2.removeClass('d-none');
-        this.sideBarLabels.removeClass('d-none');
-        this.content.removeClass('content-full');
-        this.newDiv.removeClass('new-width-full');
-        this.breadcrumb.removeClass('breadcrumb-nav-full');
+        // console.debug("debug - " + "show side");
+        // this.sideBar.removeClass('active');
+        // this.sideBar2.removeClass('d-none');
+        // this.sideBarLabels.removeClass('d-none');
+        // this.content.removeClass('content-full');
+        // this.newDiv.removeClass('new-width-full');
+        // this.breadcrumb.removeClass('breadcrumb-nav-full');
     }
 
     hideSideBar() {
-        console.debug("debug - " + "hide side");
-        this.sideBar.addClass('active');
-        this.sideBar2.addClass('d-none');
-        this.sideBarLabels.addClass('d-none');
-        this.content.addClass('content-full');
-        this.newDiv.addClass('new-width-full');
-        this.breadcrumb.addClass('breadcrumb-nav-full');
+        // console.debug("debug - " + "hide side");
+        // this.sideBar.addClass('active');
+        // this.sideBar2.addClass('d-none');
+        // this.sideBarLabels.addClass('d-none');
+        // this.content.addClass('content-full');
+        // this.newDiv.addClass('new-width-full');
+        // this.breadcrumb.addClass('breadcrumb-nav-full');
     }
 
     checkSelectUser() {
@@ -653,8 +1042,18 @@ export class GlobalUi {
             let selectName = $(this).attr('id');
             console.info("auto enable slim-select-simple for : " + selectName);
             let allowDeselect = Boolean($(this).attr('data-allow-deselect'));
-            new SlimSelect({
+            const selectElement = document.getElementById(selectName);
+            const optionData = selectElement != null ? Array.from(selectElement.options).map(option => ({
+                text: option.text,
+                value: option.value,
+                html: option.dataset.html || option.text,
+                selected: option.selected || false,
+                disabled: option.disabled || false,
+                placeholder: option.dataset.placeholder === 'true'
+            })) : [];
+            const slim = new SlimSelect({
                 select: '#' + selectName,
+                data: optionData.some(option => option.html !== option.text) ? optionData : undefined,
                 settings: {
                     showSearch: false,
                     searchHighlight: false,
@@ -667,7 +1066,11 @@ export class GlobalUi {
                     callback(false)
                 }
             });
-            self.slimSelectHack($(this))
+            self.slimSelectHack($(this));
+            const slimContainer = $('#' + selectName).next('.ss-main');
+            $('#' + selectName).add(slimContainer).on('click mousedown mouseup keydown', function (e) {
+                e.stopPropagation();
+            });
         });
     }
 
@@ -725,27 +1128,122 @@ export class GlobalUi {
         });
     }
 
-    onDocumentLoad() {
+    async onDocumentLoad() {
         console.info("global on load");
         // $.fn.modal.Constructor.prototype.enforceFocus = function () {};
+        await this.refreshUiFetchData();
         this.checkSelectUser();
         this.checkSlimSelect();
         this.enableSummerNote();
         this.enableSpectrum();
         this.adjustUi();
         this.sessionTimeout();
+        document.documentElement.dataset.globalUiReady = 'true';
+        document.dispatchEvent(new CustomEvent('globalUiReady'));
+    }
+
+    getSharedSessionExpiresAt() {
+        const rawValue = window.localStorage.getItem(GlobalUi.sessionExpiresAtStorageKey);
+        if (rawValue == null) {
+            return null;
+        }
+        const expiresAt = Number.parseInt(rawValue, 10);
+        return Number.isFinite(expiresAt) ? expiresAt : null;
+    }
+
+    updateSharedSessionExpiration() {
+        const expiresAt = Date.now() + (this.maxInactiveInterval * 1000);
+        window.localStorage.setItem(GlobalUi.sessionExpiresAtStorageKey, String(expiresAt));
+        return expiresAt;
+    }
+
+    clearSessionTimeoutTimer() {
+        if (this.sessionTimeoutId != null) {
+            window.clearTimeout(this.sessionTimeoutId);
+            this.sessionTimeoutId = null;
+        }
+    }
+
+    bindSessionTimeoutStorageListener() {
+        if (this.sessionTimeoutStorageListener != null) {
+            return;
+        }
+        this.sessionTimeoutStorageListener = event => {
+            if (event.storageArea !== window.localStorage) {
+                return;
+            }
+            if (event.key === GlobalUi.sessionExpiresAtStorageKey) {
+                this.scheduleSessionTimeoutFromSharedExpiration();
+            }
+            if (event.key === GlobalUi.sessionTimedOutAtStorageKey && event.newValue != null) {
+                this.showSessionTimeoutModal();
+            }
+        };
+        window.addEventListener('storage', this.sessionTimeoutStorageListener);
+    }
+
+    scheduleSessionTimeoutFromSharedExpiration() {
+        this.clearSessionTimeoutTimer();
+        if (this.sessionTimeoutTriggered) {
+            return;
+        }
+        const expiresAt = this.getSharedSessionExpiresAt();
+        if (expiresAt == null) {
+            return;
+        }
+        const remainingMs = expiresAt - Date.now();
+        if (remainingMs <= 0) {
+            this.triggerSessionTimeout(true);
+            return;
+        }
+        this.sessionTimeoutId = window.setTimeout(() => {
+            this.triggerSessionTimeout(true);
+        }, remainingMs);
+    }
+
+    showSessionTimeoutModal() {
+        if (this.sessionTimeoutTriggered) {
+            return false;
+        }
+        this.sessionTimeoutTriggered = true;
+        this.clearSessionTimeoutTimer();
+        document.dispatchEvent(new CustomEvent('esup-session-timeout'));
+        $("#timeoutModal").modal("show");
+        return true;
+    }
+
+    triggerSessionTimeout(shouldBroadcast = true) {
+        if (!this.showSessionTimeoutModal()) {
+            return;
+        }
+        if (shouldBroadcast) {
+            window.localStorage.setItem(GlobalUi.sessionTimedOutAtStorageKey, String(Date.now()));
+        }
+        void fetch('/ws-secure/timeout-logout', {
+            method: 'POST',
+            headers: this.getCsrfHeaders(),
+            credentials: 'same-origin'
+        }).catch((error) => {
+            console.debug('Unable to force local logout on session timeout', error);
+        });
     }
 
     sessionTimeout() {
-        setInterval(function(){
-            $("#timeoutModal").modal("show");
-        }, this.maxInactiveInterval * 1000);
-        $("#timeoutModal").on('hidden.bs.modal', function(){
-            if(window.location.pathname.includes("otp")) {
-                window.location.href = "/otp-access/session-expired";
-            } else {
-                location.reload();
-            }
+        if (this.maxInactiveInterval == null || this.maxInactiveInterval <= 0) {
+            return;
+        }
+        const timeoutModal = $("#timeoutModal");
+        if (!timeoutModal.length) {
+            return;
+        }
+
+        this.sessionTimeoutTriggered = false;
+        this.bindSessionTimeoutStorageListener();
+        this.updateSharedSessionExpiration();
+        this.scheduleSessionTimeoutFromSharedExpiration();
+
+        timeoutModal.off('hidden.bs.modal.esupSessionTimeout').on('hidden.bs.modal.esupSessionTimeout', () => {
+            window.location.href = '/logged-out';
         });
     }
 
@@ -794,6 +1292,9 @@ export class GlobalUi {
             let test = $(".card.show").length > 0;
 
             if (!test) {
+                if ($(e.target).closest('.no-row-navigation, .participant-step-select, .participant-step-select-ui, .ss-main, .ss-content').length > 0) {
+                    return;
+                }
                 let url = $(this).closest('tr').attr('data-href');
                 if (e.ctrlKey || e.metaKey) {
                     window.open(url, '_blank');

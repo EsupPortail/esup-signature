@@ -26,6 +26,8 @@ export default class FilesInput extends EventFactory {
         this.input.on('fileremoved', e => this.checkUniqueFile());
         this.input.on('filecleared', e => this.checkUniqueFile());
         this.input.on('fileclear', e => this.input.fileinput('unlock'));
+        this.input.on('change', e => this.updateZipOptionVisibility());
+        this.updateZipOptionVisibility();
     }
 
     initFileInput(documents, readOnly) {
@@ -104,50 +106,55 @@ export default class FilesInput extends EventFactory {
             preferIconicPreview: true,
             allowedFileTypes : [],
             previewFileIconSettings: {
-                'pdf': '<i class="fa-solid fa-file-pdf text-danger fa-xl"></i>',
-                'doc': '<i class="fa-solid fa-file-word text-primary fa-xl"></i>',
-                'xls': '<i class="fa-solid fa-file-excel text-success fa-xl"></i>',
-                'ppt': '<i class="fa-solid fa-file-powerpoint text-danger fa-xl"></i>',
-                'zip': '<i class="fa-solid fa-file-archive text-muted fa-xl"></i>',
-                'htm': '<i class="fa-solid fa-file-code text-info fa-xl"></i>',
-                'txt': '<i class="fa-solid fa-file-alt text-info fa-xl"></i>',
-                'mov': '<i class="fa-solid fa-file-video text-warning fa-xl"></i>',
-                'mp3': '<i class="fa-solid fa-file-audio text-warning fa-xl"></i>',
-                'jpg': '<i class="fa-solid fa-file-image text-danger fa-xl"></i>',
-                'gif': '<i class="fa-solid fa-file-image text-muted fa-xl"></i>',
-                'png': '<i class="fa-solid fa-file-image text-primary fa-xl"></i>',
-                'other': '<i class="fa-solid fa-file text-muted fa-xl"></i>'
+                'pdf': '<i class="fi fi-rr-file-pdf text-danger"></i>',
+                'doc': '<i class="fi fi-rr-file-word text-primary"></i>',
+                'xls': '<i class="fi fi-rr-file-excel text-success"></i>',
+                'ppt': '<i class="fi fi-rr-file-powerpoint text-danger"></i>',
+                'zip': '<i class="fi fi-rr-file-zipper text-warning"></i>',
+                'htm': '<i class="fi fi-rr-file-code text-info"></i>',
+                'txt': '<i class="fi fi-rr-document text-info"></i>',
+                'mov': '<i class="fi fi-rr-video-camera text-warning"></i>',
+                'mp3': '<i class="fi fi-rr-file-audio text-warning"></i>',
+                'img': '<i class="fi fi-rr-file-image text-secondary"></i>',
+                'signed': '<i class="fi fi-rr-document-signed text-success"></i>',
+                'other': '<i class="fi fi-rr-file text-muted"></i>'
             },
             previewFileExtSettings: {
                 'other': function() {
                     return true;
                 },
+                'signed': function(ext) {
+                    return ext.match(/(sce)$/i);
+                },
                 'pdf': function(ext) {
                     return ext.match(/(pdf)$/i);
                 },
                 'doc': function(ext) {
-                    return ext.match(/(doc|docx|odt)$/i);
+                    return ext.match(/(doc|docx|odt|rtf)$/i);
                 },
                 'xls': function(ext) {
-                    return ext.match(/(xls|xlsx)$/i);
+                    return ext.match(/(xls|xlsx|ods)$/i);
                 },
                 'ppt': function(ext) {
                     return ext.match(/(odp|ppt|pptx)$/i);
                 },
                 'zip': function(ext) {
-                    return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
+                    return ext.match(/(zip|rar|tar|gzip|gz|7z|bz2|xz|tgz)$/i);
                 },
                 'htm': function(ext) {
-                    return ext.match(/(htm|html)$/i);
+                    return ext.match(/(htm|html|xhtml)$/i);
                 },
                 'txt': function(ext) {
-                    return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
+                    return ext.match(/(txt|ini|csv|log|md|java|php|js|css|json|xml|yml|yaml)$/i);
                 },
                 'mov': function(ext) {
-                    return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+                    return ext.match(/(avi|mpg|mpeg|mkv|mov|mp4|3gp|webm|wmv)$/i);
+                },
+                'img': function(ext) {
+                    return ext.match(/(jpg|jpeg|gif|png|svg|bmp|webp|tif|tiff)$/i);
                 },
                 'mp3': function(ext) {
-                    return ext.match(/(mp3|wav)$/i);
+                    return ext.match(/(mp3|wav|ogg|oga|m4a|aac|flac)$/i);
                 }
             },
             fileActionSettings: {
@@ -174,9 +181,51 @@ export default class FilesInput extends EventFactory {
         } else {
             $('#forceAllSign').addClass('d-none');
         }
+        this.updateZipOptionVisibility();
+    }
+
+    getUnzipOptionContainer() {
+        return this.input.closest('form').find('[data-es-unzip-option-container]').first();
+    }
+
+    getUnzipOption() {
+        return this.input.closest('form').find('[data-es-unzip-option]').first();
+    }
+
+    getSelectedFiles() {
+        try {
+            return Object.values(this.input.fileinput('getFileStack') || {}).filter(file => file != null);
+        } catch (e) {
+            return Array.from(this.input[0]?.files || []);
+        }
+    }
+
+    isZipFile(file) {
+        if(file == null) {
+            return false;
+        }
+        const fileName = (file.name || '').toLowerCase();
+        const contentType = (file.type || '').toLowerCase();
+        return fileName.endsWith('.zip') || contentType.includes('zip');
+    }
+
+    updateZipOptionVisibility() {
+        const unzipOptionContainer = this.getUnzipOptionContainer();
+        const unzipOption = this.getUnzipOption();
+        if(unzipOptionContainer.length === 0 || unzipOption.length === 0) {
+            return;
+        }
+        const hasZip = this.getSelectedFiles().some(file => this.isZipFile(file));
+        unzipOptionContainer.toggleClass('d-none', !hasZip);
+        unzipOption.prop('checked', hasZip);
     }
 
     changeUploadUrl() {
-        return "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token
+        let uploadUrl = "/ws-secure/global/add-docs/" + this.signBookId + "?" + this.csrf.parameterName + "=" + this.csrf.token;
+        const unzipOption = this.getUnzipOption();
+        if(unzipOption.length > 0 && unzipOption.is(':checked')) {
+            uploadUrl += "&unzip=true";
+        }
+        return uploadUrl;
     }
 }

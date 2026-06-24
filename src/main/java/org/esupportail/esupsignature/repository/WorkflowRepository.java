@@ -1,8 +1,9 @@
 package org.esupportail.esupsignature.repository;
 
-import org.esupportail.esupsignature.dto.chart.WorkflowStatusChartDto;
-import org.esupportail.esupsignature.dto.export.WorkflowDatasCsvDto;
-import org.esupportail.esupsignature.dto.json.WorkflowDto;
+import org.esupportail.esupsignature.dto.projection.chart.WorkflowStatusChartProjectionDto;
+import org.esupportail.esupsignature.dto.projection.export.WorkflowDatasCsvProjectionDto;
+import org.esupportail.esupsignature.dto.projection.jpa.WorkflowDto;
+import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.Workflow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -19,6 +20,7 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     Workflow findByIdOrToken(Long idLong, String idStr);
     List<Workflow> findByFromCodeIsTrue();
     List<Workflow> findByCreateByEppn(String userEppn);
+    List<Workflow> findBySharedToUsersContains(User user);
     List<Workflow> findDistinctByAuthorizedShareTypesIsNotNull();
     List<Workflow> findByManagerRole(String role);
     @Query(value = "select count(*) from workflow as w where w.name = :name", nativeQuery = true)
@@ -43,21 +45,28 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
     List<Workflow> findWorkflowByManagersIn(String email, Set<String> roles);
     @Query("select w from Workflow w where w.id = :idLong or w.token = :idStr")
     WorkflowDto getByIdJson(Long idLong, String idStr);
+    @Query("""
+        select distinct w
+        from Workflow w
+        left join fetch w.tags
+        where w.id in :ids
+    """)
+    List<Workflow> findByIdInWithTags(Set<Long> ids);
     @Query(value = """
         select distinct
             sb.id as signBookId,
-            array_agg(distinct sbsr.id) as workflowDatasSignRequestIds,
-            array_agg(distinct sbsr.title) as workflowDatasSignRequestTitles,
+            array_to_string(array_agg(distinct cast(sbsr.id as text)), ',') as workflowDatasSignRequestIds,
+            array_to_string(array_agg(distinct sbsr.title), ',') as workflowDatasSignRequestTitles,
             sb.status as signBookStatus,
             cb.eppn as signBookCreateBy,
-            sb.create_date as signBookCreateDate,
-            sb.update_date as completedDate,
+            cast(sb.create_date as text) as signBookCreateDate,
+            cast(sb.update_date as text) as completedDate,
             sb.update_by as completedBy,
             lw.current_step_id as currentStepId,
             ws.description as currentStepDescription,
-            array_agg((select email from user_account as u where u.id in (select user_id from recipient as r where r.id in (rhs.recipient_has_signed_key)))) as workflowDatasStepsRecipientsEmails,
-            array_agg((select action_type from action as a where a.id in (rhs.recipient_has_signed_id))) as workflowDatasStepsActionsTypes,
-            array_agg((select date from action as a where a.id in (rhs.recipient_has_signed_id))) as workflowDatasStepsActionsDates
+            array_to_string(array_agg((select email from user_account as u where u.id in (select user_id from recipient as r where r.id in (rhs.recipient_has_signed_key)))), ',') as workflowDatasStepsRecipientsEmails,
+            array_to_string(array_agg((select cast(action_type as text) from action as a where a.id in (rhs.recipient_has_signed_id))), ',') as workflowDatasStepsActionsTypes,
+            array_to_string(array_agg((select cast(date as text) from action as a where a.id in (rhs.recipient_has_signed_id))), ',') as workflowDatasStepsActionsDates
         from sign_book sb
              join sign_request sbsr on sbsr.parent_sign_book_id = sb.id
              join public.sign_request_recipient_has_signed rhs on rhs.sign_request_id = sbsr.id
@@ -69,11 +78,11 @@ public interface WorkflowRepository extends CrudRepository<Workflow, Long> {
         where w.id = :id and sb.deleted is not true
         group by sb.id, sb.status, cb.eppn, sb.create_date, sb.update_date, sb.update_by, lw.current_step_id, ws.description
     """, nativeQuery = true)
-    List<WorkflowDatasCsvDto> findWorkflowDatas(Long id);
+    List<WorkflowDatasCsvProjectionDto> findWorkflowDatas(Long id);
     @Query("""
             select sb.status as status, count(sb.status) as count from SignBook sb
             where sb.liveWorkflow.workflow.id = :id and sb.deleted is not true group by sb.status order by sb.status
             """)
-    List<WorkflowStatusChartDto> findWorkflowStatusCount(Long id);
+    List<WorkflowStatusChartProjectionDto> findWorkflowStatusCount(Long id);
     List<Workflow> findByTokenStartingWith(String token);
 }

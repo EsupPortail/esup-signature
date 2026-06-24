@@ -4,8 +4,8 @@
 <!--/*@thymesVar id="forms" type="java.util.List<org.esupportail.esupsignature.entity.Form>"*/-->
 <div id="new-tools" th:fragment="new-tools" class="clear" th:with="isUserOnSu = ${userEppn != authUserEppn}">
     <div class="w-100 d-flex flex-row flex-wrap justify-content-center justify-content-lg-between gap-2 gap-md-3 gap-lg-4">
-        <a tabindex="0" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button"
-           class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-1 flex-fill"
+        <a tabindex="1" id="new-self-sign" th:if="${userEppn == authUserEppn}" th:unless="${globalProperties.hideAutoSign}" role="button"
+           class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal"
            data-bs-target="#wiz-self-sign-modal"
@@ -18,8 +18,8 @@
                 <small style="font-size: clamp(0.7rem, 1.1vw, 0.875rem);" class="d-none d-xxl-block">Signer vos documents</small>
             </div>
         </a>
-        <a tabindex="0" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal"
-           class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-1 flex-fill"
+        <a tabindex="2" id="new-fast-sign" th:if="${!isUserOnSu}" th:unless="${globalProperties.hideSendSignRequest}" role="button" data-bs-dismiss="modal"
+           class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal"
            data-bs-target="#wiz-fast-sign-modal"
@@ -32,9 +32,9 @@
                 <small style="font-size: clamp(0.7rem, 1.1vw, 0.875rem);" class="d-none d-xxl-block">Envoyer un/des documents à vos destinataires</small>
             </div>
         </a>
-        <a tabindex="0" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
+        <a tabindex="3" id="start-wizard-custom-button" th:if="${!isUserOnSu}"
            th:unless="${globalProperties.hideWizard}" role="button"
-           class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-1 flex-fill"
+           class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal" data-bs-target="#wiz-custom-sign-modal"
            title="Envoyer des documents dans un circuit à plusieurs étapes">
@@ -46,8 +46,8 @@
                 <small style="font-size: clamp(0.7rem, 1.1vw, 0.875rem);" class="d-none d-xxl-block">Envoyer des documents dans un circuit à plusieurs étapes</small>
             </div>
         </a>
-        <a tabindex="0" id="all-modal-button" th:if="${!isUserOnSu && (workflows.size() > 0 || forms.size() > 0)}"
-           class="global-button btn btn-material border border-secondary-subtle btn-light text-center overflow-hidden p-1 flex-fill"
+        <a tabindex="4" id="all-modal-button" th:if="${!isUserOnSu && (workflows.size() > 0 || forms.size() > 0)}"
+           class="global-button btn btn-material border border-dark-subtle btn-light text-center overflow-hidden p-1 flex-fill"
            style="height: auto; margin: 0;"
            data-bs-toggle="modal" data-bs-target="#allModal"
            title="Afficher la liste complète des circuits et formulaires disponibles">

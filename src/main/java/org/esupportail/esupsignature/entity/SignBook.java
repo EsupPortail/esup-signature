@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 })
 public class SignBook {
 
-	@Id
+    @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
     @SequenceGenerator(name = "hibernate_sequence", allocationSize = 1)
     private Long id;
@@ -38,7 +38,7 @@ public class SignBook {
     private Set<Otp> otps = new HashSet<>();
 
     @Deprecated
-	private String name;
+    private String name;
 
     @Deprecated
     private String title;
@@ -46,7 +46,6 @@ public class SignBook {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -58,7 +57,6 @@ public class SignBook {
     @Enumerated(EnumType.STRING)
     private ArchiveStatus archiveStatus;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date updateDate;
 
@@ -71,7 +69,7 @@ public class SignBook {
     private LiveWorkflow liveWorkflow;
 
     @JsonIgnore
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @OrderColumn
     private List<SignRequest> signRequests = new ArrayList<>();
 
@@ -104,7 +102,6 @@ public class SignBook {
 
     private Boolean forceAllDocsSign = false;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date endDate;
 

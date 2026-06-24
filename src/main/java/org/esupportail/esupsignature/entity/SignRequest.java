@@ -33,7 +33,6 @@ public class SignRequest {
 
 	private String title;
 	
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date createDate;
 
@@ -77,6 +76,9 @@ public class SignRequest {
     @NotNull
     private SignBook parentSignBook;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private SignRequest clonedFrom;
+
     @OneToMany(cascade = CascadeType.REMOVE)
     @OrderColumn
     @JoinTable(
@@ -103,7 +105,6 @@ public class SignRequest {
     @OneToOne(cascade = CascadeType.DETACH)
     private AuditTrail auditTrail;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     private Date cleanDocumentsHistoryDate;
 
@@ -245,6 +246,14 @@ public class SignRequest {
 
     public void setSignRequestParams(List<SignRequestParams> signRequestParams) {
         this.signRequestParams = signRequestParams;
+    }
+
+    public SignRequest getClonedFrom() {
+        return clonedFrom;
+    }
+
+    public void setClonedFrom(SignRequest clonedFrom) {
+        this.clonedFrom = clonedFrom;
     }
 
     public List<Comment> getComments() {

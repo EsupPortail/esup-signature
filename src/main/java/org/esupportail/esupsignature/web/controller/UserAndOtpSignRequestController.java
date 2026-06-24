@@ -1,28 +1,30 @@
 package org.esupportail.esupsignature.web.controller;
 
-import eu.europa.esig.dss.validation.reports.Reports;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.apache.commons.io.FileUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dss.service.XSLTService;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.projection.jpa.AttachmentProjectionDto;
+import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.ui.UiFetchSignRequestService;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.ShowSignRequestContextDto;
+import org.esupportail.esupsignature.dto.page.user.signrequest.SignUiFrontDto;
+import org.esupportail.esupsignature.dto.ui.global.SignatureUiConfigDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.*;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureIOException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
-import org.esupportail.esupsignature.exception.EsupSignatureUserException;
 import org.esupportail.esupsignature.service.*;
-import org.esupportail.esupsignature.service.security.PreAuthorizeService;
-import org.esupportail.esupsignature.service.utils.sign.SignService;
-import org.hibernate.annotations.Synchronize;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -34,11 +36,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
@@ -50,35 +48,30 @@ public class UserAndOtpSignRequestController {
 
     private final SignRequestService signRequestService;
     private final CommentService commentService;
-    private final SignWithService signWithService;
-    private final DataService dataService;
     private final UserService userService;
-    private final CertificatService certificatService;
-    private final PreAuthorizeService preAuthorizeService;
     private final GlobalProperties globalProperties;
     private final SignBookService signBookService;
-    private final LogService logService;
-    private final AuditTrailService auditTrailService;
-    private final SignService signService;
+    private final UiFetchService uiFetchService;
 
     private final Map<String, Object> userLocks = new ConcurrentHashMap<>();
+    private final UiFetchSignRequestService uiFetchSignRequestService;
+    private final PreAuthorizeService preAuthorizeService;
+    private final MobileSignTokenService mobileSignTokenService;
+
     private Object getLock(String authUserEppn) {
         return userLocks.computeIfAbsent(authUserEppn, k -> new Object());
     }
 
-    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, SignWithService signWithService, DataService dataService, UserService userService, CertificatService certificatService, PreAuthorizeService preAuthorizeService, GlobalProperties globalProperties, SignBookService signBookService, LogService logService, AuditTrailService auditTrailService, SignService signService) {
+    public UserAndOtpSignRequestController(SignRequestService signRequestService, CommentService commentService, UserService userService, GlobalProperties globalProperties, SignBookService signBookService, UiFetchService uiFetchService, UiFetchSignRequestService uiFetchSignRequestService, PreAuthorizeService preAuthorizeService, MobileSignTokenService mobileSignTokenService) {
         this.signRequestService = signRequestService;
         this.commentService = commentService;
-        this.signWithService = signWithService;
-        this.dataService = dataService;
         this.userService = userService;
-        this.certificatService = certificatService;
-        this.preAuthorizeService = preAuthorizeService;
         this.globalProperties = globalProperties;
         this.signBookService = signBookService;
-        this.logService = logService;
-        this.auditTrailService = auditTrailService;
-        this.signService = signService;
+        this.uiFetchService = uiFetchService;
+        this.uiFetchSignRequestService = uiFetchSignRequestService;
+        this.preAuthorizeService = preAuthorizeService;
+        this.mobileSignTokenService = mobileSignTokenService;
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -86,174 +79,76 @@ public class UserAndOtpSignRequestController {
     public String show(@ModelAttribute("userEppn") String userEppn,
                        @ModelAttribute("authUserEppn") String authUserEppn,
                        @PathVariable("id") Long id,
-                       @RequestParam(required = false) Boolean frameMode,
-                       @RequestParam(required = false) String annotation,
                        Model model, HttpSession httpSession, HttpServletRequest httpServletRequest) throws IOException, EsupSignatureRuntimeException {
-        String urlProfil = "user";
         String path = httpServletRequest.getRequestURI();
-        SignRequest signRequest = signRequestService.getById(id);
-        if(path.startsWith("/otp")) {
-            urlProfil = "otp";
-            model.addAttribute("displayNotif", false);
-            model.addAttribute("isTempUsers", false);
-        } else {
-            model.addAttribute("displayNotif", signRequestService.isDisplayNotif(signRequest, userEppn));
-            model.addAttribute("isTempUsers", signBookService.isTempUsers(signRequest.getParentSignBook().getId()));
+        boolean isOtpView = path.startsWith("/otp");
+        String favoriteSignRequestParamsJson = userService.getFavoriteSignRequestParamsJson(userEppn);
+        ShowSignRequestContextDto context = uiFetchSignRequestService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
+        if(context.getSignImagesWarningMessage() != null) {
+            model.addAttribute("message", new UiMessageDto("warn", context.getSignImagesWarningMessage()));
         }
-        boolean signable = signBookService.checkSignRequestSignable(id, userEppn, authUserEppn);
-        model.addAttribute("signable", signable);
-        model.addAttribute("urlProfil", urlProfil);
-        model.addAttribute("isManager", signBookService.checkUserManageRights(signRequest.getParentSignBook().getId(), userEppn));
-        model.addAttribute("signRequest", signRequest);
-        model.addAttribute("signBook", signRequest.getParentSignBook());
-        Workflow workflow = signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
-        model.addAttribute("workflow", workflow);
-        model.addAttribute("postits", signRequestService.getPostits(id));
-        model.addAttribute("comments", signRequestService.getComments(id));
-        model.addAttribute("spots", signRequestService.getSpots(id));
-        boolean attachmentAlert = signRequestService.isAttachmentAlert(signRequest);
-        model.addAttribute("attachmentAlert", attachmentAlert);
-        boolean attachmentRequire = signRequestService.isAttachmentRequire(signRequest);
-        model.addAttribute("attachmentRequire", attachmentRequire);
-        model.addAttribute("currentSignType", signRequest.getCurrentSignType());
-        model.addAttribute("currentStepNumber", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStepNumber());
-        model.addAttribute("currentStepMultiSign", true);
-        model.addAttribute("currentStepSingleSignWithAnnotation", true);
-        SignLevel currentStepMinSignLevel = SignLevel.simple;
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-            currentStepMinSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMinSignLevel();
-            if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep() != null) {
-                model.addAttribute("currentStepId", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getWorkflowStep().getId());
-            }
-            model.addAttribute("currentStepMultiSign", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign());
-            model.addAttribute("currentStepSingleSignWithAnnotation", signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSingleSignWithAnnotation());
-        }
-        model.addAttribute("nbSignRequestInSignBookParent", signRequest.getParentSignBook().getSignRequests().size());
-        List<Document> toSignDocuments = signRequestService.getToSignDocuments(signRequest.getId());
-        if(toSignDocuments.size() == 1) {
-            model.addAttribute("toSignDocument", toSignDocuments.get(0));
-        }
-        if(toSignDocuments.stream().anyMatch(d -> !d.isPdf()) && currentStepMinSignLevel.getValue() < 3) {
-            currentStepMinSignLevel = SignLevel.advanced;
-        }
-        model.addAttribute("sealCertificatPropertieses", certificatService.getCheckedSealCertificates());
-        model.addAttribute("attachments", signRequestService.getAttachments(id));
-        SignBook nextSignBook = signBookService.getNextSignBook(signRequest.getId(), userEppn, authUserEppn);
-        model.addAttribute("nextSignBook", nextSignBook);
-        model.addAttribute("nextSignRequest", signBookService.getNextSignRequest(signRequest.getId(), nextSignBook));
-        model.addAttribute("fields", signRequestService.prefillSignRequestFields(id, userEppn));
-        model.addAttribute("toUseSignRequestParams", signRequestService.getToUseSignRequestParams(id, userEppn));
-        model.addAttribute("favoriteSignRequestParamsJson", userService.getFavoriteSignRequestParamsJson(userEppn));
-        try {
-            Object userShareString = httpSession.getAttribute("userShareId");
-            Long userShareId = null;
-            if(userShareString != null) {
-                userShareId = Long.valueOf(userShareString.toString());
-            }
-            List<String> signImages = signBookService.getSignImagesForSignRequest(id, userEppn, authUserEppn, userShareId);
-            model.addAttribute("signImages", signImages);
-        } catch (EsupSignatureUserException e) {
-            model.addAttribute("message", new JsMessage("warn", e.getMessage()));
-        }
-        model.addAttribute("signatureIds", new ArrayList<>());
-        Reports reports = signService.validate(id);
-        if(reports != null) {
-            model.addAttribute("signatureIds", reports.getSimpleReport().getSignatureIdList());
-            List<SignWith> signWiths = signWithService.getAuthorizedSignWiths(userEppn, signRequest, !reports.getSimpleReport().getSignatureIdList().isEmpty());
-            if(signable) {
-                model.addAttribute("signWiths", signWiths);
-            }
-            model.addAttribute("signatureIssue", false);
-            if(!reports.getSimpleReport().getSignatureIdList().isEmpty()) {
-                for (String signatureId : reports.getSimpleReport().getSignatureIdList()) {
-                    if (!reports.getSimpleReport().isValid(signatureId)) {
-                        model.addAttribute("signatureIssue", true);
-                    }
-                }
-                if(currentStepMinSignLevel.getValue() < 3) {
-                    currentStepMinSignLevel = SignLevel.advanced;
-                }
-            }
-        } else {
-            if(signable)  model.addAttribute("signWiths", signWithService.getAuthorizedSignWiths(userEppn, signRequest, false));
-        }
-        model.addAttribute("currentStepMinSignLevel", currentStepMinSignLevel);
-        SignLevel currentStepMaxSignLevel = SignLevel.qualified;
-        if(signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep() != null) {
-            currentStepMaxSignLevel = signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMaxSignLevel();
-        }
-        model.addAttribute("currentStepMaxSignLevel", currentStepMaxSignLevel);
-        if(!signRequest.getStatus().equals(SignRequestStatus.draft) && !signRequest.getStatus().equals(SignRequestStatus.pending) && !signRequest.getStatus().equals(SignRequestStatus.refused) && !signRequest.getDeleted()) {
-            AuditTrail auditTrail = auditTrailService.getAuditTrailByToken(signRequest.getToken());
-            if(auditTrail != null) {
-                model.addAttribute("auditTrail", auditTrail);
-                if(auditTrail.getDocumentSize() != null) {
-                    model.addAttribute("size", FileUtils.byteCountToDisplaySize(auditTrail.getDocumentSize()));
-                }
-            }
-        }
-        model.addAttribute("sealCertOK", signWithService.checkSealCertificat(userEppn, true));
-        model.addAttribute("allSignWiths", SignWith.values());
-        model.addAttribute("certificats", certificatService.getCertificatByUser(userEppn));
-        boolean editable = signRequestService.isEditable(id, userEppn);
-        model.addAttribute("editable", editable);
-        if(annotation != null && !editable) {
-            return "redirect:/user/signrequests/" + id;
-        } else {
-            model.addAttribute("annotation", annotation);
-        }
-        model.addAttribute("isNotSigned", !signRequestService.isSigned(signRequest, reports));
-        model.addAttribute("isCurrentUserAsSigned", signRequestService.isCurrentUserAsSigned(signRequest, userEppn));
-        if(signRequest.getStatus().equals(SignRequestStatus.draft)) {
-            model.addAttribute("steps", signRequest.getParentSignBook().getLiveWorkflow().getLiveWorkflowSteps());
-        }
-        model.addAttribute("refuseLogs", logService.getRefuseLogs(signRequest.getId()));
-        model.addAttribute("viewRight", preAuthorizeService.checkUserViewRights(signRequest, userEppn, authUserEppn));
-        model.addAttribute("frameMode", frameMode);
-        if(signRequest.getData() != null && signRequest.getData().getForm() != null && signRequest.getData().getForm().getWorkflow() != null) {
-            model.addAttribute("action", signRequest.getData().getForm().getAction());
-            model.addAttribute("supervisors", signRequest.getData().getForm().getWorkflow().getManagers());
-        }
-        if(signable
-                && signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null && userService.getUiParams(authUserEppn) != null
-                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString()))
-                && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.hiddenVisa)) {
-            model.addAttribute("message", new JsMessage("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
-            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getId().toString() + ",");
 
+        if(context.isSignable()
+                && context.getWorkflowId() != null && userService.getUiParams(authUserEppn) != null
+                && (userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert) == null || !Arrays.asList(userService.getUiParams(authUserEppn).get(UiParams.workflowVisaAlert).split(",")).contains(context.getWorkflowId().toString()))
+                && SignType.hiddenVisa.equals(context.getCurrentStepSignType())) {
+            model.addAttribute("message", new UiMessageDto("custom", "Vous êtes destinataire d'une demande de visa (et non de signature) sur ce document.\nSa validation implique que vous en acceptez le contenu.\nVous avez toujours la possibilité de ne pas donner votre accord en refusant cette demande de visa et en y adjoignant vos commentaires."));
+            userService.setUiParams(authUserEppn, UiParams.workflowVisaAlert, context.getWorkflowId().toString() + ",");
         }
-        Data data = dataService.getBySignBook(signRequest.getParentSignBook());
-        if(data != null && data.getForm() != null) {
-            model.addAttribute("form", data.getForm());
-        }
-        List<Log> logs = logService.getFullBySignRequest(signRequest.getId());
-        model.addAttribute("logs", logs);
-        if(!toSignDocuments.isEmpty()) {
-            model.addAttribute("pdfaCheck", toSignDocuments.get(0).getPdfaCheck());
-        }
-        if(signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.completed) || signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.exported)) {
-            model.addAttribute("auditTrailChecked", true);
-            model.addAttribute("externalsRecipients", signRequestService.getExternalRecipients(signRequest.getId()));
-        }
+        ShowSignRequestDto showSignRequest = context.getShowSignRequest();
+        model.addAttribute("favoriteSignRequestParamsJson", favoriteSignRequestParamsJson);
+        model.addAttribute("signatureUiConfig", SignatureUiConfigDto.fromGlobalProperties(globalProperties));
+        model.addAttribute("showSignRequest", showSignRequest);
+        model.addAttribute("signRequestFull", showSignRequest.signRequestFull());
+        model.addAttribute("signRequestLight", showSignRequest.signRequestLight());
         return "user/signrequests/show";
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/front", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<SignUiFrontDto> getFront(@ModelAttribute("userEppn") String userEppn,
+                                                   @ModelAttribute("authUserEppn") String authUserEppn,
+                                                   @PathVariable("id") Long id,
+                                                   HttpSession httpSession,
+                                                   HttpServletRequest httpServletRequest) throws IOException {
+        String path = httpServletRequest.getRequestURI();
+        boolean isOtpView = path.startsWith("/otp");
+        ShowSignRequestContextDto context = uiFetchSignRequestService.buildShowSignRequestContext(id, userEppn, authUserEppn, httpSession, isOtpView);
+        SignUiFrontDto frontDto = context.getSignUiFront();
+        return ResponseEntity.ok(frontDto);
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestRecipientAndViewers(#id, #userEppn)")
     @PostMapping(value = "/postit/{id}")
-    public String postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public Object postit(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                          @RequestParam(value = "comment", required = false) String comment,
                          @RequestParam(value = "postit", required = false) String postit,
                          @RequestParam(value = "forceSend", required = false, defaultValue = "false") Boolean forceSend, Model model, HttpServletRequest httpServletRequest) {
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
         Long commentId = null;
         try {
             commentId = signRequestService.addComment(id, comment, null, null, null, null, null, postit, null, authUserEppn, userEppn, forceSend);
         } catch (EsupSignatureException e) {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+            if (ajaxRequest) {
+                return internalServerErrorResponse("Problème lors de l'ajout du post-it");
+            }
+            model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         if(commentId != null) {
-            model.addAttribute("message", new JsMessage("success", "Post-it ajouté"));
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "Post-it ajouté");
+                response.put("postit", toPostitResponse(commentService.getById(commentId), id, userEppn));
+                return ResponseEntity.ok(response);
+            }
+            model.addAttribute("message", new UiMessageDto("success", "Post-it ajouté"));
         } else {
-            model.addAttribute("message", new JsMessage("error", "Problème lors de l'ajout du post-it"));
+            if (ajaxRequest) {
+                return badRequestResponse("Problème lors de l'ajout du post-it");
+            }
+            model.addAttribute("message", new UiMessageDto("error", "Problème lors de l'ajout du post-it"));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
@@ -268,14 +163,35 @@ public class UserAndOtpSignRequestController {
                                 @RequestParam(value = "comment", required = false) String comment, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.updateComment(signRequestId, postitId, comment);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit modifiée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Postit modifié"));
 
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + signRequestId;
+    }
+
+    // AJAX-friendly endpoint to update a postit via fetch (avoid relying on _method override)
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @PostMapping(value = "/comment-ajax/{signRequestId}/update/{postitId}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> commentUpdateAjax(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                  @PathVariable("signRequestId") Long signRequestId,
+                                                                  @PathVariable("postitId") Long postitId,
+                                                                  @RequestParam(value = "comment", required = false) String comment) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            commentService.updateComment(signRequestId, postitId, comment);
+            response.put("success", true);
+            response.put("message", "Postit modifié");
+            return ResponseEntity.ok(response);
+        } catch (EsupSignatureException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
     }
 
     @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
@@ -285,60 +201,125 @@ public class UserAndOtpSignRequestController {
                                 @PathVariable("postitId") Long postitId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         try {
             commentService.deletePostit(signRequestId, postitId);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Postit supprimé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Postit supprimé"));
 
         } catch (EsupSignatureException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         }
         String path = httpServletRequest.getRequestURI();
         String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
         return "redirect:" + basePath + signRequestId;
     }
 
+    // AJAX-friendly endpoint to delete a postit via fetch (avoid relying on _method override)
+    @PreAuthorize("@preAuthorizeService.commentCreator(#postitId, #userEppn)")
+    @PostMapping(value = "/comment-ajax/{signRequestId}/delete/{postitId}", produces = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> commentDeleteAjax(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn,
+                                                                  @PathVariable("signRequestId") Long signRequestId,
+                                                                  @PathVariable("postitId") Long postitId) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            commentService.deletePostit(signRequestId, postitId);
+            response.put("success", true);
+            response.put("message", "Postit supprimé");
+            return ResponseEntity.ok(response);
+        } catch (EsupSignatureException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
     @PreAuthorize("@preAuthorizeService.signRequestRecipient(#id, #authUserEppn)")
     @PostMapping(value = "/add-attachment/{id}")
-    public String addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
+    public Object addAttachement(@ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
                                  @RequestParam(value = "multipartFiles", required = false) MultipartFile[] multipartFiles,
                                  @RequestParam(value = "link", required = false) String link,
-                                 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) throws EsupSignatureIOException {
+                                 RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start add attachment");
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        Set<Long> attachmentIdsBefore = signRequestService.getAttachmentProjections(id).stream()
+                .map(AttachmentProjectionDto::getId)
+                .filter(Objects::nonNull)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll);
+        Set<String> linksBefore = new HashSet<>(signRequestService.getById(id).getLinks());
         try {
             if(StringUtils.hasText(link)) {
                 new URI(link);
             }
             if(signRequestService.addAttachement(multipartFiles, link, id, authUserEppn)) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La piece jointe a bien été ajoutée"));
+                if (ajaxRequest) {
+                    return ResponseEntity.ok(buildAddAttachmentResponse(id, attachmentIdsBefore, linksBefore, link));
+                }
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La piece jointe a bien été ajoutée"));
             } else {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
+                if (ajaxRequest) {
+                    return badRequestResponse("Aucune pièce jointe n'a été ajoutée. Merci de contrôler la validité du document");
+                }
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Aucune pièce jointe n'a été ajoutée. Merci de contrôle la validité du document"));
             }
+        } catch (EsupSignatureIOException e) {
+            logger.warn("error adding attachment", e);
+            if (ajaxRequest) {
+                return internalServerErrorResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Le lien fourni n'est pas valide"));
+            if (ajaxRequest) {
+                return badRequestResponse("Le lien fourni n'est pas valide");
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Le lien fourni n'est pas valide"));
         }
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.attachmentCreator(#attachementId, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-attachment/{id}/{attachementId}")
-    public String removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+    public Object removeAttachement(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("attachementId") Long attachementId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove attachment");
-        signRequestService.removeAttachement(id, attachementId, redirectAttributes);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "La pieces jointe a été supprimée"));
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        try {
+            signRequestService.removeAttachement(id, attachementId);
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "La pièce jointe a été supprimée");
+                response.put("attachmentId", attachementId);
+                return ResponseEntity.ok(response);
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "La pieces jointe a été supprimée"));
+        } catch (EsupSignatureRuntimeException e) {
+            if (ajaxRequest) {
+                return badRequestResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
     @DeleteMapping(value = "/remove-link/{id}/{linkId}")
-    public String removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
+    public Object removeLink(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id, @PathVariable("linkId") Integer linkId, RedirectAttributes redirectAttributes, HttpServletRequest httpServletRequest) {
         logger.info("start remove link");
-        signRequestService.removeLink(id, linkId);
-        redirectAttributes.addFlashAttribute("message", new JsMessage("info", "Le lien a été supprimé"));
-        String path = httpServletRequest.getRequestURI();
-        String basePath = path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
-        return "redirect:" + basePath + id + "?attachment=true";
+        boolean ajaxRequest = isAjaxRequest(httpServletRequest);
+        try {
+            signRequestService.removeLink(id, linkId);
+            if (ajaxRequest) {
+                Map<String, Object> response = new LinkedHashMap<>();
+                response.put("success", true);
+                response.put("message", "Le lien a été supprimé");
+                response.put("links", new ArrayList<>(signRequestService.getById(id).getLinks()));
+                return ResponseEntity.ok(response);
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Le lien a été supprimé"));
+        } catch (EsupSignatureRuntimeException e) {
+            if (ajaxRequest) {
+                return badRequestResponse(e.getMessage());
+            }
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
+        }
+        return "redirect:" + getBasePath(httpServletRequest) + id + "?attachment=true";
     }
 
     @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
@@ -347,7 +328,7 @@ public class UserAndOtpSignRequestController {
         synchronized (getLock(authUserEppn)) {
             try {
                 if (!signRequestService.getAttachmentResponse(id, attachementId, httpServletResponse)) {
-                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
                     httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
                 }
             } catch (Exception e) {
@@ -363,7 +344,7 @@ public class UserAndOtpSignRequestController {
             try {
                 logger.info("get file attachment");
                 if (!signRequestService.getAttachmentInlineResponse(id, attachementId, httpServletResponse)) {
-                    redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Pièce jointe non trouvée ..."));
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Pièce jointe non trouvée ..."));
                     httpServletResponse.sendRedirect("/user/signsignrequests/" + id);
                 }
             } catch (Exception e) {
@@ -397,7 +378,7 @@ public class UserAndOtpSignRequestController {
         }
     }
 
-    @PreAuthorize("@preAuthorizeService.signRequestCreator(#id, #userEppn)")
+    @PreAuthorize("@preAuthorizeService.signRequestManager(#id, #userEppn)")
     @PostMapping(value = "/add-spot/{id}")
     @ResponseBody
     public ResponseEntity<String> addSpot(@ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, @PathVariable("id") Long id,
@@ -405,10 +386,11 @@ public class UserAndOtpSignRequestController {
                                           @RequestParam(value = "commentPageNumber", required = false) Integer commentPageNumber,
                                           @RequestParam(value = "commentPosX", required = false) Integer commentPosX,
                                           @RequestParam(value = "commentPosY", required = false) Integer commentPosY,
-                                          @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale) {
+                                          @RequestParam(value = "commentScale", required = false, defaultValue = "1") Float commentScale,
+                                          @RequestParam(value = "recipientId", required = false) Long recipientId) {
         Long spotId;
         try {
-            spotId = signRequestService.addSpot(id, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), spotStepNumber);
+            spotId = signRequestService.addSpot(id, commentPageNumber, commentPosX, commentPosY, Math.round(200 * commentScale), Math.round(100 * commentScale), spotStepNumber, recipientId);
         } catch (EsupSignatureException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
@@ -444,22 +426,27 @@ public class UserAndOtpSignRequestController {
                            @RequestParam(value = "keepFollow", required = false) Boolean keepFollow, HttpServletRequest httpServletRequest,
                            RedirectAttributes redirectAttributes) {
         if(!globalProperties.getEnableTransfertForUsers()) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Opération interdite"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Opération interdite"));
             return "redirect:/user/signrequests/" + signRequestId;
         }
         if(keepFollow == null) keepFollow = false;
         try {
             signBookService.transfertSignRequest(signRequestId, authUserEppn, transfertRecipientsEmails, phones, names, firstnames, keepFollow);
-            redirectAttributes.addFlashAttribute("message", new JsMessage("success", "Demande transférée"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "Demande transférée"));
             if(keepFollow) {
                 return "redirect:/user/signrequests/" + signRequestId;
             } else {
-                String path = httpServletRequest.getRequestURI();
-                String basePath = path.startsWith("/otp") ? "/otp-access/transferred" : "/user/signrequests/" + signRequestId;
-                return "redirect:" + basePath;
+                if(preAuthorizeService.checkUserViewRights(signRequestId, authUserEppn, authUserEppn)) {
+                    String path = httpServletRequest.getRequestURI();
+                    String basePath = path.startsWith("/otp") ? "/otp-access/transferred" : "/user/signrequests/" + signRequestId;
+                    return "redirect:" + basePath;
+                } else {
+                    redirectAttributes.addFlashAttribute("message", new UiMessageDto("info", "Demande transférée, vous n'y avez plus accès"));
+                    return "redirect:/user";
+                }
             }
         } catch (EsupSignatureRuntimeException e) {
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Demande non transférée : " + e.getMessage()));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Demande non transférée : " + e.getMessage()));
             return "redirect:/user/signrequests/" + signRequestId;
         }
     }
@@ -480,6 +467,125 @@ public class UserAndOtpSignRequestController {
         } else {
             return "redirect:" + basePath + redirect;
         }
+    }
+
+    @PreAuthorize("@preAuthorizeService.signRequestView(#id, #userEppn, #authUserEppn)")
+    @GetMapping(value = "/{id}/generate-mobile-token")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> generateToken(@ModelAttribute("userEppn") String userEppn,
+                                                             @ModelAttribute("authUserEppn") String authUserEppn,
+                                                             @PathVariable("id") Long id) {
+        try {
+            String token = mobileSignTokenService.createToken(authUserEppn);
+            String mobileSignUrl = buildMobileSignUrl(token);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+            response.put("url", mobileSignUrl);
+            response.put("qrcodeUrl", "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + java.net.URLEncoder.encode(mobileSignUrl, "UTF-8"));
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error generating mobile sign token: ", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private String buildMobileSignUrl(String token) {
+        String baseUrl = globalProperties.getRootUrl();
+        if (baseUrl == null || baseUrl.isEmpty()) {
+            baseUrl = "http://" + globalProperties.getDomain();
+        }
+        // Make sure baseUrl doesn't end with /
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        return baseUrl + "/public/mobile-sign/" + token;
+    }
+
+    private boolean isAjaxRequest(HttpServletRequest httpServletRequest) {
+        return "XMLHttpRequest".equalsIgnoreCase(httpServletRequest.getHeader("X-Requested-With"));
+    }
+
+    private String getBasePath(HttpServletRequest httpServletRequest) {
+        String path = httpServletRequest.getRequestURI();
+        return path.startsWith("/otp") ? "/otp/signrequests/" : "/user/signrequests/";
+    }
+
+    private ResponseEntity<Map<String, Object>> badRequestResponse(String message) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    private ResponseEntity<Map<String, Object>> internalServerErrorResponse(String message) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return ResponseEntity.internalServerError().body(response);
+    }
+
+    private Map<String, Object> buildAddAttachmentResponse(Long id, Set<Long> attachmentIdsBefore, Set<String> linksBefore, String submittedLink) {
+        List<AttachmentProjectionDto> attachments = signRequestService.getAttachmentProjections(id);
+        SignRequest signRequest = signRequestService.getById(id);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("success", true);
+        response.put("message", "La pièce jointe a bien été ajoutée");
+
+        List<Map<String, Object>> addedAttachments = new ArrayList<>();
+        for (AttachmentProjectionDto attachment : attachments) {
+            if (attachment.getId() != null && !attachmentIdsBefore.contains(attachment.getId())) {
+                addedAttachments.add(toAttachmentResponse(attachment));
+            }
+        }
+        response.put("addedAttachments", addedAttachments);
+
+        List<String> links = new ArrayList<>(signRequest.getLinks());
+        response.put("links", links);
+        if (StringUtils.hasText(submittedLink) && !linksBefore.contains(submittedLink)) {
+            int addedLinkIndex = links.indexOf(submittedLink);
+            if (addedLinkIndex >= 0) {
+                Map<String, Object> addedLink = new LinkedHashMap<>();
+                addedLink.put("index", addedLinkIndex);
+                addedLink.put("value", submittedLink);
+                response.put("addedLink", addedLink);
+            }
+        }
+        return response;
+    }
+
+    private Map<String, Object> toAttachmentResponse(AttachmentProjectionDto attachment) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", attachment.getId());
+        response.put("fileName", attachment.getFileName());
+        if (attachment.getCreateByEppn() != null || attachment.getCreateByFirstname() != null || attachment.getCreateByName() != null) {
+            Map<String, Object> createBy = new LinkedHashMap<>();
+            createBy.put("eppn", attachment.getCreateByEppn());
+            createBy.put("firstname", attachment.getCreateByFirstname());
+            createBy.put("name", attachment.getCreateByName());
+            response.put("createBy", createBy);
+        }
+        return response;
+    }
+
+    private Map<String, Object> toPostitResponse(Comment comment, Long signRequestId, String userEppn) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("id", comment.getId());
+        response.put("text", comment.getText());
+        response.put("postitColor", comment.getPostitColor());
+        response.put("refuse", Boolean.TRUE.equals(comment.getRefuse()));
+        response.put("createDate", comment.getCreateDate() != null ? comment.getCreateDate().getTime() : null);
+        response.put("canEdit", comment.getCreateBy() != null && Objects.equals(comment.getCreateBy().getEppn(), userEppn) && !Boolean.TRUE.equals(comment.getRefuse()));
+        response.put("signRequestId", signRequestId);
+        if (comment.getCreateBy() != null) {
+            Map<String, Object> createBy = new LinkedHashMap<>();
+            createBy.put("eppn", comment.getCreateBy().getEppn());
+            createBy.put("firstname", comment.getCreateBy().getFirstname());
+            createBy.put("name", comment.getCreateBy().getName());
+            response.put("createBy", createBy);
+        }
+        return response;
     }
 
 }

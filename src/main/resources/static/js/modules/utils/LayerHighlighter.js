@@ -7,7 +7,7 @@ class LayerHighlighter {
     constructor(viewer) {
         this.viewer = viewer;
         this.highlightedLayers = new Set();
-        this.highlightColor = '#9cdf7f';
+        this.highlightColor = getComputedStyle(document.documentElement).getPropertyValue('--color-9cdf7f').trim();
         this.highlightOpacity = 0.3;
     }
 

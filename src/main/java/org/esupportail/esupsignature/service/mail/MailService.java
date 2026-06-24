@@ -83,20 +83,21 @@ public class MailService {
             User recipientUser = recipient.getUser();
             if (!UserType.external.equals(recipientUser.getUserType())
                     && (!recipientUser.getEppn().equals(userEppn) || forceSend)
-                    && (recipientUser.getEmailAlertFrequency() == null
-                    || recipientUser.getEmailAlertFrequency().equals(EmailAlertFrequency.immediately)
-                    || userService.checkEmailAlert(recipientUser))) {
-                sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook);
+                    && isImmediateEmailAlert(recipientUser)) {
+                sendSignRequestAlert(recipientUser, signBook);
             }
             sendSignRequestAlertsShare(signBook, recipientUser, data);
         }
     }
 
+    private boolean isImmediateEmailAlert(User user) {
+        return user.getEmailAlertFrequency() == null || EmailAlertFrequency.immediately.equals(user.getEmailAlertFrequency());
+    }
+
     public void sendSignRequestAlertsShare(SignBook signBook, User recipientUser, Data data) throws EsupSignatureMailException {
-        Date date = new Date();
         Workflow workflow = signBook.getLiveWorkflow().getWorkflow();
-        recipientUser.setLastSendAlertDate(date);
         Map<String, UserShare> toShareEmails = new HashMap<>();
+        Map<String, User> toShareUsers = new LinkedHashMap<>();
         for (UserShare userShare : userShareService.getUserSharesByUser(recipientUser.getEppn())) {
             if (userShare.getShareTypes().contains(ShareType.sign) &&
                 ((data != null && data.getForm() != null && userShare.getForm() != null && data.getForm().getId().equals(userShare.getForm().getId()))
@@ -107,18 +108,24 @@ public class MailService {
                         && (userShare.getEndDate() == null || userShare.getEndDate().after(new Date()))
                 )))) {
                 for (User toUser : userShare.getToUsers()) {
-                    toShareEmails.put(toUser.getEmail(), userShare);
+                    if (!UserType.external.equals(toUser.getUserType()) && isImmediateEmailAlert(toUser)) {
+                        toShareEmails.put(toUser.getEmail(), userShare);
+                        toShareUsers.put(toUser.getEmail(), toUser);
+                    }
                 }
             }
         }
         if(!toShareEmails.isEmpty()) {
-            sendSignRequestAlertShare(new ArrayList<>(toShareEmails.keySet()), recipientUser, toShareEmails.values().stream().toList().get(0), signBook);
+            boolean sent = sendSignRequestAlertShare(new ArrayList<>(toShareEmails.keySet()), recipientUser, toShareEmails.values().stream().toList().get(0), signBook);
+            if (sent) {
+                toShareUsers.values().forEach(user -> markSignRequestsTransmitted(user, signBook));
+            }
         }
     }
 
-    private void sendSignRequestAlertShare(List<String> recipientsEmails, User recipientUser, UserShare userShare, SignBook signBook) {
+    private boolean sendSignRequestAlertShare(List<String> recipientsEmails, User recipientUser, UserShare userShare, SignBook signBook) {
         if (!checkMailSender()) {
-            return;
+            return false;
         }
         final Context ctx = new Context(Locale.FRENCH);
 
@@ -140,6 +147,7 @@ public class MailService {
             logger.info("send email alert for " + recipientsEmails.get(0));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
             signBook.setLastNotifDate(new Date());
+            return true;
         } catch (Exception e) {
             logger.error("unable to send ALERT email share", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail delegation", e);
@@ -273,9 +281,9 @@ public class MailService {
         }
     }
 
-    public void sendSignRequestAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
+    public boolean sendSignRequestAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
         if (!checkMailSender()) {
-            return;
+            return false;
         }
         final Context ctx = new Context(Locale.FRENCH);
         setTemplate(ctx, signBook);
@@ -288,18 +296,28 @@ public class MailService {
             logger.info("send email alert for " + recipientsEmails.get(0));
             sendMail(mimeMessage, signBook.getLiveWorkflow().getWorkflow());
             signBook.setLastNotifDate(new Date());
+            return true;
         } catch (Exception e) {
             logger.error("unable to send ALERT email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
         }
     }
 
-    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignBook signBook) throws EsupSignatureMailException {
+    public void sendSignRequestAlert(User recipientUser, SignBook signBook) throws EsupSignatureMailException {
+        if (sendSignRequestAlert(Collections.singletonList(recipientUser.getEmail()), signBook)) {
+            markSignRequestsTransmitted(recipientUser, signBook);
+        }
+    }
+
+    public void sendSignRequestReplayAlert(List<String> recipientsEmails, SignRequest signRequest) throws EsupSignatureMailException {
         if (!checkMailSender()) {
             return;
         }
+        SignBook signBook = signRequest.getParentSignBook();
         final Context ctx = new Context(Locale.FRENCH);
         setTemplate(ctx, signBook);
+        ctx.setVariable("signRequest", signRequest);
+        ctx.setVariable("url", globalProperties.getRootUrl() + "/user/signrequests/" + signRequest.getId());
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
             String htmlContent = templateEngine.process("mail/email-replay-alert.html", ctx);
@@ -345,12 +363,13 @@ public class MailService {
 
     }
 
-    public void sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) throws EsupSignatureMailException {
+    public boolean sendSignRequestSummaryAlert(List<String> recipientsEmails, List<SignRequest> signRequests) throws EsupSignatureMailException {
         if (!checkMailSender()) {
-            return;
+            return false;
         }
         final Context ctx = new Context(Locale.FRENCH);
         setTemplate(ctx, signRequests.get(0).getParentSignBook());
+        ctx.setVariable("signRequests", signRequests);
         ctx.setVariable("rootUrl", globalProperties.getRootUrl());
         try {
             MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
@@ -360,7 +379,8 @@ public class MailService {
             mimeMessage.setTo(recipientsEmails.toArray(String[]::new));
             mimeMessage.setText(htmlContent, true);
             logger.info("send email summary for " + recipientsEmails.get(0));
-            sendMail(mimeMessage, null);
+            sendMail(mimeMessage, null, false);
+            return true;
         } catch (MessagingException e) {
             logger.error("unable to send SUMMARY email", e);
             throw new EsupSignatureMailException("Problème lors de l'envoi du mail", e);
@@ -368,6 +388,16 @@ public class MailService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    private void markSignRequestsTransmitted(User user, SignBook signBook) {
+        if (user == null || signBook == null) {
+            return;
+        }
+        signBook.getSignRequests().stream()
+                .map(SignRequest::getId)
+                .filter(Objects::nonNull)
+                .forEach(user.getTransmittedSignRequestIds()::add);
     }
 
     public void sendOtp(Otp otp, SignBook signBook, boolean signature) throws EsupSignatureMailException {
@@ -459,9 +489,15 @@ public class MailService {
     }
 
     private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow) throws MessagingException, IOException {
+        sendMail(mimeMessageHelper, workflow, true);
+    }
+
+    private void sendMail(MimeMessageHelper mimeMessageHelper, Workflow workflow, boolean addFileLogo) throws MessagingException, IOException {
         mimeMessageHelper.addInline("logo", resizeImage(new ClassPathResource("/static/images/logo.png", MailService.class).getInputStream(), 30));
         mimeMessageHelper.addInline("logo-univ", resizeImage(new ClassPathResource("/static/images/logo-univ.png", MailService.class).getInputStream(), 30));
-        mimeMessageHelper.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
+        if (addFileLogo) {
+            mimeMessageHelper.addInline("logo-file", new ClassPathResource("/static/images/fa-file.png", MailService.class));
+        }
         if(workflow != null && BooleanUtils.isTrue(workflow.getDisableEmailAlerts())) {
             logger.debug("email alerts are disabled for this workflow " + workflow.getName());
             return;
@@ -558,6 +594,21 @@ public class MailService {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void sendMailCode(String userEmail, String code) throws MessagingException, IOException {
+        final Context ctx = new Context(Locale.FRENCH);
+        User user = userService.getUserByEmail(userEmail);
+        ctx.setVariable("user", user);
+        ctx.setVariable("code", code);
+        ctx.setVariable("rootUrl", globalProperties.getRootUrl());
+        MimeMessageHelper mimeMessage = new MimeMessageHelper(getMailSender().createMimeMessage(), true, "UTF-8");
+        String htmlContent = templateEngine.process("mail/email-code.html", ctx);
+        mimeMessage.setText(htmlContent, true);
+        mimeMessage.setSubject("Votre code de vérification");
+        mimeMessage.setTo(userEmail);
+        logger.info("send email code for " + userEmail);
+        sendMail(mimeMessage, null);
     }
 
 //    public MimeMessage signMessage(MimeMessage message) {

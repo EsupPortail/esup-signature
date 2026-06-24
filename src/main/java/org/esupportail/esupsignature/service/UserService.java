@@ -5,24 +5,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
 import org.esupportail.esupsignature.config.security.shib.ShibProperties;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.SignRequestParamsWsDto;
-import org.esupportail.esupsignature.dto.view.UserDto;
+import org.esupportail.esupsignature.dto.projection.jpa.RoleManagerProjectionDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.SignRequestParamsWsDto;
+import org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.EmailAlertFrequency;
 import org.esupportail.esupsignature.entity.enums.UiParams;
 import org.esupportail.esupsignature.entity.enums.UserType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.exception.EsupSignatureUserException;
+import org.esupportail.esupsignature.repository.RecipientRepository;
 import org.esupportail.esupsignature.repository.SignRequestParamsRepository;
 import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.interfaces.listsearch.UserListService;
-import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.ldap.*;
 import org.esupportail.esupsignature.service.ldap.entry.AliasLdap;
 import org.esupportail.esupsignature.service.ldap.entry.OrganizationalUnitLdap;
@@ -30,6 +33,7 @@ import org.esupportail.esupsignature.service.ldap.entry.PersonLdap;
 import org.esupportail.esupsignature.service.ldap.entry.PersonLightLdap;
 import org.esupportail.esupsignature.service.utils.database.LikePatternUtils;
 import org.esupportail.esupsignature.service.utils.file.FileService;
+import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +65,8 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private static final String DATE_PATTERN = "yyyy-MM-dd'T'HH:mm";
+    private static final int DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER = 999997;
+    private static final int DEFAULT_GENERATED_SIGN_IMAGE_NUMBER = 999998;
 
     private final GlobalProperties globalProperties;
     private final WebSecurityProperties webSecurityProperties;
@@ -69,7 +75,6 @@ public class UserService {
     private final LdapAliasService ldapAliasService;
     private final LdapGroupService ldapGroupService;
     private final LdapOrganizationalUnitService ldapOrganizationalUnitService;
-    private final SmsService smsService;
     private final ShibProperties shibProperties;
     private final UserRepository userRepository;
     private final FileService fileService;
@@ -77,6 +82,8 @@ public class UserService {
     private final UserListService userListService;
     private final ObjectMapper objectMapper;
     private final SignRequestParamsRepository signRequestParamsRepository;
+    private final RecipientRepository recipientRepository;
+    private final Validator validator;
 
     public UserService(GlobalProperties globalProperties,
                        WebSecurityProperties webSecurityProperties,
@@ -85,7 +92,7 @@ public class UserService {
                        @Autowired(required = false) LdapAliasService ldapAliasService,
                        @Autowired(required = false) LdapGroupService ldapGroupService,
                        @Autowired(required = false) LdapOrganizationalUnitService ldapOrganizationalUnitService,
-                       @Autowired(required = false) SmsService smsService, ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository) {
+                       ShibProperties shibProperties, UserRepository userRepository, FileService fileService, DocumentService documentService, UserListService userListService, ObjectMapper objectMapper, SignRequestParamsRepository signRequestParamsRepository, RecipientRepository recipientRepository, Validator validator) {
         this.globalProperties = globalProperties;
         this.webSecurityProperties = webSecurityProperties;
         this.ldapPersonService = ldapPersonService;
@@ -93,7 +100,6 @@ public class UserService {
         this.ldapAliasService = ldapAliasService;
         this.ldapGroupService = ldapGroupService;
         this.ldapOrganizationalUnitService = ldapOrganizationalUnitService;
-        this.smsService = smsService;
         this.shibProperties = shibProperties;
         this.userRepository = userRepository;
         this.fileService = fileService;
@@ -101,6 +107,8 @@ public class UserService {
         this.userListService = userListService;
         this.objectMapper = objectMapper;
         this.signRequestParamsRepository = signRequestParamsRepository;
+        this.recipientRepository = recipientRepository;
+        this.validator = validator;
     }
 
     public User getById(Long id) {
@@ -109,6 +117,19 @@ public class UserService {
 
     public User getByEppn(String eppn) {
         return  userRepository.findByEppn(eppn).orElse(null);
+    }
+
+    private int normalizeDefaultSignImageNumber(User user, Integer signImageNumber) {
+        if (signImageNumber == null) {
+            return DEFAULT_GENERATED_SIGN_IMAGE_NUMBER;
+        }
+        if (signImageNumber == DEFAULT_GENERATED_SIGN_IMAGE_NUMBER || signImageNumber == DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER) {
+            return signImageNumber;
+        }
+        if (signImageNumber >= 0 && signImageNumber < user.getSignImages().size()) {
+            return signImageNumber;
+        }
+        return DEFAULT_GENERATED_SIGN_IMAGE_NUMBER;
     }
 
     public User getByAccessToken(String accessToken) {
@@ -140,7 +161,7 @@ public class UserService {
         return createUser("generic", "Utilisateur issue des favoris", "", "generic", UserType.system, false);
     }
 
-    public List<UserDto> getAllUsersDto() {
+    public List<UserProjectionDto> getAllUsersDto() {
         return userRepository.findAllUsersDto();
     }
 
@@ -190,8 +211,9 @@ public class UserService {
                 user.setKeystoreFileName(user.getKeystore().getFileName());
             }
             user.setSignImagesIds(user.getSignImages().stream().map(Document::getId).collect(Collectors.toList()));
-            if (user.getDefaultSignImageNumber() == null || user.getDefaultSignImageNumber() < 0 || (user.getDefaultSignImageNumber() != 999997 && user.getDefaultSignImageNumber() >= user.getSignImages().size())) {
-                user.setDefaultSignImageNumber(999998);
+            int normalizedDefaultSignImageNumber = normalizeDefaultSignImageNumber(user, user.getDefaultSignImageNumber());
+            if (!Objects.equals(user.getDefaultSignImageNumber(), normalizedDefaultSignImageNumber)) {
+                user.setDefaultSignImageNumber(normalizedDefaultSignImageNumber);
             }
             return user;
         }
@@ -373,6 +395,7 @@ public class UserService {
             user.getRoles().remove("ROLE_USER");
             user.getRoles().add("ROLE_OTP");
         }
+        validateUserForPersistence(user, "createUser:" + userType.name());
         userRepository.save(user);
         return user;
     }
@@ -390,6 +413,7 @@ public class UserService {
                 signRequestParams.setyPos(signRequestParamsJson.getyPos());
                 signRequestParams.setSignImageNumber(signRequestParamsJson.getSignImageNumber());
                 signRequestParams.setAddWatermark(signRequestParamsJson.getAddWatermark());
+                signRequestParams.setAddImage(signRequestParamsJson.getAddImage());
                 signRequestParams.setAddExtra(signRequestParamsJson.getAddExtra());
                 signRequestParams.setIsExtraText(signRequestParamsJson.getIsExtraText());
                 if(signRequestParamsJson.getIsExtraText()) {
@@ -401,6 +425,13 @@ public class UserService {
                 signRequestParams.setExtraName(signRequestParamsJson.getExtraName());
                 signRequestParams.setExtraDate(signRequestParamsJson.getExtraDate());
                 signRequestParams.setExtraOnTop(signRequestParamsJson.getExtraOnTop());
+                signRequestParams.setTextPart(signRequestParamsJson.getTextPart());
+                signRequestParams.setSignScale(signRequestParamsJson.getSignScale());
+                signRequestParams.setExtraText(signRequestParamsJson.getExtraText());
+                signRequestParams.setRed(signRequestParamsJson.getRed());
+                signRequestParams.setGreen(signRequestParamsJson.getGreen());
+                signRequestParams.setBlue(signRequestParamsJson.getBlue());
+                signRequestParams.setFontSize(signRequestParamsJson.getFontSize());
             } catch (JsonProcessingException e) {
                 logger.warn("no signRequestParams returned", e);
             }
@@ -456,6 +487,12 @@ public class UserService {
      *         configurés, sinon false.
      */
     public boolean checkEmailAlert(User user) {
+        if (user == null || user.getEmailAlertFrequency() == null) {
+            return false;
+        }
+        if (EmailAlertFrequency.immediately.equals(user.getEmailAlertFrequency()) || EmailAlertFrequency.never.equals(user.getEmailAlertFrequency())) {
+            return false;
+        }
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -464,14 +501,23 @@ public class UserService {
             diffInMillies = Math.abs(date.getTime() - user.getLastSendAlertDate().getTime());
         }
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
         long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-        if ((EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
-                || (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour().equals(hour))
-                || (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay().equals(DayOfWeek.of(calendar.get(Calendar.DAY_OF_WEEK))))) {
-            return true;
-        }
-        return false;
+        return (EmailAlertFrequency.hourly.equals(user.getEmailAlertFrequency()) && diff >= 1)
+                || (EmailAlertFrequency.daily.equals(user.getEmailAlertFrequency()) && diff >= 24 && user.getEmailAlertHour() != null && user.getEmailAlertHour().equals(hour))
+                || (EmailAlertFrequency.weekly.equals(user.getEmailAlertFrequency()) && diff >= 168 && user.getEmailAlertDay() != null && user.getEmailAlertDay().equals(getCurrentDayOfWeek(calendar)));
+    }
+
+    private DayOfWeek getCurrentDayOfWeek(Calendar calendar) {
+        return switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+            case Calendar.MONDAY -> DayOfWeek.MONDAY;
+            case Calendar.TUESDAY -> DayOfWeek.TUESDAY;
+            case Calendar.WEDNESDAY -> DayOfWeek.WEDNESDAY;
+            case Calendar.THURSDAY -> DayOfWeek.THURSDAY;
+            case Calendar.FRIDAY -> DayOfWeek.FRIDAY;
+            case Calendar.SATURDAY -> DayOfWeek.SATURDAY;
+            case Calendar.SUNDAY -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Invalid day of week: " + calendar.get(Calendar.DAY_OF_WEEK));
+        };
     }
 
     @Transactional
@@ -516,8 +562,8 @@ public class UserService {
                 if(user.getEppn().equals("creator")) {
                     personLightLdaps.add(getPersonLdapLightFromUser(user));
                 }
-                if(!personLightLdaps.isEmpty() && personLightLdaps.stream().noneMatch(personLightLdap -> personLightLdap != null && personLightLdap.getMail() != null && personLightLdap.getMail().equalsIgnoreCase(user.getEmail()))) {
-                    PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
+                PersonLightLdap personLightLdap = getPersonLdapLightFromUser(user);
+                if(personLightLdaps.stream().noneMatch(existingPersonLightLdap -> existingPersonLightLdap != null && existingPersonLightLdap.getMail() != null && existingPersonLightLdap.getMail().equalsIgnoreCase(personLightLdap.getMail()))) {
                     if(user.getUserType().equals(UserType.group)) {
                         personLightLdap.setDisplayName(personLightLdap.getDisplayName());
                     }
@@ -576,12 +622,14 @@ public class UserService {
             personLdap.setGivenName(currentReplaceByUser.getFirstname());
             personLdap.setDisplayName(user.getFirstname() + " " + user.getName() + " remplacé par " + currentReplaceByUser.getFirstname() + " " + currentReplaceByUser.getName());
             personLdap.setMail(currentReplaceByUser.getEmail());
+            personLdap.setEduPersonPrincipalName(user.getEppn());
         } else {
             personLdap.setUid(user.getEppn());
             personLdap.setSn(user.getName());
             personLdap.setGivenName(user.getFirstname());
             personLdap.setDisplayName(user.getFirstname() + " " + user.getName());
             personLdap.setMail(user.getEmail());
+            personLdap.setEduPersonPrincipalName(user.getEppn());
         }
         return personLdap;
     }
@@ -622,8 +670,7 @@ public class UserService {
 
     @Transactional
     public void disableIntro(String authUserEppn, String name) {
-        User authUser = getByEppn(authUserEppn);
-        authUser.getUiParams().put(UiParams.valueOf(name), "true");
+        setUiParams(authUserEppn, UiParams.valueOf(name), "true");
     }
 
     @Transactional
@@ -806,12 +853,13 @@ public class UserService {
         User authUser = getByEppn(authUserEppn);
         Document signDocument = documentService.getById(id);
         int test = authUser.getSignImages().indexOf(signDocument);
-        if (authUser.getDefaultSignImageNumber().equals(test)) {
-            authUser.setDefaultSignImageNumber(999998);
-        } else {
-            if(test < authUser.getDefaultSignImageNumber()) {
-                authUser.setDefaultSignImageNumber(authUser.getDefaultSignImageNumber() - 1);
-            }
+        int defaultSignImageNumber = normalizeDefaultSignImageNumber(authUser, authUser.getDefaultSignImageNumber());
+        if (defaultSignImageNumber == test) {
+            authUser.setDefaultSignImageNumber(DEFAULT_GENERATED_SIGN_IMAGE_NUMBER);
+        } else if (defaultSignImageNumber >= 0 && defaultSignImageNumber < authUser.getSignImages().size() && test < defaultSignImageNumber) {
+            authUser.setDefaultSignImageNumber(defaultSignImageNumber - 1);
+        } else if (!Objects.equals(authUser.getDefaultSignImageNumber(), defaultSignImageNumber)) {
+            authUser.setDefaultSignImageNumber(defaultSignImageNumber);
         }
         authUser.getSignImages().remove(signDocument);
     }
@@ -820,10 +868,12 @@ public class UserService {
     public void setFormMessage(String authUserEppn, long formId) {
         User authUser = getByEppn(authUserEppn);
         authUser.setFormMessages(authUser.getFormMessages() + " " + formId);
+        validateUserForPersistence(authUser, "setFormMessage");
     }
 
     @Transactional
     public void save(User user) {
+        validateUserForPersistence(user, "save");
         userRepository.save(user);
     }
 
@@ -848,12 +898,13 @@ public class UserService {
     public void setUiParams(String authUserEppn, UiParams key, String value) {
         User user = getByEppn(authUserEppn);
         user.getUiParams().put(key, value);
+        validateUserForPersistence(user, "setUiParams:" + key.name());
     }
 
     @Transactional
     public void setDefaultSignImage(String authUserEppn, int signImageNumber) {
         User user = getByEppn(authUserEppn);
-        user.setDefaultSignImageNumber(signImageNumber);
+        user.setDefaultSignImageNumber(normalizeDefaultSignImageNumber(user, signImageNumber));
     }
 
     @Transactional
@@ -893,7 +944,39 @@ public class UserService {
             throw new EsupSignatureRuntimeException("Le numéro de téléphone est déjà présent dans la base");
         } else {
             user.setPhone(phoneNormalized);
+            validateUserForPersistence(user, "updatePhone");
         }
+    }
+
+    public void validateUserForPersistence(User user, String context) {
+        User userToValidate = user == null ? null : (User) Hibernate.unproxy(user);
+        if (userToValidate != null && UserType.system.equals(userToValidate.getUserType())) {
+            return;
+        }
+        Set<ConstraintViolation<User>> violations = validator.validate(userToValidate);
+        if (violations.isEmpty()) {
+            return;
+        }
+        violations.stream()
+                .sorted(Comparator.comparing(v -> v.getPropertyPath().toString()))
+                .forEach(violation -> logger.error(
+                        "Validation utilisateur en échec avant persistence [context={}, field={}, message={}, length={}, max={}]",
+                        context,
+                        violation.getPropertyPath(),
+                        violation.getMessage(),
+                        getInvalidValueLength(violation),
+                        violation.getConstraintDescriptor().getAttributes().get("max")
+                ));
+        ConstraintViolation<User> violation = violations.iterator().next();
+        throw new EsupSignatureRuntimeException("Champ utilisateur invalide : " + violation.getPropertyPath() + " - " + violation.getMessage());
+    }
+
+    private Integer getInvalidValueLength(ConstraintViolation<User> violation) {
+        Object invalidValue = violation.getInvalidValue();
+        if (invalidValue instanceof String value) {
+            return value.length();
+        }
+        return null;
     }
 
     public List<String> getAllRoles() {
@@ -925,6 +1008,30 @@ public class UserService {
 
     public List<User> getByManagersRolesUsers() {
         return userRepository.findByManagersRolesNotNull();
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, List<User>> getRoleManagersMap() {
+        return groupRoleManagers(userRepository.findAllRoleManagers());
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, List<User>> getRoleManagersMap(List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return new LinkedHashMap<>();
+        }
+        return groupRoleManagers(userRepository.findRoleManagersByRoles(roles));
+    }
+
+    private Map<String, List<User>> groupRoleManagers(List<RoleManagerProjectionDto> roleManagers) {
+        return roleManagers.stream()
+                .sorted(Comparator.comparing(RoleManagerProjectionDto::role)
+                        .thenComparing(dto -> dto.user().getEmail(), Comparator.nullsLast(String::compareToIgnoreCase)))
+                .collect(Collectors.groupingBy(
+                RoleManagerProjectionDto::role,
+                LinkedHashMap::new,
+                Collectors.mapping(RoleManagerProjectionDto::user, Collectors.toList())
+        ));
     }
 
     @Transactional
@@ -997,12 +1104,13 @@ public class UserService {
     @Transactional
     public InputStream getFavoriteImage(String eppn) throws IOException {
         User user = getByEppn(eppn);
-        if(user.getDefaultSignImageNumber() == 999998) {
+        int defaultSignImageNumber = normalizeDefaultSignImageNumber(user, user.getDefaultSignImageNumber());
+        if(defaultSignImageNumber == DEFAULT_GENERATED_SIGN_IMAGE_NUMBER) {
             return getDefaultImage(eppn);
-        } else if (user.getDefaultSignImageNumber() == 999997) {
+        } else if (defaultSignImageNumber == DEFAULT_PARAPHE_SIGN_IMAGE_NUMBER) {
             return getDefaultParaphe(eppn);
         }
-        return user.getSignImages().get(user.getDefaultSignImageNumber()).getInputStream();
+        return user.getSignImages().get(defaultSignImageNumber).getInputStream();
     }
 
     @Transactional
@@ -1033,8 +1141,9 @@ public class UserService {
 
     @Transactional
     public List<String> getManagersRoles(String authUserEppn) {
-        User user = getByEppn(authUserEppn);
-        return user.getManagersRoles().stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        return userRepository.findManagersRolesByEppn(authUserEppn).stream()
+                .sorted(Comparator.naturalOrder())
+                .toList();
     }
 
     @Transactional
@@ -1051,6 +1160,7 @@ public class UserService {
         user.getSignImages().clear();
         user.setKeystore(null);
         user.setPhone("");
+        user.getTransmittedSignRequestIds().clear();
         user.getRoles().clear();
     }
 
@@ -1144,6 +1254,7 @@ public class UserService {
     public void renewToken(String userEppn) {
         User user = getByEppn(userEppn);
         user.setAccessToken(UUID.randomUUID().toString());
+        validateUserForPersistence(user, "renewToken");
     }
 
     @Transactional
@@ -1155,6 +1266,9 @@ public class UserService {
                     Arrays.asList(objectMapper.readValue(signRequestParamsJsonString, SignRequestParams[].class))
             );
             for (SignRequestParams signRequestParams : signRequestParamses) {
+                if(signRequestParams.getRecipient() == null && signRequestParams.getRecipientId() != null) {
+                    signRequestParams.setRecipient(recipientRepository.findById(signRequestParams.getRecipientId()).orElse(null));
+                }
                 if(signRequestParams.getImageBase64() != null) {
                     try {
                         user.getSignImages().add(documentService.createDocument(fileService.base64Transparence(signRequestParams.getImageBase64()), user, user.getEppn() + "_sign.png", "image/png"));

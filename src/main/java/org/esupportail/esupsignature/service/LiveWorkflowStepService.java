@@ -2,8 +2,8 @@ package org.esupportail.esupsignature.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
 import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.SignLevel;
 import org.esupportail.esupsignature.entity.enums.SignType;
@@ -100,6 +100,9 @@ public class LiveWorkflowStepService {
 
     public LiveWorkflowStep cloneLiveWorkflowStep(SignBook signBook, WorkflowStep workflowStep, LiveWorkflowStep step) throws EsupSignatureException {
         LiveWorkflowStep liveWorkflowStep = new LiveWorkflowStep();
+        if (workflowStep == null) {
+            workflowStep = step.getWorkflowStep();
+        }
         liveWorkflowStep.setWorkflowStep(workflowStep);
         if(StringUtils.hasText(step.getDescription())) {
             liveWorkflowStep.setDescription(step.getDescription());
@@ -154,6 +157,7 @@ public class LiveWorkflowStepService {
                             userService.updatePhone(recipientUser.getEppn(), recipientWsDto.getPhone());
                         }
                         recipientUser.setForceSms(recipientWsDto.getForceSms() != null && recipientWsDto.getForceSms());
+                        userService.validateUserForPersistence(recipientUser, "addRecipientsToWorkflowStep");
                     }
                 }
             }

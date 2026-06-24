@@ -12,6 +12,7 @@ import org.esupportail.esupsignature.entity.*;
 import org.esupportail.esupsignature.entity.enums.ActionType;
 import org.esupportail.esupsignature.repository.AuditStepRepository;
 import org.esupportail.esupsignature.repository.AuditTrailRepository;
+import org.esupportail.esupsignature.repository.UserRepository;
 import org.esupportail.esupsignature.service.utils.file.FileService;
 import org.esupportail.esupsignature.service.utils.sign.ValidationService;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AuditTrailService {
@@ -56,7 +58,9 @@ public class AuditTrailService {
 
     private final ValidationService validationService;
 
-    public AuditTrailService(AuditTrailRepository auditTrailRepository, AuditStepRepository auditStepRepository, UserService userService, FileService fileService, LogService logService, TemplateEngine templateEngine, ValidationService validationService) {
+    private final UserRepository userRepository;
+
+    public AuditTrailService(AuditTrailRepository auditTrailRepository, AuditStepRepository auditStepRepository, UserService userService, FileService fileService, LogService logService, TemplateEngine templateEngine, ValidationService validationService, UserRepository userRepository) {
         this.auditTrailRepository = auditTrailRepository;
         this.auditStepRepository = auditStepRepository;
         this.userService = userService;
@@ -64,6 +68,7 @@ public class AuditTrailService {
         this.logService = logService;
         this.templateEngine = templateEngine;
         this.validationService = validationService;
+        this.userRepository = userRepository;
     }
 
     public AuditTrail create(String token) {
@@ -82,6 +87,7 @@ public class AuditTrailService {
         auditTrail.setDocumentId(document.getId().toString());
     }
 
+    @Transactional
     public void addAuditStep(String token, String userEppn, String signId, String timeStampId, String certificat, String timeStampCertificat, Date timeStampDate, Boolean allScrolled, Integer page, Integer posX, Integer posY) {
         AuditTrail auditTrail = auditTrailRepository.findByToken(token);
         if(auditTrail == null) auditTrail = create(token);
@@ -128,17 +134,33 @@ public class AuditTrailService {
 
     @Transactional
     public AuditTrail getAuditTrailFromCheksum(String checkSum) {
-        return auditTrailRepository.findByDocumentCheckSum(checkSum);
+        return initializeAuditTrail(auditTrailRepository.findByDocumentCheckSum(checkSum));
     }
 
     @Transactional
     public AuditTrail getAuditTrailByToken(String token) {
-        return auditTrailRepository.findByToken(token);
+        return initializeAuditTrail(auditTrailRepository.findByToken(token));
     }
 
     @Transactional
     public AuditTrail getAuditTrailByDocumentId(String id) {
-        return auditTrailRepository.findByDocumentId(id);
+        return initializeAuditTrail(auditTrailRepository.findByDocumentId(id));
+    }
+
+    private AuditTrail initializeAuditTrail(AuditTrail auditTrail) {
+        if (auditTrail == null) {
+            return null;
+        }
+        auditTrail.getAuditSteps().forEach(auditStep -> {
+            auditStep.getId();
+            if (auditStep.getAuthenticationDetails() != null) {
+                auditStep.getAuthenticationDetails().size();
+            }
+            if (auditStep.getSignRequestParams() != null) {
+                auditStep.getSignRequestParams().getId();
+            }
+        });
+        return auditTrail;
     }
 
 
@@ -199,24 +221,36 @@ public class AuditTrailService {
     }
 
 
-    public List<User> checkUserResponseSigned(SignRequest signRequest) {
-        List<User> usersHasSigned = new ArrayList<>();
-        for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
-            if (recipientActionEntry.getValue().getActionType().equals(ActionType.signed)) {
-                usersHasSigned.add(recipientActionEntry.getKey().getUser());
-            }
-        }
-        return usersHasSigned;
+    @Transactional(readOnly = true)
+    public List<org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto> checkUserResponseSigned(SignRequest signRequest) {
+        return resolveUsersProjectionFromRecipientActions(signRequest, ActionType.signed);
     }
 
-    public List<User> checkUserResponseRefused(SignRequest signRequest) {
-        List<User> usersHasRefused = new ArrayList<>();
-        for(Map.Entry<Recipient, Action> recipientActionEntry : signRequest.getRecipientHasSigned().entrySet()) {
-            if (recipientActionEntry.getValue().getActionType().equals(ActionType.refused)) {
-                usersHasRefused.add(recipientActionEntry.getKey().getUser());
-            }
+    @Transactional(readOnly = true)
+    public List<org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto> checkUserResponseRefused(SignRequest signRequest) {
+        return resolveUsersProjectionFromRecipientActions(signRequest, ActionType.refused);
+    }
+
+    private List<org.esupportail.esupsignature.dto.projection.jpa.UserProjectionDto> resolveUsersProjectionFromRecipientActions(SignRequest signRequest, ActionType actionType) {
+        if (signRequest == null || signRequest.getRecipientHasSigned() == null || signRequest.getRecipientHasSigned().isEmpty()) {
+            return List.of();
         }
-        return usersHasRefused;
+
+        List<Long> userIds = signRequest.getRecipientHasSigned().entrySet().stream()
+                .filter(entry -> entry.getValue() != null && actionType.equals(entry.getValue().getActionType()))
+                .map(Map.Entry::getKey)
+                .map(Recipient::getUser)
+                .filter(Objects::nonNull)
+                .map(User::getId) // safe on Hibernate proxies
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+
+        return userRepository.findUsersDtoByIdIn(userIds);
     }
 
     public void createSignAuditStep(SignRequest signRequest, String userEppn, Document signedDocument, boolean isViewed) {

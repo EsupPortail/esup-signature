@@ -52,6 +52,7 @@ import org.apache.xmpbox.xml.XmpSerializer;
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.pdf.PdfConfig;
 import org.esupportail.esupsignature.entity.*;
+import org.esupportail.esupsignature.entity.enums.FieldType;
 import org.esupportail.esupsignature.entity.enums.SignType;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.LogService;
@@ -161,7 +162,9 @@ public class PdfService {
             if(signRequestParams.getAllPages() != null && signRequestParams.getAllPages() && signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getMultiSign()) {
                 int i = 1;
                 for(PDPage pdPage : pdDocument.getPages()) {
-                    if(i != signRequestParams.getSignPageNumber() || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.signature)) {
+                    if(i != signRequestParams.getSignPageNumber()
+                            || signRequest.getParentSignBook().getLiveWorkflow().getCurrentStep().getSignType().equals(SignType.signature)
+                            || Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         stampImageToPage(signRequest, signRequestParams, user, signType, pdfParameters, pdDocument, pdPage, i, date, otp, endingWithCert, ocg);
                     }
                     i++;
@@ -189,12 +192,13 @@ public class PdfService {
         if (signRequestParams.getSignImageNumber() < 0) {
             signImage = fileService.getFaImageByIndex(signRequestParams.getSignImageNumber());
         } else {
-            if ((signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage())
+            boolean isParaph = Objects.equals(signRequestParams.getSignImageNumber(), 999997);
+            if (((signType.equals(SignType.visa) || signType.equals(SignType.hiddenVisa) || !signRequestParams.getAddImage()) && !isParaph)
                     && (!StringUtils.hasText(signRequestParams.getTextPart()) || signRequestParams.getAddExtra()) ) {
                 signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
             } else if (signRequestParams.getAddExtra()) {
                 if(signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() >= user.getSignImages().size()) {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
@@ -206,7 +210,7 @@ public class PdfService {
                 if(user.getSignImages().size() >= signRequestParams.getSignImageNumber() + 1) {
                     signImage = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
                 } else {
-                    if(signRequestParams.getSignImageNumber() >= user.getSignImages().size() + 1 && signRequestParams.getSignImageNumber() != 999998) {
+                    if(Objects.equals(signRequestParams.getSignImageNumber(), 999997)) {
                         signImage = fileService.addTextToImage(fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
                     } else {
                         signImage = fileService.addTextToImage(fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true), signRequestParams, signType, user, newDate, otp);
@@ -223,23 +227,22 @@ public class PdfService {
         float tx = 0;
         float ty = 0;
         Float fixFactor = globalProperties.getFixFactor();
+        PDRectangle pageBox = pdPage.getCropBox();
+        float renderedSignWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
+        float renderedSignHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
         float xAdjusted = signRequestParams.getxPos() * fixFactor;
         float yAdjusted;
 
         if (pdfParameters.getRotation() == 0) {
-            yAdjusted = pdfParameters.getHeight() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = 0;
             ty = 0;
         } else if (pdfParameters.getRotation() == 180) {
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() * fixFactor + signRequestParams.getSignHeight() * signRequestParams.getSignScale());
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             tx = pdfParameters.getWidth();
             ty = pdfParameters.getHeight();
         } else {
-            yAdjusted = pdfParameters.getWidth() - signRequestParams.getyPos() * fixFactor
-                    - signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor
-                    + pdPage.getCropBox().getLowerLeftY();
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getWidth() - signRequestParams.getyPos() * fixFactor - renderedSignHeight;
             if (pdfParameters.getWidth() > pdfParameters.getHeight()) {
                 ty = pdfParameters.getHeight();
             } else {
@@ -257,17 +260,29 @@ public class PdfService {
         contentStream.beginMarkedContent(COSName.OC, ocg);
 
         if (signImage != null) {
+            validateSignatureBounds(pageBox, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight, pageNumber);
             logger.info("stamp image to " + Math.round(xAdjusted) + ", " + Math.round(yAdjusted) + " on page : " + pageNumber);
             BufferedImage bufferedSignImage = ImageIO.read(signImage);
             ByteArrayOutputStream signImageByteArrayOutputStream = new ByteArrayOutputStream();
             ImageIO.write(bufferedSignImage, "png", signImageByteArrayOutputStream);
             PDImageXObject pdImage = PDImageXObject.createFromByteArray(pdDocument, signImageByteArrayOutputStream.toByteArray(), "sign.png");
-            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor);
+            contentStream.drawImage(pdImage, xAdjusted, yAdjusted, renderedSignWidth, renderedSignHeight);
         } else if (StringUtils.hasText(signRequestParams.getTextPart())) {
             float fontSize = signRequestParams.getFontSize() * fixFactor;
             PDFont pdFont = PDType0Font.load(pdDocument, new ClassPathResource("/static/fonts/LiberationSans-Regular.ttf").getInputStream(), true);
             String[] lines = signRequestParams.getTextPart().split("\n", -1);
-            yAdjusted = pdfParameters.getHeight() - (signRequestParams.getyPos() + fontSize);
+            float lineHeight = fontSize * 1.2f;
+            float textHeight = lines.length * lineHeight;
+            float maxWidth = 0;
+            for (String line : lines) {
+                float w = pdFont.getStringWidth(line) / 1000 * fontSize;
+                if (w > maxWidth) {
+                    maxWidth = w;
+                }
+            }
+            yAdjusted = pageBox.getLowerLeftY() + pageBox.getHeight() - (signRequestParams.getyPos() * fixFactor + fontSize);
+            float textBottomY = yAdjusted - textHeight;
+            validateSignatureBounds(pageBox, xAdjusted, textBottomY, maxWidth, textHeight, pageNumber);
             contentStream.beginText();
             contentStream.setFont(pdFont, fontSize);
             contentStream.newLineAtOffset(xAdjusted + 1, yAdjusted - 1);
@@ -281,10 +296,10 @@ public class PdfService {
         contentStream.endMarkedContent();
         contentStream.close();
         if (!StringUtils.hasText(signRequestParams.getTextPart()) && signRequestParams.getSignImageNumber() >= 0 && !endingWithCert) {
-            addLinkInLayer(signRequest, signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor, signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+            addLinkInLayer(signRequest, renderedSignWidth, renderedSignHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
         } else {
-            float signWidth = signRequestParams.getSignWidth() * signRequestParams.getSignScale() * fixFactor;
-            float signHeight = signRequestParams.getSignHeight() * signRequestParams.getSignScale() * fixFactor;
+            float signWidth = renderedSignWidth;
+            float signHeight = renderedSignHeight;
             if (StringUtils.hasText(signRequestParams.getTextPart())) {
                 float fontSize = signRequestParams.getFontSize() * fixFactor;
                 PDFont pdFont = PDType0Font.load(pdDocument,
@@ -307,6 +322,19 @@ public class PdfService {
                 yAdjusted = realY - padding;
             }
             addMetadataAnnotation(signRequest, signWidth, signHeight, user, fixFactor, pdDocument, pdPage, newDate, dateFormat, xAdjusted, yAdjusted, rotation, pdfParameters, ocg);
+        }
+    }
+
+    private void validateSignatureBounds(PDRectangle pageBox, float x, float y, float width, float height, int pageNumber) {
+        float minX = pageBox.getLowerLeftX();
+        float minY = pageBox.getLowerLeftY();
+        float maxX = pageBox.getUpperRightX();
+        float maxY = pageBox.getUpperRightY();
+        boolean outOfBounds = width <= 0 || height <= 0 || x < minX || y < minY || x + width > maxX || y + height > maxY;
+        if (outOfBounds) {
+            throw new EsupSignatureRuntimeException(String.format(Locale.ROOT,
+                    "La signature est hors page (page=%d, x=%.2f, y=%.2f, width=%.2f, height=%.2f, pageWidth=%.2f, pageHeight=%.2f)",
+                    pageNumber, x, y, width, height, pageBox.getWidth(), pageBox.getHeight()));
         }
     }
 
@@ -977,10 +1005,10 @@ public class PdfService {
      * @param pdfFile Le flux du fichier PDF original
      * @param datas Les données à insérer dans le formulaire
      * @param isLastStep Indique si c'est la dernière étape de remplissage
-     * @param isForm Indique si le fichier doit être traité comme un formulaire
+     * @param form Indique si le fichier doit être traité comme un formulaire
      * @return Le fichier PDF modifié en tant que tableau de bytes
      */
-    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, boolean isForm) {
+    public byte[] fill(InputStream pdfFile, Map<String, String> datas, boolean isLastStep, Form form) {
         ByteArrayOutputStream interimOut = new ByteArrayOutputStream();
         try {
             PDDocument pdDocument = Loader.loadPDF(pdfFile.readAllBytes());
@@ -1065,9 +1093,24 @@ public class PdfService {
                             } catch (Exception e) {
                                 logger.warn("error on set value " + filedName + ", cause : " +e.getMessage());
                             }
+                            if(isLastStep && form != null && StringUtils.hasText(value)) {
+                                Field formField = form.getFields().stream().filter(f -> f.getName().equals(filedName)).findFirst().orElse(null);
+                                if(formField != null && formField.getType().equals(FieldType.link)) {
+                                    for (PDAnnotationWidget pdAnnotationWidget : pdField.getWidgets()) {
+                                        PDAnnotationLink pdAnnotationLink = new PDAnnotationLink();
+                                        pdAnnotationLink.setRectangle(pdAnnotationWidget.getRectangle());
+                                        PDActionURI actionURI = new PDActionURI();
+                                        actionURI.setURI(value);
+                                        pdAnnotationLink.setAction(actionURI);
+                                        pdAnnotationLink.setPrinted(true);
+                                        int pageNum = pageNrByAnnotDict.getOrDefault(pdField.getPartialName(), 0);
+                                        pdDocument.getPage(pageNum).getAnnotations().add(pdAnnotationLink);
+                                    }
+                                }
+                            }
                         }
                     }
-                    if (!pdField.isReadOnly() && !isForm) {
+                    if (!pdField.isReadOnly() && form != null) {
                         pdField.setReadOnly(true);
                     }
                 }
@@ -1256,7 +1299,8 @@ public class PdfService {
      */
     public PdfParameters getPdfParameters(PDDocument pdDocument, int pageNumber) {
         PDPage pdPage = pdDocument.getPage(pageNumber - 1);
-        return new PdfParameters((int) pdPage.getMediaBox().getWidth(), (int) pdPage.getMediaBox().getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
+        PDRectangle pageBox = pdPage.getCropBox();
+        return new PdfParameters((int) pageBox.getWidth(), (int) pageBox.getHeight(), pdPage.getRotation(), pdDocument.getNumberOfPages());
     }
 
     /**
@@ -1438,6 +1482,148 @@ public class PdfService {
             logger.error("error on get signature field", e);
         }
         return null;
+    }
+
+    public byte[] removeOptionalContentAfterStep(byte[] pdfWithOcg, int stepNumber) throws IOException {
+        try (PDDocument doc = Loader.loadPDF(pdfWithOcg)) {
+            PDOptionalContentProperties ocProperties = doc.getDocumentCatalog().getOCProperties();
+            if (ocProperties == null) {
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                doc.save(out);
+                return out.toByteArray();
+            }
+
+            List<String> applicationLayerNames = getApplicationLayerNamesInOrder(doc);
+            Set<String> hiddenLayerNames = new HashSet<>();
+            for (int i = 0; i < applicationLayerNames.size(); i++) {
+                boolean displayLayer = i < stepNumber;
+                ocProperties.setGroupEnabled(applicationLayerNames.get(i), displayLayer);
+                if (!displayLayer) {
+                    hiddenLayerNames.add(applicationLayerNames.get(i));
+                }
+            }
+
+            for (PDPage page : doc.getPages()) {
+                rewritePageAnnotationsWithoutHiddenLayers(page, hiddenLayerNames);
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            doc.save(out);
+            return out.toByteArray();
+        }
+    }
+
+    private List<String> getOptionalContentGroupNamesInOrder(PDDocument document) {
+        List<String> groupNames = new ArrayList<>();
+        COSBase ocgs = document.getDocumentCatalog().getOCProperties().getCOSObject().getDictionaryObject(COSName.OCGS);
+        if (ocgs instanceof COSArray optionalContentGroups) {
+            for (COSBase ocg : optionalContentGroups) {
+                if (ocg instanceof COSDictionary optionalContentGroupDictionary) {
+                    String name = optionalContentGroupDictionary.getString(COSName.NAME);
+                    if (StringUtils.hasText(name)) {
+                        groupNames.add(name.trim());
+                    }
+                }
+            }
+        }
+        if (groupNames.isEmpty()) {
+            groupNames.addAll(Arrays.asList(document.getDocumentCatalog().getOCProperties().getGroupNames()));
+        }
+        return groupNames;
+    }
+
+    private List<String> getApplicationLayerNamesInOrder(PDDocument document) {
+        return getOptionalContentGroupNamesInOrder(document).stream()
+                .filter(this::isApplicationLayerName)
+                .toList();
+    }
+
+    private boolean isApplicationLayerName(String layerName) {
+        if (!StringUtils.hasText(layerName)) {
+            return false;
+        }
+        return layerName.matches("layer_\\d+")
+                || layerName.matches("sign_\\d+_.*")
+                || layerName.matches("SignStep_\\d+_.*");
+    }
+
+    private void rewritePageAnnotationsWithoutHiddenLayers(PDPage page, Set<String> hiddenLayerNames) throws IOException {
+        List<PDAnnotation> keptAnnotations = new ArrayList<>();
+        for (PDAnnotation annotation : page.getAnnotations()) {
+            if (!isAnnotationInHiddenLayer(annotation, hiddenLayerNames)) {
+                keptAnnotations.add(annotation);
+            }
+        }
+        COSArray annotations = new COSArray();
+        for (PDAnnotation keptAnnotation : keptAnnotations) {
+            annotations.add(keptAnnotation.getCOSObject());
+        }
+        page.getCOSObject().setItem(COSName.ANNOTS, annotations);
+    }
+
+    private boolean isAnnotationInHiddenLayer(PDAnnotation annotation, Set<String> hiddenLayerNames) {
+        if (hiddenLayerNames == null || hiddenLayerNames.isEmpty()) {
+            return false;
+        }
+        Set<String> annotationLayerIds = getAnnotationLayerIds(annotation);
+        return annotationLayerIds.stream().anyMatch(hiddenLayerNames::contains);
+    }
+
+    private Set<String> getAnnotationLayerIds(PDAnnotation annotation) {
+        Set<String> layerIds = new HashSet<>();
+        if (annotation == null) {
+            return layerIds;
+        }
+
+        if (StringUtils.hasText(annotation.getAnnotationName())) {
+            layerIds.add(annotation.getAnnotationName().trim());
+        }
+
+        String contents = annotation.getContents();
+        if (StringUtils.hasText(contents)) {
+            Matcher matcher = Pattern.compile("\"layer_id\"\\s*:\\s*\"([^\"]+)\"").matcher(contents);
+            while (matcher.find()) {
+                if (StringUtils.hasText(matcher.group(1))) {
+                    layerIds.add(matcher.group(1).trim());
+                }
+            }
+        }
+
+        COSBase optionalContent = annotation.getCOSObject().getDictionaryObject(COSName.OC);
+        collectOptionalContentLayerNames(optionalContent, layerIds);
+
+        return layerIds;
+    }
+
+    private void collectOptionalContentLayerNames(COSBase optionalContent, Set<String> layerIds) {
+        if (optionalContent == null || layerIds == null) {
+            return;
+        }
+
+        if (optionalContent instanceof COSDictionary optionalContentDictionary) {
+            String name = optionalContentDictionary.getString(COSName.NAME);
+            if (StringUtils.hasText(name)) {
+                layerIds.add(name.trim());
+            }
+
+            COSBase ocgs = optionalContentDictionary.getDictionaryObject(COSName.OCGS);
+            if (ocgs != null && ocgs != optionalContent) {
+                collectOptionalContentLayerNames(ocgs, layerIds);
+            }
+
+            COSBase ocg = optionalContentDictionary.getDictionaryObject(COSName.OCG);
+            if (ocg != null && ocg != optionalContent) {
+                collectOptionalContentLayerNames(ocg, layerIds);
+            }
+
+            return;
+        }
+
+        if (optionalContent instanceof COSArray optionalContentArray) {
+            for (COSBase cosBase : optionalContentArray) {
+                collectOptionalContentLayerNames(cosBase, layerIds);
+            }
+        }
     }
 
 //    public InputStream convertDocToPDF(InputStream doc) {

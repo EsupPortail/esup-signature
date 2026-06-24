@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -40,6 +41,10 @@ public class LogoutHandlerImpl implements LogoutHandler {
 
     @Override
     public void logout(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) {
+        boolean isOtpUser = authentication != null
+                && authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch("ROLE_OTP"::equals);
         List<Object> principals = sessionRegistry.getAllPrincipals();
         for (Object principal : principals) {
             if(authentication != null && authentication.getPrincipal().equals(principal)) {
@@ -49,6 +54,15 @@ public class LogoutHandlerImpl implements LogoutHandler {
             }
         }
         try {
+            if (isOtpUser) {
+                ResponseCookie logoutTypeCookie = ResponseCookie.from("logout_user_type", "otp")
+                        .httpOnly(true)
+                        .secure(false)
+                        .path("/")
+                        .sameSite("Lax")
+                        .build();
+                httpServletResponse.addHeader("Set-Cookie", logoutTypeCookie.toString());
+            }
             if(httpServletRequest.getSession().getAttribute("securityServiceName") != null) {
                 String securityServiceName = httpServletRequest.getSession().getAttribute("securityServiceName").toString();
                 String state = UUID.randomUUID().toString();

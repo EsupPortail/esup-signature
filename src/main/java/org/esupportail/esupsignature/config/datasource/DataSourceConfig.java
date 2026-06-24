@@ -3,8 +3,6 @@ package org.esupportail.esupsignature.config.datasource;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -23,8 +21,10 @@ public class DataSourceConfig {
             @Value("${spring.datasource.url}") String url,
             @Value("${spring.datasource.username}") String username,
             @Value("${spring.datasource.password}") String password,
+            @Value("${spring.datasource.hikari.auto-commit}") Boolean autoCommit,
             @Value("${spring.datasource.hikari.maximum-pool-size:30}") int maxPoolSize,
             @Value("${spring.datasource.hikari.minimum-idle:10}") int minIdle,
+            @Value("${spring.datasource.hikari.idle-timeout:600000}") long idleTimeout,
             @Value("${spring.datasource.hikari.connection-timeout:30000}") long connectionTimeout) {
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setPoolName("Main-Hikari-Pool");
@@ -32,8 +32,10 @@ public class DataSourceConfig {
         hikariConfig.setJdbcUrl(url);
         hikariConfig.setUsername(username);
         hikariConfig.setPassword(password);
+        hikariConfig.setAutoCommit(autoCommit);
         hikariConfig.setMaximumPoolSize(maxPoolSize);
         hikariConfig.setMinimumIdle(minIdle);
+        hikariConfig.setIdleTimeout(idleTimeout);
         hikariConfig.setConnectionTimeout(connectionTimeout);
         return new HikariDataSource(hikariConfig);
     }

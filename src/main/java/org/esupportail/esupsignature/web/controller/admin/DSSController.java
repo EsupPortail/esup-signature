@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.esupportail.esupsignature.dss.config.DSSBeanConfig;
 import org.esupportail.esupsignature.dss.service.DSSService;
 import org.esupportail.esupsignature.dss.service.KeystoreService;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
 
 import java.util.Collections;
 import java.util.List;
@@ -93,6 +97,12 @@ public class DSSController {
 		}
 		model.addAttribute("currentOjUrl", dssService.getCurrentOjUrl());
 		model.addAttribute("actualOjUrl", dssService.getActualOjUrl());
+		try {
+			model.addAttribute("ojKeystorePath", dssService.getOjKeystorePath());
+		} catch (IOException e) {
+			logger.error("Unable to resolve DSS OJ keystore path", e);
+			model.addAttribute("ojKeystorePath", "-");
+		}
 		return "admin/dss/tl-summary";
 	}
 
@@ -139,8 +149,14 @@ public class DSSController {
 	}
 
 	@GetMapping(value = "/refresh")
-	public String refresh() {
-		dssService.refreshOj();
+	public String refresh(RedirectAttributes redirectAttributes) {
+		try {
+			dssService.refreshOj();
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("success", "DSS réactualisé"));
+		} catch (IOException e) {
+			logger.error("Error refreshing DSS", e);
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Erreur lors de la réactualisation DSS : <br>" + e.getMessage()));
+		}
 		return "redirect:/admin/dss";
 	}
 

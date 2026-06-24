@@ -1,6 +1,6 @@
 global:
-    root-url: http://localhost:8080
-    domain: univ-ville.fr
+    root-url: http://localhost:7070
+    domain: example.org
     nexu-url: http://localhost:9795
     nexu-version: 1.23-SNAPSHOT
     nexu-download-url: /downloads/nexu-bundle.zip
@@ -55,7 +55,7 @@ spring:
     data:
         ldap:
             repositories:
-                enabled: true
+                enabled: false
     datasource:
         driver-class-name: org.postgresql.Driver
         url: jdbc:postgresql://localhost:5433/esupsignature
@@ -75,10 +75,10 @@ spring:
         show-sql: false
         open-in-view: false
     ldap:
-    #        base: dc=univ-ville,dc=fr
-    #        password: ldap-password
-    #        urls: ldap://ldap.univ-ville.fr
-    #        username: cn=consult,dc=univ-ville,dc=fr
+        base: dc=example,dc=org
+        password: admin
+        urls: ldap://localhost:3980
+        username: cn=admin,dc=example,dc=org
     #mail:
     #    host: smtp.univ-ville.fr
     messages:
@@ -108,15 +108,25 @@ spring:
         static-path-pattern: /**
 
 ldap:
-#    search-base: ou=people
-#    group-search-base: ou=groups
-#    group-search-filter: member={0}
-#    user-id-search-filter: (uid={0})
-#    member-search-filter: (&(uid={0})({1}))
-#    mapping-filters-groups:
-#        student : "(eduPersonAffiliation:=student)"
-#        staff : "(eduPersonAffiliation:=staff)"
-#        affiliate : "(eduPersonAffiliation:=affiliate)"
+    search-base: ou=people
+    user-object-classes: inetOrgPerson
+    group-object-classes: groupOfNames
+    ou-object-classes: organizationalUnit
+    users-search-filter: (&(|(displayName={0}*)(cn={0}*)(uid={0})(mail={0}*))(mail=*))
+    group-search-base: ou=groups
+    group-search-filter: member={0}
+    all-groups-search-filter: (|(cn=*{0}*))
+    all-aliases-search-filter: (mail={0})
+    user-id-search-filter: (uid={0})
+    cas-user-search-filter: (uid={0})
+    user-eppn-search-filter: (mail={0})
+    user-mail-search-filter: (mail={0})
+    ou-search-base: ou=structures
+    ou-search-filter: (ou={0})
+    member-search-filter: (&(uid={0})({1}))
+    # Comptes LDAP de test bootstrapés par src/test/resources/docker/ldap-bootstrap/01-bootstrap.ldif
+    # - uid=0,ou=people,dc=example,dc=org / mot de passe: password
+    # - uid=testadmin,ou=people,dc=example,dc=org / mot de passe: password
 
 mail:
     from: no-reply.esup-signature@univ-ville.fr
@@ -162,17 +172,10 @@ pdf:
 
 security:
     cas:
-    #        service: https://esup-signature.univ-ville.fr/login/cas
-    #        title: Compte Université (CAS)
-    #        url: https://cas.univ-ville.fr
-    shib:
-        dev:
-            enable: true
-        credentials-request-header: MEMBER
-        idp-url: https://idp.univ-ville.fr
-        principal-request-header: REMOTE_USER
-        title: Compte d’un autre établissement (Shibboleth)
-        domains-white-list-url: https://eduspot.renater.fr/eduspot/whitelist-eduspot.txt
+        service: http://localhost:7070/login/cas
+        title: Compte Université (CAS de test)
+        url: http://localhost:7080/cas
+    # Shibboleth désactivé en test : on valide le flux CAS + LDAP sur 7070/7080.
     web:
         group-to-role-filter-pattern: for.esup-signature.role.(\w*)
         mapping-groups-roles:

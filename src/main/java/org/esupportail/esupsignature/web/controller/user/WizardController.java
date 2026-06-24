@@ -1,28 +1,32 @@
 package org.esupportail.esupsignature.web.controller.user;
 
-import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.esupportail.esupsignature.dto.js.JsMessage;
-import org.esupportail.esupsignature.dto.json.RecipientWsDto;
-import org.esupportail.esupsignature.dto.json.WorkflowStepDto;
-import org.esupportail.esupsignature.entity.Form;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
+import org.esupportail.esupsignature.dto.ws.RecipientWsDto;
+import org.esupportail.esupsignature.dto.ws.WorkflowStepDto;
+import org.esupportail.esupsignature.entity.LiveWorkflowStep;
 import org.esupportail.esupsignature.entity.SignBook;
 import org.esupportail.esupsignature.entity.Workflow;
+import org.esupportail.esupsignature.entity.WorkflowStep;
 import org.esupportail.esupsignature.exception.EsupSignatureException;
 import org.esupportail.esupsignature.exception.EsupSignatureFsException;
 import org.esupportail.esupsignature.exception.EsupSignatureRuntimeException;
 import org.esupportail.esupsignature.service.FormService;
+import org.esupportail.esupsignature.service.LiveWorkflowStepService;
 import org.esupportail.esupsignature.service.SignBookService;
 import org.esupportail.esupsignature.service.SignRequestService;
+import org.esupportail.esupsignature.service.WorkflowStepService;
 import org.esupportail.esupsignature.service.WorkflowService;
+import org.esupportail.esupsignature.service.ui.UiFetchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -41,20 +45,25 @@ public class WizardController {
 
     private static final Logger logger = LoggerFactory.getLogger(WizardController.class);
 
-    @Resource
-    private WorkflowService workflowService;
+    private final WorkflowService workflowService;
+    private final UiFetchService uiFetchService;
+    private final FormService formService;
+    private final SignBookService signBookService;
+    private final SignRequestService signRequestService;
+    private final TemplateEngine templateEngine;
+    private final WorkflowStepService workflowStepService;
+    private final LiveWorkflowStepService liveWorkflowStepService;
 
-    @Resource
-    private FormService formService;
-
-    @Resource
-    private SignBookService signBookService;
-
-    @Resource
-    private SignRequestService signRequestService;
-
-    @Resource
-    private TemplateEngine templateEngine;
+    public WizardController(WorkflowService workflowService, UiFetchService uiFetchService, FormService formService, SignBookService signBookService, SignRequestService signRequestService, TemplateEngine templateEngine, WorkflowStepService workflowStepService, LiveWorkflowStepService liveWorkflowStepService) {
+        this.workflowService = workflowService;
+        this.uiFetchService = uiFetchService;
+        this.formService = formService;
+        this.signBookService = signBookService;
+        this.signRequestService = signRequestService;
+        this.templateEngine = templateEngine;
+        this.workflowStepService = workflowStepService;
+        this.liveWorkflowStepService = liveWorkflowStepService;
+    }
 
     @PreAuthorize("@preAuthorizeService.notInShare(#userEppn, #authUserEppn) && hasRole('ROLE_USER')")
     @GetMapping(value = "/wiz-start-sign/{type}", produces = "text/html")
@@ -62,8 +71,12 @@ public class WizardController {
                                @RequestParam(value = "workflowId", required = false) Long workflowId, Model model) {
         String modalTile = "Création d'une nouvelle demande personnalisée";
         if(workflowId != null) {
-            Workflow workflow = workflowService.getById(workflowId);
-            workflow.setMessageToDisplay(workflowService.getHelpMessage(userEppn, workflow));
+            if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                model.addAttribute("modalTitle", "Erreur");
+                model.addAttribute("errorMessage", "Circuit non autorisé");
+                return "user/wizard/wiz-not-autorized";
+            }
+            var workflow = uiFetchService.buildWorkflowWizardView(workflowId, userEppn);
             modalTile = "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription();
             model.addAttribute("workflow", workflow);
         }
@@ -81,11 +94,11 @@ public class WizardController {
     @GetMapping(value = "/wiz-start-form/{formId}", produces = "text/html")
     public String wizStartForm(@PathVariable("formId") Long formId, @ModelAttribute("userEppn") String userEppn, @ModelAttribute("authUserEppn") String authUserEppn, Model model) {
         if(formService.isFormAuthorized(userEppn, authUserEppn, formId)) {
-            Form form = formService.getById(formId);
-            form.setMessageToDisplay(formService.getHelpMessage(userEppn, form));
-            model.addAttribute("form", form);
+            model.addAttribute("form", uiFetchService.buildStartFormWizardView(formId, userEppn));
             return "user/wizard/wiz-start-form";
         } else {
+            model.addAttribute("modalTitle", "Erreur");
+            model.addAttribute("errorMessage", "Formulaire non autorisé");
             return "user/wizard/wiz-not-autorized";
         }
     }
@@ -154,6 +167,9 @@ public class WizardController {
         Workflow workflow = null;
         String name = "Demande personnalisée";
         if (workflowId != null) {
+            if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                return ResponseEntity.status(403).build();
+            }
             workflow = workflowService.getById(workflowId);
             name = workflow.getDescription();
         }
@@ -165,6 +181,7 @@ public class WizardController {
     @PostMapping(value = "/wiz-new-step/{signBookId}")
     public String wizWorkflowSignNewStep(@ModelAttribute("userEppn") String userEppn,
                        @PathVariable("signBookId") Long signBookId,
+                       @ModelAttribute("authUserEppn") String authUserEppn,
                        @RequestParam(value = "workflowId", required = false) Long workflowId,
                        @RequestBody List<WorkflowStepDto> steps,
                        Model model) {
@@ -173,12 +190,20 @@ public class WizardController {
         if(signBook.getCreateBy().getEppn().equals(userEppn)) {
             model.addAttribute("signBook", signBook);
             if (workflowId != null && workflowId != 0) {
+                if(!workflowService.isWorkflowAuthorized(userEppn, authUserEppn, workflowId)) {
+                    model.addAttribute("modalTitle", "Erreur");
+                    model.addAttribute("errorMessage", "Circuit non autorisé");
+                    return "user/wizard/wiz-not-autorized";
+                }
                 signBookService.initSignBook(signBookId, workflowId, userEppn);
+                var workflow = uiFetchService.buildWorkflowView(workflowId, userEppn);
+                model.addAttribute("workflow", workflow);
                 model.addAttribute("isTempUsers", signBookService.isTempUsers(signBook.getId()));
                 model.addAttribute("workflowId", workflowId);
-                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + signBook.getLiveWorkflow().getWorkflow().getDescription());
+                model.addAttribute("modalTitle", "Création d'une nouvelle demande dans le circuit : " + workflow.getDescription());
                 return "user/wizard/wiz-setup-workflow";
             }
+            model.addAttribute("signBook", signBookService.getByIdWithWizardContext(signBookId));
         }
         return "user/wizard/wiz-new-step";
     }
@@ -205,7 +230,8 @@ public class WizardController {
                 }
                 signBookService.addNewStepToSignBook(signBookId, steps, authUserEppn);
             }
-            model.addAttribute("signBook", signBook);
+            SignBook signBookForView = end ? signBookService.getById(signBookId) : signBookService.getByIdWithWizardContext(signBookId);
+            model.addAttribute("signBook", signBookForView);
             model.addAttribute("close", close);
             model.asMap().forEach(context::setVariable);
             if(end) {
@@ -219,6 +245,39 @@ public class WizardController {
         return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-step", context));
     }
 
+    @Transactional
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#signBookId, #userEppn)")
+    @PostMapping(value = "/wiz-delete-step-signbook/{signBookId}/{stepId}", produces = "text/html")
+    @ResponseBody
+    public ResponseEntity<String> wizWorkflowSignDeleteStep(@ModelAttribute("userEppn") String userEppn,
+                                                            @PathVariable("signBookId") Long signBookId,
+                                                            @PathVariable("stepId") Long stepId,
+                                                            Model model,
+                                                            HttpServletRequest request,
+                                                            HttpServletResponse response) {
+        JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
+        IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
+        final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
+        SignBook signBook = signBookService.getById(signBookId);
+        if (signBook != null && signBook.getCreateBy().getEppn().equals(userEppn) && signBook.getLiveWorkflow() != null) {
+            LiveWorkflowStep liveWorkflowStep = signBook.getLiveWorkflow().getLiveWorkflowSteps().stream()
+                    .filter(step -> step.getId().equals(stepId))
+                    .findFirst()
+                    .orElse(null);
+            if (liveWorkflowStep != null) {
+                signBook.getLiveWorkflow().getLiveWorkflowSteps().remove(liveWorkflowStep);
+                if (signBook.getLiveWorkflow().getCurrentStep() != null && stepId.equals(signBook.getLiveWorkflow().getCurrentStep().getId())) {
+                    signBook.getLiveWorkflow().setCurrentStep(null);
+                }
+                liveWorkflowStepService.delete(liveWorkflowStep);
+            }
+            model.addAttribute("signBook", signBookService.getByIdWithWizardContext(signBookId));
+            model.asMap().forEach(context::setVariable);
+        }
+        return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-step", context));
+    }
+
+    @PreAuthorize("@preAuthorizeService.signBookCreator(#id, #userEppn)")
     @PostMapping(value = "/wiz-save-signbook/{id}")
     public String saveWorkflow(@ModelAttribute("userEppn") String userEppn,
                                @PathVariable("id") Long id,
@@ -236,6 +295,7 @@ public class WizardController {
         return "user/wizard/wiz-end";
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#workflowId, #userEppn)")
     @PostMapping(value = "/wiz-add-step-workflow/{workflowId}", produces = "text/html")
     @ResponseBody
     public ResponseEntity<String> wizXWorkflow(@PathVariable("workflowId") Long workflowId,
@@ -246,12 +306,12 @@ public class WizardController {
         JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
         IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
         final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
-        Workflow workflow;
-        workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
-        model.addAttribute("workflow", workflow);
+        Workflow workflow = workflowService.addStepToWorkflow(workflowId, steps.get(0), userEppn);
+        var workflowView = uiFetchService.buildWorkflowView(workflow.getId(), userEppn);
+        model.addAttribute("workflow", workflowView);
         model.asMap().forEach(context::setVariable);
         if(end != null && end) {
-            if(workflow!=null && !workflow.getWorkflowSteps().isEmpty()) {
+            if(workflowView != null && !workflowView.getWorkflowSteps().isEmpty()) {
                 return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-save-workflow", context));
             }else {
                 return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-end", context));
@@ -260,6 +320,36 @@ public class WizardController {
         return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-workflow-step", context));
     }
 
+    @Transactional
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#workflowId, #userEppn)")
+    @PostMapping(value = "/wiz-delete-step-workflow/{workflowId}/{stepId}", produces = "text/html")
+    @ResponseBody
+    public ResponseEntity<String> wizDeleteWorkflowStep(@PathVariable("workflowId") Long workflowId,
+                                                        @PathVariable("stepId") Long stepId,
+                                                        @ModelAttribute("userEppn") String userEppn,
+                                                        Model model,
+                                                        HttpServletRequest request,
+                                                        HttpServletResponse response) {
+        JakartaServletWebApplication jakartaServletWebApplication = JakartaServletWebApplication.buildApplication(request.getServletContext());
+        IServletWebExchange iServletWebExchange = jakartaServletWebApplication.buildExchange(request, response);
+        final WebContext context = new WebContext(iServletWebExchange, Locale.FRENCH);
+        Workflow workflow = workflowService.getById(workflowId);
+        if (workflow != null && workflow.getCreateBy().getEppn().equals(userEppn)) {
+            WorkflowStep workflowStep = workflow.getWorkflowSteps().stream()
+                    .filter(step -> step.getId().equals(stepId))
+                    .findFirst()
+                    .orElse(null);
+            if (workflowStep != null) {
+                workflow.getWorkflowSteps().remove(workflowStep);
+                workflowStepService.delete(workflowStep);
+            }
+            model.addAttribute("workflow", uiFetchService.buildWorkflowView(workflowId, userEppn));
+            model.asMap().forEach(context::setVariable);
+        }
+        return ResponseEntity.ok().body(templateEngine.process("user/wizard/wiz-new-workflow-step", context));
+    }
+
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @GetMapping(value = "/wiz-save-workflow/{id}")
     public String wiz5Workflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id,
                                Model model) {
@@ -270,6 +360,7 @@ public class WizardController {
         return "user/wizard/wiz-save-workflow";
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @PostMapping(value = "/wiz-save-workflow/{id}")
     @ResponseBody
     public ResponseEntity<Void> wizSaveWorkflow(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, @RequestParam(name="name") String name,
@@ -288,8 +379,10 @@ public class WizardController {
                                         @RequestParam(value = "pending", required = false) Boolean pending,
                                         @RequestParam(value = "sendEmailAlert", required = false, defaultValue = "true") Boolean sendEmailAlert) throws MessagingException, EsupSignatureRuntimeException {
         if (sendEmailAlert == null) sendEmailAlert = true;
+        List<WorkflowStepDto> workflowSteps = steps == null ? List.of() : steps;
+        List<String> targetEmails = workflowSteps.isEmpty() ? List.of() : workflowSteps.get(0).getTargetEmails();
         try {
-            signBookService.initSignBookWorkflow(signBookId, steps, steps.get(0).getTargetEmails(), userEppn, authUserEppn, pending, sendEmailAlert);
+            signBookService.initSignBookWorkflow(signBookId, workflowSteps, targetEmails, userEppn, authUserEppn, pending, sendEmailAlert);
             if(comment != null && !comment.isEmpty()) {
                 signRequestService.addPostit(signBookId, comment, userEppn, authUserEppn);
             }
@@ -308,16 +401,17 @@ public class WizardController {
         return ResponseEntity.ok().body(signBookId);
     }
 
+    @PreAuthorize("@preAuthorizeService.workflowOwner(#id, #userEppn)")
     @DeleteMapping(value = "/delete-workflow/{id}", produces = "text/html")
     public String delete(@ModelAttribute("userEppn") String userEppn, @PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
         Workflow workflow = workflowService.getById(id);
         if (!workflow.getCreateBy().getEppn().equals(userEppn)) {
-			redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Non autorisé"));
+			redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Non autorisé"));
 		} else {
             try {
                 workflowService.delete(id);
             } catch (EsupSignatureRuntimeException e) {
-                redirectAttributes.addFlashAttribute("message", new JsMessage("error", e.getMessage()));
+                redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", e.getMessage()));
             }
         }
         return "redirect:/user";

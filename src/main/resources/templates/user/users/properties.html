@@ -6,14 +6,17 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol id="breadcrumb-ol" class="breadcrumb">
+                <li class="breadcrumb-item"><i class="fi fi-rr-user"></i> <span th:text="${authUser.firstname} + ' ' + ${authUser.name}"></span></li>
                 <li class="breadcrumb-item active">Mes saisies enregistrées</li>
             </ol>
         </nav>
-        <div id="content" class="content">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <nav th:replace="~{fragments/sides/side-user :: side-user}"></nav>
+                <div class="flex-grow-1">
             <div class="row">
                 <div class="card col-lg-5 mx-auto">
                     <div class="card-body text-center">
@@ -37,7 +40,7 @@
                                     </td>
                                     <td>
                                         <form th:action="'/user/users/delete-user-propertie/' + ${userPropertie.key.id}" th:method="'delete'">
-                                            <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-alt"></i></button>
+                                            <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -70,7 +73,7 @@
                                         <td>
                                             <form th:action="'/user/users/delete-field-propertie/' + ${fieldPropertie.id}" th:method="'delete'">
                                                 <input type="hidden" name="key" th:value="${favorite.key}">
-                                                <button type="submit" class="btn btn-danger"><i class="fa-solid fa-trash-alt"></i></button>
+                                                <button type="submit" class="btn btn-danger"><i class="fi fi-rr-trash"></i></button>
                                             </form>
                                         </td>
                                     </tr>
@@ -79,6 +82,8 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
                 </div>
             </div>
         </div>

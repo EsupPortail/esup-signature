@@ -33,6 +33,7 @@ global:
     send-postit-by-email: false
     send-creation-mail-to-viewers: false
     sms-required: false
+    user-can-change-phone: true
     file-name-spaces-replace-by: " "
     csv-quote: "\""
     csv-separator: ";"
@@ -101,9 +102,13 @@ spring:
         password: esup
         username: esupsignature
         hikari:
+            auto-commit: false
             maximum-pool-size: 15
             minimum-idle: 3
+            idle-timeout: 300000
             connection-timeout: 30000
+            leak-detection-threshold: 15000
+            max-lifetime: 600000
         tomcat:
             validation-query: SELECT 1;
     jpa:
@@ -180,6 +185,8 @@ spring:
                     content:
                         enabled: true
                         paths: /**
+        error:
+            include-stacktrace: always
     mvc:
         static-path-pattern: /**
 
@@ -222,9 +229,6 @@ dss:
     cache-password:
     cache-username: sa
     default-validation-policy: policy/constraint.xml
-    server-signing-keystore-filename: validate_service.p12
-    server-signing-keystore-password: password
-    server-signing-keystore-type: PKCS12
     tsp-servers:
         - http://timestamp.sectigo.com/qualified
         - http://tsa.belgium.be/connect
@@ -239,6 +243,7 @@ dss:
     check-revocation-for-untrusted-chains: false
     multi-thread-tl-validation: true
     accept-signature-field-overlap: false
+    tl-loader-ades-enabled: true
 
 fs:
 #    smb-login: esup-signature
@@ -284,8 +289,6 @@ server:
     servlet:
         session:
             tracking-modes: COOKIE
-    error:
-        include-stacktrace: always
     port: 8080
     tomcat:
         mbeanregistry:

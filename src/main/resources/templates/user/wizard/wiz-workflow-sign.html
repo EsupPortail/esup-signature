@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto"*/-->
 <div th:if="${workflow != null && workflow.messageToDisplay != null}" class="toast toast-xl bg-white show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="999999999" style="z-index: 3;">
     <div class="toast-body toast-body-news">
         <button type="button" class="btn-close" title="Fermer float-end" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -9,7 +9,7 @@
     </div>
     <div class="toast-footer">
         <button th:if="${workflow}" th:id="'markHelpAsReadButton_' + ${workflow.id}" class="btn btn-success me-2 mb-2 float-end" data-bs-dismiss="toast" aria-label="Close">
-            <i class="fa fa-eye-slash"></i>
+            <i class="fi fi-rr-eye-crossed"></i>
             Marquer comme lu
         </button>
     </div>
@@ -19,26 +19,37 @@
     <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
 <div class="modal-body">
-    <div id="stepper1" class="bs-stepper linear">
-        <div class="bs-stepper-header" role="tablist">
-            <div class="step active" data-bs-target="#test-l-2">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-cloud-upload-alt"></i></span>
-                <span class="bs-stepper-label">Dépôt des fichiers</span>
+    <div id="stepper1" class="steps-horizontal-v2 d-flex justify-content-center" style="width: 100%;">
+        <div id="wiz-step-1" class="step-horizontal-v2 d-flex gap-2 align-items-center active">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-cloud-upload-alt"></i></div>
             </div>
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-diagram-project"></i></span>
-                <span class="bs-stepper-label">Création du circuit</span>
+            <div class="step-horizontal-v2-content">
+                <span class="text-xs font-bold">Dépôt des fichiers</span>
             </div>
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-disk"></i></span>
-                <span class="bs-stepper-label">Sauvegarde</span>
+        </div>
+        <div id="wiz-step-2" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-diagram-project"></i></div>
             </div>
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-bs-target="#test-l-3">
-                <span class="bs-stepper-circle"><i class="fi fi-rr-flag"></i></span>
-                <span class="bs-stepper-label">Fin</span>
+            <div class="step-horizontal-v2-content">
+                <span class="text-xs font-bold">Création du circuit</span>
+            </div>
+        </div>
+        <div id="wiz-step-3" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-disk"></i></div>
+            </div>
+            <div class="step-horizontal-v2-content">
+                <span class="text-xs font-bold">Sauvegarde</span>
+            </div>
+        </div>
+        <div id="wiz-step-4" class="step-horizontal-v2 d-flex gap-2 align-items-center disabled">
+            <div class="d-flex align-items-center gap-2">
+                <div class="step-horizontal-v2-icon"><i class="fi fi-rr-flag"></i></div>
+            </div>
+            <div class="step-horizontal-v2-content">
+                <span class="text-xs font-bold">Fin</span>
             </div>
         </div>
     </div>
@@ -53,16 +64,20 @@
             </div>
             <div class="form-group mb-3">
                 <div class="file-loading">
-                    <input required th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''">
+                    <input required th:id="'multipartFiles_' + ${workflow != null ? workflow.id : '0'}" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf,.zip,application/zip' : ''">
                 </div>
             </div>
+            <div class="form-check d-none mb-3" data-es-unzip-option-container>
+                <input class="form-check-input" type="checkbox" name="unzip" value="true" th:id="'unzip-workflow-sign-' + ${workflow != null ? workflow.id : '0'}" data-es-unzip-option>
+                <label class="form-check-label" th:for="'unzip-workflow-sign-' + ${workflow != null ? workflow.id : '0'}">Décompresser le zip pour générer une demande par fichier</label>
+            </div>
             <div id="forceAllSign" class="form-check form-switch form-switch-md">
-                <input class="form-check-input" type="checkbox" name="forceAllSign">
-                <label class="form-check-label">Imposer la signature de tous les documents envoyés (hors pièces jointes)</label>
+                <input class="form-check-input" type="checkbox" name="forceAllSign" id="force-all-sign-wiz">
+                <label class="form-check-label" for="force-all-sign-wiz">Imposer la signature de tous les documents envoyés (hors pièces jointes)</label>
             </div>
             <div class="form-group mb-3">
                 <div>
-                    <label class="form-label" for="comment">Commentaire (facultatif)</label>
+                    <label class="form-label" for="comment-wiz">Commentaire (facultatif)</label>
                     <textarea type="text" placeholder="Vous pouvez saisir un commentaire ici. Celui-ci sera visible par tous les participants."  onfocus="this.placeholder = ''" id="comment-wiz" name="comment" class="form-control"></textarea>
                 </div>
             </div>
@@ -84,7 +99,7 @@
     <button type="button" id="wiz-start-button" class="btn btn-success float-end m-1">
         <div class="send-form-spinner spinner-border d-none" style="width: 1rem; height: 1rem;">
         </div>
-        Suivant <i class="fa-solid fa-angle-right"></i>
+        Suivant
     </button>
 </div>
 </html>

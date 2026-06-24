@@ -1,8 +1,11 @@
+import {markIntroAsRead} from "./HelpState.js?version=@version@";
+
 export class SignRequestHelp {
 
     constructor(doneTour, isOtp) {
         this.doneTour = doneTour;
         this.isOtp = isOtp;
+        this.introReadMarked = false;
         this.intro = introJs();
         this.intro.setOptions({nextLabel: 'Suivant', prevLabel: 'Précédent', doneLabel: 'Terminer', skipLabel: '<i class="fi fi-rr-cross"></i>', showStepNumbers: 'false', overlayOpacity: 0.3})
         this.initListeners();
@@ -10,66 +13,104 @@ export class SignRequestHelp {
     }
 
     initListeners() {
-        this.intro.onbeforechange(e => this.scrollTop(e));
-        this.intro.onafterchange(e => this.modButtons());
-        let self = this;
-        this.intro.onexit(function () {
-            if(self.isOtp) {
-                $.get("/otp/users/mark-intro-as-read/signRequestHelp");
-            } else {
-                $.get("/user/users/mark-intro-as-read/signRequestHelp");
-            }
-        });
-        $("#helpStartButton").on('click', e => this.start());
+        this.intro.onbeforechange(() => this.scrollTop());
+        this.intro.onafterchange(() => this.modButtons());
+        this.intro.onexit(() => this.markAsRead());
+        this.intro.oncomplete(() => this.markAsRead());
+        $("#helpStartButton").on('click', () => this.start());
+    }
+
+    markAsRead() {
+        if (this.introReadMarked) {
+            return;
+        }
+
+        this.introReadMarked = true;
+        this.doneTour = true;
+        markIntroAsRead('signRequestHelp', this.isOtp);
     }
 
     initStep() {
 
         this.intro.addStep({
-            intro: "Cette est l'interface va vous permettre de :" +
+            intro: "Cette interface vous permet de :" +
                 "<ul>" +
                 "<li>Consulter le document que vous devez signer</li>" +
-                "<li>Signer le document (avec ou sans certificat)</li>" +
-                "<li>Ajouter des commentaires à des endroits précis du document</li>" +
+                "<li>Suivre l’état de la demande et les étapes du circuit</li>" +
+                "<li>Préparer puis valider votre signature ou votre visa selon votre rôle</li>" +
+                "<li>Ajouter des annotations, post-it ou pièces jointes selon vos droits</li>" +
                 "</ul>"
         });
 
-        this.intro.addStep({
-            element: '#tools',
-            intro: "La barre d'outils permet :" +
+        this.addStepIfElementExists('#tools', {
+            intro: "Cette zone regroupe les actions principales sur la demande :" +
                 "<ul>" +
-                "<li>d'obtenir des details sur la demande</li>" +
-                "<li>de naviguer dans le document (ajuster le zoom, changer de page)</li>" +
-                "<li>d'ajouter des pièces jointes (document ou liens)</li>" +
-                "<li>d'ajouter ou de modifier la/les signature(s)</li>",
+                "<li>choisir le mode de signature</li>" +
+                "<li>insérer votre signature dans le document PDF</li>" +
+                "<li>valider, signer ou refuser la demande</li>" +
+                "<li>télécharger le document signé en fin de circuit</li>",
             position: 'auto'
         });
-        if($.trim($("#sign-tools").html()) !== '') {
-            this.intro.addStep({
-                element: '#sign-tools',
-                intro: "Ici vous pouvez ajouter des signatures ainsi que les mentions \"signé par\", \"signé le\"",
-                position: 'bottom'
-            });
-        }
-        this.intro.addStep({
-            element: '#sidebar',
-            intro: "La barre latérale vous permet de basculer sur le mode \"commentaires\" et vous informe sur l'avancée du circuit",
+        this.addStepIfElementExists(['#sign-tools', '[id^="crossTools_"]'], {
+            intro: "Quand une signature est sélectionnée, ces options permettent de personnaliser son rendu :" +
+                "<ul>" +
+                "<li>afficher ou masquer les textes complémentaires</li>" +
+                "<li>choisir la position des mentions autour de la signature</li>" +
+                "<li>afficher le type de signature, le nom, la date ou un texte libre</li>" +
+                "<li>activer selon le cas un filigrane</li>" +
+                "</ul>",
+            position: 'bottom'
+        });
+        this.addStepIfElementExists('#sidebar', {
+            intro: "La barre latérale vous donne une vue d’ensemble de la demande : statut, créateur, suivi, commentaires éventuels et étapes du circuit.",
             position: 'right'
         });
-        if($.trim($("#cross").html()) !== '') {
-            this.intro.addStep({
-                element: '#cross',
-                intro: "Déplacer votre signature en maintenant le bouton gauche de la souris enfoncée",
-                position: 'bottom'
-            });
+        this.addStepIfElementExists(['#cross', '[id^="cross_"]'], {
+            intro: "Cette zone correspond à votre signature ou à votre visa dans le document. Vous pouvez la déplacer, la redimensionner et ajuster son contenu avant validation.",
+            position: 'bottom'
+        });
+        this.addStepIfElementExists('#signButtons', {
+            intro: "Cette colonne regroupe des actions complémentaires. Selon vos droits et l’état de la demande, vous y trouverez par exemple les informations, pièces jointes, post-it, réglages, téléchargements, impression ou suppression.",
+            position: 'left'
+        });
+    }
+
+    addStepIfElementExists(selectors, stepOptions) {
+        const element = this.findFirstExistingElement(selectors);
+        if (element == null) {
+            return;
         }
-        if($.trim($("#signButtons").html()) !== '') {
-            this.intro.addStep({
-                element: '#signButtons',
-                intro: "Utilisez les boutons suivants pour viser, signer ou refuser les documents",
-                position: 'left'
-            });
+
+        this.intro.addStep({
+            ...stepOptions,
+            element: element
+        });
+    }
+
+    findFirstExistingElement(selectors) {
+        const selectorList = Array.isArray(selectors) ? selectors : [selectors];
+
+        for (const selector of selectorList) {
+            const candidates = Array.from(document.querySelectorAll(selector));
+            const matchingElement = candidates.find(element => this.isHelpTargetVisible(element));
+            if (matchingElement != null) {
+                return matchingElement;
+            }
         }
+
+        return null;
+    }
+
+    isHelpTargetVisible(element) {
+        if (element == null) {
+            return false;
+        }
+
+        if ($(element).hasClass('d-none')) {
+            return false;
+        }
+
+        return $.trim($(element).html()) !== '';
     }
 
     autoStart() {
@@ -83,11 +124,11 @@ export class SignRequestHelp {
         this.intro.start();
     }
 
-    scrollTop(e) {
+    scrollTop() {
         window.scrollTo(0, 0);
     }
 
-    modButtons(e) {
+    modButtons() {
         $('.introjs-button').each(function(){
             if($(this).hasClass('introjs-disabled')) {
                 $(this).removeClass('introjs-disabled');

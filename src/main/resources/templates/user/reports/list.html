@@ -1,68 +1,97 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org" xmlns:sd="http://www.w3.org/1999/xhtml">
-<!--/*@thymesVar id="report" type="org.esupportail.esupsignature.entity.Report"*/-->
-<!--/*@thymesVar id="reportsMap" type="java.util.Map<org.esupportail.esupsignature.entity.Report, java.util.Map<org.esupportail.esupsignature.entity.enums.ReportStatus, java.util.Set<java.lang.Long>>>"*/-->
+<!--/*@thymesVar id="report" type="org.esupportail.esupsignature.dto.page.user.report.ReportListViewDto.RowDto"*/-->
+<!--/*@thymesVar id="reportStatus" type="org.esupportail.esupsignature.dto.page.user.report.ReportListViewDto.StatusDto"*/-->
 <head th:replace="~{fragments/head-full :: head}"></head>
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active">Rapports de signature en masse</li>
             </ol>
         </nav>
-        <div id="content" class="content-fixed-breadcrumb">
-            <div class="fixed-action-btn" >
-                <a title="Supprimer tous les rapports" data-bs-toggle="modal" data-bs-target="#deleteAllModal" type="button"
-                    class="btn-floating btn-lg bg-danger">
-                    <i class="fa-solid fa-dumpster-fire fa-2xl"></i>
-                </a>
-            </div>
-            <li class="card card text-bg-light" style="width: calc(100% - 100px);">
-                <ul class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <th:block th:each="report, iterator : ${reports}">
-                            <li class="list-group-item" th:id="'heading' + ${iterator.index}">
-                                    <div class="row">
-                                        <div class="col-md-10">
-                                            <h5 class="mb-0">
-                                                <button th:text="'Rapport du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}" class="btn btn-link" data-bs-toggle="collapse" th:data-bs-target="'#collapse' + ${iterator.index}" aria-expanded="true" th:aria-controls="'collapse'  + ${iterator.index}">
-                                                </button>
-                                            </h5>
-                                        </div>
-                                        <div class="col-md-2 text-right">
-                                            <form id="reportDelete" th:action="'/user/reports/'+ ${report.id}" th:method="delete">
-                                                <button class="btn btn-danger" type="submit">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                <div th:id="'collapse'  + ${iterator.index}" class="collapse" th:classappend="${iterator.index == 0 ? 'show' :  ''}" th:aria-labelledby="'heading' + ${iterator.index}" data-parent="#accordion">
-                                    <div class="card-body">
-                                        <ul>
-                                            <th:block th:each="reportMap : ${reportsMap.get(report)}">
-                                                <li>
-                                                    <span th:text="#{'report.reportstatus.' + ${reportMap.getKey()}}"></span> :
-                                                    <span th:text="${reportMap.value.size()} + ' demande(s)'"></span>
-                                                    <span th:if="${reportMap.value.size() > 0}">
-                                                        (<th:block th:each="signRequestId, iterator2 : ${reportMap.value}">
-                                                            <a th:href="'/user/signrequests/' + ${signRequestId}" th:text="${signRequestId}">
-                                                            </a>
-                                                            <span th:text="${iterator2.index != reportMap.value.size() - 1} ? ', '"></span>
-                                                        </th:block>)
-                                                    </span>
-                                                </li>
-                                            </th:block>
-                                        </ul>
-                                    </div>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="flex-grow-1 overflow-scroll">
+                    <div class="p-0 m-2">
+                        <div class="card text-bg-light">
+                            <div class="card-header bg-transparent border-light-subtle p-0 pt-1">
+                                <h5 class="ms-4">
+                                    Rapports de signature en masse
+                                    <span class="text-muted" th:text="'(' + ${#lists.size(reports)} + ')'"></span>
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div th:if="${reports.size() == 0}" class="p-3">
+                                    <div class="alert alert-secondary mb-0">Aucun rapport</div>
                                 </div>
-                            </li>
-                        </th:block>
-                        <th:block th:if="${reports.size() == 0}">
-                            <div class="alert alert-secondary">Aucun rapport</div>
-                        </th:block>
+
+                                <div th:if="${reports.size() > 0}" class="accordion accordion-flush" id="reportsAccordion">
+                                    <th:block th:each="report, iterator : ${reports}">
+                                        <div class="accordion-item">
+                                            <div class="accordion-header d-flex align-items-center gap-2 pe-3"
+                                                 th:id="'heading' + ${iterator.index}">
+                                                <button class="accordion-button"
+                                                        th:classappend="${iterator.index == 0 ? '' : ' collapsed'}"
+                                                        type="button"
+                                                        data-bs-toggle="collapse"
+                                                        th:data-bs-target="'#collapse' + ${iterator.index}"
+                                                        th:aria-expanded="${iterator.index == 0}"
+                                                        th:aria-controls="'collapse' + ${iterator.index}">
+                                                    <span th:text="'Rapport du ' + ${#dates.format(report.date, 'dd/MM/yyyy HH:mm')}"></span>
+                                                </button>
+                                                <form th:action="'/user/reports/' + ${report.id}" th:method="delete" class="ms-auto flex-shrink-0">
+                                                    <button class="btn btn-sm btn-transparent text-danger"
+                                                            type="submit"
+                                                            title="Supprimer ce rapport">
+                                                        <i class="fi fi-rr-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div th:id="'collapse' + ${iterator.index}"
+                                                 class="accordion-collapse collapse"
+                                                 th:classappend="${iterator.index == 0 ? ' show' : ''}"
+                                                 th:aria-labelledby="'heading' + ${iterator.index}"
+                                                 data-bs-parent="#reportsAccordion">
+                                                <div class="accordion-body p-0">
+                                                    <ul class="list-group list-group-flush">
+                                                        <th:block th:each="reportStatus : ${report.statuses}">
+                                                            <li class="list-group-item">
+                                                                <div class="d-flex flex-wrap align-items-baseline gap-2">
+                                                                    <span class="fw-semibold" th:text="#{'report.reportstatus.' + ${reportStatus.status}}"></span>
+                                                                    <span class="text-muted" th:text="${reportStatus.count} + ' demande(s)'"></span>
+                                                                </div>
+                                                                <div th:if="${reportStatus.count > 0}" class="mt-1 small">
+                                                                    <span class="text-muted">Demandes :</span>
+                                                                    <th:block th:each="signRequestId, iterator2 : ${reportStatus.signRequestIds}">
+                                                                        <a th:href="'/user/signrequests/' + ${signRequestId}" th:text="${signRequestId}"></a><span th:if="${!iterator2.last}">, </span>
+                                                                    </th:block>
+                                                                </div>
+                                                            </li>
+                                                        </th:block>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </th:block>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Supprimer tous les rapports"
+                               data-bs-toggle="modal"
+                               data-bs-target="#deleteAllModal"
+                               type="button"
+                               class="btn btn-transparent text-danger">
+                                <i class="fi fi-rr-dumpster-fire"></i>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -71,21 +100,26 @@
 </main>
 <div data-bs-focus="false" class="modal fade" id="deleteAllModal"  role="dialog"
     aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Confirmer la suppression de tous les rapports</h3>
                 <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close">
                 </button>
             </div>
-            <div class="modal-body">
             <form id="reportDeleteAll" th:action="'/user/reports/all/'" th:method="delete">
-                <button class="btn btn-danger float-end" type="submit">
-                    Supprimer tout
-                </button>
-                <button type="button" class="btn btn-secondary float-end me-1" data-bs-dismiss="modal">Fermer</button>
+                <div class="modal-body">
+                    <div class="alert alert-danger mb-0">
+                        Cette action supprimera tous les rapports de signature en masse.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button class="btn btn-danger" type="submit">
+                        Supprimer tout
+                    </button>
+                </div>
             </form>
-            </div>
         </div>
     </div>
 </div>

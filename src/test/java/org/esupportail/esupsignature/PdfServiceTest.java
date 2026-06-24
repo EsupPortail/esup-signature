@@ -11,6 +11,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(SpringExtension.class)
@@ -26,7 +31,11 @@ public class PdfServiceTest {
     @Test
     public void testPdtAConversion() {
         try {
-            pdfService.convertToPDFA(new ClassPathResource("/dummy.pdf").getInputStream().readAllBytes());
+            byte[] source = new ClassPathResource("/dummy.pdf").getInputStream().readAllBytes();
+            byte[] result = pdfService.convertToPDFA(source);
+            assertNotNull(result, "La conversion PDF/A ne doit pas retourner null.");
+            assertTrue(result.length > 4, "Le résultat de conversion PDF/A doit contenir un PDF non vide.");
+            assertEquals("%PDF", new String(result, 0, 4, StandardCharsets.US_ASCII), "Le résultat de conversion PDF/A doit rester un document PDF valide.");
         } catch (Exception e) {
             logger.error("GhostScript convert not working, please check gs install or PDFA_def.ps and srgb.icc locations", e);
             fail();

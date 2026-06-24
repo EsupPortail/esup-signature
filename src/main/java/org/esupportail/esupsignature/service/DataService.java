@@ -60,6 +60,11 @@ public class DataService {
     }
 
     @Transactional
+    public Data getByIdForUpdate(Long dataId) {
+        return dataRepository.findByIdForUpdate(dataId);
+    }
+
+    @Transactional
     public Data getFullById(Long dataId) {
         return dataRepository.findByIdWithWorkflowFull(dataId);
     }
@@ -83,6 +88,11 @@ public class DataService {
      */
     public Data getBySignBook(SignBook signBook) {
         return dataRepository.findBySignBook(signBook);
+    }
+
+    @Transactional
+    public Data getBySignBookForUpdate(SignBook signBook) {
+        return dataRepository.findBySignBookForUpdate(signBook);
     }
 
     /**
@@ -161,9 +171,9 @@ public class DataService {
     public byte[] generateFile(Data data, InputStream inputStream) throws IOException {
         Form form = data.getForm();
         if(inputStream != null && inputStream.available() > 0) {
-            return pdfService.fill(inputStream, data.getDatas(), false, true);
+            return pdfService.fill(inputStream, data.getDatas(), false, form);
         } else if(form.getDocument() != null) {
-            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow(), false), data.getDatas(), false, true);
+            return pdfService.fill(pdfService.removeSignField(form.getDocument().getInputStream(), data.getForm().getWorkflow(), false), data.getDatas(), false, form);
         } else {
             logger.error("no pdf model");
         }
@@ -185,7 +195,7 @@ public class DataService {
         Form form = formService.getById(id);
         Data data;
         if(dataId != null) {
-            data = getById(dataId);
+            data = getByIdForUpdate(dataId);
         } else {
             data = new Data();
         }

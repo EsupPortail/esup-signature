@@ -4,8 +4,8 @@
 <body>
 <header th:replace="~{fragments/nav-empty :: nav-empty}"></header>
 <main role="main">
-    <div class="wrapper">
-        <div id="content" class="content-full">
+    <div class="es-wrapper">
+        <div id="content" class="es-content-full">
             <div class="error-container">
                 <div class="alert alert-light">
                     <div class="error-icon text-danger">
@@ -67,7 +67,7 @@
         width: 100%;
         border-radius: 8px;
         padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px var(--color-rgba-0-0-0-01);
     }
 
     .error-icon {
@@ -80,26 +80,26 @@
         margin: 1.5rem 0;
         font-size: 1rem;
         line-height: 1.6;
-        color: #333;
+        color: var(--bs-dark);
     }
 
     .error-details {
         margin: 1.5rem 0;
         padding: 1rem;
-        background-color: #f8f9fa;
-        border-left: 4px solid #ffc107;
+        background-color: var(--color-f8f9fa);
+        border-left: 4px solid var(--color-ffc107);
         border-radius: 4px;
     }
 
     .error-details summary {
         cursor: pointer;
         font-weight: 500;
-        color: #666;
+        color: var(--bs-secondary);
         user-select: none;
     }
 
     .error-details summary:hover {
-        color: #333;
+        color: var(--bs-dark);
     }
 
     .error-details ul {
@@ -112,11 +112,11 @@
         padding: 0.5rem 0;
         font-family: 'Courier New', monospace;
         font-size: 0.85rem;
-        color: #555;
+        color: var(--bs-secondary);
     }
 
     .error-details code {
-        background-color: #e9ecef;
+        background-color: var(--color-e9ecef);
         padding: 0.25rem 0.5rem;
         border-radius: 3px;
         word-break: break-all;
@@ -145,38 +145,38 @@
     }
 
     .btn-primary {
-        background: #0d6efd;
-        color: white;
+        background: var(--bs-primary);
+        color: var(--bs-white);
     }
 
     .btn-primary:hover {
-        background: #0b5ed7;
-        box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
+        background: var(--bs-primary);
+        box-shadow: 0 2px 8px var(--color-rgba-13-110-253-03);
     }
 
     .btn-primary:active {
-        background: #0a58ca;
+        background: var(--bs-primary);
         transform: translateY(1px);
     }
 
     .btn-secondary {
-        background: #6c757d;
-        color: white;
+        background: var(--bs-secondary);
+        color: var(--bs-white);
     }
 
     .btn-secondary:hover {
-        background: #5c636a;
-        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        background: var(--bs-secondary);
+        box-shadow: 0 2px 8px var(--color-rgba-108-117-125-03);
     }
 
     .btn-secondary:active {
-        background: #565e64;
+        background: var(--bs-secondary);
         transform: translateY(1px);
     }
 
     .error-info {
-        background: #e7f3ff;
-        border-left: 4px solid #0d6efd;
+        background: var(--color-e7f3ff);
+        border-left: 4px solid var(--bs-primary);
         padding: 1.25rem;
         border-radius: 6px;
         margin-top: 2rem;
@@ -184,7 +184,7 @@
 
     .error-info h5 {
         margin-top: 0;
-        color: #0d6efd;
+        color: var(--bs-primary);
         font-weight: 600;
     }
 
@@ -199,7 +199,7 @@
 
     .error-advice li {
         margin: 0.5rem 0;
-        color: #495057;
+        color: var(--bs-secondary);
         line-height: 1.6;
     }
 

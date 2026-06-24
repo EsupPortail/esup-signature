@@ -5,6 +5,8 @@ import eu.europa.esig.dss.validation.reports.Reports;
 import fr.gouv.vitam.tools.sedalib.core.ArchiveUnit;
 import fr.gouv.vitam.tools.sedalib.core.BinaryDataObject;
 import fr.gouv.vitam.tools.sedalib.core.DataObjectPackage;
+import fr.gouv.vitam.tools.sedalib.core.seda.SedaContext;
+import fr.gouv.vitam.tools.sedalib.core.seda.SedaVersion;
 import fr.gouv.vitam.tools.sedalib.inout.SIPBuilder;
 import fr.gouv.vitam.tools.sedalib.metadata.content.*;
 import fr.gouv.vitam.tools.sedalib.metadata.management.*;
@@ -67,7 +69,7 @@ public class SedaExportService {
                 fw.write(reports.getXmlDiagnosticData());
             }
             fw.close();
-
+            SedaContext.setVersion(SedaVersion.V2_3);
             SEDALibProgressLogger pl = new SEDALibProgressLogger(logger, SEDALibProgressLogger.GLOBAL);
             SIPBuilder sb = new SIPBuilder(targetFile.getAbsolutePath(), pl);
             sb.setAgencies("FRAN_NP_000001", "FRAN_NP_000010", "FRAN_NP_000015", "FRAN_NP_000019");
@@ -110,8 +112,8 @@ public class SedaExportService {
                     signature.addMetadata(validator);
                     ReferencedObject referencedObject = new ReferencedObject(
                             docBinaryDataObject.getInDataObjectPackageId(),
-                            docBinaryDataObject.messageDigest.getValue(),
-                            docBinaryDataObject.messageDigest.getAlgorithm());
+                            docBinaryDataObject.getMetadataMessageDigest().getValue(),
+                            docBinaryDataObject.getMetadataMessageDigest().getAlgorithm());
                     signature.addMetadata(referencedObject);
                     id2ArchiveUnit.getContent().addMetadata(signature);
                 }

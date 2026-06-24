@@ -9,6 +9,8 @@ import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.esupportail.esupsignature.entity.Action;
+import org.esupportail.esupsignature.entity.Recipient;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
@@ -16,8 +18,14 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = EsupSignatureApplication.class)
@@ -29,7 +37,9 @@ public class JpaTest {
 
     @Test
     public void testJpaConnexion() {
-        entityManager.createNativeQuery("SELECT 1").getSingleResult();
+        Object result = entityManager.createNativeQuery("SELECT 1").getSingleResult();
+        assertNotNull(result, "La requête de connectivité JPA ne doit pas retourner null.");
+        assertEquals(1, ((Number) result).intValue(), "La requête JPA de connectivité doit retourner 1.");
     }
 
     @Test
@@ -40,11 +50,28 @@ public class JpaTest {
         final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
         provider.addIncludeFilter(new RegexPatternTypeFilter(Pattern.compile(".*")));
         final Set<BeanDefinition> beanDefinitions = provider.findCandidateComponents("org.esupportail.esupsignature.entity");
+        assertFalse(beanDefinitions.isEmpty(), "Le scan des entités JPA ne doit pas être vide.");
         for(BeanDefinition beanDefinition : beanDefinitions) {
             metadataSources.addAnnotatedClass(Class.forName(beanDefinition.getBeanClassName()));
         }
         Metadata metadata =  metadataSources.buildMetadata();
-        System.out.println(metadata.toString());
+        assertNotNull(metadata, "Les métadonnées Hibernate doivent être construites.");
+        assertFalse(metadata.getEntityBindings().isEmpty(), "Les métadonnées Hibernate doivent contenir des entités mappées.");
+    }
+
+    @Test
+    public void testRecipientEqualityUsesPersistentIdentity() {
+        Recipient recipientFromWorkflow = new Recipient();
+        recipientFromWorkflow.setId(42L);
+
+        Recipient recipientFromRecipientMap = new Recipient();
+        recipientFromRecipientMap.setId(42L);
+
+        Map<Recipient, Action> recipientHasSigned = new HashMap<>();
+        recipientHasSigned.put(recipientFromWorkflow, new Action());
+        recipientHasSigned.put(recipientFromRecipientMap, new Action());
+
+        assertEquals(1, recipientHasSigned.size(), "Deux instances représentant le même destinataire ne doivent pas créer deux entrées dans la map.");
     }
 
 }

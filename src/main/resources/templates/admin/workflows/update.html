@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
-<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.dto.FrontendGlobalProperties"*/-->
+<!--/*@thymesVar id="globalProperties" type="org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <link rel="stylesheet" th:href="@{/webjars/summernote/dist/summernote-lite.css}" />
 <script th:src="@{/webjars/summernote/dist/summernote-lite.js}"></script>
@@ -12,425 +12,489 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item"><a href="/admin/workflows">Liste des circuits</a></li>
-                <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span></li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item"><a href="/admin/workflows"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</a></li>
+                <li aria-current="page" class="breadcrumb-item active">Modifier le circuit : <span th:text="${workflow.description}"></span></li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-btns" >
-                <ul class="list-unstyled">
-                    <li>
-                        <a class="btn-floating btn-lg bg-primary" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
-                            <i class="fi fi-rr-file-export fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn-floating btn-lg bg-primary" data-bs-toggle="modal" data-bs-target="#importWorkflow">
-                            <i class="fi fi-rr-file-import fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a id="saveButton" role="button" title="Enregistrer" class="btn-floating btn-lg bg-success"
-                            onclick="document.getElementById('updateSignBook').submit();">
-                            <i class="fi fi-rr-disk fa-2xl" style="margin-top: 10px;"></i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <ul class="nav nav-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" href="#" onclick="return false;">Paramètres</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}">Destinations</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">Étapes</a>
-                </li>
-            </ul>
-            <div class="card text-bg-light col-lg-11 m-2">
-                <div class="card-body">
-                    <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
-                        <input type="hidden" th:field="*{id}">
-                        <div class="accordion" id="accordionExample">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                                        <h5>Généralités</h5>
-                                        <div class="alert alert-secondary ms-2 p-2">Nombre de demandes dans ce circuit : <span th:text="${nbWorkflowSignRequests}"></span></div>
-                                    </button>
-                                </h2>
-                                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <p>Identifiant du circuit : <input type="text" readonly disabled th:value="${workflow.id}"></p>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="p-0 m-2">
+                        <ul class="nav nav-tabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#" onclick="return false;"><i class="fi fi-rr-settings-sliders"></i> Paramètres</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/targets/' + ${workflow.id}"><i class="fi fi-rr-location-crosshairs"></i> Destinations</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}"><i class="fi fi-rr-shoe-prints"></i> Étapes</a>
+                            </li>
+                        </ul>
+                        <div class="es-main-content-admin overflow-scroll p-2">
+                            <form th:object="${workflow}" th:action="@{'/' + ${workflowRole} + '/workflows/update'}" th:method="'put'" id="updateSignBook">
+                                <input type="hidden" th:field="*{id}">
+                                <div class="accordion" id="accordionExample">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button d-flex align-items-center gap-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                                <h5>Généralités</h5>
+                                                <span class="d-inline-flex align-items-center small bg-body-tertiary border px-3 py-2 ms-2">Nombre de demandes dans ce circuit : <span class="ms-1" th:text="${nbWorkflowSignRequests}"></span></span>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="d-flex align-items-center gap-3 mb-3 text-secondary">
+                                                    <label for="workflowIdReadonly" class="form-label fw-semibold mb-0">Identifiant du circuit :</label>
+                                                    <input id="workflowIdReadonly" type="text" class="form-control w-auto bg-body-tertiary" readonly disabled th:value="${workflow.id}">
+                                                </div>
 
-                                        <div class="form-group mb-3">
-                                            <label for="description"><strong>Titre</strong></label>
-                                            <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="token"><strong>Référence unique à passer dans {id} pour les appels web service</strong> (à saisir manuellement ou générer)</label>
-                                            <div class="input-group">
-                                                <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
-                                                <button class="btn btn-outline-secondary" type="button"
-                                                        onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=> (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));">
-                                                    Générer
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="mailFrom"><strong>Adresse email from</strong> (from qui apparaitra dans les mails envoyés dans le cadre de ce circuit)</label>
-                                            <input id="mailFrom" class="form-control" type="text" th:field="*{mailFrom}" value="">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label>
-                                                <strong>Modèle de nommage des demandes</strong> (généré au moment de la création)
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                            </label>
-                                            <div class="collapse" id="help-naming-template">
-                                                <div class="alert alert-info mb-1">
-                                                    Le modèle est construit à l'aide d'attributs entre crochets.
-                                                    Si vide, se réfere à l'attribut namingTemplate de la configuration générale
-                                                    Les attributs disponibles sont :
-                                                    <ul>
-                                                        <li>[originalFileName] : nom original du document</li>
-                                                        <li>[signedFileName] : nom original du document</li>
-                                                        <li>[fileNameOnly] : nom document sans extension</li>
-                                                        <li>[fileExtension] : extension du document</li>
-                                                        <li>[title] : titre du parapheur</li>
-                                                        <li>[id] : identifiant du parapheur</li>
-                                                        <li>[worflowName] : nom du circuit</li>
-                                                        <li>[user.name] : nom prénom de l'utilisateur courant</li>
-                                                        <li>[user.eppn] : eppn de l'utilisateur courant</li>
-                                                        <li>[user.initials] : initiales de l'utilisateur courant</li>
-                                                        <li>[UUID] : un identifiant unique</li>
-                                                        <li>[order] : le numéro d'ordre de création pour un même circuit</li>
-                                                        <li>[timestamp] : timestamp sous forme de long</li>
-                                                        <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
-                                                        <li>[date-en] : date yyyy-MM-dd hh:mm</li>
-                                                    </ul>
+                                                <div class="form-group mb-3">
+                                                    <label for="description" class="form-label fw-semibold"><strong>Titre</strong></label>
+                                                    <input id="description" class="form-control" type="text" th:field="*{description}" value="" autocomplete="on">
                                                 </div>
-                                            </div>
-                                            <input class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <div class="form-check">
-                                                <input id="isFeatured" type="checkbox" class="form-check-input" th:field="*{isFeatured}"/>
-                                                <label for="isFeatured">À la une !</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        <h5>Autorisations</h5>
-                                    </button>
-                                </h2>
-                                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <div class="form-group mb-2">
-                                            <label><strong>Diffusion</strong></label>
-                                            <div class="form-check" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
-                                                <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
-                                                <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
-                                                <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à ce formulaire</small></div>
-                                            </div>
-                                            <div class="form-group mt-2">
-                                                <label for="roles" class="form-check-label">Diffusion du workflow pour les rôles</label>
-                                                <select id="roles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{roles}" multiple>
-                                                    <th:block th:each="newRole : ${roles}">
-                                                        <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
-                                                    </th:block>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-3" id="managers">
-                                            <label for="managersSelect"><strong>Superviseur(s) du circuit</strong>
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                            </label>
-                                            <div class="collapse" id="collapseHelp1">
-                                                <div class="alert alert-info mb-1">
-                                                    Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
-                                                </div>
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="roles" class="form-check-label">Accès superviseur nominatif</label>
-                                                <select id="managersSelect" class="auto-select-users" multiple="multiple" name="managers">
-                                                    <option data-placeholder="true"></option>
-                                                    <th:block th:each="manager : ${workflow.managers}">
-                                                        <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
-                                                    </th:block>
-                                                </select>
-                                            </div>
-                                            <div class="form-group mb-3">
-                                                <label for="roles" class="form-check-label">Accès superviseur par rôles</label>
-                                                <select id="dashboardRoles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{dashboardRoles}" multiple="multiple">
-                                                    <th:block th:each="newRole : ${roles}">
-                                                        <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.dashboardRoles, newRole)}"></option>
-                                                    </th:block>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label for="viewersSelect"><strong>Observateurs par défaut</strong>
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                            </label>
-                                            <div class="collapse" id="collapseHelp2">
-                                                <div class="alert alert-info mb-1">
-                                                    Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
-                                                </div>
-                                            </div>
-                                            <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewersEmails">
-                                                <option data-placeholder="true"></option>
-                                                <th:block th:each="viewer : ${workflow.viewers}">
-                                                    <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
-                                                </th:block>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-2">
-                                            <label><strong>Authentification des externes</strong></label>
-                                            <select id="externalAuth" class="form-select" data-placeholder="Choisir des modes" type="text" th:field="*{externalAuths}" multiple>
-                                                <th:block th:each="externalAuth : ${externalAuths}">
-                                                    <option th:text="${externalAuth}" th:value="${externalAuth}" th:selected="${#sets.contains(workflow.externalAuths, externalAuth)}"></option>
-                                                </th:block>
-                                            </select>
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label><strong>Types de délégation autorisés</strong></label>
-                                            <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
-                                                <div class="form-check text-left">
-                                                    <input th:checked="${workflow.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types" th:value="${shareType.name()}"/>
-                                                    <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
-                                                </div>
-                                            </th:block>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5>Options</h5>
-                                    </button>
-                                </h2>
-                                <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <div class="form-group mb-2">
-                                            <h5>Options de fin de circuit</h5>
-                                            <div class="form-check mb-2" th:if="${globalProperties.sealDriverConfigured}">
-                                                <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
-                                                <label for="sealAtEnd" class="form-check-label">Signature avec cachet en fin de circuit</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
-                                                <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
-                                            </div>
-                                            <h5>Restrictions</h5>
-                                            <div class="form-check mb-2">
-                                                <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
-                                                <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
-                                                <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="disableEmailAlerts" type="checkbox" class="form-check-input" th:field="*{disableEmailAlerts}"/>
-                                                <label for="disableEmailAlerts" class="form-check-label">Désactiver toutes les alertes mail pour ce circuit</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="forbidDownloadsBeforeEnd" type="checkbox" class="form-check-input" th:field="*{forbidDownloadsBeforeEnd}"/>
-                                                <label for="forbidDownloadsBeforeEnd" class="form-check-label">Bloquer les téléchargements jusqu’à la fin du circuit</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="authorizeClone" type="checkbox" class="form-check-input" th:field="*{authorizeClone}"/>
-                                                <label for="authorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
-                                            </div>
-                                            <h5>Droits des extérieurs</h5>
-                                            <div class="form-check mb-2">
-                                                <input id="externalCanReaderAnnotations" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAnnotations}"/>
-                                                <label for="externalCanReaderAnnotations" class="form-check-label">Les extérieurs peuvent consulter les annotations</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input type="hidden" name="externalCanEdit" value="false" th:if="${workflow.externalCanReaderAnnotations == false}">
-                                                <input id="externalCanEdit" type="checkbox" class="form-check-input" th:field="*{externalCanEdit}" th:disabled="${workflow.externalCanReaderAnnotations == false}"/>
-                                                <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="externalCanReaderAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAttachments}"/>
-                                                <label for="externalCanReaderAttachments" class="form-check-label">Les extérieurs peuvent consulter les pièces jointes</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input type="hidden" name="externalCanEditAttachments" value="false" th:if="${workflow.externalCanReaderAttachments == false}">
-                                                <input id="externalCanEditAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanEditAttachments}" th:disabled="${workflow.externalCanReaderAttachments == false}"/>
-                                                <label for="externalCanEditAttachments" class="form-check-label">Les extérieurs peuvent modifier les pièces jointes</label>
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="disableSidebarForExternal" type="checkbox" class="form-check-input" th:field="*{disableSidebarForExternal}"/>
-                                                <label for="disableSidebarForExternal" class="form-check-label">Désactiver la barre latérale pour les extérieurs</label>
-                                            </div>
-                                            <h5>Paramètres d'importation</h5>
-                                            <div class="form-group mb-3" id="signRequestParamsDetectionPatternDiv">
-                                                <label for="signRequestParamsDetectionPattern"> <strong>Pattern de détection des champs signature</strong>
-                                                    <button class="btn btn-sm btn-transparent" data-bs-target="#help-detection-pattern" data-bs-toggle="collapse"
-                                                            type="button">
-                                                        <span class="fa-solid fa-info-circle text-info"></span>
-                                                    </button>
-                                                </label>
-                                                <div class="collapse" id="help-detection-pattern">
-                                                    <div class="alert alert-info mb-1">
-                                                        Le modèle est construit à l’aide du type d’élément entre crochets suivi d’une regex pour le nom de l’attribut.
-                                                        Voici la liste des éléments pris en charge :
-                                                        <ul>
-                                                            <li>[TextField]</li>
-                                                            <li>[PushButton]</li>
-                                                            <li>[AnnotationLink]</li>
-                                                            <li>[Image]</li>
-                                                        </ul>
-                                                        Exemples :
-                                                        <ul>
-                                                            <li>[TextField]^(SIG_SIGNATURE|SIG_CACHET)$ : pour détecter les champs de type TextField avec les attributs SIG_SIGNATURE ou SIG_CACHET</li>
-                                                            <li>[AnnotationLink]^signature : pour détecter les champs de type AnnotationLink commençant par "signature"</li>
-                                                        </ul>
-
+                                                <div class="form-group mb-3">
+                                                    <label for="token"><strong>Référence unique à passer dans {id} pour les appels web service</strong> (à saisir manuellement ou générer)</label>
+                                                    <div class="input-group">
+                                                        <input id="token" class="form-control" type="text" th:field="*{token}" autocomplete="on">
+                                                        <button class="btn btn-outline-secondary" type="button"
+                                                                onclick="document.getElementById('token').value = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c=> (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));">
+                                                            Générer
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
-                                                       class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
-                                            </div>
-                                            <div class="form-check mb-2">
-                                                <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
-                                                <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés (obsolète)</label>
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                                <div class="collapse" id="help-scan-meta">
-                                                    <div class="alert alert-info mb-1">
-                                                        Attention cette fonction est à utiliser dans le cas où les PDF contiennent la description du workflow.
-                                                        Voir <a href="https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori" target="_blank">https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori</a>
+                                                <div class="form-group mb-3">
+                                                    <label for="mailFrom"><strong>Adresse email from</strong> (from qui apparaitra dans les mails envoyés dans le cadre de ce circuit)</label>
+                                                    <input id="mailFrom" class="form-control" type="text" th:field="*{mailFrom}" value="">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                        <label for="namingTemplate" class="form-label fw-semibold mb-0">
+                                                            <strong>Modèle de nommage des demandes</strong> (généré au moment de la création)
+                                                        </label>
+                                                        <button class="btn btn-sm btn-transparent flex-shrink-0 py-0" data-bs-target="#help-naming-template" data-bs-toggle="collapse"
+                                                                aria-label="Afficher l’aide sur le modèle de nommage des demandes"
+                                                                type="button">
+                                                            <span class="fi fi-rr-info text-info"></span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="collapse" id="help-naming-template">
+                                                        <div class="alert alert-info mb-3">
+                                                            Le modèle est construit à l'aide d'attributs entre crochets.
+                                                            Si vide, se réfere à l'attribut namingTemplate de la configuration générale
+                                                            Les attributs disponibles sont :
+                                                            <ul class="mb-0 ps-3">
+                                                                <li>[originalFileName] : nom original du document</li>
+                                                                <li>[signedFileName] : nom original du document</li>
+                                                                <li>[fileNameOnly] : nom document sans extension</li>
+                                                                <li>[fileExtension] : extension du document</li>
+                                                                <li>[title] : titre du parapheur</li>
+                                                                <li>[id] : identifiant du parapheur</li>
+                                                                <li>[worflowName] : nom du circuit</li>
+                                                                <li>[user.name] : nom prénom de l'utilisateur courant</li>
+                                                                <li>[user.eppn] : eppn de l'utilisateur courant</li>
+                                                                <li>[user.initials] : initiales de l'utilisateur courant</li>
+                                                                <li>[UUID] : un identifiant unique</li>
+                                                                <li>[order] : le numéro d'ordre de création pour un même circuit</li>
+                                                                <li>[timestamp] : timestamp sous forme de long</li>
+                                                                <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
+                                                                <li>[date-en] : date yyyy-MM-dd hh:mm</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <input id="namingTemplate" class="form-control" type="text" th:field="*{namingTemplate}" value="" autocomplete="off">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <div class="form-check">
+                                                        <input id="isFeatured" type="checkbox" class="form-check-input" th:field="*{isFeatured}"/>
+                                                        <label for="isFeatured" class="form-check-label">À la une !</label>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5>Source et archivage</h5>
-                                    </button>
-                                </h2>
-                                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <div class="form-group mb-3" id="documentsSourceUriDiv">
-                                            <label for="documentsSourceUri"> <strong>Lien pour l’import automatique des documents</strong></label>
-                                            <input id="documentsSourceUri" name="documentsSourceUri"
-                                                class="form-control" type="text"
-                                                th:value="${workflow.documentsSourceUri}"
-                                                autocomplete="on">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <label>
-                                                <strong>Modèle de nommage pour l’export des documents</strong>
-                                                <button class="btn btn-sm btn-transparent" data-bs-target="#help-naming-template2" data-bs-toggle="collapse"
-                                                        type="button">
-                                                    <span class="fa-solid fa-info-circle text-info"></span>
-                                                </button>
-                                            </label>
-                                            <div class="collapse" id="help-naming-template2">
-                                                <div class="alert alert-info mb-1">
-                                                    Le modèle est construit à l'aide d'attributs entre crochets.
-                                                    Si vide, se réfere à l'attribut namingTemplate de la configuration générale
-                                                    Les attributs disponibles sont :
-                                                    <ul>
-                                                        <li>[originalFileName] : nom original du document</li>
-                                                        <li>[signedFileName] : nom original du document</li>
-                                                        <li>[fileNameOnly] : nom document sans extension</li>
-                                                        <li>[fileExtension] : extension du document</li>
-                                                        <li>[title] : titre du parapheur</li>
-                                                        <li>[id] : identifiant du parapheur</li>
-                                                        <li>[worflowName] : nom du circuit</li>
-                                                        <li>[user.name] : nom prénom de l'utilisateur courant</li>
-                                                        <li>[user.eppn] : eppn de l'utilisateur courant</li>
-                                                        <li>[user.initials] : initiales de l'utilisateur courant</li>
-                                                        <li>[UUID] : un identifiant unique</li>
-                                                        <li>[order] : le numéro d'ordre de création pour un même circuit</li>
-                                                        <li>[timestamp] : timestamp sous forme de long</li>
-                                                        <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
-                                                        <li>[date-en] : date yyyy-MM-dd hh:mm</li>
-                                                    </ul>
+                                    <div class="accordion-item border-top-0">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                <h5>Autorisations</h5>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="form-group mb-2">
+                                                    <h5 class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Diffusion</h5>
+                                                    <div class="form-check" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+                                                        <input id="publicUsage" type="checkbox" class="form-check-input" th:field="*{publicUsage}"/>
+                                                        <label for="publicUsage" class="form-check-label">Visibilité publique ?</label>
+                                                        <div class="alert alert-info d-none"><small>Le rôle correspond au groupe autorisé à accéder à ce formulaire</small></div>
+                                                    </div>
+                                                    <div class="form-group mt-2">
+                                                        <label for="roles" class="form-label fw-semibold">Diffusion du workflow pour les rôles</label>
+                                                        <select id="roles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{roles}" multiple>
+                                                            <th:block th:each="newRole : ${roles}">
+                                                                <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.roles, newRole)}"></option>
+                                                            </th:block>
+                                                        </select>
+                                                        <th:block th:each="missingRole : ${missingRoles}">
+                                                            <input type="hidden" name="missingRoles" th:value="${missingRole}">
+                                                        </th:block>
+                                                        <div class="alert alert-warning mt-2" th:if="${!missingRoles.isEmpty()}">
+                                                            <div><strong>Des rôles déjà enregistrés ne sont plus proposés dans la liste.</strong></div>
+                                                            <div>Ils seront conservés lors de l'enregistrement sauf si vous confirmez leur suppression :</div>
+                                                            <ul class="mb-2">
+                                                                <li th:each="missingRole : ${missingRoles}" th:text="${missingRole}"></li>
+                                                            </ul>
+                                                            <div class="form-check">
+                                                                <input id="removeMissingRoles" class="form-check-input" type="checkbox" name="removeMissingRoles" value="true"/>
+                                                                <label for="removeMissingRoles" class="form-check-label">Supprimer aussi ces rôles indisponibles</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group mb-3" id="managers">
+                                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                        <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-0 flex-grow-1">Superviseur(s) du circuit</div>
+                                                        <button class="btn btn-sm btn-transparent flex-shrink-0 py-0" data-bs-target="#collapseHelp1" data-bs-toggle="collapse"
+                                                                aria-label="Afficher l’aide sur les superviseurs du circuit"
+                                                                type="button">
+                                                            <span class="fi fi-rr-info text-info"></span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="collapse" id="collapseHelp1">
+                                                        <div class="alert alert-info mb-3">
+                                                            Les superviseurs ont accès à l’espace supervision du circuit. Cela permet de consulter et supprimer les demandes associées et d’exporter les données
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group mb-3">
+                                                        <label for="managersSelect" class="form-label fw-semibold">Accès superviseur nominatif</label>
+                                                        <select id="managersSelect" class="auto-select-users" multiple="multiple" name="managers">
+                                                            <option data-placeholder="true"></option>
+                                                            <th:block th:each="manager : ${workflow.managers}">
+                                                                <option selected="selected" th:value="${manager}" th:text="${manager}"></option>
+                                                            </th:block>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group mb-3">
+                                                        <label for="dashboardRoles" class="form-label fw-semibold">Accès superviseur par rôles</label>
+                                                        <select id="dashboardRoles" class="slim-select-filter" data-placeholder="Choisir des roles" type="text" th:field="*{dashboardRoles}" multiple="multiple">
+                                                            <th:block th:each="newRole : ${roles}">
+                                                                <option th:text="${newRole}" th:value="${newRole}" th:selected="${#lists.contains(workflow.dashboardRoles, newRole)}"></option>
+                                                            </th:block>
+                                                        </select>
+                                                        <th:block th:each="missingDashboardRole : ${missingDashboardRoles}">
+                                                            <input type="hidden" name="missingDashboardRoles" th:value="${missingDashboardRole}">
+                                                        </th:block>
+                                                        <div class="alert alert-warning mt-2" th:if="${!missingDashboardRoles.isEmpty()}">
+                                                            <div><strong>Des rôles superviseur déjà enregistrés ne sont plus proposés dans la liste.</strong></div>
+                                                            <div>Ils seront conservés lors de l'enregistrement sauf si vous confirmez leur suppression :</div>
+                                                            <ul class="mb-2">
+                                                                <li th:each="missingDashboardRole : ${missingDashboardRoles}" th:text="${missingDashboardRole}"></li>
+                                                            </ul>
+                                                            <div class="form-check">
+                                                                <input id="removeMissingDashboardRoles" class="form-check-input" type="checkbox" name="removeMissingDashboardRoles" value="true"/>
+                                                                <label for="removeMissingDashboardRoles" class="form-check-label">Supprimer aussi ces rôles superviseur indisponibles</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Autre</div>
+                                                <div class="form-group mb-3">
+                                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                        <label for="viewersSelect" class="form-label fw-semibold mb-0"><strong>Observateurs par défaut</strong></label>
+                                                        <button class="btn btn-sm btn-transparent flex-shrink-0 py-0" data-bs-target="#collapseHelp2" data-bs-toggle="collapse"
+                                                                aria-label="Afficher l’aide sur les observateurs par défaut"
+                                                                type="button">
+                                                            <span class="fi fi-rr-info text-info"></span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="collapse" id="collapseHelp2">
+                                                        <div class="alert alert-info mb-3">
+                                                            Les observateurs sont alertés à la fin d’un circuit et ont un accès en lecture. (Modifiable à la création du circuit)
+                                                        </div>
+                                                    </div>
+                                                    <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewersEmails">
+                                                        <option data-placeholder="true"></option>
+                                                        <th:block th:each="viewer : ${workflow.viewers}">
+                                                            <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                                        </th:block>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mb-2">
+                                                    <label class="form-label fw-semibold" for="externalAuth">Authentification des externes</label>
+                                                    <select id="externalAuth" class="form-select" data-placeholder="Choisir des modes" type="text" th:field="*{externalAuths}" multiple>
+                                                        <th:block th:each="externalAuth : ${externalAuths}">
+                                                            <option th:text="${externalAuth}" th:value="${externalAuth}" th:selected="${#lists.contains(workflow.externalAuths, externalAuth)}"></option>
+                                                        </th:block>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label fw-semibold">Types de délégation autorisés</label>
+                                                    <th:block th:each="shareType : ${T(org.esupportail.esupsignature.entity.enums.ShareType).values()}">
+                                                        <div class="form-check text-left">
+                                                            <input th:checked="${workflow.authorizedShareTypes.contains(shareType)}" th:id="'check-' + ${shareType.name()}" type="checkbox" class="form-check-input" name="types" th:value="${shareType.name()}"/>
+                                                            <label class="form-check-label" th:for="'check-' + ${shareType.name()}" th:text="#{'usershare.sharetype.' + ${shareType.name()}}"></label>
+                                                        </div>
+                                                    </th:block>
                                                 </div>
                                             </div>
-                                            <input class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
-                                        </div>
-                                        <div class="form-group mb-3">
-                                            <strong>Paramètre d'archivage (indépendant de l'export)</strong>
-                                            <br>
-                                            <label for="startArchiveDate">Date à partir de laquelle on archive les demandes de ce circuit</label>
-                                            <input id="startArchiveDate" class="form-control" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
-                                            <label for="archiveTarget">Emplacement d’archivage (si vide l’emplacement configuré dans application.yml est utilisé)</label>
-                                            <input id="archiveTarget" class="form-control" type="text" th:field="*{archiveTarget}" value="" autocomplete="off">
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5>Tags</h5>
-                                    </button>
-                                </h2>
-                                <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <div class="d-inline-flex justify-content-around w-100">
-                                            <select id="tags" name="tags" class="slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple>
-                                                <th:block th:each="tag : ${allTags}">
-                                                    <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${workflow.tags.contains(tag)}"></option>
-                                                </th:block>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseThree">
-                                        <h5>Communication</h5>
-                                    </button>
-                                </h2>
-                                <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <div class="form-group mb-3">
-                                            <label for="message"><strong>Message d’accueil</strong></label>
-                                            <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                    <div class="accordion-item border-top-0">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseThree">
+                                                <h5>Options</h5>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="form-group mb-2">
+                                                    <h5 class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Options de fin de circuit</h5>
+                                                    <div class="form-check mb-2" th:if="${globalProperties.sealDriverConfigured}">
+                                                        <input id="sealAtEnd" type="checkbox" class="form-check-input" th:field="*{sealAtEnd}"/>
+                                                        <label for="sealAtEnd" class="form-check-label">Signature avec cachet en fin de circuit</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="*{sendAlertToAllRecipients}"/>
+                                                        <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                                                    </div>
+                                                    <h5 class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3  mt-4">Restrictions</h5>
+                                                    <div class="form-check mb-2">
+                                                        <input id="ownerSystem" type="checkbox" class="form-check-input" th:field="*{ownerSystem}"/>
+                                                        <label for="ownerSystem" class="form-check-label">Le compte système est propriétaire des demandes de ce circuit (les créateurs ne pourront pas supprimer les demandes)</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="disableDeleteByCreator" type="checkbox" class="form-check-input" th:field="*{disableDeleteByCreator}"/>
+                                                        <label for="disableDeleteByCreator" class="form-check-label">Le propriétaire ne peut pas supprimer la demande</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="disableUpdateByCreator" type="checkbox" class="form-check-input" th:field="*{disableUpdateByCreator}"/>
+                                                        <label for="disableUpdateByCreator" class="form-check-label">Le propriétaire ne peut pas modifier la demande</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="disableEmailAlerts" type="checkbox" class="form-check-input" th:field="*{disableEmailAlerts}"/>
+                                                        <label for="disableEmailAlerts" class="form-check-label">Désactiver toutes les alertes mail pour ce circuit</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="forbidDownloadsBeforeEnd" type="checkbox" class="form-check-input" th:field="*{forbidDownloadsBeforeEnd}"/>
+                                                        <label for="forbidDownloadsBeforeEnd" class="form-check-label">Bloquer les téléchargements jusqu’à la fin du circuit</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="authorizeClone" type="checkbox" class="form-check-input" th:field="*{authorizeClone}"/>
+                                                        <label for="authorizeClone" class="form-check-label">Autoriser le propriétaire à relancer une nouvelle demande (clonage)</label>
+                                                    </div>
+                                                    <h5 class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3  mt-4">Droits des extérieurs</h5>
+                                                    <div class="form-check mb-2">
+                                                        <input id="externalCanReaderAnnotations" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAnnotations}"/>
+                                                        <label for="externalCanReaderAnnotations" class="form-check-label">Les extérieurs peuvent consulter les annotations</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input type="hidden" name="externalCanEdit" value="false" th:if="${workflow.externalCanReaderAnnotations == false}">
+                                                        <input id="externalCanEdit" type="checkbox" class="form-check-input" th:field="*{externalCanEdit}" th:disabled="${workflow.externalCanReaderAnnotations == false}"/>
+                                                        <label for="externalCanEdit" class="form-check-label">Les extérieurs peuvent mettre des annotations</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="externalCanReaderAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanReaderAttachments}"/>
+                                                        <label for="externalCanReaderAttachments" class="form-check-label">Les extérieurs peuvent consulter les pièces jointes</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input type="hidden" name="externalCanEditAttachments" value="false" th:if="${workflow.externalCanReaderAttachments == false}">
+                                                        <input id="externalCanEditAttachments" type="checkbox" class="form-check-input" th:field="*{externalCanEditAttachments}" th:disabled="${workflow.externalCanReaderAttachments == false}"/>
+                                                        <label for="externalCanEditAttachments" class="form-check-label">Les extérieurs peuvent modifier les pièces jointes</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="disableSidebarForExternal" type="checkbox" class="form-check-input" th:field="*{disableSidebarForExternal}"/>
+                                                        <label for="disableSidebarForExternal" class="form-check-label">Désactiver la barre latérale pour les extérieurs</label>
+                                                    </div>
+                                                    <h5 class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3  mt-4">Paramètres d'importation</h5>
+                                                    <div class="form-group mb-3" id="signRequestParamsDetectionPatternDiv">
+                                                        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                            <label for="signRequestParamsDetectionPattern" class="form-label fw-semibold mb-0"><strong>Pattern de détection des champs signature</strong></label>
+                                                            <button class="btn btn-sm btn-transparent flex-shrink-0 py-0" data-bs-target="#help-detection-pattern" data-bs-toggle="collapse"
+                                                                    aria-label="Afficher l’aide sur le pattern de détection des champs signature"
+                                                                    type="button">
+                                                                <span class="fi fi-rr-info text-info"></span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="collapse" id="help-detection-pattern">
+                                                            <div class="alert alert-info mb-3">
+                                                                Le modèle est construit à l’aide du type d’élément entre crochets suivi d’une regex pour le nom de l’attribut.
+                                                                Voici la liste des éléments pris en charge :
+                                                                <ul class="mb-0 ps-3">
+                                                                    <li>[TextField]</li>
+                                                                    <li>[PushButton]</li>
+                                                                    <li>[AnnotationLink]</li>
+                                                                    <li>[Image]</li>
+                                                                </ul>
+                                                                Exemples :
+                                                                <ul class="mb-0 ps-3">
+                                                                    <li>[TextField]^(SIG_SIGNATURE|SIG_CACHET)$ : pour détecter les champs de type TextField avec les attributs SIG_SIGNATURE ou SIG_CACHET</li>
+                                                                    <li>[AnnotationLink]^signature : pour détecter les champs de type AnnotationLink commençant par "signature"</li>
+                                                                </ul>
 
+                                                            </div>
+                                                        </div>
+                                                        <input id="signRequestParamsDetectionPattern" name="signRequestParamsDetectionPattern"
+                                                               class="form-control" type="text" th:value="${workflow.signRequestParamsDetectionPattern}" autocomplete="on">
+                                                    </div>
+                                                    <div class="form-check mb-2">
+                                                        <input id="scanPdfMetadatas" type="checkbox" class="form-check-input" th:field="*{scanPdfMetadatas}"/>
+                                                        <label for="scanPdfMetadatas" class="form-check-label">Construction du circuit à partir des métadonnées des pdf importés (obsolète)</label>
+                                                        <button class="btn btn-sm btn-transparent" data-bs-target="#help-scan-meta" data-bs-toggle="collapse"
+                                                                aria-label="Afficher l’aide sur l’analyse des métadonnées PDF"
+                                                                type="button">
+                                                            <span class="fi fi-rr-info text-info"></span>
+                                                        </button>
+                                                        <div class="collapse" id="help-scan-meta">
+                                                            <div class="alert alert-info mb-3">
+                                                                Attention cette fonction est à utiliser dans le cas où les PDF contiennent la description du workflow.
+                                                                Voir <a href="https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori" target="_blank">https://www.esup-portail.org/wiki/display/SIGN/Gestion+des+circuits#Gestiondescircuits-D%C3%A9finirlesparticipants%C3%A0uncircuit%C3%A0posteriori</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item border-top-0">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                                <h5>Source et archivage</h5>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="form-group mb-3" id="documentsSourceUriDiv">
+                                                    <label for="documentsSourceUri" class="form-label fw-semibold"><strong>Lien pour l’import automatique des documents</strong></label>
+                                                    <input id="documentsSourceUri" name="documentsSourceUri"
+                                                           class="form-control" type="text"
+                                                           th:value="${workflow.documentsSourceUri}"
+                                                           autocomplete="on">
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                                                        <label for="targetNamingTemplate" class="form-label fw-semibold mb-0">
+                                                            <strong>Modèle de nommage pour l’export des documents</strong>
+                                                        </label>
+                                                        <button class="btn btn-sm btn-transparent flex-shrink-0 py-0" data-bs-target="#help-naming-template2" data-bs-toggle="collapse"
+                                                                aria-label="Afficher l’aide sur le modèle de nommage pour l’export"
+                                                                type="button">
+                                                            <span class="fi fi-rr-info text-info"></span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="collapse" id="help-naming-template2">
+                                                        <div class="alert alert-info mb-3">
+                                                            Le modèle est construit à l'aide d'attributs entre crochets.
+                                                            Si vide, se réfere à l'attribut namingTemplate de la configuration générale
+                                                            Les attributs disponibles sont :
+                                                            <ul class="mb-0 ps-3">
+                                                                <li>[originalFileName] : nom original du document</li>
+                                                                <li>[signedFileName] : nom original du document</li>
+                                                                <li>[fileNameOnly] : nom document sans extension</li>
+                                                                <li>[fileExtension] : extension du document</li>
+                                                                <li>[title] : titre du parapheur</li>
+                                                                <li>[id] : identifiant du parapheur</li>
+                                                                <li>[worflowName] : nom du circuit</li>
+                                                                <li>[user.name] : nom prénom de l'utilisateur courant</li>
+                                                                <li>[user.eppn] : eppn de l'utilisateur courant</li>
+                                                                <li>[user.initials] : initiales de l'utilisateur courant</li>
+                                                                <li>[UUID] : un identifiant unique</li>
+                                                                <li>[order] : le numéro d'ordre de création pour un même circuit</li>
+                                                                <li>[timestamp] : timestamp sous forme de long</li>
+                                                                <li>[date-fr] : date dd/MM/yyyy hh:mm</li>
+                                                                <li>[date-en] : date yyyy-MM-dd hh:mm</li>
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                    <input id="targetNamingTemplate" class="form-control" type="text" th:field="*{targetNamingTemplate}" value="" autocomplete="off">
+                                                    <div class="form-check mt-3">
+                                                        <label class="form-check-label" for="unzip">En cas de zip, dézipper le contenu pour recréer une demande par fichier</label>
+                                                        <input id="unzip" type="checkbox" class="form-check-input" th:field="*{unzip}">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group mb-3">
+                                                    <div class="fs-6 text-secondary text-uppercase border-bottom pb-2 mb-3 ">Paramètre d'archivage (indépendant de l'export)</div>
+                                                    <label for="startArchiveDate" class="form-label fw-semibold">Date à partir de laquelle on archive les demandes de ce circuit</label>
+                                                    <input id="startArchiveDate" class="form-control" type="datetime-local" th:value="${#dates.format(workflow.startArchiveDate, 'yyyy-MM-dd''T''HH:mm')}" name="startArchiveDate" autocomplete="off">
+                                                    <label for="archiveTarget" class="form-label fw-semibold">Emplacement d’archivage (si vide l’emplacement configuré dans application.yml est utilisé)</label>
+                                                    <input id="archiveTarget" class="form-control" type="text" th:field="*{archiveTarget}" value="" autocomplete="off">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item border-top-0">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseThree">
+                                                <h5>Tags</h5>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseFive" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="d-inline-flex justify-content-around w-100">
+                                                    <label for="tags" class="visually-hidden">Tags</label>
+                                                    <select id="tags" name="tags" class="slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple>
+                                                        <th:block th:each="tag : ${allTags}">
+                                                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${#lists.contains(selectedTagIds, tag.id)}"></option>
+                                                        </th:block>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item border-top-0">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSix" aria-expanded="false" aria-controls="collapseThree">
+                                                <h5>Communication</h5>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseSix" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                                            <div class="accordion-body">
+                                                <div class="form-group mb-3">
+                                                    <label for="message" class="form-label fw-semibold"><strong>Message d’accueil</strong></label>
+                                                    <textarea id="message" class="summer-note" th:field="*{message}"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+
+                            </form>
                         </div>
-
-
-                    </form>
+                    </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark"
+                                    onclick="return window.workflowUi ? window.workflowUi.submitForm() : document.getElementById('updateSignBook').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </button>
+                        </li>
+                        <li>
+                            <a class="btn btn-transparent text-dark" title="Exporter le circuit" role="button" th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
+                                <i class="fi fi-rr-file-export"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a role="button" title="Importer la configuration d'un circuit" type="button" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#importWorkflow">
+                                <i class="fi fi-rr-file-import"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
+                                <i class="fi fi-rr-folder-times"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -445,12 +509,12 @@
                     <h3 class="modal-title">Importer une configuration</h3><button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                        <div class="form-group mb-3">
-                            <div class="custom-file">
-                                <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
-                                <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier" aria-describedby="multipartFormSetup"/>
-                            </div>
+                    <div class="form-group mb-3">
+                        <div class="custom-file">
+                            <label for="multipartFormSetup" class="custom-file-label"> Choisir un fichier de configuration au format JSON</label>
+                            <input id="multipartFormSetup" type="file" class="form-control" name="multipartFormSetup" value="Choisir un fichier" aria-describedby="multipartFormSetup"/>
                         </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button id="submitFormSetup" type="submit" class="btn btn-primary">Importer le circuit</button>

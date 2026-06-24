@@ -1,5 +1,6 @@
 package org.esupportail.esupsignature.service.security.cas;
 
+import org.apereo.cas.client.util.AbstractConfigurationFilter;
 import org.apereo.cas.client.validation.Cas20ServiceTicketValidator;
 import org.esupportail.esupsignature.config.ldap.LdapProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
@@ -8,6 +9,7 @@ import org.esupportail.esupsignature.repository.MappingFiltersGroupsRepository;
 import org.esupportail.esupsignature.repository.MappingGroupsRolesRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
 import org.esupportail.esupsignature.service.security.Group2UserRoleService;
+import org.esupportail.esupsignature.service.security.LocalSessionLogoutService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.SpelGroupService;
 import org.slf4j.Logger;
@@ -53,10 +55,11 @@ public class CasSecurityServiceImpl implements SecurityService {
 	private final MappingFiltersGroupsRepository mappingFiltersGroupsRepository;
 	private final MappingGroupsRolesRepository mappingGroupsRolesRepository;
 	private final RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy;
+	private final LocalSessionLogoutService localSessionLogoutService;
 
 	private LdapUserDetailsService ldapUserDetailsService;
 
-    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy) {
+    public CasSecurityServiceImpl(WebSecurityProperties webSecurityProperties, SpelGroupService spelGroupService, LdapGroupService ldapGroupService, CasProperties casProperties, LdapProperties ldapProperties, CasAuthenticationSuccessHandler casAuthenticationSuccessHandler, LdapContextSource ldapContextSource, MappingFiltersGroupsRepository mappingFiltersGroupsRepository, MappingGroupsRolesRepository mappingGroupsRolesRepository, RegisterSessionAuthenticationStrategy registerSessionAuthenticationStrategy, LocalSessionLogoutService localSessionLogoutService) {
         this.webSecurityProperties = webSecurityProperties;
         this.spelGroupService = spelGroupService;
         this.ldapGroupService = ldapGroupService;
@@ -68,6 +71,7 @@ public class CasSecurityServiceImpl implements SecurityService {
         this.mappingFiltersGroupsRepository = mappingFiltersGroupsRepository;
         this.mappingGroupsRolesRepository = mappingGroupsRolesRepository;
         this.registerSessionAuthenticationStrategy = registerSessionAuthenticationStrategy;
+        this.localSessionLogoutService = localSessionLogoutService;
     }
 
     @Override
@@ -177,4 +181,10 @@ public class CasSecurityServiceImpl implements SecurityService {
 		return ldapUserDetailsService;
 	}
 
+	@Override
+	public AbstractConfigurationFilter getSingleSignOutFilter() {
+		CasSingleSignOutFilter singleSignOutFilter = new CasSingleSignOutFilter("/login/cas", localSessionLogoutService);
+		singleSignOutFilter.setIgnoreInitConfiguration(true);
+		return singleSignOutFilter;
+	}
 }

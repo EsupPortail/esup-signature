@@ -110,7 +110,6 @@
                             <i class="fa fa-times-circle align-middle text-danger"/>
                         </xsl:when>
                     </xsl:choose>
-                     
                     <xsl:variable name="semanticText" select="//dss:Semantic[@Key = $indicationText]"/>
                     <xsl:if test="string-length($semanticText) &gt; 0">
                         <xsl:attribute name="data-bs-toggle">tooltip</xsl:attribute>

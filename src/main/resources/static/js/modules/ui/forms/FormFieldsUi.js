@@ -1,20 +1,23 @@
 import {Message} from "../../../prototypes/Message.js?version=@version@";
-import Toast from "../Toast.js?version=@version@";
+import NotificationCenter from "../NotificationCenter.js?version=@version@";
+import {attachDirtyIndicator} from '../DirtyIndicator.js?version=@version@';
 
 export class FormFieldsUi {
 
     constructor(domain, formId, prefillTypes) {
         console.info("Starting Form UI for " + formId);
-        this.toast = new Toast();
+        this.notificationCenter = new NotificationCenter();
         this.formId = formId;
         this.btnSaveFields = $('#saveButton');
+        this.dirtyIndicator = null;
         this.prefillTypes = prefillTypes;
         this.domain = domain;
         this.initListeners();
     }
 
     initListeners() {
-        this.btnSaveFields.on('click', e => this.saveFields());
+        this.btnSaveFields.on('click', () => this.saveFields());
+        this.initDirtyIndicator();
         let self = this;
         $('[id^="valueServiceName_"]').each(function (){
             $(this).on('change', e => self.updateTypes(e));
@@ -28,6 +31,24 @@ export class FormFieldsUi {
         });
         $("#multipartModel").on('change', function () {
             $("#submitModel").removeClass("d-none");
+        });
+    }
+
+    initDirtyIndicator() {
+        if (this.dirtyIndicator != null) {
+            return;
+        }
+
+        const formContainer = document.querySelector('.table-fix-head');
+        const saveButton = document.getElementById('saveButton');
+
+        if (!formContainer || !saveButton) {
+            return;
+        }
+
+        this.dirtyIndicator = attachDirtyIndicator({
+            form: formContainer,
+            saveButton
         });
     }
 
@@ -69,48 +90,73 @@ export class FormFieldsUi {
         }
     }
 
-    saveFields() {
+    serializeFieldForm(form) {
+        let fd = new FormData(form);
+
+        return {
+            id: Number($(form).attr('id')),
+            description: fd.get('description') || '',
+            fieldType: fd.get('fieldType') || 'text',
+            required: fd.has('required'),
+            favorisable: fd.has('favorisable'),
+            readOnly: fd.has('readOnly'),
+            prefill: fd.has('prefill'),
+            search: fd.has('search'),
+            valueServiceName: fd.get('valueServiceName') || '',
+            valueType: fd.get('valueType') || '',
+            valueReturn: fd.get('valueReturn') || '',
+            stepZero: fd.has('stepZero'),
+            workflowStepsIds: fd.getAll('workflowStepsIds')
+                .map(value => Number(value))
+                .filter(value => !Number.isNaN(value))
+        };
+    }
+
+    async saveFields() {
         let message = new Message();
         message.type = "info";
         message.text = "Enregistrement en cours";
         message.object = null;
-        let self = this;
-        let fieldsUpdates = $('form[name^="field-update"]');
-        let forms = fieldsUpdates.toArray();
-        let i = 0;
 
-        function saveNextField() {
-            if (i >= forms.length) {
-                let message = new Message();
-                message.type = "success";
-                message.text = "Modifications enregistrées";
-                message.object = null;
-                self.toast.launch(message);
-                return;
+        let forms = $('form[name^="field-update"]').toArray();
+        let payload = forms.map(form => this.serializeFieldForm(form));
+        let csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+        let csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+
+        this.btnSaveFields.addClass('disabled');
+        this.btnSaveFields.attr('aria-disabled', 'true');
+
+        try {
+            let response = await fetch(`/${this.domain}/forms/${this.formId}/fields/update-all`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
 
-            let form = forms[i];
-            let fd = new FormData(form);
-
-            $.ajax({
-                type: "PUT",
-                url: "/" + self.domain + "/forms/" + self.formId + "/fields/" + $(form).attr('id') + "/update?_csrf=" + fd.get("_csrf"),
-                data: fd,
-                processData: false,
-                contentType: false,
-                success: function(data, status) {
-                    i++;
-                    saveNextField();
-                },
-                error: function(data, status) {
-                    let message = new Message();
-                    message.type = "error";
-                    message.text = "Problème lors de l'enregistrement";
-                    message.object = null;
-                    self.toast.launch(message);
-                },
-            });
+            let successMessage = new Message();
+            successMessage.type = "success";
+            successMessage.text = "Modifications enregistrées";
+            successMessage.object = null;
+            this.notificationCenter.launch(successMessage);
+            this.dirtyIndicator?.markClean();
+        } catch (error) {
+            console.error('save fields error', error);
+            let errorMessage = new Message();
+            errorMessage.type = "error";
+            errorMessage.text = "Problème lors de l'enregistrement";
+            errorMessage.object = null;
+            this.notificationCenter.launch(errorMessage);
+        } finally {
+            this.btnSaveFields.removeClass('disabled');
+            this.btnSaveFields.removeAttr('aria-disabled');
         }
-        saveNextField();
     }
 }

@@ -4,22 +4,12 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
 
 import javax.sql.DataSource;
-import java.nio.charset.StandardCharsets;
 
 @Component
-@EnableJdbcHttpSession
 public class DatabaseInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
@@ -67,6 +57,11 @@ public class DatabaseInitializer {
         }
         try {
             jdbcTemplate.execute("create index if not exists sign_book_team_team_id_index on sign_book_team (team_id);");
+        } catch (Exception e) {
+            logger.warn(e.getMessage());
+        }
+        try {
+            jdbcTemplate.execute("create index if not exists idx_user_roles_user_id on user_roles(user_id);");
         } catch (Exception e) {
             logger.warn(e.getMessage());
         }

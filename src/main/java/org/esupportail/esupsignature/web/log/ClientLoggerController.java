@@ -1,8 +1,7 @@
 package org.esupportail.esupsignature.web.log;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.esupportail.esupsignature.dto.js.JsError;
-import org.esupportail.esupsignature.web.controller.user.UserController;
+import org.esupportail.esupsignature.dto.ui.global.UiErrorDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,10 +20,10 @@ public class ClientLoggerController {
     private static final Logger logger = LoggerFactory.getLogger(ClientLoggerController.class);
 
     @PostMapping(consumes = {"application/json"})
-    public ResponseEntity<Boolean> log(@RequestBody JsError jsonClientSideError, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<Boolean> log(@RequestBody UiErrorDto jsonClientSideError, HttpServletRequest httpServletRequest) {
         long contentLength = httpServletRequest.getContentLengthLong();
         if (contentLength > Long.parseLong("1000")) {
-            logger.warn("This request is too big and its content will not be logged. Headers");
+            logger.warn("This signRequestLight is too big and its content will not be logged. Headers");
         } else {
             logger.warn("Client-side error occurred : " + jsonClientSideError);
         }

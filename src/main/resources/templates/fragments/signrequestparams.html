@@ -1,61 +1,11 @@
 <!doctype html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <div th:fragment="signrequestparam" class="d-flex flex-column align-items-center">
-    <div id="crossTools_0" class="badge pill bg-light cross-tools">
-        <div id="defaultTools_0" class="">
-            <input id="signColorPicker_0" value='#000000' class="d-none"/>
-            <button type="button" id="watermark_0"
-                    title="Filigrane"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                <i class="fi fi-rr-background"></i> Filigrane
-            </button>
-            <button type="button" id="signExtra_0"
-                    title="Ajouter les informations complémentaires (nom, date et heure...)"
-                    class="btn btn-sm btn-light text-start d-none"
-                    style="z-index: 3;">
-                <i class="fi fi-rr-receipt"></i> Textes complémentaires
-            </button>
-            <button type="button" id="signExtraOnTop_0"
-                    title="Texte au dessus/texte sur la droite"
-                    class="btn btn-sm btn-light text-start mb-1"
-                    disabled
-                    style="z-index: 3;">
-                <i class="fi fi-rr-arrows-retweet"></i> <span>Au dessus</span>
-            </button>
-            <br>
-            <button type="button" id="extraType_0"
-                    title="Afficher/Masquer le type de signature"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                Type de signature
-            </button>
-            <button type="button" id="extraName_0"
-                    title="Afficher/Masquer le nom"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                Prénom et nom
-            </button>
-            <button type="button" id="extraDate_0"
-                    title="Afficher/Masquer la date"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                Date de signature
-            </button>
-            <button type="button" id="extraText_0"
-                    title="Ajouter/Masquer un texte libre"
-                    class="btn btn-sm btn-light text-start"
-                    style="z-index: 3;">
-                Texte libre
-            </button>
-        </div>
-    </div>
     <div id="cross_0" style="
-    border: 1px solid #000000;
+    border: 1px solid var(--bs-black);
     position: relative;
     background-repeat: no-repeat;">
-        <div id="canvas_0" style="position: absolute; bottom: 0; height: 150px; width: 100%; background-size: 300px;"></div>
+        <div id="canvas_0" style="position: absolute; bottom: 0; height: 100%; width: 100%;"></div>
     </div>
-
 </div>
 </html>

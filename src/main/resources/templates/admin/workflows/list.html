@@ -5,43 +5,57 @@
 <body>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
-            <ol class="breadcrumb col-12">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <ol id="breadcrumb-ol" class="breadcrumb">
                 <li class="breadcrumb-item"><a th:href="'/' + ${workflowRole}">Administration</a></li>
-                <li class="breadcrumb-item active">Liste des circuits</li>
+                <li class="breadcrumb-item active"><i class="fi fi-rr-diagram-project project-diagram-color"></i> Liste des circuits</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-simple-btn" >
-                <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
-                    class="btn-lg btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
-                </a>
-            </div>
-            <div class="col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                <div class="input-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
+                <div class="flex-grow-1">
+            <div class="p-0 m-2">
+                <div class="input-group mb-3 admin-list-filters admin-list-filters-loading" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <span class="input-group-text">Filtrer</span>
-                    <select name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?displayWorkflowType=' + this.value">
-                        <option value="all" th:selected="${displayWorkflowType.name() == 'all'}">Tout voir</option>
-                        <option value="system" th:selected="${displayWorkflowType.name() == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
-                        <option value="classes" th:selected="${displayWorkflowType.name() == 'classes'}">Classes workflow (définies par les développeurs)</option>
-                        <option value="users" th:selected="${displayWorkflowType.name() == 'users'}">Workflows Utilisateurs (définis pas les utilisateurs)</option>
-                    </select>
-                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/admin/workflows?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
+                    <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
                         <th:block th:each="tag : ${allTags}">
-                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
+                            <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                         </th:block>
                     </select>
+                    <select id="displayWorkflowType" name="displayWorkflowType" class="form-select" onclick="event.stopPropagation();">
+                        <option value="all" th:selected="${displayWorkflowType == 'all'}">Tout voir</option>
+                        <option value="system" th:selected="${displayWorkflowType == 'system'}">Workflows globaux (définis pas les administrateurs)</option>
+                        <option value="classes" th:selected="${displayWorkflowType == 'classes'}">Classes workflow (définies par les développeurs)</option>
+                        <option value="users" th:selected="${displayWorkflowType == 'users'}">Workflows utilisateurs (définis pas les utilisateurs)</option>
+                    </select>
                 </div>
-                <div class="table-fix-head scrollbar-style rounded-3">
-                    <table class="table table-light table-sm table-borderless table-hover table-striped">
+                <div class="table-fix-head scrollbar-style rounded-3 admin-list-table-wrap">
+                    <table id="workflowsListTable" class="table table-light table-sm table-borderless table-hover table-striped admin-list-table">
+                        <colgroup>
+                            <col style="width: 72px;">
+                            <col style="width: 24%;">
+                            <col style="width: 13%;">
+                            <col style="width: 86px;">
+                            <col style="width: 76px;">
+                            <col style="width: 14%;">
+                            <col style="width: 14%;">
+                            <col style="width: 20%;">
+                            <col style="width: 88px;">
+                        </colgroup>
                         <thead class="table-secondary">
                         <tr>
                             <th>Id</th>
-                            <th>Nom</th>
+                            <th>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-dark text-decoration-none js-sort-name" data-table-id="workflowsListTable" data-col-index="1">
+                                    Nom&nbsp;<i class="fi fi-rr-sort-alt" aria-hidden="true"></i>
+                                </button>
+                                <input type="search" class="form-control form-control-sm mt-1 js-search-name" data-table-id="workflowsListTable" data-col-index="1" placeholder="Rechercher">
+                            </th>
                             <th>Tags</th>
                             <th>À la une</th>
                             <th>Public</th>
@@ -64,16 +78,16 @@
                                     </th:block>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${workflow.isFeatured}" class="fa-solid fa-check text-success"></i>
-                                    <i th:unless="${workflow.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
+                                    <i th:if="${workflow.featured}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${workflow.featured}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td">
-                                    <i th:if="${workflow.publicUsage}" class="fa-solid fa-check text-success"></i>
+                                    <i th:if="${workflow.publicUsage}" class="fi fi-rr-check text-success"></i>
                                     <i th:unless="${workflow.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
                                 </td>
                                 <td class="clickable-td" th:text="${workflow.roles}"></td>
                                 <td th:class="${workflow.id != null} ? 'clickable-td' : ''" >
-                                    <span th:if="${workflow.createBy != null}" th:text="${workflow.createBy.eppn}"></span>
+                                    <span th:if="${workflow.createByEppn != null}" th:text="${workflow.createByEppn}"></span>
 
                                 </td>
                                 <td th:if="${workflow.workflowSteps.size() > 0}">
@@ -82,12 +96,12 @@
                                         <li class="list-group-item py-1">
                                             <span th:text="${iterator.index + 1}" class="d-inline"></span>
                                             <th:block th:each="user : ${workflowStep.users}">
-                                                <i class="fa-solid fa-user"></i>
+                                                <i class="fi fi-rr-user"></i>
                                                 <span th:text="${user.firstname + ' ' + user.name}"></span>
                                                 <br/>
                                             </th:block>
-                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fa-solid fa-hand"></i> À saisir à la création</span>
-                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fa-solid fa-warning"></i> Non configuré</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && workflowStep.changeable}"><i class="fi fi-rr-hand-paper"></i> À saisir à la création</span>
+                                            <span th:if="${workflowStep.users.size() == 0 && !workflowStep.changeable && !workflowStep.autoSign}"><i class="fi fi-rr-triangle-warning"></i> Non configuré</span>
                                             <span th:if="${workflowStep.autoSign}"><i class="fi fi-rr-cloud-gear-automation"></i> Signature automatique</span>
                                         </li>
                                     </th:block>
@@ -100,36 +114,36 @@
                                     <div class="dropdown position-relative" th:if="${workflow.id != null}">
                                         <button type="button" th:id="'menu-toggle_' + ${workflow.id}" class="btn text-dark" th:title="'Actions ' + ${workflow.description}"
                                                 th:data-bs-target="'#menu-' + ${workflow.id}" th:aria-controls="'menu-' + ${workflow.id}" data-bs-toggle="dropdown">
-                                            <i class="fa-solid fa-ellipsis-v"></i>
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
                                         </button>
                                         <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${workflow.id}">
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                     th:href="'/' + ${workflowRole} + '/workflows/update/' + ${workflow.id}">
-                                                    <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
+                                                    <i class="fi fi-rr-pencil"></i> Modifier les paramètres
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
                                                     th:href="'/' + ${workflowRole} + '/workflows/steps/' + ${workflow.id}">
-                                                    <i class="fa-solid fa-shoe-prints pr-2"></i> Modifier les étapes
+                                                    <i class="fi fi-rr-shoe-prints"></i> Modifier les étapes
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="btn btn-transparent text-dark text-left col-12" title="Exporter le circuit" role="button"
                                                     th:href="'/' + ${workflowRole} + '/workflows/export/' + ${workflow.id}">
-                                                    <i class="fa-solid fa-file-export pr-2"></i> Exporter le circuit
+                                                    <i class="fi fi-rr-file-export"></i> Exporter le circuit
                                                 </a>
                                             </li>
                                             <li>
-                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
-                                                    <i class="fa-solid fa-binoculars pr-2"></i> Scanner la source
+                                                <a class="btn btn-transparent text-dark text-left col-12" th:if="${workflow.documentsSourceUriPresent}" title="Scanner la source" type="button" th:href="'/' + ${workflowRole} + '/workflows/get-files-from-source/' + ${workflow.id}">
+                                                    <i class="fi fi-rr-folder-times"></i> Scanner la source
                                                 </a>
                                             </li>
                                             <li>
-                                                <a th:if="${workflow.fromCode == null || !workflow.fromCode}" class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
+                                                <a th:if="${!workflow.fromCode}" class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${workflow.id}" role="button" title="Supprimer"
                                                     data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${workflow.id}">
-                                                    <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
+                                                    <i class="fi fi-rr-trash"></i> Supprimer
                                                 </a>
                                             </li>
                                         </ul>
@@ -161,6 +175,18 @@
                         </tbody>
                     </table>
                 </div>
+                </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Créer un nouveau circuit" data-bs-toggle="modal" data-bs-target="#newWorkflow" type="button"
+                               class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-apps-add"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -168,6 +194,159 @@
 <script th:inline="javascript" type="module">
     import {WorkflowManualAdd } from '/js/modules/ui/workflows/WorkflowManualAdd.js?version=@[(${versionApp})]@';
     new WorkflowManualAdd();
+</script>
+<script>
+    (() => {
+        const navigateWithFilters = (updates) => {
+            const currentUrl = new URL(window.location.href);
+            const targetUrl = new URL(window.location.href);
+
+            Object.entries(updates).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        targetUrl.searchParams.set(key, value.join(','));
+                    } else {
+                        targetUrl.searchParams.delete(key);
+                    }
+                    return;
+                }
+
+                if (value == null || value === '') {
+                    targetUrl.searchParams.delete(key);
+                } else {
+                    targetUrl.searchParams.set(key, value);
+                }
+            });
+
+            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
+                return;
+            }
+
+            window.location.assign(targetUrl.pathname + targetUrl.search + targetUrl.hash);
+        };
+
+        const displayWorkflowTypeSelect = document.getElementById('displayWorkflowType');
+        if (displayWorkflowTypeSelect) {
+            displayWorkflowTypeSelect.addEventListener('change', function () {
+                navigateWithFilters({ displayWorkflowType: this.value });
+            });
+        }
+
+        const tagsSelect = document.getElementById('tags');
+        if (tagsSelect) {
+            tagsSelect.addEventListener('change', function () {
+                navigateWithFilters({ selectedTags: Array.from(this.selectedOptions).map(option => option.value) });
+            });
+        }
+    })();
+</script>
+<style>
+    .admin-list-table-wrap {
+        overflow-x: auto;
+    }
+
+    .admin-list-filters select.slim-select-simple[multiple] {
+        height: 38px;
+        min-height: 38px;
+        overflow: hidden;
+    }
+
+    .admin-list-filters .ss-main {
+        min-height: 38px;
+    }
+
+    .admin-list-filters-loading {
+        visibility: hidden;
+    }
+
+    .admin-list-table {
+        min-width: 1080px;
+        table-layout: fixed;
+    }
+
+    .admin-list-table th,
+    .admin-list-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .admin-list-table td {
+        white-space: nowrap;
+    }
+
+    .admin-list-table .badge,
+    .admin-list-table .list-group-item {
+        white-space: normal;
+    }
+
+    @media (max-width: 1199.98px) {
+        .admin-list-table {
+            min-width: 960px;
+        }
+    }
+</style>
+<script>
+    (() => {
+        const showFiltersWhenReady = () => {
+            document.querySelectorAll('.admin-list-filters-loading').forEach(filters => {
+                const selects = filters.querySelectorAll('select.slim-select-simple');
+                let attempts = 0;
+                const reveal = () => {
+                    const ready = Array.from(selects).every(select => select.nextElementSibling?.classList.contains('ss-main'));
+                    if (ready || attempts >= 60) {
+                        filters.classList.remove('admin-list-filters-loading');
+                        return;
+                    }
+                    attempts++;
+                    requestAnimationFrame(reveal);
+                };
+                reveal();
+            });
+        };
+
+        showFiltersWhenReady();
+
+        const normalize = value => value.trim().toLocaleLowerCase();
+
+        document.querySelectorAll('.js-search-name').forEach(input => {
+            const table = document.getElementById(input.dataset.tableId);
+            const columnIndex = Number(input.dataset.colIndex);
+            if (!table || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            input.addEventListener('input', () => {
+                const search = normalize(input.value);
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cell = row.cells[columnIndex];
+                    row.classList.toggle('d-none', search !== '' && !normalize(cell ? cell.textContent : '').includes(search));
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-sort-name').forEach(button => {
+            const table = document.getElementById(button.dataset.tableId);
+            const columnIndex = Number(button.dataset.colIndex);
+            if (!table || !table.tBodies.length || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            button.addEventListener('click', () => {
+                const tbody = table.tBodies[0];
+                const direction = button.dataset.direction === 'asc' ? -1 : 1;
+                button.dataset.direction = direction === 1 ? 'asc' : 'desc';
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.className = direction === 1 ? 'fi fi-rr-sort-amount-down' : 'fi fi-rr-sort-amount-up';
+                }
+
+                Array.from(tbody.rows)
+                    .sort((a, b) => direction * normalize(a.cells[columnIndex]?.textContent || '').localeCompare(normalize(b.cells[columnIndex]?.textContent || ''), 'fr'))
+                    .forEach(row => tbody.appendChild(row));
+            });
+        });
+    })();
 </script>
 <div data-bs-focus="false" class="modal fade" id="newWorkflow"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">

@@ -44,6 +44,7 @@ public class Form {
 
 	private String managerRole;
 
+	@JsonIgnore
 	@OneToOne
 	private Workflow workflow;
 	
@@ -214,6 +215,7 @@ public class Form {
 	}
 
 	public Boolean getDeleted() {
+		if(deleted == null) return false;
 		return deleted;
 	}
 
@@ -262,6 +264,7 @@ public class Form {
 	}
 
     public List<Tag> getTags() {
+		if(this.tags != null && !this.tags.isEmpty()) return this.tags;
         if(this.workflow != null) {
             return workflow.getTags();
         }

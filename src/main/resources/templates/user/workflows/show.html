@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.entity.Workflow"*/-->
+<!--/*@thymesVar id="workflow" type="org.esupportail.esupsignature.dto.page.user.wiz.WorkflowViewDto"*/-->
 <head th:replace="~{fragments/head :: head}"></head>
 <body>
 <script th:inline="javascript" type="module">
@@ -9,73 +9,85 @@
 </script>
 <header th:replace="~{fragments/nav :: nav}"></header>
 <main role="main">
-    <div class="wrapper">
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav breadcrumb-nav-full-fixed">
-            <ol class="breadcrumb col-12">
-                <li class="breadcrumb-item active"><a href="/">Accueil</a></li>
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item active"><a href="/"><i class="fi fi-rr-home"></i> Accueil</a></li>
                 <li aria-current="page" class="breadcrumb-item active">Circuit : <span th:text="${workflow.description}"></span>
                 </li>
             </ol>
         </nav>
-        <div id="content" class="content-fixed-breadcrumb">
-            <div id="addButton" class="fixed-action-btns"  onmouseover="$('#addButton').toggleClass('active');" onmouseout="$('#addButton').toggleClass('active');">
-                <ul id="collapseExample" class="list-unstyled">
-                    <li>
-                        <a th:if="${workflow.documentsSourceUri != null}" title="Scanner la source" type="button" th:href="'/user/workflows/get-files-from-source/' + ${workflow.id}" class="btn-lg btn-floating bg-success">
-                            <i class="fa-solid fa-binoculars"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a role="button" title="Ajouter une étape" class="btn-lg btn-floating bg-primary" data-bs-toggle="modal" data-bs-target="#addStep">
-                            <span class="fa-stack fa-1x">
-                                <i class="fa-solid fa-shoe-prints fa-stack-1x" style="margin-top: 27px; margin-left: 10px"></i>
-                                <i class="fa-solid fa-plus fa-stack-2x" style="margin-top: 8px; margin-left: -5px"></i>
-                            </span>                        </a>
-                    </li>
-                    <li>
-                        <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
-                            <a id="delete-button" role="button" title="Supprimer" class="btn-lg btn-floating bg-danger">
-                                <i class="fa-solid fa-trash-alt fa-2xl"></i>
-                            </a>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="flex-grow-1 overflow-scroll p-2">
+                    <div class="alert alert-light col-10 mx-auto">
+                        <h5 class="card-title">Paramètres généraux</h5>
+                        <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
+                            <div class="form-group">
+                                <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
+                                <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="viewersSelect">Partager avec</label>
+                                <select id="sharedToUsersSelect" class="auto-select-users" multiple="multiple" name="sharedToUsers">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="sharedToUsers : ${workflow.sharedToUsers}">
+                                        <option selected="selected" th:value="${sharedToUsers.email}" th:text="${sharedToUsers.firstname} + ' ' + ${sharedToUsers.name} + ' (' + ${sharedToUsers.email} + ')'"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="viewersSelect">Observateurs</label>
+                                <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
+                                    <option data-placeholder="true"></option>
+                                    <th:block th:each="viewer : ${workflow.viewers}">
+                                        <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
+                                    </th:block>
+                                </select>
+                            </div>
+                            <strong>Options</strong>
+                            <div class="form-check mb-2">
+                                <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
+                                <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
+                            </div>
                         </form>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="alert alert-light rounded-3 col-lg-10 mx-auto mb-1">
-                <h5>Paramètres généraux</h5>
-                <form id="params" th:action="'/user/workflows/' + ${workflow.id}" th:method="'put'">
-                    <div class="form-group">
-                        <label class="form-label" for="name"><strong>Nom du circuit</strong></label>
-                        <input type="text" class="form-control" name="name" id="name" th:value="${workflow.description}"/>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label" for="viewersSelect">Observateurs</label>
-                        <select id="viewersSelect" class="auto-select-users" multiple="multiple" name="viewers">
-                            <option data-placeholder="true"></option>
-                            <th:block th:each="viewer : ${workflow.viewers}">
-                                <option selected="selected" th:value="${viewer.email}" th:text="${viewer.firstname} + ' ' + ${viewer.name} + ' (' + ${viewer.email} + ')'"></option>
-                            </th:block>
-                        </select>
+                    <div class="alert alert-light col-10 mx-auto">
+                            <h5 class="card-title"><b>Étapes</b></h5>
+                            <dl class="row border-bottom m-0 text-start">
+                                <dd>
+                                    <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
+                                    <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
+                                        Vous pouvez ajouter des étapes
+                                    </div>
+                                </dd>
+                            </dl>
                     </div>
-                    <strong>Options</strong>
-                    <div class="form-check mb-2">
-                        <input id="sendAlertToAllRecipients" type="checkbox" class="form-check-input" th:field="${workflow.sendAlertToAllRecipients}"/>
-                        <label for="sendAlertToAllRecipients" class="form-check-label">Avertir tous les participants à la fin du circuit</label>
-                    </div>
-                    <button title="Enregistrer" type="submit" class="btn btn-success mt-2"><i class="fi fi-rr-disk"></i></button>
-                </form>
-            </div>
-            <div class="alert alert-light col-lg-10 mx-auto mb-1">
-                <h5 class="text-center"><b>Étapes</b></h5>
-                <dl class="row border-bottom m-0">
-                    <dd>
-                        <div th:if="${workflow.workflowSteps.size() > 0}" th:replace="~{admin/workflows/cards/stepscard :: stepscard}"></div>
-                        <div th:unless="${workflow.workflowSteps.size() > 0}" class="alert alert-secondary">
-                            Vous pouvez ajouter des étapes
-                        </div>
-                    </dd>
-                </dl>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul id="buttonList" class="list-unstyled">
+                        <li>
+                            <button id="saveButton" role="button" title="Enregistrer" class="btn btn-transparent text-dark" onclick="document.getElementById('params').submit();">
+                                <i class="fi fi-rr-disk"></i>
+                            </button>
+                        </li>
+                        <li>
+                            <a role="button" title="Ajouter une étape" class="btn btn-transparent text-dark" data-bs-toggle="modal" data-bs-target="#addStep">
+                                <span class="d-flex align-items-center">
+                                    <i class="fi fi-rr-shoe-prints"></i>
+                                    <i class="fi fi-rr-plus-small"></i>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <form id="delete" th:action="'/user/workflows/' + ${workflow.id}" th:method="delete">
+                                <a id="delete-button" role="button" title="Supprimer" class="btn btn-transparent text-danger">
+                                    <i class="fi fi-rr-trash"></i>
+                                </a>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div data-bs-focus="false" class="modal fade" id="addStep"  role="dialog" aria-labelledby="addStepLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
@@ -86,8 +98,8 @@
                             </div>
                             <div class="modal-body">
                                 <div class="form-group mb-3">
-                                    <label class="form-label">Description de l’étape :</label>
-                                    <input name="description" type="text" class="form-control" />
+                                    <label class="form-label" for="stepDescription">Description de l’étape :</label>
+                                    <input id="stepDescription" name="description" type="text" class="form-control" />
                                 </div>
                                 <div class="form-group mb-3">
                                     <label class="form-label" for="stepNumber">Ajouter cette étape :</label>
@@ -98,76 +110,74 @@
                                     </select>
                                 </div>
                                 <div class="form-check form-switch form-switch-md">
+                                    <input type="checkbox" class="form-check-input" name="changeable" id="changeable"/>
                                     <label class="form-check-label" for="changeable">
                                         <strong>L'utilisateur peut modifier les participants</strong>
-                                        <button data-bs-target="#collapseHelpChangeable" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fa-solid fa-info-circle text-info"></span>
-                                        </button>
-                                        <div class="collapse" id="collapseChangeable">
-                                            <div class="alert alert-info">
-                                                <small>
-                                                    L'utilisateur pourra changer les noms des participants au moment de valider sa demande de signature
-                                                </small>
-                                            </div>
-                                        </div>
                                     </label>
-                                    <input type="checkbox" class="form-check-input" name="changeable" id="changeable"/>
+                                    <button data-bs-target="#collapseChangeable" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent" aria-controls="collapseChangeable" aria-expanded="false">
+                                        <span class="fi fi-rr-info text-info"></span>
+                                    </button>
+                                    <div class="collapse mt-2" id="collapseChangeable">
+                                        <div class="alert alert-info mb-0">
+                                            <small>
+                                                L'utilisateur pourra changer les noms des participants au moment de valider sa demande de signature
+                                            </small>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group mb-3">
+                                    <label class="form-label" for="stepRecipientsEmails">Participants</label>
                                     <select class="auto-select-users" name="recipientsEmails" id="stepRecipientsEmails" multiple="multiple"></select>
                                 </div>
                                 <div class="form-check form-switch form-switch-md">
                                     <input type="checkbox" class="form-check-input" name="allSignToComplete" id="all-sign-to-complete"/>
                                     <label class="form-check-label form-switch" for="all-sign-to-complete">
-                                        <strong> Tous les participants doivent signer pour valider l'étape </strong>
-                                        <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent">
-                                            <span class="fa-solid fa-info-circle text-info"></span>
-                                        </button>
-                                        <div class="collapse" id="collapseHelpAllSign">
-                                            <div class="alert alert-info">
-                                                <small>
-                                                    <ul>
-                                                        <li>
-                                                            Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
-                                                        </li>
-                                                        <li>
-                                                            Non : Une seule signature suffit
-                                                        </li>
-                                                    </ul>
-                                                </small>
-                                            </div>
-                                        </div>
+                                        <strong>Tous les participants doivent signer pour valider l'étape</strong>
                                     </label>
+                                    <button data-bs-target="#collapseHelpAllSign" data-bs-toggle="collapse" type="button" class="btn btn-sm btn-transparent" aria-controls="collapseHelpAllSign" aria-expanded="false">
+                                        <span class="fi fi-rr-info text-info"></span>
+                                    </button>
+                                    <div class="collapse mt-2" id="collapseHelpAllSign">
+                                        <div class="alert alert-info mb-0 small">
+                                            <ul class="mb-0">
+                                                <li>
+                                                    Oui : Tous les participants doivent signer pour que la demande passe au status "Signé"
+                                                </li>
+                                                <li>
+                                                    Non : Une seule signature suffit
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="form-group mb-3" id="_signType_div_id">
-                                    <label for="signType_id"> <strong> Type de signature
-                                        par défaut
-                                        <button data-bs-target="#collapseHelpSignType"
-                                                data-bs-toggle="collapse" type="button"
-                                                class="btn btn-sm btn-transparent">
-                                            <i class="fa-solid fa-info-circle text-info"></i>
-                                        </button>
-                                    </strong>
-                                        <div class="collapse" id="collapseHelpSignType">
-                                            <div class="alert alert-info">
-                                                <ul>
-                                                    <li>PAdES/XAdES : s'appuie sur le certificat P12
-                                                        uploader au niveau de vos paramètres
-                                                    </li>
-                                                    <li>Apposition de la signature : ajoute simplement
-                                                        l'image de votre signature sur un PDF à l'endroit voulu
-                                                    </li>
-                                                    <li>PAdES/XAdES eIDas: s'appuie l'application Esup-DSS-Client
-                                                        qui permet l'utilisation d'un certificat matériel
-                                                    </li>
-                                                    <li>Confirmation de lecture : permet de valider la
-                                                        lecture d'un document
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                    <label class="form-label" for="signType_id">
+                                        <strong>Type de signature par défaut</strong>
                                     </label>
+                                    <button data-bs-target="#collapseHelpSignType"
+                                            data-bs-toggle="collapse" type="button"
+                                            class="btn btn-sm btn-transparent" aria-controls="collapseHelpSignType" aria-expanded="false">
+                                        <i class="fi fi-rr-info text-info"></i>
+                                    </button>
+                                    <div class="collapse mb-2" id="collapseHelpSignType">
+                                        <div class="alert alert-info mb-0">
+                                            <ul class="mb-0">
+                                                <li>PAdES/XAdES : s'appuie sur le certificat P12
+                                                    uploader au niveau de vos paramètres
+                                                </li>
+                                                <li>Apposition de la signature : ajoute simplement
+                                                    l'image de votre signature sur un PDF à l'endroit voulu
+                                                </li>
+                                                <li>PAdES/XAdES eIDas: s'appuie l'application Esup-DSS-Client
+                                                    qui permet l'utilisation d'un certificat matériel
+                                                </li>
+                                                <li>Confirmation de lecture : permet de valider la
+                                                    lecture d'un document
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
                                     <div class="col-lg-10">
                                         <select class="slim-select-simple" id="signType_id" name="signType" size="1">
                                             <th:block th:each="signType : ${signTypes}">
@@ -187,7 +197,6 @@
             </div>
 
         </div>
-    </div>
     </div>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>

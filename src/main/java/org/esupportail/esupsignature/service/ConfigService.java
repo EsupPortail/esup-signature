@@ -2,6 +2,7 @@ package org.esupportail.esupsignature.service;
 
 import org.esupportail.esupsignature.config.GlobalProperties;
 import org.esupportail.esupsignature.config.security.WebSecurityProperties;
+import org.esupportail.esupsignature.dto.page.admin.AdminConfigViewDto;
 import org.esupportail.esupsignature.entity.Config;
 import org.esupportail.esupsignature.repository.ConfigRepository;
 import org.esupportail.esupsignature.service.ldap.LdapGroupService;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.Iterator;
 
 @Service
@@ -41,6 +43,17 @@ public class ConfigService {
         } else {
             return configRepository.save(new Config());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public AdminConfigViewDto getAdminConfigView() {
+        Config config = getConfig();
+        AdminConfigViewDto dto = new AdminConfigViewDto();
+        dto.setMappingFiltersGroups(new LinkedHashMap<>(config.getMappingFiltersGroups()));
+        dto.setMappingGroupsRoles(new LinkedHashMap<>(config.getMappingGroupsRoles()));
+        dto.setGroupMappingSpel(new LinkedHashMap<>(config.getGroupMappingSpel()));
+        dto.setHideAutoSign(config.getHideAutoSign());
+        return dto;
     }
 
     @Transactional

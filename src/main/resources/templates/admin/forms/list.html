@@ -10,165 +10,198 @@
     const workflowRole = '[[${workflowRole}]]';
 </script>
 <main role="main">
-    <div class="wrapper">
-        <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
-        <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
-        <nav id="breadcrumb" aria-label="breadcrumb" class="breadcrumb-nav">
+    <div class="es-wrapper">
+        <nav id="breadcrumb" aria-label="breadcrumb" class="es-breadcrumb-nav es-breadcrumb-nav-full-fixed es-breadcrumb-nav-full text-uppercase">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin">Administration</a></li>
-                <li class="breadcrumb-item active">Liste des formulaires</li>
+                <li class="breadcrumb-item"><a href="/admin" class="d-flex align-items-center"><i class="fi fi-rr-chess-queen"></i> Administration</a></li>
+                <li class="breadcrumb-item active"><i class="fi fi-rr-poll-h file-alt-color"></i> Liste des formulaires</li>
             </ol>
         </nav>
-        <div id="content" class="content">
-            <div class="fixed-action-simple-btn" >
-                <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn-lg btn-floating text-dark bg-primary">
-                    <i class="fi fi-rr-apps-add fa-2xl" style="margin-top: 10px;"></i>
-                </a>
-            </div>
-            <div class="input-group mb-3">
-                <span class="input-group-text">Filtrer</span>
-                <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?selectedTags=' + Array.from(this.selectedOptions).map(o => o.value).join(',')">
-                    <th:block th:each="tag : ${allTags}">
-                        <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTags.contains(tag)}"></option>
-                    </th:block>
-                </select>
-                <span class="input-group-text">Actifs</span>
-                <select id="activeVersion" name="activeVersion" class="form-select" data-placeholder="Tous" onclick="event.stopPropagation();" onchange="document.location.href = '/'+ workflowRole + '/forms?activeVersion=' + this.value">
-                    <option data-placeholder="true" readonly="" value="">Tous</option>
-                    <option value="true" th:selected="${activeVersion != null && activeVersion}">Oui</option>
-                    <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
-                </select>
-            </div>
-            <div class="table-fix-head scrollbar-style rounded-3 col-sm-9 col-md-10 col-xl-11 p-0 m-2">
-                <table class="table table-light table-striped table-hover table-borderless">
-                    <thead class="table-secondary">
-                    <tr>
-                        <th>Id</th>
-                        <th class="w-25">Titre</th>
-                        <th>Tags</th>
-                        <th>À la une</th>
-                        <th>Circuit associé</th>
-                        <th>Actif</th>
-                        <th>Tuile masquée</th>
-                        <th>Supprimé</th>
-                        <th>Public</th>
-                        <th>Rôle</th>
-                        <th class="text-center">Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
-                        <td><input type="text" th:value="${form.id}" disabled></td>
-                        <td class="clickable-td" th:text="${form.title}"></td>
-                        <td th:class="${form.id != null}? 'clickable-td' : ''">
-                            <th:block th:each="tag : ${form.tags}">
-                                <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
+        <div id="content" class="es-content-full">
+            <div class="es-main-content d-flex">
+                <div class="es-sidebar d-flex">
+                    <nav th:replace="~{fragments/sides/side-admin :: side-admin}"></nav>
+                    <nav th:replace="~{fragments/sides/side-manager :: side-manager}"></nav>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="p-0 m-2">
+                    <div class="input-group mb-3 admin-list-filters admin-list-filters-loading">
+                        <span class="input-group-text">Filtrer</span>
+                        <select id="tags" name="tags" class="form-control slim-select-simple" data-placeholder="Choisir un ou plusieurs tags" multiple onclick="event.stopPropagation();">
+                            <th:block th:each="tag : ${allTags}">
+                                <option th:style="'color:' + ${tag.color}" th:data-html="'<span class=\'badge\' style=\'background-color:' + ${tag.color} + '\'>' + ${tag.name} + '</span>'" th:value="${tag.id}" th:text="${tag.name}" th:selected="${selectedTagIds.contains(tag.id)}"></option>
                             </th:block>
-                        </td>
-                        <td class="clickable-td">
-                            <i th:if="${form.isFeatured}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.isFeatured}" class="fi fi-rr-cross-small text-danger"></i>
-                        </td>
-                        <td>
-                            <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
-                        </td>
-                        <td class="clickable-td">
-                            <i th:if="${form.activeVersion}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
-                        </td>
-                        <td class="clickable-td">
-                            <i th:if="${form.hideButton}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.hideButton}" class="fa-solid fa-minus text-secondary"></i>
-                        </td>
-                        <td class="clickable-td">
-                            <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
-                        </td>
-                        <td class="clickable-td">
-                            <i th:if="${form.publicUsage}" class="fa-solid fa-check text-success"></i>
-                            <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
-                        </td>
-                        <td class="clickable-td" th:text="${form.roles}"></td>
-                        <td class="text-center">
-                            <div class="dropdown position-relative">
-                                <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
-                                        th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${form.id}">
-                                    <li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
-                                            <i class="fa-solid fa-pencil-alt pr-2"></i> Modifier les paramètres
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">
-                                            <i class="fa-solid fa-align-justify pr-2"></i> Modifier les champs
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
-                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">
-                                            <i class="fa-solid fa-signature pr-2"></i> Configurer les champs signatures
-                                        </a>
-                                    <li>
-                                    </li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
-                                            th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
-                                            <i class="fa-solid fa-cloud-download-alt pr-2"></i> Exporter la configuration
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
-                                            th:href="'/' + ${workflowRole} + '/forms/' + ${form.name} + '/datas/csv'">
-                                            <i class="fa-solid fa-file-export pr-2"></i> Exporter les données saisies
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="btn btn-transparent text-dark text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
-                                            data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
-                                            <i class="fa-solid fa-trash-alt pr-2"></i> Supprimer
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id}" th:method="delete">
-                                            <div class="modal-header">
-                                                <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
-                                                        aria-label="Close">
-
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-danger text-center">Confirmez-vous la
-                                                    suppression du formulaire ?
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline pull-left"
-                                                        data-bs-dismiss="modal">Non
-                                                </button>
-                                                <button type="submit"
-                                                        class="btn btn-outline pull-left btn-danger">
-                                                    Oui
-                                                </button>
-                                            </div>
-                                        </form>
+                        </select>
+                        <span class="input-group-text">Actifs</span>
+                        <select id="activeVersion" name="activeVersion" class="form-select" data-placeholder="Tous" onclick="event.stopPropagation();">
+                            <option data-placeholder="true" readonly="" value="">Tous</option>
+                            <option value="true" th:selected="${activeVersion != null && activeVersion}">Oui</option>
+                            <option value="false" th:selected="${activeVersion != null && !activeVersion}">Non</option>
+                        </select>
+                    </div>
+                    <div class="table-fix-head scrollbar-style rounded-3 admin-list-table-wrap">
+                        <table id="formsListTable" class="table table-light table-striped table-hover table-borderless admin-list-table">
+                            <colgroup>
+                                <col style="width: 72px;">
+                                <col style="width: 16%;">
+                                <col style="width: 20%;">
+                                <col style="width: 12%;">
+                                <col style="width: 86px;">
+                                <col style="width: 15%;">
+                                <col style="width: 72px;">
+                                <col style="width: 112px;">
+                                <col style="width: 86px;">
+                                <col style="width: 72px;">
+                                <col style="width: 12%;">
+                                <col style="width: 88px;">
+                            </colgroup>
+                            <thead class="table-secondary">
+                            <tr>
+                                <th>Id</th>
+                                <th>
+                                    <button type="button" class="btn btn-link btn-sm p-0 text-dark text-decoration-none js-sort-name" data-table-id="formsListTable" data-col-index="1">
+                                        Nom&nbsp;<i class="fi fi-rr-sort-alt" aria-hidden="true"></i>
+                                    </button>
+                                    <input type="search" class="form-control form-control-sm mt-1 js-search-name" data-table-id="formsListTable" data-col-index="1" placeholder="Rechercher">
+                                </th>
+                                <th>Titre</th>
+                                <th>Tags</th>
+                                <th>À la une</th>
+                                <th>Circuit associé</th>
+                                <th>Actif</th>
+                                <th>Tuile masquée</th>
+                                <th>Supprimé</th>
+                                <th>Public</th>
+                                <th>Rôle</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="form : ${forms}" th:data-href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
+                                <td><input type="text" th:value="${form.id}" disabled></td>
+                                <td class="clickable-td" th:text="${form.name}"></td>
+                                <td class="clickable-td" th:text="${form.title}"></td>
+                                <td th:class="${form.id != null}? 'clickable-td' : ''">
+                                    <th:block th:each="tag : ${form.tags}">
+                                        <span th:text="${tag.name}" th:style="'background-color: ' + ${tag.color}" class="badge"></span>
+                                    </th:block>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.featured}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${form.featured}" class="fi fi-rr-cross-small text-danger"></i>
+                                </td>
+                                <td>
+                                    <a th:if="${form.workflow != null}" th:href="'/' + ${workflowRole} + '/workflows/update/' + ${form.workflow.id}" th:text="${form.workflow.description}"></a>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.activeVersion}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${form.activeVersion}" class="fi fi-rr-cross-small text-danger"></i>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.hideButton}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${form.hideButton}" class="fi fi-rr-minus text-secondary"></i>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.deleted}" class="fi fi-rr-cross-small text-danger"></i>
+                                </td>
+                                <td class="clickable-td">
+                                    <i th:if="${form.publicUsage}" class="fi fi-rr-check text-success"></i>
+                                    <i th:unless="${form.publicUsage}" class="fi fi-rr-cross-small text-danger"></i>
+                                </td>
+                                <td class="clickable-td" th:text="${form.roles}"></td>
+                                <td class="text-center">
+                                    <div class="dropdown position-relative">
+                                        <button type="button" th:id="'menu-toggle_' + ${form.id}" class="btn text-dark" th:title="'Actions ' + ${form.title}"
+                                                th:data-bs-target="'#menu-' + ${form.id}" th:aria-controls="'menu-' + ${form.id}" data-bs-toggle="dropdown">
+                                            <i class="fi fi-rr-menu-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu position-absolute ps-2 pe-2" th:id="'menu-' + ${form.id}">
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/' + ${workflowRole} + '/forms/update/' + ${form.id}">
+                                                    <i class="fi fi-rr-pencil"></i> Modifier les paramètres
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/fields'">
+                                                    <i class="fi fi-rr-pen-field"></i> Modifier les champs
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Consulter" role="button"
+                                                   th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/signs'">
+                                                    <i class="fi fi-rr-digital-signature"></i> Configurer les champs signatures
+                                                </a>
+                                            <li>
+                                            </li>
+                                            <a class="btn btn-transparent text-dark text-left col-12" title="Exporter   " role="button"
+                                               th:href="'/' + ${workflowRole} + '/forms/export/' + ${form.id}">
+                                                <i class="fi fi-rr-file-export"></i> Exporter la configuration
+                                            </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-dark text-left col-12" title="Télécharger" role="button"
+                                                   th:href="'/' + ${workflowRole} + '/forms/' + ${form.id} + '/datas/csv'">
+                                                    <i class="fi fi-rr-file-csv"></i> Exporter les données saisies
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="btn btn-transparent text-danger text-left col-12" th:href="'#modal-warning-' + ${form.id}" role="button" title="Supprimer"
+                                                   data-bs-toggle="modal" th:data-bs-target="'#modal-warning-' + ${form.id}">
+                                                    <i class="fi fi-rr-trash"></i> Supprimer
+                                                </a>
+                                            </li>
+                                        </ul>
                                     </div>
-                                </div>
-                            </div>
 
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
-                    Aucun formulaire actif pour le moment
+                                    <div data-bs-focus="false" class="modal modal-warning fade in" th:id="'modal-warning-' + ${form.id}">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form id="command" th:action="'/' + ${workflowRole} + '/forms/' + ${form.id}" th:method="delete">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="btn-close" title="Fermer" data-bs-dismiss="modal"
+                                                                aria-label="Close">
+
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="alert alert-danger text-center">Confirmez-vous la
+                                                            suppression du formulaire ?
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline pull-left"
+                                                                data-bs-dismiss="modal">Non
+                                                        </button>
+                                                        <button type="submit"
+                                                                class="btn btn-outline pull-left btn-danger">
+                                                            Oui
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="alert alert-secondary" th:unless="${forms.size() > 0}">
+                            Aucun formulaire actif pour le moment
+                        </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="es-sign-buttons es-fixed-action-btns active">
+                    <ul class="list-unstyled">
+                        <li>
+                            <a title="Créer un formulaire depuis un formulaire PDF" data-bs-toggle="modal" data-bs-target="#newForm" class="btn btn-transparent text-dark">
+                                <i class="fi fi-rr-apps-add"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -177,6 +210,159 @@
 <script th:inline="javascript" type="module">
     import {FormManualAdd } from '/js/modules/ui/forms/FormManualAdd.js?version=@[(${versionApp})]@';
     new FormManualAdd();
+</script>
+<script>
+    (() => {
+        const navigateWithFilters = (updates) => {
+            const currentUrl = new URL(window.location.href);
+            const targetUrl = new URL(window.location.href);
+
+            Object.entries(updates).forEach(([key, value]) => {
+                if (Array.isArray(value)) {
+                    if (value.length > 0) {
+                        targetUrl.searchParams.set(key, value.join(','));
+                    } else {
+                        targetUrl.searchParams.delete(key);
+                    }
+                    return;
+                }
+
+                if (value == null || value === '') {
+                    targetUrl.searchParams.delete(key);
+                } else {
+                    targetUrl.searchParams.set(key, value);
+                }
+            });
+
+            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
+                return;
+            }
+
+            window.location.assign(targetUrl.pathname + targetUrl.search + targetUrl.hash);
+        };
+
+        const tagsSelect = document.getElementById('tags');
+        if (tagsSelect) {
+            tagsSelect.addEventListener('change', function () {
+                navigateWithFilters({ selectedTags: Array.from(this.selectedOptions).map(option => option.value) });
+            });
+        }
+
+        const activeVersionSelect = document.getElementById('activeVersion');
+        if (activeVersionSelect) {
+            activeVersionSelect.addEventListener('change', function () {
+                navigateWithFilters({ activeVersion: this.value });
+            });
+        }
+    })();
+</script>
+<style>
+    .admin-list-table-wrap {
+        overflow-x: auto;
+    }
+
+    .admin-list-filters select.slim-select-simple[multiple] {
+        height: 38px;
+        min-height: 38px;
+        overflow: hidden;
+    }
+
+    .admin-list-filters .ss-main {
+        min-height: 38px;
+    }
+
+    .admin-list-filters-loading {
+        visibility: hidden;
+    }
+
+    .admin-list-table {
+        min-width: 1080px;
+        table-layout: fixed;
+    }
+
+    .admin-list-table th,
+    .admin-list-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+    }
+
+    .admin-list-table td {
+        white-space: nowrap;
+    }
+
+    .admin-list-table .badge,
+    .admin-list-table .list-group-item {
+        white-space: normal;
+    }
+
+    @media (max-width: 1199.98px) {
+        .admin-list-table {
+            min-width: 960px;
+        }
+    }
+</style>
+<script>
+    (() => {
+        const showFiltersWhenReady = () => {
+            document.querySelectorAll('.admin-list-filters-loading').forEach(filters => {
+                const selects = filters.querySelectorAll('select.slim-select-simple');
+                let attempts = 0;
+                const reveal = () => {
+                    const ready = Array.from(selects).every(select => select.nextElementSibling?.classList.contains('ss-main'));
+                    if (ready || attempts >= 60) {
+                        filters.classList.remove('admin-list-filters-loading');
+                        return;
+                    }
+                    attempts++;
+                    requestAnimationFrame(reveal);
+                };
+                reveal();
+            });
+        };
+
+        showFiltersWhenReady();
+
+        const normalize = value => value.trim().toLocaleLowerCase();
+
+        document.querySelectorAll('.js-search-name').forEach(input => {
+            const table = document.getElementById(input.dataset.tableId);
+            const columnIndex = Number(input.dataset.colIndex);
+            if (!table || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            input.addEventListener('input', () => {
+                const search = normalize(input.value);
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cell = row.cells[columnIndex];
+                    row.classList.toggle('d-none', search !== '' && !normalize(cell ? cell.textContent : '').includes(search));
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-sort-name').forEach(button => {
+            const table = document.getElementById(button.dataset.tableId);
+            const columnIndex = Number(button.dataset.colIndex);
+            if (!table || !table.tBodies.length || Number.isNaN(columnIndex)) {
+                return;
+            }
+
+            button.addEventListener('click', () => {
+                const tbody = table.tBodies[0];
+                const direction = button.dataset.direction === 'asc' ? -1 : 1;
+                button.dataset.direction = direction === 1 ? 'asc' : 'desc';
+                const icon = button.querySelector('i');
+                if (icon) {
+                    icon.className = direction === 1 ? 'fi fi-rr-sort-amount-down' : 'fi fi-rr-sort-amount-up';
+                }
+
+                Array.from(tbody.rows)
+                    .sort((a, b) => direction * normalize(a.cells[columnIndex]?.textContent || '').localeCompare(normalize(b.cells[columnIndex]?.textContent || ''), 'fr'))
+                    .forEach(row => tbody.appendChild(row));
+            });
+        });
+    })();
 </script>
 <div data-bs-focus="false" class="modal fade" id="newManualForm"  role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -188,11 +374,11 @@
             <div class="modal-body">
                 <form th:action="'/' + ${workflowRole} + '/forms'" method="post">
                     <div class="form-group mb-3">
-                        <label for="titleManual" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <label for="titleManual" class="form-label">Titre (affiché aux utilisateurs)</label>
                         <input type="text" id="titleManual" name="title" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="nameManual" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
+                        <label for="nameManual" class="form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="nameManual" name="name" class="form-control" required>
                     </div>
                     <div class="form-check mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
@@ -200,7 +386,7 @@
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
                     <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
-                        <label for="roleNames" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <label for="roleNames" class="form-label">Nom du role autorisé à accéder au formulaire</label>
                         <select id="roleNames" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
@@ -208,7 +394,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowIdManual" class="col-form-label">Circuit associé</label>
+                        <label for="workflowIdManual" class="form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowIdManual" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -226,7 +412,7 @@
                                 </th:block>
                             </select>
                             <button id="btn-add-field" type="button" class="btn btn-success">
-                                <span class="fa-solid fa-plus fa-2xl" aria-hidden="true"></span>
+                                <span class="fi fi-rr-plus" aria-hidden="true"></span>
                             </button>
                         </div>
                     </div>
@@ -246,15 +432,15 @@
             <form id="addModel" th:action="'/' + ${workflowRole} + '/forms/generate?' + ${_csrf.parameterName} + '=' + ${_csrf.token}" method="post" enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label for="title" class="col-form-label">Titre (affiché aux utilisateurs)</label>
+                        <label for="title" class="form-label">Titre (affiché aux utilisateurs)</label>
                         <input type="text" id="title" name="title" class="form-control" onchange="" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="name" class="col-form-label">Nom (nom technique sans espace ni accents)</label>
+                        <label for="name" class="form-label">Nom (nom technique sans espace ni accents)</label>
                         <input type="text" id="name" name="name" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label class="col-form-label">Modèle PDF Form</label>
+                        <label class="form-label">Modèle PDF Form</label>
                         <div class="custom-file">
                             <input aria-describedby="inputGroupFileAddon01" class="form-control" data-buttonText="Choisir fichier" id="modelFile" name="multipartFile" type="file" required/>
                         </div>
@@ -272,7 +458,7 @@
                         <input type="checkbox" class="form-check-input" id="publicUsage" name="publicUsage">
                     </div>
                     <div class="form-group mb-3" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" >
-                        <label for="roleNames2" class="col-form-label">Nom du role autorisé à accéder au formulaire</label>
+                        <label for="roleNames2" class="form-label">Nom du role autorisé à accéder au formulaire</label>
                         <select id="roleNames2" class="slim-select" type="text" name="roleNames" multiple>
                             <th:block th:each="newRole : ${roles}">
                                 <option th:text="${newRole}" th:value="${newRole}"></option>
@@ -280,7 +466,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="workflowId" class="col-form-label">Circuit associé</label>
+                        <label for="workflowId" class="form-label">Circuit associé</label>
                         <select class="slim-select-simple" id="workflowId" name="workflowId">
                             <th:block th:each="workflowType : ${workflowTypes}">
                                 <option th:value="${workflowType.id}" th:text="${workflowType.description}"></option>
@@ -288,7 +474,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="prefillType" class="col-form-label">Type de pré-remplissage</label>
+                        <label for="prefillType" class="form-label">Type de pré-remplissage</label>
                         <select class="slim-select-simple" id="prefillType" name="prefillType">
                             <th:block th:each="preFillType : ${preFillTypes}">
                                 <option th:selected="${preFillType.name == 'default'}" th:value="${preFillType.name}"

@@ -13,19 +13,15 @@ export class PdfViewer extends EventFactory {
         this.viewed = false;
         this.url = url;
         this.interval = null;
-        this.initialOffset = 0;
         this.pages = [];
         this.signable = signable;
         this.editable = editable;
         this.currentStepNumber = currentStepNumber;
         this.saveScrolling = 0;
         this.pageNum = 1;
-        this.annotationDisplay = null;
         this.eventBus = new EventBus({dispatchToDOM: false});
         this._optionalContentConfigPromise = null;
-        this._isRefreshingOCG = false;
         const testUrl = new URL(window.location.href);
-        const hasAnnotation = testUrl.searchParams.has("annotation");
         if(forcePageNum != null) {
             this.pageNum = forcePageNum;
         }
@@ -44,18 +40,26 @@ export class PdfViewer extends EventFactory {
         this.page = null;
         this.dataFields = jsFields;
         this.savedFields = new Map();
+        this.linkValidationStates = new Map();
+        this.linkValidationTimers = new Map();
+        this.linkValidationControllers = new Map();
+        this.linkValidationSeq = new Map();
         this.events = {};
-        this.rotation = null;
-        this.pageRotation = 0;
+        this.rotationOverride = null;
         this.renderedPages = 0;
         this.renderQueue = [];
         this.activeRenders = 0;
         this.maxConcurrentRenders = 5;
+        this.renderCycleId = 0;
+        this.isRendering = false;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
         this.renderedPagesMap = new Map();
         this.displayedPagesMap = new Map();
         this.lastWidth = window.innerWidth;
         this.lastHeight = window.innerHeight;
         this.currentOptionalContentConfig = null;
+        this._activeLayerView = null; // { stepNumber: number, solo: boolean } | null
         let self = this;
         $(document).ready(function() {
             if (!globalThis.pdfjsLib || !Promise.withResolvers) {
@@ -63,13 +67,15 @@ export class PdfViewer extends EventFactory {
                     document.location = "https://www.mozilla.org/fr/firefox/new/"
                 });
             } else {
-                self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.DISABLE;
-                if(hasAnnotation) {
-                    self.annotationDisplay = globalThis.pdfjsLib.AnnotationMode.ENABLE_FORMS;
+                if (!self.url) {
+                    throw new Error("PdfViewer: self.url est vide");
                 }
-                let loadingTask = globalThis.pdfjsLib.getDocument(self.url);
-                loadingTask.promise.then(function(pdf) {
-                    self.startRender(pdf)
+                if (globalThis.pdfjsLib.GlobalWorkerOptions) {
+                    globalThis.pdfjsLib.GlobalWorkerOptions.workerSrc = '/webjars/pdfjs-dist/legacy/build/pdf.worker.min.mjs';
+                }
+                let loadingTask = globalThis.pdfjsLib.getDocument({ url: self.url });
+                loadingTask.promise.then(async function(pdf) {
+                    await self.startRender(pdf)
                 });
             }
         });
@@ -83,35 +89,39 @@ export class PdfViewer extends EventFactory {
         $('#zoomout').on('click', e => this.zoomOut());
         $('#fullwidth').on('click', e => this.fullWidth());
         $('#fullheight').on('click', e => this.fullHeight());
-        $('#autototate').on('click', e => this.autoRotate());
+        $('#autoRotate').on('click', e => this.autoRotate());
+        $(document).on('click', '.display-layer-btn', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, false, layerId);
+        });
+
         $(document).on('click', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-
-            $('.toggle-layer-btn').each(function() {
-                const btnStep = parseInt($(this).data('step'));
-                const $icon = $(this).find('i');
-
-                if (btnStep <= stepNumber) {
-                    // Niveaux inférieurs et courant : fi-rr-eye + noir
-                    $(this).css('opacity', '1');
-                    $icon.removeClass('fi-rr-eye-crossed').addClass('fi-rr-eye');
-                } else {
-                    // Niveaux supérieurs : fi-rr-eye-crossed + gris
-                    $(this).css('opacity', '0.5');
-                    $icon.removeClass('fi-rr-eye').addClass('fi-rr-eye-crossed');
-                }
-            });
-
-            self.showLayerByStep(stepNumber);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.toggleLayerByStep(stepNumber, true, layerId);
         });
+
         $(document).on('mouseenter', '.toggle-layer-btn', (e) => {
             const stepNumber = parseInt($(e.currentTarget).data('step'));
-            self.highlightStep(stepNumber);
+            const layerId = $(e.currentTarget).data('layer-id');
+            self.highlightStep(stepNumber, layerId);
         });
 
         $(document).on('mouseleave', '.toggle-layer-btn', (e) => {
             self.clearHighlight();
         });
+
+        $(document).on('mouseenter', '.toggle-layer-div', (e) => {
+            const stepNumber = parseInt($(e.currentTarget).data('step'));
+            const layerId = $(e.currentTarget).find('[data-layer-id]').first().data('layer-id');
+            self.highlightStep(stepNumber, layerId);
+        });
+
+        $(document).on('mouseleave', '.toggle-layer-div', (e) => {
+            self.clearHighlight();
+        });
+
         const THRESHOLD = 100;
         const DEBOUNCE_DELAY = 100;
         let resizeTimer = null;
@@ -134,6 +144,83 @@ export class PdfViewer extends EventFactory {
         } else {
             this.adjustZoom();
         }
+    }
+
+    getWorkspaceElement() {
+        return document.getElementById('workspace');
+    }
+
+    getScrollTop() {
+        const workspace = this.getWorkspaceElement();
+        return workspace ? workspace.scrollTop : window.scrollY;
+    }
+
+    getViewportHeight() {
+        const workspace = this.getWorkspaceElement();
+        return workspace ? workspace.clientHeight : window.innerHeight;
+    }
+
+    scrollToPosition(top, behavior = 'auto') {
+        const workspace = this.getWorkspaceElement();
+        if (workspace) {
+            workspace.scrollTo({
+                top: Math.max(0, top),
+                left: 0,
+                behavior: behavior,
+            });
+            return;
+        }
+        window.scrollTo({
+            top: Math.max(0, top),
+            left: 0,
+            behavior: behavior,
+        });
+    }
+
+    animateScrollToPosition(top) {
+        const targetTop = Math.max(0, top);
+        const workspace = this.getWorkspaceElement();
+        if (workspace) {
+            $(workspace).stop().animate({
+                scrollTop: targetTop
+            }, 100);
+            return;
+        }
+        $('html, body').stop().animate({
+            scrollTop: targetTop
+        }, 100);
+    }
+
+    getPageRelativeTop(pageNum) {
+        const page = $("#page_" + pageNum);
+        if (!page.length) {
+            return 0;
+        }
+        const firstPage = $("#page_1");
+        const pageTop = page.position()?.top ?? 0;
+        if (!firstPage.length) {
+            return Math.round(pageTop);
+        }
+        const firstPageTop = firstPage.position()?.top ?? 0;
+        return Math.round(pageTop - firstPageTop);
+    }
+
+    // Absolute top within #pdf positioning context (used by absolute overlays).
+    getPageTopInPdf(pageNum) {
+        const page = $("#page_" + pageNum);
+        if (!page.length) {
+            return 0;
+        }
+        return Math.round(page.position()?.top ?? 0);
+    }
+
+    // Absolute left within #pdf positioning context (used by absolute overlays).
+    getPageLeftInPdf(pageNum) {
+        const page = $("#page_" + pageNum);
+        if (!page.length) {
+            return 0;
+        }
+        return Math.round(page.position()?.left ?? 0);
     }
 
     set optionalContentConfigPromise(promise) {
@@ -171,15 +258,14 @@ export class PdfViewer extends EventFactory {
 
     getVisiblePages() {
         const visiblePages = [];
-        const scrollTop = window.scrollY;
-        const scrollBottom = scrollTop + window.innerHeight;
+        const scrollTop = this.getScrollTop();
+        const scrollBottom = scrollTop + this.getViewportHeight();
 
         for (let i = 1; i <= this.numPages; i++) {
             const pageElement = document.getElementById(`page_${i}`);
             if (pageElement) {
-                const rect = pageElement.getBoundingClientRect();
-                const elementTop = rect.top + scrollTop;
-                const elementBottom = elementTop + rect.height;
+                const elementTop = this.getPageRelativeTop(i);
+                const elementBottom = elementTop + pageElement.offsetHeight;
                 if (elementBottom > scrollTop && elementTop < scrollBottom) {
                     visiblePages.push(i);
                 }
@@ -190,11 +276,7 @@ export class PdfViewer extends EventFactory {
 
     restoreScrolling() {
         let newScrolling = Math.round(this.saveScrolling * this.scale);
-        window.scrollTo({
-            top: newScrolling,
-            left: 0,
-            behavior: 'auto',
-        });
+        this.scrollToPosition(newScrolling);
     }
 
     listenToSearchCompletion() {
@@ -213,7 +295,7 @@ export class PdfViewer extends EventFactory {
                         controller = new AbortController()
                         signal = controller.signal;
                         $.ajax({
-                            url: "/ws-secure/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
+                            url: "/user/users/search-extvalue?searchType=" + searchType + "&searchString=" + request.term + "&serviceName=" + serviceName + "&searchReturn=" + searchReturn,
                             dataType: "json",
                             signal: signal,
                             data: {
@@ -268,11 +350,115 @@ export class PdfViewer extends EventFactory {
         });
     }
 
+    async applyLinkAnnotationsVisibility() {
+        if (!this.pdfDoc) {
+            return;
+        }
+        const config = await Promise.resolve(this._optionalContentConfigPromise);
+        if (!config) {
+            return;
+        }
+
+        const visibleLayerNames = new Set();
+        for (const [id, group] of config) {
+            if (group?.visible) {
+                visibleLayerNames.add(group.name);
+            }
+        }
+
+        const tasks = [];
+        for (let pageNum = 1; pageNum <= this.numPages; pageNum++) {
+            tasks.push(this.applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames));
+        }
+        await Promise.all(tasks);
+    }
+
+    async applyLinkAnnotationsVisibilityForPage(pageNum, visibleLayerNames) {
+        const pageContainer = document.getElementById(`page_${pageNum}`);
+        if (!pageContainer) {
+            return;
+        }
+        const annotationLayer = pageContainer.querySelector('.annotationLayer');
+        if (!annotationLayer) {
+            return;
+        }
+
+        const page = await this.pdfDoc.getPage(pageNum);
+        const annotations = await page.getAnnotations();
+        const annotationsById = new Map();
+        annotations.forEach(annotation => {
+            if (annotation?.id != null) {
+                annotationsById.set(String(annotation.id), annotation);
+            }
+        });
+
+        annotationLayer.querySelectorAll('section.linkAnnotation[data-annotation-id]').forEach(section => {
+            const annotation = annotationsById.get(String(section.dataset.annotationId));
+            if (!annotation) {
+                section.style.removeProperty('display');
+                return;
+            }
+
+            const layerIds = this.extractAnnotationLayerIds(annotation);
+            if (!layerIds.length) {
+                section.style.removeProperty('display');
+                return;
+            }
+
+            const shouldDisplay = layerIds.some(layerId => visibleLayerNames.has(layerId));
+            section.style.display = shouldDisplay ? '' : 'none';
+        });
+    }
+
+    extractAnnotationLayerIds(annotation) {
+        const layerIds = new Set();
+        if (!annotation) {
+            return [];
+        }
+
+        [annotation.annotationName, annotation.name, annotation.ocgName, annotation.layerName].forEach(value => {
+            if (typeof value === 'string' && value.trim()) {
+                layerIds.add(value.trim());
+            }
+        });
+
+        [annotation.contents, annotation.contentsObj?.str, annotation.title].forEach(value => {
+            if (typeof value !== 'string' || !value.trim()) {
+                return;
+            }
+            try {
+                const parsed = JSON.parse(value);
+                if (parsed?.layer_id) {
+                    layerIds.add(String(parsed.layer_id).trim());
+                }
+            } catch (e) {
+                const match = value.match(/"layer_id"\s*:\s*"([^"]+)"/);
+                if (match?.[1]) {
+                    layerIds.add(match[1].trim());
+                }
+            }
+        });
+
+        return Array.from(layerIds);
+    }
+
+    isApplicationLayerName(layerName) {
+        if (typeof layerName !== 'string' || !layerName.trim()) {
+            return false;
+        }
+        return /^layer_\d+$/.test(layerName)
+            || /^sign_\d+_.+/.test(layerName)
+            || /^SignStep_\d+_.+/.test(layerName);
+    }
+
     checkCurrentPage(e) {
         if(this.renderedPages < this.numPages) return;
         let numPages = this.pdfDoc.numPages;
+
         for(let i = 1; i < numPages + 1; i++) {
-            if(e > $("#page_" + i).offset().top - 250) {
+            let pagePos = this.getPageRelativeTop(i);
+
+            if(e > pagePos - 250) {
                 this.pageNum = i;
                 document.getElementById('page_num').value = this.pageNum;
                 if((this.pageNum === this.numPages || this.numPages === 1) && !this.viewed) {
@@ -293,11 +479,24 @@ export class PdfViewer extends EventFactory {
         this.fireEvent("scaleChange", ['in']);
     }
 
-    startRender(pdf) {
-        this.pdfDiv.css('opacity', 0);
-        if(this.pdfDoc == null) {
+    async startRender(pdf) {
+        if (pdf != null && this.pdfDoc == null) {
             this.pdfDoc = pdf;
         }
+        if (this.pdfDoc == null) {
+            return;
+        }
+        if (this.isRendering || this.activeRenders > 0 || this.renderQueue.length > 0) {
+            this.pendingRender = true;
+            this.pendingRenderPdf = pdf ?? this.pdfDoc;
+            return;
+        }
+
+        this.isRendering = true;
+        this.pendingRender = false;
+        this.pendingRenderPdf = null;
+        const currentRenderCycleId = ++this.renderCycleId;
+        this.pdfDiv.css('opacity', 0);
         this.numPages = this.pdfDoc.numPages;
         document.getElementById('page_count').textContent = this.pdfDoc.numPages;
         this.renderedPages = 0;
@@ -309,35 +508,65 @@ export class PdfViewer extends EventFactory {
         $("#pdf-progress-bar").css("opacity", 1);
         this.startProgress();
 
-        this._optionalContentConfigPromise = this.pdfDoc.getOptionalContentConfig();
+        try {
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
+            this._optionalContentConfigPromise = Promise.resolve(config);
+        } catch (e) {
+            console.error("Error getting optional content config: " + e);
+            this._optionalContentConfigPromise = Promise.resolve(null);
+        }
 
         for (let i = 1; i <= this.numPages; i++) {
             this.renderQueue.push(i);
         }
-        this.processRenderQueue();
+        this.processRenderQueue(currentRenderCycleId);
 
         this.refreshTools();
         this.fireEvent("ready", ['ok']);
     }
 
-    processRenderQueue() {
+    processRenderQueue(renderCycleId = this.renderCycleId) {
         while (this.activeRenders < this.maxConcurrentRenders && this.renderQueue.length > 0) {
             const pageNum = this.renderQueue.shift();
             this.activeRenders++;
 
             let self = this;
             this.pdfDoc.getPage(pageNum).then(page => {
-                return self.renderTask(page, pageNum, self._optionalContentConfigPromise);
-            }).then(function() {
+                return self.renderTask(page, pageNum, self._optionalContentConfigPromise.catch(e => {
+                    console.error("Error in optionalContentConfigPromise: " + e);
+                    return null;
+                }), renderCycleId);
+            }).then(async function() {
                 self.activeRenders--;
+                if (renderCycleId !== self.renderCycleId) {
+                    if (self.activeRenders === 0 && self.pendingRender) {
+                        self.isRendering = false;
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        await self.startRender(pendingPdf);
+                    }
+                    return;
+                }
                 self.renderedPages++;
 
                 if(self.renderQueue.length === 0 && self.activeRenders === 0) {
+                    self.isRendering = false;
+                    if (self.pendingRender) {
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        await self.startRender(pendingPdf);
+                        return;
+                    }
                     // Si c'est un refresh OCG, ne pas lancer postRenderAll
                     if (self._isRefreshingOCG) {
                         self._isRefreshingOCG = false;
+                        self.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur masquage liens OCG:', err));
                     } else {
-                        self.initialOffset = parseInt($("#page_1").offset().top);
                         self.fireEvent("renderFinished", ['ok']);
                         $(document).trigger("renderFinished");
                         if(self.pages.length === self.numPages) {
@@ -348,27 +577,42 @@ export class PdfViewer extends EventFactory {
                         }
                     }
                 } else {
-                    self.processRenderQueue();
+                    self.processRenderQueue(renderCycleId);
                 }
             })
-                .catch(err => {
+                .catch(async err => {
+                    if (renderCycleId !== self.renderCycleId) {
+                        self.activeRenders--;
+                        if (self.activeRenders === 0 && self.pendingRender) {
+                            self.isRendering = false;
+                            const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                            self.pendingRender = false;
+                            self.pendingRenderPdf = null;
+                            await self.startRender(pendingPdf);
+                        }
+                        return;
+                    }
                     console.error(`Erreur rendu page ${pageNum}:`, err);
                     self.activeRenders--;
+                    self.isRendering = false;
                     self._isRefreshingOCG = false;
-                    self.processRenderQueue();
+                    if (self.pendingRender && self.activeRenders === 0) {
+                        const pendingPdf = self.pendingRenderPdf ?? self.pdfDoc;
+                        self.pendingRender = false;
+                        self.pendingRenderPdf = null;
+                        await self.startRender(pendingPdf);
+                        return;
+                    }
+                    self.processRenderQueue(renderCycleId);
                 });
         }
     }
 
     scrollToPage(num) {
-        let self = this;
         let page = $("#page_" + num);
         if(page.length) {
-            let scrollTo = page.offset().top - self.initialOffset;
-            $([document.documentElement, document.body]).animate({
-                scrollTop: scrollTo
-            }, 100, function (){
-            });
+            let scrollTo = this.getPageRelativeTop(num);
+            this.animateScrollToPosition(scrollTo);
         }
     }
 
@@ -396,7 +640,14 @@ export class PdfViewer extends EventFactory {
         }
     }
 
-    async renderTask(page, i, configPromise) {
+    getPageRotation(page) {
+        if (this.rotationOverride == null) {
+            return page.rotate;
+        }
+        return this.rotationOverride;
+    }
+
+    async renderTask(page, i, configPromise, renderCycleId = this.renderCycleId) {
         return new Promise((resolve, reject) => {
             let container = document.getElementById(`page_${i}`);
             if (!container) {
@@ -415,43 +666,49 @@ export class PdfViewer extends EventFactory {
             });
 
             const browserZoom = this.getBrowserZoom();
-            this.pageRotation = page.rotate;
-
-            if(this.rotation == null) {
-                this.rotation = this.pageRotation;
-            }
+            const pageRotation = this.getPageRotation(page);
 
             const viewport = page.getViewport({
                 scale: this.scale,
-                rotation: this.rotation
+                rotation: pageRotation
             });
 
             const dispatchToDOM = false;
             const pdfPageView = new pdfjsViewer.PDFPageView({
                 eventBus: this.eventBus,
                 container: container,
-                id: this.pageNum,
+                id: i,
                 scale: this.scale,
                 defaultViewport: viewport,
                 useOnlyCssZoom: true,
                 defaultZoomDelay: 0,
-                textLayerMode: 0,
+                textLayerMode: 1,
                 annotationMode: pdfjsLib.AnnotationMode.ENABLE_FORMS,
-                // CORRECTIF CRUCIAL: Passer la config OCG ici
                 optionalContentConfigPromise: configPromise
             });
 
             pdfPageView.setPdfPage(page);
 
-            let self = this;
             pdfPageView.draw().then(() => {
+                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                    resolve("obsolete");
+                    return;
+                }
                 const container = document.getElementById(`page_${i}`);
                 if (!container) {
+                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                        resolve("obsolete");
+                        return;
+                    }
                     reject(new Error("Container disparu"));
                     return;
                 }
                 const canvas = container.querySelector('canvas');
                 if (!canvas) {
+                    if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                        resolve("obsolete");
+                        return;
+                    }
                     reject(new Error("Pas de canvas"));
                     return;
                 }
@@ -475,21 +732,32 @@ export class PdfViewer extends EventFactory {
                 container.style.width = `${Math.floor(viewport.width)}px`;
                 container.style.height = `${Math.floor(viewport.height)}px`;
                 container.style.overflow = 'hidden';
+                const layerWidth = Math.floor(viewport.width);
+                const layerHeight = Math.floor(viewport.height);
                 const annotationLayer = container.querySelector('.annotationLayer');
                 if (annotationLayer) {
-                    annotationLayer.setAttribute("data-main-rotation", this.rotation);
-                    const isPortrait = viewport.width < viewport.height;
-                    if (!isPortrait) {
-                        annotationLayer.style.width = `${Math.floor(viewport.height)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.width)}px`;
-                    } else {
-                        annotationLayer.style.width = `${Math.floor(viewport.width)}px`;
-                        annotationLayer.style.height = `${Math.floor(viewport.height)}px`;
-                    }
+                    annotationLayer.setAttribute("data-main-rotation", pageRotation);
+                    annotationLayer.style.width = `${layerWidth}px`;
+                    annotationLayer.style.height = `${layerHeight}px`;
+                    annotationLayer.style.setProperty('--scale-factor', this.scale);
+                    annotationLayer.style.setProperty('--total-scale-factor', this.scale);
                 }
-                this.pages.push(page);
+                const textLayer = container.querySelector('.textLayer');
+                if (textLayer) {
+                    textLayer.style.width = `${layerWidth}px`;
+                    textLayer.style.height = `${layerHeight}px`;
+                    textLayer.style.left = '0';
+                    textLayer.style.top = '0';
+                    textLayer.style.setProperty('--scale-factor', this.scale);
+                    textLayer.style.setProperty('--total-scale-factor', this.scale);
+                }
+                this.pages[i - 1] = page;
                 resolve("ok");
             }).catch(err => {
+                if (renderCycleId !== this.renderCycleId || this.pendingRender) {
+                    resolve("obsolete");
+                    return;
+                }
                 console.error("Erreur dans pdfPageView.draw() page", i, ":", err);
                 reject(err);
             });
@@ -518,6 +786,31 @@ export class PdfViewer extends EventFactory {
             this.postRender(this.pages[i]);
         }
         this.restoreScrolling();
+        this.updateHorizontalOverflowState();
+        this.applyLinkAnnotationsVisibility().catch(err => console.error('Erreur postRenderAll liens OCG:', err));
+    }
+
+    updateHorizontalOverflowState() {
+        const workspace = this.getWorkspaceElement();
+        if (!workspace) {
+            return;
+        }
+        workspace.style.overflowX = 'auto';
+        const firstPage = document.getElementById('page_1');
+        if (!firstPage) {
+            return;
+        }
+        const hasHorizontalOverflow = firstPage.offsetWidth > workspace.clientWidth;
+        // Bootstrap's justify-content-center uses !important; override with inline !important on overflow.
+        if (hasHorizontalOverflow) {
+            workspace.style.setProperty('justify-content', 'flex-start', 'important');
+        } else {
+            workspace.style.removeProperty('justify-content');
+        }
+        this.pdfDiv.css('align-items', hasHorizontalOverflow ? 'flex-start' : 'center');
+        if (!hasHorizontalOverflow) {
+            workspace.scrollLeft = 0;
+        }
     }
 
     postRender(page) {
@@ -731,7 +1024,7 @@ export class PdfViewer extends EventFactory {
                     let sendField = inputField;
                     $.ajax({
                         type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
                         success: response => this.autocomplete(response, sendField)
                     });
                 }
@@ -754,6 +1047,216 @@ export class PdfViewer extends EventFactory {
 
                 if (dataField.type === "number") {
                     inputField.get(0).type = "number";
+                }
+
+                if (dataField.type === "link") {
+                    this.ensureLinkFieldStyles();
+                    inputField.addClass("field-type-link pdf-link-input");
+
+                    const currentValue = (items[i].fieldValue && items[i].fieldValue.length)
+                        ? items[i].fieldValue
+                        : (dataField.defaultValue || '');
+
+                    const testerId = inputName + "_test_btn";
+                    const disabledLinkId = inputName + "_link_btn";
+                    section.css('overflow', 'visible');
+                    section.find('#' + testerId + ', #' + disabledLinkId).remove();
+
+                    if (this.isFieldEnable(dataField)) {
+                        inputField.attr('type', 'url');
+                        inputField.attr('inputmode', 'url');
+                        inputField.attr('placeholder', 'https://exemple.org');
+                        inputField.show();
+                        if (currentValue) {
+                            inputField.val(currentValue);
+                        }
+
+                        const $tester = $('<button type="button" id="' + testerId + '" class="pdf-link-test-btn" disabled>Tester</button>');
+                        section.append($tester);
+
+                        const getLiveInputField = () => {
+                            const $liveInput = $('section[data-annotation-id=' + items[i].id + '] > input[name="' + inputName + '"]');
+                            if ($liveInput.length) {
+                                return $liveInput;
+                            }
+                            return $('section[data-annotation-id=' + items[i].id + '] > input').first();
+                        };
+
+                        const updateLinkState = () => {
+                            const $liveInput = getLiveInputField();
+                            const value = ($liveInput.val() || '').trim();
+                            const element = $liveInput.get(0);
+                            const normalizedValue = this.normalizeLinkValue(value);
+                            const currentState = this.linkValidationStates.get(inputName);
+
+                            if (!value) {
+                                this.clearLinkReachabilityCheck(inputName);
+                                this.linkValidationStates.set(inputName, {
+                                    status: 'empty',
+                                    value: '',
+                                    normalizedValue: ''
+                                });
+                                $tester.prop('disabled', true);
+                                $tester.data('href', '');
+                                $liveInput.removeClass('pdf-link-invalid pdf-link-valid');
+                                if (element && typeof element.setCustomValidity === 'function') {
+                                    element.setCustomValidity('');
+                                }
+                                return;
+                            }
+
+                            if (!this.isValidLinkValue(value)) {
+                                this.clearLinkReachabilityCheck(inputName);
+                                this.linkValidationStates.set(inputName, {
+                                    status: 'format-invalid',
+                                    value: value,
+                                    normalizedValue: ''
+                                });
+                                $liveInput.addClass('pdf-link-invalid');
+                                $liveInput.removeClass('pdf-link-valid');
+                                $tester.prop('disabled', true);
+                                $tester.data('href', '');
+                                if (element && typeof element.setCustomValidity === 'function') {
+                                    element.setCustomValidity('URL invalide');
+                                }
+                                return;
+                            }
+
+                            if (currentState && currentState.normalizedValue === normalizedValue) {
+                                if (currentState.status === 'reachable') {
+                                    $tester.prop('disabled', false);
+                                    $tester.data('href', currentState.normalizedValue || '');
+                                    $liveInput.removeClass('pdf-link-invalid').addClass('pdf-link-valid');
+                                    if (element && typeof element.setCustomValidity === 'function') {
+                                        element.setCustomValidity('');
+                                    }
+                                    return;
+                                }
+                                if (currentState.status === 'checking') {
+                                    $tester.prop('disabled', true);
+                                    $tester.data('href', '');
+                                    $liveInput.removeClass('pdf-link-invalid pdf-link-valid');
+                                    if (element && typeof element.setCustomValidity === 'function') {
+                                        element.setCustomValidity('Vérification du lien en cours');
+                                    }
+                                    return;
+                                }
+                                if (currentState.status === 'unreachable') {
+                                    $tester.prop('disabled', true);
+                                    $tester.data('href', '');
+                                    $liveInput.addClass('pdf-link-invalid').removeClass('pdf-link-valid');
+                                    if (element && typeof element.setCustomValidity === 'function') {
+                                        element.setCustomValidity('Lien inaccessible');
+                                    }
+                                    return;
+                                }
+                            }
+
+                            this.scheduleLinkReachabilityCheck(inputName, value, (state) => {
+                                const $currentInput = getLiveInputField();
+                                const currentElement = $currentInput.get(0);
+
+                                if (state.status === 'checking') {
+                                    $tester.prop('disabled', true);
+                                    $tester.data('href', '');
+                                    $currentInput.removeClass('pdf-link-invalid pdf-link-valid');
+                                    if (currentElement && typeof currentElement.setCustomValidity === 'function') {
+                                        currentElement.setCustomValidity('Vérification du lien en cours');
+                                    }
+                                    return;
+                                }
+
+                                if (state.status === 'reachable') {
+                                    $tester.prop('disabled', false);
+                                    $tester.data('href', state.normalizedValue || '');
+                                    $currentInput.removeClass('pdf-link-invalid').addClass('pdf-link-valid');
+                                    if (currentElement && typeof currentElement.setCustomValidity === 'function') {
+                                        currentElement.setCustomValidity('');
+                                    }
+                                    return;
+                                }
+
+                                $tester.prop('disabled', true);
+                                $tester.data('href', '');
+                                $currentInput.addClass('pdf-link-invalid').removeClass('pdf-link-valid');
+                                if (currentElement && typeof currentElement.setCustomValidity === 'function') {
+                                    currentElement.setCustomValidity('Lien inaccessible');
+                                }
+                            });
+                        };
+
+                        section.off('.pdf_link_' + items[i].id);
+                        section.on('input.pdf_link_' + items[i].id + ' keyup.pdf_link_' + items[i].id + ' change.pdf_link_' + items[i].id + ' blur.pdf_link_' + items[i].id, 'input[name="' + inputName + '"]', () => {
+                            updateLinkState();
+                        });
+
+                        $tester.off('click.pdf_link');
+                        $tester.off('mousedown.pdf_link');
+                        $tester.on('mousedown.pdf_link', (e) => {
+                            e.preventDefault();
+                        });
+                        $tester.on('click.pdf_link', (e) => {
+                            e.preventDefault();
+                            const href = $tester.data('href');
+                            if (!href) {
+                                return;
+                            }
+                            window.open(href, '_blank', 'noopener,noreferrer');
+                        });
+
+                        updateLinkState();
+                    } else {
+                        inputField.attr('type', 'url');
+                        inputField.attr('inputmode', 'url');
+                        inputField.show();
+                        inputField.prop('readonly', true);
+                        inputField.prop('disabled', false);
+                        inputField.removeClass('disabled-field disable-selection');
+                        inputField.parent().removeClass('disable-div-selection');
+                        inputField.addClass('pdf-link-disabled-input');
+                        const rawValue = (currentValue || '').trim();
+                        const valid = this.isValidLinkValue(rawValue);
+                        const href = valid ? this.normalizeLinkValue(rawValue) : '#';
+                        const label = valid ? 'Ouvrir le lien' : 'Lien indisponible';
+                        const $linkButton = $('<a id="' + disabledLinkId + '" class="pdf-link-display-btn" target="_blank" rel="noopener noreferrer"></a>');
+
+                        $linkButton.attr('href', href);
+                        $linkButton.text(label);
+
+                        if (!valid) {
+                            $linkButton.addClass('is-disabled');
+                            $linkButton.on('click', (e) => e.preventDefault());
+                        }
+
+                        inputField.off('click.pdf_link_disabled keydown.pdf_link_disabled');
+                        if (valid) {
+                            inputField.attr('title', rawValue);
+                            inputField.on('click.pdf_link_disabled', (e) => {
+                                e.preventDefault();
+                                window.open(href, '_blank', 'noopener,noreferrer');
+                            });
+                            inputField.on('keydown.pdf_link_disabled', (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    window.open(href, '_blank', 'noopener,noreferrer');
+                                }
+                            });
+                        }
+
+                        section.append($linkButton);
+                    }
+
+                    if (this.isFieldEnable(dataField)) {
+                        if (dataField.required) {
+                            inputField.prop('required', true);
+                            inputField.addClass('required-field');
+                        } else {
+                            inputField.prop('required', false);
+                            inputField.removeClass('required-field');
+                        }
+                    } else {
+                        inputField.prop('required', false);
+                    }
                 }
 
                 if (dataField.type === "radio") {
@@ -877,15 +1380,15 @@ export class PdfViewer extends EventFactory {
                         display: {
                             viewMode: 'clock',
                             icons: {
-                                time: 'fa fa-clock',
+                                time: 'fi fi-rr-clock',
                                 date: 'fi fi-rr-calendar-day',
-                                up: 'fa fa-chevron-up',
-                                down: 'fa fa-chevron-down',
-                                previous: 'fa fa-chevron-left',
-                                next: 'fa fa-chevron-right',
+                                up: 'fi fi-rr-angle-small-up',
+                                down: 'fi fi-rr-angle-small-down',
+                                previous: 'fi fi-rr-angle-small-left',
+                                next: 'fi fi-rr-angle-small-right',
                                 today: 'fi fi-rr-calendar-check',
-                                clear: 'fa fa-trash-alt',
-                                close: 'fa fa-check'
+                                clear: 'fi fi-rr-trash',
+                                close: 'fi fi-rr-check'
                             },
                             components: {
                                 calendar: false,
@@ -935,7 +1438,7 @@ export class PdfViewer extends EventFactory {
                 if (dataField.favorisable) {
                     $.ajax({
                         type: "GET",
-                        url: '/ws-secure/users/get-favorites/' + dataField.id,
+                        url: '/ws-secure/ui/favorites/fields/' + dataField.id,
                         success: response => this.autocomplete(response, sendField)
                     });
                 }
@@ -973,6 +1476,188 @@ export class PdfViewer extends EventFactory {
             $(this).removeClass("d-none");
         });
         this.listenToSearchCompletion();
+    }
+
+    ensureLinkFieldStyles() {
+        if (document.getElementById('pdf-link-style')) {
+            return;
+        }
+        const css = `
+            .pdf-link-input {
+                border-radius: 0 !important;
+                padding-right: 72px !important;
+            }
+            .pdf-link-disabled-input {
+                cursor: pointer;
+                background: #fff !important;
+                color: inherit !important;
+            }
+            .pdf-link-disabled-input:focus {
+                outline: 1px solid #0d6efd;
+                outline-offset: 0;
+            }
+            .pdf-link-test-btn,
+            .pdf-link-display-btn {
+                position: absolute;
+                top: 0;
+                right: 0;
+                height: 100%;
+                min-width: 68px;
+                border: 1px solid #6c757d;
+                background: #fff;
+                color: #212529;
+                padding: 0 10px;
+                cursor: pointer;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2;
+            }
+            .pdf-link-test-btn[disabled],
+            .pdf-link-display-btn.is-disabled {
+                color: #6c757d;
+                background: #f1f3f5;
+                cursor: not-allowed;
+                pointer-events: none;
+            }
+            .pdf-link-invalid {
+                border-color: #c82333 !important;
+            }
+            .pdf-link-valid {
+                border-color: #198754 !important;
+            }
+        `;
+        const style = document.createElement('style');
+        style.id = 'pdf-link-style';
+        style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
+    }
+
+    normalizeLinkValue(value) {
+        const trimmedValue = (value || '').trim();
+        if (!trimmedValue) {
+            return '';
+        }
+        if (/^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(trimmedValue)) {
+            return trimmedValue;
+        }
+        return 'https://' + trimmedValue;
+    }
+
+    isValidLinkValue(value) {
+        const normalizedValue = this.normalizeLinkValue(value);
+        if (!normalizedValue) {
+            return false;
+        }
+        try {
+            const url = new URL(normalizedValue);
+            if (!['http:', 'https:'].includes(url.protocol)) {
+                return false;
+            }
+            if (!url.hostname || !url.hostname.includes('.')) {
+                return false;
+            }
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    clearLinkReachabilityCheck(fieldName) {
+        const timer = this.linkValidationTimers.get(fieldName);
+        if (timer) {
+            clearTimeout(timer);
+            this.linkValidationTimers.delete(fieldName);
+        }
+        const controller = this.linkValidationControllers.get(fieldName);
+        if (controller) {
+            controller.abort();
+            this.linkValidationControllers.delete(fieldName);
+        }
+    }
+
+    async checkLinkReachability(url, signal) {
+        try {
+            await fetch(url, {
+                method: 'HEAD',
+                mode: 'no-cors',
+                cache: 'no-store',
+                redirect: 'follow',
+                signal: signal,
+            });
+            return true;
+        } catch (headError) {
+            if (signal?.aborted) {
+                throw headError;
+            }
+            await fetch(url, {
+                method: 'GET',
+                mode: 'no-cors',
+                cache: 'no-store',
+                redirect: 'follow',
+                signal: signal,
+            });
+            return true;
+        }
+    }
+
+    scheduleLinkReachabilityCheck(fieldName, value, onStateChange) {
+        const normalizedValue = this.normalizeLinkValue(value);
+        if (!normalizedValue) {
+            const emptyState = { status: 'empty', value: value, normalizedValue: '' };
+            this.linkValidationStates.set(fieldName, emptyState);
+            onStateChange(emptyState);
+            return;
+        }
+
+        this.clearLinkReachabilityCheck(fieldName);
+        const sequence = (this.linkValidationSeq.get(fieldName) || 0) + 1;
+        this.linkValidationSeq.set(fieldName, sequence);
+
+        const checkingState = {
+            status: 'checking',
+            value: value,
+            normalizedValue: normalizedValue,
+        };
+        this.linkValidationStates.set(fieldName, checkingState);
+        onStateChange(checkingState);
+
+        const timer = setTimeout(async () => {
+            const controller = new AbortController();
+            this.linkValidationControllers.set(fieldName, controller);
+            const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+            try {
+                await this.checkLinkReachability(normalizedValue, controller.signal);
+                if (this.linkValidationSeq.get(fieldName) !== sequence) {
+                    return;
+                }
+                const reachableState = {
+                    status: 'reachable',
+                    value: value,
+                    normalizedValue: normalizedValue,
+                };
+                this.linkValidationStates.set(fieldName, reachableState);
+                onStateChange(reachableState);
+            } catch (error) {
+                if (this.linkValidationSeq.get(fieldName) !== sequence) {
+                    return;
+                }
+                const unreachableState = {
+                    status: 'unreachable',
+                    value: value,
+                    normalizedValue: normalizedValue,
+                };
+                this.linkValidationStates.set(fieldName, unreachableState);
+                onStateChange(unreachableState);
+            } finally {
+                clearTimeout(timeoutId);
+                this.linkValidationControllers.delete(fieldName);
+            }
+        }, 350);
+
+        this.linkValidationTimers.set(fieldName, timer);
     }
 
     isFieldEnable(dataField) {
@@ -1038,21 +1723,33 @@ export class PdfViewer extends EventFactory {
     zoomIn(e) {
         const workspaceDiv = document.getElementById('workspace');
         const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
-        let newScale = Math.round(workspaceWidth / 600 * 10) / 10 - .1;
-        if (this.scale >= newScale) {
+        const baseLimit = Math.round(workspaceWidth / 600 * 10) / 10 - 0.1;
+        // On small screens, allow controlled overflow so text stays readable.
+        const overflowBonus = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 1.2
+            : 0;
+        const maxZoomLimit = Math.min(3.2, Math.max(baseLimit + overflowBonus, 1.8));
+        if (this.scale >= maxZoomLimit) {
             return;
         }
-        this.saveScrolling = Math.round(window.scrollY / this.scale);
+        this.saveScrolling = Math.round(this.getScrollTop() / this.scale);
         this.scale = Math.round((this.scale + this.zoomStep) * 1000) / 1000;
         console.info('zoom in, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['in']);
     }
 
     zoomOut(e) {
-        if (this.scale <= 0.2) {
+        const workspaceDiv = document.getElementById('workspace');
+        const workspaceWidth = workspaceDiv ? workspaceDiv.offsetWidth : window.innerWidth;
+        // On small screens, keep a higher minimum zoom to preserve readability.
+        const smallScreenPenalty = workspaceWidth < 1200
+            ? ((1200 - workspaceWidth) / 1200) * 0.5
+            : 0;
+        const minZoomLimit = Math.min(0.9, Math.max(0.2 + smallScreenPenalty, 0.2));
+        if (this.scale <= minZoomLimit) {
             return;
         }
-        this.scale = Math.round((this.scale - this.zoomStep) * 1000) / 1000;
+        this.scale = Math.max(minZoomLimit, Math.round((this.scale - this.zoomStep) * 1000) / 1000);
         console.info('zoom out, scale = ' + this.scale);
         this.fireEvent("scaleChange", ['out']);
     }
@@ -1081,12 +1778,8 @@ export class PdfViewer extends EventFactory {
 
     autoRotate() {
         console.info('rotate left');
-        if (this.rotation === 0) {
-            this.rotation = this.pageRotation;
-        } else {
-            this.rotation = 0;
-        }
-        let autorotatebtn = $("#autototate");
+        this.rotationOverride = this.rotationOverride === 0 ? null : 0;
+        let autorotatebtn = $("#autoRotate");
         autorotatebtn.toggleClass("btn-light btn-dark");
         autorotatebtn.toggleClass("btn-outline-dark border-dark");
         autorotatebtn.children().toggleClass("fi-rr-navigation fi-rr-compass-north")
@@ -1116,8 +1809,29 @@ export class PdfViewer extends EventFactory {
             $(self.dataFields).each(function (e, item) {
                 let savedField = self.savedFields.get(item.name)
                 formData[item.name] = savedField;
-                if (item.required && self.isFieldEnable(item) &&
-                    (!savedField || (savedField === "off" && item.type === "checkbox"))) {
+                item.validationError = null;
+                const isMissingRequiredValue = item.required && self.isFieldEnable(item) &&
+                    (!savedField || (savedField === "off" && item.type === "checkbox"));
+                const isInvalidLinkValue = item.type === "link" && self.isFieldEnable(item)
+                    && !!savedField && !self.isValidLinkValue(savedField);
+                const linkValidationState = item.type === "link"
+                    ? self.linkValidationStates.get(item.name)
+                    : null;
+                const isUnverifiedOrUnreachableLink = item.type === "link" && self.isFieldEnable(item)
+                    && !!savedField
+                    && self.isValidLinkValue(savedField)
+                    && (!linkValidationState || !['reachable'].includes(linkValidationState.status));
+
+                if (isMissingRequiredValue || isInvalidLinkValue || isUnverifiedOrUnreachableLink) {
+                    if (isInvalidLinkValue) {
+                        item.validationError = 'invalid_link';
+                    } else if (isUnverifiedOrUnreachableLink) {
+                        item.validationError = linkValidationState?.status === 'checking'
+                            ? 'checking_link'
+                            : 'unreachable_link';
+                    } else {
+                        item.validationError = 'required';
+                    }
                     let addWarning = true;
                     for(let i = 0; i < warningFields.length; i++) {
                         if(warningFields[i].name === item.name) {
@@ -1133,21 +1847,39 @@ export class PdfViewer extends EventFactory {
                 warningFields.sort((a, b) => a.compareByPage(b))
                 let text = "Certain champs requis n'ont pas été remplis dans ce formulaire<ul>";
                 if (warningFields.length < 2 && warningFields[0].name != null) {
-                    if (warningFields[0].description != null && warningFields[0].description !== "") {
-                        text = "Le champ " + warningFields[0].description + " n'est pas rempli en page " + warningFields[0].page;
+                    const fieldLabel = warningFields[0].description != null && warningFields[0].description !== ""
+                        ? warningFields[0].description
+                        : warningFields[0].name;
+                    if (warningFields[0].validationError === 'invalid_link') {
+                        text = "Le champ " + fieldLabel + " contient une URL invalide";
+                    } else if (warningFields[0].validationError === 'checking_link') {
+                        text = "Le champ " + fieldLabel + " est encore en cours de vérification";
+                    } else if (warningFields[0].validationError === 'unreachable_link') {
+                        text = "Le champ " + fieldLabel + " contient un lien inaccessible";
                     } else {
-                        text = "Le champ " + warningFields[0].name + " n'est pas rempli en page " + warningFields[0].page;
+                        text = "Le champ " + fieldLabel + " n'est pas rempli";
+                    }
+                    if (warningFields[0].page != null) {
+                        text += " en page " + warningFields[0].page;
                     }
                 } else {
                     warningFields.forEach(function (field) {
+                        let suffix = '';
+                        if (field.validationError === 'invalid_link') {
+                            suffix = ' : URL invalide';
+                        } else if (field.validationError === 'checking_link') {
+                            suffix = ' : vérification en cours';
+                        } else if (field.validationError === 'unreachable_link') {
+                            suffix = ' : lien inaccessible';
+                        }
                         if (field.description != null && field.description !== "") {
-                            text += "<li>" + field.description;
+                            text += "<li>" + field.description + suffix;
                             if(field.page != null) {
                                 text += " (en page " + (field.page + 1) + ")";
                             }
                             text +="</li>";
                         } else {
-                            text += "<li>" + field.name;
+                            text += "<li>" + field.name + suffix;
                             if(field.page != null) {
                                 text += " (en page " + (field.page + 1) + ")";
                             }
@@ -1176,6 +1908,17 @@ export class PdfViewer extends EventFactory {
         field.focus();
         let offset = field.offset();
         if(offset != null) {
+            const workspace = this.getWorkspaceElement();
+            if (workspace) {
+                const workspaceOffset = $(workspace).offset();
+                if (workspaceOffset != null) {
+                    $(workspace).animate({
+                        scrollTop: offset.top - workspaceOffset.top + workspace.scrollTop - 170,
+                        scrollLeft: 0
+                    });
+                    return;
+                }
+            }
             $('html, body').animate({
                 scrollTop: offset.top - 170,
                 scrollLeft: offset.left
@@ -1227,55 +1970,178 @@ export class PdfViewer extends EventFactory {
         return window.devicePixelRatio || 1;
     }
 
-    async showLayerByStep(stepNumber) {
+    getApplicationLayers(config) {
+        const layers = [];
+        if (!config) {
+            return layers;
+        }
+        for (const [id, group] of config) {
+            if (group?.name && this.isApplicationLayerName(group.name)) {
+                layers.push({ id, name: group.name, visible: group.visible });
+            }
+        }
+        return layers;
+    }
+
+    resolveLayerName(stepNumber, requestedLayerName, layers) {
+        if (requestedLayerName) {
+            const exactMatch = layers.find(group => group.name === requestedLayerName);
+            if (exactMatch) {
+                return exactMatch.name;
+            }
+            const requestedLayerId = Number.parseInt(String(requestedLayerName).replace('layer_', ''), 10);
+            if (!Number.isNaN(requestedLayerId)) {
+                const compatibleMatch = layers.find(group => {
+                    const liveWorkflowStepId = this.extractStableLayerStepId(group.name);
+                    return liveWorkflowStepId === requestedLayerId;
+                });
+                if (compatibleMatch) {
+                    return compatibleMatch.name;
+                }
+            }
+
+            return null;
+        }
+        return layers[stepNumber - 1]?.name || null;
+    }
+
+    extractStableLayerStepId(layerName) {
+        if (typeof layerName !== 'string') {
+            return null;
+        }
+        let match = layerName.match(/^layer_(\d+)$/);
+        if (match) {
+            return Number.parseInt(match[1], 10);
+        }
+        match = layerName.match(/^sign_(\d+)_/);
+        if (match) {
+            return Number.parseInt(match[1], 10);
+        }
+        return null;
+    }
+
+    async showLayerByStep(stepNumber, solo, layerName = null) {
         if (!this.pdfDoc) {
             return;
         }
         try {
-            const config = await this.pdfDoc.getOptionalContentConfig();
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
             if (!config) {
                 return;
             }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
+            const allGroups = this.getApplicationLayers(config);
+            const resolvedLayerName = this.resolveLayerName(stepNumber, layerName, allGroups);
+            if (!resolvedLayerName && stepNumber !== 0) {
+                console.warn(`showLayerByStep: layer introuvable pour step=${stepNumber}, layerName=${layerName}`);
+                return;
             }
-
-            allGroups.forEach((group, index) => {
-                const shouldBeVisible = (index + 1) <= stepNumber;
-                config.setVisibility(group.id, shouldBeVisible);
-            });
+            if(solo) {
+                allGroups.forEach((group) => {
+                    const shouldBeVisible = group.name === resolvedLayerName;
+                    config.setVisibility(group.id, shouldBeVisible);
+                });
+            } else {
+                allGroups.forEach((group) => {
+                    const selectedGroupIndex = allGroups.findIndex(candidate => candidate.name === resolvedLayerName);
+                    const currentGroupIndex = allGroups.findIndex(candidate => candidate.name === group.name);
+                    const shouldBeVisible = stepNumber === 0 ? false : (selectedGroupIndex >= 0 && currentGroupIndex <= selectedGroupIndex);
+                    config.setVisibility(group.id, shouldBeVisible);
+                });
+            }
             this.optionalContentConfigPromise = Promise.resolve(config);
+            this._activeLayerView = { stepNumber, solo, layerId: resolvedLayerName };
+            this.updateLayerButtonsState();
         } catch(err) {
             console.error('Erreur showLayerByStep:', err);
         }
     }
 
-    async highlightStep(stepNumber) {
+    updateLayerButtonsState() {
+        // Reset all button "on" states
+        const onClasses = ['active', 'bg-primary-subtle', 'text-primary', 'border', 'border-primary-subtle'];
+        $('.display-layer-btn, .toggle-layer-btn').each(function () {
+            onClasses.forEach(c => $(this).removeClass(c));
+        });
+
+        if (!this._activeLayerView) {
+            return;
+        }
+
+        const selector = this._activeLayerView.solo
+            ? `.toggle-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`
+            : `.display-layer-btn[data-layer-id="${this._activeLayerView.layerId}"]`;
+
+        const $btn = $(selector);
+        if ($btn.length) {
+            onClasses.forEach(c => $btn.addClass(c));
+        }
+    }
+
+    async showAllLayers() {
+        if (!this.pdfDoc) {
+            return;
+        }
+        try {
+            const config = await this.pdfDoc.getOptionalContentConfig().catch(e => {
+                console.error("Error getting optional content config: " + e);
+                return null;
+            });
+            if (!config) {
+                return;
+            }
+            for (const group of this.getApplicationLayers(config)) {
+                config.setVisibility(group.id, true);
+            }
+            this.optionalContentConfigPromise = Promise.resolve(config);
+            this._activeLayerView = null;
+            this.updateLayerButtonsState();
+        } catch(err) {
+            console.error('Erreur showAllLayers:', err);
+        }
+    }
+
+    async toggleLayerByStep(stepNumber, solo, layerId = null) {
+        // Si on reclique sur le même stepNumber déjà actif (même mode), on repasse sur tous les calques.
+        if (this._activeLayerView
+            && this._activeLayerView.solo === solo
+            && this._activeLayerView.layerId === (layerId || this._activeLayerView.layerId)) {
+            await this.showAllLayers();
+            return;
+        }
+        await this.showLayerByStep(stepNumber, solo, layerId);
+    }
+
+    async highlightStep(stepNumber, layerId = null) {
         if (!this.highlighter) {
             console.error('highlightStep: LayerHighlighter non initialisé');
             return;
         }
 
         try {
-            const config = await Promise.resolve(this._optionalContentConfigPromise);
+            const config = await Promise.resolve(this._optionalContentConfigPromise).catch(e => {
+                console.error("Error resolving optionalContentConfigPromise: " + e);
+                return null;
+            });
             if (!config) {
                 console.warn('highlightStep: Aucun calque disponible');
                 return;
             }
-            const allGroups = [];
-            for (const [id, group] of config) {
-                allGroups.push({ id, name: group.name });
-            }
+            const allGroups = this.getApplicationLayers(config);
 
-            if (stepNumber < 1 || stepNumber > allGroups.length) {
-                console.warn(`highlightStep: Step ${stepNumber} hors limites (1-${allGroups.length})`);
+            const resolvedLayerName = this.resolveLayerName(stepNumber, layerId, allGroups);
+            const targetGroup = resolvedLayerName
+                ? allGroups.find(group => group.name === resolvedLayerName)
+                : null;
+            if (!targetGroup) {
+                console.warn(`highlightStep: layer introuvable pour step=${stepNumber}, layerId=${layerId}`);
                 return;
             }
-            const targetGroup = allGroups[stepNumber - 1];
             this.highlighter.clearHighlights();
             await this.highlighter.highlightLayer(targetGroup.id);
-            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${highlightColor}`);
+            console.log(`highlightStep(${stepNumber}): Calque "${targetGroup.name}" en ${this.highlighter.highlightColor}`);
         } catch(err) {
             console.error('highlightStep error:', err);
         }

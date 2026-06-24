@@ -181,6 +181,7 @@ public class SignService {
 
     public Document certSign(AbstractSignatureForm signatureDocumentForm, SignRequest signRequest, String userEppn, String password, SignWith signWith, String sealCertificat, SignRequestParams signRequestParams) throws EsupSignatureRuntimeException {
 		User user = userService.getByEppn(userEppn);
+    String resolvedSealCertificat = signWith.equals(SignWith.sealCert) ? resolveSealCertificat(userEppn, sealCertificat) : sealCertificat;
 		logger.info("start certSign for signRequest : " + signRequest.getId());
 		SignatureForm signatureForm;
 		SignatureTokenConnection abstractKeyStoreTokenConnection = null;
@@ -196,18 +197,15 @@ public class SignService {
 				abstractKeyStoreTokenConnection = userKeystoreService.getPkcs12Token(certificat.getKeystore().getInputStream(), certificatService.decryptPassword(certificat));
 			} else if (signWith.equals(SignWith.sealCert)
                     &&
-                    (userEppn.equals("system") || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
-                    || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc -> sc.sealCertificatName.equals(sealCertificat)
-                    || certificatService.getAuthorizedSealCertificatProperties(userEppn).stream().anyMatch(sc1 -> globalProperties.getSealCertificatProperties() != null && !globalProperties.getSealCertificatProperties().isEmpty() && globalProperties.getSealCertificatProperties().get(sealCertificat) != null && sc1.sealCertificatName.equals(globalProperties.getSealCertificatProperties().get(sealCertificat).getSealSpareOf()))))
+                    isSealSigningAllowed(user, userEppn, resolvedSealCertificat)
             ) {
 				try {
-                    abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(sealCertificat));
+                    abstractKeyStoreTokenConnection = certificatService.getSealToken(globalProperties.getSealCertificatProperties().get(resolvedSealCertificat));
                     userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
 				} catch (Exception e) {
                     logger.warn("unable to open seal token", e);
                     // trying spares
-                    for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.getSealSpareOf().equals(sealCertificat)).toList()) {
+                    for(SealCertificatProperties sealCertificatProperties : globalProperties.getSealCertificatProperties().values().stream().filter(sc -> sc.getSealSpareOf().equals(resolvedSealCertificat)).toList()) {
                         try {
                             abstractKeyStoreTokenConnection = certificatService.getSealToken(sealCertificatProperties);
                             certificateToken = userKeystoreService.getCertificateToken(abstractKeyStoreTokenConnection);
@@ -275,6 +273,55 @@ public class SignService {
 		}
 	}
 
+    private String resolveSealCertificat(String userEppn, String sealCertificat) {
+        if (StringUtils.hasText(sealCertificat)) {
+            return sealCertificat;
+        }
+
+        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn);
+        if (authorizedSealCertificatProperties.size() == 1) {
+            return authorizedSealCertificatProperties.get(0).getSealCertificatName();
+        }
+        if (authorizedSealCertificatProperties.isEmpty()) {
+            return null;
+        }
+
+        throw new EsupSignatureRuntimeException("Merci de sélectionner un certificat cachet");
+    }
+
+    private boolean isSealSigningAllowed(User user, String userEppn, String sealCertificat) {
+        return userEppn.equals("system")
+                || (user.getUserType().equals(UserType.external) && globalProperties.getSealForExternals())
+                || (!user.getUserType().equals(UserType.external) && globalProperties.getSealAuthorizedForSignedFiles())
+                || hasAuthorizedSealOrAuthorizedPrincipalSpare(userEppn, sealCertificat);
+    }
+
+    private boolean hasAuthorizedSealOrAuthorizedPrincipalSpare(String userEppn, String sealCertificat) {
+        List<SealCertificatProperties> authorizedSealCertificatProperties = certificatService.getAuthorizedSealCertificatProperties(userEppn);
+        if (authorizedSealCertificatProperties.isEmpty()) {
+            return false;
+        }
+
+        boolean hasDirectAuthorization = authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), sealCertificat));
+        if (hasDirectAuthorization) {
+            return true;
+        }
+
+        Map<String, SealCertificatProperties> configuredSealCertificatProperties = globalProperties.getSealCertificatProperties();
+        if (configuredSealCertificatProperties == null || configuredSealCertificatProperties.isEmpty()) {
+            return false;
+        }
+
+        SealCertificatProperties requestedSealCertificatProperties = configuredSealCertificatProperties.get(sealCertificat);
+        if (requestedSealCertificatProperties == null) {
+            return false;
+        }
+
+        return authorizedSealCertificatProperties.stream()
+                .anyMatch(sc -> Objects.equals(sc.getSealCertificatName(), requestedSealCertificatProperties.getSealSpareOf()));
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private DSSDocument certSignDocument(SignatureDocumentForm signatureDocumentForm, AbstractSignatureParameters parameters, SignatureTokenConnection signingToken) throws IOException {
         logger.debug("Start signDocument with single documents");
@@ -314,10 +361,13 @@ public class SignService {
 		PAdESSignatureParameters pAdESSignatureParameters = new PAdESSignatureParameters();
 		SignatureImageParameters imageParameters = new SignatureImageParameters();
 		InMemoryDocument fileDocumentImage;
-		if(signRequestParams.getSignImageNumber() >= 0 && (signRequestParams.getSignImageNumber() == null || signRequestParams.getSignImageNumber() == 999998 || signRequestParams.getSignImageNumber() == 999999 || user.getSignImages().size() >= signRequestParams.getSignImageNumber() || user.getEppn().equals("system"))) {
+    Integer signImageNumber = signRequestParams.getSignImageNumber();
+    if(signImageNumber != null && signImageNumber >= 0 && (signImageNumber == 999997 || signImageNumber == 999998 || signImageNumber == 999999 || user.getSignImages().size() > signImageNumber || user.getEppn().equals("system"))) {
 			InputStream inputStream;
-			if(user.getSignImages().size() > signRequestParams.getSignImageNumber() && signRequestParams.getAddImage()) {
-				inputStream = user.getSignImages().get(signRequestParams.getSignImageNumber()).getInputStream();
+      if(signImageNumber == 999997) {
+        inputStream = fileService.getDefaultParaphe(user.getName(), user.getFirstname(), user.getEmail(), true);
+      } else if(user.getSignImages().size() > signImageNumber && signRequestParams.getAddImage()) {
+        inputStream = user.getSignImages().get(signImageNumber).getInputStream();
 			} else {
 				inputStream = fileService.getDefaultImage(user.getName(), user.getFirstname(), user.getEmail(), true);
 			}

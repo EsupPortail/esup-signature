@@ -1,5 +1,6 @@
 import {default as FilesInput} from "../utils/FilesInput.js?version=@version@";
 import {default as SelectUser} from "../utils/SelectUser.js?version=@version@";
+import NotificationCenter from "./NotificationCenter.js?version=@version@";
 import {Step} from "../../prototypes/Step.js?version=@version@";
 import {Recipient} from "../../prototypes/Recipient.js?version=@version@";
 
@@ -29,7 +30,56 @@ export class WizUi {
 
     initListeners() {
         this.modal.on('hidden.bs.modal', e => this.checkOnModalClose());
-        this.modal.focus();
+        this.modal.on('shown.bs.modal', () => this.requestModalFocus());
+    }
+
+    requestModalFocus(options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        if (typeof window.esupFocusModalContent === 'function') {
+            return window.esupFocusModalContent(modalElement, {
+                attempts: options.attempts ?? 20,
+                delay: options.delay ?? 80
+            });
+        }
+        const fallbackCandidate = modalElement.querySelector('[autofocus], input:not([type="hidden"]), select, textarea, button:not(.btn-close), [href], [tabindex]:not([tabindex="-1"])');
+        if (fallbackCandidate != null) {
+            fallbackCandidate.focus({preventScroll: true});
+            return true;
+        }
+        modalElement.focus({preventScroll: true});
+        return false;
+    }
+
+    focusVisibleFilePicker(selectors = ['.btn-file', '.file-drop-zone', '#fast-sign-button', '#fast-form-close'], options = {}) {
+        const modalElement = this.modal?.get(0);
+        if (modalElement == null) {
+            return false;
+        }
+        const attempts = options.attempts ?? 20;
+        const delay = options.delay ?? 80;
+        const isVisible = element => element != null
+            && element.getClientRects().length > 0
+            && window.getComputedStyle(element).display !== 'none'
+            && window.getComputedStyle(element).visibility !== 'hidden'
+            && !element.disabled;
+        const tryFocus = remainingAttempts => {
+            for (const selector of selectors) {
+                const element = modalElement.querySelector(selector);
+                if (isVisible(element)) {
+                    element.focus({preventScroll: true});
+                    return true;
+                }
+            }
+            if (remainingAttempts <= 0) {
+                return this.requestModalFocus();
+            }
+            window.setTimeout(() => tryFocus(remainingAttempts - 1), delay);
+            return false;
+        };
+        return tryFocus(attempts);
     }
 
     listenHelpMarkAsReadButton(btn) {
@@ -72,6 +122,7 @@ export class WizUi {
             self.enableButtons();
         });
         $("#fast-sign-button").on('click', e => self.wizCreateSign("self"));
+        this.focusVisibleFilePicker();
     }
 
     wizCreateSign(type) {
@@ -117,6 +168,10 @@ export class WizUi {
         $("#fast-form-close").attr("disabled", "disabled");
         $("#send-draft-button").attr("disabled", "disabled");
         $("#send-pending-button").attr("disabled", "disabled");
+        $("#end-workflow-sign").attr("disabled", "disabled");
+        $("#end-workflow-sign-start").attr("disabled", "disabled");
+        $("#save-step").attr("disabled", "disabled");
+        $("#wiz-end").attr("disabled", "disabled");
         $("#wiz-start-button").attr("disabled", "disabled");
         $('button[aria-label="Close"]').attr("disabled", "disabled");
     }
@@ -128,8 +183,42 @@ export class WizUi {
         $("#fast-form-close").removeAttr("disabled");
         $("#send-draft-button").removeAttr("disabled");
         $("#send-pending-button").removeAttr("disabled");
+        $("#end-workflow-sign").removeAttr("disabled");
+        $("#end-workflow-sign-start").removeAttr("disabled");
+        $("#save-step").removeAttr("disabled");
+        $("#wiz-end").removeAttr("disabled");
         $("#wiz-start-button").removeAttr("disabled");
         $('button[aria-label="Close"]').removeAttr("disabled")
+    }
+
+    resetFastSignAfterError() {
+        this.pending = false;
+        this.newSignBookId = "";
+        this.files = null;
+        if(this.fileInput != null) {
+            this.fileInput.signBookId = null;
+        }
+        if(this.input != null && this.input.length) {
+            try {
+                this.input.fileinput('cancel');
+            } catch (e) {
+                console.debug("fileinput cancel skipped", e);
+            }
+            try {
+                this.input.fileinput('clear');
+                this.input.fileinput('clearFileStack');
+                this.input.fileinput('unlock');
+            } catch (e) {
+                console.debug("fileinput reset skipped", e);
+            }
+            this.input.val('');
+        }
+        if(this.fileInput != null) {
+            this.fileInput.updateZipOptionVisibility();
+        }
+        this.enableButtons();
+        $("#send-draft-button").removeAttr("disabled");
+        $("#send-pending-button").removeAttr("disabled");
     }
 
     fastStartSign() {
@@ -199,6 +288,7 @@ export class WizUi {
                 $('#singleSignWithAnnotation').prop('checked', true);
             }
         });
+        this.requestModalFocus();
     }
 
     fastSignSubmitDatas() {
@@ -208,17 +298,24 @@ export class WizUi {
         }
         let errorCallback = function(e) {
             if(e.responseText !== "") {
-                self.input.fileinput('cancel');
+                let signBookId = self.newSignBookId;
                 bootbox.alert("Une erreur s’est produite lors du démarrage du circuit :<br>" + e.responseText, function () {
-                    $.ajax({
-                        method: "DELETE",
-                        url: "/ws-secure/global/silent-delete-signbook/" + self.newSignBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
-                        cache: false
-                    });
-                    $("#update-fast-sign-submit").click();
+                    if(signBookId !== "") {
+                        $.ajax({
+                            method: "DELETE",
+                            url: "/ws-secure/global/silent-delete-signbook/" + signBookId + "?" + self.csrf.parameterName + "=" + self.csrf.token,
+                            cache: false,
+                            complete: function() {
+                                self.resetFastSignAfterError();
+                            }
+                        });
+                    } else {
+                        self.resetFastSignAfterError();
+                    }
                 });
             } else {
                 $("#update-fast-sign-submit").click();
+                self.enableButtons();
             }
         }
         const multiSign = $("#multiSign").is(":checked");
@@ -239,6 +336,11 @@ export class WizUi {
             success : function(html) {
                 self.workflowSignDisplayForm(html);
                 self.manageMinMaxLevels();
+            },
+            error: function(e) {
+                self.forceCloseModal(() => {
+                    NotificationCenter.showSnackbar(self.getAjaxErrorMessage(e, "Une erreur s’est produite lors du lancement du circuit"), "error");
+                });
             }
         });
     }
@@ -248,6 +350,9 @@ export class WizUi {
         this.div.html(html);
         this.input = $("#multipartFiles_" + this.workflowId);
         if(!this.workflowId) this.input = $("#multipartFiles_0");
+        if(!this.input.length) {
+            return;
+        }
         this.newSignBookId = this.input.attr("data-es-signbook-id");
         this.fileInput = new FilesInput(this.input, this.maxSize, this.csrf, null, false, this.newSignBookId);
         if($("#recipientsCCEmails").length) {
@@ -283,6 +388,7 @@ export class WizUi {
             }
         });
         $('button[id^="markHelpAsReadButton_"]').each((index, e) => this.listenHelpMarkAsReadButton(e));
+        this.requestModalFocus();
     }
 
     wizardFormStart(formId) {
@@ -380,8 +486,13 @@ export class WizUi {
         $("#wiz-exit").on('click', e => this.wizardExit());
         $("#save-workflow").on('click', e => this.saveWorkflow());
         $("#save-step").on('click', e => this.workflowSignSubmitStepData());
+        $("button[id^='delete-step-']").on('click', e => {
+            e.preventDefault();
+            this.workflowSignDeleteStepData($(e.currentTarget).data('es-step-id'));
+        });
         $("#send-draft-button").on('click', e => this.workflowSignSubmitLastStepData(false));
         $("#send-pending-button").on('click', e => this.workflowSignSubmitLastStepData(true));
+        this.requestModalFocus();
     }
 
     workflowSignSubmitStepData() {
@@ -400,16 +511,49 @@ export class WizUi {
             $("#wiz-step-form-submit").click();
             return;
         }
+        if (self.end) {
+            this.disableButtons();
+        }
         let successCallback = function(html) {
             self.workflowSignNextStepDisplay(html)
             self.manageMinMaxLevels();
         };
         let errorCallback = function (data) {
+            if (self.end) {
+                self.enableButtons();
+            }
             $("#wiz-step-form-submit").click();
         };
         let url = '/user/wizard/wiz-add-step-' + mode +  '/' + elementId + '?end=' + self.end + '&start=' + self.start + '&close=' + self.close;
         this.sendSteps(url, $("#wiz-step-form"), successCallback, errorCallback);
 
+    }
+
+    workflowSignDeleteStepData(stepId) {
+        console.info("Delete step");
+        let self = this;
+        let mode = "workflow";
+        let elementId = -1;
+        self.end = false;
+        self.start = false;
+        self.close = false;
+        if (this.newSignBookId !== "") {
+            mode = "signbook";
+            elementId = this.newSignBookId;
+        } else if (this.newWorkflowId !== "") {
+            elementId = this.newWorkflowId;
+        }
+        $.ajax({
+            url: '/user/wizard/wiz-delete-step-' + mode + '/' + elementId + '/' + stepId + '?' + self.csrf.parameterName + '=' + self.csrf.token,
+            type: 'POST',
+            success: function(html) {
+                self.workflowSignNextStepDisplay(html);
+                self.manageMinMaxLevels();
+            },
+            error: function() {
+                $("#wiz-step-form-submit").click();
+            }
+        });
     }
 
     workflowSignSubmitLastStepData(pending) {
@@ -476,6 +620,7 @@ export class WizUi {
             this.recipientCCSelect = new SelectUser("recipientsCCEmails", null, null, this.csrf);
         }
         $("#save-workflow").on('click', e => this.saveWorkflow());
+        this.requestModalFocus();
 
     }
 
@@ -507,14 +652,88 @@ export class WizUi {
         }
     }
 
-    closeModal() {
-        if(this.recipientCCSelect != null) this.recipientCCSelect.slimSelect.destroy();
+    getAjaxErrorMessage(error, fallbackMessage) {
+        if (error == null) {
+            return fallbackMessage;
+        }
+        if (error.responseJSON != null) {
+            const responseMessage = error.responseJSON.message || error.responseJSON.error;
+            if (responseMessage != null && responseMessage !== "") {
+                return this.escapeHtml(responseMessage);
+            }
+        }
+        if (error.responseText != null && error.responseText !== "") {
+            try {
+                const responseBody = JSON.parse(error.responseText);
+                const responseMessage = responseBody.message || responseBody.error;
+                if (responseMessage != null && responseMessage !== "") {
+                    return this.escapeHtml(responseMessage);
+                }
+            } catch (parseError) {
+                return this.escapeHtml(error.responseText);
+            }
+        }
+        if (error.statusText != null && error.statusText !== "") {
+            return this.escapeHtml(error.statusText);
+        }
+        return fallbackMessage;
+    }
+
+    escapeHtml(text) {
+        if (text == null) {
+            return "";
+        }
+        return String(text)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    cleanupModalState() {
+        if(this.recipientCCSelect != null) {
+            this.recipientCCSelect.slimSelect.destroy();
+            this.recipientCCSelect = null;
+        }
         if(this.recipientsEmailsSelect != null) {
             this.recipientsEmailsSelect.slimSelect.destroy();
+            this.recipientsEmailsSelect = null;
         }
-        this.modal.modal('hide');
-        this.modal.unbind();
+        this.pending = false;
+        this.newSignBookId = "";
+        this.newWorkflowId = "";
+        this.input = null;
+        this.files = null;
+        this.fileInput = null;
+        this.form = null;
+        this.close = false;
+        this.end = false;
+        this.start = false;
         this.div.html("");
+    }
+
+    forceCloseModal(callback = null) {
+        const finalizeClose = () => {
+            this.cleanupModalState();
+            this.modal.off('hidden.bs.modal');
+            this.modal.unbind();
+            if (typeof callback === 'function') {
+                callback();
+            }
+        };
+
+        this.modal.off('hidden.bs.modal');
+        if (this.modal.hasClass('show')) {
+            this.modal.one('hidden.bs.modal', () => finalizeClose());
+            this.modal.modal('hide');
+            return;
+        }
+        finalizeClose();
+    }
+
+    closeModal() {
+        this.forceCloseModal();
     }
 
     startFormDisplayForm(html) {
@@ -532,6 +751,7 @@ export class WizUi {
         if($("#targetEmailsSelect").length) {
             new SelectUser("targetEmailsSelect", null, null, this.csrf);
         }
+        this.requestModalFocus();
     }
 
     sendForm(e) {
@@ -545,7 +765,7 @@ export class WizUi {
             $("#send-form-submit").click();
             self.enableButtons();
         };
-        this.sendSteps('/user/datas/send-form/' + formId + '?pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
+        this.sendSteps('/user/datas/send-form/' + formId + '?title=' + encodeURIComponent($('#send-form').find('[name="title"]').val()) + '&pending=' + false, $("li[id^='step-form-']"), successCallback, errorCallback);
     }
 
     sendSteps(url, stepsSources, successCallback, errorCallback) {

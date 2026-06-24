@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.BooleanUtils;
 import org.esupportail.esupsignature.config.GlobalProperties;
-import org.esupportail.esupsignature.dto.js.JsMessage;
+import org.esupportail.esupsignature.config.sms.SmsProperties;
+import org.esupportail.esupsignature.dto.ui.global.UiGlobalPropertiesDto;
+import org.esupportail.esupsignature.dto.ui.global.UiMessageDto;
 import org.esupportail.esupsignature.entity.Otp;
 import org.esupportail.esupsignature.entity.User;
 import org.esupportail.esupsignature.entity.enums.SignRequestStatus;
@@ -28,6 +30,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -54,20 +57,24 @@ public class OtpAccessController {
     private final UserService userService;
     private final List<SecurityService> securityServices;
     private final SmsService smsService;
+    private final ClientRegistrationRepository clientRegistrationRepository;
+    private final SmsProperties smsProperties;
 
-    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService) {
+    public OtpAccessController(GlobalProperties globalProperties, OtpService otpService, SignBookService signBookService, UserService userService, List<SecurityService> securityServices, @Autowired(required = false) SmsService smsService, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, SmsProperties smsProperties) {
         this.globalProperties = globalProperties;
         this.otpService = otpService;
         this.signBookService = signBookService;
         this.userService = userService;
         this.securityServices = securityServices;
         this.smsService = smsService;
+        this.clientRegistrationRepository = clientRegistrationRepository;
+        this.smsProperties = smsProperties;
     }
 
     @GetMapping(value = "/first/{urlId}")
-    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) throws NumberParseException {
+    public String signin(@PathVariable String urlId, Model model, HttpServletRequest httpServletRequest, RedirectAttributes redirectAttributes) {
         model.addAttribute("urlId", urlId);
-        List<OidcOtpSecurityService> oidcOtpSecurityServices = securityServices.stream().filter(s -> (s instanceof OidcOtpSecurityService)).map(s -> (OidcOtpSecurityService) s).toList();
+        List<OidcOtpSecurityService> oidcOtpSecurityServices = getActiveOidcSecurityServices();
         Otp otp = otpService.getAndCheckOtpFromDatabase(urlId);
         if(otp != null && ((otp.isSignature() && otp.getTries() < globalProperties.getNbSignOtpTries()) || (!otp.isSignature() && otp.getTries() < globalProperties.getNbViewOtpTries()))) {
             if (!globalProperties.getSmsRequired() && !otp.isForceSms() && oidcOtpSecurityServices.isEmpty()) {
@@ -78,12 +85,12 @@ public class OtpAccessController {
                 return "redirect:/otp-access/completed";
             }
             model.addAttribute("otp", otp);
-            model.addAttribute("smsService", smsService);
             model.addAttribute("smsRequired", (globalProperties.getSmsRequired() || otp.isForceSms()));
+            model.addAttribute("enableSms", smsProperties.getServiceName());
             model.addAttribute("externalAuths", signBookService.getExternalAuths(otp.getSignBook().getId(), oidcOtpSecurityServices));
             httpServletRequest.getSession().setAttribute("after_oauth_redirect", "/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId());
             model.addAttribute("securityServices", oidcOtpSecurityServices);
-            model.addAttribute("globalProperties", globalProperties);
+            model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
             return "otp/signin";
         }
         otp = otpService.getOtpFromDatabase(urlId);
@@ -98,6 +105,18 @@ public class OtpAccessController {
                     """);
             return "redirect:/otp-access/error";
         }
+    }
+
+    private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
+        return securityServices.stream()
+                .filter(OidcOtpSecurityService.class::isInstance)
+                .map(OidcOtpSecurityService.class::cast)
+                .filter(this::hasClientRegistration)
+                .toList();
+    }
+
+    private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+        return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
     }
 
     @GetMapping(value = "/completed")
@@ -133,27 +152,39 @@ public class OtpAccessController {
             User user = otp.getUser();
             User userTest = userService.getUserByPhone(phone);
             if (userTest == null || user.getEppn().equals(userTest.getEppn())) {
-                Phonenumber.PhoneNumber number;
-                try {
-                    number = phoneUtil.parse(phone, null);
-                } catch (Exception e) {
-                    return ResponseEntity.internalServerError().body("Merci de saisir correctement votre numéro de mobile");
+                Phonenumber.PhoneNumber number = null;
+                if(!smsProperties.getServiceName().equals("EMAIL")) {
+                    if(userTest == null && !globalProperties.getUserCanChangePhone()) {
+                        return ResponseEntity.internalServerError().body("Numéro de mobile incorrect");
+                    }
+                    try {
+                        number = phoneUtil.parse(phone, null);
+                    } catch (Exception e) {
+                        return ResponseEntity.internalServerError().body("Merci de saisir correctement votre numéro de mobile");
+                    }
                 }
                 if ((!otp.getSmsSended() || otpService.getOtpFromCache(urlId) == null) && smsService != null) {
+                    String password = otpService.generateOtpPassword(urlId, phone);
+                    if(smsProperties.getServiceName().equals("EMAIL")) {
+                        smsService.sendSms(user.getEmail(), null, password);
+                        otpService.setSmsSended(urlId);
+                        return ResponseEntity.ok().body("Code transmit sur votre boite mail");
+
+                    }
                     if (phoneUtil.isValidNumber(number)) {
-                        String password = otpService.generateOtpPassword(urlId, phone);
                         logger.info("sending password by sms : " + password + " to " + phone);
                         try {
-                            smsService.sendSms(phone, "Votre code de connexion esup_signature " + password);
+                            smsService.sendSms(user.getEmail(), phone, password);
                             otpService.setSmsSended(urlId);
-                            return ResponseEntity.ok().build();
+                            userService.updatePhone(user.getEppn(), phone);
+                            return ResponseEntity.ok().body("Code transmit sur votre mobile");
                         } catch (EsupSignatureRuntimeException e) {
                             logger.error(e.getMessage(), e);
                             return ResponseEntity.internalServerError().body(e.getMessage());
                         }
                     }
                 } else {
-                    return ResponseEntity.ok().body("Merci d'utiliser le code du dernier SMS reçu.");
+                    return ResponseEntity.ok().body("Merci d'utiliser le dernier code reçu");
                 }
             } else {
                 return ResponseEntity.internalServerError().body("Numéro de mobile déjà attribué, merci de prendre contact avec l'émetteur via le mail ci-dessus");
@@ -175,21 +206,18 @@ public class OtpAccessController {
             otp.setSmsSended(true);
             logger.info("otp success for : " + urlId);
             User user = otp.getUser();
-            if(StringUtils.hasText(otp.getPhoneNumber())) {
-                userService.updatePhone(user.getEppn(), otp.getPhoneNumber());
-            }
             authOtp(model, httpServletRequest, user);
             return "redirect:/otp/signrequests/signbook-redirect/" + otp.getSignBook().getId();
         } else {
             String newPassword = otpService.generateOtpPassword(urlId, otp.getPhoneNumber());
             logger.info("sending password by sms : " + newPassword + " to " + otp.getPhoneNumber());
             try {
-                smsService.sendSms(otp.getPhoneNumber(), "Votre code de connexion esup_signature " + newPassword);
+                smsService.sendSms(otp.getUser().getEmail(), otp.getPhoneNumber(), newPassword);
                 otpService.setSmsSended(urlId);
             } catch (Exception e) {
                 logger.error(e.getMessage());
             }
-            redirectAttributes.addFlashAttribute("message", new JsMessage("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
+            redirectAttributes.addFlashAttribute("message", new UiMessageDto("error", "Mauvais code SMS, un nouveau code vous à été envoyé"));
             return "redirect:/otp-access/first/" + urlId;
         }
     }
@@ -198,15 +226,21 @@ public class OtpAccessController {
     public String oauth2Error(
             @RequestParam(required = false) String error,
             @RequestParam(required = false) String error_description,
+            @RequestParam(required = false) String internal_error,
             @RequestParam(required = false) String state,
             Model model) {
-        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, state: {}", error, error_description, state);
+        logger.warn("OAuth2/OIDC error received - error: {}, description: {}, internal_error: {}, state: {}", error, error_description, internal_error, state);
         model.addAttribute("oauth2Error", error);
         model.addAttribute("oauth2ErrorDescription", error_description);
+        model.addAttribute("oauth2InternalError", internal_error);
         model.addAttribute("oauth2State", state);
-        String errorMessage = mapOAuth2ErrorToMessage(error);
+        String errorMessage = StringUtils.hasText(internal_error) ? internal_error : mapOAuth2ErrorToMessage(error);
         model.addAttribute("errorMessage", errorMessage);
         return "otp/oauth2-error";
+    }
+
+    public String oauth2Error(String error, String error_description, String state, Model model) {
+        return oauth2Error(error, error_description, null, state, model);
     }
 
     private String mapOAuth2ErrorToMessage(String error) {

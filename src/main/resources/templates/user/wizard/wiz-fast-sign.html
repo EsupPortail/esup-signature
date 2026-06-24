@@ -13,7 +13,11 @@
         </div>
         <div class="form-group mb-3">
             <label class="form-label" for="multipartFiles">Choix des fichiers à signer *</label>
-            <input tabindex="500" id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf' : ''" required>
+            <input tabindex="500" id="multipartFiles" name="multipartFiles" type="file" multiple="multiple" th:accept="${globalProperties.pdfOnly} ? 'application/pdf,.zip,application/zip' : ''" required>
+        </div>
+        <div class="form-check d-none mb-3" data-es-unzip-option-container>
+            <input class="form-check-input" type="checkbox" name="unzip" value="true" id="unzip-fast-sign" data-es-unzip-option>
+            <label class="form-check-label" for="unzip-fast-sign">Décompresser le zip pour générer une demande par fichier</label>
         </div>
         <div id="forceAllSign" class="form-check form-switch form-switch-md d-none">
             <input id="force-all-sign" class="form-check-input" type="checkbox" name="forceAllSign">
@@ -75,7 +79,7 @@
                         <label class="form-label" for="signType-1">Choisir un type de signature *</label>
                         <button data-bs-target="#collapseHelpSignType" data-bs-toggle="collapse" title="Aide sur les types de signature"
                                 type="button" class="btn btn-sm btn-transparent">
-                            <span class="fa-solid fa-info-circle text-info"></span>
+                            <span class="fi fi-rr-info text-info"></span>
                         </button>
                         <div class="collapse" id="collapseHelpSignType">
                             <div class="alert alert-info mb-1">
