@@ -23,7 +23,7 @@
                      th:title="${comment.text}"
                      th:es-comment-text="${comment.text}"
                      th:es-comment-title="${comment.createBy.firstname + ' ' + comment.createBy.name + ' ' + #dates.format(comment.createDate, 'dd/MM/yyyy HH:mm')}"
-                     th:es-comment-delete="${signRequestFull.commentDeleteAllowed}">
+                     th:es-comment-delete="${signRequestFull.commentDeleteAllowed || (authUserEppn != null && comment.createBy != null && comment.createBy.eppn == authUserEppn && (#strings.equals(signRequestFull.status, 'draft') || #strings.equals(signRequestFull.status, 'pending')))}">
                     <i class="fi fi-sr-comment" style="font-size: 30px; color: var(--bs-warning)"></i>
                 </div>
             </th:block>

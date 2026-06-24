@@ -401,7 +401,7 @@ public class UiFetchSignRequestService {
         dto.setCurrentSignType(common.getCurrentSignType());
         dto.setSignable(common.getSignable());
         dto.setEditable(common.getEditable());
-        dto.setComments(mapper.toCommentFrontDtos(common.getComments()));
+        dto.setComments(mapper.toCommentFrontDtos(common.getComments(), context));
         dto.setSpots(mapper.toSignRequestParamsFrontDtos(common.getSpots()));
         dto.setPdf(common.getPdf());
         dto.setCurrentStepNumber(common.getCurrentStepNumber());
