@@ -23,20 +23,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ghostscript postgresql-client ldap-utils curl docker-compose
+          sudo apt-get install -y docker-compose ghostscript postgresql-client ldap-utils curl
 
       - name: Create temporary directory for tests
         run: |
           sudo mkdir -p /opt/esup-signature-test-work/tmp
           sudo chmod -R 777 /opt/esup-signature-test-work
-
-      - name: Wait for PostgreSQL
-        run: |
-          until pg_isready -h localhost -p 5433 -U esupsignature -d esupsignature; do
-            sleep 2
-          done
-        env:
-          PGPASSWORD: esup
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -73,8 +65,8 @@ jobs:
         if: failure()
         run: |
           docker ps -a
-          docker compose ls
-          find . -name "*compose*.yml" -o -name "*compose*.yaml"
+          docker-compose ps || true
+          docker-compose logs --tail=200 || true
 
       - name: Upload Surefire reports
         if: always()
