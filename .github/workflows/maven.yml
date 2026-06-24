@@ -16,7 +16,7 @@ jobs:
         env:
           POSTGRES_DB: esupsignature
           POSTGRES_USER: esupsignature
-          POSTGRES_PASSWORD: esupsignature
+          POSTGRES_PASSWORD: esup
         ports:
           - 5433:5432
         options: >-
