@@ -54,7 +54,7 @@ jobs:
             sleep 2
           done
         env:
-          PGPASSWORD: esupsignature
+          PGPASSWORD: esup
 
       - name: Create temporary directory for tests
         run: |
@@ -74,7 +74,7 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/esupsignature
           SPRING_DATASOURCE_USERNAME: esupsignature
-          SPRING_DATASOURCE_PASSWORD: esupsignature
+          SPRING_DATASOURCE_PASSWORD: esup
         run: >
           mvn -B clean test
           -Dspring.config.location=src/test/resources/application-test.yml
