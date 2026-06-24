@@ -10,21 +10,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: esupsignature
-          POSTGRES_USER: esupsignature
-          POSTGRES_PASSWORD: esup
-        ports:
-          - 5433:5432
-        options: >-
-          --health-cmd="pg_isready -U esupsignature -d esupsignature"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-
     steps:
       - uses: actions/checkout@v4
 
@@ -35,18 +20,20 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose ghostscript postgresql-client
+          sudo apt-get install -y ghostscript postgresql-client ldap-utils curl
+
+      - name: Create temporary directory for tests
+        run: |
+          sudo mkdir -p /opt/esup-signature-test-work/tmp
+          sudo chmod -R 777 /opt/esup-signature-test-work
+
+      - name: Start test services
+        run: |
+          docker compose -f src/test/resources/docker/docker-compose.yml up -d db openldap cas
+          docker compose -f src/test/resources/docker/docker-compose.yml ps
 
       - name: Wait for PostgreSQL
         run: |
@@ -56,10 +43,25 @@ jobs:
         env:
           PGPASSWORD: esup
 
-      - name: Create temporary directory for tests
+      - name: Wait for LDAP
         run: |
-          sudo mkdir -p /opt/esup-signature-test-work/tmp
-          sudo chmod -R 777 /opt/esup-signature-test-work
+          until ldapsearch -x -H ldap://localhost:3980 -D "cn=admin,dc=example,dc=org" -w admin -b "dc=example,dc=org" >/dev/null; do
+            sleep 2
+          done
+
+      - name: Wait for CAS
+        run: |
+          until curl -fsS http://localhost:7080/cas/login >/dev/null; do
+            sleep 5
+          done
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
 
       - name: Install Chromium and Linux dependencies for Playwright
         run: >
@@ -71,10 +73,6 @@ jobs:
           -Dexec.args="install --with-deps chromium"
 
       - name: Maven Surefire tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/esupsignature
-          SPRING_DATASOURCE_USERNAME: esupsignature
-          SPRING_DATASOURCE_PASSWORD: esup
         run: >
           mvn -B clean test
           -Dspring.config.location=src/test/resources/application-test.yml
@@ -82,15 +80,17 @@ jobs:
           -DskipDockerCompose=true
 
       - name: Maven Failsafe Playwright UI tests
-        env:
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/esupsignature
-          SPRING_DATASOURCE_USERNAME: esupsignature
-          SPRING_DATASOURCE_PASSWORD: esupsignature
         run: >
           mvn -B verify
           -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
           -DskipSurefire=true
           -DskipDockerCompose=false
+
+      - name: Show Docker logs
+        if: failure()
+        run: |
+          docker compose -f src/test/resources/docker/docker-compose.yml ps
+          docker compose -f src/test/resources/docker/docker-compose.yml logs --tail=200
 
       - name: Upload Surefire reports
         if: always()
