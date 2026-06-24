@@ -14,16 +14,16 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: esup_signature
-          POSTGRES_USER: esup
-          POSTGRES_PASSWORD: esup
+          POSTGRES_DB: esupsignature
+          POSTGRES_USER: esupsignature
+          POSTGRES_PASSWORD: esupsignature
         ports:
           - 5433:5432
         options: >-
-          --health-cmd="pg_isready -U esup -d esup_signature"
+          --health-cmd="pg_isready -U esupsignature -d esupsignature"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
@@ -43,22 +43,54 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      - name: Install system dependencies
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y docker-compose ghostscript --fix-missing
+          sudo apt-get install -y docker-compose ghostscript postgresql-client
+
+      - name: Wait for PostgreSQL
+        run: |
+          until pg_isready -h localhost -p 5433 -U esupsignature -d esupsignature; do
+            sleep 2
+          done
+        env:
+          PGPASSWORD: esupsignature
 
       - name: Create temporary directory for tests
-        run: sudo mkdir -p /opt/esup-signature-test-work/tmp && sudo chmod -R 777 /opt/esup-signature-test-work
+        run: |
+          sudo mkdir -p /opt/esup-signature-test-work/tmp
+          sudo chmod -R 777 /opt/esup-signature-test-work
 
       - name: Install Chromium and Linux dependencies for Playwright
-        run: mvn -q -DskipTests -Dexec.classpathScope=test org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
+        run: >
+          mvn -q
+          -DskipTests
+          -Dexec.classpathScope=test
+          org.codehaus.mojo:exec-maven-plugin:3.5.0:java
+          -Dexec.mainClass=com.microsoft.playwright.CLI
+          -Dexec.args="install --with-deps chromium"
 
       - name: Maven Surefire tests
-        run: mvn -B clean test -Dspring.config.location=src/test/resources/application-test.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipDockerCompose=true
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/esupsignature
+          SPRING_DATASOURCE_USERNAME: esupsignature
+          SPRING_DATASOURCE_PASSWORD: esupsignature
+        run: >
+          mvn -B clean test
+          -Dspring.config.location=src/test/resources/application-test.yml
+          -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+          -DskipDockerCompose=true
 
       - name: Maven Failsafe Playwright UI tests
-        run: mvn -B verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true -DskipDockerCompose=false
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5433/esupsignature
+          SPRING_DATASOURCE_USERNAME: esupsignature
+          SPRING_DATASOURCE_PASSWORD: esupsignature
+        run: >
+          mvn -B verify
+          -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+          -DskipSurefire=true
+          -DskipDockerCompose=false
 
       - name: Upload Surefire reports
         if: always()
