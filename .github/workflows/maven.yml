@@ -10,6 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: esupsignature
+          POSTGRES_USER: esupsignature
+          POSTGRES_PASSWORD: esup
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready -U esupsignature -d esupsignature"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
     steps:
       - uses: actions/checkout@v4
 
@@ -30,11 +45,6 @@ jobs:
           sudo mkdir -p /opt/esup-signature-test-work/tmp
           sudo chmod -R 777 /opt/esup-signature-test-work
 
-      - name: Start test services
-        run: |
-          docker compose -f docker-compose.yml up -d db openldap cas
-          docker compose -f docker-compose.yml ps
-
       - name: Wait for PostgreSQL
         run: |
           until pg_isready -h localhost -p 5433 -U esupsignature -d esupsignature; do
@@ -42,18 +52,6 @@ jobs:
           done
         env:
           PGPASSWORD: esup
-
-      - name: Wait for LDAP
-        run: |
-          until ldapsearch -x -H ldap://localhost:3980 -D "cn=admin,dc=example,dc=org" -w admin -b "dc=example,dc=org" >/dev/null; do
-            sleep 2
-          done
-
-      - name: Wait for CAS
-        run: |
-          until curl -fsS http://localhost:7080/cas/login >/dev/null; do
-            sleep 5
-          done
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -77,7 +75,7 @@ jobs:
           mvn -B clean test
           -Dspring.config.location=src/test/resources/application-test.yml
           -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
-          -DskipDockerCompose=true
+          -DskipDockerCompose=false
 
       - name: Maven Failsafe Playwright UI tests
         run: >
@@ -85,12 +83,13 @@ jobs:
           -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
           -DskipSurefire=true
           -DskipDockerCompose=false
-      
-      - name: Show Docker logs
+
+      - name: Show Docker info
         if: failure()
         run: |
-          docker compose -f docker-compose.yml ps
-          docker compose -f docker-compose.yml logs --tail=200
+          docker ps -a
+          docker compose ls
+          find . -name "*compose*.yml" -o -name "*compose*.yaml"
 
       - name: Upload Surefire reports
         if: always()
