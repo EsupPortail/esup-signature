@@ -196,7 +196,10 @@ export class SignSpaceManager {
 		const spots = Array.isArray(this.options.getSpots()) ? this.options.getSpots() : [];
 
 		if (this.options.isEditable() && this.canViewAllSpots()) {
-			const merged = [...currentParams, ...spots];
+			const managerSpots = this.options.isCreator()
+				? spots
+				: this.options.filterSpotsNotCurrentStep(spots);
+			const merged = [...currentParams, ...managerSpots];
 			const byKey = new Map();
 			for (let i = 0; i < merged.length; i++) {
 				const item = merged[i];
