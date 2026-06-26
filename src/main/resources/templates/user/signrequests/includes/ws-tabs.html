@@ -70,9 +70,11 @@
         <ul class="dropdown-menu p-2 dropdown-menu-right" aria-labelledby="DropdownMenu">
         </ul>
     </li>
-    <li class="nav-item ws-tab-nav d-none d-lg-block">
+    <li class="nav-item ws-tab-nav d-none d-lg-block" style="border-bottom: 1px solid var(--bs-secondary-bg-subtle);">
         <a th:if="${showSignRequest.signBookLight.editable && showSignRequest.signRequestLight.createBy.eppn == userEppn}" title="Ajouter un document à signer" role="button" data-bs-toggle="modal" data-bs-target="#addDoc"  class="nav-link bg-secondary-subtle text-dark ">
-            <i class="fi fi-rr-add-document"></i>
+            <div class="d-flex justify-content-start align-items-center gap-1">
+                <i class="fi fi-rr-add-document"></i>
+            </div>
         </a>
     </li>
 </ul>
