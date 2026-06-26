@@ -9,54 +9,88 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: maven
-    - name: Cache Playwright browsers
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-playwright-
-    - name: Install docker-compose
-      run: sudo apt-get update && sudo apt-get install -y docker-compose --fix-missing
-    - name: Install ghostscript
-      run: sudo apt-get update && sudo apt-get install -y ghostscript --fix-missing
-    - name: Create temporary directory for tests
-      run: mkdir -p /opt/esup-signature-test-work/tmp
-    - name: Install Chromium and Linux dependencies for Playwright
-      run: mvn -q -DskipTests -Dexec.classpathScope=test org.codehaus.mojo:exec-maven-plugin:3.5.0:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install --with-deps chromium"
-    - name: Maven Surefire tests
-      run: mvn -B clean test -Dspring.config.location=src/test/resources/application-test.yml -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipDockerCompose=true
-    - name: Maven Failsafe Playwright UI tests (PlaywrightTest)
-      run: mvn verify -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp -DskipSurefire=true -DskipDockerCompose=false
-    - name: Upload Surefire reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: surefire-reports
-        path: target/surefire-reports/
-        if-no-files-found: warn
-        retention-days: 14
-    - name: Upload Failsafe reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: failsafe-reports
-        path: target/failsafe-reports/
-        if-no-files-found: warn
-        retention-days: 14
-    - name: Upload Playwright artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: playwright-artifacts
-        path: target/playwright-artifacts/
-        if-no-files-found: warn
-        retention-days: 14
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker-compose ghostscript postgresql-client ldap-utils curl
+
+      - name: Create temporary directory for tests
+        run: |
+          sudo mkdir -p /opt/esup-signature-test-work/tmp
+          sudo chmod -R 777 /opt/esup-signature-test-work
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Install Chromium and Linux dependencies for Playwright
+        run: >
+          mvn -q
+          -DskipTests
+          -Dexec.classpathScope=test
+          org.codehaus.mojo:exec-maven-plugin:3.5.0:java
+          -Dexec.mainClass=com.microsoft.playwright.CLI
+          -Dexec.args="install --with-deps chromium"
+
+      - name: Maven Surefire tests
+        run: >
+          mvn -B clean test
+          -Dspring.config.location=src/test/resources/application-test.yml
+          -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+          -DskipDockerCompose=false
+
+      - name: Maven Failsafe Playwright UI tests
+        run: >
+          mvn -B verify
+          -Djava.io.tmpdir=/opt/esup-signature-test-work/tmp
+          -DskipSurefire=true
+          -DskipDockerCompose=false
+
+      - name: Show Docker info
+        if: failure()
+        run: |
+          docker ps -a
+          docker-compose ps || true
+          docker-compose logs --tail=200 || true
+
+      - name: Upload Surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Failsafe reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: target/failsafe-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: target/playwright-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
