@@ -442,7 +442,7 @@ td {
 
 .nav-item.ws-tab.active a {
     opacity: 1;
-    border-bottom: 1px solid var(--bs-white);
+    border-bottom: 1px solid var(--bs-light);
 }
 
 .nav-item.ws-tab.active {
