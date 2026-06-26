@@ -402,7 +402,7 @@ td {
 }
 
 .nav-tabs {
-    border-bottom : 1px solid var(--bs-secondary-bg-subtle);
+    border-bottom : 0px solid var(--bs-secondary-bg-subtle);
     /*background-color: white;*/
     /*margin-left: -5px;*/
 }
@@ -506,7 +506,7 @@ option[unavailable="unavailable"] {
 
 .breadcrumb-nav.breadcrumb-sign,
 .es-breadcrumb-nav.es-breadcrumb-sign {
-    border: 0 !important;
+    /*border: 0 !important;*/
 }
 
 .breadcrumb-nav i:before,
