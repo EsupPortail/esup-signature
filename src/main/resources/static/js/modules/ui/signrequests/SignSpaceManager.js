@@ -386,7 +386,9 @@ export class SignSpaceManager {
 					let signRequestParams = Array.from(signPlacementController.signRequestParamses.values())[i];
 					let cross = signRequestParams.cross;
 					if (cross.attr("id") === ui.draggable.attr("id")) {
-						cross.resizable("enable");
+						if (cross.data("ui-resizable") || cross.data("resizable")) {
+							cross.resizable("enable");
+						}
 						signRequestParams.signSpace = null;
 						signRequestParams.ready = false;
 						signRequestParams.dropped = false;
