@@ -348,6 +348,7 @@ public class SignBookService {
         preloadWorkflowTags(signBooks.getContent());
         for (SignBook signBook : signBooks.getContent()) {
             if(!signBook.getSignRequests().isEmpty()) {
+                signBook.setDisplayNotif(signRequestService.isDisplayNotif(signBook.getSignRequests().get(0), userEppn));
                 signBook.setDeleteableByCurrentUser(signRequestService.isDeletetable(signBook.getSignRequests().get(0), userEppn) && (signBook.getCreateBy().getEppn().equals(userEppn)));
             }
         }
