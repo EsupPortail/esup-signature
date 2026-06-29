@@ -1,6 +1,7 @@
 package org.esupportail.esupsignature.service.security.oauth;
 
-import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
+import org.esupportail.esupsignature.service.security.OidcSecurityService;
+import org.esupportail.esupsignature.service.security.OidcUserSecurityService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequestEntityConverter;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
@@ -47,11 +49,12 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
 
     private final Converter<OAuth2UserRequest, RequestEntity<?>> requestEntityConverter = new OAuth2UserRequestEntityConverter();
     private final RestOperations restOperations;
-    private final List<OidcOtpSecurityService> securityServices;
+    private final OidcUserService oidcUserService = new OidcUserService();
+    private final List<OidcSecurityService> securityServices;
     private final ClientRegistrationRepository clientRegistrationRepository;
 
 
-    public ValidatingOAuth2UserService(List<OidcOtpSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
+    public ValidatingOAuth2UserService(List<OidcSecurityService> securityServices, ClientRegistrationRepository clientRegistrationRepository) {
         this.securityServices = securityServices;
         this.clientRegistrationRepository = clientRegistrationRepository;
         JwtHttpMessageConverter jwtConverter = new JwtHttpMessageConverter();
@@ -74,7 +77,11 @@ public class ValidatingOAuth2UserService implements OAuth2UserService<OidcUserRe
     public OidcUser loadUser(OidcUserRequest userRequest) throws OAuth2AuthenticationException {
         Assert.notNull(userRequest, "userRequest cannot be null");
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
-        OidcOtpSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
+        OidcSecurityService currentSecurityService = securityServices.stream().filter(s -> s.getCode().equals(registrationId)).findFirst().get();
+        if (currentSecurityService instanceof OidcUserSecurityService oidcUserSecurityService) {
+            OidcUser oidcUser = oidcUserService.loadUser(userRequest);
+            return new DefaultOidcUser(oidcUser.getAuthorities(), oidcUser.getIdToken(), oidcUser.getUserInfo(), oidcUserSecurityService.getPrincipalClaim());
+        }
         JwtDecoder jwtDecoder = getJwtDecoder(currentSecurityService.getCode(), currentSecurityService.getSignatureAlgorithm());
         if (!StringUtils.hasText(userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUri())) {
             OAuth2Error oauth2Error = new OAuth2Error(

@@ -3,6 +3,7 @@ package org.esupportail.esupsignature.service.security;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.esupportail.esupsignature.config.GlobalProperties;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseCookie;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,13 +32,15 @@ public class LogoutHandlerImpl implements LogoutHandler {
     private final GlobalProperties globalProperties;
     private final SessionRegistry sessionRegistry;
     private final List<SecurityService> securityServices;
+    private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
-    public LogoutHandlerImpl(GlobalProperties globalProperties, SessionRegistry sessionRegistry, List<SecurityService> securityServices) {
+    public LogoutHandlerImpl(GlobalProperties globalProperties, SessionRegistry sessionRegistry, List<SecurityService> securityServices, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
         this.globalProperties = globalProperties;
         this.sessionRegistry = sessionRegistry;
         this.securityServices = securityServices;
+        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
     }
 
     @Override
@@ -73,11 +77,11 @@ public class LogoutHandlerImpl implements LogoutHandler {
                         .sameSite("Lax")
                         .build();
                 httpServletResponse.addHeader("Set-Cookie", stateCookie.toString());
-                for (SecurityService securityService : securityServices) {
+                for (SecurityService securityService : getSecurityServices()) {
                     if (securityService.getCode().equals(securityServiceName)) {
-                        if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser && securityService instanceof OidcOtpSecurityService) {
+                        if (authentication != null && authentication.getPrincipal() instanceof OidcUser oidcUser && securityService instanceof OidcSecurityService oidcSecurityService) {
                             String idToken = oidcUser.getIdToken().getTokenValue();
-                            String endSessionEndpoint = ((OidcOtpSecurityService) securityService).getLogoutUrl();
+                            String endSessionEndpoint = oidcSecurityService.getLogoutUrl();
                             String redirectUri = globalProperties.getRootUrl().replaceAll("/+$", "") +
                                     "/" + securityService.getLoggedOutUrl().replaceAll("^/+", "");
                             String logoutUrl = endSessionEndpoint +
@@ -103,6 +107,12 @@ public class LogoutHandlerImpl implements LogoutHandler {
         } catch (IOException e) {
             logger.error("error on logout", e);
         }
+    }
+
+    private List<SecurityService> getSecurityServices() {
+        List<SecurityService> services = new ArrayList<>(securityServices);
+        services.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+        return services;
     }
 
 }

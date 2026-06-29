@@ -15,10 +15,12 @@ import org.esupportail.esupsignature.config.sms.SmsProperties;
 import org.esupportail.esupsignature.entity.enums.ExternalAuth;
 import org.esupportail.esupsignature.service.security.IndexEntryPoint;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
+import org.esupportail.esupsignature.service.security.OidcSecurityService;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.SecurityService;
 import org.esupportail.esupsignature.service.security.cas.CasSecurityServiceImpl;
 import org.esupportail.esupsignature.service.security.oauth.CustomAuthorizationRequestResolver;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.oauth.OAuth2FailureHandler;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.security.oauth.ValidatingOAuth2UserService;
@@ -85,9 +87,10 @@ public class WebSecurityConfig {
 	private final SessionRegistryImpl sessionRegistry;
 	private final LogoutHandlerImpl logoutHandler;
 	private final CasJwtDecoder casJwtDecoder;
+	private final OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver;
 	private DevShibRequestFilter devShibRequestFilter;
 
-	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder) {
+	public WebSecurityConfig(GlobalProperties globalProperties, OAuthAuthenticationSuccessHandler oAuthAuthenticationSuccessHandler, WebSecurityProperties webSecurityProperties, @Autowired(required = false) ClientRegistrationRepository clientRegistrationRepository, List<SecurityService> securityServices, RegisterSessionAuthenticationStrategy sessionAuthenticationStrategy, SessionRegistryImpl sessionRegistry, LogoutHandlerImpl logoutHandler, @Autowired(required = false) CasJwtDecoder casJwtDecoder, OidcUserSecurityServiceResolver oidcUserSecurityServiceResolver) {
         this.globalProperties = globalProperties;
         this.oAuthAuthenticationSuccessHandler = oAuthAuthenticationSuccessHandler;
         this.webSecurityProperties = webSecurityProperties;
@@ -97,6 +100,7 @@ public class WebSecurityConfig {
         this.sessionRegistry = sessionRegistry;
         this.logoutHandler = logoutHandler;
         this.casJwtDecoder = casJwtDecoder;
+        this.oidcUserSecurityServiceResolver = oidcUserSecurityServiceResolver;
     }
 
 	@Bean
@@ -160,7 +164,7 @@ public class WebSecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		List<SecurityService> activeSecurityServices = getActiveSecurityServices();
-		List<OidcOtpSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
+		List<OidcSecurityService> activeOidcSecurityServices = getActiveOidcSecurityServices();
 		http.sessionManagement(sessionManagement -> sessionManagement.sessionAuthenticationStrategy(sessionAuthenticationStrategy).maximumSessions(5).sessionRegistry(sessionRegistry));
 		if(devShibRequestFilter != null) {
 			http.addFilterBefore(devShibRequestFilter, OAuth2AuthorizationRequestRedirectFilter.class);
@@ -224,22 +228,26 @@ public class WebSecurityConfig {
 	}
 
 	private List<SecurityService> getActiveSecurityServices() {
-		return securityServices.stream().filter(this::isActiveSecurityService).toList();
+		List<SecurityService> activeSecurityServices = new ArrayList<>(securityServices.stream().filter(this::isActiveSecurityService).toList());
+		activeSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+		return activeSecurityServices;
 	}
 
-	private List<OidcOtpSecurityService> getActiveOidcSecurityServices() {
-		return securityServices.stream()
-				.filter(OidcOtpSecurityService.class::isInstance)
-				.map(OidcOtpSecurityService.class::cast)
+	private List<OidcSecurityService> getActiveOidcSecurityServices() {
+		List<OidcSecurityService> oidcSecurityServices = new ArrayList<>(securityServices.stream()
+				.filter(OidcSecurityService.class::isInstance)
+				.map(OidcSecurityService.class::cast)
 				.filter(this::hasClientRegistration)
-				.toList();
+				.toList());
+		oidcSecurityServices.addAll(oidcUserSecurityServiceResolver.getConfiguredServices());
+		return oidcSecurityServices;
 	}
 
 	private boolean isActiveSecurityService(SecurityService securityService) {
-		return !(securityService instanceof OidcOtpSecurityService) || hasClientRegistration((OidcOtpSecurityService) securityService);
+		return !(securityService instanceof OidcSecurityService) || hasClientRegistration((OidcSecurityService) securityService);
 	}
 
-	private boolean hasClientRegistration(OidcOtpSecurityService securityService) {
+	private boolean hasClientRegistration(OidcSecurityService securityService) {
 		return clientRegistrationRepository != null && clientRegistrationRepository.findByRegistrationId(securityService.getCode()) != null;
 	}
 
