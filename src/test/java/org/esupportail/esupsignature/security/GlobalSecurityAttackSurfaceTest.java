@@ -20,6 +20,7 @@ import org.esupportail.esupsignature.service.interfaces.sms.SmsService;
 import org.esupportail.esupsignature.service.security.LogoutHandlerImpl;
 import org.esupportail.esupsignature.service.security.OidcOtpSecurityService;
 import org.esupportail.esupsignature.service.security.PreAuthorizeService;
+import org.esupportail.esupsignature.service.security.oauth.OidcUserSecurityServiceResolver;
 import org.esupportail.esupsignature.service.security.otp.OtpService;
 import org.esupportail.esupsignature.service.security.oauth.OAuthAuthenticationSuccessHandler;
 import org.esupportail.esupsignature.service.utils.file.FileService;
@@ -1159,7 +1160,8 @@ class GlobalSecurityAttackSurfaceTest {
                 mock(RegisterSessionAuthenticationStrategy.class),
                 mock(SessionRegistryImpl.class),
                 mock(LogoutHandlerImpl.class),
-                mock(CasJwtDecoder.class)
+                mock(CasJwtDecoder.class),
+                mock(OidcUserSecurityServiceResolver.class)
         );
     }
 }

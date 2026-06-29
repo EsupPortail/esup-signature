@@ -2786,6 +2786,9 @@ public class SignBookService {
             for(SignRequest signRequest : signBook.getSignRequests()) {
                 Document signedFile = signRequest.getLastSignedDocument();
                 if(signedFile != null) {
+                    // TODO: générer le sous-dossier d'archivage avec l'id + "_" + le titre du circuit
+                    // pour les workflows, et conserver un comportement hors circuit cohérent pour les demandes
+                    // sans workflow.
                     String subPath = "/" + signRequest.getParentSignBook().getWorkflowName().replaceAll("[^a-zA-Z0-9]", "_") + "/";
                     if(signBook.getStatus().equals(SignRequestStatus.refused)) {
                         subPath += "refused/";
@@ -2860,6 +2863,8 @@ public class SignBookService {
      */
     @Transactional
     public boolean needToBeArchived(SignBook signBook) {
+        // TODO: traiter les circuits personnels (workflow.createBy != system) comme les demandes hors circuit :
+        // ils n'ont pas d'archiveTarget saisissable et doivent utiliser global.archive-uri.
         return signBook.getLiveWorkflow() != null
                 && (signBook.getLiveWorkflow().getWorkflow() == null
                 || (signBook.getLiveWorkflow().getWorkflow().getStartArchiveDate() != null
