@@ -45,6 +45,7 @@ export class SignPlacementController extends EventFactory {
         this.initializeSpecialSignImageNumbers();
         this.initListeners();
         this.refreshSteps();
+        this.syncAddSignButtonState();
     }
 
     initializeSpecialSignImageNumbers() {
@@ -212,8 +213,12 @@ export class SignPlacementController extends EventFactory {
                 this.currentSignRequestParamses[slotIndex].ready = false;
             }
             this.refreshSteps?.();
+            this.syncAddSignButtonState();
         });
-        signRequestParams.addEventListener("placementStateChanged", () => this.refreshSteps?.());
+        signRequestParams.addEventListener("placementStateChanged", () => {
+            this.refreshSteps?.();
+            this.syncAddSignButtonState();
+        });
         signRequestParams.addEventListener("spotSaved", e => this.onSpotSaved(e));
         signRequestParams.addEventListener("spotDeleted", e => this.onSpotDeleted(e));
         if (signImageNumber != null && signImageNumber >= 0 && !isParaph) {
@@ -330,6 +335,7 @@ export class SignPlacementController extends EventFactory {
             this.enableForwardButton();
         }
         this.refreshSteps();
+        this.syncAddSignButtonState();
     }
 
     onSpotSaved(spotData) {
@@ -352,6 +358,7 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses.forEach(function (signRequestParams){
             signRequestParams.lock();
         });
+        this.syncAddSignButtonState();
     }
 
     disableForwardButton() {
@@ -434,6 +441,7 @@ export class SignPlacementController extends EventFactory {
         this.signRequestParamses.set(id, signRequestParams);
         this.applySpecialSignImageNumbers(signRequestParams);
         this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
+        this.syncAddSignButtonState();
 
         if (signImageNumber != null && signImageNumber !== 999999 && (!isVisaPlacement || isParaph)) {
             await signRequestParams.changeSignImage(signImageNumber);
@@ -448,6 +456,7 @@ export class SignPlacementController extends EventFactory {
         this.id++;
         if (!isSpot && !isParaph) {
             this.refreshSteps();
+            this.syncAddSignButtonState();
         }
         return signRequestParams;
     }
@@ -525,6 +534,30 @@ export class SignPlacementController extends EventFactory {
             return true;
         }
         return this.getActiveSigns().length > 0;
+    }
+
+    getPlacedSignatureCount() {
+        return this.getActiveSigns().length;
+    }
+
+    syncAddSignButtonState() {
+        const addSignButton2 = $("#addSignButton2");
+        if (!addSignButton2.length) {
+            return;
+        }
+        const count = this.getPlacedSignatureCount();
+        const hasSignature = count > 0;
+        const label = hasSignature ? "Ajouter une autre signature" : "Insérer une signature";
+        addSignButton2.find(".es-add-sign-button-label").text(label);
+        addSignButton2
+            .attr("title", label)
+            .attr("aria-label", hasSignature
+                ? `${label}. ${count} signature${count > 1 ? "s" : ""} en place.`
+                : label);
+        const countBadge = addSignButton2.find("#addSignButton2Count");
+        countBadge.toggleClass("d-none", !hasSignature);
+        countBadge.find(".es-add-sign-count").text(count);
+        countBadge.find(".visually-hidden").text(` signature${count > 1 ? "s" : ""} en place`);
     }
 
     hasPendingSignaturePlacement() {
@@ -639,6 +672,7 @@ export class SignPlacementController extends EventFactory {
 
         this.setStepState(step1, true, false, false);
         this.setStepState(step2, false, false, true);
+        this.syncAddSignButtonState();
 
         step1.find(".step-horizontal-v2-icon").html("1");
         step2.find(".step-horizontal-v2-icon").html("2");
@@ -655,7 +689,7 @@ export class SignPlacementController extends EventFactory {
             refuseLaunchDivResponsive
         } = this.getStepUiElements();
 
-        addSignButton2.attr("disabled", "disabled");
+        addSignButton2.removeAttr("disabled");
         refuseLaunchButton.removeAttr("disabled");
         insertBtn.removeAttr("disabled");
         refuseLaunchDiv.removeClass("d-none");
@@ -664,6 +698,7 @@ export class SignPlacementController extends EventFactory {
 
         this.setButtonVariant(addSignButton2, "btn-success");
         addSignButton2.removeClass("pulse-success");
+        this.syncAddSignButtonState();
         this.setButtonVariant(insertBtn, "btn-success");
         this.setButtonVariant(refuseLaunchButton, "btn-secondary");
         this.syncSignatureActionButtons(null, singleVisibleStep);

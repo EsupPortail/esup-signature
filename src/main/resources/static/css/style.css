@@ -140,11 +140,17 @@ body.es-signrequest-page #tools #signAdvancedLaunchButton {
 }
 
 body.es-signrequest-page #tools #step-1 #addSignButton2 {
+    align-items: center;
+    gap: .5rem;
     width: auto;
     min-width: fit-content;
     max-width: none;
     flex: 0 0 auto;
     white-space: nowrap;
+}
+
+body.es-signrequest-page #tools #step-1 #addSignButton2 .es-add-sign-button-count {
+    min-width: 1.75rem;
 }
 
 body.es-signrequest-page #tools #signActionButtons {

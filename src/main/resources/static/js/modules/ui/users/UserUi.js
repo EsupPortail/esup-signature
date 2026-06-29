@@ -7,6 +7,7 @@ export class UserUi {
 
     constructor(userName, signRequestParams, signImages, userType, defaultSignImageNumber, signatureUiConfig = null) {
         console.log('Starting user UI');
+        this.previewSignRequestParamsId = "user-preview";
         this.userName = userName;
         this.signImages = signImages;
         this.userType = userType;
@@ -293,8 +294,10 @@ export class UserUi {
             this.signRequestParams.resetMobileSignatureFlow({clearToken: true, force: true});
         }
 
-        $("#pdf .cross").remove();
-        $("#pdf > input[id^='canvas_']").remove();
+        const previewId = this.signRequestParams?.id ?? this.previewSignRequestParamsId;
+        $(`#cross_${previewId}, #canvas_${previewId}, #border_${previewId}, #crossTools_${previewId}, #extraTools_${previewId}, #displayMoreTools_${previewId}`).remove();
+        $("#pdf .cross[data-user-signature-preview='true']").remove();
+        $("#pdf > input[data-user-signature-preview='true']").remove();
         this.signRequestParams = null;
     }
 
@@ -371,7 +374,7 @@ export class UserUi {
         }
 
         this.applySignRequestParamsPreviewChrome();
-        if (signRequestParams.cross?.hasClass("ui-resizable")) {
+        if (signRequestParams.cross?.data("ui-resizable") || signRequestParams.cross?.data("resizable")) {
             try {
                 signRequestParams.cross.resizable("enable");
             } catch (e) {
@@ -465,7 +468,7 @@ export class UserUi {
         this.signRequestParams = new SignRequestParams(
             this.userType === 'otp',
             null,
-            0,
+            this.previewSignRequestParamsId,
             2,
             1,
             this.userName,
@@ -482,6 +485,8 @@ export class UserUi {
             undefined,
             this.signatureUiConfig
         );
+        this.signRequestParams.cross?.attr("data-user-signature-preview", "true");
+        this.signRequestParams.canvas?.attr("data-user-signature-preview", "true");
 
         const {generatedSignImageNumber, parapheSignImageNumber} = this.resolveSpecialSignImageNumbers();
         this.signRequestParams.generatedSignImageNumber = generatedSignImageNumber;

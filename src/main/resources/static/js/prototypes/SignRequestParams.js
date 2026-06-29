@@ -1392,7 +1392,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #enableCrossResizable() {
-        if(!this.dropped) {
+        if(!this.dropped && this.cross != null && (this.cross.data("ui-resizable") || this.cross.data("resizable"))) {
             this.cross.resizable("enable");
         }
     }
