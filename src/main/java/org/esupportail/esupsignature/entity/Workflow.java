@@ -100,6 +100,8 @@ public class Workflow {
 
     private Boolean disableUpdateByCreator = false;
 
+    private Boolean authorizeReplayByCreator = false;
+
     private Boolean sealAtEnd = false;
 
     private String signRequestParamsDetectionPattern;
@@ -397,6 +399,14 @@ public class Workflow {
 
     public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) {
         this.disableUpdateByCreator = disableUpdateByCreator;
+    }
+
+    public Boolean getAuthorizeReplayByCreator() {
+        return Objects.requireNonNullElse(authorizeReplayByCreator, false);
+    }
+
+    public void setAuthorizeReplayByCreator(Boolean authorizeReplayByCreator) {
+        this.authorizeReplayByCreator = authorizeReplayByCreator;
     }
 
     public List<User> getViewers() {

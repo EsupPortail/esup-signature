@@ -1808,20 +1808,40 @@ public class SignRequestService {
 	 * @return true si une notification doit être affichée, false sinon
 	 */
 	public boolean isDisplayNotif(SignRequest signRequest, String userEppn) {
-		User user = userService.getByEppn(userEppn);
-		boolean displayNotif = false;
-		if (signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) &&
-				(userEppn.equals("system") || signRequest.getCreateBy().getEppn().equals(userEppn)
-						|| (signRequest.getParentSignBook().getLiveWorkflow().getWorkflow() != null &&
-						(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getManagers().contains(user.getEmail())
-								|| !Collections.disjoint(signRequest.getParentSignBook().getLiveWorkflow().getWorkflow().getDashboardRoles(), user.getRoles())))
-				)
-				&&
-				((signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()) ||
-						(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()))) {
-			displayNotif = true;
+		if (signRequest == null || userEppn == null || signRequest.getParentSignBook() == null) {
+			return false;
 		}
-		return displayNotif;
+		User user = userService.getByEppn(userEppn);
+		Workflow workflow = getWorkflow(signRequest);
+		boolean managerCanReplay = workflow != null
+				&& user != null
+				&& (workflow.getManagers().contains(user.getEmail())
+				|| !Collections.disjoint(workflow.getDashboardRoles(), user.getRoles()));
+		boolean replayAllowed = userEppn.equals("system") || canCreatorReplayNotif(signRequest, userEppn) || managerCanReplay;
+		boolean refreshDelayReached = (signRequest.getParentSignBook().getLastNotifDate() == null && Duration.between(signRequest.getParentSignBook().getCreateDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif()) ||
+				(signRequest.getParentSignBook().getLastNotifDate() != null && Duration.between(signRequest.getParentSignBook().getLastNotifDate().toInstant(), new Date().toInstant()).toHours() >= globalProperties.getHoursBeforeRefreshNotif());
+		return signRequest.getParentSignBook().getStatus().equals(SignRequestStatus.pending) && replayAllowed && refreshDelayReached;
+	}
+
+	private boolean canCreatorReplayNotif(SignRequest signRequest, String userEppn) {
+		if (signRequest == null || signRequest.getCreateBy() == null || !userEppn.equals(signRequest.getCreateBy().getEppn())) {
+			return false;
+		}
+		Workflow workflow = getWorkflow(signRequest);
+		if (workflow == null) {
+			return true;
+		}
+		if (workflow.getCreateBy() != null && userEppn.equals(workflow.getCreateBy().getEppn())) {
+			return true;
+		}
+		return BooleanUtils.isTrue(workflow.getAuthorizeReplayByCreator());
+	}
+
+	private Workflow getWorkflow(SignRequest signRequest) {
+		if (signRequest == null || signRequest.getParentSignBook() == null || signRequest.getParentSignBook().getLiveWorkflow() == null) {
+			return null;
+		}
+		return signRequest.getParentSignBook().getLiveWorkflow().getWorkflow();
 	}
 
 	private List<Recipient> getCurrentRecipients(SignRequest signRequest) {

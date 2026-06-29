@@ -279,6 +279,10 @@
                                                         <label for="disableUpdateByCreator" class="form-check-label">Le propriétaire ne peut pas modifier la demande</label>
                                                     </div>
                                                     <div class="form-check mb-2">
+                                                        <input id="authorizeReplayByCreator" type="checkbox" class="form-check-input" th:field="*{authorizeReplayByCreator}"/>
+                                                        <label for="authorizeReplayByCreator" class="form-check-label">Autoriser le créateur d’une demande à relancer les notifications</label>
+                                                    </div>
+                                                    <div class="form-check mb-2">
                                                         <input id="disableEmailAlerts" type="checkbox" class="form-check-input" th:field="*{disableEmailAlerts}"/>
                                                         <label for="disableEmailAlerts" class="form-check-label">Désactiver toutes les alertes mail pour ce circuit</label>
                                                     </div>

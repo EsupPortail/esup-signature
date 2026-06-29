@@ -84,6 +84,7 @@ public class AdminWorkflowUpdateViewDto {
         private Boolean ownerSystem;
         private Boolean disableDeleteByCreator;
         private Boolean disableUpdateByCreator;
+        private Boolean authorizeReplayByCreator;
         private Boolean disableEmailAlerts;
         private Boolean forbidDownloadsBeforeEnd;
         private Boolean authorizeClone;
@@ -126,6 +127,7 @@ public class AdminWorkflowUpdateViewDto {
                            Boolean ownerSystem,
                            Boolean disableDeleteByCreator,
                            Boolean disableUpdateByCreator,
+                           Boolean authorizeReplayByCreator,
                            Boolean disableEmailAlerts,
                            Boolean forbidDownloadsBeforeEnd,
                            Boolean authorizeClone,
@@ -164,6 +166,7 @@ public class AdminWorkflowUpdateViewDto {
             this.ownerSystem = ownerSystem;
             this.disableDeleteByCreator = disableDeleteByCreator;
             this.disableUpdateByCreator = disableUpdateByCreator;
+            this.authorizeReplayByCreator = authorizeReplayByCreator;
             this.disableEmailAlerts = disableEmailAlerts;
             this.forbidDownloadsBeforeEnd = forbidDownloadsBeforeEnd;
             this.authorizeClone = authorizeClone;
@@ -222,6 +225,8 @@ public class AdminWorkflowUpdateViewDto {
         public void setDisableDeleteByCreator(Boolean disableDeleteByCreator) { this.disableDeleteByCreator = disableDeleteByCreator; }
         public Boolean getDisableUpdateByCreator() { return disableUpdateByCreator; }
         public void setDisableUpdateByCreator(Boolean disableUpdateByCreator) { this.disableUpdateByCreator = disableUpdateByCreator; }
+        public Boolean getAuthorizeReplayByCreator() { return authorizeReplayByCreator; }
+        public void setAuthorizeReplayByCreator(Boolean authorizeReplayByCreator) { this.authorizeReplayByCreator = authorizeReplayByCreator; }
         public Boolean getDisableEmailAlerts() { return disableEmailAlerts; }
         public void setDisableEmailAlerts(Boolean disableEmailAlerts) { this.disableEmailAlerts = disableEmailAlerts; }
         public Boolean getForbidDownloadsBeforeEnd() { return forbidDownloadsBeforeEnd; }
