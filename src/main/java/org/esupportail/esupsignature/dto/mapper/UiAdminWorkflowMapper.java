@@ -100,6 +100,7 @@ public class UiAdminWorkflowMapper {
         dto.setOwnerSystem(workflow.getOwnerSystem());
         dto.setDisableDeleteByCreator(workflow.getDisableDeleteByCreator());
         dto.setDisableUpdateByCreator(workflow.getDisableUpdateByCreator());
+        dto.setAuthorizeReplayByCreator(workflow.getAuthorizeReplayByCreator());
         dto.setDisableEmailAlerts(workflow.getDisableEmailAlerts());
         dto.setForbidDownloadsBeforeEnd(workflow.getForbidDownloadsBeforeEnd());
         dto.setAuthorizeClone(workflow.getAuthorizeClone());
@@ -217,4 +218,3 @@ public class UiAdminWorkflowMapper {
         return steps;
     }
 }
-
