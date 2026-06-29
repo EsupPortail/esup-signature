@@ -2264,9 +2264,9 @@ tr[aria-expanded="true"] .caret-toggle-expanded {
 }
 
 .step-horizontal-v2.active .step-horizontal-v2-icon {
-    background: var(--bs-success) !important;
+    background: var(--bs-white) !important;
     border-color: var(--bs-success) !important;
-    color: var(--bs-white);
+    color: var(--bs-success);
     box-shadow: 0 0 0 3px var(--color-rgba-255-255-255-08);
 }
 
