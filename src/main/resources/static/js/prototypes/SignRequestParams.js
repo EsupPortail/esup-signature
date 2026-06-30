@@ -195,7 +195,8 @@ export class SignRequestParams extends EventFactory {
     }
 
     #getExtraRenderedFontSize() {
-        return Math.max(1, Math.round(this.#getExtraBaseFontSize() * this.currentScale * this.signScale));
+        const renderedFontSize = this.#getExtraBaseFontSize() * this.currentScale * this.signScale;
+        return Math.max(1, Number(renderedFontSize.toFixed(3)));
     }
 
     #getMaxRenderedExtraDateText() {
