@@ -1,6 +1,7 @@
 import {SignRequestParams} from "../../../prototypes/SignRequestParams.js?version=@version@";
 import {EventFactory} from "../../utils/EventFactory.js?version=@version@";
 import {UserUi} from '../users/UserUi.js?version=@version@';
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from './SignatureImageResolver.js?version=@version@';
 
 export class SignPlacementController extends EventFactory {
 
@@ -49,13 +50,6 @@ export class SignPlacementController extends EventFactory {
     }
 
     initializeSpecialSignImageNumbers() {
-        const signImages = Array.isArray(this.signImages) ? this.signImages : [];
-        if (signImages.length === 0) {
-            this.generatedSignImageNumber = null;
-            this.parapheSignImageNumber = null;
-            return;
-        }
-
         let uiMe = null;
         try {
             const rawUiMe = sessionStorage.getItem('uiMe');
@@ -63,25 +57,9 @@ export class SignPlacementController extends EventFactory {
         } catch (error) {
             console.debug('Unable to parse uiMe session payload', error);
         }
-        const userImageIds = uiMe != null && Array.isArray(uiMe.userImagesIds) ? uiMe.userImagesIds : null;
-        if (userImageIds != null) {
-            this.generatedSignImageNumber = signImages.length > userImageIds.length
-                ? userImageIds.length
-                : null;
-            this.parapheSignImageNumber = this.generatedSignImageNumber != null && signImages.length > this.generatedSignImageNumber + 1
-                ? this.generatedSignImageNumber + 1
-                : null;
-            return;
-        }
-
-        if (signImages.length === 1) {
-            this.generatedSignImageNumber = 0;
-            this.parapheSignImageNumber = null;
-            return;
-        }
-
-        this.generatedSignImageNumber = signImages.length - 2;
-        this.parapheSignImageNumber = signImages.length - 1;
+        const specialIndexes = SignatureImageResolver.getSpecialIndexes(this.signImages, uiMe);
+        this.generatedSignImageNumber = specialIndexes.generatedSignImageNumber;
+        this.parapheSignImageNumber = specialIndexes.parapheSignImageNumber;
     }
 
     getScrollContainer() {
@@ -142,8 +120,7 @@ export class SignPlacementController extends EventFactory {
     }
 
     normalizeSignImageNumber(signImageNumber) {
-        const normalizedSignImageNumber = signImageNumber == null ? null : Number.parseInt(signImageNumber, 10);
-        return signImageNumber != null && Number.isFinite(normalizedSignImageNumber) ? normalizedSignImageNumber : signImageNumber;
+        return SignatureImageResolver.normalizeSignImageNumber(signImageNumber);
     }
 
     async waitForOtpSelection() {
@@ -181,7 +158,7 @@ export class SignPlacementController extends EventFactory {
     }
 
     getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph) {
-        if (signImageNumber == null || signImageNumber < 0 || signImageNumber === 999999 || isParaph) {
+        if (signImageNumber == null || signImageNumber < 0 || signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT || isParaph) {
             return null;
         }
         if (forceSignNumber != null) {
@@ -233,17 +210,11 @@ export class SignPlacementController extends EventFactory {
     }
 
     getGeneratedSignImageNumber(userState) {
-        const signImageIds = Array.isArray(userState?.signImageIds) ? userState.signImageIds : [];
-        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
-        return signImages.length > signImageIds.length ? signImageIds.length : null;
+        return SignatureImageResolver.getSpecialIndexes(userState?.signImages, userState).generatedSignImageNumber;
     }
 
     getParapheSignImageNumber(userState) {
-        const generatedSignImageNumber = this.getGeneratedSignImageNumber(userState);
-        const signImages = Array.isArray(userState?.signImages) ? userState.signImages : [];
-        return generatedSignImageNumber != null && signImages.length > generatedSignImageNumber + 1
-            ? generatedSignImageNumber + 1
-            : null;
+        return SignatureImageResolver.getSpecialIndexes(userState?.signImages, userState).parapheSignImageNumber;
     }
 
     applySpecialSignImageNumbers(signRequestParams) {
@@ -258,6 +229,8 @@ export class SignPlacementController extends EventFactory {
         if (!userState) {
             return;
         }
+        const previousGeneratedSignImageNumber = this.generatedSignImageNumber;
+        const previousParapheSignImageNumber = this.parapheSignImageNumber;
         const displayName = [userState.firstname, userState.name].filter(Boolean).join(' ').trim();
         if (displayName) {
             this.userName = displayName;
@@ -272,13 +245,50 @@ export class SignPlacementController extends EventFactory {
                 this.userUI.userName = displayName || this.userUI.userName;
             }
             this.signRequestParamses.forEach(signRequestParams => {
+                const currentSignImageNumber = Number.parseInt(signRequestParams.signImageNumber, 10);
+                const mobilePersistedSignImageNumber = Number.parseInt(signRequestParams.mobilePersistedSignImageNumber, 10);
+                const isPersistedMobileSignature = Number.isFinite(mobilePersistedSignImageNumber)
+                    && currentSignImageNumber === mobilePersistedSignImageNumber;
+                if (!isPersistedMobileSignature && Number.isFinite(currentSignImageNumber)) {
+                    if (previousGeneratedSignImageNumber != null
+                        && currentSignImageNumber === previousGeneratedSignImageNumber
+                        && this.generatedSignImageNumber != null) {
+                        signRequestParams.signImageNumber = this.generatedSignImageNumber;
+                    } else if (previousParapheSignImageNumber != null
+                        && currentSignImageNumber === previousParapheSignImageNumber
+                        && this.parapheSignImageNumber != null) {
+                        signRequestParams.signImageNumber = this.parapheSignImageNumber;
+                    }
+                }
                 signRequestParams.signImages = userState.signImages;
                 this.applySpecialSignImageNumbers(signRequestParams);
-                if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== 999999) {
+                if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
                     signRequestParams.changeSignImage(signRequestParams.signImageNumber);
                 }
             });
         }
+    }
+
+    async persistMobileSignaturePreviews() {
+        const persistPromises = [];
+        this.signRequestParamses.forEach(signRequestParams => {
+            if (typeof signRequestParams.persistMobileSignaturePreviewIfNeeded === "function") {
+                persistPromises.push(signRequestParams.persistMobileSignaturePreviewIfNeeded());
+            }
+        });
+        if (persistPromises.length === 0) {
+            return null;
+        }
+
+        const results = await Promise.all(persistPromises);
+        let lastSavedSignImageNumber = null;
+        results.forEach(userState => {
+            const savedSignImageNumber = Number.parseInt(userState?.savedSignImageNumber, 10);
+            if (Number.isFinite(savedSignImageNumber)) {
+                lastSavedSignImageNumber = savedSignImageNumber;
+            }
+        });
+        return lastSavedSignImageNumber;
     }
 
     buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
@@ -320,8 +330,8 @@ export class SignPlacementController extends EventFactory {
         if(this.signsList.length === 0) {
             $('#addSignButton').removeAttr('disabled');
         }
-        // Ne pas modifier l'état des étapes si c'est un spot (999999) qui est supprimé.
-        if(id === 999999) {
+        // Ne pas modifier l'état des étapes si c'est un spot qui est supprimé.
+        if(id === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             return;
         }
         if(this.signRequestParamses.size === 0) {
@@ -383,14 +393,6 @@ export class SignPlacementController extends EventFactory {
 
     async addSign(page, restore, signImageNumber, forceSignNumber) {
         signImageNumber = this.normalizeSignImageNumber(signImageNumber);
-        let realSignImagesCount = 0;
-        if (Array.isArray(this.signImages)) {
-            let totalImages = this.signImages.filter(i => i !== "" && i !== null).length;
-            let specialImagesCount = 0;
-            if (this.generatedSignImageNumber != null) specialImagesCount++;
-            if (this.parapheSignImageNumber != null) specialImagesCount++;
-            realSignImagesCount = Math.max(0, totalImages - specialImagesCount);
-        }
         if (this.isOtp || this.signatureStepRequested) {
             const selection = await this.waitForOtpSelection();
             if (this.signatureStepRequested) {
@@ -404,18 +406,18 @@ export class SignPlacementController extends EventFactory {
             this.applyUserSignatureState(selection);
             signImageNumber = selectedSignImageNumber;
         }
-        const isSpot = signImageNumber === 999999;
-        const isParaph = signImageNumber === 999997;
+        const isSpot = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
+        const isParaph = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.PARAPHE;
         const isVisaPlacement = this.signType === "visa" && !isParaph;
         if (!isSpot && !isParaph) {
             this.prepareVisualPlacement();
         }
-        const id = signImageNumber === 999999 ? 999999 : this.id;
+        const id = signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT ? SPECIAL_SIGN_IMAGE_NUMBERS.SPOT : this.id;
         const currentSignRequestParams = this.getPendingCurrentSignRequestParams(forceSignNumber, signImageNumber, isParaph);
         const initialSignRequestParamsModel = signImageNumber == null ? null : this.buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph);
         let signRequestParams = null;
 
-        if (signImageNumber === 999999) {
+        if (signImageNumber === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             signRequestParams = new SignRequestParams(this.isOtp, null, id, this.currentScale, page, this.userName, this.authUserName, false, false, false, false, null, false, signImageNumber, this.scrollTop, this.csrf, this.signType, this.signatureUiConfig, this.signRequestId);
             signRequestParams.changeSignSize({
                 w: signRequestParams.originalWidth,
@@ -443,7 +445,7 @@ export class SignPlacementController extends EventFactory {
         this.bindSignRequestParamsEvents(signRequestParams, id, signImageNumber, isParaph);
         this.syncAddSignButtonState();
 
-        if (signImageNumber != null && signImageNumber !== 999999 && (!isVisaPlacement || isParaph)) {
+        if (signImageNumber != null && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT && (!isVisaPlacement || isParaph)) {
             await signRequestParams.changeSignImage(signImageNumber);
             if (!restore && typeof signRequestParams.syncExtraLayoutFromState === "function") {
                 signRequestParams.syncExtraLayoutFromState();
@@ -525,7 +527,7 @@ export class SignPlacementController extends EventFactory {
                 && signRequestParams.isSign
                 && signImageNumber != null
                 && signImageNumber >= 0
-                && signImageNumber !== 999999;
+                && signImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT;
         });
     }
 
@@ -550,7 +552,6 @@ export class SignPlacementController extends EventFactory {
         const label = hasSignature ? "Ajouter une autre signature" : "Insérer une signature";
         addSignButton2.find(".es-add-sign-button-label").text(label);
         addSignButton2
-            .attr("title", label)
             .attr("aria-label", hasSignature
                 ? `${label}. ${count} signature${count > 1 ? "s" : ""} en place.`
                 : label);

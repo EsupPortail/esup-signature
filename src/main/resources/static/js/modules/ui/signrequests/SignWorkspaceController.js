@@ -493,7 +493,10 @@ export class SignWorkspaceController {
         // }
         this.pdfViewer.annotationLinkRemove();
         const {signNum, targetPageNumber} = this.resolveTargetSign(forceSignNumber);
-        const resolvedSignImageNumber = this.resolvePreferredSignImageNumber();
+        const persistedSignImageNumber = await this.signPlacementController?.persistMobileSignaturePreviews?.();
+        const resolvedSignImageNumber = Number.isFinite(persistedSignImageNumber)
+            ? persistedSignImageNumber
+            : this.resolvePreferredSignImageNumber();
         if (Number.isFinite(resolvedSignImageNumber)) {
             this.signImageNumber = resolvedSignImageNumber;
         }
@@ -945,5 +948,4 @@ export class SignWorkspaceController {
     }
 
 }
-
 

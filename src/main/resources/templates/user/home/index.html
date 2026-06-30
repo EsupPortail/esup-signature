@@ -207,7 +207,6 @@
                                     data-bs-target="#wiz-workflow-sign-modal"
                                     th:href="'/user/start-workflow/' + ${workflow.id}"
                                     style="width: 120px; display: inline-flex; flex-direction: column;"
-                                    th:title="${workflow.description}"
                                     th:data-es-workflow-id="${workflow.id}"
                                     th:alt="'Circuit : ' + ${workflow.description}">
                                     <div class="d-flex flex-column align-items-center justify-content-center h-100 w-100 gap-3">
@@ -242,8 +241,7 @@
                                 <a tabindex="0" role="button"
                                     class="btn btn-secondary"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#workflowsModal"
-                                    title="Ajouter un circuit à vos favoris">
+                                    data-bs-target="#workflowsModal">
                                     <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i><br>
                                     Ajouter un circuit dans mes favoris
                                 </a>
@@ -268,7 +266,6 @@
                                 class="btn btn-material border border-secondary-subtle border-opacity-10 btn-light text-center overflow-hidden form-button start-form-button"
                                 style="width: 120px; height: 170px;"
                                 th:classappend="${form.hideButton || !favoriteFormIds.contains(form.id)} ? 'd-none' : ''"
-                                th:title="${form.title}"
                                 th:data-es-form-id="${form.id}"
                                 th:href="'/user/start-form/' + ${form.id}"
                                 data-bs-toggle="modal" data-bs-target="#wiz-start-form-modal" >
@@ -285,8 +282,7 @@
                                 <a tabindex="0" role="button"
                                     class="btn btn-secondary"
                                     data-bs-toggle="modal"
-                                    data-bs-target="#formsModal"
-                                    title="Ajouter un circuit à vos favoris">
+                                    data-bs-target="#formsModal">
                                     <i class="fi fi-rr-plus m-3" style="font-size: 30px;"></i><br>
                                     Ajouter un formulaire dans mes favoris
                                 </a>
