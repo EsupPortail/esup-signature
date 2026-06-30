@@ -1183,14 +1183,19 @@
                         const signPad = document.getElementById('signPad');
                         const vanillaUpload = document.getElementById('vanilla-upload');
                         const cropDiv = document.getElementById('crop-div');
-                        
+                        const signImageBase64 = document.getElementById('signImageBase64');
+                        const hasSignaturePayload = `${signImageBase64?.value || ''}`.trim() !== '';
+
                         if (activeTab.id === 'preview-tab' || (activeTab.id === 'draw-tab' && (!signPad || signPad.classList.contains('d-none') || signPad.style.display === 'none'))) {
                             saveButton.classList.add('d-none');
+                            saveButton.disabled = true;
                         } else if (activeTab.id === 'upload-tab' && (!vanillaUpload || vanillaUpload.value === '') && (!cropDiv || cropDiv.style.display === 'none')) {
                             saveButton.classList.add('d-none');
+                            saveButton.disabled = true;
                         } else {
                             saveButton.classList.remove('d-none');
                             saveButton.innerHTML = '<i class="fi fi-rr-check"></i> Utiliser cette signature';
+                            saveButton.disabled = !hasSignaturePayload;
                         }
                     }
 
@@ -1756,7 +1761,15 @@
                        });
                     });
                     signWithGeneratedButton?.addEventListener('click', () => triggerUserParamsPrepared('generated', '999998'));
-                    saveButton.addEventListener('click', () => setPendingUserSignatureAction('custom', ''));
+                    saveButton.addEventListener('click', event => {
+                        const signImageBase64 = document.getElementById('signImageBase64');
+                        if (`${signImageBase64?.value || ''}`.trim() === '') {
+                            event.preventDefault();
+                            updateSaveButtonState();
+                            return;
+                        }
+                        setPendingUserSignatureAction('custom', '');
+                    });
                     drawOnMobileButton?.addEventListener('click', () => {
                         clearMobilePreviewState({clearToken: true});
                         resetMobileSignStatus();
@@ -1797,19 +1810,23 @@
                     userParamsForm.addEventListener('submit', e => e.preventDefault());
                     document.getElementById('signImageBase64')?.addEventListener('input', event => {
                         if (!mobilePreviewApplied || !mobilePreviewSignatureBase64) {
+                            updateSaveButtonState();
                             return;
                         }
                         if ((event.target.value || '') !== mobilePreviewSignatureBase64) {
                             clearMobilePreviewState();
                         }
+                        updateSaveButtonState();
                     });
                     document.getElementById('signImageBase64')?.addEventListener('change', event => {
                         if (!mobilePreviewApplied || !mobilePreviewSignatureBase64) {
+                            updateSaveButtonState();
                             return;
                         }
                         if ((event.target.value || '') !== mobilePreviewSignatureBase64) {
                             clearMobilePreviewState();
                         }
+                        updateSaveButtonState();
                     });
                     eraseButton?.addEventListener('click', () => clearMobilePreviewState());
                     cancelNewSignBtn?.addEventListener('click', () => {
@@ -1918,7 +1935,7 @@
                                 let selectedSignImageNumber = null;
                                 if (selectionMode === 'generated') {
                                     updateLiveUserState(userState);
-                                    selectedSignImageNumber = currentUserSignatureState?.generatedSignImageNumber ?? 999998;
+                                    selectedSignImageNumber = 999998;
                                 } else if (selectionMode === 'existing') {
                                     updateLiveUserState(userState);
                                     selectedSignImageNumber = parseInt(userParamsForm.dataset.selectedSignImageNumber, 10);
@@ -1960,4 +1977,3 @@
     </div>
 </div>
 </html>
-

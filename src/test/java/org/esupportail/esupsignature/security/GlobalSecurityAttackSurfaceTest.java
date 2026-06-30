@@ -849,6 +849,17 @@ class GlobalSecurityAttackSurfaceTest {
         }
 
         @Test
+        void mobileSignPublicControllerShouldNotExposeDirectSaveEndpoint() {
+            boolean directSaveEndpointExists = java.util.Arrays.stream(PublicController.class.getDeclaredMethods())
+                    .map(method -> method.getAnnotation(org.springframework.web.bind.annotation.PostMapping.class))
+                    .filter(java.util.Objects::nonNull)
+                    .flatMap(mapping -> java.util.Arrays.stream(mapping.value()))
+                    .anyMatch("/mobile-sign/{token}/save"::equals);
+
+            assertFalse(directSaveEndpointExists);
+        }
+
+        @Test
         void mobileSignPageShouldExposeUsedStateWithoutFlaggingExpiration() {
             LogService logService = mock(LogService.class);
             SignRequestService signRequestService = mock(SignRequestService.class);
@@ -1165,4 +1176,3 @@ class GlobalSecurityAttackSurfaceTest {
         );
     }
 }
-

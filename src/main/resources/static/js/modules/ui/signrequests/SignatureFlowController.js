@@ -635,10 +635,19 @@ export class SignatureFlowController {
         }
     }
 
-    submitSignRequest() {
+    async submitSignRequest() {
         const signUi = this.signUi;
         let signaturesCheck = true;
         let formData = { };
+        try {
+            await signUi.workspace?.signPlacementController?.persistMobileSignaturePreviews?.();
+        } catch (error) {
+            console.error("Unable to persist mobile signature preview", error);
+            signUi.wait?.modal?.('hide');
+            this.setLaunchButtonsDisabled(false);
+            bootbox.alert("La signature mobile n'a pas pu etre enregistree. Veuillez reessayer avant de valider.");
+            return;
+        }
         if(signUi.isPdf) {
             $.each($('#signForm').serializeArray(), function () {
                 if (!this.name.startsWith("comment")) {
@@ -706,7 +715,7 @@ export class SignatureFlowController {
                 };
                 if(originalParams.userSignaturePad != null) {
                     const hasDrawnSignature = !originalParams.userSignaturePad.signaturePad.isEmpty();
-                    const hasLoadedSignatureImage = Boolean(originalParams.userSignaturePad.signImageBase64Val);
+                    const hasLoadedSignatureImage = Boolean(originalParams.userSignaturePad.signImageBase64Val) && !originalParams.mobileSignatureSaved;
                     if(!hasDrawnSignature && !hasLoadedSignatureImage) {
                         signaturesCheck = false;
                     } else if (hasDrawnSignature) {
@@ -806,4 +815,3 @@ export class SignatureFlowController {
     }
 
 }
-

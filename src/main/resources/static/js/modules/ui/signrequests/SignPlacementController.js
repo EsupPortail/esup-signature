@@ -258,6 +258,8 @@ export class SignPlacementController extends EventFactory {
         if (!userState) {
             return;
         }
+        const previousGeneratedSignImageNumber = this.generatedSignImageNumber;
+        const previousParapheSignImageNumber = this.parapheSignImageNumber;
         const displayName = [userState.firstname, userState.name].filter(Boolean).join(' ').trim();
         if (displayName) {
             this.userName = displayName;
@@ -272,6 +274,21 @@ export class SignPlacementController extends EventFactory {
                 this.userUI.userName = displayName || this.userUI.userName;
             }
             this.signRequestParamses.forEach(signRequestParams => {
+                const currentSignImageNumber = Number.parseInt(signRequestParams.signImageNumber, 10);
+                const mobilePersistedSignImageNumber = Number.parseInt(signRequestParams.mobilePersistedSignImageNumber, 10);
+                const isPersistedMobileSignature = Number.isFinite(mobilePersistedSignImageNumber)
+                    && currentSignImageNumber === mobilePersistedSignImageNumber;
+                if (!isPersistedMobileSignature && Number.isFinite(currentSignImageNumber)) {
+                    if (previousGeneratedSignImageNumber != null
+                        && currentSignImageNumber === previousGeneratedSignImageNumber
+                        && this.generatedSignImageNumber != null) {
+                        signRequestParams.signImageNumber = this.generatedSignImageNumber;
+                    } else if (previousParapheSignImageNumber != null
+                        && currentSignImageNumber === previousParapheSignImageNumber
+                        && this.parapheSignImageNumber != null) {
+                        signRequestParams.signImageNumber = this.parapheSignImageNumber;
+                    }
+                }
                 signRequestParams.signImages = userState.signImages;
                 this.applySpecialSignImageNumbers(signRequestParams);
                 if (signRequestParams.signImageNumber != null && signRequestParams.signImageNumber >= 0 && signRequestParams.signImageNumber !== 999999) {
@@ -279,6 +296,28 @@ export class SignPlacementController extends EventFactory {
                 }
             });
         }
+    }
+
+    async persistMobileSignaturePreviews() {
+        const persistPromises = [];
+        this.signRequestParamses.forEach(signRequestParams => {
+            if (typeof signRequestParams.persistMobileSignaturePreviewIfNeeded === "function") {
+                persistPromises.push(signRequestParams.persistMobileSignaturePreviewIfNeeded());
+            }
+        });
+        if (persistPromises.length === 0) {
+            return null;
+        }
+
+        const results = await Promise.all(persistPromises);
+        let lastSavedSignImageNumber = null;
+        results.forEach(userState => {
+            const savedSignImageNumber = Number.parseInt(userState?.savedSignImageNumber, 10);
+            if (Number.isFinite(savedSignImageNumber)) {
+                lastSavedSignImageNumber = savedSignImageNumber;
+            }
+        });
+        return lastSavedSignImageNumber;
     }
 
     buildInitialSignRequestParamsModel(currentSignRequestParams, signImageNumber, isParaph) {
@@ -550,7 +589,6 @@ export class SignPlacementController extends EventFactory {
         const label = hasSignature ? "Ajouter une autre signature" : "Insérer une signature";
         addSignButton2.find(".es-add-sign-button-label").text(label);
         addSignButton2
-            .attr("title", label)
             .attr("aria-label", hasSignature
                 ? `${label}. ${count} signature${count > 1 ? "s" : ""} en place.`
                 : label);
