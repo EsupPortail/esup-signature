@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.savedrequest.SimpleSavedRequest;
 import org.springframework.stereotype.Service;
@@ -63,18 +64,32 @@ public class OAuthAuthenticationSuccessHandler extends SavedRequestAwareAuthenti
 				}
 			}
 			Object targetUrlAttr = httpServletRequest.getSession().getAttribute("after_oauth_redirect");
-			String targetUrl = targetUrlAttr != null ? targetUrlAttr.toString() : "/";
+			httpServletRequest.getSession().removeAttribute("after_oauth_redirect");
+			String targetUrl = targetUrlAttr != null ? targetUrlAttr.toString() : "/user";
 			if (targetUrl.isBlank()) {
-				targetUrl = "/";
+				targetUrl = "/user";
 			}
 			SavedRequest savedRequest = new SimpleSavedRequest(targetUrl);
 			httpServletRequest.getSession().setAttribute("SPRING_SECURITY_SAVED_REQUEST", savedRequest);
 			super.onAuthenticationSuccess(httpServletRequest, httpServletResponse, authentication);
 		} catch (EsupSignatureUserException e) {
-			httpServletRequest.getSession().setAttribute("errorMsg", e.getMessage());
+			logger.warn("OIDC authentication refused for registrationId={} : {}", registrationId, e.getMessage());
+			clearAuthentication(httpServletRequest);
+			httpServletRequest.getSession(true).setAttribute("errorMsg", e.getMessage());
 			httpServletResponse.sendRedirect("/");
 		}
 
+	}
+
+	private void clearAuthentication(HttpServletRequest httpServletRequest) {
+		SecurityContextHolder.clearContext();
+		try {
+			if(httpServletRequest.getSession(false) != null) {
+				httpServletRequest.getSession(false).removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+			}
+		} catch (IllegalStateException e) {
+			logger.debug("Session already cleared during OIDC authentication cleanup");
+		}
 	}
 
 	private void handleOtpAuthentication(HttpServletRequest httpServletRequest, Authentication authentication, DefaultOAuth2User defaultOidcUser, String registrationId) {
