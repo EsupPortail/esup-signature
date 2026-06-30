@@ -2,10 +2,11 @@ import {EventFactory} from "../modules/utils/EventFactory.js?version=@version@";
 import {UserUi} from '../modules/ui/users/UserUi.js?version=@version@';
 import {UserSignaturePad} from "../modules/ui/users/UserSignaturePad.js?version=@version@";
 import NotificationCenter from "../modules/ui/NotificationCenter.js?version=@version@";
+import {SignatureImageResolver, SPECIAL_SIGN_IMAGE_NUMBERS} from "../modules/ui/signrequests/SignatureImageResolver.js?version=@version@";
+import {MobileSignatureFlow} from "../modules/ui/signrequests/MobileSignatureFlow.js?version=@version@";
 
 let activeKeyboardPlacementId = null;
 const activeKeyboardPlacementNamespace = ".signRequestParamsKeyboardActive";
-let activeMobileSignParams = null;
 
 export class SignRequestParams extends EventFactory {
 
@@ -124,10 +125,12 @@ export class SignRequestParams extends EventFactory {
         this.mobilePersistPromise = null;
         this.mobilePersistedSignImageNumber = null;
         this.lastReceivedPreviewTimestamp = null;
+        this.localSignaturePad = null;
+        this.mobileSignatureFlow = this.#createMobileSignatureFlow();
         if(!light) {
             this.offset = this.#getPageRelativeTop(this.signPageNumber);
         }
-        if(signImages === 999999) {
+        if(signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             this.#initSpot();
         } else if(light) {
             this.#initLight();
@@ -959,88 +962,25 @@ export class SignRequestParams extends EventFactory {
         this.resetMobileSignatureFlow({clearToken: true, force: true});
     }
 
-    #getMobileSignModalElement() {
-        return document.getElementById("signRequestMobileSignModal");
-    }
-
-    #getMobileSignModal() {
-        const modalElement = this.#getMobileSignModalElement();
-        return modalElement && window.bootstrap ? bootstrap.Modal.getOrCreateInstance(modalElement) : null;
+    #createMobileSignatureFlow() {
+        return new MobileSignatureFlow(this, {
+            isTouchDevice: () => this.isTouchDevice(),
+            ensureCanvasReadyForMobilePreview: () => this.#ensureCanvasReadyForMobilePreview(),
+            enableDragAfterMobilePreview: () => this.#enableDragAfterMobilePreview(),
+            loadSignatureImage: signImageBase64 => this.userSignaturePad.loadImage(signImageBase64),
+            showEraseButton: () => this.eraseCanvasBtn?.removeClass("d-none"),
+            hasSignatureImage: () => this.userSignaturePad != null && !!this.userSignaturePad.signImageBase64Val,
+            getSignatureImageBase64: () => this.userSignaturePad.signImageBase64Val,
+            changeSignImage: signImageNumber => this.changeSignImage(signImageNumber)
+        });
     }
 
     #ensureMobileSignModalListeners() {
-        const modalElement = this.#getMobileSignModalElement();
-        if (modalElement == null || modalElement.dataset.mobileSignBound === "true") {
-            return;
-        }
-
-        modalElement.addEventListener("shown.bs.modal", () => {
-            if (this.isTouchDevice()) {
-                this.#initLocalMobileSignaturePad();
-            }
-        });
-
-        modalElement.addEventListener("hidden.bs.modal", () => {
-            if (this.localSignaturePad && typeof this.localSignaturePad.destroy === 'function') {
-                this.localSignaturePad.destroy();
-            }
-            this.localSignaturePad = null;
-            if (activeMobileSignParams != null) {
-                if (activeMobileSignParams.mobilePreviewApplied) {
-                    return;
-                }
-                activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
-                activeMobileSignParams = null;
-            }
-        });
-        modalElement.dataset.mobileSignBound = "true";
-    }
-
-    #resetMobileSignStatus() {
-        $("#signRequestMobileSignModalStatus")
-            .addClass("d-none")
-            .removeClass("alert-success alert-danger alert-warning")
-            .empty();
-    }
-
-    #showMobileSignStatus(message, level) {
-        $("#signRequestMobileSignModalStatus")
-            .removeClass("d-none alert-success alert-danger alert-warning")
-            .addClass("alert-" + level)
-            .text(message);
-    }
-
-    #stopMobileSignaturePolling() {
-        if (this.mobileSignPollingInterval != null) {
-            window.clearInterval(this.mobileSignPollingInterval);
-            this.mobileSignPollingInterval = null;
-        }
+        this.mobileSignatureFlow.ensureModalListeners();
     }
 
     resetMobileSignatureFlow({clearToken = false, force = false} = {}) {
-        if (this.mobilePreviewApplied && (clearToken || clearToken === undefined) && !force) {
-            // If a preview was applied, we keep the token and polling
-            return;
-        }
-        this.#stopMobileSignaturePolling();
-        this.mobilePreviewRequested = false;
-        this.mobilePreviewApplied = false;
-        this.mobilePreviewFinished = false;
-        this.mobileSignatureSaved = false;
-        this.mobilePersistPromise = null;
-        this.mobilePersistedSignImageNumber = null;
-        this.lastReceivedPreviewTimestamp = null;
-        if (clearToken) {
-            this.mobileSignToken = null;
-        }
-        this.#resetMobileSignStatus();
-    }
-
-    #startMobileSignaturePolling() {
-        this.#stopMobileSignaturePolling();
-        this.mobileSignPollingInterval = window.setInterval(() => {
-            this.#pollMobileTokenStatus();
-        }, 2000);
+        this.mobileSignatureFlow.reset({clearToken, force});
     }
 
     #ensureCanvasReadyForMobilePreview() {
@@ -1069,158 +1009,8 @@ export class SignRequestParams extends EventFactory {
         });
     }
 
-    #applyMobileSignaturePreview(signImageBase64) {
-        if (!signImageBase64) {
-            return;
-        }
-
-        this.#ensureCanvasReadyForMobilePreview();
-        this.userSignaturePad.loadImage(signImageBase64);
-        this.#enableDragAfterMobilePreview();
-        this.eraseCanvasBtn?.removeClass("d-none");
-        this.mobilePreviewApplied = true;
-        this.mobilePreviewRequested = false;
-        this.#showMobileSignStatus("Signature recue. Verifiez l'apercu dans le document.", "success");
-        NotificationCenter.showSnackbar("Signature mobile chargee dans le document", "success", {delay: 3000});
-        this.#startMobileSignaturePolling(); // Restart polling after applying preview
-        this.#getMobileSignModal()?.hide();
-        if (this.mobilePreviewFinished) {
-            this.persistMobileSignaturePreviewIfNeeded();
-        }
-    }
-
     persistMobileSignaturePreviewIfNeeded() {
-        if (!this.mobilePreviewApplied || this.mobileSignatureSaved || !this.mobileSignToken || this.userSignaturePad == null || !this.userSignaturePad.signImageBase64Val) {
-            return Promise.resolve(null);
-        }
-        if (this.mobilePersistPromise != null) {
-            return this.mobilePersistPromise;
-        }
-
-        const data = {
-            token: this.mobileSignToken,
-            signImageBase64: this.userSignaturePad.signImageBase64Val,
-            signRequestId: this.signRequestId
-        };
-        if (this.csrf?.parameterName && this.csrf?.token) {
-            data[this.csrf.parameterName] = this.csrf.token;
-        }
-
-        this.mobilePersistPromise = new Promise((resolve, reject) => {
-            $.ajax({
-                url: "/ws-secure/ui/profile/signatures/mobile",
-                type: "POST",
-                data: data,
-                success: response => {
-                    const fallbackNumber = Array.isArray(response?.signImageIds) && response.signImageIds.length > 0
-                        ? response.signImageIds.length - 1
-                        : null;
-                    const savedSignImageNumber = Number.parseInt(response?.savedSignImageNumber ?? fallbackNumber, 10);
-                    if (!Number.isFinite(savedSignImageNumber)) {
-                        this.mobilePersistPromise = null;
-                        reject(new Error("Unable to resolve saved mobile signature index"));
-                        return;
-                    }
-
-                    this.mobileSignatureSaved = true;
-                    this.mobilePersistedSignImageNumber = savedSignImageNumber;
-                    this.signImageNumber = savedSignImageNumber;
-                    this.signImages = Array.isArray(response?.signImages) ? response.signImages : this.signImages;
-                    localStorage.setItem("signNumber", savedSignImageNumber);
-                    document.dispatchEvent(new CustomEvent("userSignatureUpdated", {detail: response}));
-                    Promise.resolve(this.changeSignImage(savedSignImageNumber))
-                        .then(() => {
-                            this.#stopMobileSignaturePolling();
-                            this.#showMobileSignStatus("Signature mobile enregistree.", "success");
-                            resolve(response);
-                        })
-                        .catch(error => {
-                            this.mobilePersistPromise = null;
-                            reject(error);
-                        });
-                },
-                error: xhr => {
-                    this.mobilePersistPromise = null;
-                    let message = "Erreur lors de l'enregistrement de la signature mobile.";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        message = xhr.responseJSON.message;
-                    }
-                    this.#showMobileSignStatus(message, "warning");
-                    NotificationCenter.showSnackbar(message, "warning", {delay: 4000});
-                    reject(new Error(message));
-                }
-            });
-        });
-
-        return this.mobilePersistPromise;
-    }
-
-    #fetchMobileSignaturePreview() {
-        if (!this.mobileSignToken || this.mobilePreviewRequested) {
-            return;
-        }
-
-        this.mobilePreviewRequested = true;
-        $.ajax({
-            url: "/public/mobile-sign/" + encodeURIComponent(this.mobileSignToken) + "/preview",
-            type: "GET",
-            success: response => {
-                this.mobilePreviewRequested = false;
-                if (response && response.success && response.signImageBase64) {
-                    this.#applyMobileSignaturePreview(response.signImageBase64);
-                    return;
-                }
-                this.#showMobileSignStatus("La signature mobile a ete detectee mais son apercu est indisponible.", "warning");
-            },
-            error: xhr => {
-                this.mobilePreviewRequested = false;
-                let message = "Erreur lors de la recuperation de la signature mobile.";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    message = xhr.responseJSON.message;
-                }
-                this.#showMobileSignStatus(message, "warning");
-            }
-        });
-    }
-
-    #pollMobileTokenStatus() {
-        if (!this.mobileSignToken) {
-            return;
-        }
-
-        $.ajax({
-            url: "/public/mobile-sign/" + encodeURIComponent(this.mobileSignToken) + "/status",
-            type: "GET",
-            success: response => {
-                if (response.used) {
-                    this.#stopMobileSignaturePolling();
-                    if (!this.mobileSignatureSaved) {
-                        this.#showMobileSignStatus("Ce lien a deja ete utilise. Generez-en un nouveau si besoin.", "warning");
-                    }
-                    return;
-                }
-                if (response.finished) {
-                    this.mobilePreviewFinished = true;
-                }
-                if (response.previewAvailable && !this.mobilePreviewRequested) {
-                    if (response.previewTimestamp != null && response.previewTimestamp !== this.lastReceivedPreviewTimestamp) {
-                        this.lastReceivedPreviewTimestamp = response.previewTimestamp;
-                        this.#fetchMobileSignaturePreview();
-                    }
-                }
-                if (response.finished && this.mobilePreviewApplied) {
-                    this.persistMobileSignaturePreviewIfNeeded();
-                }
-                if (!response.valid) {
-                    this.#stopMobileSignaturePolling();
-                    this.#showMobileSignStatus(response.message || "Ce lien n'est plus valide. Veuillez en generer un nouveau.", "warning");
-                }
-            },
-            error: () => {
-                this.#stopMobileSignaturePolling();
-                this.#showMobileSignStatus("Erreur lors de la verification du lien mobile.", "warning");
-            }
-        });
+        return this.mobileSignatureFlow.persistPreviewIfNeeded();
     }
 
     isTouchDevice() {
@@ -1229,80 +1019,8 @@ export class SignRequestParams extends EventFactory {
             (navigator.msMaxTouchPoints > 0));
     }
 
-    #initLocalMobileSignaturePad() {
-        const canvas = document.getElementById("canvasMobile");
-        if (!canvas) return;
-
-        const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        canvas.width = canvas.offsetWidth * ratio;
-        canvas.height = canvas.offsetHeight * ratio;
-        canvas.getContext("2d").scale(ratio, ratio);
-
-        if (this.localSignaturePad && typeof this.localSignaturePad.destroy === 'function') {
-            this.localSignaturePad.destroy();
-        }
-
-        this.localSignaturePad = new SignaturePad(canvas);
-
-        const eraseButton = document.getElementById("eraseMobile");
-        const validateButton = document.getElementById("validateMobile");
-
-        if (eraseButton) {
-            $(eraseButton).off("click").on("click", () => {
-                this.localSignaturePad.clear();
-            });
-        }
-
-        if (validateButton) {
-            $(validateButton).off("click").on("click", () => {
-                if (this.localSignaturePad.isEmpty()) {
-                    alert("Veuillez dessiner votre signature.");
-                    return;
-                }
-                const signImageBase64 = this.localSignaturePad.toDataURL("image/png");
-                this.#applyMobileSignaturePreview(signImageBase64);
-                this.#getMobileSignModal()?.hide();
-            });
-        }
-    }
-
     #startMobileSignatureFlow() {
-        if (activeMobileSignParams != null && activeMobileSignParams !== this) {
-            activeMobileSignParams.resetMobileSignatureFlow({clearToken: true});
-        }
-        activeMobileSignParams = this;
-        this.resetMobileSignatureFlow({clearToken: true});
-
-        if (this.isTouchDevice()) {
-            $("#signRequestMobileSignModalLocal").removeClass("d-none");
-            $("#signRequestMobileSignModalQR").addClass("d-none");
-            this.#getMobileSignModal()?.show();
-            return;
-        }
-
-        let url = (this.isOtp ? "/otp" : "/user") + "/signrequests/" + this.signRequestId + "/generate-mobile-token";
-        $.ajax({
-            url: url,
-            type: "GET",
-            success: response => {
-                if (!(response && response.qrcodeUrl && response.token)) {
-                    this.#showMobileSignStatus("Erreur lors de la generation du lien mobile. Veuillez reessayer.", "danger");
-                    return;
-                }
-
-                this.mobileSignToken = response.token;
-                $("#signRequestQrcodeImage").attr("src", response.qrcodeUrl);
-                $("#signRequestMobileSignUrl").attr("href", response.url).text(response.url);
-                this.#resetMobileSignStatus();
-                this.#getMobileSignModal()?.show();
-                this.#startMobileSignaturePolling();
-                this.#pollMobileTokenStatus();
-            },
-            error: () => {
-                this.#showMobileSignStatus("Erreur lors de la generation du lien mobile. Veuillez reessayer.", "danger");
-                this.#getMobileSignModal()?.show();
-            }
-        });
+        this.mobileSignatureFlow.start();
     }
 
     #createTools() {
@@ -1483,7 +1201,7 @@ export class SignRequestParams extends EventFactory {
             bootbox.alert("Attention votre signature superpose un autre élément du document cela pourrait nuire à sa lecture. Vous pourrez tout de même la valider même si elle est de couleur orange", null);
         }
         this.#afterDropRefresh(ui);
-        if(this.signImages !== 999999) {
+        if(this.signImages !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             let signLaunchButton = $("#signLaunchButton");
             if(signLaunchButton.length) {
                 signLaunchButton.addClass("pulse-success");
@@ -1507,7 +1225,7 @@ export class SignRequestParams extends EventFactory {
                 this.inside = true;
             }
         });
-        if (!this.inside && this.signImages !== 999999) {
+        if (!this.inside && this.signImages !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             console.log("La signature n'est pas entièrement dans une page !");
         }
         this.#computeBgColor();
@@ -1515,7 +1233,7 @@ export class SignRequestParams extends EventFactory {
     }
 
     #computeBgColor() {
-        if(this.signImages === 999999) {
+        if(this.signImages === SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
             return;
         }
         if (!this.inside) {
@@ -1725,9 +1443,7 @@ export class SignRequestParams extends EventFactory {
 
     #deleteSign() {
         this.resetMobileSignatureFlow({clearToken: true});
-        if (activeMobileSignParams === this) {
-            activeMobileSignParams = null;
-        }
+        MobileSignatureFlow.clearActiveFlow(this.mobileSignatureFlow);
         this.setSlotDeleteButtonsEnabled(true);
         this.#deleteAllPagesSigns();
         this.cross.attr("remove", "true");
@@ -1860,50 +1576,19 @@ export class SignRequestParams extends EventFactory {
         this.#computeBgColor();
     }
 
-    #isGeneratedSignImageNumber(imageNum) {
-        const normalizedImageNum = Number.parseInt(imageNum, 10);
-        return normalizedImageNum === 999998
-            || (Number.isInteger(this.generatedSignImageNumber) && normalizedImageNum === this.generatedSignImageNumber);
-    }
-
-    #isParapheSignImageNumber(imageNum) {
-        const normalizedImageNum = Number.parseInt(imageNum, 10);
-        return normalizedImageNum === 999997
-            || (Number.isInteger(this.parapheSignImageNumber) && normalizedImageNum === this.parapheSignImageNumber);
-    }
-
     #resolveSpecialSignImageRequestNumber(imageNum) {
-        if (this.#isParapheSignImageNumber(imageNum)) {
-            return 999997;
-        }
-        if (this.#isGeneratedSignImageNumber(imageNum)) {
-            return 999998;
-        }
-        return imageNum;
+        return SignatureImageResolver.resolveRequestedSignImageNumber(imageNum, this.#getSpecialSignImageIndexes());
+    }
+
+    #getSpecialSignImageIndexes() {
+        return {
+            generatedSignImageNumber: this.generatedSignImageNumber,
+            parapheSignImageNumber: this.parapheSignImageNumber
+        };
     }
 
     #getSelectableSignImageNumbers() {
-        if (!Array.isArray(this.signImages) || this.signImages.length === 0) {
-            return [];
-        }
-
-        const selectableNumbers = [];
-        for (let imageIndex = 0; imageIndex < this.signImages.length; imageIndex++) {
-            if (!this.signImages[imageIndex]) {
-                continue;
-            }
-            if (imageIndex === this.generatedSignImageNumber || imageIndex === this.parapheSignImageNumber) {
-                continue;
-            }
-            selectableNumbers.push(imageIndex);
-        }
-        if (this.generatedSignImageNumber != null && this.signImages[this.generatedSignImageNumber]) {
-            selectableNumbers.push(999998);
-        }
-        if (this.parapheSignImageNumber != null && this.signImages[this.parapheSignImageNumber]) {
-            selectableNumbers.push(999997);
-        }
-        return selectableNumbers;
+        return SignatureImageResolver.getSelectableSignImageNumbers(this.signImages, this.#getSpecialSignImageIndexes());
     }
 
     #cycleSignImage(direction) {
@@ -2873,38 +2558,21 @@ export class SignRequestParams extends EventFactory {
             }
             if(imageNum != null && imageNum >= 0) {
                 if(this.signImages != null) {
-                    const requestedImageNum = this.#resolveSpecialSignImageRequestNumber(imageNum);
-                    let resolvedImageNum = imageNum;
-                    if (requestedImageNum === 999998) {
-                        if (Number.isInteger(this.generatedSignImageNumber)) {
-                            resolvedImageNum = this.generatedSignImageNumber;
-                        } else if (Number.isInteger(this.parapheSignImageNumber)) {
-                            resolvedImageNum = Math.max(0, this.parapheSignImageNumber - 1);
-                        } else {
-                            resolvedImageNum = this.signImages.length > 1
-                                ? Math.max(0, this.signImages.length - 2)
-                                : Math.max(0, this.signImages.length - 1);
-                        }
-                    } else if (requestedImageNum === 999997) {
-                        if (Number.isInteger(this.parapheSignImageNumber)) {
-                            resolvedImageNum = this.parapheSignImageNumber;
-                        } else {
-                            resolvedImageNum = Math.max(0, this.signImages.length - 1);
-                        }
-                    } else if(resolvedImageNum > this.signImages.length - 1) {
-                        resolvedImageNum = 0;
-                    }
-                    this.signImageNumber = requestedImageNum;
-                    console.debug("debug - " + "change sign image to " + requestedImageNum);
+                    const {
+                        requestedSignImageNumber,
+                        resolvedImageNumber
+                    } = SignatureImageResolver.resolveImageRequest(imageNum, this.signImages, this.#getSpecialSignImageIndexes());
+                    this.signImageNumber = requestedSignImageNumber;
+                    console.debug("debug - " + "change sign image to " + requestedSignImageNumber);
                     let img = null;
-                    if(this.signImages[resolvedImageNum] != null) {
-                        img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[resolvedImageNum];
+                    if(this.signImages[resolvedImageNumber] != null) {
+                        img = "data:image/jpeg;charset=utf-8;base64, " + this.signImages[resolvedImageNumber];
                         this.cross.css("background-image", "url('" + img + "')");
                         let sizes = this.#getImageDimensions(img);
                         sizes.then(result => {
                             this.changeSignSize(result);
-                            if(requestedImageNum !== 999999) {
-                                localStorage.setItem('signNumber', requestedImageNum);
+                            if(requestedSignImageNumber !== SPECIAL_SIGN_IMAGE_NUMBERS.SPOT) {
+                                localStorage.setItem('signNumber', requestedSignImageNumber);
                             }
                             this.#refreshAllPagesSigns();
                             resolve(img);
