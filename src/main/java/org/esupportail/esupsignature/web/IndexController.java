@@ -41,13 +41,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
-import org.springframework.security.web.savedrequest.DefaultSavedRequest;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
@@ -85,48 +86,57 @@ public class IndexController {
 		String savedQueryString = null;
 		HttpSession httpSession = httpServletRequest.getSession(false);
 		if(httpSession != null) {
-			DefaultSavedRequest defaultSavedRequest = null;
-			try {
-				defaultSavedRequest = (DefaultSavedRequest) httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
-			} catch (Exception e) {
-				logger.warn(e.getMessage());
-			}
-			if (defaultSavedRequest != null) {
-				if (StringUtils.hasText(defaultSavedRequest.getQueryString())) {
-					savedQueryString = defaultSavedRequest.getRequestURL() + "?" + defaultSavedRequest.getQueryString();
-				} else {
-					savedQueryString = defaultSavedRequest.getRequestURL();
-				}
+			Object savedRequest = httpSession.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+			if (savedRequest instanceof SavedRequest) {
+				savedQueryString = ((SavedRequest) savedRequest).getRedirectUrl();
+			} else if(savedRequest != null) {
+				logger.warn("invalide saved url type : {}", savedRequest.getClass().getName());
 			}
 		}
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 		if(StringUtils.hasText(authUserEppn) && !authUserEppn.equals("system")) {
 			model.asMap().clear();
 			return "redirect:/user";
-			} else {
-				if("anonymousUser".equals(auth.getName())) {
-					logger.trace("auth user : " + auth.getName());
-					List<SecurityService> loginSecurityServices = getLoginSecurityServices();
-					model.addAttribute("securityServices", loginSecurityServices);
-					model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
-					if(StringUtils.hasText(savedQueryString)) {
-						model.addAttribute("redirect", savedQueryString);
-						if(!savedQueryString.contains("/casentry") && loginSecurityServices.size() == 1 && loginSecurityServices.get(0) instanceof CasSecurityServiceImpl) {
-							return "redirect:/login/casentry?redirect=" + savedQueryString;
-						}
+		} else {
+			if("anonymousUser".equals(auth.getName())) {
+				logger.trace("auth user : " + auth.getName());
+				List<SecurityService> loginSecurityServices = getLoginSecurityServices();
+				model.addAttribute("securityServices", loginSecurityServices);
+				model.addAttribute("globalProperties", UiGlobalPropertiesDto.fromGlobalProperties(globalProperties));
+				if(StringUtils.hasText(savedQueryString)) {
+					model.addAttribute("redirect", savedQueryString);
+					if(!savedQueryString.contains("/casentry") && loginSecurityServices.size() == 1 && loginSecurityServices.get(0) instanceof CasSecurityServiceImpl) {
+						return "redirect:/login/casentry?redirect=" + savedQueryString;
 					}
-					if(httpServletRequest.getSession().getAttribute("errorMsg") != null) {
-						model.addAttribute("message", new UiMessageDto("error", httpServletRequest.getSession().getAttribute("errorMsg").toString()));
-					}
+				}
+				if(httpServletRequest.getSession().getAttribute("errorMsg") != null) {
+					model.addAttribute("message", new UiMessageDto("error", httpServletRequest.getSession().getAttribute("errorMsg").toString()));
+				}
 				return "signin";
 			} else {
 				logger.info("auth user : " + auth.getName());
-				if(StringUtils.hasText(savedQueryString) && !savedQueryString.equals("/login/casentry")) {
+				if(isUsableSavedRedirect(savedQueryString)) {
 					return "redirect:" + savedQueryString;
 				} else {
 					return "redirect:/user";
 				}
 			}
+		}
+	}
+
+	private boolean isUsableSavedRedirect(String savedQueryString) {
+		if(!StringUtils.hasText(savedQueryString)) {
+			return false;
+		}
+		try {
+			String path = URI.create(savedQueryString).getPath();
+			if(!StringUtils.hasText(path)) {
+				path = "/";
+			}
+			return !path.equals("/") && !path.equals("/login/casentry");
+		} catch (IllegalArgumentException e) {
+			logger.warn("invalide saved url: {}", savedQueryString);
+			return false;
 		}
 	}
 
