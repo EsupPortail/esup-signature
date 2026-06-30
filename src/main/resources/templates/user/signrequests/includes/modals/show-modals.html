@@ -1730,6 +1730,15 @@
                     readUiMe() && hydrateModalFromUiMe(readUiMe());
                     updateSaveButtonState();
                     document.addEventListener('uiMeLoaded', ({detail}) => hydrateModalFromUiMe(detail));
+                    document.addEventListener('userSignatureUpdated', ({detail}) => {
+                        if (!detail) {
+                            return;
+                        }
+                        const savedSignImageNumber = Number.parseInt(detail.savedSignImageNumber, 10);
+                        updateLiveUserState(detail, {
+                            modalActiveIndex: Number.isFinite(savedSignImageNumber) ? savedSignImageNumber : 0
+                        });
+                    });
                     addSignImageModal?.addEventListener('shown.bs.modal', () => {
                         const firstTab = document.querySelector('#draw-tab');
                         if (firstTab) {
