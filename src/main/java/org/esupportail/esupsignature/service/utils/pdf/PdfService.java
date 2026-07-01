@@ -826,6 +826,9 @@ public class PdfService {
 
     public String getGhostscriptVersion() {
         String gsPath = pdfConfig.getPdfProperties().getPathToGS(); // chemin vers gs
+        if (!StringUtils.hasText(gsPath)) {
+            return null;
+        }
         ProcessBuilder processBuilder = new ProcessBuilder();
         if (SystemUtils.IS_OS_WINDOWS) {
             processBuilder.command("cmd", "/C", gsPath + " -version");
